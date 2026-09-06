@@ -30,7 +30,9 @@ the pre-release sparse-package identity changes from Inspect to Analyze.
 Consequences
 ------------
 
-- Explorer naturally renders the intended Analyze, Convert, Optimize sequence.
+- The tested Explorer environment renders Analyze, Convert, Optimize in the
+  intended alphabetical sequence. This is an observation, not a guaranteed
+  ordering contract across Windows versions or localized labels.
 - The name supports both technical facts and deterministic recommendations.
 - Product copy must not imply AI or probabilistic analysis.
 - Old development Inspect packages must be removed during installation and

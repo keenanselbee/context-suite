@@ -30,8 +30,11 @@ All three packages reference the same externally located native shell DLL, host,
 and generated assets.
 
 The application display names are the short root labels **Analyze**, **Convert**,
-and **Optimize**. Future prototype child actions for one tool must be registered
-only in that tool's identity package.
+and **Optimize**. Convert and Optimize supply their children through their own
+`IExplorerCommand::EnumSubCommands` implementations. Do not add package verbs
+for those children: retain one manifest verb per root so the package-level
+aggregation observed in the experiment is not reintroduced. Analyze stays a
+direct command without a submenu.
 
 
 Consequences

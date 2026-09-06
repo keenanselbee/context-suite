@@ -1,7 +1,8 @@
 Shell Prototype Platform
 ========================
 
-Status: superseded by [0003: Separate shell identity packages](0003-separate-shell-identity-packages.md)
+Status: accepted for the prototype; package count superseded by
+[0003: Separate shell identity packages](0003-separate-shell-identity-packages.md)
 Date: 2026-09-05
 
 
