@@ -1,0 +1,80 @@
+Architecture Decisions
+======================
+
+Use this directory for decisions that constrain implementation, packaging,
+public behavior, or long-term maintenance. Do not create a decision record for a
+routine code choice that is obvious from the implementation.
+
+
+When To Record A Decision
+-------------------------
+
+Create a record when choosing or changing matters such as:
+
+- Desktop UI framework or application lifecycle.
+- Explorer integration and deployment identity.
+- Inter-process activation and request schemas.
+- Media engines and binary distribution.
+- Supported Windows versions or architectures.
+- Persisted settings and preset schemas.
+- Output replacement guarantees.
+- A significant change to product scope or tool boundaries.
+
+
+Naming
+------
+
+Use a four-digit sequence and a short lower-kebab-case title:
+
+```text
+0001-select-desktop-ui-framework.md
+0002-select-shell-registration-model.md
+```
+
+
+Template
+--------
+
+```markdown
+Decision Title
+==============
+
+Status: proposed | accepted | superseded
+Date: YYYY-MM-DD
+
+
+Context
+-------
+
+What problem or constraint requires a durable decision?
+
+
+Decision
+--------
+
+What was selected?
+
+
+Consequences
+------------
+
+What becomes easier, harder, required, or intentionally unsupported?
+
+
+Alternatives Considered
+-----------------------
+
+Which credible alternatives were rejected, and why?
+```
+
+Keep records concise, link superseding decisions in both directions, and update
+design documents when an accepted decision changes their assumptions.
+
+
+Current Decisions
+-----------------
+
+- [0001: Shell prototype platform](0001-shell-prototype-platform.md)
+- [0002: Shell activation request](0002-shell-activation-request.md)
+- [0003: Separate shell identity packages](0003-separate-shell-identity-packages.md)
+- [0004: Analyzer product language](0004-analyzer-product-language.md)

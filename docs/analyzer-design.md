@@ -1,0 +1,132 @@
+Context Analyzer Design
+=======================
+
+Status: initial design; DDS is the first planned implementation.
+
+
+Purpose
+-------
+
+Context Analyzer explains how a file is stored and which properties matter for
+later conversion or optimization. Analysis is strictly read-only and should
+make uncertainty visible rather than infer facts the file does not encode.
+
+
+Explorer Experience
+-------------------
+
+**Analyze** is a top-level Explorer command alongside **Convert** and
+**Optimize**. It has no Explorer submenu: invoking it passes the complete
+selection to the host and opens the Analyzer details surface directly.
+
+Explorer performs no full parse or property-summary work. Analysis happens out
+of process after activation. For multiple selected files, the details surface
+can show a comparison table, aggregate facts, and individual warnings without
+launching a separate window for each file.
+
+
+Analysis Result Model
+---------------------
+
+An analysis result should include:
+
+- Source identity and detected media family.
+- Detected format and raw format identifier.
+- Facts grouped into stable sections such as storage, image, audio, metadata,
+  and compatibility.
+- Warnings for malformed, unsupported, contradictory, or incomplete data.
+- A state for each fact: explicit, derived, unknown, not encoded, or unavailable.
+- The analyzer and schema versions needed to understand cached results.
+
+Parsers return typed facts. They do not construct menu text, windows, or message
+boxes. Presentation layers decide which facts fit a compact snapshot and which
+belong in details.
+
+
+DDS Version 1
+-------------
+
+The first analyzer should read DDS headers and report:
+
+- DDS header type: legacy or DX10 extended.
+- Exact known format plus raw FourCC or DXGI value.
+- Compression family, including BC1 through BC7 where represented.
+- Whether linear or sRGB is explicitly encoded, typeless, unknown, or not
+  recorded by a legacy header.
+- Width, height, depth, and mip count.
+- Texture type, cube-map state, array size, and volume state.
+- Alpha mode when encoded and a qualified description when format-dependent.
+- File size and structural warnings.
+
+Legacy DXT headers do not encode enough information to prove linear versus sRGB
+usage. Analyzer must report that limitation rather than guess from the filename
+or common engine practice.
+
+
+Later Image Analysis
+--------------------
+
+Common image analysis may report:
+
+- Container and encoded pixel format.
+- Dimensions, bit depth, channel count, and alpha presence.
+- Animation and frame count.
+- Color profile or declared color space.
+- Orientation metadata and whether display dimensions differ from stored
+  dimensions.
+- Relevant metadata groups without exposing private values unnecessarily.
+- Compression mode and quality indicators when the format makes them reliably
+  available.
+
+Analyzer must distinguish an absent property from one that the selected parser
+cannot determine.
+
+
+Later Audio Analysis
+--------------------
+
+Common audio analysis may report:
+
+- Container and codec.
+- Duration, sample rate, bit depth where meaningful, and channel layout.
+- Bitrate and whether it is constant, variable, lossless, or unknown.
+- Tags, embedded artwork presence, and gapless or loop-relevant information when
+  reliably encoded.
+- Warnings for misleading extensions, unsupported streams, or malformed data.
+
+
+Performance And Safety
+----------------------
+
+- Treat extensions as routing hints and validate signatures or container data.
+- Use bounded reads and checked arithmetic for sizes and offsets.
+- Place limits on allocation, recursion, frame counts, metadata lengths, and
+  decompression work.
+- Do not invoke external media engines during Explorer menu enumeration.
+- Do not modify access, write, or creation timestamps intentionally.
+- Do not retain file contents or sensitive metadata in logs or caches.
+- Key cached results by sufficient file identity and invalidate them when the
+  file changes.
+
+
+Validation
+----------
+
+Each analyzer requires:
+
+- Unit fixtures for every advertised format variant.
+- Malformed, truncated, oversized, and unknown-value cases.
+- Tests proving that unknown values remain reportable rather than crashing.
+- Tests separating encoded facts from inferences.
+- A read-only contract test that detects unexpected file changes.
+- Snapshot selection tests covering one file, compatible batches, mixed types,
+  and an unavailable parser.
+
+
+Non-Goals
+---------
+
+Analyzer does not repair files, edit metadata, decode complete media merely to
+show a header summary, or make conversion and optimization decisions on the
+user's behalf. It may explain or recommend another tool, but that operation must
+remain a separate explicit command.
