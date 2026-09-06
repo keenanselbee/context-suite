@@ -1,2 +1,4 @@
 Context Suite.code-workspace
 reference/*
+.codex-temp/
+artifacts/
