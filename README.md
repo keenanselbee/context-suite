@@ -50,6 +50,27 @@ See [shell prototype validation](docs/shell-prototype-validation.md) for the
 automated evidence, observed layout, and optional manual host-dialog check.
 
 
+Production Foundation
+---------------------
+
+The WPF application, shared core, on-demand worker, bounded activation queue,
+and private-project composition now build. Media implementations remain absent:
+the window reports unsupported operations and never transforms files.
+
+```powershell
+./tools/Test-Foundation.ps1 -Configuration Release
+./tools/Build-Production.ps1 -Configuration Release
+./tools/Test-Foundation.ps1 -Configuration Release -Integration
+./artifacts/production/Release/ContextSuite.Application.exe
+```
+
+The full build requires the compatible private checkout. These commands do not
+install or replace Explorer packages. See [development and validation](docs/development.md)
+for prerequisites, public-only checks, IPC limits, and the remaining manual smoke
+checks. CI workflows are authored; hosted execution requires publication.
+See [foundation validation](docs/milestone-1-validation.md) for the local evidence.
+
+
 Public Source And Commercial Direction
 -------------------------------------
 
@@ -65,8 +86,8 @@ architecture, tests, and planned screenshots and demo video. A downloadable
 commercial trial is planned for people who want to run the application.
 
 Public components may be built and tested independently where supported. The
-commands above currently build only the native shell prototype; production
-composition, licensing, and media processing are not implemented yet.
+native prototype commands remain independent. Production composition now builds;
+licensing and media processing are not implemented yet.
 
 The commercial direction is a three-day trial followed by website login and
 purchase validation. Media processing remains local. Trial start timing and
@@ -82,8 +103,9 @@ The accepted production foundation is Windows 11 x64, WPF on .NET 10 with MVVM,
 one application per interactive user session, and one on-demand sequential
 media worker. It retains the native Explorer extension and bounded request-file
 activation, with local named pipes for application forwarding and worker
-communication. Settings use versioned local JSON. These choices are accepted,
-not implemented; see [decision 0007](docs/decisions/0007-production-ui-and-processes.md).
+communication. Settings will use versioned local JSON when preferences are added.
+Process foundations are implemented; see [decision 0007](docs/decisions/0007-production-ui-and-processes.md)
+and [development status](docs/development.md) for verification limits.
 
 - Analysis is read-only.
 - Conversion changes format only after the destination is explicit.

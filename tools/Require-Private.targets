@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <ContextSuitePrivateProject Condition="'$(ContextSuitePrivateProject)' == ''">$(MSBuildThisFileDirectory)..\proprietary\src\ContextSuite.Private\ContextSuite.Private.csproj</ContextSuitePrivateProject>
+  </PropertyGroup>
+  <ItemGroup Condition="Exists('$(ContextSuitePrivateProject)')">
+    <ProjectReference Include="$(ContextSuitePrivateProject)" />
+  </ItemGroup>
+  <Target Name="RequirePrivateCheckout" BeforeTargets="PrepareForBuild;CollectPackageReferences">
+    <Error Condition="!Exists('$(ContextSuitePrivateProject)')" Text="Context Suite production requires the compatible context-suite-private checkout under proprietary/. See docs/development.md. There is no public demo build." />
+  </Target>
+</Project>

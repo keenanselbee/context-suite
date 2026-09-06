@@ -1,7 +1,7 @@
 Context Suite Product Design
 ============================
 
-Status: initial product direction with a working shell-integration prototype;
+Status: initial product direction with shell and production process foundations;
 media analysis and transformation are not implemented yet.
 
 
@@ -150,13 +150,13 @@ Most engineering is intended to be publicly reviewable. The complete production
 application requires private implementations from `context-suite-private`,
 checked out under the public repository's ignored `proprietary/` directory.
 
-One planned production application build requires the private checkout; a
+One production foundation build requires the private checkout; a
 public checkout alone cannot build the complete app. There is no separate
 review/demo edition. Portfolio presentation uses public code, architecture,
 tests, and planned screenshots and demo video; a downloadable commercial trial
 will serve people who want to run it. Public components may be tested separately
-where their dependencies permit. The current public build is only the shell
-prototype, not the production application. See
+where their dependencies permit. Public-only builds cover the shell prototype
+and component contracts, not the complete production application. See
 [decision 0005](decisions/0005-public-and-proprietary-builds.md).
 
 The commercial direction is a three-day trial followed by website login and

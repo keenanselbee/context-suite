@@ -130,12 +130,13 @@ Repository-Specific Notes
   checkout, with a clear error when required implementations are unavailable.
   Do not add a separate public review/demo edition or shipping access bypass.
   Independently testable public components do not require a second application.
-  The production build is planned; current shell-prototype commands still apply.
+  Use tools/Build-Production.ps1 for the full foundation; the native
+  shell-prototype commands remain independently supported.
 - Follow accepted decision 0007 for the production foundation: Windows 11 x64,
   WPF/.NET 10 with MVVM, one app per interactive user session, one on-demand
   sequential worker, and bounded local named-pipe communication. The app owns
   final output publication. Do not add a worker pool or resident service without
-  a new scope decision. Production implementation is still pending.
+  a new scope decision. Media engines and commercial access are not implemented.
 - Keep private source out of public source archives through explicit packaging
   rules. Never store payment credentials or signing private keys in either repo.
 - Website login and purchase validation are permitted; media contents and
@@ -173,6 +174,11 @@ Repository-Specific Notes
   arbitrary engine commands, or obscure formats without an explicit
   product-scope decision.
 - Use `tools/Build.ps1` for the canonical native x64 build.
+- Use `tools/Build-Production.ps1` for production composition and
+  `tools/Test-Foundation.ps1` for public contracts; add `-Integration` to test the
+  real private worker. Close the application before router tests. Use
+  `tools/Test-PrivateBoundary.ps1` for expected missing-private failures and
+  `tools/Test-Repository.ps1` for documentation and public-source boundaries.
 - Use `tools/Test-ShellPrototype.ps1` for host schema, manifest, COM class, and
   multi-selection activation contracts.
 - Use `tools/Install-ShellPrototype.ps1` and

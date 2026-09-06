@@ -1,7 +1,7 @@
 Production UI And Processes
 ===========================
 
-Status: accepted; implementation pending
+Status: accepted; process foundation implemented, media work pending
 Date: 2026-09-06
 
 
@@ -9,7 +9,9 @@ Context
 -------
 
 The native shell prototype proves command layout and complete-selection handoff.
-The production UI, application lifetime, and media worker have not been built.
+At acceptance, the production UI, application lifetime, and media worker had not
+been built. The foundation implementation is now described in
+[development status](../development.md); media implementations remain absent.
 The next foundation should support one small Windows utility built from public
 source and selected private production implementations.
 
@@ -111,7 +113,8 @@ Scaffolding may proceed using this decision. Specify exact IPC schemas, timeout
 values, startup coordination, request-file cleanup, and settings fields as their
 contracts are implemented and tested. Preserve the native shell tests during
 the production-host transition. Acceptance does not mean these mechanisms have
-already been implemented or verified.
+already been implemented or verified. Consult the development status for the
+current evidence and remaining visual/installed-package smoke checks.
 
 Media-engine selection remains separate. Magick.NET and ImageSharp are image
 candidates; oxipng and pngquant are PNG candidates; FFmpeg/ffprobe are audio

@@ -372,8 +372,13 @@ std::filesystem::path GetHostPath()
         }
         if (length < buffer.size() - 1)
         {
-            return std::filesystem::path(std::wstring(buffer.data(), length)).parent_path() /
-                L"ContextSuite.Host.exe";
+            const auto directory = std::filesystem::path(std::wstring(buffer.data(), length)).parent_path();
+            const auto application = directory / L"ContextSuite.Application.exe";
+            if (GetFileAttributesW(application.c_str()) != INVALID_FILE_ATTRIBUTES)
+            {
+                return application;
+            }
+            return directory / L"ContextSuite.Host.exe";
         }
         buffer.resize(buffer.size() * 2);
     }

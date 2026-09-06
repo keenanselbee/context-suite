@@ -1,7 +1,7 @@
 Context Suite Architecture
 ==========================
 
-Status: production foundation accepted in decision 0007; implementation pending.
+Status: production process foundation implemented under decision 0007.
 Media engines and production deployment details remain deferred decisions.
 
 
@@ -60,15 +60,18 @@ private credentials; private release CI verifies the complete application and
 records both repository revisions.
 See [decision 0005](decisions/0005-public-and-proprietary-builds.md).
 
-This production build is planned. The current solution contains only the native
-shell, prototype host, and shell contract tests. Accepted
+The native solution retains the shell, prototype host, and shell contract tests.
+Production scripts additionally build Core, Application, Worker, and the private
+implementation project. Managed contract tests cover the new boundaries. Accepted
 [decision 0007](decisions/0007-production-ui-and-processes.md) selects Windows 11
 x64, C#/.NET 10 WPF with MVVM, one application per interactive user session, and
 one on-demand worker processing files sequentially. Retain bounded request-file
 shell activation; use local named pipes for app forwarding and worker messages.
 The app owns final publication; the worker produces and validates temporary
-outputs. Settings use versioned JSON in local application data. These choices
-are ready for scaffolding, not implemented functionality.
+outputs once media work is implemented. Settings will use versioned JSON in local
+application data when preferences are introduced. The current worker exposes
+only its real, empty capability catalog; no media operation is implemented.
+See [development status](development.md) for verification limits.
 
 
 Operation Model

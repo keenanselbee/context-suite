@@ -33,8 +33,10 @@ their tests may build independently where their dependencies permit; this does
 not require a separate application or a promise that every public project can
 build alone. Test doubles belong in tests, not a shipping demonstration edition.
 
-The production build is not implemented yet. The existing native shell prototype
-continues to build independently through the documented commands.
+The production foundation now builds through `tools/Build-Production.ps1`; its
+private media catalog is empty until real adapters are implemented. The existing
+native shell prototype continues to build independently. See
+[development status](../development.md) for verified and pending surfaces.
 
 Public code owns shared contracts, Explorer integration, presentation, batch
 coordination, output safety, the DDS parser, and their tests. Private code owns

@@ -80,4 +80,4 @@ Current Decisions
 - [0004: Analyzer product language](0004-analyzer-product-language.md)
 - [0005: Public and proprietary builds](0005-public-and-proprietary-builds.md) — accepted
 - [0006: Trial and purchase access](0006-trial-and-purchase-access.md) — direction accepted; policies open
-- [0007: Production UI and processes](0007-production-ui-and-processes.md) — accepted; implementation pending
+- [0007: Production UI and processes](0007-production-ui-and-processes.md) — accepted; process foundation implemented

@@ -1,7 +1,8 @@
 Context Suite Roadmap
 =====================
 
-Status: foundation decisions approved; Milestone 1 ready to start. Remaining
+Status: Milestone 1 foundation implemented locally; UI/installed-shell smoke and
+hosted CI verification remain pending. Remaining
 Milestone 0 engine and release decisions are deferred to their dependent work.
 Milestones are ordered by dependency and proof of value, not calendar dates.
 
@@ -22,19 +23,22 @@ shell-integration discovery prototype. It proves:
 This evidence resolves the shell-discovery portion of Milestone 0. Production UI,
 platform, lifecycle, worker/IPC boundaries, settings storage, and initial source
 allocation are now accepted in decision 0007. Media engines, production packaging,
-updates, signing, and diagnostics remain deferred decisions. Milestone 1 is ready
-but has not started as defined: the repository
-does not yet contain the planned application/core projects, domain contracts,
-fixture conventions, or CI. Milestone 2 and later media milestones have not
-started; the shell prototype proves batch handoff only, not the safe execution
-pipeline or media behavior.
+updates, signing, and diagnostics remain deferred decisions. Milestone 1 now has
+Core, WPF Application, Worker, private composition, managed contracts, fixture
+conventions, build/test scripts, and authored CI workflows. Local builds and
+protocol tests pass; hosted CI and manual production-window/installed-shell
+smoke checks remain unverified. See [development status](development.md).
+The bounded foundation goal's evidence is summarized in
+[Milestone 1 validation](milestone-1-validation.md); this does not certify release readiness.
+Milestone 2 has early queue/cancellation plumbing but no output transaction or
+media execution. Milestone 3 and later media features have not started.
 
 The public/private repository direction and three-day commercial trial are now
-recorded in decisions 0005 and 0006. The single production build, trial handling,
-and website activation are planned, not implemented. Decision 0007 accepts the
+recorded in decisions 0005 and 0006. The single production foundation builds;
+trial handling and website activation are not implemented. Decision 0007 accepts the
 WPF application and worker foundation, including application reuse, sequential
 worker execution, IPC, publication ownership, settings, and source allocation.
-Acceptance permits scaffolding; it does not mark Milestone 1 as implemented.
+The private catalog advertises no media capabilities until real adapters arrive.
 
 
 Roadmap Principles
