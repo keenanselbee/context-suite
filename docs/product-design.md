@@ -108,6 +108,13 @@ result presentation to an out-of-process host.
 Shared Operation Workflow
 -------------------------
 
+The application resolves trial or purchase access before admitting a commercial
+operation. Analyze validates the selection, reads bounded media facts, and opens
+its report; it does not create or publish transformed files. Application-owned
+trial bookkeeping does not belong in the read-only analyzer.
+
+Convert and Optimize follow the transformation workflow:
+
 1. Receive the selected paths as one operation batch and validate each path.
 2. Analyze enough media properties to determine applicable capabilities.
 3. Build a typed operation plan and identify consequences or required choices.
@@ -135,6 +142,38 @@ Each slice should work from Explorer through validation before the next format
 family substantially expands the product surface.
 
 
+Portfolio And Commercial Product
+--------------------------------
+
+Context Suite is both a co-op portfolio project and a potential paid utility.
+Most engineering is intended to be publicly reviewable. The complete production
+application requires private implementations from `context-suite-private`,
+checked out under the public repository's ignored `proprietary/` directory.
+
+One planned production application build requires the private checkout; a
+public checkout alone cannot build the complete app. There is no separate
+review/demo edition. Portfolio presentation uses public code, architecture,
+tests, and planned screenshots and demo video; a downloadable commercial trial
+will serve people who want to run it. Public components may be tested separately
+where their dependencies permit. The current public build is only the shell
+prototype, not the production application. See
+[decision 0005](decisions/0005-public-and-proprietary-builds.md).
+
+The commercial direction is a three-day trial followed by website login and
+purchase validation. Login alone does not establish a purchase. All media
+processing stays local; account services do not receive selected paths or media
+contents. Access is checked by the application before work starts, never while
+Explorer constructs a menu. An admitted batch may finish after trial expiry,
+and its results remain available.
+
+Trial start timing and exact elapsed-time rules remain open. Browser activation
+with a signed offline license is proposed; license lifetime, refresh, service
+outages, recovery, and post-trial feature availability require explicit policies.
+Pricing and license terms are also undecided. Keep protection modest and accept
+that determined users may reset local trials or modify binaries. See
+[decision 0006](decisions/0006-trial-and-purchase-access.md).
+
+
 Explicit Non-Goals
 ------------------
 
@@ -144,7 +183,10 @@ The initial product will not include:
 - PDF or Office conversion.
 - Photo editing, filters, retouching, or background removal.
 - AI enhancement or generation.
-- Cloud accounts or remote processing.
+- Remote media processing or cloud media storage. Accounts are limited to the
+  planned purchase and activation workflow.
+- Extensive anti-piracy mechanisms such as invasive hardware fingerprinting or
+  anti-debugging systems.
 - CD ripping or media-library management.
 - Arbitrary FFmpeg or other engine command entry.
 - Automatic deletion of source files.

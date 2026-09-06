@@ -78,3 +78,6 @@ Current Decisions
 - [0002: Shell activation request](0002-shell-activation-request.md)
 - [0003: Separate shell identity packages](0003-separate-shell-identity-packages.md)
 - [0004: Analyzer product language](0004-analyzer-product-language.md)
+- [0005: Public and proprietary builds](0005-public-and-proprietary-builds.md) — accepted
+- [0006: Trial and purchase access](0006-trial-and-purchase-access.md) — direction accepted; policies open
+- [0007: Production UI and processes](0007-production-ui-and-processes.md) — accepted; implementation pending

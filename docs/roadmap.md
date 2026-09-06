@@ -1,8 +1,9 @@
 Context Suite Roadmap
 =====================
 
-Status: Milestone 0 in progress. Milestones are ordered by dependency and proof
-of value, not assigned calendar dates.
+Status: foundation decisions approved; Milestone 1 ready to start. Remaining
+Milestone 0 engine and release decisions are deferred to their dependent work.
+Milestones are ordered by dependency and proof of value, not calendar dates.
 
 
 Current Position
@@ -18,13 +19,22 @@ shell-integration discovery prototype. It proves:
 - Host-side schema, action, path-count, absolute-path, and existence validation.
 - Debug and Release builds plus automated three-file COM activation contracts.
 
-This evidence resolves part of Milestone 0 but does not complete it. Desktop UI,
-media engines, production packaging, settings, updates, signing, and diagnostics
-remain open decisions. Milestone 1 has not started as defined: the repository
+This evidence resolves the shell-discovery portion of Milestone 0. Production UI,
+platform, lifecycle, worker/IPC boundaries, settings storage, and initial source
+allocation are now accepted in decision 0007. Media engines, production packaging,
+updates, signing, and diagnostics remain deferred decisions. Milestone 1 is ready
+but has not started as defined: the repository
 does not yet contain the planned application/core projects, domain contracts,
 fixture conventions, or CI. Milestone 2 and later media milestones have not
 started; the shell prototype proves batch handoff only, not the safe execution
 pipeline or media behavior.
+
+The public/private repository direction and three-day commercial trial are now
+recorded in decisions 0005 and 0006. The single production build, trial handling,
+and website activation are planned, not implemented. Decision 0007 accepts the
+WPF application and worker foundation, including application reuse, sequential
+worker execution, IPC, publication ownership, settings, and source allocation.
+Acceptance permits scaffolding; it does not mark Milestone 1 as implemented.
 
 
 Roadmap Principles
@@ -52,20 +62,34 @@ The roadmap targets two product releases:
 - **Audio expansion** — common audio analysis, batch conversion, and narrowly
   defined same-format optimization after the image foundation is reliable.
 
+Public source, documentation, tests, screenshots, and demo video support
+portfolio evaluation; there is no separate review/demo application. The one
+production build requires the private checkout. A downloadable trial will
+provide hands-on evaluation when ready. A paid image
+release additionally requires the commercial access gate under Milestone 7;
+the first useful media slices can be developed before live purchase services.
+
 
 Milestone 0: Resolve Foundation Decisions
 -----------------------------------------
 
-Decide and record:
+Accepted foundation choices:
 
-- Supported Windows versions and CPU architectures.
-- Desktop UI framework and application lifecycle.
-- Modern Explorer registration and deployment identity.
-- Host activation and large-selection IPC.
+- Windows 11 x64 and WPF/.NET 10 with MVVM.
+- One application per interactive user session and one on-demand sequential worker.
+- Existing three-root native shell approach and bounded request-file activation;
+  bounded local named pipes for app forwarding and worker communication.
+- Application-owned output publication and versioned local JSON settings.
+- Public/private allocation and one production build under decisions 0005/0007.
+
+Resolve before the dependent media or release work:
+
 - Image decoding and encoding engine.
 - Distribution of FFmpeg, `oxipng`, and `pngquant` or selected alternatives.
-- Settings location and schema format.
 - Installer, signing, update, and diagnostics strategy.
+- Exact private engine adapters and optimization policy definitions.
+- Access-policy boundary for the three-day trial and purchase workflow
+  (direction accepted in decision 0006; timing and offline policy still open).
 
 Exit criteria:
 
@@ -76,13 +100,19 @@ Exit criteria:
 - Dependency packaging never resolves code or binaries from `reference/`.
 - The supported platform can be reproduced on a clean development machine.
 
+Resolve decisions when their dependent work begins. Production UI, project
+ownership, and activation lifecycle precede application scaffolding. Exact
+engine choices precede their media slices; live payment services and audio
+distribution need not delay the first DDS analysis feature.
+
 
 Milestone 1: Repository And Contract Foundation
 -----------------------------------------------
 
 Deliver:
 
-- The initial .NET solution and projects following the accepted architecture.
+- Extend the existing solution with production application/core/worker projects
+  under accepted decision 0007; preserve native shell contract tests.
 - Canonical restore, build, test, format-check, and run commands.
 - Continuous integration for build and automated tests.
 - Shared operation, capability, media fact, warning, error, progress, and result
@@ -90,13 +120,28 @@ Deliver:
 - Typed output and replacement policies.
 - Test-data conventions and a small fixture provenance manifest.
 - Developer setup and contribution documentation.
+- One production application build with direct private project references only
+  at the composition boundary. Document which public components and tests can
+  run independently; do not scaffold a separate demo app or substitute engines.
+- A public access-policy contract with trial/paid/expired/unavailable test
+  states; defer real login, payments, and trial persistence to the commercial
+  access gate. Test access states without adding a shipping bypass mode.
+- Public CI for independently buildable components, tests, documentation, and
+  source boundaries without private credentials; a private integration workflow that
+  records compatible public/private revisions and prevents publishing private
+  source in public artifacts.
 
 Exit criteria:
 
-- A clean checkout restores, builds, and tests with documented commands.
+- A clean public checkout runs its documented component tests and checks without
+  private credentials. The complete application builds with the documented
+  compatible private checkout and fails clearly when it is absent. There is no
+  requirement for a standalone public application build.
 - Core contracts do not depend on UI, Explorer, or a particular media engine.
 - Reference projects remain ignored and are not build or runtime dependencies.
 - CI enforces the same essential checks documented for local development.
+- Parent-repository checks reject tracked private paths. Production integration
+  checks exercise real private implementations rather than sample substitutes.
 
 
 Milestone 2: Safe Execution And Batch Infrastructure
@@ -226,6 +271,7 @@ Deliver:
 - Consistent queue, progress, cancellation, diagnostics, and result UX.
 - Installer, clean upgrade, repair, and uninstall flows.
 - Explorer performance and resilience measurements.
+- The commercial access gate below, required before charging for the release.
 - User documentation, screenshots, demo media, and a concise portfolio case
   study explaining the design and engineering decisions.
 
@@ -236,6 +282,30 @@ Exit criteria:
 - Missing engines or invalid activation requests cannot destabilize Explorer.
 - The primary workflows are usable without advanced codec knowledge.
 - Automated checks, manual release smoke tests, and accessibility review pass.
+
+
+Commercial Access Gate For The Paid Image Release
+------------------------------------------------
+
+Before implementation, settle trial start and elapsed-time rules, feature access
+after expiry, offline-license duration/refresh, outage behavior, recovery/device
+transfers, and refunds/revocation. Confirm pricing, source/distribution terms,
+and the identity/payment providers independently of media-engine selection.
+
+Deliver and verify:
+
+- The three-day trial with clear expiry information and completion of batches
+  admitted before expiry.
+- Browser login, authoritative purchase checks, and the chosen local license
+  storage and verification policy. An unpaid login must not grant paid access.
+- Invalid-license, unavailable-service, account-recovery, and selected offline
+  behavior tests without exposing credentials or media data in diagnostics.
+- Private release signing with no private keys in either repository or the app.
+- Install, upgrade, and recovery checks that preserve access state according to
+  the documented policy.
+
+Extensive anti-piracy work is outside this gate. Public portfolio documentation
+and media development can proceed before commercial services are ready.
 
 
 Milestone 8: Audio Analysis And Batch Conversion

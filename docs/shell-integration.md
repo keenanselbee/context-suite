@@ -89,6 +89,12 @@ The host treats every request as untrusted. It validates operation identifiers,
 path counts, path lengths, file existence where required, supported schemes, and
 all requested options before planning.
 
+For the planned commercial application, the host also resolves trial or purchase
+access before admitting a new operation. Account and activation UI belong in
+that process, never Explorer menu enumeration. Website services must not receive
+the selected paths or file contents, and an admitted batch may finish if trial
+access expires. See [decision 0006](decisions/0006-trial-and-purchase-access.md).
+
 
 Command Identity
 ----------------

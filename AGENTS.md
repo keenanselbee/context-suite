@@ -122,6 +122,26 @@ Repository-Specific Notes
 
 - Context Suite is a local Windows application with three peer Explorer tools:
   Analyze, Convert, and Optimize.
+- Treat `proprietary/` as a separate private Git repository with its own
+  instructions, history, and remote. Keep it untracked by the parent; parent
+  staging or commit requests do not authorize private-repository commits.
+- Follow decisions 0005 and 0006 for public/private builds and commercial
+  access. Maintain one production application build requiring the private
+  checkout, with a clear error when required implementations are unavailable.
+  Do not add a separate public review/demo edition or shipping access bypass.
+  Independently testable public components do not require a second application.
+  The production build is planned; current shell-prototype commands still apply.
+- Follow accepted decision 0007 for the production foundation: Windows 11 x64,
+  WPF/.NET 10 with MVVM, one app per interactive user session, one on-demand
+  sequential worker, and bounded local named-pipe communication. The app owns
+  final output publication. Do not add a worker pool or resident service without
+  a new scope decision. Production implementation is still pending.
+- Keep private source out of public source archives through explicit packaging
+  rules. Never store payment credentials or signing private keys in either repo.
+- Website login and purchase validation are permitted; media contents and
+  selected paths stay local. Keep access checks in application orchestration,
+  never in Explorer enumeration or parsers. Trial expiry must not interrupt an
+  admitted batch. Do not add extensive anti-piracy machinery.
 - Treat `docs/product-design.md` as the suite-wide product boundary and the
   relevant tool design as that tool's current boundary. Update the owning
   document when an accepted decision changes either boundary.

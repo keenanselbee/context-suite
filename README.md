@@ -47,11 +47,43 @@ The build requires Visual Studio 2026 with the x64 C++ desktop tools and Windows
 packages, one for each Explorer root; it does not modify media-file associations.
 
 See [shell prototype validation](docs/shell-prototype-validation.md) for the
-automated evidence and the remaining Explorer smoke check.
+automated evidence, observed layout, and optional manual host-dialog check.
+
+
+Public Source And Commercial Direction
+-------------------------------------
+
+Context Suite is intended as both a co-op portfolio project and a paid Windows
+utility. Most engineering is publicly reviewable; selected production
+implementations live in the separate `context-suite-private` repository,
+checked out at the ignored `proprietary/` path.
+
+There will be one production application build, requiring the compatible private
+checkout. A public checkout alone will not build the complete app. There is no
+separate review/demo edition: portfolio evaluation will use the public code,
+architecture, tests, and planned screenshots and demo video. A downloadable
+commercial trial is planned for people who want to run the application.
+
+Public components may be built and tested independently where supported. The
+commands above currently build only the native shell prototype; production
+composition, licensing, and media processing are not implemented yet.
+
+The commercial direction is a three-day trial followed by website login and
+purchase validation. Media processing remains local. Trial start timing and
+offline-license policy are still open, as are pricing and source-license terms.
+See [build ownership](docs/decisions/0005-public-and-proprietary-builds.md) and
+[commercial access](docs/decisions/0006-trial-and-purchase-access.md).
 
 
 Product Boundaries
 ------------------
+
+The accepted production foundation is Windows 11 x64, WPF on .NET 10 with MVVM,
+one application per interactive user session, and one on-demand sequential
+media worker. It retains the native Explorer extension and bounded request-file
+activation, with local named pipes for application forwarding and worker
+communication. Settings use versioned local JSON. These choices are accepted,
+not implemented; see [decision 0007](docs/decisions/0007-production-ui-and-processes.md).
 
 - Analysis is read-only.
 - Conversion changes format only after the destination is explicit.

@@ -45,6 +45,9 @@ assets/
   source directories.
 - Keep ignored implementation research under `reference/`; production code must
   not depend on it.
+- Keep the separate private repository under ignored `proprietary/`. Follow
+  [decision 0005](decisions/0005-public-and-proprietary-builds.md) for public
+  interfaces, private implementations, the production build, and source packaging.
 
 
 C# And .NET
@@ -96,6 +99,9 @@ Operation Design
   or validation policy.
 - Make capability declarations testable contracts rather than informal
   extension lists.
+- Keep trial and purchase admission in application orchestration. Media parsers
+  and engines do not own account state, and admitted batches finish safely even
+  when trial access expires.
 
 
 Analyzers
