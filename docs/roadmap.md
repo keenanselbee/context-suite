@@ -1,8 +1,9 @@
 Context Suite Roadmap
 =====================
 
-Status: Milestone 1 foundation implemented locally; UI/installed-shell smoke and
-hosted CI verification remain pending. Remaining
+Status: Milestone 1 foundation implemented locally; WPF UI smoke and manual
+classic Explorer handoff pass. Automated Explorer reliability, modern-menu and
+accessibility review, and hosted CI verification remain pending. Remaining
 Milestone 0 engine and release decisions are deferred to their dependent work.
 Milestones are ordered by dependency and proof of value, not calendar dates.
 
@@ -26,8 +27,11 @@ allocation are now accepted in decision 0007. Media engines, production packagin
 updates, signing, and diagnostics remain deferred decisions. Milestone 1 now has
 Core, WPF Application, Worker, private composition, managed contracts, fixture
 conventions, build/test scripts, and authored CI workflows. Local builds and
-protocol tests pass; hosted CI and manual production-window/installed-shell
-smoke checks remain unverified. See [development status](development.md).
+protocol tests pass. WPF UI automation passes, and user screenshots confirm
+manual classic Explorer handoff for all three tools with complete selections
+and cross-tool accumulation in one window. Automated Explorer tests remain
+experimental; modern-menu/accessibility review and hosted CI remain unverified.
+See [development status](development.md).
 The bounded foundation goal's evidence is summarized in
 [Milestone 1 validation](milestone-1-validation.md); this does not certify release readiness.
 Milestone 2 has early queue/cancellation plumbing but no output transaction or

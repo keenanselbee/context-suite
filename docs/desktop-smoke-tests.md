@@ -11,8 +11,16 @@ Local verification (2026-09-06): WPF mode passed. Explorer mode is experimental
 and has NOT passed end to end on this workstation. Runs reached Analyze, but
 submenu UIA discovery and tabbed-window targeting were inconsistent; the latest
 run timed out identifying the unique visible Explorer frame. Do not use this
-mode as a release gate until it passes repeatably on an isolated desktop. The
-manual Explorer smoke remains outstanding. Failed runs are retained as evidence.
+mode as a release gate until it passes repeatably on an isolated desktop.
+Failed automated runs are retained as evidence.
+
+The subsequent user-provided screenshots confirm the manual classic
+Explorer-to-WPF handoff: all three commands receive the complete three-file
+selection, and one window accumulates 12 rows across four batches (Optimize,
+Optimize, Convert, Analyze). The classic root menu shows icons, direct Analyze,
+and submenu arrows for Convert and Optimize. This does not establish an automated
+Explorer pass, modern-menu presentation, or working media processing. See
+[foundation validation](milestone-1-validation.md) for the remaining checks.
 
 
 Run Locally

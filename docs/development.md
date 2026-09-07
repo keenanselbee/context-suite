@@ -127,8 +127,10 @@ The computer-use helper was unavailable during foundation implementation.
 The later [desktop smoke harness](desktop-smoke-tests.md) adds real WPF UIA
 assertions and an optional installed Explorer path. The WPF smoke has passed
 locally, including row contents, focus, resize, and close/reopen. Production
-Explorer automation is experimental and has not passed end to end; manual
-installed-shell acceptance remains outstanding. The local development shell
+Explorer automation is experimental and has not passed end to end. Subsequent
+user-provided screenshots confirm the manual classic Explorer-to-WPF handoff:
+all three tools receive complete three-file selections and accumulate 12 rows
+across four batches in one window. The local development shell
 registration was explicitly switched for local smoke work after the original
 foundation validation. Neither registration nor UI test success certifies a
 release installer. Window appearance, modern menu icons/order, high-DPI layout,

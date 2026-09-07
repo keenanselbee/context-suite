@@ -13,7 +13,8 @@ foundation goal, not media processing or readiness for a paid release.
 | On-demand worker and cancellation | Real private catalog connection, reuse, cancellation, graceful client disposal, crash recovery, and abrupt parent-exit cleanup are tested |
 | No fake processing or shipping access bypass | Private catalog is empty; UI reports unsupported operations; source bytes remain unchanged; access states have no shipping provider |
 | Public-only development | A copied public source tree without `proprietary/` passes component tests; both production projects reject a missing private implementation |
-| Native shell preservation | Debug and Release prototype COM/manifest contracts pass; existing installed packages remain untouched |
+| Native shell preservation | Debug and Release prototype COM/manifest contracts pass; test execution does not change registration. Development packages were later explicitly switched to WPF for the manual smoke |
+| Manual classic Explorer-to-WPF handoff | User screenshots confirm root icons, direct Analyze, Convert/Optimize submenu arrows, complete three-file selections for all tools, and 12 rows across four batches in one window (Optimize, Optimize, Convert, Analyze) |
 | Repeatable commands and CI | Build/test/boundary scripts and public/private workflows are authored; their local commands pass; hosted workflows have not been published/run |
 
 The complete managed integration run passes 50 contracts. The Windows process
@@ -25,7 +26,9 @@ contract now covers that behavior explicitly.
 Follow-up desktop automation now verifies WPF row contents for all three tools,
 single-window reuse, basic keyboard focus, resize, graceful close/reopen, and
 unchanged sources. See [desktop smoke tests](desktop-smoke-tests.md) for commands,
-Explorer-mode limitations, and retained evidence. Visual layout, modern Explorer
-menu presentation, and screen-reader UX remain manual checks. Production installer registration and
+Explorer-mode limitations, and retained evidence. Automated Explorer mode still
+has not passed end to end; the manual screenshot evidence is a separate pass.
+Broader visual/accessibility review, modern Explorer menu presentation, high-DPI
+layout, and screen-reader UX remain outstanding. Production installer registration and
 media-engine execution remain later work. See [development](development.md) for
 commands, protocol limits, temporary-fixture handling, and the private CI boundary.
