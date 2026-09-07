@@ -139,7 +139,10 @@ Repository-Specific Notes
   a new scope decision. Media engines and commercial access are not implemented.
 - Keep private source out of public source archives through explicit packaging
   rules. Never store payment credentials or signing private keys in either repo.
-- Website login and purchase validation are permitted; media contents and
+- Polar-hosted checkout and license-key validation are selected; do not add
+  custom website accounts or a signing backend without a new decision. Follow
+  docs/polar-integration.md; account approval is not proof of working licensing.
+  Purchase validation is permitted; media contents and
   selected paths stay local. Keep access checks in application orchestration,
   never in Explorer enumeration or parsers. Trial expiry must not interrupt an
   admitted batch. Do not add extensive anti-piracy machinery.
@@ -188,6 +191,11 @@ Repository-Specific Notes
   and packaged COM activation without opening Explorer.
 - Use `tools/Open-ShellPrototypeTestFolder.ps1` to prepare the three-file manual
   Explorer layout and activation smoke test.
+- Use `tools/Test-DesktopSmoke.ps1` for opt-in WPF UIA checks on an unlocked
+  desktop with Context Suite closed. Explorer mode is experimental; follow
+  docs/desktop-smoke-tests.md and never report an unavailable/failed run as a
+  pass. Do not run it concurrently with foundation integration tests. It must
+  not install packages, restart Explorer, or close unrelated windows/tabs.
 - Documentation-only changes require whitespace and link validation; do not
   scaffold or build the application solely to verify documentation.
 - Treat everything under `reference/`, including `reference/reference.md`, as

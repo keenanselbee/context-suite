@@ -159,17 +159,19 @@ where their dependencies permit. Public-only builds cover the shell prototype
 and component contracts, not the complete production application. See
 [decision 0005](decisions/0005-public-and-proprietary-builds.md).
 
-The commercial direction is a three-day trial followed by website login and
-purchase validation. Login alone does not establish a purchase. All media
+The commercial direction is a three-day trial followed by Polar license-key
+activation. Hosted checkout and the customer portal replace custom website
+accounts. A checkout redirect alone does not establish paid access. All media
 processing stays local; account services do not receive selected paths or media
 contents. Access is checked by the application before work starts, never while
 Explorer constructs a menu. An admitted batch may finish after trial expiry,
 and its results remain available.
 
 Trial start timing and exact elapsed-time rules remain open. Browser activation
-with a signed offline license is proposed; license lifetime, refresh, service
+is replaced by in-app key activation; offline grace, refresh, service
 outages, recovery, and post-trial feature availability require explicit policies.
-Pricing and license terms are also undecided. Keep protection modest and accept
+Polar is selected; pricing and license terms are still undecided. See the
+[Polar integration plan](polar-integration.md). Keep protection modest and accept
 that determined users may reset local trials or modify binaries. See
 [decision 0006](decisions/0006-trial-and-purchase-access.md).
 

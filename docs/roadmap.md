@@ -35,7 +35,7 @@ media execution. Milestone 3 and later media features have not started.
 
 The public/private repository direction and three-day commercial trial are now
 recorded in decisions 0005 and 0006. The single production foundation builds;
-trial handling and website activation are not implemented. Decision 0007 accepts the
+trial handling and Polar license activation are not implemented. Decision 0007 accepts the
 WPF application and worker foundation, including application reuse, sequential
 worker execution, IPC, publication ownership, settings, and source allocation.
 The private catalog advertises no media capabilities until real adapters arrive.
@@ -128,7 +128,7 @@ Deliver:
   at the composition boundary. Document which public components and tests can
   run independently; do not scaffold a separate demo app or substitute engines.
 - A public access-policy contract with trial/paid/expired/unavailable test
-  states; defer real login, payments, and trial persistence to the commercial
+  states; defer real key activation, payments, and trial persistence to the commercial
   access gate. Test access states without adding a shipping bypass mode.
 - Public CI for independently buildable components, tests, documentation, and
   source boundaries without private credentials; a private integration workflow that
@@ -294,15 +294,19 @@ Commercial Access Gate For The Paid Image Release
 Before implementation, settle trial start and elapsed-time rules, feature access
 after expiry, offline-license duration/refresh, outage behavior, recovery/device
 transfers, and refunds/revocation. Confirm pricing, source/distribution terms,
-and the identity/payment providers independently of media-engine selection.
+independently of media-engine selection. Polar is selected and account approval
+is user-confirmed; configuration and integration remain unverified. Follow the
+[Polar integration plan](polar-integration.md). Do not build custom website
+accounts. Commercial integration need not block the pre-September-15 portfolio
+demo and first useful media workflows.
 
 Deliver and verify:
 
 - The three-day trial with clear expiry information and completion of batches
   admitted before expiry.
-- Browser login, authoritative purchase checks, and the chosen local license
-  storage and verification policy. An unpaid login must not grant paid access.
-- Invalid-license, unavailable-service, account-recovery, and selected offline
+- Polar hosted checkout, key activation with one active installation, and the
+  chosen local storage and verification policy. Redirects cannot grant access.
+- Invalid-license, unavailable-service, license-recovery, and selected offline
   behavior tests without exposing credentials or media data in diagnostics.
 - Private release signing with no private keys in either repository or the app.
 - Install, upgrade, and recovery checks that preserve access state according to

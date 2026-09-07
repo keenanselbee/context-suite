@@ -8,17 +8,20 @@ Date: 2026-09-06
 Context
 -------
 
-The intended commercial product offers a three-day trial, then requires website
-login and purchase validation. Development should prioritize useful media
+The intended commercial product offers a three-day trial, then requires paid
+license activation. Development should prioritize useful media
 workflows and ordinary paying customers over extensive piracy prevention.
 
 
 Decision
 --------
 
-Adopt a three-day trial and website-based purchase activation for the planned
-commercial release. Login identifies an account; a separate entitlement check
-determines whether that account owns access to the product.
+Adopt a three-day trial and Polar-hosted checkout with in-app license-key
+activation for the planned commercial release. This updates the original
+website-login direction: no custom website accounts or authentication backend
+are required. A checkout redirect alone does not establish paid access.
+See the [Polar integration plan](../polar-integration.md) for provider setup,
+configuration boundaries, and the implementation checklist.
 
 Keep all media processing local. Network access is permitted for account and
 purchase services; file contents and selected file paths are not activation
@@ -39,18 +42,19 @@ Proposed Policy And Open Decisions
 
 - Trial start: proposed at the first actual media operation, not installation.
   Confirm the triggering event, elapsed-time definition, and clock-change rule.
-- Activation: proposed browser login followed by a signed license stored
-  locally, with only the verification public key distributed in the app.
+- Activation: Polar license key with one active installation and customer
+  deactivation for transfers. Target a non-expiring one-time purchase; confirm
+  the actual dashboard settings and customer-facing terms before release.
 - Offline access: recommended after successful activation; license lifetime,
   refresh requirements, and outage behavior are not yet selected.
-- Confirm which features remain available after expiry, account recovery,
+- Confirm which features remain available after expiry, license recovery,
   device transfers, refunds/revocation, and supported access states.
-- Pricing, purchase model, identity/payment providers, public-source licensing,
-  and customer-facing terms remain undecided.
+- Polar is selected; the user reports account approval. Pricing, upgrade rights,
+  public-source licensing, and customer-facing terms remain undecided.
 
 Resolve these policies and their failure cases before implementing the trial
-and before a paid release. This record does not select an authentication
-protocol, cryptographic format, or billing provider.
+and before a paid release. Polar's online JSON validation is not a signed
+offline license. A custom signing service is not part of the initial plan.
 
 
 Consequences
@@ -60,7 +64,7 @@ Milestone 1 defines a replaceable access-policy boundary and test states. The
 website, payment integration, and real activation flow can follow the first
 useful media slices, but must be verified before the paid image release.
 
-Validation must cover trial expiry, unpaid and paid accounts, invalid licenses,
+Validation must cover trial expiry, unactivated and paid access, invalid licenses,
 unavailable services, and completion of batches admitted before expiry. Exact
 offline and recovery expectations follow the policy decisions above.
 

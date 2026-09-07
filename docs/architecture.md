@@ -218,11 +218,14 @@ trial expiry may block new paid operations but must not interrupt an admitted
 batch or hide its results. Media engines and output validation do not branch on
 account credentials or contact the website.
 
-Website login and purchase validation are allowed network operations. Media
-contents and selected paths remain local. Signed offline licenses are proposed;
-their lifetime, refresh, and outage behavior must be decided before real access
-enforcement is implemented. Keep account credentials and license-signing private
-keys out of both source repositories and out of distributed app secrets.
+Polar license activation and validation are allowed network operations. Media
+contents and selected paths remain local. The private commercial adapter serves
+the public access-policy contract in application orchestration; neither Explorer
+nor the media worker owns licensing. No custom website accounts are planned.
+Offline grace, refresh, and outage behavior must be decided before enforcement.
+Polar JSON responses are not signed offline licenses. Keep administrative tokens,
+customer keys, and signing private keys out of both repositories and build output.
+See the [Polar integration plan](polar-integration.md).
 
 
 Diagnostics And Privacy

@@ -89,11 +89,15 @@ Public components may be built and tested independently where supported. The
 native prototype commands remain independent. Production composition now builds;
 licensing and media processing are not implemented yet.
 
-The commercial direction is a three-day trial followed by website login and
-purchase validation. Media processing remains local. Trial start timing and
+The commercial direction is a three-day trial followed by Polar license-key
+activation, using hosted checkout without custom website accounts. Polar account
+approval is user-confirmed; app integration remains planned. Media processing
+remains local. Trial start timing and
 offline-license policy are still open, as are pricing and source-license terms.
 See [build ownership](docs/decisions/0005-public-and-proprietary-builds.md) and
 [commercial access](docs/decisions/0006-trial-and-purchase-access.md).
+The [Polar integration plan](docs/polar-integration.md) records setup information
+still needed and the implementation and release checks.
 
 
 Product Boundaries
@@ -126,6 +130,7 @@ Documentation
 - [Optimizer design](docs/optimizer-design.md)
 - [Shell integration](docs/shell-integration.md)
 - [Architecture](docs/architecture.md)
+- [Desktop smoke tests](docs/desktop-smoke-tests.md)
 - [Repository style guide](docs/style-guide.md)
 - [Commit style](docs/commit-style.md)
 - [Architecture decisions](docs/decisions/README.md)
