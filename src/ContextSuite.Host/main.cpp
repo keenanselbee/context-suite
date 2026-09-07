@@ -487,7 +487,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
         return 0;
     }
 
-    const std::wstring title = L"Context Suite — " + DisplayOperation(request.operation);
+    const std::wstring title = L"Context Suite \u2014 " + DisplayOperation(request.operation);
     const std::wstring summary = BuildSummary(request);
     MessageBoxW(nullptr, summary.c_str(), title.c_str(), MB_OK | MB_ICONINFORMATION);
     return 0;
