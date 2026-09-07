@@ -22,8 +22,10 @@ or permissive licensing mode. It caught an acknowledgement-loss race that was
 fixed with a final client receipt before the server disconnects; a slow-reader
 contract now covers that behavior explicitly.
 
-Visual layout, keyboard/screen-reader UX, and installed Explorer-to-WPF smoke
-remain manual checks: the computer-use helper was unavailable. These are not
-represented as passing automated checks. Production installer registration and
+Follow-up desktop automation now verifies WPF row contents for all three tools,
+single-window reuse, basic keyboard focus, resize, graceful close/reopen, and
+unchanged sources. See [desktop smoke tests](desktop-smoke-tests.md) for commands,
+Explorer-mode limitations, and retained evidence. Visual layout, modern Explorer
+menu presentation, and screen-reader UX remain manual checks. Production installer registration and
 media-engine execution remain later work. See [development](development.md) for
 commands, protocol limits, temporary-fixture handling, and the private CI boundary.

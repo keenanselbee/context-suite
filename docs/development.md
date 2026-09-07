@@ -41,6 +41,15 @@ installs packages or restarts Explorer. When deployed beside the production app,
 the shell DLL chooses it; otherwise it retains the native prototype host.
 Installed packages are not automatically switched to this new output directory.
 
+For an explicitly requested local Explorer smoke test, switch the existing three
+development identities with `./tools/Install-ShellPrototype.ps1 -Production
+-Configuration Release` (on one line). This builds production and registers
+generated manifests targeting the WPF executable. Then run
+`./tools/Test-InstalledShellPrototype.ps1` and
+`./tools/Open-ShellPrototypeTestFolder.ps1 -Production`. Restart Explorer if it
+retains the old shell DLL. To return to the native prototype, run the installer
+without `-Production`. Neither mode is a release installer.
+
 
 Implementation Boundaries
 -------------------------
@@ -114,9 +123,13 @@ unchanged sources, and worker exit after abrupt parent termination. The smoke
 uses temporary GUID request files in the normal local activation directory and
 removes them afterward; it does not install packages or automate Explorer UI.
 
-The computer-use helper was unavailable during implementation, so actual window
-appearance, keyboard navigation, screen-reader presentation, and the installed
-Explorer-to-WPF path are not manually verified. The existing installed packages
-were not changed. Before installation/release, verify direct Analyze activation,
-both submenus, repeated activations into one window, readable batch rows, and safe
-window closure. Automated protocol tests are not a substitute for that smoke test.
+The computer-use helper was unavailable during foundation implementation.
+The later [desktop smoke harness](desktop-smoke-tests.md) adds real WPF UIA
+assertions and an optional installed Explorer path. The WPF smoke has passed
+locally, including row contents, focus, resize, and close/reopen. Production
+Explorer automation is experimental and has not passed end to end; manual
+installed-shell acceptance remains outstanding. The local development shell
+registration was explicitly switched for local smoke work after the original
+foundation validation. Neither registration nor UI test success certifies a
+release installer. Window appearance, modern menu icons/order, high-DPI layout,
+and screen-reader usability still require manual review.

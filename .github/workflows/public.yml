@@ -18,6 +18,9 @@ jobs:
       - name: Public foundation contracts
         shell: pwsh
         run: ./tools/Test-Foundation.ps1 -Configuration Release
+      - name: Compile desktop smoke harness (no interactive run)
+        shell: pwsh
+        run: dotnet build tests/ContextSuite.Desktop.SmokeTests/ContextSuite.Desktop.SmokeTests.csproj -c Release
       - name: Missing private implementation errors
         shell: pwsh
         run: ./tools/Test-PrivateBoundary.ps1
