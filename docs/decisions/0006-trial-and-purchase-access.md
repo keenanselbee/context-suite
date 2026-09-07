@@ -1,7 +1,7 @@
 Trial And Purchase Access
 =========================
 
-Status: accepted for product direction; detailed policies remain open
+Status: accepted; local trial settled in decision 0009, paid-access policies remain open
 Date: 2026-09-06
 
 
@@ -40,20 +40,22 @@ anti-debugging machinery as part of the initial release.
 Proposed Policy And Open Decisions
 ---------------------------------
 
-- Trial start: proposed at the first actual media operation, not installation.
-  Confirm the triggering event, elapsed-time definition, and clock-change rule.
+- Local trial: [decision 0009](0009-first-image-engine-and-trial.md) settles
+  72 elapsed hours from the first confirmed valid conversion, atomic start,
+  clock-change handling, safe storage failures, and in-flight completion.
 - Activation: Polar license key with one active installation and customer
   deactivation for transfers. Target a non-expiring one-time purchase; confirm
   the actual dashboard settings and customer-facing terms before release.
 - Offline access: recommended after successful activation; license lifetime,
   refresh requirements, and outage behavior are not yet selected.
-- Confirm which features remain available after expiry, license recovery,
+- Settings and existing results remain available after trial expiry; new
+  conversion is blocked. Confirm standalone Analyzer access, license recovery,
   device transfers, refunds/revocation, and supported access states.
 - Polar is selected; the user reports account approval. Pricing, upgrade rights,
   public-source licensing, and customer-facing terms remain undecided.
 
-Resolve these policies and their failure cases before implementing the trial
-and before a paid release. Polar's online JSON validation is not a signed
+Implement the settled local-trial policy with its failure tests; resolve the
+remaining paid policies before a paid release. Polar's online JSON validation is not a signed
 offline license. A custom signing service is not part of the initial plan.
 
 

@@ -24,9 +24,18 @@ supported by the complete selection. Initial PNG actions are:
   quality floor.
 - **More options...** — opens comparison, metadata, destination, and replacement
   controls.
+- **Settings...** — after a separator at the bottom, opens the Optimize section
+  of shared settings without starting work.
 
 The default output is a collision-safe sibling file. Replacing the source is an
 explicit option and must use recoverable transactional publication.
+
+Use `name - Optimized.ext`, then `name - Optimized (2).ext` for collisions.
+Preserve the source basename including existing suffixes. Replacement is disabled
+by default, requires per-batch confirmation, and recycles the uniquely named
+original backup only after publication succeeds. If recycling fails, keep the
+backup and show its location. Quick actions remain copy-only. Follow
+[decision 0008](decisions/0008-output-naming-settings-and-replacement.md).
 
 
 Core Invariants
@@ -41,7 +50,9 @@ Core Invariants
   published by default.
 - Transparency, animation, color behavior, and required metadata are governed
   by explicit policies.
-- A cancelled or failed operation cannot damage or replace its source.
+- Pre-publication cancellation or failure preserves the original. Completed
+  publications remain completed during batch cancellation; a later recycling
+  failure retains the original backup and is reported as a cleanup warning.
 
 
 PNG Version 1

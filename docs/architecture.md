@@ -2,7 +2,8 @@ Context Suite Architecture
 ==========================
 
 Status: production process foundation implemented under decision 0007.
-Media engines and production deployment details remain deferred decisions.
+Magick.NET with the pinned curated native engine is integrated into development
+packaging. DDS adapter selection and customer deployment remain pending.
 
 
 Architecture Goals
@@ -68,9 +69,14 @@ x64, C#/.NET 10 WPF with MVVM, one application per interactive user session, and
 one on-demand worker processing files sequentially. Retain bounded request-file
 shell activation; use local named pipes for app forwarding and worker messages.
 The app owns final publication; the worker produces and validates temporary
-outputs once media work is implemented. Settings will use versioned JSON in local
-application data when preferences are introduced. The current worker exposes
-only its real, empty capability catalog; no media operation is implemented.
+outputs. Settings use versioned JSON in local application data. Typed image
+probe/preview/conversion IPC and trial-gated application publication now have
+real-worker integration tests, and the conversion UI now uses that path. The
+capability registry advertises twenty tested PNG/JPEG/WebP/BMP/TGA conversion pairs, subject
+to per-file probing and planning. The app requires the private
+checkout to build but does not reference the engine assemblies; only the worker
+links them. A test-only host compiles the real windows with isolated storage,
+without adding a shipping override or a public review edition.
 See [development status](development.md) for verification limits.
 
 
@@ -193,6 +199,29 @@ Output safety is a shared service rather than duplicated adapter behavior:
    succeeds.
 8. Clean up temporary data without turning cleanup failure into input loss.
 
+[Decision 0008](decisions/0008-output-naming-settings-and-replacement.md) defines
+the implemented naming and replacement policy. Copies use
+Windows-style operation suffixes and collision numbering. Same-path replacement
+uses an explicit unique original backup, then attempts recycling only after
+publication succeeds. Different-extension conversion publishes first and then
+recycles the unchanged original. Recycling failures preserve originals/backups;
+there is no permanent-delete fallback or application recovery browser.
+
+The publisher must distinguish failed publication from successful publication
+with failed cleanup, reconcile Windows partial replacement failures, and protect
+interrupted-operation evidence from routine temporary cleanup. Do not claim
+unconditional atomicity across replacement, recycling, and power loss. Enable
+replacement only on verified paths/platforms; unsupported cases remain copy-only.
+
+The current gate permits Windows build 26200 x64 and ordinary single-link local
+NTFS files only. Publication records under
+`%LOCALAPPDATA%/ContextSuite/Publications` preserve paths, fingerprints, and stage;
+startup reports their presence without resuming jobs or deleting artifacts.
+Per-file results distinguish retained originals from unconfirmed recovery, and
+aggregate warnings are a subset of completed items, not extra completed files.
+This is not protection against malicious same-user filesystem manipulation or
+a guarantee against hardware/power-loss failures.
+
 Validation checks semantic requirements such as format, dimensions, streams,
 duration, alpha, animation, metadata policy, and loss policy. Requirements vary
 by operation and adapter.
@@ -202,6 +231,11 @@ Settings And Presets
 --------------------
 
 - Store typed, versioned settings with documented defaults.
+- Save local JSON safely, preserve unknown newer schemas, and snapshot settings
+  per admitted batch. Credentials and trial records are not ordinary preferences.
+- Expose one shared Convert/Optimize settings window. Replacement permission is
+  off per tool by default and never replaces explicit batch consent; quick
+  actions keep originals. See decision 0008 for the complete policy.
 - Give built-in actions stable identifiers independent of displayed labels.
 - Treat presets as complete policies over their governed fields.
 - Reject invalid persisted values and migrate intentionally when schemas change.
@@ -267,20 +301,26 @@ Decision Status And Deferred Work
 
 Decision 0007 settles the platform, UI, application lifecycle, worker boundary,
 initial IPC approach, settings storage, and initial public/private allocation.
-Scaffolding can proceed with Core, Application, Worker, one private
-implementation project, and focused tests alongside the existing shell.
+Core, Application, Worker, private composition, and focused tests now exist.
+Decision 0008 settles output naming, settings UX, and replacement direction;
+the [completed safety slice](image-output-safety-goal.md) records local verification
+of those mechanisms before codecs.
 
 Resolve these remaining choices before their dependent implementation:
 
-- Image decoding and encoding engine.
+- Select the dedicated DDS adapter/toolchain and its representations. Curated
+  production-development integration and bounded BMP/TGA policies now have
+  [passing evidence](bmp-tga-and-engine-integration.md); complete the separate
+  [redistribution gates](release-redistribution.md) before release.
 - FFmpeg distribution and update model for audio.
 - `oxipng` and `pngquant` distribution and update model.
 - Installer, signing, updates, and crash diagnostics.
 - Exact private engine adapters and optimization policy definitions.
-- Trial timing, offline access, and recovery policies, following decision 0006.
+- Retain the implemented local trial from decision 0009; settle paid offline access
+  and recovery policies under decision 0006.
 
 Shell prototype decisions 0001–0004 remain scoped to their recorded evidence.
 Public/private build direction and commercial access direction are recorded in
 0005–0006; the production foundation in 0007 is accepted. Resolve the
 choices needed by each implementation milestone before building that surface;
-audio distribution and live payment services need not block the first DDS slice.
+audio distribution and live payment services need not block output-safety work.

@@ -16,11 +16,11 @@ public static class ActivationParser
         var text = new UTF8Encoding(false, true).GetString(bytes);
         var lines = text.Split('\n').Select(line => line.TrimEnd('\r')).ToList();
         if (lines[^1] == "") lines.RemoveAt(lines.Count - 1);
-        if (lines.Count < 6 || lines[0] != "ContextSuiteActivation/1")
+        if (lines.Count < 5 || lines[0] != "ContextSuiteActivation/1")
             throw new InvalidDataException("The activation schema is unknown.");
         if (!Guid.TryParseExact(Field(lines[1], "requestId="), "D", out var id) ||
             !int.TryParse(Field(lines[4], "pathCount="), NumberStyles.None,
-                CultureInfo.InvariantCulture, out var count) || count is < 1 or > OperationRequest.MaximumPaths ||
+                CultureInfo.InvariantCulture, out var count) || count is < 0 or > OperationRequest.MaximumPaths ||
             lines.Count != count + 5)
             throw new InvalidDataException("The activation identifier or count is invalid.");
         var request = new OperationRequest(id, Field(lines[2], "operation="), Field(lines[3], "action="),

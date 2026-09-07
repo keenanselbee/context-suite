@@ -21,6 +21,9 @@ jobs:
       - name: Compile desktop smoke harness (no interactive run)
         shell: pwsh
         run: dotnet build tests/ContextSuite.Desktop.SmokeTests/ContextSuite.Desktop.SmokeTests.csproj -c Release
+      - name: Compile isolated real-UI test host (no interactive run)
+        shell: pwsh
+        run: dotnet build tests/ContextSuite.Application.TestHost/ContextSuite.Application.TestHost.csproj -c Release
       - name: Missing private implementation errors
         shell: pwsh
         run: ./tools/Test-PrivateBoundary.ps1

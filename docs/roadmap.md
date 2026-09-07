@@ -5,7 +5,8 @@ Status: Milestone 1 foundation implemented locally; WPF UI smoke and manual
 classic Explorer handoff pass. Automated Explorer reliability, modern-menu and
 accessibility review, and hosted CI verification remain pending. Remaining
 Milestone 0 engine and release decisions are deferred to their dependent work.
-Milestones are ordered by dependency and proof of value, not calendar dates.
+Milestone numbers retain their original scope identifiers. The current execution
+order below prioritizes image conversion; numbers are not a strict schedule.
 
 
 Current Position
@@ -23,8 +24,11 @@ shell-integration discovery prototype. It proves:
 
 This evidence resolves the shell-discovery portion of Milestone 0. Production UI,
 platform, lifecycle, worker/IPC boundaries, settings storage, and initial source
-allocation are now accepted in decision 0007. Media engines, production packaging,
-updates, signing, and diagnostics remain deferred decisions. Milestone 1 now has
+allocation are now accepted in decision 0007. Magick.NET is selected for general
+image conversion; decision 0009 selects Magick.NET-Q16-x64 14.17.1, with actual
+native payload verified locally and curated development packaging integrated.
+Redistribution review, DDS tooling, customer packaging,
+updates, signing, and diagnostics remain pending. Milestone 1 now has
 Core, WPF Application, Worker, private composition, managed contracts, fixture
 conventions, build/test scripts, and authored CI workflows. Local builds and
 protocol tests pass. WPF UI automation passes, and user screenshots confirm
@@ -34,15 +38,65 @@ experimental; modern-menu/accessibility review and hosted CI remain unverified.
 See [development status](development.md).
 The bounded foundation goal's evidence is summarized in
 [Milestone 1 validation](milestone-1-validation.md); this does not certify release readiness.
-Milestone 2 has early queue/cancellation plumbing but no output transaction or
-media execution. Milestone 3 and later media features have not started.
+Milestone 2 now includes queue/cancellation plumbing, settings, naming, validated
+output publication, and restricted-platform replacement/recycling. The completed
+Milestone 6 image slice has tested private codec execution, worker IPC and
+trial-gated publication and a tested system-themed planner; its bounded media
+and failure acceptance matrix passes.
+This does not complete Milestone 2 or the other media milestones.
 
 The public/private repository direction and three-day commercial trial are now
 recorded in decisions 0005 and 0006. The single production foundation builds;
-trial handling and Polar license activation are not implemented. Decision 0007 accepts the
+trial storage/admission is now connected to the tested conversion UI;
+Polar license activation is not implemented. Decision 0007 accepts the
 WPF application and worker foundation, including application reuse, sequential
 worker execution, IPC, publication ownership, settings, and source allocation.
-The private catalog advertises no media capabilities until real adapters arrive.
+The private catalog advertises twenty tested PNG/JPEG/WebP/BMP/TGA cross-format pairs;
+the real adapter is used by the Convert planner and worker. Per-file probing and
+explicit planning still determine whether an individual variant is supported.
+
+
+Next Goal And Current Execution Order
+------------------------------------
+
+The [image output safety and settings goal](image-output-safety-goal.md) is locally
+implemented and verified, a bounded Milestone 2 slice.
+[Decision 0008](decisions/0008-output-naming-settings-and-replacement.md)
+accepts Windows-style output naming, safe-copy defaults, per-batch settings, and
+optional replacement followed by recycling, with retained originals/backups on
+failure. Settings, naming, publication, result reporting, Settings activation, and
+failure contracts pass. Native replacement, recycle-only deletion guards, and
+forced-termination tests pass. Replacement is available only on verified Windows
+build 26200 x64 with ordinary local NTFS files, and permission remains off by
+default. See the goal brief for evidence and remaining manual coverage.
+
+Proceed in this order without renumbering existing milestone references:
+
+1. Completed bounded Milestone 2 settings/naming/publication safety foundation.
+2. Completed bounded Milestone 6 PNG/JPEG/WebP batch conversion using Magick.NET, adding
+   the needed Milestone 2 worker execution and validation contracts alongside it.
+3. Completed curated-engine development-packaging integration and bounded
+   BMP/TGA conversion under Milestone 6. Next settle the DDS toolchain/policies
+   for Milestone 3 analysis and DDS conversion expansion.
+4. Milestones 4 and 5 PNG optimization, reusing the output/settings foundation.
+5. Broader tested image capabilities, Milestone 7 release work, then audio.
+
+The completed brief is [PNG/JPEG/WebP batch conversion](image-conversion-goal.md).
+[Decision 0009](decisions/0009-first-image-engine-and-trial.md) settles the initial
+package, media policies and implemented 72-hour local trial. Live Polar integration remains deferred and no
+shipping bypass is permitted. Robust behavior takes priority over advertised
+format count. Actual codec, worker, isolated conversion-UI and production-window
+tests pass; the [acceptance audit](image-conversion-goal.md) records scope and
+release limits. The isolated curated-engine prototype in
+[decision 0010](decisions/0010-first-release-formats-and-curated-engine.md) passes
+its bounded acceptance; see the [evaluation](curated-engine-prototype.md).
+The subsequent [production integration and BMP/TGA slice](bmp-tga-and-engine-integration.md)
+also pass their bounded checks; stock native copying is disabled and packaging
+verifies the selected curated hashes and file allowlist. Complete the separate
+[release redistribution gates](release-redistribution.md) before distribution.
+Next decide/pin the dedicated DDS engine and exact BC/linear/sRGB/mipmap
+policies before its implementation work. The accepted first image
+release targets PNG/JPEG/WebP/DDS/TGA/BMP, not the entire upstream format catalog.
 
 
 Roadmap Principles
@@ -66,7 +120,8 @@ Release Shape
 The roadmap targets two product releases:
 
 - **Image MVP** — all three Explorer roots, DDS and common image analysis,
-  batch PNG optimization, and batch PNG/JPEG/WebP conversion.
+  batch PNG optimization, and batch PNG/JPEG/WebP/TGA/BMP conversion, with first-class
+  DDS representation conversion developed before broader image expansion.
 - **Audio expansion** — common audio analysis, batch conversion, and narrowly
   defined same-format optimization after the image foundation is reliable.
 
@@ -92,7 +147,9 @@ Accepted foundation choices:
 
 Resolve before the dependent media or release work:
 
-- Image decoding and encoding engine.
+- Curated Magick native build and redistribution configuration under decision
+  0010; package/precision are settled by 0009. Select the dedicated DDS engine
+  (DirectXTex recommended; not yet pinned/accepted).
 - Distribution of FFmpeg, `oxipng`, and `pngquant` or selected alternatives.
 - Installer, signing, update, and diagnostics strategy.
 - Exact private engine adapters and optimization policy definitions.
@@ -111,7 +168,7 @@ Exit criteria:
 Resolve decisions when their dependent work begins. Production UI, project
 ownership, and activation lifecycle precede application scaffolding. Exact
 engine choices precede their media slices; live payment services and audio
-distribution need not delay the first DDS analysis feature.
+distribution need not delay the shared safety and first image-conversion work.
 
 
 Milestone 1: Repository And Contract Foundation
@@ -166,6 +223,9 @@ Deliver:
   cancellation, timeouts, and engine identity.
 - Collision-safe output reservation, temporary output, semantic validation, and
   transactional publication.
+- Versioned settings, immutable batch snapshots, and the shared settings UI.
+- Decision 0008 naming, explicit replacement consent, and verified recycle-only
+  cleanup with original/backup retention on failure.
 - Test doubles that exercise the complete pipeline without media engines.
 
 Exit criteria:
@@ -173,7 +233,10 @@ Exit criteria:
 - A simulated multi-file Convert batch and Optimize batch run as one operation.
 - Tests cover repeated paths, collisions, locked outputs, Unicode and long paths,
   cancellation, timeouts, validation failures, and partial success.
-- Failed or cancelled operations never corrupt or replace a source.
+- Pre-publication failure/cancellation preserves originals. Committed results
+  remain completed; later cleanup failure preserves a backup and reports a warning.
+- Replacement remains unavailable until actual Windows safety checks pass;
+  copy-only support does not certify the replacement contract.
 - Aggregate results exactly reconcile with every per-file result.
 
 
@@ -250,8 +313,10 @@ Milestone 6: Batch Image Conversion
 
 Deliver:
 
-- A selected and packaged image conversion engine.
+- A pinned and packaged Magick.NET image conversion adapter.
 - PNG, JPEG, and WebP analysis needed for planning and validation.
+- Implemented BMP/TGA input and output for tested variants under decision 0010,
+  with explicit alpha, orientation, bit-depth, and metadata/color-loss policies.
 - **Convert** targets compatible with the complete Explorer selection.
 - One coordinated batch for multiple selected files.
 - Transparency detection and required matte choice for opaque outputs.
@@ -263,10 +328,20 @@ Exit criteria:
 
 - Every advertised PNG/JPEG/WebP pair has successful, malformed, transparency,
   orientation, metadata, Unicode-path, and cancellation coverage where relevant.
+- BMP/TGA additions meet the same applicable safety and per-pair contracts;
+  compiled coder availability alone never enables a capability.
 - One selected target and policy apply predictably across a batch.
 - File-specific warnings appear before execution without spawning per-file
   planning windows.
 - Outputs validate against their plans and sources remain intact.
+
+DDS expansion follows the first common-image slice and reuses Milestone 3's
+public parser for independent header validation. Target BC1/DXT1 through BC7
+and selected uncompressed formats, with explicit applicable linear/sRGB and
+signedness behavior. Preserve supported mip/face/layer structures, distinguish
+pixel conversion from reinterpretation, and reject unsupported combinations.
+Select and pin the dedicated engine and exact capability matrix before its
+implementation goal; do not imply general-image engine support covers DDS.
 
 
 Milestone 7: Image MVP Integration And Polish
@@ -301,8 +376,9 @@ transfers, and refunds/revocation. Confirm pricing, source/distribution terms,
 independently of media-engine selection. Polar is selected and account approval
 is user-confirmed; configuration and integration remain unverified. Follow the
 [Polar integration plan](polar-integration.md). Do not build custom website
-accounts. Commercial integration need not block the pre-September-15 portfolio
-demo and first useful media workflows.
+accounts. Commercial integration need not block component development. Resolve
+production admission before exposing executable paid media operations; there is
+no separate portfolio application or shipping access bypass.
 
 Deliver and verify:
 
@@ -369,14 +445,14 @@ Exit criteria:
 Deferred Backlog
 ----------------
 
-After the image MVP and audio expansion, possible additions include AVIF, HEIC,
-TIFF, BMP, GIF, SVG rasterization, ICO, richer comparison tools, clipboard
+Outside the first image-release target, possible additions include AVIF, HEIC,
+TIFF, GIF, SVG rasterization, camera RAW, ICO, richer comparison tools, clipboard
 workflows, and reusable user contexts. Each requires a demonstrated user job,
 an explicit scope decision, packaging support, and contract fixtures.
 
 Video, PDF and Office conversion, cloud processing, AI editing, CD ripping,
-automatic source deletion, and arbitrary media-engine commands remain non-goals
-until the product design explicitly changes.
+unrequested source removal, permanent-delete fallback, and arbitrary media-engine
+commands remain non-goals until the product design explicitly changes.
 
 
 Roadmap Maintenance

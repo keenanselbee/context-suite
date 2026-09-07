@@ -2,7 +2,9 @@
   <PropertyGroup>
     <ContextSuitePrivateProject Condition="'$(ContextSuitePrivateProject)' == ''">$(MSBuildThisFileDirectory)..\proprietary\src\ContextSuite.Private\ContextSuite.Private.csproj</ContextSuitePrivateProject>
   </PropertyGroup>
-  <ItemGroup Condition="Exists('$(ContextSuitePrivateProject)')">
+  <!-- The UI requires the private checkout/worker for the product build, but must not
+       acquire a transitive native image-engine dependency. Only the worker links it. -->
+  <ItemGroup Condition="Exists('$(ContextSuitePrivateProject)') and '$(ContextSuitePrivateBuildOnly)' != 'true'">
     <ProjectReference Include="$(ContextSuitePrivateProject)" />
   </ItemGroup>
   <Target Name="RequirePrivateCheckout" BeforeTargets="PrepareForBuild;CollectPackageReferences">

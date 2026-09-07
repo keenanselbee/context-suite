@@ -5,10 +5,13 @@ using System.Windows.Input;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Transport;
+using ContextSuite.Core.Settings;
+using ContextSuite.Core.Images;
 
 namespace ContextSuite.Application;
 
-internal sealed class MainViewModel(WorkerClient worker) : INotifyPropertyChanged, IAsyncDisposable
+internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings = null, OutputPublisher? publisher = null,
+    LocalTrialStore? trial = null) : INotifyPropertyChanged, IAsyncDisposable
 {
     private readonly Queue<(OperationRequest Request, FileRow[] Rows)> _pending = new();
     private readonly HashSet<Guid> _received = [];
@@ -18,23 +21,36 @@ internal sealed class MainViewModel(WorkerClient worker) : INotifyPropertyChange
     private int _batch;
     private string _summary = "Select files in Explorer and choose Analyze, Convert, or Optimize.";
     private ICommand? _cancelCommand;
+    private ICommand? _settingsCommand;
     public ObservableCollection<FileRow> Rows { get; } = [];
+    public SuiteSettings Settings { get; set; } = settings ?? new();
+    internal OutputPublisher? Publisher { get; } = publisher;
+    public string RecoveryNotice { get; } = RecoveryMessage(publisher);
     public bool IsBusy => _running is { IsCompleted: false };
     public string Summary { get => _summary; private set { _summary = value; Changed(); } }
     public ICommand CancelCommand => _cancelCommand ??= new CancelPendingCommand(this);
+    public ICommand SettingsCommand => _settingsCommand ??= new OpenSettingsCommand(this);
+    public event Action<string>? SettingsRequested;
+    public event Func<ConversionViewModel, CancellationToken, Task<ConfirmedImageBatch?>>? ConversionRequested;
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ActivationReply Admit(OperationRequest? request)
     {
         if (request is null) return new(1, Guid.Empty, true, "Application opened.");
         request.Validate();
+        if (request.IsSettingsRequest)
+        {
+            SettingsRequested?.Invoke(request.Operation);
+            return new(1, request.RequestId, true, "Settings opened.");
+        }
         if (_received.Contains(request.RequestId)) return new(1, request.RequestId, true, "Already received.");
         // Bound both pending work and retained UI history. Never silently discard selections.
         if (_lifetime.IsCancellationRequested || Rows.Count + request.Paths.Length > 16384 || _received.Count >= 1024)
             return new(1, request.RequestId, false, "The session queue is full. Close it after work finishes and try again.");
         _received.Add(request.RequestId);
         var batchId = ++_batch;
-        var rows = request.Paths.Select(path => new FileRow(batchId, request.Operation, path)).ToArray();
+        var snapshot = Settings.Capture(request.Operation);
+        var rows = request.Paths.Select(path => new FileRow(batchId, request.Operation, path, snapshot)).ToArray();
         foreach (var row in rows) Rows.Add(row);
         _pending.Enqueue((request, rows));
         if (!IsBusy) _running = DrainAsync();
@@ -50,33 +66,123 @@ internal sealed class MainViewModel(WorkerClient worker) : INotifyPropertyChange
             _active = active;
             try
             {
+                if (batch.Request.Operation == "convert" && Publisher is not null && trial is not null && ConversionRequested is not null)
+                {
+                    await ConvertBatchAsync(batch.Request, batch.Rows, active.Token);
+                    continue;
+                }
                 Summary = $"Checking available media implementations for {batch.Rows.Length} files…";
-                foreach (var row in batch.Rows) row.Status = "Checking capabilities";
+                foreach (var row in batch.Rows) row.ApplyResult(new(row.Path, OperationState.Running, "Checking capabilities"));
                 var capabilities = await worker.GetCapabilitiesAsync(active.Token);
                 active.Token.ThrowIfCancellationRequested();
                 foreach (var row in batch.Rows)
-                    row.Status = capabilities.Length == 0 ? "Unsupported — not implemented" : "Planning not implemented";
+                    row.ApplyResult(new(row.Path, OperationState.Unsupported,
+                        capabilities.Any(capability => capability.Operation == batch.Request.Operation) ? "Planning unavailable" : "Unsupported — not implemented"));
             }
             catch (OperationCanceledException)
             {
-                foreach (var row in batch.Rows) row.Status = "Cancelled";
+                foreach (var row in batch.Rows)
+                    if (row.Result.State is OperationState.Pending or OperationState.Running) row.ApplyResult(new(row.Path, OperationState.Cancelled, "Cancelled"));
             }
             catch (Exception error) when (error is IOException or InvalidDataException or System.ComponentModel.Win32Exception or
                 InvalidOperationException or System.Text.Json.JsonException)
             {
-                foreach (var row in batch.Rows) row.Status = "Worker unavailable — retry selection";
+                foreach (var row in batch.Rows)
+                    if (row.Result.Publication?.IsCommitted != true) row.ApplyResult(new(row.Path, OperationState.Failed, "Worker unavailable — retry selection"));
             }
             finally { _active = null; }
         }
-        Summary = $"{Rows.Count} files received across {_received.Count} batches. No files changed.";
+        RefreshSummary();
         Changed(nameof(IsBusy));
+    }
+
+    private async Task ConvertBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
+    {
+        var selection = new List<ConversionSelection>();
+        for (var index = 0; index < rows.Length; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var row = rows[index];
+            Summary = $"Reading image {index + 1} of {rows.Length}. No conversion has been confirmed.";
+            row.ApplyResult(new(row.Path, OperationState.Running, "Reading image properties"));
+            try
+            {
+                var facts = await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken);
+                selection.Add(new(row.ItemId, row.Path, facts, null));
+                row.ApplyResult(new(row.Path, OperationState.Pending, "Waiting for conversion choices"));
+            }
+            catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or
+                InvalidOperationException or System.ComponentModel.Win32Exception or System.Text.Json.JsonException)
+            {
+                var message = error is MediaWorkerException ? error.Message : "Image could not be read. Check the file and retry.";
+                selection.Add(new(row.ItemId, row.Path, null, message));
+                row.ApplyResult(new(row.Path, error is MediaWorkerException { Failure: ImageFailure.UnsupportedInput }
+                    ? OperationState.Unsupported : OperationState.Failed, message));
+            }
+        }
+        if (!selection.Any(s => s.Facts is not null)) return;
+        await using var planner = new ConversionViewModel(worker, trial!, request.RequestId, selection, rows[0].Settings, PublicationSupport.ReplacementAvailable);
+        Summary = $"Review conversion choices for batch {rows[0].Batch}. No files changed by this batch.";
+        var confirmed = await ConversionRequested!(planner, cancellationToken);
+        if (confirmed is null)
+        {
+            foreach (var row in rows.Where(r => r.Result.State == OperationState.Pending))
+                row.ApplyResult(new(row.Path, OperationState.Cancelled, "Conversion cancelled before confirmation"));
+            return;
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        var byId = rows.ToDictionary(row => row.ItemId);
+        var completed = rows.Count(r => r.Result.State is OperationState.Failed or OperationState.Unsupported);
+        await new ImageBatchExecutor(worker, Publisher!, trial!).ExecuteAsync(confirmed, (item, result) =>
+        {
+            byId[item.Source.ItemId].ApplyResult(result);
+            if (result.State != OperationState.Running) completed++;
+            Summary = $"Batch {rows[0].Batch}: {completed} of {rows.Length} finished. {result.Message}";
+        }, cancellationToken);
     }
 
     private void CancelPending()
     {
         _active?.Cancel();
         while (_pending.TryDequeue(out var batch))
-            foreach (var row in batch.Rows) row.Status = "Cancelled";
+            foreach (var row in batch.Rows)
+                if (row.Result.Publication?.IsCommitted != true) row.ApplyResult(new(row.Path, OperationState.Cancelled, "Cancelled"));
+        RefreshSummary();
+    }
+
+    internal void RecordResult(FileRow row, FileResult result)
+    {
+        if (!Rows.Contains(row)) throw new InvalidDataException("The result does not belong to this queue.");
+        row.ApplyResult(result);
+        RefreshSummary();
+    }
+
+    private void RefreshSummary()
+    {
+        var prefix = $"{Rows.Count} files received across {_received.Count} batches.";
+        var noChanges = Rows.All(r => r.Result.Publication?.IsCommitted != true);
+        var completed = Rows.Count(r => r.Result.State == OperationState.Succeeded);
+        var warnings = Rows.Count(r => r.Result.Publication?.HasWarning == true);
+        var failed = Rows.Count(r => r.Result.State == OperationState.Failed);
+        var cancelled = Rows.Count(r => r.Result.State == OperationState.Cancelled);
+        var unchanged = Rows.Count(r => r.Result.State == OperationState.Unchanged);
+        var unsupported = Rows.Count(r => r.Result.State == OperationState.Unsupported);
+        var pending = Rows.Count - completed - failed - cancelled - unchanged - unsupported;
+        Summary = $"{prefix} {completed} completed ({warnings} warnings), {unchanged} unchanged, {failed} failed, " +
+            $"{cancelled} cancelled, {unsupported} unsupported, {pending} pending." + (noChanges ? " No files changed." : "");
+    }
+
+    private static string RecoveryMessage(OutputPublisher? publisher)
+    {
+        if (publisher is null) return "";
+        try
+        {
+            var count = publisher.FindRecoveryRecords().Count;
+            return count == 0 ? "" : $"{count} publication recovery record(s) retained at {publisher.RecordDirectory}. " +
+                "Originals and temporary files were not automatically removed. Review these records before cleanup.";
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidDataException)
+        { return "Publication recovery records could not be checked. No originals or temporary files were removed."; }
     }
 
     private void Changed([CallerMemberName] string? name = null)
@@ -99,18 +205,39 @@ internal sealed class MainViewModel(WorkerClient worker) : INotifyPropertyChange
         public bool CanExecute(object? parameter) => true;
         public void Execute(object? parameter) { owner.CancelPending(); }
     }
+
+    private sealed class OpenSettingsCommand(MainViewModel owner) : ICommand
+    {
+        public event EventHandler? CanExecuteChanged { add { } remove { } }
+        public bool CanExecute(object? parameter) => true;
+        public void Execute(object? parameter) { owner.SettingsRequested?.Invoke("convert"); }
+    }
 }
 
-internal sealed class FileRow(int batch, string operation, string path) : INotifyPropertyChanged
+internal sealed class FileRow(int batch, string operation, string path, BatchSettings settings) : INotifyPropertyChanged
 {
-    private string _status = "Pending";
+    public Guid ItemId { get; } = Guid.NewGuid();
     public int Batch { get; set; } = batch;
     public string Operation { get; } = operation;
     public string Path { get; } = path;
-    public string Status
+    public BatchSettings Settings { get; } = settings;
+    public FileResult Result { get; private set; } = new(path, OperationState.Pending, "Pending");
+    public string Status => Result.Message;
+    public string OutputPath => Result.Publication?.OutputPath ?? "";
+    public string RetainedOriginalPath => Result.Publication?.RetainedOriginalPath ?? "";
+    public string RecoveryRecordPath => Result.Publication?.RecoveryRecordPath ?? "";
+    public string ResultDetails => $"Source: {Path}\n{Status}" +
+        (OutputPath.Length == 0 ? "" : $"\nOutput: {OutputPath}") +
+        (RetainedOriginalPath.Length == 0 ? "" : $"\nRetained original: {RetainedOriginalPath}") +
+        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}");
+
+    public void ApplyResult(FileResult result)
     {
-        get => _status;
-        set { _status = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Status))); }
+        if (!string.Equals(System.IO.Path.GetFullPath(result.Path), System.IO.Path.GetFullPath(Path), StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("The file result belongs to a different source.");
+        Result = result;
+        foreach (var property in new[] { nameof(Result), nameof(Status), nameof(OutputPath), nameof(RetainedOriginalPath), nameof(RecoveryRecordPath), nameof(ResultDetails) })
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
     public event PropertyChangedEventHandler? PropertyChanged;
 }

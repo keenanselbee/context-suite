@@ -136,7 +136,8 @@ Repository-Specific Notes
   WPF/.NET 10 with MVVM, one app per interactive user session, one on-demand
   sequential worker, and bounded local named-pipe communication. The app owns
   final output publication. Do not add a worker pool or resident service without
-  a new scope decision. Media engines and commercial access are not implemented.
+  a new scope decision. Bounded PNG/JPEG/WebP/BMP/TGA conversion and local trial admission are
+  implemented with a passed bounded acceptance matrix; paid activation remains planned.
 - Keep private source out of public source archives through explicit packaging
   rules. Never store payment credentials or signing private keys in either repo.
 - Polar-hosted checkout and license-key validation are selected; do not add
@@ -158,6 +159,14 @@ Repository-Specific Notes
   not launch independent UI or worker flows for each selected file.
 - Preserve source files by default and publish only validated outputs through a
   collision-safe, transactional output workflow.
+- Follow decision 0008 for Windows-style output names, immutable settings
+  snapshots, and explicit replacement consent. Recycle originals/backups only
+  after publication; never fall back to permanent deletion. Replacement remains
+  gated on Windows failure tests. Do not add a custom backup manager or app Undo.
+- Use `tools/Test-PublicationWindows.ps1 -Recycle` only for explicit opt-in native
+  safety verification of disposable test inputs. Never empty the Recycle Bin or
+  change its configuration. Keep replacement's platform allowlist restricted to
+  environments with equivalent native evidence; see docs/image-output-safety-goal.md.
 - Never silently discard transparency, orientation, metadata, tags, artwork,
   animation, color information, or another meaningful media capability.
 - Require an explicit matte choice before converting transparent media to an
@@ -178,6 +187,9 @@ Repository-Specific Notes
   product-scope decision.
 - Use `tools/Build.ps1` for the canonical native x64 build.
 - Use `tools/Build-Production.ps1` for production composition and
+  stage the selected curated engine first via `tools/curated-engine/Stage-ProductionEngine.ps1`.
+  Follow `docs/bmp-tga-and-engine-integration.md`; never fall back to stock native assets.
+  Use
   `tools/Test-Foundation.ps1` for public contracts; add `-Integration` to test the
   real private worker. Close the application before router tests. Use
   `tools/Test-PrivateBoundary.ps1` for expected missing-private failures and

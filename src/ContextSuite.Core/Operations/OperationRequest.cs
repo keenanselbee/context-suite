@@ -5,11 +5,19 @@ namespace ContextSuite.Core.Operations;
 public sealed record OperationRequest(Guid RequestId, string Operation, string Action, ImmutableArray<string> Paths)
 {
     public const int MaximumPaths = 4096;
+    public bool IsSettingsRequest => Action == "settings" && Operation is "convert" or "optimize";
 
     public void Validate(bool requireExistingFiles = true)
     {
-        if (RequestId == Guid.Empty || Paths.IsDefaultOrEmpty || Paths.Length > MaximumPaths)
+        if (RequestId == Guid.Empty || Paths.IsDefault || Paths.Length > MaximumPaths)
             throw new InvalidDataException("The selection identifier or size is invalid.");
+
+        if (IsSettingsRequest)
+        {
+            if (!Paths.IsEmpty) throw new InvalidDataException("Settings activation must not contain selected files.");
+            return;
+        }
+        if (Paths.IsEmpty) throw new InvalidDataException("A media operation requires selected files.");
 
         var expectedAction = Operation switch
         {

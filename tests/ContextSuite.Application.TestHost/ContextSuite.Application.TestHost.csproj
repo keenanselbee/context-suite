@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <OutputType>WinExe</OutputType>
+    <PlatformTarget>x64</PlatformTarget>
+    <StartupObject>ContextSuite.Application.TestHost.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ContextSuite.Core\ContextSuite.Core.csproj" />
+    <Compile Include="..\..\src\Shared\LocalPipe.cs" Link="Runtime\LocalPipe.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\**\*.cs" Link="Application\%(RecursiveDir)%(Filename)%(Extension)" />
+    <ApplicationDefinition Include="..\..\src\ContextSuite.Application\App.xaml" Link="App.xaml" />
+    <Page Include="..\..\src\ContextSuite.Application\MainWindow.xaml" Link="MainWindow.xaml" />
+    <Page Include="..\..\src\ContextSuite.Application\SettingsWindow.xaml" Link="SettingsWindow.xaml" />
+    <Page Include="..\..\src\ContextSuite.Application\ConversionWindow.xaml" Link="ConversionWindow.xaml" />
+  </ItemGroup>
+</Project>

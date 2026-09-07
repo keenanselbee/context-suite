@@ -4,6 +4,7 @@
     <UseWPF>true</UseWPF>
     <OutputType>WinExe</OutputType>
     <PlatformTarget>x64</PlatformTarget>
+    <ContextSuitePrivateBuildOnly>true</ContextSuitePrivateBuildOnly>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ContextSuite.Core\ContextSuite.Core.csproj" />

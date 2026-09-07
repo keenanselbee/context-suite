@@ -32,7 +32,7 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
-        if (args.Length != 3) { Console.Error.WriteLine("Expected executable, scratch directory, wpf|explorer."); return 1; }
+        if (args.Length != 3 && !(args.Length == 4 && args[2] == "images")) { Console.Error.WriteLine("Expected executable, scratch directory, wpf|explorer|images, optional image worker."); return 1; }
         var desktop = OpenInputDesktop(0, false, 0x0100);
         if (desktop == IntPtr.Zero) { Console.Error.WriteLine("NOT RUN: no accessible input desktop."); return 2; }
         var interactive = SwitchDesktop(desktop);
@@ -41,6 +41,7 @@ internal static class Program
         var existing = Process.GetProcessesByName("ContextSuite.Application");
         foreach (var process in existing) process.Dispose();
         if (existing.Length != 0) { Console.Error.WriteLine("NOT RUN: close Context Suite first."); return 2; }
+        if (args[2] == "images") return ImageConversionSmoke.Run(args[0], args[3], args[1]);
 
         var run = Path.Combine(Path.GetFullPath(args[1]), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(run);
@@ -70,9 +71,11 @@ internal static class Program
                 finally { foreach (var owner in owners) owner.Dispose(); }
                 Console.WriteLine($"PASS: {operation}: {batches * 3} rows in one window.");
             }
-            _window!.Focus();
-            var grid = _window.FindFirstDescendant(cf => cf.ByAutomationId("BatchResults"));
-            (grid ?? throw new InvalidOperationException("Missing result grid.")).Focus();
+            _window!.SetForeground();
+            var keyboardStart = _window.FindFirstDescendant(cf => cf.ByAutomationId("OpenSettings"))
+                ?? throw new InvalidOperationException("Missing settings button.");
+            keyboardStart.Focus();
+            WaitFor(() => keyboardStart.Properties.HasKeyboardFocus.ValueOrDefault, "initial keyboard focus within window");
             Keyboard.Press(VirtualKeyShort.TAB);
             Keyboard.Release(VirtualKeyShort.TAB);
             WaitFor(() => _window.FindAllDescendants().Any(e => e.Properties.HasKeyboardFocus.ValueOrDefault), "keyboard focus within window");
@@ -80,6 +83,8 @@ internal static class Program
             WaitFor(() => _window.BoundingRectangle.Width <= 750, "window resize");
             _window.Patterns.Transform.Pattern.Resize(1000, 700);
             Console.WriteLine("PASS: keyboard focus and resize (not a visual/accessibility certification).");
+            CaptureFailure(run, _window, "main-window");
+            if (!explorerMode) VerifySettings(automation, args[0], run, files);
             CloseApp();
             if (explorerMode) InvokeExplorer(automation, "analyze");
             else Activate(args[0], "analyze", files);
@@ -122,15 +127,15 @@ internal static class Program
         }
     }
 
-    private static void Activate(string executable, string operation, string[] files)
+    private static void Activate(string executable, string operation, string[] files, string? actionOverride = null)
     {
         var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ContextSuite", "Prototype", "Activations");
         Directory.CreateDirectory(directory);
         var id = Guid.NewGuid();
         var path = Path.Combine(directory, $"{id:D}.request");
         Requests.Add(path);
-        var action = operation switch { "analyze" => "open-details", "convert" => "choose-format", _ => "choose-preset" };
-        File.WriteAllText(path, $"ContextSuiteActivation/1\nrequestId={id:D}\noperation={operation}\naction={action}\npathCount=3\n" +
+        var action = actionOverride ?? (operation switch { "analyze" => "open-details", "convert" => "choose-format", _ => "choose-preset" });
+        File.WriteAllText(path, $"ContextSuiteActivation/1\nrequestId={id:D}\noperation={operation}\naction={action}\npathCount={files.Length}\n" +
             string.Concat(files.Select(f => $"path={f}\n")), new UTF8Encoding(false));
         var start = new ProcessStartInfo(executable) { UseShellExecute = false };
         start.ArgumentList.Add("--activation-file");
@@ -139,6 +144,46 @@ internal static class Program
         WaitFor(() => !File.Exists(path), "activation request consumption");
         if (Owned.Count > 1 && !Owned[0].HasExited)
             WaitFor(() => Owned[^1].HasExited, "forwarding process exit");
+    }
+
+    private static void VerifySettings(UIA3Automation automation, string executable, string run, string[] files)
+    {
+        var settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ContextSuite", "settings.json");
+        var previous = File.Exists(settingsPath) ? File.ReadAllBytes(settingsPath) : null;
+        foreach (var operation in new[] { "convert", "optimize" })
+        {
+            Activate(executable, operation, [], "settings");
+            Window? settings = null;
+            WaitFor(() =>
+            {
+                settings = _window!.FindFirstDescendant(cf => cf.ByAutomationId("SettingsWindow"))?.AsWindow();
+                return settings is not null;
+            }, "settings window");
+            var selectedId = operation == "convert" ? "ConvertSettings" : "OptimizeSettings";
+            WaitFor(() => settings!.FindFirstDescendant(cf => cf.ByAutomationId(selectedId))!
+                .Patterns.SelectionItem.Pattern.IsSelected.Value, "correct settings section");
+            if (!VerifyRows(_window!, files, ["analyze", "convert", "optimize"]))
+                throw new InvalidOperationException("Settings activation changed the media queue.");
+            var field = settings!.FindFirstDescendant(cf => cf.ByAutomationId("OutputFolder"))!.AsTextBox();
+            if (field.IsEnabled)
+            {
+                field.Focus();
+                field.Text = run;
+                if (!field.Properties.HasKeyboardFocus.Value) throw new InvalidOperationException("Settings field did not receive focus.");
+            }
+            settings.Focus();
+            WaitFor(() => settings.FindAllDescendants().Any(e => e.Properties.HasKeyboardFocus.ValueOrDefault),
+                "keyboard focus within settings before Escape");
+            CaptureFailure(run, settings, "settings-" + operation);
+            Keyboard.Press(VirtualKeyShort.ESCAPE);
+            Keyboard.Release(VirtualKeyShort.ESCAPE);
+            WaitFor(() => _window!.FindFirstDescendant(cf => cf.ByAutomationId("SettingsWindow")) is null,
+                "Escape dismisses settings");
+        }
+        var after = File.Exists(settingsPath) ? File.ReadAllBytes(settingsPath) : null;
+        if ((previous is null) != (after is null) || (previous is not null && !previous.SequenceEqual(after!)))
+            throw new InvalidOperationException("Cancelling settings changed persisted preferences.");
+        Console.WriteLine("PASS: settings sections, pathless forwarding, keyboard cancellation, unchanged queue and preferences.");
     }
 
     private static Window WaitForWindow(UIA3Automation automation, string executable)
@@ -180,7 +225,7 @@ internal static class Program
                 var cells = Enumerable.Range(0, 4).Select(col => CellText(grid.GetItem(row, col))).ToArray();
                 if (cells[0] != (batch + 1).ToString() || cells[1] != operations[batch] ||
                     !files.Contains(cells[2], StringComparer.OrdinalIgnoreCase) || !seen.Add(cells[2]) ||
-                    cells[3] != "Unsupported \u2014 not implemented") return false;
+                    cells[3] != (operations[batch] == "convert" ? "The image is damaged or invalid. Check the source file and try another copy." : "Unsupported \u2014 not implemented")) return false;
             }
         }
         return true;

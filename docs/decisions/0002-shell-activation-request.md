@@ -34,6 +34,11 @@ The schema is a prototype boundary. Replacing it with app activation, named
 pipes, or another production IPC model requires a superseding decision and must
 retain the same one-selection, one-batch semantics.
 
+Decision 0008 adds a non-media `settings` action for Convert and Optimize within
+schema 1. It carries exactly zero paths and opens the corresponding settings
+section without queue admission. All media actions still require a nonempty
+selection. Deploy matching shell/host versions; older hosts reject the new action.
+
 
 Consequences
 ------------

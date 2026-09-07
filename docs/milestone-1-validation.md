@@ -3,6 +3,10 @@ Milestone 1 Foundation Validation
 
 Local verification: September 6, 2026. This covers the bounded production
 foundation goal, not media processing or readiness for a paid release.
+This is historical foundation evidence. The subsequent
+[conversion goal](image-conversion-goal.md) records real media processing, trial
+admission and the current test counts; the original empty catalog below is no
+longer the current product state.
 
 | Requirement | Evidence |
 | --- | --- |

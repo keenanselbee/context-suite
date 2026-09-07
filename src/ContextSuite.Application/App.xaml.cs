@@ -2,6 +2,7 @@ using System.Windows;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Transport;
+using ContextSuite.Core.Images;
 
 namespace ContextSuite.Application;
 
@@ -10,6 +11,16 @@ public partial class App : System.Windows.Application
     private ActivationRouter? _router;
     private MainViewModel? _viewModel;
     private bool _closing;
+    private readonly SettingsStore _settingsStore;
+    private readonly ApplicationPaths _paths;
+    private LoadedSettings? _settings;
+    private SettingsWindow? _settingsWindow;
+    private bool _openingSettings;
+    private string _requestedSettingsSection = "convert";
+    private ConversionWindow? _conversionWindow;
+
+    public App() : this(ApplicationPaths.Production) { }
+    internal App(ApplicationPaths paths) { _paths = paths; _settingsStore = new(paths.Settings); }
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -33,7 +44,11 @@ public partial class App : System.Windows.Application
                 Shutdown();
                 return;
             }
-            _viewModel = new MainViewModel(new WorkerClient(Path.Combine(AppContext.BaseDirectory, "ContextSuite.Worker.exe")));
+            _settings = await _settingsStore.LoadAsync();
+            var publisher = new OutputPublisher(_paths.Publications, new WindowsFileRecycler(), PublicationSupport.ReplacementAvailable);
+            _viewModel = new MainViewModel(new WorkerClient(_paths.Worker, _paths.WorkerScratch), _settings.Settings, publisher, new LocalTrialStore(_paths.Trial));
+            _viewModel.SettingsRequested += ShowSettings;
+            _viewModel.ConversionRequested += ShowConversionAsync;
             var window = new MainWindow { DataContext = _viewModel };
             MainWindow = window;
             window.Closing += OnClosing;
@@ -44,7 +59,7 @@ public partial class App : System.Windows.Application
                 {
                     window.Show();
                     if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
-                    window.Activate();
+                    if (incoming?.IsSettingsRequest != true) (_conversionWindow as Window ?? window).Activate();
                 }
                 return reply;
             }).Task);
@@ -64,6 +79,59 @@ public partial class App : System.Windows.Application
             if (_viewModel is not null) await _viewModel.DisposeAsync();
             Shutdown(1);
         }
+    }
+
+    private async Task<ConfirmedImageBatch?> ShowConversionAsync(ConversionViewModel planner, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var completion = new TaskCompletionSource<ConfirmedImageBatch?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var window = new ConversionWindow { Owner = MainWindow, DataContext = planner };
+        _conversionWindow = window;
+        void Confirmed(ConfirmedImageBatch confirmed) { completion.TrySetResult(confirmed); window.Close(); }
+        planner.Confirmed += Confirmed;
+        window.Closed += (_, _) => { planner.CancelPreparation(); completion.TrySetResult(null); };
+        window.Show();
+        using var registration = cancellationToken.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
+        try
+        {
+            await planner.InitializeAsync();
+            return await completion.Task;
+        }
+        finally { planner.Confirmed -= Confirmed; _conversionWindow = null; }
+    }
+
+    private async void ShowSettings(string section)
+    {
+        _requestedSettingsSection = section;
+        MainWindow.Show();
+        if (MainWindow.WindowState == WindowState.Minimized) MainWindow.WindowState = WindowState.Normal;
+        if (_settingsWindow is not null)
+        {
+            ((SettingsViewModel)_settingsWindow.DataContext).SelectedSection = section == "optimize" ? 1 : 0;
+            if (_settingsWindow.WindowState == WindowState.Minimized) _settingsWindow.WindowState = WindowState.Normal;
+            _settingsWindow.Activate();
+            return;
+        }
+        if (_openingSettings) return;
+        _openingSettings = true;
+        try
+        {
+            _settings = await _settingsStore.LoadAsync();
+            if (_closing) return;
+            _viewModel!.Settings = _settings.Settings;
+            var settingsViewModel = new SettingsViewModel(_settingsStore, _settings, _requestedSettingsSection, PublicationSupport.ReplacementAvailable);
+            var window = new SettingsWindow { Owner = MainWindow, DataContext = settingsViewModel };
+            _settingsWindow = window;
+            settingsViewModel.Saved += loaded =>
+            {
+                _settings = loaded;
+                _viewModel.Settings = loaded.Settings;
+                window.Close();
+            };
+            window.Closed += (_, _) => _settingsWindow = null;
+            window.Show();
+        }
+        finally { _openingSettings = false; }
     }
 
     private async void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)

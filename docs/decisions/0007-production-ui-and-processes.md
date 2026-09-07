@@ -1,7 +1,7 @@
 Production UI And Processes
 ===========================
 
-Status: accepted; process foundation implemented, media work pending
+Status: accepted; process foundation implemented, first image slice under verification
 Date: 2026-09-06
 
 
@@ -11,7 +11,8 @@ Context
 The native shell prototype proves command layout and complete-selection handoff.
 At acceptance, the production UI, application lifetime, and media worker had not
 been built. The foundation implementation is now described in
-[development status](../development.md); media implementations remain absent.
+[development status](../development.md); the first image adapter and planner are
+now under active verification in [decision 0009's goal](../image-conversion-goal.md).
 The next foundation should support one small Windows utility built from public
 source and selected private production implementations.
 

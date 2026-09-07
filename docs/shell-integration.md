@@ -24,6 +24,11 @@ and Convert and Optimize contain no more than one level of child commands.
 - **Convert** offers compatible target formats and a planning action.
 - **Optimize** offers compatible loss policies and a configuration action.
 
+Convert and Optimize end with a separator and **Settings...**. These entries
+open the corresponding shared settings section, not a media batch. The current
+native implementation has a planning action, separator, and Settings action;
+actual codec targets remain pending. Analyze has no submenu.
+
 Commands should appear in the modern Windows 11 context menu when supported by
 the chosen deployment model. A fallback experience may exist, but it must retain
 the same behavioral boundaries and command names.
@@ -39,7 +44,8 @@ The shell surface queries a small capability snapshot for the selection.
   file.
 - Mixed selections may offer a planning action even when no one-click child is
   common to every file.
-- Converter does not offer a file's current format as a meaningful conversion.
+- Converter does not offer an unchanged representation as a meaningful conversion;
+  an explicit DDS compression/color change can retain the `.dds` extension.
 - Optimizer offers only policies that retain each file's current format.
 - Analyzer can offer full details for a mixed selection when every path can be
   safely handed to the host, even if some formats later report unsupported.
@@ -88,6 +94,12 @@ up after a bounded lifetime.
 The host treats every request as untrusted. It validates operation identifiers,
 path counts, path lengths, file existence where required, supported schemes, and
 all requested options before planning.
+
+The `settings` action is allowed only for Convert/Optimize, requires `pathCount=0`
+and no path records, and opens UI without trial/purchase admission or worker
+startup. Ordinary media actions still require one or more files. This extends
+schema 1's action vocabulary; deploy the matching shell and host/application
+together. Older binaries safely reject the unknown action.
 
 For the planned commercial application, the host also resolves trial or purchase
 access before admitting a new operation. Account and activation UI belong in

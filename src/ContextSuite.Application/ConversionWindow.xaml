@@ -1,0 +1,126 @@
+<Window x:Class="ContextSuite.Application.ConversionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Context Suite - Convert" Width="980" Height="820" MinWidth="760" MinHeight="580"
+        WindowStartupLocation="CenterOwner" AutomationProperties.AutomationId="ConversionWindow">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="VisibleWhenTrue" />
+    </Window.Resources>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Margin="0,0,0,12">
+            <TextBlock Text="Convert images" FontSize="26" FontWeight="SemiBold" />
+            <TextBlock Text="One target and one set of options for this selection. Nothing changes until you confirm."
+                       TextWrapping="Wrap" Margin="0,6,0,0" />
+            <TextBlock Text="{Binding TrialMessage}" TextWrapping="Wrap" Margin="0,6,0,0"
+                       AutomationProperties.AutomationId="ConversionTrialStatus" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" AutomationProperties.AutomationId="ConversionBody">
+            <StackPanel Margin="0,0,10,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Margin="0,0,16,0">
+                        <Label Content="_Target format" Target="{Binding ElementName=TargetFormat}" Padding="0,0,0,5" />
+                        <ComboBox x:Name="TargetFormat" ItemsSource="{Binding Formats}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                  SelectedValue="{Binding Target}" AutomationProperties.AutomationId="ConversionTarget"
+                                  AutomationProperties.Name="Target format" MinHeight="32" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,16,0" Visibility="{Binding HasQuality, Converter={StaticResource VisibleWhenTrue}}">
+                        <Label Content="_Quality (1–100)" Target="{Binding ElementName=QualityValue}" Padding="0,0,0,5" />
+                        <TextBox x:Name="QualityValue" Text="{Binding Quality, UpdateSourceTrigger=PropertyChanged}" Padding="6"
+                                 AutomationProperties.AutomationId="ConversionQuality" AutomationProperties.Name="Quality" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <Label Content="_Maximum dimension (optional)" Target="{Binding ElementName=ResizeValue}" Padding="0,0,0,5" />
+                        <TextBox x:Name="ResizeValue" Text="{Binding MaximumDimension, UpdateSourceTrigger=PropertyChanged}" Padding="6"
+                                 AutomationProperties.AutomationId="ConversionMaximumDimension" AutomationProperties.Name="Maximum dimension in pixels" />
+                        <TextBlock Text="Pixels on the longest side. Never enlarges." FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+                <CheckBox Content="_Lossless WebP (larger files; quality control is not used)" IsChecked="{Binding WebPLossless}" Margin="0,10,0,0"
+                          Visibility="{Binding IsWebP, Converter={StaticResource VisibleWhenTrue}}" AutomationProperties.AutomationId="WebPLossless" />
+                <Grid Margin="0,12,0,0" Visibility="{Binding NeedsMatte, Converter={StaticResource VisibleWhenTrue}}">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
+                    <StackPanel Margin="0,0,16,0">
+                        <Label Content="_Background for transparency" Target="{Binding ElementName=MatteColor}" Padding="0,0,0,5" />
+                        <ComboBox x:Name="MatteColor" ItemsSource="{Binding MatteChoices}" SelectedIndex="{Binding MatteChoice}" MinHeight="32"
+                                  AutomationProperties.AutomationId="ConversionMatte" AutomationProperties.Name="Opaque output background color" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,16,0" Visibility="{Binding HasCustomMatte, Converter={StaticResource VisibleWhenTrue}}">
+                        <Label Content="RGB _hex" Target="{Binding ElementName=CustomColor}" Padding="0,0,0,5" />
+                        <TextBox x:Name="CustomColor" Text="{Binding CustomMatte, UpdateSourceTrigger=PropertyChanged}" Padding="6" MaxLength="7"
+                                 AutomationProperties.AutomationId="ConversionCustomMatte" AutomationProperties.Name="Custom RGB color" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="2" Text="JPEG and 24-bit BMP cannot retain transparency. Choose a background for transparent images, then refresh the preview to check it."
+                               TextWrapping="Wrap" VerticalAlignment="Center" />
+                </Grid>
+                <Expander Header="Metadata and _output policy" Margin="0,14,0,8" AutomationProperties.AutomationId="ConversionAdvanced">
+                    <StackPanel Margin="4,10,4,4">
+                        <CheckBox Content="Remove descriptive metadata (including location); keep color information"
+                                  IsChecked="{Binding RemoveMetadata}" AutomationProperties.AutomationId="RemoveImageMetadata" />
+                        <TextBlock Text="By default, preserve supported metadata and ICC profiles. Orientation/dimensions are normalized; unsupported metadata is not silently dropped."
+                                   TextWrapping="Wrap" Margin="0,6,0,12" />
+                        <CheckBox Content="Replace originals for this batch" IsChecked="{Binding ReplaceOriginal}" IsEnabled="{Binding CanReplaceOriginal}"
+                                  AutomationProperties.AutomationId="ReplaceImageOriginals" />
+                        <TextBlock Text="{Binding ReplacementNotice}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Expander>
+                <TextBlock Text="{Binding OutputNotice}" TextWrapping="Wrap" Margin="0,0,0,8" AutomationProperties.AutomationId="ConversionOutputPolicy" />
+                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,0,0,8"
+                           AutomationProperties.AutomationId="ConversionPlanStatus" AutomationProperties.LiveSetting="Polite" />
+                <DataGrid ItemsSource="{Binding Rows}" SelectedIndex="{Binding SelectedIndex}" AutoGenerateColumns="False" IsReadOnly="True"
+                          SelectionMode="Single" CanUserAddRows="False" Height="150" AutomationProperties.AutomationId="ConversionFiles"
+                          AutomationProperties.Name="Image conversion plan">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="150" />
+                        <DataGridTextColumn Header="Source" Binding="{Binding Details}" Width="210" />
+                        <DataGridTextColumn Header="Plan" Binding="{Binding Status}" Width="*" MinWidth="180" />
+                        <DataGridTextColumn Header="Proposed output" Binding="{Binding ProposedOutput}" Width="240" />
+                    </DataGrid.Columns>
+                </DataGrid>
+                <TextBlock Text="{Binding SelectedExplanation}" TextWrapping="Wrap" Margin="0,6,0,0" AutomationProperties.AutomationId="SelectedImageExplanation" />
+                <DockPanel Margin="0,12,0,8">
+                    <Button DockPanel.Dock="Right" Content="_Refresh preview" Command="{Binding PreviewCommand}" Padding="12,5"
+                            AutomationProperties.AutomationId="RefreshConversionPreview" />
+                    <TextBlock Text="Selected image" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </DockPanel>
+                <Grid Height="155">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <TextBlock Text="Before" Margin="0,0,0,5" />
+                    <TextBlock Grid.Column="1" Text="After" Margin="8,0,0,5" />
+                    <Border Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" Margin="0,0,4,0">
+                        <Image Source="{Binding BeforePreview}" Stretch="Uniform" AutomationProperties.AutomationId="BeforeImagePreview"
+                               AutomationProperties.Name="Original image preview" />
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" Margin="4,0,0,0">
+                        <Image Source="{Binding AfterPreview}" Stretch="Uniform" AutomationProperties.AutomationId="AfterImagePreview"
+                               AutomationProperties.Name="Converted image preview" />
+                    </Border>
+                </Grid>
+                <TextBlock Text="{Binding PreviewMessage}" TextWrapping="Wrap" Margin="0,6,0,12" FontSize="12"
+                           AutomationProperties.AutomationId="ConversionPreviewStatus" />
+                <StackPanel Visibility="{Binding HasWarnings, Converter={StaticResource VisibleWhenTrue}}">
+                    <TextBlock Text="Conversion consequences" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Warnings}" TextWrapping="Wrap" Margin="0,5,0,8" AutomationProperties.AutomationId="ConversionWarnings" />
+                    <CheckBox Content="I have reviewed these consequences and skipped files" IsChecked="{Binding WarningsAcknowledged}"
+                              AutomationProperties.AutomationId="AcknowledgeConversionWarnings" />
+                </StackPanel>
+                <CheckBox Content="I consent to moving originals to the Recycle Bin after successful conversion" IsChecked="{Binding ReplacementConfirmed}"
+                          Visibility="{Binding ReplaceOriginal, Converter={StaticResource VisibleWhenTrue}}" Margin="0,10,0,0"
+                          AutomationProperties.AutomationId="ConfirmImageReplacement" />
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="_Convert" Command="{Binding ConfirmCommand}" Padding="22,7" Margin="0,0,8,0"
+                    AutomationProperties.AutomationId="ConfirmImageConversion" />
+            <Button Content="Cancel" Click="OnCancel" IsCancel="True" Padding="18,7" AutomationProperties.AutomationId="CancelImageConversion" />
+        </StackPanel>
+    </Grid>
+</Window>

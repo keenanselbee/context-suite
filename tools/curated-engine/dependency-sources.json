@@ -1,0 +1,15 @@
+{
+  "dependencyRelease": "2026.09.01.0503",
+  "source": "https://github.com/ImageMagick/Dependencies/blob/2026.09.01.0503/clone-dependencies.sh",
+  "note": "Native prototype uses the hashed upstream Windows static-library artifact. These are its pinned source inputs, not a claim that dependencies were rebuilt locally.",
+  "components": [
+    { "name": "jpeg-turbo", "version": "3.2.0", "revision": "b91492930ceb23c0b5282e8b9fc21de54182d92e", "repository": "https://github.com/ImageMagick/jpeg-turbo", "license": "BSD-3-Clause / IJG / Zlib components; retain LICENSE.md" },
+    { "name": "jpeg-turbo-12", "revision": "9837071e8c0e5fba6daa03f31aba4416ff5eaf7c", "repository": "https://github.com/ImageMagick/jpeg-turbo-12", "license": "Build configuration references the pinned jpeg-turbo source; same source license notices", "evidence": ".ImageMagick/Config.txt: DIRECTORY Dependencies\\jpeg-turbo; BITS_IN_JSAMPLE=12" },
+    { "name": "jpeg-turbo-16", "revision": "d16d0839d655478b4d517ebe2aeabfecce8192d9", "repository": "https://github.com/ImageMagick/jpeg-turbo-16", "license": "Build configuration references the pinned jpeg-turbo source; same source license notices", "evidence": ".ImageMagick/Config.txt: DIRECTORY Dependencies\\jpeg-turbo; BITS_IN_JSAMPLE=16" },
+    { "name": "lcms", "version": "2.19.1", "revision": "d261ab6fda30fd7578a2ce7ace5c0b2c7d3fc0b8", "repository": "https://github.com/ImageMagick/lcms", "license": "MIT" },
+    { "name": "png", "version": "1.6.58", "revision": "88ee938ef91b0289339be463b29003f65d486210", "repository": "https://github.com/ImageMagick/png", "license": "libpng-2.0" },
+    { "name": "webp", "version": "1.6.0", "revision": "b981ef267195cb12f2cb97e4dd23e12a1323a4ce", "repository": "https://github.com/ImageMagick/webp", "license": "BSD-3-Clause; separate pinned PATENTS grant included in prototype notices" },
+    { "name": "xml", "version": "2.15.3", "revision": "4509bf0d7b7a501b682da8635527cd77525b0ec9", "repository": "https://github.com/ImageMagick/xml", "license": "MIT and source-file notices" },
+    { "name": "zlib", "version": "1.3.2", "revision": "e42706934e4e7564d960031ae62ff29d918ee06d", "repository": "https://github.com/ImageMagick/zlib", "license": "Zlib" }
+  ]
+}

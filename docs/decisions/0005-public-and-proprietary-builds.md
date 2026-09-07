@@ -34,7 +34,7 @@ not require a separate application or a promise that every public project can
 build alone. Test doubles belong in tests, not a shipping demonstration edition.
 
 The production foundation now builds through `tools/Build-Production.ps1`; its
-private media catalog is empty until real adapters are implemented. The existing
+private media catalog now exposes tested image conversion pairs. The existing
 native shell prototype continues to build independently. See
 [development status](../development.md) for verified and pending surfaces.
 

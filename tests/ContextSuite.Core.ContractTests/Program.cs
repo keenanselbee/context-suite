@@ -9,7 +9,12 @@ using ContextSuite.Core.Activation;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Transport;
 using ContextSuite.Runtime;
+using ContextSuite.Core.ContractTests;
+using ContextSuite.Core.Settings;
 
+if (args.Length == 2 && args[0] == "--recycle") return await WindowsRecycleContracts.RunAsync(args[1]);
+if (args.Length == 3 && args[0] == "--recycle-images") return await WindowsRecycleContracts.RunImagesAsync(args[1], args[2]);
+if (args.Length == 3 && args[0] == "--crash-publication") return await PublicationCrashContracts.RunChildAsync(args[1], args[2]);
 if (args.Length is < 1 or > 3) throw new ArgumentException("Expected scratch directory, optional worker executable, and optional application executable.");
 Directory.CreateDirectory(args[0]);
 var fixture = Path.Combine(args[0], "contract-" + Guid.NewGuid().ToString("N") + ".txt");
@@ -17,6 +22,11 @@ await File.WriteAllTextAsync(fixture, "A deliberately non-media fixture; no tran
 var passed = 0;
 try
 {
+    await SettingsContracts.RunAsync(args[0], Check);
+    ImagePlanContracts.Run(args[0], Check);
+    await TrialContracts.RunAsync(args[0], Check);
+    await PublicationContracts.RunAsync(args[0], Check);
+    await PublicationCrashContracts.RunAsync(args[0], Check);
     var id = Guid.NewGuid();
     string RequestText(string operation = "analyze", string action = "open-details", int count = 1) =>
         $"ContextSuiteActivation/1\nrequestId={id:D}\noperation={operation}\naction={action}\npathCount={count}\npath={fixture}\n";
@@ -25,6 +35,12 @@ try
         Check(new AccessDecision(state, "Test state").CanStart == (state is AccessState.Trial or AccessState.Paid),
             "access admission: " + state);
     Check(request.RequestId == id && request.Paths.Single() == fixture, "valid activation");
+    var settingsRequest = ActivationParser.Parse(Encoding.UTF8.GetBytes(
+        $"ContextSuiteActivation/1\nrequestId={Guid.NewGuid():D}\noperation=convert\naction=settings\npathCount=0\n"));
+    Check(settingsRequest.IsSettingsRequest && settingsRequest.Paths.IsEmpty, "pathless settings activation");
+    Reject(() => (settingsRequest with { Paths = [fixture] }).Validate(), "settings rejects media paths");
+    Reject(() => (settingsRequest with { Operation = "analyze" }).Validate(), "Analyze has no settings submenu action");
+    Reject(() => (request with { Paths = [] }).Validate(), "empty media selection still rejected");
     Check(ActivationParser.Parse(Encoding.UTF8.GetBytes(RequestText().Replace("\n", "\r\n"))).Paths.Length == 1, "CRLF activation");
     foreach (var pair in new[] { ("convert", "choose-format"), ("optimize", "choose-preset") })
         Check(ActivationParser.Parse(Encoding.UTF8.GetBytes(RequestText(pair.Item1, pair.Item2))).Operation == pair.Item1, pair.Item1);
@@ -119,9 +135,18 @@ try
     await OnUiThreadAsync(async () =>
     {
         await using var vm = new MainViewModel(new WorkerClient(Path.Combine(args[0], "missing-worker.exe")));
+        string? settingsSection = null;
+        vm.SettingsRequested += section => settingsSection = section;
+        Check(vm.Admit(settingsRequest).Accepted && settingsSection == "convert" && vm.Rows.Count == 0 && !vm.IsBusy,
+            "settings activation opens section without worker or media admission");
         Check(vm.Admit(request).Accepted && vm.Admit(request).Accepted && vm.Rows.Count == 1, "duplicate request ID");
+        vm.Admit(request with { RequestId = Guid.NewGuid(), Operation = "convert", Action = "choose-format" });
+        vm.Settings = new SuiteSettings { Convert = new(true) };
+        Check(!vm.Rows[^1].Settings.Preferences.AllowReplacingOriginals, "queued file retains its settings snapshot");
+        vm.Admit(request with { RequestId = Guid.NewGuid(), Operation = "convert", Action = "choose-format" });
+        Check(vm.Rows[^1].Settings.Preferences.AllowReplacingOriginals, "future batch captures changed preferences");
         vm.Admit(request with { RequestId = Guid.NewGuid(), Paths = [fixture, fixture, fixture] });
-        Check(vm.Rows.Skip(1).Select(row => row.Batch).Distinct().Count() == 1, "shared batch identity");
+        Check(vm.Rows.TakeLast(3).Select(row => row.Batch).Distinct().Count() == 1, "shared batch identity");
         vm.CancelCommand.Execute(null);
         Check(vm.Rows.All(row => row.Status == "Cancelled"), "cancel queued batches");
         for (var index = 0; index < 3; index++)
@@ -130,21 +155,48 @@ try
         vm.CancelCommand.Execute(null);
     });
 
+    await OnUiThreadAsync(async () =>
+    {
+        await using var vm = new MainViewModel(new WorkerClient(Path.Combine(args[0], "missing-worker.exe")));
+        vm.Admit(request with { Paths = [fixture, fixture, fixture] });
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (vm.IsBusy) await Task.Delay(10, timeout.Token);
+        vm.RecordResult(vm.Rows[0], new PublicationResult(fixture, PublicationOutcome.CopyCreated, "Copy created", fixture + ".out").ToFileResult());
+        vm.RecordResult(vm.Rows[1], new PublicationResult(fixture, PublicationOutcome.BackupRetained, "Backup retained", fixture + ".out2", fixture + ".original", fixture + ".json").ToFileResult());
+        vm.RecordResult(vm.Rows[2], new PublicationResult(fixture, PublicationOutcome.Failed, "Publication failed").ToFileResult());
+        Check(vm.Summary.Contains("2 completed (1 warnings)", StringComparison.Ordinal) && vm.Summary.Contains("1 failed", StringComparison.Ordinal),
+            "UI summary reconciles committed results, warning, and failure");
+        Check(vm.Rows[1].OutputPath.EndsWith(".out2", StringComparison.Ordinal) && vm.Rows[1].RetainedOriginalPath.EndsWith(".original", StringComparison.Ordinal) &&
+            vm.Rows[1].RecoveryRecordPath.EndsWith(".json", StringComparison.Ordinal), "UI exposes actual output and recovery paths");
+        vm.CancelCommand.Execute(null);
+        Check(vm.Rows[0].Result.State == OperationState.Succeeded && vm.Rows[1].Result.State == OperationState.Succeeded,
+            "UI cancellation never undoes committed results");
+    });
+
     if (args.Length >= 2)
     {
-        await using var worker = new WorkerClient(args[1]);
-        Check((await worker.GetCapabilitiesAsync(CancellationToken.None)).Length == 0, "real private catalog has no fake capabilities");
-        Check((await worker.GetCapabilitiesAsync(CancellationToken.None)).Length == 0, "worker reuse");
-        // Cancellation kills the owned worker; a subsequent request must start a new one.
+        await ImageWorkerContracts.RunAsync(args[0], args[1], Check);
+        await ImageInterruptionContracts.RunAsync(args[0], args[1], Check);
+        await using var worker = new WorkerClient(args[1], Path.Combine(args[0], "worker-scratch"));
+        var capabilities = await worker.GetCapabilitiesAsync(CancellationToken.None);
+        var expectedCapabilities = (from input in new[] { "png", "jpeg", "webp", "bmp", "tga" }
+            from output in new[] { "png", "jpeg", "webp", "bmp", "tga" } where input != output
+            select new MediaCapability("convert", input, output)).ToHashSet();
+        Check(capabilities.Length == 20 && expectedCapabilities.SetEquals(capabilities), "real private catalog advertises exactly the twenty tested conversion pairs");
+        Check((await worker.GetCapabilitiesAsync(CancellationToken.None)).SequenceEqual(capabilities), "worker reuse retains capabilities");
+        var engine = await worker.GetEngineIdentityAsync(CancellationToken.None);
+        Check(engine.Package == "Magick.NET-Q16-x64" && engine.Version.Contains("14.17.1", StringComparison.Ordinal) &&
+            engine.NativeVersion.Contains("7.1.2", StringComparison.Ordinal), "real worker loads pinned image engine and native payload");
+        // A pre-cancelled request leaves capabilities usable; active cancellation is tested above.
         using var cancelled = new CancellationTokenSource();
         cancelled.Cancel();
         await RejectAsync(() => worker.GetCapabilitiesAsync(cancelled.Token), "worker cancellation");
-        Check((await worker.GetCapabilitiesAsync(CancellationToken.None)).Length == 0, "worker restart after cancellation");
+        Check((await worker.GetCapabilitiesAsync(CancellationToken.None)).SequenceEqual(capabilities), "worker usable after pre-cancelled request");
         using var process = Process.GetProcessById(worker.ProcessId!.Value);
         process.Kill(true);
         await process.WaitForExitAsync();
         await RejectAsync(() => worker.GetCapabilitiesAsync(CancellationToken.None), "worker crash reported");
-        Check((await worker.GetCapabilitiesAsync(CancellationToken.None)).Length == 0, "worker restart after crash");
+        Check((await worker.GetCapabilitiesAsync(CancellationToken.None)).SequenceEqual(capabilities), "worker restart after crash retains capabilities");
     }
     if (args.Length == 3)
     {

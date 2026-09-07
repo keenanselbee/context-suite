@@ -79,5 +79,8 @@ Current Decisions
 - [0003: Separate shell identity packages](0003-separate-shell-identity-packages.md)
 - [0004: Analyzer product language](0004-analyzer-product-language.md)
 - [0005: Public and proprietary builds](0005-public-and-proprietary-builds.md) — accepted
-- [0006: Trial and purchase access](0006-trial-and-purchase-access.md) — direction accepted; policies open
+- [0006: Trial and purchase access](0006-trial-and-purchase-access.md) — local trial settled by 0009; paid policies open
 - [0007: Production UI and processes](0007-production-ui-and-processes.md) — accepted; process foundation implemented
+- [0008: Output naming, settings, and replacement](0008-output-naming-settings-and-replacement.md) — implemented; replacement restricted to verified platforms/paths
+- [0009: First image engine and local trial](0009-first-image-engine-and-trial.md) — bounded local acceptance passed; release packaging refined by 0010
+- [0010: First release formats and curated image engine](0010-first-release-formats-and-curated-engine.md) — accepted; curated development packaging and bounded BMP/TGA conversion implemented; DDS and release clearance pending

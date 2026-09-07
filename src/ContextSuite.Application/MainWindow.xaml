@@ -2,18 +2,29 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Context Suite" AutomationProperties.AutomationId="ContextSuiteWindow"
-        Width="850" Height="540" MinWidth="620" MinHeight="380">
-    <Grid Margin="20">
+        Width="1000" Height="620" MinWidth="700" MinHeight="440" AllowDrop="True" PreviewDrop="OnFilesDropped" PreviewDragOver="OnDragOver">
+    <Grid Margin="20" Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock Text="Context Suite" FontSize="26" FontWeight="SemiBold" />
-        <TextBlock Grid.Row="1" Margin="0,12,0,16" TextWrapping="Wrap"
-                   Text="Production foundation: Explorer selections are received as batches. Media analysis, conversion, and optimization are not implemented yet. No files will be changed." />
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True"
+        <DockPanel>
+            <Button Content="_Settings..." Command="{Binding SettingsCommand}" DockPanel.Dock="Right"
+                    AutomationProperties.AutomationId="OpenSettings" Padding="12,6" HorizontalAlignment="Right" />
+            <Button Content="_Convert files..." Click="OnChooseFiles" DockPanel.Dock="Right" Margin="0,0,8,0"
+                    AutomationProperties.AutomationId="ChooseConversionFiles" Padding="12,6" HorizontalAlignment="Right" />
+            <TextBlock Text="Context Suite" FontSize="26" FontWeight="SemiBold" />
+        </DockPanel>
+        <StackPanel Grid.Row="1" Margin="0,12,0,16">
+            <TextBlock TextWrapping="Wrap"
+                       Text="Convert PNG, JPEG, WebP, BMP, and TGA images in a coordinated batch. Originals are kept by default. Drop files here or choose Convert files. Analyze and Optimize are not implemented yet." />
+            <TextBlock Text="{Binding RecoveryNotice}" TextWrapping="Wrap" AutomationProperties.AutomationId="RecoveryNotice" />
+            <TextBlock x:Name="InputNotice" TextWrapping="Wrap" AutomationProperties.AutomationId="InputNotice" AutomationProperties.LiveSetting="Polite" />
+        </StackPanel>
+        <DataGrid x:Name="ResultsGrid" Grid.Row="2" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True"
                   CanUserAddRows="False" AutomationProperties.AutomationId="BatchResults"
                   AutomationProperties.Name="Selected files and operation results">
             <DataGrid.Columns>
@@ -21,11 +32,22 @@
                 <DataGridTextColumn Header="Tool" Binding="{Binding Operation}" Width="90" />
                 <DataGridTextColumn Header="File" Binding="{Binding Path}" Width="*" />
                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="220" />
+                <DataGridTextColumn Header="Output" Binding="{Binding OutputPath}" Width="SizeToHeader" />
+                <DataGridTextColumn Header="Retained original" Binding="{Binding RetainedOriginalPath}" Width="SizeToHeader" />
+                <DataGridTextColumn Header="Recovery record" Binding="{Binding RecoveryRecordPath}" Width="SizeToHeader" />
             </DataGrid.Columns>
         </DataGrid>
-        <DockPanel Grid.Row="3" Margin="0,16,0,0">
+        <ScrollViewer Grid.Row="3" MaxHeight="120" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
+            <TextBlock Text="{Binding SelectedItem.ResultDetails, ElementName=ResultsGrid}" TextWrapping="Wrap" FontSize="12"
+                       AutomationProperties.AutomationId="SelectedResultDetails" />
+        </ScrollViewer>
+        <DockPanel Grid.Row="4" Margin="0,16,0,0">
             <Button DockPanel.Dock="Right" AutomationProperties.AutomationId="CancelPending"
-                    Content="_Cancel pending" Command="{Binding CancelCommand}" Padding="12,6" Margin="12,0,0,0" />
+                    Content="Cancel _pending" Command="{Binding CancelCommand}" Padding="12,6" Margin="12,0,0,0" />
+            <Button DockPanel.Dock="Right" Content="Open output _folder" Click="OnOpenOutputFolder" Padding="10,6" Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="OpenOutputFolder" />
+            <Button DockPanel.Dock="Right" Content="_Retry selected" Click="OnRetrySelected" Padding="10,6" Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="RetrySelectedFiles" />
             <TextBlock Text="{Binding Summary}" AutomationProperties.AutomationId="BatchSummary"
                        VerticalAlignment="Center" TextWrapping="Wrap" />
         </DockPanel>

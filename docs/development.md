@@ -16,10 +16,18 @@ Build And Test
 ./tools/Test-PrivateBoundary.ps1
 ./tools/Test-ShellPrototype.ps1 -Configuration Release
 
-# Complete foundation, requiring compatible private source at proprietary/.
+# Complete foundation, requiring private source and staged curated inputs.
+# See tools/curated-engine/README.md for the reviewed native staging workflow.
 ./tools/Build-Production.ps1 -Configuration Release
 ./tools/Test-Foundation.ps1 -Configuration Release -Integration
 ./artifacts/production/Release/ContextSuite.Application.exe
+
+# Real image-engine/adapter contracts, requiring the private checkout.
+./tools/Test-ImageConversion.ps1 -Configuration Release
+# Opt-in desktop test of the actual conversion UI with isolated trial/settings.
+./tools/Test-DesktopSmoke.ps1 -Configuration Release -Images
+# Opt-in native replacement; recycles only two newly generated image fixtures.
+./tools/Test-PublicationWindows.ps1 -Configuration Release -Recycle -Images
 ```
 
 Build commands restore required SDK projects automatically. `dotnet restore`
@@ -59,17 +67,63 @@ Implementation Boundaries
 - Application: WPF window/view model, bounded in-memory selection queue, activation
   forwarding, request-file handling, and on-demand worker ownership.
 - Worker: authenticated local connection and real private capability discovery.
-- Private: production composition with an empty media catalog until real adapters
-  are implemented. No fake encoder or licensing bypass is supplied.
+- Private: real image adapter and production composition; the catalog advertises
+  twenty tested PNG/JPEG/WebP/BMP/TGA cross-format pairs. No fake encoder or licensing
+  bypass is supplied.
 - Shared source: Windows pipe identity/security code compiled into its process
   owners and contract tests without adding an infrastructure assembly.
 
 This is one unfinished production application, not a demonstration edition.
-Selections currently resolve to unsupported/not-implemented results. No media
-bytes are inspected or transformed. The access-policy contract has no permissive
-shipping implementation; real operation admission awaits the commercial slice.
-There is no settings UI or persisted user preference yet; versioned JSON storage
-is the accepted approach when the first real preference is introduced.
+Convert selections now open the image planner and can produce validated
+PNG/JPEG/WebP/BMP/TGA copies after confirmation. Analyze/Optimize remain unimplemented.
+The image worker, application executor and real conversion UI have focused
+integration tests; final goal acceptance and release checks remain separate.
+Trial admission precedes reserving/encoding/publishing.
+UI tests compile the same app sources into a test-only host with isolated paths
+and real trial enforcement. No permissive shipping access implementation exists;
+live Polar access remains deferred. Only the worker links private image engines;
+the app retains the mandatory-private build check without a runtime engine reference.
+The production trial record is `%LOCALAPPDATA%/ContextSuite/Access/trial.json`,
+separate from settings. Status reads do not start/create a trial. Only a confirmed
+executable immutable conversion plan can call admission, and a successful atomic
+save must precede admission. Public contracts use isolated scratch directories and
+test clocks, not the user's real record. There is no shipping reset switch.
+The shared settings UI now stores versioned JSON at
+`%LOCALAPPDATA%/ContextSuite/settings.json`. It opens from the app or pathless
+Convert/Optimize `settings` activation. Output-folder preferences and replacement
+permission are separate per tool. Permission defaults off; availability is gated
+to verified Windows build 26200 x64, with each replacement plan restricted to an
+ordinary single-link local NTFS file. Each admitted batch captures immutable
+preferences. Unknown schemas
+are read-only, invalid settings fall back safely, and failed/stale saves do not
+silently truncate or replace the previously loaded preferences. Credentials and
+trial records are not stored here. The application-owned publisher implements
+validated copies, explicit replacement, and recycle-only cleanup. Its tests use
+controlled temporary bytes plus real worker integration, never a permissive access provider.
+The image planner supplies semantic validation and per-batch replacement
+confirmation; enabling the preference alone never authorizes replacement.
+See the [safety goal evidence](image-output-safety-goal.md).
+
+Publication recovery evidence is stored separately at
+`%LOCALAPPDATA%/ContextSuite/Publications`. Startup displays the record location
+when records remain. It does not resume jobs, purge backups, or offer app Undo.
+Records contain paths, byte fingerprints, and publication stages, not credentials.
+
+For explicit native filesystem/Shell verification on an unlocked Windows desktop:
+
+```powershell
+./tools/Test-PublicationWindows.ps1 -Recycle
+```
+
+This opt-in test builds public contracts and runs a bounded hidden child process.
+It creates disposable inputs beneath `.codex-temp/publication-windows`, verifies
+same-path and different-extension publication, reads the original bytes back from
+the Recycle Bin, and proves the callback vetoes a native permanent-delete proposal.
+It also checks cancellation and changed-source rejection. It never empties the
+Recycle Bin or changes its settings; recycled test originals remain recoverable
+there. Logs and result JSON remain under the test directory. Ordinary foundation
+tests instead cover injected disk-full/permission failures, actual file locks,
+and six forced-termination stages without performing Shell recycling.
 
 Activation messages use protocol version 1 and bounded length-prefixed UTF-8
 JSON (32 MiB maximum to accommodate escaping a 4 MiB shell request). Requests
@@ -86,7 +140,8 @@ unread response data. Cleanup examines at most
 256 files per launch and removes only GUID-named request/temp files older than
 24 hours in the owned request directory, excluding reparse points.
 
-Worker startup and request timeouts are 10 seconds; shutdown permits 2 seconds
+The worker's connection deadline is 10 seconds; application requests allow 30
+seconds for probe/preview and 120 seconds for conversion. Shutdown permits 2 seconds
 before terminating the owned process tree. Cancellation tears down the worker
 connection; a later request starts a fresh worker. Parent exit or pipe closure
 also ends the worker. No persistent job recovery or worker pool is implemented.
@@ -111,7 +166,9 @@ made by this scaffold.
 Verification Status
 -------------------
 
-Local Release builds and 50 managed foundation contracts pass, including full
+The original foundation evidence comprised Release builds and 50 managed
+contracts; the completed conversion goal now records 280 passing integration
+contracts and expanded engine/UI evidence. Foundation coverage includes full
 selection transport, malformed clients, duplicate IDs, queue bounds, cancellation,
 worker reuse, and restart after cancellation/crash. Native Release contracts also
 pass for all three commands and complete three-file selections. Both production

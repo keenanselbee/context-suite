@@ -1,8 +1,9 @@
 Context Suite Product Design
 ============================
 
-Status: initial product direction with shell and production process foundations;
-media analysis and transformation are not implemented yet.
+Status: shell/process and output-safety foundations implemented; PNG/JPEG/WebP/BMP/TGA
+conversion has passed its bounded local acceptance matrix. Analysis, optimization and paid activation
+remain planned.
 
 
 Product Summary
@@ -35,6 +36,10 @@ These boundaries are behavioral contracts, not just menu labels. Convert may
 apply sensible encoding optimization while producing its requested format, but
 same-format reduction belongs to Optimize. Optimize may explain that another
 format could be smaller, but it must not perform that conversion implicitly.
+
+An explicit DDS representation change (such as BC1 to BC7 or a chosen color-space
+conversion) belongs to Convert even though the extension remains `.dds`.
+Optimization retains the selected representation and loss policy.
 
 
 Target Users
@@ -104,6 +109,15 @@ Explorer code must remain responsive. It performs only bounded capability work
 and delegates analysis, planning, conversion, optimization, validation, and
 result presentation to an out-of-process host.
 
+Convert and Optimize each end with a separated **Settings...** action opening
+their section of one shared settings window. Quick actions preserve originals;
+replacement requires an explicit planning choice and confirmation.
+
+Application and Settings windows follow Windows' app light/dark mode, accent,
+and contrast theme automatically, including changes while windows are open.
+Use the built-in WPF Fluent appearance rather than maintaining a separate theme
+setting. Explorer menus remain Windows-owned.
+
 
 Shared Operation Workflow
 -------------------------
@@ -124,22 +138,43 @@ Convert and Optimize follow the transformation workflow:
 7. Publish outputs according to the selected output policy.
 8. Present per-file and aggregate results with useful next actions.
 
+Default names follow Windows copy formatting: `name - Converted.ext`,
+`name - Optimized.ext`, or a meaningful DDS variant such as
+`name - BC7-sRGB.dds`, with collisions numbered from `(2)`. Preserve source
+basenames rather than stripping existing suffixes. Explicit replacement publishes
+validated output before recycling the old file, retaining an original/backup
+when recycling fails. No permanent-delete fallback or app-managed backup browser
+is planned. See [decision 0008](decisions/0008-output-naming-settings-and-replacement.md)
+for naming, settings snapshots, consent, and the required Windows verification.
+
 
 Release Sequence
 ----------------
 
+The accepted first image-release format target is PNG, JPEG, WebP, DDS, TGA,
+and BMP. Bounded PNG/JPEG/WebP/BMP/TGA conversion is implemented today. Formats
+do not imply support for every variant or operation. A curated general-image
+engine is integrated into development packaging; DDS tooling remains unselected. See
+[decision 0010](decisions/0010-first-release-formats-and-curated-engine.md).
+Retain useful near-term capabilities while excluding unnecessary dependencies;
+do not expand product scope merely because upstream bundles a codec.
+
 The intended vertical slices are:
 
-1. DDS analysis, including DX10 and legacy header distinctions.
-2. Lossless PNG optimization with measured before-and-after results.
-3. Bounded lossy PNG optimization with representative visual fixtures.
-4. PNG, JPEG, and WebP conversion with transparency and metadata handling.
-5. Common image analysis.
+1. Shared settings and output safety, including replacement failure tests.
+2. PNG, JPEG, and WebP conversion with transparency and metadata handling.
+3. Curated-engine integration and bounded BMP/TGA conversion (implemented), then
+   DDS analysis with explicit BC/linear/sRGB conversion and independent validation.
+4. Lossless then bounded lossy PNG optimization with representative fixtures.
+5. Broader image conversion and analysis, capability by capability.
 6. Common audio analysis and conversion.
 7. Additional formats supported by demonstrated use cases and reliable tests.
 
 Each slice should work from Explorer through validation before the next format
 family substantially expands the product surface.
+TIFF, GIF, ICO, and AVIF remain later candidates; HEIC/HEIF, camera RAW, and SVG
+import require separate scope and redistribution decisions. Audio follows the
+image release rather than expanding its format target.
 
 
 Portfolio And Commercial Product
@@ -167,8 +202,10 @@ contents. Access is checked by the application before work starts, never while
 Explorer constructs a menu. An admitted batch may finish after trial expiry,
 and its results remain available.
 
-Trial start timing and exact elapsed-time rules remain open. Browser activation
-is replaced by in-app key activation; offline grace, refresh, service
+The local trial starts at the first confirmed valid conversion and lasts 72
+elapsed hours; [decision 0009](decisions/0009-first-image-engine-and-trial.md)
+defines clock and failure handling. Browser activation
+is replaced by in-app key activation; paid offline grace, refresh, service
 outages, recovery, and post-trial feature availability require explicit policies.
 Polar is selected; pricing and license terms are still undecided. See the
 [Polar integration plan](polar-integration.md). Keep protection modest and accept
@@ -191,7 +228,8 @@ The initial product will not include:
   anti-debugging systems.
 - CD ripping or media-library management.
 - Arbitrary FFmpeg or other engine command entry.
-- Automatic deletion of source files.
+- Unrequested source removal or permanent-delete fallback; explicitly confirmed
+  replacement may recycle originals after validated publication.
 - Silent in-place lossy processing.
 - Obscure formats added only to increase the advertised format count.
 

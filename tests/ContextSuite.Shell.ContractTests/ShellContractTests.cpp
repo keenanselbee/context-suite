@@ -94,6 +94,54 @@ bool ReadResult(
         content.find("pathCount=" + std::to_string(pathCount) + "\n") != std::string::npos;
 }
 
+bool TestSettingsChildren(IEnumExplorerCommand* enumerator, IExplorerCommand* action,
+    const CommandExpectation& expectation, HANDLE completionEvent, const std::filesystem::path& resultPath)
+{
+    IExplorerCommand* children[2]{};
+    ULONG fetched = 0;
+    if (enumerator->Next(2, children, &fetched) != S_OK || fetched != 2)
+    {
+        for (auto* child : children) if (child != nullptr) child->Release();
+        return false;
+    }
+    EXPCMDFLAGS flags{};
+    GUID actionId{}, separatorId{}, settingsId{};
+    PWSTR title = nullptr;
+    EXPCMDSTATE state = ECS_HIDDEN;
+    bool valid = SUCCEEDED(children[0]->GetFlags(&flags)) && flags == ECF_ISSEPARATOR &&
+        children[0]->Invoke(nullptr, nullptr) == E_NOTIMPL &&
+        SUCCEEDED(children[1]->GetFlags(&flags)) && flags == ECF_DEFAULT &&
+        SUCCEEDED(children[1]->GetState(nullptr, FALSE, &state)) && state == ECS_ENABLED &&
+        SUCCEEDED(children[1]->GetTitle(nullptr, &title)) && title != nullptr && std::wstring_view(title) == L"Settings..." &&
+        SUCCEEDED(action->GetCanonicalName(&actionId)) && SUCCEEDED(children[0]->GetCanonicalName(&separatorId)) &&
+        SUCCEEDED(children[1]->GetCanonicalName(&settingsId)) && !IsEqualGUID(actionId, settingsId) &&
+        !IsEqualGUID(separatorId, settingsId) && !IsEqualGUID(actionId, separatorId);
+    CoTaskMemFree(title);
+    IExplorerCommand* extra = nullptr;
+    valid = valid && enumerator->Next(1, &extra, &fetched) == S_FALSE && fetched == 0 && extra == nullptr;
+    if (extra != nullptr) extra->Release();
+
+    IEnumExplorerCommand* clone = nullptr;
+    valid = valid && enumerator->Reset() == S_OK && enumerator->Skip(1) == S_OK &&
+        SUCCEEDED(enumerator->Clone(&clone)) && clone != nullptr;
+    if (clone != nullptr)
+    {
+        valid = valid && clone->Skip(2) == S_OK && clone->Skip(1) == S_FALSE;
+        clone->Release();
+    }
+    if (valid)
+    {
+        DeleteFileW(resultPath.c_str());
+        SetEnvironmentVariableW(L"CONTEXT_SUITE_PROTOTYPE_TEST_RESULT", resultPath.c_str());
+        ResetEvent(completionEvent);
+        valid = SUCCEEDED(children[1]->Invoke(nullptr, nullptr)) &&
+            WaitForSingleObject(completionEvent, 10000) == WAIT_OBJECT_0 &&
+            ReadResult(resultPath, expectation.operation, "settings", 0);
+    }
+    for (auto* child : children) child->Release();
+    return valid;
+}
+
 bool TestCommand(
     DllGetClassObjectFunction getClassObject,
     const CommandExpectation& expectation,
@@ -163,13 +211,15 @@ bool TestCommand(
     {
         ULONG fetched = 0;
         PWSTR actualActionTitle = nullptr;
-        const bool subcommandIsValid = SUCCEEDED(command->EnumSubCommands(&enumerator)) &&
+        bool subcommandIsValid = SUCCEEDED(command->EnumSubCommands(&enumerator)) &&
             enumerator != nullptr &&
             enumerator->Next(1, &actionCommand, &fetched) == S_OK && fetched == 1 && actionCommand != nullptr &&
             SUCCEEDED(actionCommand->GetTitle(selection, &actualActionTitle)) && actualActionTitle != nullptr &&
             std::wstring_view(actualActionTitle) == expectation.actionTitle &&
             SUCCEEDED(actionCommand->GetFlags(&flags)) && flags == ECF_DEFAULT;
         CoTaskMemFree(actualActionTitle);
+        if (subcommandIsValid)
+            subcommandIsValid = TestSettingsChildren(enumerator, actionCommand, expectation, completionEvent, resultPath);
         if (enumerator != nullptr)
         {
             enumerator->Release();

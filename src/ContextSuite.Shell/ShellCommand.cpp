@@ -3,6 +3,7 @@
 #include <shobjidl_core.h>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <filesystem>
 #include <new>
@@ -47,6 +48,8 @@ enum class CommandKind
     Convert,
     Optimize,
 };
+
+enum class CommandRole { Root, Action, Separator, Settings };
 
 struct CommandDefinition
 {
@@ -461,9 +464,9 @@ std::filesystem::path GetCommandIconPath(const CommandDefinition& definition)
 class ExplorerCommand final : public IExplorerCommand
 {
 public:
-    explicit ExplorerCommand(CommandKind kind, bool isRoot = true) :
+    explicit ExplorerCommand(CommandKind kind, CommandRole role = CommandRole::Root) :
         definition_(GetDefinition(kind)),
-        isRoot_(isRoot)
+        role_(role)
     {
         ++objectCount;
     }
@@ -508,7 +511,9 @@ public:
 
     IFACEMETHODIMP GetTitle(IShellItemArray*, PWSTR* title) override
     {
-        return DuplicateString(isRoot_ ? definition_.title : definition_.actionTitle, title);
+        if (role_ == CommandRole::Separator) return DuplicateString(L"", title);
+        if (role_ == CommandRole::Settings) return DuplicateString(L"Settings...", title);
+        return DuplicateString(role_ == CommandRole::Root ? definition_.title : definition_.actionTitle, title);
     }
 
     IFACEMETHODIMP GetIcon(IShellItemArray*, PWSTR* icon) override
@@ -518,13 +523,16 @@ public:
             return E_POINTER;
         }
         *icon = nullptr;
+        if (role_ == CommandRole::Separator) return E_NOTIMPL;
         const std::filesystem::path iconPath = GetCommandIconPath(definition_);
         return iconPath.empty() ? E_NOTIMPL : DuplicateString(iconPath.wstring(), icon);
     }
 
     IFACEMETHODIMP GetToolTip(IShellItemArray*, PWSTR* tooltip) override
     {
-        return DuplicateString(isRoot_ ? definition_.tooltip : definition_.actionTooltip, tooltip);
+        if (role_ == CommandRole::Settings) return DuplicateString(L"Open settings without processing selected files", tooltip);
+        if (role_ == CommandRole::Separator) return DuplicateString(L"", tooltip);
+        return DuplicateString(role_ == CommandRole::Root ? definition_.tooltip : definition_.actionTooltip, tooltip);
     }
 
     IFACEMETHODIMP GetCanonicalName(GUID* canonicalName) override
@@ -533,7 +541,10 @@ public:
         {
             return E_POINTER;
         }
-        *canonicalName = isRoot_ ? definition_.canonicalName : definition_.actionCanonicalName;
+        *canonicalName = role_ == CommandRole::Root ? definition_.canonicalName : definition_.actionCanonicalName;
+        // Stable distinct IDs for auxiliary commands; existing root/action IDs do not change.
+        if (role_ == CommandRole::Settings) canonicalName->Data1 ^= 0x40000000;
+        if (role_ == CommandRole::Separator) canonicalName->Data1 ^= 0x80000000;
         return S_OK;
     }
 
@@ -544,6 +555,11 @@ public:
             return E_POINTER;
         }
 
+        if (role_ == CommandRole::Settings || role_ == CommandRole::Separator)
+        {
+            *state = ECS_ENABLED;
+            return S_OK;
+        }
         DWORD count = 0;
         if (items == nullptr || FAILED(items->GetCount(&count)) || count == 0 || count > MaximumSelectionCount)
         {
@@ -557,16 +573,16 @@ public:
 
     IFACEMETHODIMP Invoke(IShellItemArray* items, IBindCtx*) override
     {
-        if (isRoot_ && definition_.hasSubcommands)
+        if (role_ == CommandRole::Separator || (role_ == CommandRole::Root && definition_.hasSubcommands))
         {
             return E_NOTIMPL;
         }
 
         std::vector<std::wstring> paths;
-        RETURN_IF_FAILED(GetSelectionPaths(items, paths));
+        if (role_ != CommandRole::Settings) RETURN_IF_FAILED(GetSelectionPaths(items, paths));
 
         std::filesystem::path requestPath;
-        RETURN_IF_FAILED(CreateActivationRequest(definition_, definition_.action, paths, requestPath));
+        RETURN_IF_FAILED(CreateActivationRequest(definition_, role_ == CommandRole::Settings ? L"settings" : definition_.action, paths, requestPath));
 
         const HRESULT result = LaunchHost(requestPath);
         if (FAILED(result))
@@ -582,7 +598,8 @@ public:
         {
             return E_POINTER;
         }
-        *flags = isRoot_ && definition_.hasSubcommands ? ECF_HASSUBCOMMANDS : ECF_DEFAULT;
+        *flags = role_ == CommandRole::Separator ? ECF_ISSEPARATOR :
+            (role_ == CommandRole::Root && definition_.hasSubcommands ? ECF_HASSUBCOMMANDS : ECF_DEFAULT);
         return S_OK;
     }
 
@@ -591,14 +608,16 @@ public:
 private:
     std::atomic_ulong referenceCount_{1};
     const CommandDefinition& definition_;
-    bool isRoot_;
+    CommandRole role_;
 };
 
 class CommandEnumerator final : public IEnumExplorerCommand
 {
 public:
     explicit CommandEnumerator(CommandKind kind) :
-        command_(new (std::nothrow) ExplorerCommand(kind, false)),
+        commands_{new (std::nothrow) ExplorerCommand(kind, CommandRole::Action),
+            new (std::nothrow) ExplorerCommand(kind, CommandRole::Separator),
+            new (std::nothrow) ExplorerCommand(kind, CommandRole::Settings)},
         kind_(kind)
     {
         ++objectCount;
@@ -606,16 +625,16 @@ public:
 
     ~CommandEnumerator()
     {
-        if (command_ != nullptr)
+        for (auto* command : commands_)
         {
-            command_->Release();
+            if (command != nullptr) command->Release();
         }
         --objectCount;
     }
 
     bool IsValid() const
     {
-        return command_ != nullptr;
+        return std::all_of(commands_.begin(), commands_.end(), [](auto* command) { return command != nullptr; });
     }
 
     IFACEMETHODIMP QueryInterface(REFIID interfaceId, void** object) override
@@ -663,33 +682,21 @@ public:
         {
             commands[index] = nullptr;
         }
-        if (position_ != 0 || command_ == nullptr || count == 0)
+        ULONG actual = 0;
+        while (actual < count && position_ < commands_.size())
         {
-            return S_FALSE;
+            commands_[position_]->AddRef();
+            commands[actual++] = commands_[position_++];
         }
-
-        command_->AddRef();
-        commands[0] = command_;
-        position_ = 1;
-        if (fetched != nullptr)
-        {
-            *fetched = 1;
-        }
-        return count == 1 ? S_OK : S_FALSE;
+        if (fetched != nullptr) *fetched = actual;
+        return actual == count ? S_OK : S_FALSE;
     }
 
     IFACEMETHODIMP Skip(ULONG count) override
     {
-        if (count == 0)
-        {
-            return S_OK;
-        }
-        if (position_ == 0)
-        {
-            position_ = 1;
-            return count == 1 ? S_OK : S_FALSE;
-        }
-        return S_FALSE;
+        const auto actual = std::min(count, static_cast<ULONG>(commands_.size()) - position_);
+        position_ += actual;
+        return actual == count ? S_OK : S_FALSE;
     }
 
     IFACEMETHODIMP Reset() override
@@ -718,7 +725,7 @@ public:
 
 private:
     std::atomic_ulong referenceCount_{1};
-    ExplorerCommand* command_;
+    std::array<ExplorerCommand*, 3> commands_;
     CommandKind kind_;
     ULONG position_ = 0;
 };
@@ -730,7 +737,7 @@ HRESULT ExplorerCommand::EnumSubCommands(IEnumExplorerCommand** commands)
         return E_POINTER;
     }
     *commands = nullptr;
-    if (!isRoot_ || !definition_.hasSubcommands)
+    if (role_ != CommandRole::Root || !definition_.hasSubcommands)
     {
         return E_NOTIMPL;
     }

@@ -1,8 +1,8 @@
 Context Converter Design
 ========================
 
-Status: migrated and adapted from the original Context Converter product design;
-no implementation exists yet.
+Status: PNG/JPEG/WebP/BMP/TGA conversion, planner, preview and trial-gated publication
+implemented and verified locally for the bounded slice; release checks remain open.
 
 
 Purpose
@@ -33,6 +33,9 @@ mixed animation support, or confirming lossy-to-lossy transcoding.
 The submenu should not reproduce a large preset tree. Destination-oriented
 recommendations and advanced settings belong in the planning surface.
 
+A separated **Settings...** item comes last and opens the Convert section of the
+shared settings window without starting a media operation.
+
 
 Primary Jobs
 ------------
@@ -49,7 +52,17 @@ Primary Jobs
 Initial Image Scope
 -------------------
 
-The first Converter release should accept and produce PNG, JPEG, and WebP.
+The first image-release target is PNG, JPEG, WebP, DDS, TGA, and BMP. Only
+bounded PNG/JPEG/WebP/BMP/TGA conversion is implemented and verified today. Follow
+[decision 0010](decisions/0010-first-release-formats-and-curated-engine.md) for
+the curated general-image engine and separately selected DDS toolchain.
+
+Magick.NET-Q16-x64 14.17.1 is pinned and tested for the first slice; broader
+runtime/failure coverage and redistribution checks remain gates. See
+[decision 0009](decisions/0009-first-image-engine-and-trial.md) for image/trial
+policies and the [implementation goal](image-conversion-goal.md) for coverage.
+DDS conversion is a first-class follow-up using a dedicated tested adapter;
+DirectXTex is the recommended candidate, not yet a pinned production dependency.
 
 Primary conversions are:
 
@@ -60,9 +73,30 @@ Primary conversions are:
 - JPEG to WebP for web delivery.
 - WebP to JPEG or PNG for software that does not accept WebP.
 
-Later candidates include HEIC input, AVIF input and output, TIFF, BMP, GIF, SVG
-rasterization, and ICO. Each format should be added from demonstrated use cases
-and tested behavior rather than format-count marketing.
+BMP/TGA input and output are implemented across all twenty cross-format pairs.
+BMP accepts 24-bit uncompressed Windows INFOHEADER files; TGA accepts bounded
+24/32-bit true-color raw/RLE files. BMP outputs require an explicit matte for
+transparency; TGA retains alpha. Both outputs are eight-bit untagged sRGB with
+explicit metadata/color-loss policy. See the exact variant boundaries and
+[verification evidence](bmp-tga-and-engine-integration.md). Engine coder
+availability alone is not support.
+
+Later candidates include TIFF, GIF, ICO, and AVIF input/output. HEIC/HEIF input,
+camera RAW, and SVG rasterization need separate scope and redistribution
+decisions. Add formats for demonstrated use cases and tested behavior rather
+than format-count marketing.
+
+DDS targets should cover BC1/DXT1, BC2/DXT3, BC3/DXT5, BC4, BC5, BC6H, BC7, and
+selected uncompressed formats as their contracts are verified. Linear/sRGB
+interpretation must be explicit where supported, with pixel conversion distinct
+from tag-only reinterpretation. Do not offer nonexistent sRGB variants for
+BC4/BC5/BC6H or apply color transfer to alpha/data textures. Preserve supported
+mips, faces, layers, and slices; reject unsupported structures instead of silently
+flattening them. Exact encoding, mip-generation, and HDR policies belong in the
+dedicated DDS implementation brief before advertising these capabilities.
+
+An explicit representation change is conversion even when both filenames end in
+`.dds`; an unchanged extension is not sufficient reason to skip it.
 
 
 Image Safety Rules
@@ -178,6 +212,10 @@ Execution And Results
 - Write to a unique temporary output and validate it before publication.
 - Preserve the source and use a collision-safe sibling name by default.
 - Treat explicit replacement as a recoverable transaction.
+- Use `name - Converted.ext` or a meaningful DDS suffix such as
+  `name - BC7-sRGB.dds`, numbering collisions from `(2)`. Preserve existing source
+  suffixes. Follow [decision 0008](decisions/0008-output-naming-settings-and-replacement.md)
+  for settings, per-batch consent, and replacement/recycling failure handling.
 - Report actual output format, properties, size, warnings, and path.
 - Offer useful next actions such as opening the folder, copying the output,
   retrying failures, or revising the plan.
@@ -186,7 +224,9 @@ Execution And Results
 Required First Image Release
 ----------------------------
 
-- PNG, JPEG, and WebP conversion.
+- PNG, JPEG, WebP, TGA, and BMP conversion for explicitly tested variants/pairs.
+- DDS representation conversion under the separately accepted texture policy;
+  the target does not promise every BC format or texture structure at launch.
 - Explorer activation, drag-and-drop, and file selection.
 - Multiple-file queue.
 - Output recommendation with a concise explanation.
@@ -202,6 +242,7 @@ Required First Image Release
 Non-Goals
 ---------
 
-Converter does not own same-format optimization, video, documents, cloud
-processing, AI editing, CD ripping, arbitrary engine commands, automatic source
-deletion, or dozens of obscure formats without demonstrated demand.
+Converter does not own same-representation size optimization, video, documents,
+cloud processing, AI editing, CD ripping, arbitrary engine commands, unrequested
+source removal, permanent-delete fallback, or dozens of obscure formats without
+demonstrated demand.

@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using System.IO.Pipes;
 using ContextSuite.Core.Transport;
+using ContextSuite.Core.Images;
 using ContextSuite.Private;
+using ContextSuite.Private.Images;
 using ContextSuite.Runtime;
 
-if (args.Length != 4 || args[0] != "--pipe" || args[2] != "--parent" ||
+if (args.Length != 6 || args[0] != "--pipe" || args[2] != "--parent" || args[4] != "--scratch" || !Path.IsPathFullyQualified(args[5]) ||
     !int.TryParse(args[3], out var parentId) || !args[1].StartsWith("ContextSuite-Worker-", StringComparison.Ordinal))
     return 2;
 
@@ -13,7 +15,9 @@ try
     using var parent = Process.GetProcessById(parentId);
     using var lifetime = new CancellationTokenSource();
     parent.EnableRaisingEvents = true;
-    parent.Exited += (_, _) => lifetime.Cancel();
+    // Native decoder calls are not guaranteed to poll cancellation. Do not leave a native worker
+    // running after the owning app is gone; uncommitted output remains journaled by the publisher.
+    parent.Exited += (_, _) => Environment.Exit(3);
     if (parent.HasExited) return 3;
     await using var pipe = new NamedPipeClientStream(".", args[1], PipeDirection.InOut,
         PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
@@ -24,14 +28,50 @@ try
     }
     LocalPipe.VerifyPeer(pipe, false, parentId, parent.MainModule!.FileName!);
     var catalog = new ProductionCatalog();
+    ImageAdapter? adapter = null;
     while (!lifetime.IsCancellationRequested)
     {
         var command = await JsonFrames.ReadAsync<WorkerCommand>(pipe, lifetime.Token);
-        if (command.Version != 1 || command.RequestId == Guid.Empty) return 4;
+        command.Validate();
         if (command.Command == "shutdown") return 0;
-        if (command.Command != "capabilities") return 4;
-        await JsonFrames.WriteAsync(pipe,
-            new WorkerReply(1, command.RequestId, catalog.Capabilities.ToArray()), lifetime.Token);
+        if (command.Command == "engine-info")
+        {
+            await JsonFrames.WriteAsync(pipe,
+                new WorkerReply(1, command.RequestId, [], ImageEngineRuntime.GetIdentity()), lifetime.Token);
+            continue;
+        }
+        WorkerReply reply;
+        try
+        {
+            if (command.Command == "capabilities") reply = new(1, command.RequestId, catalog.Capabilities.ToArray());
+            else
+            {
+                adapter ??= new ImageAdapter(args[5]);
+                reply = command.Command switch
+                {
+                    "image-probe" => new(1, command.RequestId, [], Source: adapter.Probe(command.Probe!, lifetime.Token)),
+                    "image-preview" => new(1, command.RequestId, [], Preview: adapter.Preview(command.Preview!, lifetime.Token)),
+                    "image-convert" => new(1, command.RequestId, [], ImageResult: adapter.Convert(command.Work!, lifetime.Token)),
+                    _ => throw new InvalidDataException("Unknown image operation.")
+                };
+            }
+        }
+        catch (Exception error) when (error is IOException or InvalidDataException or ArgumentException or InvalidOperationException or
+            UnauthorizedAccessException or ImageMagick.MagickException or System.Xml.XmlException)
+        {
+            // A damaged/unsupported item is not a worker crash. Do not return engine strings containing file paths.
+            var failure = error switch
+            {
+                ImageFailureException known => known.Failure,
+                InvalidDataException or ArgumentException or System.Xml.XmlException => ImageFailure.InvalidInput,
+                UnauthorizedAccessException or IOException => ImageFailure.FileAccess,
+                ImageMagick.MagickResourceLimitErrorException => ImageFailure.ResourceLimit,
+                ImageMagick.MagickCorruptImageErrorException => ImageFailure.InvalidInput,
+                _ => ImageFailure.EngineFailure
+            };
+            reply = new(1, command.RequestId, [], Failure: failure);
+        }
+        await JsonFrames.WriteAsync(pipe, reply, lifetime.Token);
     }
     return 0;
 }

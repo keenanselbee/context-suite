@@ -1,0 +1,8 @@
+{
+  "nativeSha256": "2B74DB7BA2F1B25BFFFDE9F89E09F9D3BE53C82FFBFF1A2F386CB8CB9DAE7637",
+  "noticeSha256": "96F79BC76860363E533096E375AF38860CBF2CE5642221F686CFF943E43E1995",
+  "nativeRevision": "77c935e38d379b22d981770a91c466c16cba148b",
+  "imageMagickRevision": "fb965f1b54a65ddb633f8c2eac4452c782c66d7f",
+  "dependencyRelease": "2026.09.01.0503",
+  "status": "development-integration-not-commercial-clearance"
+}

@@ -228,7 +228,7 @@ bool ReadField(std::string_view line, std::string_view key, std::wstring& value)
 bool ParseRequest(const std::string& content, ActivationRequest& request, std::wstring& error)
 {
     const auto lines = SplitLines(content);
-    if (lines.size() < 6 || lines[0] != "ContextSuiteActivation/1")
+    if (lines.size() < 5 || lines[0] != "ContextSuiteActivation/1")
     {
         error = L"The activation request schema is unknown.";
         return false;
@@ -256,7 +256,8 @@ bool ParseRequest(const std::string& content, ActivationRequest& request, std::w
         error = L"The requested operation is not supported.";
         return false;
     }
-    const bool actionMatchesOperation =
+    const bool isSettings = request.action == L"settings" && request.operation != L"analyze";
+    const bool actionMatchesOperation = isSettings ||
         (request.operation == L"analyze" && request.action == L"open-details") ||
         (request.operation == L"convert" && request.action == L"choose-format") ||
         (request.operation == L"optimize" && request.action == L"choose-preset");
@@ -277,7 +278,7 @@ bool ParseRequest(const std::string& content, ActivationRequest& request, std::w
     const std::string_view countText = lines[4].substr(countPrefix.size());
     const auto countResult = std::from_chars(countText.data(), countText.data() + countText.size(), pathCount);
     if (countResult.ec != std::errc{} || countResult.ptr != countText.data() + countText.size() ||
-        pathCount == 0 || pathCount > MaximumSelectionCount || lines.size() != 5 + pathCount)
+        (isSettings ? pathCount != 0 : pathCount == 0) || pathCount > MaximumSelectionCount || lines.size() != 5 + pathCount)
     {
         error = L"The activation selection count is invalid.";
         return false;
