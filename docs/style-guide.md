@@ -158,6 +158,11 @@ Apply this section if the accepted desktop UI decision uses XAML and MVVM.
 - Keep code-behind limited to view-only behavior that is awkward or
   inappropriate to express through binding.
 - Reuse styles and resources for repeated visual decisions.
+- Application windows follow the Windows app appearance automatically through
+  WPF's built-in Fluent `ThemeMode="System"` at application scope. Keep controls
+  on theme resources so light/dark, accent, and contrast-theme changes propagate
+  to existing windows. Do not hard-code light backgrounds or add per-window theme
+  overrides. No separate stored theme preference is currently needed.
 - Provide accessible names, keyboard navigation, visible focus states, and
   sufficient color contrast.
 - Do not rely on color alone to communicate success, warnings, or failures.

@@ -20,4 +20,19 @@ foreach ($file in $files) {
         if (-not (Test-Path -LiteralPath $path)) { throw "Broken link in $($file.Name): $link" }
     }
 }
-Write-Output "Public source boundary and $($files.Count) documentation files passed."
+[xml] $applicationXaml = Get-Content -LiteralPath (Join-Path $repositoryRoot 'src\ContextSuite.Application\App.xaml') -Raw
+if ($applicationXaml.DocumentElement.GetAttribute('ThemeMode') -ne 'System') {
+    throw 'Application appearance must follow the Windows app theme.'
+}
+foreach ($window in Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'src\ContextSuite.Application') -Filter '*Window.xaml' -Recurse) {
+    [xml] $windowXaml = Get-Content -LiteralPath $window.FullName -Raw
+    if ($windowXaml.DocumentElement.HasAttribute('ThemeMode')) {
+        throw "Window must inherit the application theme: $($window.Name)"
+    }
+}
+foreach ($source in Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'src') -Filter '*.cs' -Recurse) {
+    if ((Get-Content -LiteralPath $source.FullName -Raw) -match 'CONTEXTSUITE_TEST_(ROOT|WORKER)') {
+        throw "Test-host environment inputs must not enter shipping source: $($source.Name)"
+    }
+}
+Write-Output "Public source boundary, system-theme policy, and $($files.Count) documentation files passed."
