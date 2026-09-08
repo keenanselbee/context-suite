@@ -74,6 +74,8 @@ design documents when an accepted decision changes their assumptions.
 Current Decisions
 -----------------
 
+- [0012: Inno offline installer](0012-inno-offline-installer.md) — accepted; internal first-install candidate, signing and lifecycle acceptance pending
+
 - [0011: DDS engine and texture policies](0011-dds-engine-and-texture-policies.md) — accepted; bounded local implementation and acceptance completed
 
 - [0001: Shell prototype platform](0001-shell-prototype-platform.md)

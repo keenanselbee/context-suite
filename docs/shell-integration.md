@@ -3,7 +3,9 @@ Windows Explorer Integration
 
 Status: behavioral design with an implemented x64 sparse-package prototype. The
 prototype registration and activation approach is recorded in decisions 0001,
-0002, and 0003; production packaging remains open.
+0002, and 0003. [Decision 0012](decisions/0012-inno-offline-installer.md) selects
+Inno Setup with three signed sparse identities; customer lifecycle acceptance
+and final signing identity remain open.
 
 
 Menu Contract
@@ -180,8 +182,9 @@ The repository contains a Windows 11 x64 discovery prototype with:
 
 This is deliberately an integration spike rather than the final desktop UI or
 installer. The host displays an activation summary and performs no media work.
-The final UI framework, production package identity, signing, and update model
-remain separate decisions.
+The production UI uses WPF under decision 0007. Decision 0012 selects Inno and
+manual installer updates; production package identity, signing and verified
+upgrade/repair remain separate release gates.
 
 
 Verification

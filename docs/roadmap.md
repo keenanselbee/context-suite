@@ -80,8 +80,14 @@ Proceed in this order without renumbering existing milestone references:
    BMP/TGA conversion under Milestone 6. The completed bounded [DDS goal](dds-conversion-goal.md)
    adds Milestone 3 header analysis and DDS conversion under decision 0011;
    codec, worker, failure, packaging and 33 image/DDS desktop checks pass locally.
-4. Milestones 4 and 5 PNG optimization, reusing the output/settings foundation.
-5. Broader tested image capabilities, Milestone 7 release work, then audio.
+4. In-progress [reproducible packaging and clean-machine goal](release-packaging-goal.md)
+   under Milestone 7: candidate/CI tooling and an approved Inno offline
+   first-install candidate now exist. The [recovery backend](installer-recovery.md)
+   passes automated upgrade/repair failure tests without a VM. Inno lifecycle
+   integration, stable signing identities and clean-machine verification remain.
+   No release certification yet.
+5. Milestones 4 and 5 PNG optimization, reusing the output/settings foundation.
+6. Broader tested image capabilities, remaining Milestone 7 release work, then audio.
 
 The completed brief is [PNG/JPEG/WebP batch conversion](image-conversion-goal.md).
 [Decision 0009](decisions/0009-first-image-engine-and-trial.md) settles the initial

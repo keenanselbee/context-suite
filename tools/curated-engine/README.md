@@ -20,7 +20,11 @@ the exact DLL and notice hashes in `production.json`, then copies approved input
 into ignored `artifacts/engines/curated-win-x64`. The private project excludes
 NuGet native assets and fails if these inputs are missing; the production script
 checks identity, notices and the file/package allowlist. There is no stock fallback.
-New checkouts must build/review a candidate first. Native rebuilds are not
+New checkouts can import the exact reviewed binary/notice transport ZIP with
+`Import-ProductionEngine.ps1 -Archive <zip>`; `Export-ProductionEngine.ps1`
+creates it from verified staged inputs without uploading anything. See the
+[packaging goal](../../docs/release-packaging-goal.md) for private CI provisioning.
+New native selections must build/review a candidate first. Native rebuilds are not
 byte-identical: an unreviewed new hash cannot replace the recorded selection.
 Production staging does not install software or clear commercial distribution.
 

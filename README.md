@@ -20,8 +20,9 @@ Project Status
 Product design and technical discovery are in progress. A native x64 shell
 prototype now registers **Analyze**, **Convert**, and **Optimize** as independent
 Windows 11 Explorer commands and hands the complete selection to a separate host
-through a bounded, versioned request file. The host currently confirms activation
-only; it does not analyze or transform media yet.
+through a bounded, versioned request file. The standalone native prototype host
+only confirms activation; production WPF activation supports the implemented
+analysis/conversion workflows below.
 
 Shared image-output safety and settings are implemented and locally verified.
 The [goal evidence](docs/image-output-safety-goal.md) records the tested scope and
@@ -33,8 +34,13 @@ with bounded BMP/TGA conversion bringing the catalog to twenty cross-format pair
 The completed bounded [DDS slice](docs/dds-conversion-goal.md) adds public header analysis,
 pinned CPU DirectXTex conversion, mip/color policies and safe publication: 27
 conditional conversion pairs total. All 33 focused image/DDS desktop checks pass.
-This is not release-ready: PNG optimization, paid activation and customer
-packaging remain planned. See the [integration evidence](docs/bmp-tga-and-engine-integration.md)
+This is not release-ready: PNG optimization and paid activation remain planned.
+An Inno Setup offline installer candidate now compiles. The
+[upgrade/repair recovery backend](docs/installer-recovery.md) passes automated
+failure tests; installer integration, trusted signing and clean-machine
+acceptance remain pending. See the
+[packaging goal](docs/release-packaging-goal.md),
+[integration evidence](docs/bmp-tga-and-engine-integration.md)
 and [remaining redistribution gates](docs/release-redistribution.md).
 See the [conversion goal](docs/image-conversion-goal.md) for verified scope.
 
@@ -66,9 +72,9 @@ Production Foundation
 ---------------------
 
 The WPF application, shared core, on-demand worker, bounded activation queue,
-and private-project composition now build. Convert has a working PNG/JPEG/WebP/BMP/TGA
+and private-project composition now build. Convert has a working PNG/JPEG/WebP/BMP/TGA/DDS
 planner and private worker adapter, with trial-gated safe publication. Analyze
-and Optimize still report unsupported operations. The bounded conversion acceptance
+reports bounded DDS headers; Optimize remains unimplemented. The bounded conversion acceptance
 matrix passes; commercial release checks remain unfinished.
 
 ```powershell
@@ -150,6 +156,7 @@ Documentation
 
 - [Product design](docs/product-design.md)
 - [Roadmap](docs/roadmap.md)
+- [Release packaging and clean-machine goal](docs/release-packaging-goal.md)
 - [Image output safety and settings: implementation evidence](docs/image-output-safety-goal.md)
 - [Analyzer design](docs/analyzer-design.md)
 - [Converter design](docs/converter-design.md)

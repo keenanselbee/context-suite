@@ -77,7 +77,8 @@ Implementation Boundaries
 
 This is one unfinished production application, not a demonstration edition.
 Convert selections now open the image planner and can produce validated
-PNG/JPEG/WebP/BMP/TGA copies after confirmation. Analyze/Optimize remain unimplemented.
+PNG/JPEG/WebP/BMP/TGA/DDS copies after confirmation. Analyze reports DDS headers;
+Optimize remains unimplemented.
 The image worker, application executor and real conversion UI have focused
 integration tests; final goal acceptance and release checks remain separate.
 Trial admission precedes reserving/encoding/publishing.
@@ -156,7 +157,13 @@ Public CI never checks out private source. It runs public contracts, native
 contracts, documentation checks, and expected missing-private build failures.
 Private CI is manually dispatched from `context-suite-private` with an approved
 immutable public commit SHA. It checks out both repositories, tests integration,
-and exports only their revision IDs. Do not run private integration against
+and imports the exact reviewed image-engine archive from an owner-provisioned
+private release before building DDS. It exports revision IDs and an unsigned,
+inventoried internal candidate ZIP, never source or symbols. See the
+[packaging goal](release-packaging-goal.md) for the required asset, scripts,
+runtime preflight, Inno offline installer commands and unverified signing/lifecycle
+gates. `tools/release/Test-InnoInstaller.ps1` runs registration contracts with
+mocked platform calls; it never installs or unregisters packages. Do not run private integration against
 untrusted public contributions or export whole workspaces, source, or symbols.
 
 Workflow files must be committed/pushed before hosted CI can execute; adding

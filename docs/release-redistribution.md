@@ -81,6 +81,16 @@ Remaining release gates and owners
    Re-run final package media/UI checks and scan dependencies for advisories.
    Paid Polar activation is also still unimplemented.
 
+The in-progress [packaging goal](release-packaging-goal.md) now creates an
+unsigned internal candidate without PDBs/test material, records source and engine
+identities, checks runtime prerequisites and builds unsigned identity packages.
+The approved Inno 7.1.0 offline installer now compiles as an internal first-install
+candidate, with pinned .NET/VC redistributables and mocked lifecycle contracts.
+Its bundled license and upstream FAQ were reviewed; commercial-license purchase
+is requested rather than strictly required. This does not establish Microsoft
+runtime redistribution entitlement or close signing, upgrade/repair, hosted CI
+or clean-machine release gates. See [decision 0012](decisions/0012-inno-offline-installer.md).
+
 No payment secrets or signing keys are stored here. No license purchase,
 installation, customer distribution, account change or publishing was performed
 as part of this review. The remaining gates do not prevent local BMP/TGA work.

@@ -214,6 +214,19 @@ that determined users may reset local trials or modify binaries. See
 [decision 0006](decisions/0006-trial-and-purchase-access.md).
 
 
+Distribution Direction
+----------------------
+
+Website downloads use one Inno Setup installer for the application and three
+Explorer identities. Installation is per-user, with bundled offline Microsoft
+runtime prerequisites that may require administrator approval. Settings, trial
+and license data must survive uninstall. Manual installer-based updates come first;
+Microsoft Store distribution is a later option, not a separate app edition.
+The initial installer is an internal first-install candidate only; signed
+customer installation, upgrade and repair remain pending. See
+[decision 0012](decisions/0012-inno-offline-installer.md).
+
+
 Explicit Non-Goals
 ------------------
 
