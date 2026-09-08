@@ -222,8 +222,10 @@ Explorer identities. Installation is per-user, with bundled offline Microsoft
 runtime prerequisites that may require administrator approval. Settings, trial
 and license data must survive uninstall. Manual installer-based updates come first;
 Microsoft Store distribution is a later option, not a separate app edition.
-The initial installer is an internal first-install candidate only; signed
-customer installation, upgrade and repair remain pending. See
+The internal installer uses versioned payloads and active-release launch/uninstall.
+Upgrade/repair orchestration is integrated and tested with mocked platform calls;
+existing-install admission stays closed until native acceptance. Signed customer
+installation, upgrade and repair remain pending. See
 [decision 0012](decisions/0012-inno-offline-installer.md).
 
 

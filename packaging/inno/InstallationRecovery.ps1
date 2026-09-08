@@ -1,5 +1,5 @@
 # Versioned upgrade/repair backend. Dot-sourcing defines functions only.
-# The first-install Inno entry point intentionally does not invoke this module.
+# Inno lifecycle orchestration and repository-only tests share this module.
 function Assert-RecoveryPath {
     param([string] $Path)
     $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
@@ -150,7 +150,7 @@ function Set-SuiteRecoveryRegistered {
 }
 
 function Complete-SuiteRecoveryJournal {
-    param([string] $Root, $Journal)
+    param([string] $Root, $Journal, [switch] $RepairPreflight)
     # Caller owns recovery.lock. Re-read/validate immutable inputs on every retry.
     if ($Journal.schema -ne 1 -or $Journal.phase -notin 'pending', 'committed', 'rolled-back') { throw 'Invalid recovery journal.' }
     $previous = Read-SuiteRecoveryRelease $Root $Journal.previous
@@ -165,13 +165,19 @@ function Complete-SuiteRecoveryJournal {
     if (($Journal.phase -eq 'committed' -and $active.id -cne $next.id) -or
         ($Journal.phase -eq 'rolled-back' -and $active.id -cne $previous.id)) { throw 'Journal and active release disagree.' }
     if ($active.id -ceq $next.id) {
-        Read-SuiteRecoveryRelease $Root $next.id -VerifyApplication | Out-Null
-        Assert-SuiteRecoveryRegistered $next
+        # An already finalized transaction may later need repair for damaged app
+        # files. Pending commit recovery still requires the complete next payload.
+        if (-not $RepairPreflight -or $Journal.phase -ne 'committed') {
+            Read-SuiteRecoveryRelease $Root $next.id -VerifyApplication | Out-Null
+        }
+        if ($RepairPreflight -and $Journal.phase -eq 'committed') { Assert-SuiteRecoveryOwnership $next $next }
+        else { Assert-SuiteRecoveryRegistered $next }
         $Journal.phase = 'committed'
     } else {
         # Once rolled back, retry is read-only. Pending restores the previous
         # registrations even if an earlier platform call partially succeeded.
         if ($Journal.phase -ne 'rolled-back') { Set-SuiteRecoveryRegistered $Root $previous $next $previous }
+        elseif ($RepairPreflight) { Assert-SuiteRecoveryOwnership $previous $previous }
         else { Assert-SuiteRecoveryRegistered $previous }
         $Journal.phase = 'rolled-back'
     }
@@ -195,7 +201,7 @@ function Invoke-SuiteRecovery {
                 if (-not $NextReleaseId) { return $result }
             } else {
                 # Validate terminal metadata before replacing it with a new transaction.
-                Complete-SuiteRecoveryJournal $Root $journal | Out-Null
+                Complete-SuiteRecoveryJournal $Root $journal -RepairPreflight | Out-Null
             }
         }
         if (-not $NextReleaseId) { return 'no-pending-recovery' }

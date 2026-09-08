@@ -103,7 +103,7 @@ $scriptSource = Get-Content -LiteralPath (Join-Path $repository 'packaging\inno\
 Assert-Test ($scriptSource -match 'PrivilegesRequired=lowest' -and $scriptSource -match 'ArchitecturesAllowed=x64os') 'Per-user native x64 installation'
 Assert-Test ($scriptSource -match 'WizardStyle=modern dynamic') 'Windows appearance followed'
 Assert-Test ($scriptSource -match 'CloseApplications=no' -and $scriptSource -match 'RestartApplications=no') 'Installer does not close or restart applications'
-Assert-Test ($scriptSource -notmatch '\[UninstallDelete\]|\[InstallDelete\]|\[Registry\]') 'No broad filesystem/registry cleanup or user-data removal'
+Assert-Test ($scriptSource -notmatch '\[InstallDelete\]|\[Registry\]|Type: filesandordirs|Name: "\{app\}\\\*') 'No broad filesystem/registry cleanup or user-data removal'
 Assert-Test ($scriptSource -match 'if RegistrationFailed then Result := 20' -and $scriptSource -match 'Installation incomplete') 'Registration failure is visible and nonzero'
 Assert-Test ($scriptSource -match "not RunAction\('Desktop'" -and $scriptSource -match "not RunAction\('VisualCpp'") 'Only missing runtime components installed'
 Assert-Test ($scriptSource -notmatch '(?i)https?://|DownloadTemporary|download;') 'Setup contains no dependency downloader'

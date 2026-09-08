@@ -19,7 +19,7 @@ jobs:
         shell: powershell
         run: |
           ./tools/release/Test-InnoInstaller.ps1
-          ./tools/release/Test-InstallerRecovery.ps1
+          ./tools/release/Test-InstallerLifecycle.ps1
       - name: Public foundation contracts
         shell: pwsh
         run: ./tools/Test-Foundation.ps1 -Configuration Release

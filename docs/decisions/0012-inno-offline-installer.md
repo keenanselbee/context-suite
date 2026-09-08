@@ -1,7 +1,7 @@
 Inno Setup And Offline Website Distribution
 ===========================================
 
-Status: accepted direction; first-install candidate and recovery backend implemented, native lifecycle pending
+Status: accepted direction; internal lifecycle integration implemented, native acceptance pending
 Date: 2026-09-07
 
 Context
@@ -42,8 +42,13 @@ It does not remove development registrations automatically.
 
 The [upgrade/repair backend](../installer-recovery.md) uses separately staged
 immutable release directories, an active-release pointer and a durable recovery
-journal. Its mocked failure matrix passes. Inno integration and native acceptance
-are still required before enabling upgrades; tests require no Sandbox or VM.
+journal. Inno now stages versioned files and calls the shared lifecycle coordinator.
+The Start menu resolves the active pointer; uninstall uses the active release's
+identity/version, not the most recently attempted installer version. A bootstrap
+journal covers failed first registration and an uninstall journal supports retry.
+The mocked integration/failure matrix passes without Sandbox or a VM. Admission
+still rejects existing directories: native acceptance is required before enabling
+upgrades or rerunning incomplete setup. No automatic legacy-layout migration.
 
 Registration verifies all three results and compensates newly added packages if
 one fails, including an Add operation that changes state before returning an
@@ -53,7 +58,11 @@ shows an incomplete-install message, and retains files plus the uninstaller for
 recovery. If compensation fails, retain files supporting remaining registrations.
 Uninstall removes exact current-user names/publisher/version only, before file
 removal; an unregistration error aborts file cleanup. User settings, trial state,
-license data and media are outside its cleanup rules.
+license data and media are outside its cleanup rules. Inno's accumulated file
+ledger owns versioned payload removal; only five explicitly named installer
+metadata files use `UninstallDelete`. Unknown files/temporary journal remnants
+are retained rather than swept up. A per-user process-lifetime mutex serializes
+setup and uninstall; the helper's exclusive lock protects registration/pointers.
 
 Abrupt process termination, power loss, in-use shell DLLs and native uninstall
 exception handling still require isolated Windows evidence. Do not advertise

@@ -72,14 +72,16 @@ $output = Join-Path $repository ('artifacts\installer-candidates\' + [guid]::New
 $staging = Join-Path $output 'source'
 $installation = Join-Path $staging 'payload\installation'
 $runtimes = Join-Path $staging 'payload\runtimes'
-New-Item -ItemType Directory -Path $installation, $runtimes -Force | Out-Null
-Copy-Item -LiteralPath (Join-Path $candidateRoot 'app') -Destination (Join-Path $staging 'payload') -Recurse
+$releaseDirectory = Join-Path $staging 'payload\release'
+New-Item -ItemType Directory -Path $installation, $runtimes, (Join-Path $releaseDirectory 'packages') -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $candidateRoot 'app') -Destination $releaseDirectory -Recurse
 $candidateManifest = Get-Content -LiteralPath (Join-Path $candidateRoot 'release-manifest.json') -Raw | ConvertFrom-Json
 foreach ($entry in $candidateManifest.files | Where-Object { $_.path.StartsWith('app/') }) {
-    $copy = Join-Path (Join-Path $staging 'payload') $entry.path
+    $copy = Join-Path $releaseDirectory $entry.path
     if ((Get-FileHash -LiteralPath $copy).Hash -ne $entry.sha256) { throw 'Application changed while staging installer.' }
 }
-foreach ($name in 'ContextSuite.iss', 'Invoke-InstallerAction.ps1', 'ShellRegistration.ps1') {
+foreach ($name in 'ContextSuite.iss', 'Invoke-InstallerAction.ps1', 'ShellRegistration.ps1',
+    'InstallationRecovery.ps1', 'InstallerLifecycle.ps1', 'Launch-Active.ps1') {
     $destination = if ($name -like '*.iss') { $staging } else { $installation }
     Copy-Item -LiteralPath (Join-Path $repository "packaging\inno\$name") -Destination $destination
 }
@@ -90,11 +92,24 @@ foreach ($name in 'requirements.json', 'Test-Prerequisites.ps1', 'release-manife
 # Use the current component-aware preflight even when wrapping an older candidate.
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Test-Prerequisites.ps1') -Destination $installation -Force
 foreach ($package in $identity.packages) { Copy-Item -LiteralPath (Join-Path $identityRoot $package.file) -Destination $installation }
+foreach ($package in $identity.packages) { Copy-Item -LiteralPath (Join-Path $identityRoot $package.file) -Destination (Join-Path $releaseDirectory 'packages') }
+Copy-Item -LiteralPath (Join-Path $candidateRoot 'app\Assets\Analyze.ico') -Destination $installation
 foreach ($input in @($pins.desktopRuntime, $pins.visualCppRuntime)) {
     Copy-Item -LiteralPath (Join-Path $inputs $input.file) -Destination $runtimes
 }
 $utf8 = [Text.UTF8Encoding]::new($false)
-[IO.File]::WriteAllText((Join-Path $installation 'installer.json'), ($identity | ConvertTo-Json -Depth 6), $utf8)
+$release = [ordered]@{
+    schema = 1; id = [guid]::NewGuid().ToString('N'); publisher = $identity.publisher; version = $identity.version;
+    packages = @($identity.packages | ForEach-Object {
+        [ordered]@{ name = $_.name; file = 'packages/' + $_.file; sha256 = $_.sha256 }
+    });
+    files = @(Get-ChildItem -LiteralPath $releaseDirectory -Recurse -File | Sort-Object FullName | ForEach-Object {
+        [ordered]@{ path = $_.FullName.Substring($releaseDirectory.Length + 1).Replace('\', '/'); sha256 = (Get-FileHash -LiteralPath $_.FullName).Hash }
+    })
+}
+[IO.File]::WriteAllText((Join-Path $releaseDirectory 'release.json'), ($release | ConvertTo-Json -Depth 12), $utf8)
+$identity | Add-Member -NotePropertyName release -NotePropertyValue $release
+[IO.File]::WriteAllText((Join-Path $installation 'installer.json'), ($identity | ConvertTo-Json -Depth 12), $utf8)
 # Output path is generated under this repository, not accepted from external metadata.
 if ($output -match '["\r\n]') { throw 'Unsupported build path.' }
 $configuration = @(
@@ -107,7 +122,7 @@ $configuration = @(
 if ($LASTEXITCODE -ne 0) { throw 'Inno compilation failed.' }
 $installer = Join-Path $output "ContextSuite-$($identity.version)-win-x64-internal.exe"
 $receipt = [ordered]@{
-    schema = 1; status = 'unsigned-internal-first-install-candidate';
+    schema = 1; status = 'unsigned-internal-lifecycle-candidate'; nativeUpgradeAdmission = $false;
     candidateManifestSha256 = $identity.candidateManifestSha256;
     identityReceiptSha256 = (Get-FileHash -LiteralPath (Join-Path $identityRoot 'identity-candidates.json')).Hash;
     unsignedIdentityInputs = [bool]$UnsignedInternal; innoVersion = $pins.inno.version;

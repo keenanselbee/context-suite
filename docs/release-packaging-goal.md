@@ -1,14 +1,14 @@
 Reproducible Packaging And Clean-Machine Goal
 ============================================
 
-Status: in progress; internal candidate tooling and Inno first-install candidate
-implemented; signing, upgrade/repair and isolated-machine acceptance pending.
+Status: in progress; internal candidate tooling and Inno lifecycle integration
+implemented; signing, native upgrade/repair and isolated-machine acceptance pending.
 No commercial release approval.
 
-The [upgrade/repair recovery backend](installer-recovery.md) now passes 52
-automated file/journal and mocked Appx checks without Sandbox or a VM. It does
-not yet enable upgrades in the first-install Inno candidate. Integration and
-native acceptance remain open rather than being inferred from these tests.
+The [installer lifecycle integration](installer-recovery.md) passes 38 orchestration
+checks plus 52 recovery checks without Sandbox or a VM. Versioned extraction,
+active launch/uninstall and recovery are wired; native existing-install admission
+remains closed rather than being inferred from mocked platform tests.
 
 Scope and boundaries
 --------------------
@@ -109,6 +109,7 @@ Inno installer candidate
 # Read a licensed, reviewed VC redistributable; downloads pinned Inno/.NET inputs.
 ./tools/release/Get-InstallerInputs.ps1 -VisualCppRedistributable '<vc_redist.x64.exe>'
 ./tools/release/Test-InnoInstaller.ps1
+./tools/release/Test-InstallerLifecycle.ps1
 ./tools/release/Test-InnoInstaller.ps1 -Candidate '<candidate>' -IdentityDirectory '<identities>'
 ./tools/release/Build-InnoInstaller.ps1 -Candidate '<candidate>' -IdentityDirectory '<identities>' -UnsignedInternal
 ```
@@ -136,7 +137,7 @@ SHA256 in `installer-receipt.json`. The installer-specific preflight is separate
 inventoried and may be newer than the preflight archived in the input candidate.
 The compiler is not part of the customer payload.
 
-This output is visibly an **internal first-install candidate**, not a customer
+This output is visibly an **internal lifecycle candidate**, not a customer
 release. `-UnsignedInternal` allows compile verification only; the resulting
 installer refuses unsigned/untrusted MSIX packages. Without that flag the builder
 also rejects unsigned identities. Signing the installer/application, stable
@@ -164,6 +165,8 @@ Acceptance checklist
 - [ ] Clean committed checkouts/hosted CI reproduce a candidate using the private asset.
 - [x] Inno Setup, per-user/offline installation and manual updates approved.
 - [x] Internal EXE compilation and mocked registration/failure contracts.
+- [x] Versioned Inno extraction, active launch/uninstall and recovery orchestration;
+  repository-only integration tests. Native existing-install admission stays closed.
 - [ ] Stable production identities and signing provider selected.
 - [ ] Isolated clean Windows install, missing-runtime handling and app startup.
 - [ ] Installed modern Explorer roots, image/DDS conversion and source safety.
@@ -214,7 +217,7 @@ defaults, independent prerequisite checks and rejected unsigned/mismatched
 build inputs. Appx calls are mocked: these are not native lifecycle passes.
 The compiler and offline inputs were staged inside `artifacts/`; no runtime,
 Context Suite installation, certificate trust or Explorer registration changed.
-The final internal EXE is retained under
+The earlier first-install EXE is retained under
 `artifacts/installer-candidates/504e2bd245cd49c5bd26ee2061202100/` (84,328,063 bytes);
 its receipt records SHA256
 `87967ECFC9FFEA712EBED23F9D46F9BDB4D6B36781B0D7766CE76DAD69A9680A`.
@@ -225,3 +228,10 @@ development host; missing-runtime execution remains an isolated-machine test.
 Next acceptance requires an isolated Windows environment and explicitly
 authorized test signing/trust there, or production-signed packages. Do not trust
 a test certificate on the development machine to bypass this gate.
+
+The subsequent lifecycle integration candidate compiles at
+`artifacts/installer-candidates/cffbe0cfd639417cb1062c69c0cd6a89/`.
+Its receipt inventories the new helper scripts, versioned release template and
+application/package files, and records `nativeUpgradeAdmission: false`.
+See [integration evidence and limits](installer-recovery.md). This wraps the
+previous dirty-marked application candidate; it is not a clean-source release.

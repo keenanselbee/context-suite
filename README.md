@@ -36,9 +36,10 @@ pinned CPU DirectXTex conversion, mip/color policies and safe publication: 27
 conditional conversion pairs total. All 33 focused image/DDS desktop checks pass.
 This is not release-ready: PNG optimization and paid activation remain planned.
 An Inno Setup offline installer candidate now compiles. The
-[upgrade/repair recovery backend](docs/installer-recovery.md) passes automated
-failure tests; installer integration, trusted signing and clean-machine
-acceptance remain pending. See the
+[installer lifecycle integration](docs/installer-recovery.md) now wires versioned
+staging, active-release launch/uninstall and recovery, with automated failure
+tests. Native upgrade admission remains closed pending signed Windows lifecycle
+acceptance; trusted signing and clean-machine checks remain pending. See the
 [packaging goal](docs/release-packaging-goal.md),
 [integration evidence](docs/bmp-tga-and-engine-integration.md)
 and [remaining redistribution gates](docs/release-redistribution.md).

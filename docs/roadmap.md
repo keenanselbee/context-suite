@@ -82,9 +82,10 @@ Proceed in this order without renumbering existing milestone references:
    codec, worker, failure, packaging and 33 image/DDS desktop checks pass locally.
 4. In-progress [reproducible packaging and clean-machine goal](release-packaging-goal.md)
    under Milestone 7: candidate/CI tooling and an approved Inno offline
-   first-install candidate now exist. The [recovery backend](installer-recovery.md)
-   passes automated upgrade/repair failure tests without a VM. Inno lifecycle
-   integration, stable signing identities and clean-machine verification remain.
+   lifecycle candidate now exist. The [installer integration](installer-recovery.md)
+   passes automated staging, launch, upgrade/repair and uninstall-orchestration
+   checks without a VM. Native upgrade admission, stable signing identities and
+   clean-machine verification remain gated.
    No release certification yet.
 5. Milestones 4 and 5 PNG optimization, reusing the output/settings foundation.
 6. Broader tested image capabilities, remaining Milestone 7 release work, then audio.

@@ -1,8 +1,8 @@
 Installer Upgrade And Repair Recovery
 =====================================
 
-Status: recovery backend implemented; 52 local automated checks pass.
-Native installation and Inno upgrade integration remain gated.
+Status: Inno lifecycle integration implemented; 38 orchestration checks and 52
+recovery checks pass locally. Native existing-install admission remains gated.
 
 The owner approved implementing and automatically testing recovery without
 Sandbox or a manually maintained VM. Windows Home is not a development blocker.
@@ -39,12 +39,42 @@ Recovery contract
 Integration boundary
 ---------------------
 
-The recovery module is an independently tested backend, not a command that runs
-against installed packages during routine verification. The current Inno layout
-still uses `app/` and refuses upgrades. Enabling it requires versioned staging,
-active-pointer-aware shortcuts/uninstall, migration from the initial layout and
-native verification of Appx re-registration and file-in-use behavior. Do not
-remove the guard or add an installer bypass on the strength of mock tests.
+Inno now extracts into `releases/<id>/app` and `releases/<id>/packages`, writes a
+bounded release descriptor, and invokes the shared lifecycle coordinator. Each
+setup process derives a stable 32-hex stage ID from its unique temporary directory;
+this is a directory identifier, not a security hash. Existing stage directories
+are never overwritten. The builder inventories the exact staged application and
+three package files and includes the recovery/lifecycle helpers.
+
+A stable Start menu shortcut requests a hidden `Launch-Active.ps1` helper,
+which resolves the active executable, checks its hash and refuses pending recovery
+or uninstall. It does not repair automatically; actual launch appearance still
+needs native verification. Explorer
+continues using the selected release's sparse-package external location.
+
+First installation records `bootstrap.json` before file extraction. Registration
+commits `active.json` only after all three roots verify. The coordinator can retry
+an interrupted first registration; incomplete extraction cannot register anything.
+Uninstall uses the active version (even after an attempted newer installation),
+or bootstrap identity when no pointer exists. `uninstall.json` blocks launching
+and enables retries after partial unregistration without resurrecting packages.
+Inno's own file ledger removes installed files; only `active.json`, `bootstrap.json`,
+`recovery.json`, `recovery.lock` and `uninstall.json` have exact metadata cleanup
+entries. There is no recursive sweep, media cleanup or old-payload pruning.
+
+Setup and uninstall acquire one per-user named mutex for their entire process
+lifetime. Registration and launch also use the recovery file lock. These guards
+do not claim to prevent an already running app/Explorer from holding DLLs open.
+
+The shipping Check/Stage admission function still rejects every existing root,
+including a partially installed root, with an actionable explanation. There is
+no command-line bypass. The coordinator's retry/update behavior is verified below,
+but rerunning the compiled setup is deliberately NOT yet an upgrade/repair path.
+Legacy flat-layout and prototype registrations require explicit removal, not
+automatic migration. Native signing, re-registration, file-in-use behavior and
+Inno cancellation/uninstall-log behavior must be verified before opening this gate.
+An interruption before Inno creates its uninstaller may require owner-assisted
+cleanup; neither automatic recovery nor zero-leftover uninstall is promised.
 
 See [decision 0012](decisions/0012-inno-offline-installer.md) and the
 [release checklist](release-packaging-goal.md).
@@ -55,6 +85,8 @@ Automated verification
 ```powershell
 ./tools/release/Test-InstallerRecovery.ps1
 ./tools/release/Test-InnoInstaller.ps1
+# Superset: runs the recovery matrix once, then lifecycle orchestration checks.
+./tools/release/Test-InstallerLifecycle.ps1
 ```
 
 The recovery suite uses actual files, package ZIPs, atomic JSON replacement,
@@ -75,6 +107,22 @@ operations, reparse paths and unchanged user data. Local evidence:
 `.codex-temp/installer-recovery/c0689920bb524e93ba9d61559a7427d8`.
 The public workflow now invokes the safe installer/recovery tests; hosted
 execution has not been run here.
+
+The integration superset adds 38 checks: first install, immutable staging,
+active launch, upgrade, repair after later app damage, failure compensation,
+uninstall retry, older-installer/active-newer-version handling, pending launch,
+exclusive locks, corrupted/incomplete extraction, foreign identity, bootstrap
+cleanup authorization, legacy rejection, unchanged user data, and source wiring.
+Evidence: `.codex-temp/installer-recovery/339e1bd7d5194581bdc030a3a5ff959e`.
+The stage copier simulates Inno extraction using real fixture files; it does not
+execute Inno's native file ledger. The test explicitly keeps Appx/signature calls
+mocked. Public CI calls the superset instead of running the backend matrix twice.
+Inno 7.1.0 successfully compiles the updated Pascal hooks and offline payload;
+see the [packaging receipt location](release-packaging-goal.md).
+
+Implementation references: [Inno lifecycle callbacks](https://jrsoftware.org/ishelp/topic_scriptevents.htm),
+[exact uninstall cleanup entries](https://jrsoftware.org/ishelp/topic_uninstalldeletesection.htm),
+and [Windows named mutex semantics](https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createmutexw).
 
 Remaining checks are explicit: native signed Appx behavior, registration target
 location, stopped/running app and Explorer surrogate behavior, process-kill and
