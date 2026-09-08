@@ -7,6 +7,7 @@ using ContextSuite.Core.Operations;
 using ContextSuite.Core.Transport;
 using ContextSuite.Core.Settings;
 using ContextSuite.Core.Images;
+using ContextSuite.Core.Dds;
 
 namespace ContextSuite.Application;
 
@@ -66,6 +67,11 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
             _active = active;
             try
             {
+                if (batch.Request.Operation == "analyze")
+                {
+                    await AnalyzeBatchAsync(batch.Rows, active.Token);
+                    continue;
+                }
                 if (batch.Request.Operation == "convert" && Publisher is not null && trial is not null && ConversionRequested is not null)
                 {
                     await ConvertBatchAsync(batch.Request, batch.Rows, active.Token);
@@ -94,6 +100,31 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         }
         RefreshSummary();
         Changed(nameof(IsBusy));
+    }
+
+    internal async Task WaitForIdleAsync()
+    {
+        if (_running is not null) await _running;
+    }
+
+    private async Task AnalyzeBatchAsync(FileRow[] rows, CancellationToken cancellationToken)
+    {
+        for (var index = 0; index < rows.Length; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var row = rows[index];
+            Summary = $"Reading DDS header {index + 1} of {rows.Length}. No files changed.";
+            row.ApplyResult(new(row.Path, OperationState.Running, "Reading DDS header"));
+            try
+            {
+                var facts = await DdsParser.ReadAsync(row.Path, cancellationToken);
+                row.ApplyAnalysis(facts);
+            }
+            catch (InvalidDataException)
+            { row.ApplyResult(new(row.Path, OperationState.Unsupported, "Not a supported DDS header. No files changed.")); }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+            { row.ApplyResult(new(row.Path, OperationState.Failed, "Could not read this file. Check access and retry.")); }
+        }
     }
 
     private async Task ConvertBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
@@ -222,6 +253,7 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
     public string Path { get; } = path;
     public BatchSettings Settings { get; } = settings;
     public FileResult Result { get; private set; } = new(path, OperationState.Pending, "Pending");
+    public DdsInfo? Analysis { get; private set; }
     public string Status => Result.Message;
     public string OutputPath => Result.Publication?.OutputPath ?? "";
     public string RetainedOriginalPath => Result.Publication?.RetainedOriginalPath ?? "";
@@ -229,7 +261,24 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
     public string ResultDetails => $"Source: {Path}\n{Status}" +
         (OutputPath.Length == 0 ? "" : $"\nOutput: {OutputPath}") +
         (RetainedOriginalPath.Length == 0 ? "" : $"\nRetained original: {RetainedOriginalPath}") +
-        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}");
+        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}") + AnalysisDetails;
+
+    private string AnalysisDetails => Analysis is not { } dds ? "" :
+        $"\nHeader: {(dds.HasDx10Header ? "DX10 extended" : "Legacy DDS")}; FourCC: 0x{dds.RawFourCc:X8}; DXGI: {dds.RawDxgiFormat}" +
+        $"\nFormat: {dds.Format}; structure: {dds.Kind}; dimensions: {dds.Width} x {dds.Height} x {dds.Depth}; array count: {dds.ArraySize}; mip levels: {dds.MipLevels}" +
+        $"\nColor interpretation: {(dds.IsSrgb ? "sRGB explicitly declared" : dds.IsTypeless ? "Typeless; typed interpretation required" : "No sRGB declaration; not proof of authored linear color or texture purpose")}" +
+        $"\nAlpha mode: {(Enum.IsDefined((DdsAlphaMode)dds.RawAlphaMode) ? ((DdsAlphaMode)dds.RawAlphaMode).ToString() : "Unrecognized")} ({dds.RawAlphaMode})" +
+        $"\nFile size: {dds.FileBytes:N0} bytes; expected payload: {(dds.ExpectedPayloadBytes is { } size ? $"{size:N0} bytes" : "Unavailable for this layout")}" +
+        "\nHeader analysis only; no pixels decoded and no files changed. Conversion separately validates supported 2D textures." +
+        string.Concat(dds.Warnings.Select(warning => "\nWarning: " + warning));
+
+    public void ApplyAnalysis(DdsInfo facts)
+    {
+        Analysis = facts;
+        ApplyResult(new(Path, OperationState.Succeeded, $"{facts.Format} {facts.Width} x {facts.Height}; {facts.MipLevels} mip(s)" +
+            (facts.Warnings.IsEmpty ? "" : $"; {facts.Warnings.Length} warning(s)")));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Analysis)));
+    }
 
     public void ApplyResult(FileResult result)
     {

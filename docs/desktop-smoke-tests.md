@@ -138,6 +138,14 @@ are retained instead of relabeled as passes.
 Future Coverage
 ---------------
 
+The DDS extension passes all 33 image UI checks in
+`.codex-temp/desktop-smoke/images-883ea7a9ede344d6b640bfce8519623c`.
+It adds explicit source interpretation, actual DDS preview before confirmation,
+no trial consumption from preview, and invalidation after storage changes.
+The DDS controls and shared before/after captures were visually reviewed in dark
+mode. See the [completed bounded DDS goal](dds-conversion-goal.md) for independent
+codec/worker evidence and the deliberately deferred formats/structures.
+
 Keep most checks in fast contracts. Add real media fixtures and semantic output
 checks alongside each adapter; retain source-preservation and collision tests.
 Keep the empty-file foundation assertions distinct from image-mode checks.

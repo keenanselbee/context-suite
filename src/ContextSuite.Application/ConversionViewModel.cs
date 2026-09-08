@@ -9,13 +9,14 @@ using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Settings;
+using ContextSuite.Core.Dds;
 
 namespace ContextSuite.Application;
 
 internal sealed record ConversionSelection(Guid ItemId, string Path, ImageSourceFacts? Facts, string? Failure);
 internal sealed record FormatChoice(string Label, ImageFormat Value);
 
-internal sealed class ConversionViewModel : INotifyPropertyChanged, IAsyncDisposable
+internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsyncDisposable
 {
     private readonly WorkerClient _worker;
     private readonly LocalTrialStore _trial;
@@ -41,13 +42,14 @@ internal sealed class ConversionViewModel : INotifyPropertyChanged, IAsyncDispos
         _worker = worker; _trial = trial; _batchId = batchId; _settings = settings;
         CanReplaceOriginal = replacementAvailable && settings.Preferences.AllowReplacingOriginals && settings.Preferences.OutputDirectory is null;
         Rows = new(selection.Select(item => new ConversionRow(item)));
+        _ddsMips = selection.Any(item => item.Facts?.Texture is not null) ? DdsMipPolicy.Preserve : DdsMipPolicy.Generate;
         _selectedIndex = Math.Max(0, selection.ToList().FindIndex(s => s.Facts?.HasTransparency == true));
         ConfirmCommand = new UiCommand(Confirm, () => CanConfirm);
         PreviewCommand = new UiCommand(() => _previewTask = RefreshPreviewAsync(), () => !IsPreviewBusy && SelectedSource is not null);
         RefreshPlan();
     }
 
-    public IReadOnlyList<FormatChoice> Formats { get; } = [new("PNG — lossless", ImageFormat.Png), new("JPEG", ImageFormat.Jpeg), new("WebP", ImageFormat.WebP), new("BMP — 24-bit RGB", ImageFormat.Bmp), new("TGA — true color / alpha", ImageFormat.Tga)];
+    public IReadOnlyList<FormatChoice> Formats { get; } = [new("PNG — lossless", ImageFormat.Png), new("JPEG", ImageFormat.Jpeg), new("WebP", ImageFormat.WebP), new("BMP — 24-bit RGB", ImageFormat.Bmp), new("TGA — true color / alpha", ImageFormat.Tga), new("DDS — game texture", ImageFormat.Dds)];
     public IReadOnlyList<string> MatteChoices { get; } = ["Choose a background", "White", "Black", "Custom RGB"];
     public ObservableCollection<ConversionRow> Rows { get; }
     public ImageFormat? Target { get => _target; set { if (Set(ref _target, value)) RefreshPlan(); } }
@@ -66,7 +68,7 @@ internal sealed class ConversionViewModel : INotifyPropertyChanged, IAsyncDispos
         set { if (Set(ref _selectedIndex, value)) { InvalidatePreview(); _before = null; Changed(nameof(BeforePreview)); Changed(nameof(SelectedExplanation)); } }
     }
     public bool IsJpeg => Target == ImageFormat.Jpeg;
-    public bool NeedsMatte => Target is ImageFormat.Jpeg or ImageFormat.Bmp;
+    public bool NeedsMatte => Target is ImageFormat.Jpeg or ImageFormat.Bmp || (IsDdsWorkflow && DdsAlpha == DdsAlphaPolicy.Flatten);
     public bool IsWebP => Target == ImageFormat.WebP;
     public bool HasQuality => IsJpeg || (IsWebP && !WebPLossless);
     public bool HasCustomMatte => NeedsMatte && MatteChoice == 3;
@@ -76,6 +78,7 @@ internal sealed class ConversionViewModel : INotifyPropertyChanged, IAsyncDispos
     public bool CanConfirm => _plan?.HasExecutableItems == true && !_previewBusy &&
         _trialStatus?.State is LocalTrialState.NotStarted or LocalTrialState.Active &&
         (!HasWarnings || WarningsAcknowledged) && (!ReplaceOriginal || (CanReplaceOriginal && ReplacementConfirmed)) &&
+        (!IsDdsWorkflow || _hasDdsPreview) &&
         (_hasMattePreview || _plan.Options.SupportsAlpha || !_plan.Items.Any(item => item.CanExecute && item.Source.HasTransparency));
     public string Message => _message;
     public string SelectedExplanation => SelectedIndex >= 0 && SelectedIndex < Rows.Count ?
@@ -85,7 +88,8 @@ internal sealed class ConversionViewModel : INotifyPropertyChanged, IAsyncDispos
     public string TrialMessage => _trialStatus?.Message ?? "Checking local trial status…";
     public string OutputNotice => ReplaceOriginal
         ? "Publish the converted file, then move its original to the Recycle Bin. A cleanup failure retains the original and is reported. No permanent-delete fallback."
-        : "Keep originals. New names use ‘ - Converted’; existing names get (2), (3), and so on. Proposed paths below are finalized safely at publication.";
+        : IsDdsTarget ? "Keep originals. New names include the texture representation, such as ‘ - BC7-sRGB’; collisions get (2), (3), and so on. Proposed paths are finalized safely at publication." :
+            "Keep originals. New names use ‘ - Converted’; existing names get (2), (3), and so on. Proposed paths below are finalized safely at publication.";
     public string ReplacementNotice => CanReplaceOriginal ? "Replacement is optional and requires consent for this batch." :
         "Replacement is unavailable: it requires permission in Settings, source-folder output, and a verified Windows/NTFS location. Copies remain available.";
     public BitmapSource? BeforePreview => _before;
@@ -129,14 +133,16 @@ internal sealed class ConversionViewModel : INotifyPropertyChanged, IAsyncDispos
                 throw new InvalidDataException("Enter a six-digit RGB color, such as FFFFFF for white.");
             matte = rgb;
         }
-        return new(target, quality, IsWebP && WebPLossless, maximum, matte,
-            RemoveMetadata ? ImageMetadataMode.RemoveDescriptive : ImageMetadataMode.Preserve);
+        return new(target, quality, IsWebP && WebPLossless, maximum, IsDdsWorkflow ? null : matte,
+            RemoveMetadata ? ImageMetadataMode.RemoveDescriptive : ImageMetadataMode.Preserve,
+            IsDdsWorkflow ? TextureOptions(matte) : null, IsDdsExport ? SelectedMip() : null);
     }
 
     private void RefreshPlan()
     {
         InvalidatePreview();
         _hasMattePreview = false;
+        _hasDdsPreview = false;
         _warningsAcknowledged = false; _replacementConfirmed = false;
         _plan = null; _warnings = "";
         try
@@ -166,7 +172,7 @@ internal sealed class ConversionViewModel : INotifyPropertyChanged, IAsyncDispos
             _plan = null; _message = error.Message;
             foreach (var row in Rows) row.Update(null, null, _settings, false);
         }
-        foreach (var property in new[] { nameof(IsJpeg), nameof(NeedsMatte), nameof(IsWebP), nameof(HasQuality), nameof(HasCustomMatte), nameof(Message),
+        foreach (var property in new[] { nameof(IsDdsWorkflow), nameof(IsDdsTarget), nameof(IsDdsExport), nameof(CanResize), nameof(IsJpeg), nameof(NeedsMatte), nameof(IsWebP), nameof(HasQuality), nameof(HasCustomMatte), nameof(Message),
             nameof(Warnings), nameof(HasWarnings), nameof(WarningsAcknowledged), nameof(ReplacementConfirmed), nameof(CanConfirm), nameof(OutputNotice), nameof(SelectedExplanation) }) Changed(property);
     }
 
@@ -198,8 +204,12 @@ internal sealed class ConversionViewModel : INotifyPropertyChanged, IAsyncDispos
             if (revision != _revision) return;
             _before = Bitmap(before); _after = after is null ? null : Bitmap(after);
             if (after is not null && source.HasTransparency && options?.SupportsAlpha == false) _hasMattePreview = true;
+            if (after is not null && options?.Texture is not null) _hasDdsPreview = true;
             _previewMessage = after is null ? "Original preview. Choose an applicable target and any required background to preview the conversion." :
                 "Before / after — color-managed, reduced-size preview. Compression at full resolution may look different. Transparent areas show the neutral preview background.";
+            if (IsDdsWorkflow) _previewMessage = after is null ?
+                "DDS before preview: declared sRGB color or raw channels when interpretation is unknown. Choose a valid texture policy and refresh before converting." :
+                "DDS after preview decodes the actual proposed output, then reduces it to 512 pixels. Color follows the selected interpretation. Data/normal views show channels, not a lit material; signed channels map -1..1 to 0..1. Before uses the source declaration, or raw channels if unknown.";
         }
         catch (OperationCanceledException) { }
         catch (Exception error) when (error is IOException or InvalidDataException or ArgumentException or InvalidOperationException or
@@ -264,7 +274,7 @@ internal sealed class ConversionRow(ConversionSelection selection) : INotifyProp
     {
         Status = Selection.Failure ?? plan?.BlockReason ?? (plan is null ? "Choose a target format" : $"Ready · {plan.OutputWidth} × {plan.OutputHeight} · {plan.OutputDepth}-bit");
         ProposedOutput = plan?.CanExecute == true && options is not null ? Path.Combine(settings.Preferences.OutputDirectory ?? Path.GetDirectoryName(Selection.Path)!,
-            OutputNames.Create(Selection.Path, "convert", options.Extension, replaceSource: replace)) : "";
+            OutputNames.Create(Selection.Path, "convert", options.Extension, representation: options.OutputRepresentation, replaceSource: replace)) : "";
         PropertyChanged?.Invoke(this, new(nameof(Status))); PropertyChanged?.Invoke(this, new(nameof(ProposedOutput)));
     }
 }

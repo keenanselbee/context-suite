@@ -1,7 +1,7 @@
 Context Analyzer Design
 =======================
 
-Status: initial design; DDS is the first planned implementation.
+Status: bounded DDS header analysis is implemented; broader analysis remains planned.
 
 
 Purpose
@@ -46,7 +46,7 @@ belong in details.
 DDS Version 1
 -------------
 
-The first analyzer should read DDS headers and report:
+The implemented public parser reads at most 148 header bytes and reports:
 
 - DDS header type: legacy or DX10 extended.
 - Exact known format plus raw FourCC or DXGI value.
@@ -61,6 +61,13 @@ The first analyzer should read DDS headers and report:
 Legacy DXT headers do not encode enough information to prove linear versus sRGB
 usage. Analyzer must report that limitation rather than guess from the filename
 or common engine practice.
+
+The application processes an Analyze selection as one read-only batch and shows
+per-file details on row selection. Malformed files do not stop later items.
+No worker, media engine, trial admission or network request is needed. Checked
+payload accounting covers known mip/array/cube/volume layouts; unknown formats
+retain their raw identifiers without claiming a payload size. This is structural
+analysis, not validation of compressed pixels. See [DDS evidence](dds-conversion-goal.md).
 
 
 Later Image Analysis

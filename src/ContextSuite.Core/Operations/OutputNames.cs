@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace ContextSuite.Core.Operations;
 
-public enum DdsCompression { BC1, BC2, BC3, BC4, BC5, BC6H, BC7 }
+public enum DdsCompression { BC1, BC2, BC3, BC4, BC5, BC6H, BC7, R8, RG8, RGBA8, BGRA8 }
 public enum TextureTransfer { Linear, Srgb }
 
 // This models naming, not an advertised encoder capability. Adapters still validate support.
@@ -13,13 +13,14 @@ public sealed record DdsRepresentation(DdsCompression Compression, TextureTransf
         get
         {
             if (!Enum.IsDefined(Compression) || !Enum.IsDefined(Transfer) ||
-                (Transfer == TextureTransfer.Srgb && Compression is DdsCompression.BC4 or DdsCompression.BC5 or DdsCompression.BC6H) ||
+                (Transfer == TextureTransfer.Srgb && Compression is DdsCompression.BC4 or DdsCompression.BC5 or DdsCompression.BC6H or DdsCompression.R8 or DdsCompression.RG8) ||
                 (Signed && Compression is not (DdsCompression.BC4 or DdsCompression.BC5 or DdsCompression.BC6H)))
                 throw new InvalidDataException("The DDS representation is invalid.");
             return Compression switch
             {
                 DdsCompression.BC4 or DdsCompression.BC5 => $"{Compression}-{(Signed ? "SNORM" : "UNORM")}",
                 DdsCompression.BC6H => $"BC6H-{(Signed ? "SF16" : "UF16")}",
+                DdsCompression.R8 or DdsCompression.RG8 => $"{Compression}-UNORM",
                 _ => $"{Compression}-{(Transfer == TextureTransfer.Srgb ? "sRGB" : "Linear")}"
             };
         }

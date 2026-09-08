@@ -4,6 +4,13 @@ Release Redistribution Checklist
 Reviewed: 2026-09-07. Engineering review, not a legal opinion or release approval.
 
 The curated development payload materially reduces the dependency inventory.
+The DDS development candidate additionally links pinned CPU DirectXTex (MIT)
+through the private bridge. Its license and hash/provenance identity now travel
+with the payload. Its direct DLL imports are Windows and Microsoft C++/UCRT
+components; this is not evidence that every statically linked component has
+completed release review. Review the DDS build map and archive its exact source
+and notices alongside the image-engine evidence before distribution. See the
+[DDS scope and evidence](dds-conversion-goal.md).
 Do not use the stock NuGet native bundle as a release fallback. Runtime coder
 restrictions are safety controls, not removal of compiled third-party code.
 

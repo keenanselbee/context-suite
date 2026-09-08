@@ -57,6 +57,23 @@ internal static class ImageConversionSmoke
             Wait(() => conversion.FindAllDescendants().Any(e => e.Properties.HasKeyboardFocus.ValueOrDefault), "planner keyboard navigation");
             Check(true, "keyboard navigation retains focus within the conversion window");
             Check(!Control(conversion, "ConfirmImageConversion").IsEnabled && !File.Exists(trial), "explicit target required; opening planner/preview does not start trial");
+            Control(conversion, "ConversionTarget").AsComboBox().Select(5);
+            Check(!Control(conversion, "ConfirmImageConversion").IsEnabled, "DDS ordinary color input requires explicit interpretation");
+            Control(conversion, "DdsInterpretation").AsComboBox().Select(2);
+            RemoveMetadata(conversion);
+            Wait(() => Control(conversion, "ConversionPlanStatus").Name.Contains("1 ready", StringComparison.Ordinal), "DDS explicit color and metadata plan");
+            Toggle(conversion, "AcknowledgeConversionWarnings");
+            Check(!Control(conversion, "ConfirmImageConversion").IsEnabled, "DDS confirmation requires actual encoded preview");
+            Control(conversion, "RefreshConversionPreview").AsButton().Invoke();
+            Wait(() => Control(conversion, "ConfirmImageConversion").IsEnabled, "DDS BC7 preview");
+            Check(!File.Exists(trial) && Control(conversion, "ConversionPreviewStatus").Name.StartsWith("DDS after", StringComparison.Ordinal),
+                "DDS preview uses actual proposed output without starting trial");
+            Control(conversion, "ConversionBody").Patterns.Scroll.Pattern.SetScrollPercent(-1, 0);
+            Capture(conversion, "dds-bc7-planner");
+            Control(conversion, "DdsFormat").AsComboBox().Select(4);
+            Check(!Control(conversion, "ConfirmImageConversion").IsEnabled && !Control(conversion, "AcknowledgeConversionWarnings").AsCheckBox().IsChecked.GetValueOrDefault(),
+                "DDS storage change clears consent and preview eligibility");
+            Toggle(conversion, "RemoveImageMetadata");
             Control(conversion, "ConversionTarget").AsComboBox().Select(1);
             Wait(() => Control(conversion, "ConversionPlanStatus").Name.Contains("0 ready", StringComparison.Ordinal), "transparent JPEG matte gate");
             Check(!Control(conversion, "ConfirmImageConversion").IsEnabled, "transparent JPEG cannot convert without a background choice");

@@ -27,7 +27,7 @@ platform, lifecycle, worker/IPC boundaries, settings storage, and initial source
 allocation are now accepted in decision 0007. Magick.NET is selected for general
 image conversion; decision 0009 selects Magick.NET-Q16-x64 14.17.1, with actual
 native payload verified locally and curated development packaging integrated.
-Redistribution review, DDS tooling, customer packaging,
+Redistribution review, customer packaging,
 updates, signing, and diagnostics remain pending. Milestone 1 now has
 Core, WPF Application, Worker, private composition, managed contracts, fixture
 conventions, build/test scripts, and authored CI workflows. Local builds and
@@ -51,7 +51,8 @@ trial storage/admission is now connected to the tested conversion UI;
 Polar license activation is not implemented. Decision 0007 accepts the
 WPF application and worker foundation, including application reuse, sequential
 worker execution, IPC, publication ownership, settings, and source allocation.
-The private catalog advertises twenty tested PNG/JPEG/WebP/BMP/TGA cross-format pairs;
+The private catalog advertises twenty tested PNG/JPEG/WebP/BMP/TGA cross-format pairs
+plus five ordinary-image-to-DDS pairs, DDS-to-DDS and selected-color-mip DDS-to-PNG;
 the real adapter is used by the Convert planner and worker. Per-file probing and
 explicit planning still determine whether an individual variant is supported.
 
@@ -76,8 +77,9 @@ Proceed in this order without renumbering existing milestone references:
 2. Completed bounded Milestone 6 PNG/JPEG/WebP batch conversion using Magick.NET, adding
    the needed Milestone 2 worker execution and validation contracts alongside it.
 3. Completed curated-engine development-packaging integration and bounded
-   BMP/TGA conversion under Milestone 6. Next settle the DDS toolchain/policies
-   for Milestone 3 analysis and DDS conversion expansion.
+   BMP/TGA conversion under Milestone 6. The completed bounded [DDS goal](dds-conversion-goal.md)
+   adds Milestone 3 header analysis and DDS conversion under decision 0011;
+   codec, worker, failure, packaging and 33 image/DDS desktop checks pass locally.
 4. Milestones 4 and 5 PNG optimization, reusing the output/settings foundation.
 5. Broader tested image capabilities, Milestone 7 release work, then audio.
 
@@ -94,8 +96,8 @@ The subsequent [production integration and BMP/TGA slice](bmp-tga-and-engine-int
 also pass their bounded checks; stock native copying is disabled and packaging
 verifies the selected curated hashes and file allowlist. Complete the separate
 [release redistribution gates](release-redistribution.md) before distribution.
-Next decide/pin the dedicated DDS engine and exact BC/linear/sRGB/mipmap
-policies before its implementation work. The accepted first image
+Decision 0011 settles the dedicated CPU DirectXTex engine and BC/linear/sRGB/mipmap
+policies; bounded implementation and focused verification pass locally. The accepted first image
 release targets PNG/JPEG/WebP/DDS/TGA/BMP, not the entire upstream format catalog.
 
 
@@ -148,8 +150,8 @@ Accepted foundation choices:
 Resolve before the dependent media or release work:
 
 - Curated Magick native build and redistribution configuration under decision
-  0010; package/precision are settled by 0009. Select the dedicated DDS engine
-  (DirectXTex recommended; not yet pinned/accepted).
+  0010; package/precision are settled by 0009. CPU DirectXTex and the bounded DDS
+  matrix are selected/pinned under 0011; complete their acceptance and redistribution gates.
 - Distribution of FFmpeg, `oxipng`, and `pngquant` or selected alternatives.
 - Installer, signing, update, and diagnostics strategy.
 - Exact private engine adapters and optimization policy definitions.
@@ -340,8 +342,9 @@ public parser for independent header validation. Target BC1/DXT1 through BC7
 and selected uncompressed formats, with explicit applicable linear/sRGB and
 signedness behavior. Preserve supported mip/face/layer structures, distinguish
 pixel conversion from reinterpretation, and reject unsupported combinations.
-Select and pin the dedicated engine and exact capability matrix before its
-implementation goal; do not imply general-image engine support covers DDS.
+Decision 0011 selects the CPU DirectXTex bridge and initial ordinary-2D matrix;
+BC6H/HDR and cube/array/volume conversion remain deferred. See the active
+[DDS goal](dds-conversion-goal.md); general-image engine support does not cover DDS.
 
 
 Milestone 7: Image MVP Integration And Polish

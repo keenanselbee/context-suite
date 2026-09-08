@@ -1,10 +1,11 @@
 using System.Collections.Immutable;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Settings;
+using ContextSuite.Core.Dds;
 
 namespace ContextSuite.Core.Images;
 
-public enum ImageFormat { Png, Jpeg, WebP, Bmp, Tga }
+public enum ImageFormat { Png, Jpeg, WebP, Bmp, Tga, Dds }
 public enum ImageMetadataMode { Preserve, RemoveDescriptive }
 
 // EXIF-compatible units: 1 = aspect only, 2 = pixels/inch, 3 = pixels/cm.
@@ -22,11 +23,14 @@ public sealed record ImageSourceFacts(Guid ItemId, string Path, string Sha256, l
     ImageFormat Format, uint Width, uint Height, uint BitDepth, uint Orientation,
     bool HasTransparency, bool IsLossy, string ColorDescription,
     ImmutableArray<string> ProfileNames, bool HasOtherMetadata = false, string? UnsupportedReason = null, ImageResolution? Resolution = null,
-    bool HasGrayscaleProfile = false)
+    bool HasGrayscaleProfile = false, DdsInfo? Texture = null)
 {
     public void Validate()
     {
         Resolution?.Validate();
+        if ((Format == ImageFormat.Dds) != (Texture is not null) || Texture is { } texture &&
+            (texture.Width != Width || texture.Height != Height || texture.FileBytes != FileBytes || !texture.IsSupported2D))
+            throw new InvalidDataException("DDS image facts do not match their admitted texture header.");
         if (ItemId == Guid.Empty || string.IsNullOrWhiteSpace(Path) || !System.IO.Path.IsPathFullyQualified(Path) ||
             Path.Length > 32700 || Path.IndexOfAny(['\0', '\r', '\n']) >= 0 ||
             Sha256 is null || Sha256.Length != 64 || !Sha256.All(char.IsAsciiHexDigit) || FileBytes <= 0 ||
@@ -40,18 +44,33 @@ public sealed record ImageSourceFacts(Guid ItemId, string Path, string Sha256, l
 }
 
 public sealed record ImageConversionOptions(ImageFormat Target, uint Quality = 90, bool WebPLossless = false,
-    uint? MaximumDimension = null, uint? MatteRgb = null, ImageMetadataMode Metadata = ImageMetadataMode.Preserve)
+    uint? MaximumDimension = null, uint? MatteRgb = null, ImageMetadataMode Metadata = ImageMetadataMode.Preserve,
+    DdsConversionOptions? Texture = null, uint? ExtractMip = null)
 {
-    public bool IsLossy => Target == ImageFormat.Jpeg || (Target == ImageFormat.WebP && !WebPLossless);
-    public bool SupportsAlpha => Target is not (ImageFormat.Jpeg or ImageFormat.Bmp);
+    public bool IsLossy => Target == ImageFormat.Jpeg || (Target == ImageFormat.WebP && !WebPLossless) || (Target == ImageFormat.Dds && Texture?.IsCompressed == true);
+    public DdsRepresentation? OutputRepresentation => Target != ImageFormat.Dds || Texture is null ? null : new(
+        DdsConversionOptions.LinearFormat(Texture.Format) switch
+        {
+            DdsFormat.Bc1 => DdsCompression.BC1, DdsFormat.Bc2 => DdsCompression.BC2, DdsFormat.Bc3 => DdsCompression.BC3,
+            DdsFormat.Bc4 or DdsFormat.Bc4Snorm => DdsCompression.BC4, DdsFormat.Bc5 or DdsFormat.Bc5Snorm => DdsCompression.BC5,
+            DdsFormat.Bc7 => DdsCompression.BC7, DdsFormat.R8 => DdsCompression.R8, DdsFormat.Rg8 => DdsCompression.RG8,
+            DdsFormat.Rgba8 => DdsCompression.RGBA8, DdsFormat.Bgra8 => DdsCompression.BGRA8,
+            _ => throw new InvalidDataException("Unsupported DDS output name.")
+        }, Texture.IsSrgb ? TextureTransfer.Srgb : TextureTransfer.Linear, Texture.IsSigned);
+    public bool SupportsAlpha => Target is not (ImageFormat.Jpeg or ImageFormat.Bmp) &&
+        (Target != ImageFormat.Dds || Texture is { Channels: 4, Alpha: not (DdsAlphaPolicy.Flatten or DdsAlphaPolicy.Discard) });
     public string Extension => Target switch
     {
-        ImageFormat.Png => "png", ImageFormat.Jpeg => "jpg", ImageFormat.WebP => "webp", ImageFormat.Bmp => "bmp", ImageFormat.Tga => "tga",
+        ImageFormat.Png => "png", ImageFormat.Jpeg => "jpg", ImageFormat.WebP => "webp", ImageFormat.Bmp => "bmp", ImageFormat.Tga => "tga", ImageFormat.Dds => "dds",
         _ => throw new InvalidDataException("Unknown image target.")
     };
 
     public void Validate()
     {
+        Texture?.Validate();
+        if ((Target == ImageFormat.Dds && Texture is null) || ExtractMip > 14 ||
+            (ExtractMip is not null && (Texture is null || Target == ImageFormat.Dds)) || (Texture is not null && MaximumDimension is not null))
+            throw new InvalidDataException("DDS conversion requires texture options; mip extraction must be explicit and resizing is not yet implemented.");
         if (!Enum.IsDefined(Target) || !Enum.IsDefined(Metadata) || Quality is < 1 or > 100 ||
             MaximumDimension is 0 or > 16384 || MatteRgb > 0xffffff ||
             (WebPLossless && Target != ImageFormat.WebP) || (MatteRgb is not null && SupportsAlpha))
@@ -125,6 +144,8 @@ public static class ImageConversionPlanner
         source.Validate();
         var width = source.Orientation is >= 5 and <= 8 ? source.Height : source.Width;
         var height = source.Orientation is >= 5 and <= 8 ? source.Width : source.Height;
+        if (source.Texture is { } sourceTexture && options.ExtractMip is { } mip && mip < sourceTexture.MipLevels)
+        { width = Math.Max(1, width >> (int)mip); height = Math.Max(1, height >> (int)mip); }
         if (options.MaximumDimension is uint maximum && Math.Max(width, height) > maximum)
         {
             var scale = (double)maximum / Math.Max(width, height);
@@ -134,9 +155,59 @@ public static class ImageConversionPlanner
         var depth = options.Target == ImageFormat.Png && source.BitDepth > 8 ? 16u : 8u;
         var warnings = ImmutableArray.CreateBuilder<OperationWarning>();
         var blocked = source.UnsupportedReason;
-        if (source.Format == options.Target) blocked ??= "Same-format re-encoding belongs to Optimize.";
-        if (source.HasTransparency && !options.SupportsAlpha && options.MatteRgb is null)
+        if (source.Format == options.Target && source.Format != ImageFormat.Dds) blocked ??= "Same-format re-encoding belongs to Optimize.";
+        if (source.HasTransparency && !options.SupportsAlpha && options.MatteRgb is null && options.Target != ImageFormat.Dds)
             blocked ??= "Select and preview an explicit background color for transparency.";
+        if (source.Format == ImageFormat.Dds || options.Target == ImageFormat.Dds)
+        {
+            if (options.Texture is not { } textureOptions) blocked ??= "Choose DDS interpretation and texture policies.";
+            else
+            {
+                try
+                {
+                    if (source.Texture is { } texture) textureOptions.ValidateSource(texture, source.HasTransparency && textureOptions.Purpose == DdsPurpose.Color);
+                    else
+                    {
+                        if (textureOptions.ColorOperation == DdsColorOperation.Reinterpret) throw new InvalidDataException("Only DDS inputs permit declaration-only changes.");
+                        if (textureOptions.IsCompressed && (width % 4 != 0 || height % 4 != 0)) throw new InvalidDataException("BC output requires dimensions divisible by four; no automatic resize is applied.");
+                        if (textureOptions.Purpose == DdsPurpose.Color && textureOptions.SourceInterpretation != DdsInterpretation.Srgb)
+                            throw new InvalidDataException("Choose sRGB interpretation for color-managed image input, or Data for numeric textures.");
+                        if (textureOptions.Purpose != DdsPurpose.Color && source.ProfileNames.Any(p => p.ToLowerInvariant() is "icc" or "icm"))
+                            throw new InvalidDataException("A profiled image cannot silently be treated as numeric texture data.");
+                    }
+                }
+                catch (InvalidDataException error) { blocked ??= error.Message; }
+                if (options.Target != ImageFormat.Dds)
+                {
+                    if (options.Target != ImageFormat.Png || textureOptions.Purpose != DdsPurpose.Color)
+                        blocked ??= "Initial DDS image export supports color PNG only; numeric texture export needs a separate range policy.";
+                    if (source.Texture is not { } input || options.ExtractMip is not { } level || level >= input.MipLevels)
+                        blocked ??= "Explicitly select the DDS mip level to export.";
+                    warnings.Add(new("dds-extraction", "Only the explicitly selected mip is exported to PNG; the original DDS is kept by default."));
+                }
+                warnings.Add(new("dds-policy", $"Texture purpose: {textureOptions.Purpose}; source interpretation: {textureOptions.SourceInterpretation}; mip policy: {textureOptions.Mips}; alpha: {textureOptions.Alpha}."));
+                if (textureOptions.IsCompressed)
+                    warnings.Add(new("dds-compression", $"{textureOptions.Format} uses lossy block compression. BC1 retains only binary alpha/fourth-channel values; BC2 quantizes them to 16 levels. Inspect the encoded preview."));
+                if (textureOptions.Purpose == DdsPurpose.Normal)
+                    warnings.Add(new("dds-normal", "BC5 stores X/Y and reconstructs positive Z. RGB negative-Z normals and one-channel inputs are rejected; normal-vector filtering can change stored values."));
+                if (textureOptions.Purpose == DdsPurpose.Data && textureOptions.Format == DdsFormat.Bc1)
+                    warnings.Add(new("dds-bc1-data", "BC1 data output requires an all-opaque fourth channel; transparent BC1 blocks cannot retain the other data channels. Choose BC3/BC7 when the fourth channel carries data."));
+                if (textureOptions.ColorOperation == DdsColorOperation.Reinterpret)
+                    warnings.Add(new("dds-reinterpret", "Only the declaration changes. Pixel values and compressed blocks are retained; appearance may change."));
+                if (source.Texture is { } retainedTexture && textureOptions.ColorOperation != DdsColorOperation.Reinterpret && textureOptions.PreservesPayload(retainedTexture))
+                    warnings.Add(new("dds-preserved-pixels", "The pixel representation is unchanged: payload bytes are retained. Copy mode still creates the requested named file."));
+                if (textureOptions.Channels < 4) warnings.Add(new("dds-channels", $"Keep {textureOptions.RedChannel}" + (textureOptions.Channels == 2 ? $" and {textureOptions.GreenChannel}" : "") + "; all other channels are discarded."));
+                if (textureOptions.Mips == DdsMipPolicy.Generate) warnings.Add(new("dds-mips", "Rebuild mip levels with area filtering; existing authored mip content is replaced. Tiny cutout mips can only approximate alpha coverage."));
+                if (textureOptions.Header == DdsHeaderMode.Legacy) warnings.Add(new("dds-legacy", "Legacy headers do not retain explicit sRGB or alpha-mode declarations. Verify the target game's interpretation."));
+                if (textureOptions.Alpha is DdsAlphaPolicy.Flatten or DdsAlphaPolicy.Discard or DdsAlphaPolicy.Cutout)
+                    warnings.Add(new("dds-alpha", "The selected alpha policy changes transparency or discards it; review the encoded preview."));
+            }
+            if (options.Target == ImageFormat.Dds && options.Metadata == ImageMetadataMode.Preserve &&
+                (source.Resolution is not null || source.ProfileNames.Length != 0 || source.HasOtherMetadata))
+                blocked ??= "DDS cannot preserve image profiles or descriptive metadata; explicitly choose metadata removal.";
+            if (options.Target == ImageFormat.Dds && source.ProfileNames.Any(p => p is "icc" or "icm"))
+                warnings.Add(new("dds-profile", "Color input is transformed to sRGB before the selected DDS transfer; embedded profiles are not retained. Data input must not contain a color profile."));
+        }
         if (options.Metadata == ImageMetadataMode.Preserve && (source.HasOtherMetadata ||
             source.ProfileNames.Any(p => p.ToLowerInvariant() is not ("icc" or "icm" or "exif" or "xmp"))))
             blocked ??= "Some source metadata cannot be preserved by this conversion. Choose descriptive-metadata removal explicitly.";

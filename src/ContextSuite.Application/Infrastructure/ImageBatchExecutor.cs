@@ -28,7 +28,7 @@ internal sealed class ImageBatchExecutor(WorkerClient worker, OutputPublisher pu
                     report?.Invoke(item, new(item.Source.Path, OperationState.Running, "Preparing safe output"));
                     var plan = confirmed.Plan;
                     reservation = await publisher.ReserveAsync(new(item.Source.ItemId, item.Source.Path,
-                        plan.Options.Extension, plan.Settings, plan.ReplaceOriginal, plan.ReplaceOriginal), cancellationToken);
+                        plan.Options.Extension, plan.Settings, plan.ReplaceOriginal, plan.ReplaceOriginal, Dds: plan.Options.OutputRepresentation), cancellationToken);
                     // Reservation independently fingerprints the source; both that fingerprint and the planner's
                     // digest must still match before the adapter is permitted to write its temporary output.
                     if (!string.Equals(reservation.Record.Source.Sha256, item.Source.Sha256, StringComparison.Ordinal))

@@ -6,12 +6,13 @@ using System.Text;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Operations;
+using ContextSuite.Core.Dds;
 
 namespace ContextSuite.Core.ContractTests;
 
 internal static class ImageInterruptionContracts
 {
-    public static async Task RunAsync(string scratch, string executable, Action<bool, string> check)
+    public static async Task RunAsync(string scratch, string executable, Action<bool, string> check, bool dds = false)
     {
         var root = Path.Combine(scratch, "native-interruption-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -24,9 +25,11 @@ internal static class ImageInterruptionContracts
         foreach (var fault in new[] { "cancel", "crash", "timeout" })
         {
             var source = await worker.ProbeAsync(new(Guid.NewGuid(), sourcePath), CancellationToken.None);
-            var options = new ImageConversionOptions(ImageFormat.WebP, Quality: 100);
+            var options = dds ? new ImageConversionOptions(ImageFormat.Dds, Metadata: ImageMetadataMode.RemoveDescriptive,
+                Texture: new(Format: DdsFormat.Bc7Srgb, SourceInterpretation: DdsInterpretation.Srgb, Mips: DdsMipPolicy.Generate, Quality: 2)) :
+                new ImageConversionOptions(ImageFormat.WebP, Quality: 100);
             var plan = ImageConversionPlanner.Create(Guid.NewGuid(), [source], options, new("convert", new())).Items[0];
-            var reservation = await publisher.ReserveAsync(new(source.ItemId, source.Path, "webp", new("convert", new())));
+            var reservation = await publisher.ReserveAsync(new(source.ItemId, source.Path, options.Extension, new("convert", new())));
             using var cancellation = new CancellationTokenSource();
             var conversion = worker.ConvertAsync(new(plan, options, reservation.TemporaryPath), cancellation.Token);
             var wait = Stopwatch.StartNew();

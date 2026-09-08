@@ -2,9 +2,11 @@
 param([Parameter(Mandatory)][string] $Payload)
 $ErrorActionPreference = 'Stop'
 & (Join-Path $PSScriptRoot 'Test-ProductionEngine.ps1') -Payload $Payload
+& (Join-Path (Split-Path $PSScriptRoot -Parent) 'dds-engine\Test-DdsEngine.ps1') -Payload $Payload
 $allowed = @('Magick.Native-Q16-x64.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.Core.dll',
     'Magick.NET.Notice.txt', 'ContextSuite.Engine.json', 'ContextSuite.Shell.dll',
-    'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'payload-inventory.json')
+    'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'payload-inventory.json',
+    'ContextSuite.Dds.Native.dll', 'ContextSuite.Dds.Engine.json', 'DirectXTex.License.txt')
 foreach ($name in 'Application', 'Worker') {
     foreach ($extension in 'exe', 'dll', 'pdb', 'deps.json', 'runtimeconfig.json') { $allowed += "ContextSuite.$name.$extension" }
 }

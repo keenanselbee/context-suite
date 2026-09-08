@@ -20,5 +20,6 @@
     <Compile Include="..\..\src\ContextSuite.Application\SettingsViewModel.cs" Link="Runtime\SettingsViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.cs" Link="Runtime\MainViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.cs" Link="Runtime\ConversionViewModel.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.Dds.cs" Link="Runtime\ConversionViewModel.Dds.cs" />
   </ItemGroup>
 </Project>

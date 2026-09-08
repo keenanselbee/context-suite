@@ -13,7 +13,7 @@ public partial class MainWindow : System.Windows.Window
     private void OnChooseFiles(object sender, RoutedEventArgs e)
     {
         var picker = new OpenFileDialog { Title = "Choose images to convert", Multiselect = true, CheckFileExists = true,
-            Filter = "Supported images (*.png;*.jpg;*.jpeg;*.webp;*.bmp;*.tga)|*.png;*.jpg;*.jpeg;*.webp;*.bmp;*.tga|All files (*.*)|*.*" };
+            Filter = "Supported images (*.png;*.jpg;*.jpeg;*.webp;*.bmp;*.tga;*.dds)|*.png;*.jpg;*.jpeg;*.webp;*.bmp;*.tga;*.dds|All files (*.*)|*.*" };
         if (picker.ShowDialog(this) == true) AddFiles(picker.FileNames);
     }
 
@@ -21,6 +21,13 @@ public partial class MainWindow : System.Windows.Window
     {
         e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
+    }
+
+    private void OnChooseAnalysisFiles(object sender, RoutedEventArgs e)
+    {
+        var picker = new OpenFileDialog { Title = "Choose DDS files to analyze", Multiselect = true, CheckFileExists = true,
+            Filter = "DDS textures (*.dds)|*.dds|All files (*.*)|*.*" };
+        if (picker.ShowDialog(this) == true) AddFiles(picker.FileNames, "analyze");
     }
 
     private void OnFilesDropped(object sender, DragEventArgs e)
@@ -36,13 +43,14 @@ public partial class MainWindow : System.Windows.Window
         AddFiles(rows.Select(row => row.Path));
     }
 
-    private void AddFiles(IEnumerable<string> paths)
+    private void AddFiles(IEnumerable<string> paths, string operation = "convert")
     {
         try
         {
             var selection = paths.Take(OperationRequest.MaximumPaths + 1).Select(Path.GetFullPath).ToImmutableArray();
-            var reply = ((MainViewModel)DataContext).Admit(new(Guid.NewGuid(), "convert", "choose-format", selection));
-            InputNotice.Text = reply.Accepted ? "Selection received as a new batch. Review its conversion window when ready." : reply.Message;
+            var reply = ((MainViewModel)DataContext).Admit(new(Guid.NewGuid(), operation, operation == "analyze" ? "open-details" : "choose-format", selection));
+            InputNotice.Text = reply.Accepted ? (operation == "analyze" ? "Read-only analysis started. Select a result row for its details." :
+                "Selection received as a new batch. Review its conversion window when ready.") : reply.Message;
         }
         catch (Exception error) when (error is InvalidDataException or ArgumentException or IOException)
         { InputNotice.Text = "Could not add this selection. Use existing files only (no folders), up to 4,096 per batch."; }

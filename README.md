@@ -30,7 +30,10 @@ adapter/worker execution, a system-themed conversion planner, previews and
 trial-gated safe publication and a passing bounded media/failure matrix.
 The curated native engine is now integrated into production development builds,
 with bounded BMP/TGA conversion bringing the catalog to twenty cross-format pairs.
-This is not release-ready: DDS, PNG optimization, paid activation and customer
+The completed bounded [DDS slice](docs/dds-conversion-goal.md) adds public header analysis,
+pinned CPU DirectXTex conversion, mip/color policies and safe publication: 27
+conditional conversion pairs total. All 33 focused image/DDS desktop checks pass.
+This is not release-ready: PNG optimization, paid activation and customer
 packaging remain planned. See the [integration evidence](docs/bmp-tga-and-engine-integration.md)
 and [remaining redistribution gates](docs/release-redistribution.md).
 See the [conversion goal](docs/image-conversion-goal.md) for verified scope.
@@ -70,6 +73,7 @@ matrix passes; commercial release checks remain unfinished.
 
 ```powershell
 ./tools/Test-Foundation.ps1 -Configuration Release
+./tools/dds-engine/Build-DdsEngine.ps1
 ./tools/Build-Production.ps1 -Configuration Release
 ./tools/Test-Foundation.ps1 -Configuration Release -Integration
 ./artifacts/production/Release/ContextSuite.Application.exe
@@ -166,9 +170,8 @@ The first release path is intentionally narrow:
 1. Shared settings, safe copies, and optional replacement: implemented and tested.
 2. PNG/JPEG/WebP/BMP/TGA conversion and curated-engine integration: implemented
    and tested for explicitly bounded variants.
-3. Select the DDS toolchain and policies, then analyze DDS
-   headers with verified BC-format and linear/sRGB conversions through a
-   separately selected texture toolchain.
+3. DDS analysis and bounded 2D conversion: implemented and locally verified
+   under [decision 0011](docs/decisions/0011-dds-engine-and-texture-policies.md).
 4. Optimize PNG files with explicit lossless and bounded lossy policies, then
    expand image coverage through tested capabilities.
 5. Add common audio analysis and conversion after the image workflow is

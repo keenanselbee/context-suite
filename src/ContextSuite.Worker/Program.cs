@@ -57,7 +57,8 @@ try
             }
         }
         catch (Exception error) when (error is IOException or InvalidDataException or ArgumentException or InvalidOperationException or
-            UnauthorizedAccessException or ImageMagick.MagickException or System.Xml.XmlException)
+            UnauthorizedAccessException or ImageMagick.MagickException or System.Xml.XmlException or
+            System.Runtime.InteropServices.COMException or TypeInitializationException or DllNotFoundException or EntryPointNotFoundException or BadImageFormatException or OutOfMemoryException)
         {
             // A damaged/unsupported item is not a worker crash. Do not return engine strings containing file paths.
             var failure = error switch
@@ -66,6 +67,7 @@ try
                 InvalidDataException or ArgumentException or System.Xml.XmlException => ImageFailure.InvalidInput,
                 UnauthorizedAccessException or IOException => ImageFailure.FileAccess,
                 ImageMagick.MagickResourceLimitErrorException => ImageFailure.ResourceLimit,
+                OutOfMemoryException => ImageFailure.ResourceLimit,
                 ImageMagick.MagickCorruptImageErrorException => ImageFailure.InvalidInput,
                 _ => ImageFailure.EngineFailure
             };

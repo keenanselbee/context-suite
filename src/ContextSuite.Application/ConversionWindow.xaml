@@ -57,9 +57,78 @@
                         <TextBox x:Name="CustomColor" Text="{Binding CustomMatte, UpdateSourceTrigger=PropertyChanged}" Padding="6" MaxLength="7"
                                  AutomationProperties.AutomationId="ConversionCustomMatte" AutomationProperties.Name="Custom RGB color" />
                     </StackPanel>
-                    <TextBlock Grid.Column="2" Text="JPEG and 24-bit BMP cannot retain transparency. Choose a background for transparent images, then refresh the preview to check it."
+                    <TextBlock Grid.Column="2" Text="Opaque output and DDS Flatten use the selected background for transparency. Choose it explicitly, then refresh the encoded preview to check it."
                                TextWrapping="Wrap" VerticalAlignment="Center" />
                 </Grid>
+                <Expander Header="DDS texture policies" IsExpanded="True" Margin="0,14,0,8"
+                          Visibility="{Binding IsDdsWorkflow, Converter={StaticResource VisibleWhenTrue}}" AutomationProperties.AutomationId="DdsPolicies">
+                    <StackPanel Margin="4,8">
+                        <TextBlock Text="BC1 = DXT1, BC2 = DXT3, BC3 = DXT5. Formats without Srgb store linear color or numeric data, as selected below. BC output requires dimensions divisible by four; resizing is not performed."
+                                   TextWrapping="Wrap" Margin="0,0,0,8" />
+                        <UniformGrid Columns="3">
+                            <StackPanel Margin="0,0,12,8" Visibility="{Binding IsDdsTarget, Converter={StaticResource VisibleWhenTrue}}">
+                                <TextBlock Text="Output storage / transfer" />
+                                <ComboBox ItemsSource="{Binding DdsFormats}" SelectedItem="{Binding DdsFormat}" MinHeight="30" AutomationProperties.AutomationId="DdsFormat" AutomationProperties.Name="DDS output storage and transfer" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,8">
+                                <TextBlock Text="Texture purpose" />
+                                <ComboBox ItemsSource="{Binding DdsPurposes}" SelectedItem="{Binding DdsPurpose}" MinHeight="30" AutomationProperties.AutomationId="DdsPurpose" AutomationProperties.Name="Texture purpose" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,8">
+                                <TextBlock Text="Source interpretation" />
+                                <ComboBox ItemsSource="{Binding DdsInterpretations}" SelectedItem="{Binding DdsInterpretation}" MinHeight="30" AutomationProperties.AutomationId="DdsInterpretation" AutomationProperties.Name="Source interpretation" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,8" Visibility="{Binding IsDdsTarget, Converter={StaticResource VisibleWhenTrue}}">
+                                <TextBlock Text="Mip levels" />
+                                <ComboBox ItemsSource="{Binding DdsMipPolicies}" SelectedItem="{Binding DdsMips}" MinHeight="30" AutomationProperties.AutomationId="DdsMips" AutomationProperties.Name="Mip policy" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,8">
+                                <TextBlock Text="Alpha / fourth channel" />
+                                <ComboBox ItemsSource="{Binding DdsAlphaPolicies}" SelectedItem="{Binding DdsAlpha}" MinHeight="30" AutomationProperties.AutomationId="DdsAlpha" AutomationProperties.Name="Alpha policy" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,8" Visibility="{Binding IsDdsExport, Converter={StaticResource VisibleWhenTrue}}">
+                                <TextBlock Text="Export mip (0 = largest)" />
+                                <TextBox Text="{Binding DdsMip, UpdateSourceTrigger=PropertyChanged}" Padding="6" AutomationProperties.AutomationId="DdsExportMip" AutomationProperties.Name="Mip level to export" />
+                            </StackPanel>
+                        </UniformGrid>
+                        <TextBlock Text="Color-managed PNG/JPEG/WebP/BMP/TGA inputs require Srgb. Unspecified accepts only a DDS sRGB declaration. Data and Normal require Data interpretation. Normal also requires BC5, Discard alpha and channel-loss acknowledgment. DDS export currently supports a selected color mip to PNG only."
+                                   TextWrapping="Wrap" Margin="0,2,0,8" />
+                        <Expander Header="Advanced texture controls" AutomationProperties.AutomationId="DdsAdvanced">
+                            <StackPanel Margin="4,8">
+                                <UniformGrid Columns="3">
+                                    <StackPanel Margin="0,0,12,8">
+                                        <TextBlock Text="Convert values / change declaration" />
+                                        <ComboBox ItemsSource="{Binding DdsColorOperations}" SelectedItem="{Binding DdsColorOperation}" MinHeight="30" AutomationProperties.AutomationId="DdsColorOperation" AutomationProperties.Name="Color operation" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,8">
+                                        <TextBlock Text="DDS header" />
+                                        <ComboBox ItemsSource="{Binding DdsHeaders}" SelectedItem="{Binding DdsHeader}" MinHeight="30" IsEnabled="{Binding IsDdsTarget}" AutomationProperties.AutomationId="DdsHeader" AutomationProperties.Name="DDS header" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,8">
+                                        <TextBlock Text="BC7 effort: 0 fast / 1 normal / 2 slow" />
+                                        <ComboBox ItemsSource="{Binding DdsQualities}" SelectedItem="{Binding DdsQuality}" MinHeight="30" AutomationProperties.AutomationId="DdsQuality" AutomationProperties.Name="BC7 encoding effort" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,8">
+                                        <TextBlock Text="Data output red channel from" />
+                                        <ComboBox ItemsSource="{Binding DdsChannels}" SelectedItem="{Binding DdsRed}" MinHeight="30" AutomationProperties.AutomationId="DdsRed" AutomationProperties.Name="Red channel source" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,8">
+                                        <TextBlock Text="Data output green channel from" />
+                                        <ComboBox ItemsSource="{Binding DdsChannels}" SelectedItem="{Binding DdsGreen}" MinHeight="30" AutomationProperties.AutomationId="DdsGreen" AutomationProperties.Name="Green channel source" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,8">
+                                        <TextBlock Text="BC1 cutout threshold (0–1)" />
+                                        <TextBox Text="{Binding DdsCutout, UpdateSourceTrigger=PropertyChanged}" Padding="6" AutomationProperties.AutomationId="DdsCutout" AutomationProperties.Name="BC1 cutout threshold" />
+                                    </StackPanel>
+                                </UniformGrid>
+                                <CheckBox Content="I acknowledge that channels outside the selected R/RG mapping are discarded" IsChecked="{Binding DdsChannelLoss}" AutomationProperties.AutomationId="DdsChannelLoss" />
+                                <CheckBox Content="Approximate base-level cutout coverage in generated mips" IsChecked="{Binding DdsCoverage}" Margin="0,8,0,0" AutomationProperties.AutomationId="DdsCoverage" />
+                                <TextBlock Text="Mip generation uses area filtering in linear light, alpha-aware color and normalized normal vectors. Reinterpret changes only the DDS declaration and preserves compressed bytes; it cannot change layout, mips or alpha. Legacy headers cannot retain sRGB or alpha-mode declarations."
+                                           TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </Expander>
                 <Expander Header="Metadata and _output policy" Margin="0,14,0,8" AutomationProperties.AutomationId="ConversionAdvanced">
                     <StackPanel Margin="4,10,4,4">
                         <CheckBox Content="Remove descriptive metadata (including location); keep color information"

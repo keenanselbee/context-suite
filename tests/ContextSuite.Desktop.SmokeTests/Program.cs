@@ -225,7 +225,8 @@ internal static class Program
                 var cells = Enumerable.Range(0, 4).Select(col => CellText(grid.GetItem(row, col))).ToArray();
                 if (cells[0] != (batch + 1).ToString() || cells[1] != operations[batch] ||
                     !files.Contains(cells[2], StringComparer.OrdinalIgnoreCase) || !seen.Add(cells[2]) ||
-                    cells[3] != (operations[batch] == "convert" ? "The image is damaged or invalid. Check the source file and try another copy." : "Unsupported \u2014 not implemented")) return false;
+                    cells[3] != (operations[batch] == "convert" ? "The image is damaged or invalid. Check the source file and try another copy." :
+                        operations[batch] == "analyze" ? "Not a supported DDS header. No files changed." : "Unsupported \u2014 not implemented")) return false;
             }
         }
         return true;

@@ -18,12 +18,14 @@ Build And Test
 
 # Complete foundation, requiring private source and staged curated inputs.
 # See tools/curated-engine/README.md for the reviewed native staging workflow.
+./tools/dds-engine/Build-DdsEngine.ps1
 ./tools/Build-Production.ps1 -Configuration Release
 ./tools/Test-Foundation.ps1 -Configuration Release -Integration
 ./artifacts/production/Release/ContextSuite.Application.exe
 
 # Real image-engine/adapter contracts, requiring the private checkout.
 ./tools/Test-ImageConversion.ps1 -Configuration Release
+./tools/Test-DdsCodec.ps1 -SkipNativeBuild
 # Opt-in desktop test of the actual conversion UI with isolated trial/settings.
 ./tools/Test-DesktopSmoke.ps1 -Configuration Release -Images
 # Opt-in native replacement; recycles only two newly generated image fixtures.
@@ -68,7 +70,7 @@ Implementation Boundaries
   forwarding, request-file handling, and on-demand worker ownership.
 - Worker: authenticated local connection and real private capability discovery.
 - Private: real image adapter and production composition; the catalog advertises
-  twenty tested PNG/JPEG/WebP/BMP/TGA cross-format pairs. No fake encoder or licensing
+  twenty tested ordinary-image pairs and seven bounded DDS pairs. No fake encoder or licensing
   bypass is supplied.
 - Shared source: Windows pipe identity/security code compiled into its process
   owners and contract tests without adding an infrastructure assembly.

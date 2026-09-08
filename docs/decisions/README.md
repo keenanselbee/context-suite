@@ -74,6 +74,8 @@ design documents when an accepted decision changes their assumptions.
 Current Decisions
 -----------------
 
+- [0011: DDS engine and texture policies](0011-dds-engine-and-texture-policies.md) — accepted; bounded local implementation and acceptance completed
+
 - [0001: Shell prototype platform](0001-shell-prototype-platform.md)
 - [0002: Shell activation request](0002-shell-activation-request.md)
 - [0003: Separate shell identity packages](0003-separate-shell-identity-packages.md)
@@ -83,4 +85,4 @@ Current Decisions
 - [0007: Production UI and processes](0007-production-ui-and-processes.md) — accepted; process foundation implemented
 - [0008: Output naming, settings, and replacement](0008-output-naming-settings-and-replacement.md) — implemented; replacement restricted to verified platforms/paths
 - [0009: First image engine and local trial](0009-first-image-engine-and-trial.md) — bounded local acceptance passed; release packaging refined by 0010
-- [0010: First release formats and curated image engine](0010-first-release-formats-and-curated-engine.md) — accepted; curated development packaging and bounded BMP/TGA conversion implemented; DDS and release clearance pending
+- [0010: First release formats and curated image engine](0010-first-release-formats-and-curated-engine.md) — accepted; curated development packaging and bounded BMP/TGA conversion implemented; DDS refined by 0011, release clearance pending

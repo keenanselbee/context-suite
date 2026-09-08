@@ -3,7 +3,8 @@ Context Suite Architecture
 
 Status: production process foundation implemented under decision 0007.
 Magick.NET with the pinned curated native engine is integrated into development
-packaging. DDS adapter selection and customer deployment remain pending.
+packaging. Decision 0011 adds pinned CPU DirectXTex in the worker and public
+bounded DDS header analysis. Bounded DDS local acceptance passes; customer deployment remains pending.
 
 
 Architecture Goals
@@ -72,7 +73,7 @@ The app owns final publication; the worker produces and validates temporary
 outputs. Settings use versioned JSON in local application data. Typed image
 probe/preview/conversion IPC and trial-gated application publication now have
 real-worker integration tests, and the conversion UI now uses that path. The
-capability registry advertises twenty tested PNG/JPEG/WebP/BMP/TGA conversion pairs, subject
+capability registry advertises twenty ordinary-image pairs and seven bounded DDS pairs, subject
 to per-file probing and planning. The app requires the private
 checkout to build but does not reference the engine assemblies; only the worker
 links them. A test-only host compiles the real windows with isolated storage,
@@ -308,7 +309,7 @@ of those mechanisms before codecs.
 
 Resolve these remaining choices before their dependent implementation:
 
-- Select the dedicated DDS adapter/toolchain and its representations. Curated
+- DDS acceptance passes under [decision 0011](decisions/0011-dds-engine-and-texture-policies.md). Curated
   production-development integration and bounded BMP/TGA policies now have
   [passing evidence](bmp-tga-and-engine-integration.md); complete the separate
   [redistribution gates](release-redistribution.md) before release.

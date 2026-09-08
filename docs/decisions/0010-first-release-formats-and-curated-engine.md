@@ -21,7 +21,8 @@ Decision
 
 Target PNG, JPEG, WebP, DDS, TGA, and BMP for the first image release.
 The bounded PNG/JPEG/WebP/BMP/TGA conversion slice is now implemented and
-verified. DDS remains planned. This target is not a claim that every variant, conversion pair, or
+verified. DDS selection is refined by [decision 0011](0011-dds-engine-and-texture-policies.md),
+with its bounded implementation passing local acceptance. This target is not a claim that every variant, conversion pair, or
 Analyze/Optimize operation is supported.
 
 - Retain Magick.NET Q16 and the current worker/adapter architecture for general
@@ -29,10 +30,9 @@ Analyze/Optimize operation is supported.
 - Add tested BMP/TGA input and output as bounded general-image capabilities.
   Define supported headers, compression, orientation, alpha, bit depth, and
   metadata/color-loss policies before advertising each capability.
-- Use a separately selected and pinned DDS toolchain. DirectXTex remains a
-  candidate, not an accepted production dependency. Settle BC formats,
-  linear/sRGB conversion versus reinterpretation, mip generation, texture
-  structures, HDR, and validation policies in its own implementation brief.
+- Use a separately selected and pinned DDS toolchain. Decision 0011 now accepts
+  CPU DirectXTex and settles the initial BC/color/mipmap matrix. Its separate
+  acceptance and redistribution gates remain required.
 - Prioritize a curated native build aligned with this release target. Retain
   ImageMagick/Magick.Native, PNG/zlib, the required JPEG variants, WebP, and
   Little CMS, and libxml2 (required by the verified XMP preservation path).

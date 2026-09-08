@@ -154,7 +154,8 @@ Release Sequence
 The accepted first image-release format target is PNG, JPEG, WebP, DDS, TGA,
 and BMP. Bounded PNG/JPEG/WebP/BMP/TGA conversion is implemented today. Formats
 do not imply support for every variant or operation. A curated general-image
-engine is integrated into development packaging; DDS tooling remains unselected. See
+engine is integrated into development packaging. Decision 0011 selects a pinned
+CPU DirectXTex bridge; bounded DDS analysis/conversion passes local acceptance. See
 [decision 0010](decisions/0010-first-release-formats-and-curated-engine.md).
 Retain useful near-term capabilities while excluding unnecessary dependencies;
 do not expand product scope merely because upstream bundles a codec.

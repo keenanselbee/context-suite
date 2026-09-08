@@ -53,7 +53,8 @@ Initial Image Scope
 -------------------
 
 The first image-release target is PNG, JPEG, WebP, DDS, TGA, and BMP. Only
-bounded PNG/JPEG/WebP/BMP/TGA conversion is implemented and verified today. Follow
+bounded variants are supported. PNG/JPEG/WebP/BMP/TGA conversion has completed
+its local acceptance, as has the bounded DDS implementation. Follow
 [decision 0010](decisions/0010-first-release-formats-and-curated-engine.md) for
 the curated general-image engine and separately selected DDS toolchain.
 
@@ -61,8 +62,10 @@ Magick.NET-Q16-x64 14.17.1 is pinned and tested for the first slice; broader
 runtime/failure coverage and redistribution checks remain gates. See
 [decision 0009](decisions/0009-first-image-engine-and-trial.md) for image/trial
 policies and the [implementation goal](image-conversion-goal.md) for coverage.
-DDS conversion is a first-class follow-up using a dedicated tested adapter;
-DirectXTex is the recommended candidate, not yet a pinned production dependency.
+DDS uses a pinned CPU DirectXTex bridge under
+[decision 0011](decisions/0011-dds-engine-and-texture-policies.md). Its native
+dependency is confined to the sequential worker. Current support and evidence
+are recorded in the [DDS goal](dds-conversion-goal.md).
 
 Primary conversions are:
 
@@ -86,8 +89,10 @@ camera RAW, and SVG rasterization need separate scope and redistribution
 decisions. Add formats for demonstrated use cases and tested behavior rather
 than format-count marketing.
 
-DDS targets should cover BC1/DXT1, BC2/DXT3, BC3/DXT5, BC4, BC5, BC6H, BC7, and
-selected uncompressed formats as their contracts are verified. Linear/sRGB
+DDS targets cover ordinary 2D BC1/DXT1, BC2/DXT3, BC3/DXT5, BC4/BC5 UNORM/SNORM,
+BC7, R8, RG8 and RGBA8/BGRA8. BC6H/HDR, typeless, premultiplied-alpha and
+cube/array/volume conversion are deferred. Export is an explicitly selected
+color mip to 8-bit sRGB PNG; numeric export needs a separate range policy. Linear/sRGB
 interpretation must be explicit where supported, with pixel conversion distinct
 from tag-only reinterpretation. Do not offer nonexistent sRGB variants for
 BC4/BC5/BC6H or apply color transfer to alpha/data textures. Preserve supported

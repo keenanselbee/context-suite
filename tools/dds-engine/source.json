@@ -1,0 +1,7 @@
+{
+  "revision": "5ddca91f9ad07308957bd9d4dffe204914a98acb",
+  "release": "mar2026",
+  "archiveSha256": "7F0E4F8E6CB54943CBBB6AB1FFC8EBE45ED121225488FFC69E618CD38E8758DB",
+  "configuration": "CPU only; no OpenMP, GPU, tools, sample, OpenEXR, JPEG or PNG auxiliary dependencies",
+  "status": "implementation candidate; not commercial release clearance"
+}
