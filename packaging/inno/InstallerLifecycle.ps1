@@ -68,6 +68,11 @@ function Start-SuiteInstallStage {
         if (-not (Test-Path -LiteralPath (Join-Path $Root 'active.json'))) {
             throw 'Incomplete or legacy installation requires recovery before staging another payload.'
         }
+        # Reject a foreign installer before recovery can touch registrations,
+        # journals, locks or payload directories. Recovery may change the active
+        # pointer, so validate again against its resolved release below.
+        $previous = Get-SuiteActiveRelease $Root
+        Assert-SuiteInstallerIdentity $Incoming $previous
         if (Test-Path -LiteralPath (Join-Path $Root 'recovery.json')) {
             $journal = Read-RecoveryJson (Join-Path $Root 'recovery.json')
             if ($journal.phase -eq 'pending') { Invoke-SuiteRecovery $Root | Out-Null }

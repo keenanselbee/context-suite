@@ -8,6 +8,34 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $repository 'packaging\inno\InstallerLifecycle.ps1')
 $backendCount = $script:passed
 
+function Get-InstallationSnapshot {
+    param([string] $Root)
+    return @(Get-ChildItem -LiteralPath $Root -Recurse -Force | Sort-Object FullName | ForEach-Object {
+        [ordered]@{ path = $_.FullName.Substring($Root.Length); directory = $_.PSIsContainer;
+            lastWriteUtc = $_.LastWriteTimeUtc.Ticks; attributes = [int]$_.Attributes;
+            hash = $(if (-not $_.PSIsContainer) { (Get-FileHash -LiteralPath $_.FullName).Hash }) }
+    }) | ConvertTo-Json -Depth 4 -Compress
+}
+
+foreach ($mismatch in 'publisher', 'package-name') {
+    foreach ($committedPointer in $false, $true) {
+        New-RecoveryFixture
+        if ($committedPointer) { Invoke-SuiteRecovery $fixture.root $fixture.next.id | Out-Null }
+        Write-PendingFixture
+        # Both journal states would mutate files, and rollback can change Appx.
+        $incoming = $fixture.next | ConvertTo-Json -Depth 12 | ConvertFrom-Json
+        if ($mismatch -eq 'publisher') { $incoming.publisher = 'CN=Other' }
+        else { $incoming.packages[0].name = 'ContextSuite.Foreign.Analyze' }
+        $beforeFiles = Get-InstallationSnapshot $fixture.root
+        $beforePackages = $script:registered | ConvertTo-Json -Depth 4 -Compress
+        $beforeCalls = $script:addCount + $script:removeCount
+        Expect-RecoveryFailure { Start-SuiteInstallStage $fixture.root $incoming ([guid]::NewGuid().ToString('N')) } 'identity differs'
+        Assert-RecoveryTest ((Get-InstallationSnapshot $fixture.root) -ceq $beforeFiles -and
+            ($script:registered | ConvertTo-Json -Depth 4 -Compress) -ceq $beforePackages -and
+            ($script:addCount + $script:removeCount) -eq $beforeCalls) "Stage rejects $mismatch without any state changes (committed pointer: $committedPointer)"
+    }
+}
+
 function Copy-StageFixture {
     param([string] $Root, $Release, [string] $Source)
     $id = [guid]::NewGuid().ToString('N')
