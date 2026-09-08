@@ -97,9 +97,9 @@ const CommandDefinition& GetDefinition(CommandKind kind)
         L"Optimize",
         L"Optimize the selected media files with Context Suite",
         L"optimize",
-        L"Choose preset...",
-        L"Choose one optimization policy for the complete selection",
-        L"choose-preset",
+        L"Auto",
+        L"Balance quality and size; keep originals and preserve metadata",
+        L"auto",
         L"Optimize.ico",
         true,
         OptimizeCommandClsid,
@@ -464,9 +464,9 @@ std::filesystem::path GetCommandIconPath(const CommandDefinition& definition)
 class ExplorerCommand final : public IExplorerCommand
 {
 public:
-    explicit ExplorerCommand(CommandKind kind, CommandRole role = CommandRole::Root) :
+    explicit ExplorerCommand(CommandKind kind, CommandRole role = CommandRole::Root, unsigned preset = 0) :
         definition_(GetDefinition(kind)),
-        role_(role)
+        role_(role), preset_(preset)
     {
         ++objectCount;
     }
@@ -513,6 +513,10 @@ public:
     {
         if (role_ == CommandRole::Separator) return DuplicateString(L"", title);
         if (role_ == CommandRole::Settings) return DuplicateString(L"Settings...", title);
+        if (role_ == CommandRole::Action && definition_.kind == CommandKind::Optimize)
+            return DuplicateString(PresetTitles[preset_], title);
+        if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert)
+            return DuplicateString(ConvertTitles[preset_], title);
         return DuplicateString(role_ == CommandRole::Root ? definition_.title : definition_.actionTitle, title);
     }
 
@@ -532,6 +536,11 @@ public:
     {
         if (role_ == CommandRole::Settings) return DuplicateString(L"Open settings without processing selected files", tooltip);
         if (role_ == CommandRole::Separator) return DuplicateString(L"", tooltip);
+        if (role_ == CommandRole::Action && definition_.kind == CommandKind::Optimize)
+            return DuplicateString(PresetTooltips[preset_], tooltip);
+        if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert)
+            return DuplicateString(preset_ == 5 ? L"Choose format, quality and advanced settings" :
+                L"Create converted copies; ask only when transparency, metadata or quality needs a decision", tooltip);
         return DuplicateString(role_ == CommandRole::Root ? definition_.tooltip : definition_.actionTooltip, tooltip);
     }
 
@@ -545,6 +554,8 @@ public:
         // Stable distinct IDs for auxiliary commands; existing root/action IDs do not change.
         if (role_ == CommandRole::Settings) canonicalName->Data1 ^= 0x40000000;
         if (role_ == CommandRole::Separator) canonicalName->Data1 ^= 0x80000000;
+        if (role_ == CommandRole::Action && definition_.kind == CommandKind::Optimize) canonicalName->Data1 ^= preset_ + 1;
+        if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert && preset_ < 5) canonicalName->Data1 ^= preset_ + 1;
         return S_OK;
     }
 
@@ -582,7 +593,10 @@ public:
         if (role_ != CommandRole::Settings) RETURN_IF_FAILED(GetSelectionPaths(items, paths));
 
         std::filesystem::path requestPath;
-        RETURN_IF_FAILED(CreateActivationRequest(definition_, role_ == CommandRole::Settings ? L"settings" : definition_.action, paths, requestPath));
+        const auto action = role_ == CommandRole::Settings ? L"settings" :
+            definition_.kind == CommandKind::Optimize ? PresetActions[preset_] :
+            definition_.kind == CommandKind::Convert ? ConvertActions[preset_] : definition_.action;
+        RETURN_IF_FAILED(CreateActivationRequest(definition_, action, paths, requestPath));
 
         const HRESULT result = LaunchHost(requestPath);
         if (FAILED(result))
@@ -609,18 +623,30 @@ private:
     std::atomic_ulong referenceCount_{1};
     const CommandDefinition& definition_;
     CommandRole role_;
+    unsigned preset_;
+    static constexpr const wchar_t* ConvertTitles[] = { L"PNG", L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"More options..." };
+    static constexpr const wchar_t* ConvertActions[] = { L"png", L"jpeg", L"webp", L"bmp", L"tga", L"choose-format" };
+    static constexpr const wchar_t* PresetTitles[] = { L"Auto", L"Lossless", L"Balanced", L"Smallest" };
+    static constexpr const wchar_t* PresetActions[] = { L"auto", L"lossless", L"balanced", L"smallest" };
+    static constexpr const wchar_t* PresetTooltips[] = {
+        L"Balance quality and size with gentle loss only when worthwhile; keep originals",
+        L"Reduce file size without changing pixels; keep originals",
+        L"Allow slight RGB precision loss for smaller files; keep originals",
+        L"Allow stronger RGB precision loss; banding may be visible; keep originals" };
 };
 
 class CommandEnumerator final : public IEnumExplorerCommand
 {
 public:
     explicit CommandEnumerator(CommandKind kind) :
-        commands_{new (std::nothrow) ExplorerCommand(kind, CommandRole::Action),
-            new (std::nothrow) ExplorerCommand(kind, CommandRole::Separator),
-            new (std::nothrow) ExplorerCommand(kind, CommandRole::Settings)},
-        kind_(kind)
+        kind_(kind), commandCount_(kind == CommandKind::Optimize ? 6 : 8)
     {
         ++objectCount;
+        const unsigned count = commandCount_ - 2;
+        for (unsigned preset = 0; preset < count; ++preset)
+            commands_[preset] = new (std::nothrow) ExplorerCommand(kind, CommandRole::Action, preset);
+        commands_[count] = new (std::nothrow) ExplorerCommand(kind, CommandRole::Separator);
+        commands_[count + 1] = new (std::nothrow) ExplorerCommand(kind, CommandRole::Settings);
     }
 
     ~CommandEnumerator()
@@ -634,7 +660,7 @@ public:
 
     bool IsValid() const
     {
-        return std::all_of(commands_.begin(), commands_.end(), [](auto* command) { return command != nullptr; });
+        return std::all_of(commands_.begin(), commands_.begin() + commandCount_, [](auto* command) { return command != nullptr; });
     }
 
     IFACEMETHODIMP QueryInterface(REFIID interfaceId, void** object) override
@@ -683,7 +709,7 @@ public:
             commands[index] = nullptr;
         }
         ULONG actual = 0;
-        while (actual < count && position_ < commands_.size())
+        while (actual < count && position_ < commandCount_)
         {
             commands_[position_]->AddRef();
             commands[actual++] = commands_[position_++];
@@ -694,7 +720,7 @@ public:
 
     IFACEMETHODIMP Skip(ULONG count) override
     {
-        const auto actual = std::min(count, static_cast<ULONG>(commands_.size()) - position_);
+        const auto actual = std::min(count, commandCount_ - position_);
         position_ += actual;
         return actual == count ? S_OK : S_FALSE;
     }
@@ -725,8 +751,9 @@ public:
 
 private:
     std::atomic_ulong referenceCount_{1};
-    std::array<ExplorerCommand*, 3> commands_;
+    std::array<ExplorerCommand*, 8> commands_{};
     CommandKind kind_;
+    ULONG commandCount_;
     ULONG position_ = 0;
 };
 

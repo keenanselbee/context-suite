@@ -21,6 +21,18 @@ The product promise is:
 > Understand and prepare media files without hidden quality, metadata, or
 > compatibility surprises.
 
+The overarching UX goal is simplicity for a broad audience: **select files,
+right-click, choose, done**. Routine successful work should rarely require the
+application UI. Direct, understandable menu actions are the primary interface;
+settings, technical detail and advanced planning are secondary.
+
+[Decision 0015](decisions/0015-simple-context-menu-workflows.md) establishes the
+next direction: Auto first, direct presets, best-effort processing within the
+chosen quality limits, a completion chime, and UI only for useful progress,
+necessary decisions or problems. Direct Optimize and safe common Convert implement this flow with
+local automated evidence; broader UI/compatibility work and human acceptance
+remain open. See the [quiet-first UX evidence](quiet-first-ux-goal.md).
+
 
 Tool Boundaries
 ---------------
@@ -71,6 +83,12 @@ Design Principles
 -----------------
 
 - Describe user goals before implementation details.
+- Prefer a single context-menu choice over opening a planner. Do not make users
+  understand PNG variants, metadata chunks or encoder settings for ordinary work.
+- Treat Auto and named presets as bounded quality goals, not required encodings;
+  choose the smallest verified eligible result and use a safe gentler fallback.
+- Keep fast success quiet except for one optional completion sound per batch.
+  Progress and exception UI must be compact and actionable, not an engineering dashboard.
 - Recommend actions, but keep irreversible consequences visible until execution.
 - Preserve source files by default.
 - Explain meaningful quality and compatibility tradeoffs in plain language.
@@ -106,6 +124,12 @@ file; otherwise the planning surface can explain or partition the selection.
 Common one-decision operations may start from a child command. Any action that
 requires a meaningful decision—such as choosing a matte for transparent PNG to
 JPEG conversion—opens the appropriate planning surface before processing.
+
+The target Optimize submenu is Auto, Lossless, Balanced, Smallest, separator,
+Settings. Each preset runs directly without Choose preset or a success dialog.
+Fast batches stay hidden; longer work may show cancellable progress. No smaller
+result is a normal completion. Required consent, access problems, partial failure
+and recovery warnings remain visible; simplicity must not conceal consequences.
 
 Explorer code must remain responsive. It performs only bounded capability work
 and delegates analysis, planning, conversion, optimization, validation, and

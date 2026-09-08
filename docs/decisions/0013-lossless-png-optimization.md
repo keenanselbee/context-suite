@@ -17,18 +17,20 @@ Decision
   runtime downloads, reference binaries, stock fallback or arbitrary arguments.
 - Policy `png-lossless-preserve-v1` uses level 2, one thread, no reductions,
   existing interlace mode, no alpha optimization and no metadata stripping.
-  The initial product admits non-interlaced PNG only. Grayscale/indexed
+  The product admits non-interlaced and Adam7 PNG. Grayscale/indexed
   1/2/4/8-bit and applicable grayscale/RGB/alpha 8/16-bit variants are covered.
 - The existing bounded image probe and decoder remain admission checks. Their
   color/profile and malformed-input restrictions still apply. Reject animation,
-  HDR/gain maps, interlacing, unknown critical/unsafe structural chunks, offset
+  HDR/gain maps, unknown critical/unsafe structural chunks, offset
   metadata (`iDOT`) and provenance-bearing `caBX`, rather than silently changing
   their meaning. Later support requires new fixtures and an explicit policy.
 - Permit only IDAT recompression. Independently check identical IHDR, palette,
-  transparency and unfiltered packed sample bytes, including hidden RGB and all
+  transparency and unfiltered packed samples (excluding unused padding bits), including hidden RGB and all
   precision bits. Copy every original non-IDAT chunk back unchanged and reopen
   the final PNG. Do not normalize orientation or color, reorder the palette,
   strip metadata, resize or reduce bit depth.
+  Adam7 validation resets filters for each nonempty pass and retains pass order;
+  see [PNG interlacing specification](https://www.w3.org/TR/png-3/#8Interlace).
 - The private worker invokes the encoder over bounded stdin/stdout, never with
   user media/output paths. A Windows kill-on-close job owns its lifetime and
   limits encoder process memory to 1 GiB. A 90-second child deadline and existing

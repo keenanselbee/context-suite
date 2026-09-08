@@ -55,8 +55,11 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         var result = reply.ImageResult ?? throw new InvalidDataException("Worker returned no optimization result.");
         if (result.Validation.ItemId != request.Source.ItemId || !result.Validation.MatchesPlan ||
             result.Width != request.Source.Width || result.Height != request.Source.Height || result.BitDepth != request.Source.BitDepth ||
-            result.OutputBytes is <= 0 or > 128 * 1024 * 1024 || string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 128)
-            throw new InvalidDataException("Worker result does not match the lossless optimization plan.");
+            result.OutputBytes is <= 0 or > 128 * 1024 * 1024 || string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 128 ||
+            result.OptimizationMethod is not ("Lossless" or "RGB7 (lossy)" or "RGB6 (lossy)") || result.OptimizationReason?.Length > 512 ||
+            (request.Policy == PngOptimizationPlan.Policy && result.OptimizationMethod != "Lossless") ||
+            (request.Policy != PngOptimizationPlan.SmallestPolicy && result.OptimizationMethod == "RGB6 (lossy)"))
+            throw new InvalidDataException("Worker result does not match the optimization plan.");
         return result;
     }
 

@@ -3,7 +3,7 @@ using ContextSuite.Core.Settings;
 
 namespace ContextSuite.Core.Images;
 
-public enum PngOptimizationPreset { Lossless, Balanced, Smallest }
+public enum PngOptimizationPreset { Lossless, Balanced, Smallest, Auto }
 
 // Fixed policies; no metadata stripping, alpha changes or resizing.
 public sealed record PngOptimizationItem(ImageSourceFacts Source, string? BlockReason)
@@ -15,13 +15,15 @@ public sealed record PngOptimizationPlan(Guid BatchId, BatchSettings Settings, b
     ImmutableArray<PngOptimizationItem> Items, PngOptimizationPreset Preset = PngOptimizationPreset.Lossless)
 {
     public const string Policy = "png-lossless-preserve-v1";
-    public const string BalancedPolicy = "png-rgb7-preserve-v1";
-    public const string SmallestPolicy = "png-rgb6-preserve-v1";
+    public const string BalancedPolicy = "png-balanced-preserve-v2";
+    public const string SmallestPolicy = "png-smallest-preserve-v2";
+    public const string AutoPolicy = "png-auto-preserve-v1";
     public string SelectedPolicy => Preset switch
     {
         PngOptimizationPreset.Lossless => Policy,
         PngOptimizationPreset.Balanced => BalancedPolicy,
         PngOptimizationPreset.Smallest => SmallestPolicy,
+        PngOptimizationPreset.Auto => AutoPolicy,
         _ => throw new InvalidDataException("Unknown PNG preset.")
     };
     public bool HasExecutableItems => Items.Any(item => item.CanExecute);
@@ -44,10 +46,7 @@ public sealed record PngOptimizationPlan(Guid BatchId, BatchSettings Settings, b
         {
             source.Validate();
             return new PngOptimizationItem(source, source.Format != ImageFormat.Png ? "Optimization currently supports PNG only." :
-                source.UnsupportedReason ?? (preset == PngOptimizationPreset.Lossless ? null :
-                    source.BitDepth != 8 || (ulong)source.Width * source.Height > 16_000_000
-                        ? "Lossy presets require supported 8-bit PNGs of at most 16 million pixels. Choose Lossless."
-                        : source.PngLossyBlockReason));
+                source.UnsupportedReason);
         }).ToImmutableArray();
         if (items.IsEmpty || items.Length > 4096 || items.Select(i => i.Source.ItemId).Distinct().Count() != items.Length)
             throw new InvalidDataException("Invalid optimization selection.");

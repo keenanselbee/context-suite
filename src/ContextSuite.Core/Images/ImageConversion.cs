@@ -89,6 +89,14 @@ public sealed record ImageBatchPlan(Guid BatchId, ImageConversionOptions Options
 {
     public bool HasExecutableItems => Items.Any(i => i.CanExecute);
 
+    // Format facts and resolution-only normalization do not remove capabilities.
+    // EXIF/XMP normalization can remove thumbnails, so that still needs review.
+    public bool CanConfirmQuickCopy => !ReplaceOriginal && !Items.IsDefaultOrEmpty &&
+        Items.All(item => item.CanExecute && item.Warnings.All(warning =>
+            warning.Code is "loss-not-restored" or "untagged-srgb" ||
+            warning.Code == "metadata-normalization" && !item.Source.ProfileNames.Any(name =>
+                name.Equals("exif", StringComparison.OrdinalIgnoreCase) || name.Equals("xmp", StringComparison.OrdinalIgnoreCase))));
+
     // Confirmation belongs to this exact immutable plan, not a reusable settings preference.
     public ConfirmedImageBatch Confirm(bool warningsAcknowledged, bool replacementConfirmed, bool replacementAvailable)
     {

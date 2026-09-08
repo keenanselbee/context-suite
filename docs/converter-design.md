@@ -4,6 +4,18 @@ Context Converter Design
 Status: PNG/JPEG/WebP/BMP/TGA conversion, planner, preview and trial-gated publication
 implemented and verified locally for the bounded slice; release checks remain open.
 
+Direct PNG/JPEG/WebP/BMP/TGA menu targets now create safe copies without a planner
+when no meaningful decision is needed. Defaults are full size, preserved metadata,
+JPEG quality 90 and lossless WebP. Existing replacement preferences never authorize
+a quick action to remove an original. Transparency backgrounds, metadata changes,
+precision reduction, lossy-to-lossy processing and DDS still require the preselected
+planner. Informational notices about lost detail not being restored or untagged
+BMP/TGA sRGB are not extra confirmation gates. Resolution-only normalization also
+proceeds quietly; EXIF/XMP normalization still requires review because it can remove
+embedded thumbnails. The planner refreshes previews after
+a 300 ms pause in edits; size/quality and technical file details are secondary.
+See [current UX verification](quiet-first-ux-goal.md) for pending desktop acceptance.
+
 
 Purpose
 -------

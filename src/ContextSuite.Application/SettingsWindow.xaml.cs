@@ -14,4 +14,12 @@ public partial class SettingsWindow : Window
     {
         Close();
     }
+
+    private void OnBrowseFolder(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: ToolSettingsEditor editor }) return;
+        var dialog = new Microsoft.Win32.OpenFolderDialog { Title = "Choose output folder", Multiselect = false };
+        if (System.IO.Directory.Exists(editor.OutputDirectory)) dialog.InitialDirectory = editor.OutputDirectory;
+        if (dialog.ShowDialog(this) == true) editor.OutputDirectory = dialog.FolderName;
+    }
 }

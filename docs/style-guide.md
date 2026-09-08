@@ -15,6 +15,11 @@ Product Language
 - Use the short commands **Analyze**, **Convert**, and **Optimize** in Explorer.
 - Use `ContextSuite` as the root namespace and project-name prefix.
 - Describe user goals before implementation details.
+- Favor context-menu-first, one-choice workflows for routine work. Keep Auto
+  first where a tested conservative automatic policy exists; put technical
+  choices and per-file diagnostics behind an intentional secondary surface.
+- Follow decision 0015 for quiet success, compact delayed progress and actionable
+  exception UI. Do not force users to dismiss success dialogs or inspect grids.
 - Prefer plain media terms such as **format**, **quality**, **dimensions**,
   **file size**, **metadata**, and **output**.
 - Explain codec or metadata terminology where the user must make a decision.
@@ -165,6 +170,11 @@ Apply this section if the accepted desktop UI decision uses XAML and MVVM.
   overrides. No separate stored theme preference is currently needed.
 - Provide accessible names, keyboard navigation, visible focus states, and
   sufficient color contrast.
+- Use `StatusTextBlock` for changing task, validation and recovery messages.
+  It sends polite live-region events for visible text changes, coalesces changes
+  within a dispatcher turn and leaves hidden quick work silent. Plain WPF
+  `LiveSetting` markup alone does not raise the required event; see
+  [Microsoft's WPF guidance](https://learn.microsoft.com/en-us/accessibility-tools-docs/items/wpf/text_livesetting).
 - Do not rely on color alone to communicate success, warnings, or failures.
 - Keep primary workflows usable without opening advanced settings.
 

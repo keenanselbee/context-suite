@@ -1,6 +1,25 @@
 Desktop Smoke Tests
 ===================
 
+Non-interactive view checks
+--------------------------
+
+Run `./tools/Test-ViewContracts.ps1 -Configuration Release` without reserving the
+keyboard or mouse. It loads the actual four production windows into the isolated
+test host, measures their minimum-size layout without showing them, checks the
+UIA names/live settings of status controls, and checks collapsed advanced panels,
+planner columns and Escape/confirmation wiring. It starts no worker or trial and
+does not send desktop input, install packages or change the system theme.
+
+The 2026-09-08 run passed 34 checks. These prove that the views load and expose
+the checked properties, not visual fit, keyboard focus behavior or delivery to
+a real screen reader. Interactive checks below are still needed. Visible status
+updates now explicitly emit polite live-region events; hidden quick operations
+do not announce messages or create windows for accessibility notifications.
+
+Interactive checks
+------------------
+
 The public FlaUI.UIA3 5.0.0 harness drives the production WPF executable in
 foundation mode and the exact app sources in an isolated test host in image mode.
 The latter is a test assembly, not a review edition, fake codec or access bypass:

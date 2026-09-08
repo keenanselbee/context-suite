@@ -40,7 +40,8 @@ internal sealed class SettingsStore(string path)
                 var settings = new SuiteSettings
                 {
                     Convert = ReadTool(root, "Convert", ref repaired),
-                    Optimize = ReadTool(root, "Optimize", ref repaired)
+                    Optimize = ReadTool(root, "Optimize", ref repaired),
+                    PlayCompletionSound = !root.TryGetProperty("PlayCompletionSound", out var sound) || sound.ValueKind != JsonValueKind.False
                 };
                 return new(settings, revision, true, repaired ? "Some settings were invalid and use safe defaults. Save to apply the repaired values." : null);
             }

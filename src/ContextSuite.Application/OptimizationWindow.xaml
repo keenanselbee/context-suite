@@ -1,44 +1,62 @@
 <Window x:Class="ContextSuite.Application.OptimizationWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:ContextSuite.Application.Infrastructure"
         Title="Context Suite — Optimize PNG" AutomationProperties.AutomationId="OptimizationWindow"
-        Width="900" Height="570" MinWidth="680" MinHeight="470"
-        WindowStartupLocation="CenterOwner">
+        Width="760" Height="600" MinWidth="600" MinHeight="440"
+        WindowStartupLocation="CenterOwner" FocusManager.FocusedElement="{Binding ElementName=PresetChoice}">
+    <Window.Resources><BooleanToVisibilityConverter x:Key="VisibleWhenTrue" /></Window.Resources>
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TextBlock Text="PNG optimization" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,12"/>
-        <StackPanel Grid.Row="1" Margin="0,0,0,14">
-            <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding Preset}" Width="200" HorizontalAlignment="Left"
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      AutomationProperties.AutomationId="OptimizationBody">
+        <StackPanel Margin="0,0,10,0">
+            <Label Content="_Preset" Target="{Binding ElementName=PresetChoice}" Padding="0,0,0,5" />
+            <ComboBox x:Name="PresetChoice" ItemsSource="{Binding Presets}" SelectedItem="{Binding Preset}" MinHeight="32"
                       AutomationProperties.Name="PNG optimization preset" AutomationProperties.AutomationId="PngOptimizationPreset"/>
             <TextBlock Text="{Binding PolicyDescription}" TextWrapping="Wrap" Margin="0,8,0,4"/>
-            <TextBlock TextWrapping="Wrap" Text="Originals are kept by default. No smaller acceptable result means no output. Lossy presets require supported 8-bit RGB/RGBA PNGs and must beat lossless recompression. Animation and interlacing are not supported."/>
-        </StackPanel>
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True"
-                  CanUserAddRows="False" AutomationProperties.Name="PNG optimization plan">
+            <TextBlock TextWrapping="Wrap" Text="Originals are kept by default. Each preset selects the smallest eligible result, including a lossless fallback. No smaller result means no new file."/>
+            <ui:StatusTextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,12,0,8"
+                                AutomationProperties.AutomationId="OptimizationPlanStatus"/>
+        <DataGrid ItemsSource="{Binding Rows}" SelectedIndex="{Binding SelectedIndex}" AutoGenerateColumns="False" IsReadOnly="True"
+                  SelectionMode="Single" Height="150" CanUserAddRows="False" AutomationProperties.AutomationId="OptimizationFiles"
+                  AutomationProperties.Name="PNG optimization plan">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="140"/>
-                <DataGridTextColumn Header="Properties" Binding="{Binding Details}" Width="190"/>
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*"/>
-                <DataGridTextColumn Header="Proposed output (collision numbers may change)" Binding="{Binding ProposedOutput}" Width="220"/>
+                <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="160"/>
+                <DataGridTextColumn Header="Plan" Binding="{Binding Status}" Width="*" MinWidth="160"/>
             </DataGrid.Columns>
         </DataGrid>
-        <StackPanel Grid.Row="3" Margin="0,12,0,0">
-            <CheckBox Content="Replace originals after validation (requires permission in Optimize settings)"
-                      IsEnabled="{Binding CanReplaceOriginal}" IsChecked="{Binding ReplaceOriginal}" Margin="0,0,0,8"/>
-            <CheckBox Content="I confirm replacement. Recycle originals only after success; retain backups if recycling fails."
-                      IsEnabled="{Binding ReplaceOriginal}" IsChecked="{Binding ReplacementConfirmed}"/>
+            <TextBlock Text="{Binding SelectedStatus}" TextWrapping="Wrap" Margin="0,6,0,0"
+                       AutomationProperties.AutomationId="SelectedOptimizationStatus" />
+            <Expander Header="File _details" Margin="0,8,0,0" AutomationProperties.AutomationId="OptimizationDetails">
+                <TextBlock Text="{Binding SelectedDetails}" TextWrapping="Wrap" Margin="4,8"
+                           AutomationProperties.AutomationId="SelectedOptimizationDetails" />
+            </Expander>
+            <Expander Header="_Output and replacement" Margin="0,12,0,0" AutomationProperties.AutomationId="OptimizationOutput">
+                <StackPanel Margin="4,8">
+                    <TextBlock Text="{Binding OutputNotice}" TextWrapping="Wrap" Margin="0,0,0,10" />
+                    <CheckBox Content="_Replace originals for this batch" IsEnabled="{Binding CanReplaceOriginal}"
+                              IsChecked="{Binding ReplaceOriginal}" AutomationProperties.AutomationId="ReplaceOptimizationOriginals" />
+                    <TextBlock Text="{Binding ReplacementNotice}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                </StackPanel>
+            </Expander>
+            <CheckBox IsChecked="{Binding ReplacementConfirmed}" Margin="0,12,0,0"
+                      Visibility="{Binding ReplaceOriginal, Converter={StaticResource VisibleWhenTrue}}"
+                      AutomationProperties.AutomationId="ConfirmOptimizationReplacement">
+                <TextBlock Text="I consent to recycling originals after successful optimization. If recycling fails, keep the backup and show its location."
+                           TextWrapping="Wrap" />
+            </CheckBox>
+            <ui:StatusTextBlock Text="{Binding TrialMessage}" TextWrapping="Wrap" Margin="0,12,0,0"
+                                AutomationProperties.AutomationId="OptimizationTrialStatus"/>
         </StackPanel>
-        <StackPanel Grid.Row="4" Margin="0,12,0,12">
-            <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" AutomationProperties.AutomationId="OptimizationPlanStatus"/>
-            <TextBlock Text="{Binding TrialMessage}" TextWrapping="Wrap" Margin="0,6,0,0"/>
-        </StackPanel>
-        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Cancel" IsCancel="True" Click="Cancel_Click" MinWidth="90" Margin="0,0,10,0"/>
-            <Button Content="Optimize" Command="{Binding ConfirmCommand}" MinWidth="160" Padding="12,6"
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="_Optimize" Command="{Binding ConfirmCommand}" Padding="22,7" Margin="0,0,8,0"
                     AutomationProperties.Name="Start PNG optimization" AutomationProperties.AutomationId="ConfirmPngOptimization"/>
+            <Button Content="Cancel" IsCancel="True" Click="Cancel_Click" Padding="18,7" AutomationProperties.AutomationId="CancelPngOptimization"/>
         </StackPanel>
     </Grid>
 </Window>

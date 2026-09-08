@@ -32,7 +32,7 @@ public partial class MainWindow : System.Windows.Window
 
     private void OnChooseOptimizationFiles(object sender, RoutedEventArgs e)
     {
-        var picker = new OpenFileDialog { Title = "Choose PNG files to optimize losslessly", Multiselect = true, CheckFileExists = true,
+        var picker = new OpenFileDialog { Title = "Choose PNG files to optimize", Multiselect = true, CheckFileExists = true,
             Filter = "PNG images (*.png)|*.png|All files (*.*)|*.*" };
         if (picker.ShowDialog(this) == true) AddFiles(picker.FileNames, "optimize");
     }
@@ -45,9 +45,7 @@ public partial class MainWindow : System.Windows.Window
 
     private void OnRetrySelected(object sender, RoutedEventArgs e)
     {
-        var rows = ResultsGrid.SelectedItems.Cast<FileRow>().Where(row => row.Operation is "convert" or "optimize").ToArray();
-        if (rows.Length == 0) { InputNotice.Text = "Select conversion or optimization rows to retry their originals with a new plan."; return; }
-        foreach (var group in rows.GroupBy(row => row.Operation)) AddFiles(group.Select(row => row.Path), group.Key);
+        InputNotice.Text = ((MainViewModel)DataContext).RetryFailed();
     }
 
     private void AddFiles(IEnumerable<string> paths, string operation = "convert")

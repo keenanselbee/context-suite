@@ -13,8 +13,50 @@ internal static class PngOptimizationContracts
 {
     public static async Task RunAsync(string scratch, Action<bool, string> check)
     {
+        var now = DateTimeOffset.UtcNow;
+        var quiet = new QuietWorkflow();
+        var quietId = Guid.NewGuid();
+        quiet.Begin(quietId, true, now);
+        check(!quiet.ShowProgress(now.AddMilliseconds(1999)) && quiet.ShowProgress(now.AddSeconds(2)), "quiet: delayed progress boundary");
+        check(quiet.Complete(quietId, [new("source", OperationState.Unchanged, "No smaller result")]) &&
+            !quiet.Complete(quietId, [new("source", OperationState.Succeeded, "Saved")]) && !quiet.ShowProgress(now.AddHours(1)), "quiet: unchanged succeeds, exactly one signal, timer cleared");
+        foreach (var state in new[] { OperationState.Failed, OperationState.Unsupported, OperationState.Cancelled })
+        {
+            quiet = new(); quiet.Begin(quietId, true, now);
+            check(!quiet.Complete(quietId, [new("source", state, "Outcome")]) && quiet.NeedsAttention == (state != OperationState.Cancelled), "quiet: no chime for " + state);
+        }
+        quiet = new(); quiet.Begin(quietId, false, now);
+        check(!quiet.Complete(quietId, [new("source", OperationState.Succeeded, "Saved")]) && !quiet.NeedsAttention, "quiet: mute succeeds without attention");
+        foreach (var action in new[] { "auto", "lossless", "balanced", "smallest" })
+        {
+            var request = new OperationRequest(Guid.NewGuid(), "optimize", action, [Path.GetFullPath("test.png")]);
+            request.Validate(false);
+            check(request.IsQuickOptimization, "quick: accepted explicit preset " + action);
+            Reject(() => (request with { Operation = "convert" }).Validate(false), "preset under wrong operation");
+        }
+        foreach (var action in new[] { "png", "jpeg", "webp", "bmp", "tga" })
+        {
+            var request = new OperationRequest(Guid.NewGuid(), "convert", action, [Path.GetFullPath("test.png")]);
+            request.Validate(false);
+            check(request.IsQuickConversion && request.IsQuickAction && !request.IsQuickOptimization, "quick: accepted explicit conversion " + action);
+            Reject(() => (request with { Operation = "optimize" }).Validate(false), "conversion under wrong operation");
+        }
         var root = Path.Combine(scratch, "png-planner-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
+        var directSource = new ImageSourceFacts(Guid.NewGuid(), Path.Combine(root, "direct.png"), new string('0', 64), 100,
+            ImageFormat.Png, 10, 20, 8, 1, false, false, "sRGB", []);
+        ImageBatchPlan QuickPlan(ImageSourceFacts facts, ImageFormat target = ImageFormat.WebP) =>
+            ImageConversionPlanner.Create(Guid.NewGuid(), [facts], new(target, WebPLossless: target == ImageFormat.WebP), new("convert", new()));
+        check(QuickPlan(directSource).CanConfirmQuickCopy && QuickPlan(directSource with { Resolution = new(300,300,2) }).CanConfirmQuickCopy,
+            "quick Convert: preservation and resolution-only normalization need no dialog");
+        check(QuickPlan(directSource with { Format = ImageFormat.Jpeg, IsLossy = true }, ImageFormat.Png).CanConfirmQuickCopy &&
+            QuickPlan(directSource, ImageFormat.Bmp).CanConfirmQuickCopy, "quick Convert: informational format notices need no consent");
+        foreach (var guarded in new[] { directSource with { ProfileNames = ["exif"] }, directSource with { HasOtherMetadata = true },
+            directSource with { BitDepth = 16 } })
+            check(!QuickPlan(guarded).CanConfirmQuickCopy, "quick Convert: metadata or precision consequence requires review");
+        check(!QuickPlan(directSource with { HasTransparency = true }, ImageFormat.Jpeg).CanConfirmQuickCopy &&
+            !QuickPlan(directSource with { Format = ImageFormat.WebP, IsLossy = true }, ImageFormat.Jpeg).CanConfirmQuickCopy,
+            "quick Convert: matte and lossy transcode never bypassed");
         var source = new ImageSourceFacts(Guid.NewGuid(), Path.Combine(root, "source.png"), new string('0', 64), 100,
             ImageFormat.Png, 10, 20, 16, 6, true, false, "sRGB", ["exif"], HasOtherMetadata: true);
         var plan = PngOptimizationPlan.Create(Guid.NewGuid(), [source], new("optimize", new()));
@@ -41,14 +83,20 @@ internal static class PngOptimizationContracts
         check(!viewModel.CanConfirm, "PNG UI: waits for access status");
         await viewModel.InitializeAsync();
         check(viewModel.CanConfirm && !File.Exists(trialPath) && viewModel.Rows[0].ProposedOutput.EndsWith("source - Optimized.png"), "PNG UI: safe named copy, reading planner does not start trial");
+        check(viewModel.SelectedDetails.Contains("source - Optimized.png") && viewModel.SelectedStatus.Contains("Lossless") &&
+            viewModel.OutputNotice.Contains("beside") && viewModel.ReplacementNotice.Contains("unavailable"),
+            "PNG UI: selected detail retains destination, preset and replacement explanation");
+        viewModel.SelectedIndex = -1;
+        check(viewModel.SelectedDetails == "" && viewModel.SelectedStatus.Contains("Select a file"), "PNG UI: empty selection is safe");
+        viewModel.SelectedIndex = 0;
         ConfirmedPngOptimization? confirmed = null;
         viewModel.Confirmed += value => confirmed = value;
         viewModel.ConfirmCommand.Execute(null);
         check(confirmed is not null && !File.Exists(trialPath), "PNG UI: confirmation is immutable, admission alone starts trial");
         check(viewModel.Preset == PngOptimizationPreset.Lossless, "PNG UI: Lossless remains default");
         viewModel.Preset = PngOptimizationPreset.Balanced;
-        check(!viewModel.CanConfirm && confirmed!.Plan.Preset == PngOptimizationPreset.Lossless,
-            "PNG UI: unprobed lossy eligibility blocked; confirmed snapshot unchanged");
+        check(viewModel.CanConfirm && confirmed!.Plan.Preset == PngOptimizationPreset.Lossless,
+            "PNG UI: lossy-ineligible source uses lossless fallback; confirmed snapshot unchanged");
         var lossySource = source with { BitDepth = 8, PngLossyBlockReason = null };
         var lossyView = new OptimizationViewModel(trial, Guid.NewGuid(), [new(lossySource.ItemId, lossySource.Path, lossySource, null)], plan.Settings, false);
         await lossyView.InitializeAsync();
@@ -67,6 +115,8 @@ internal static class PngOptimizationContracts
         replacementView.ReplaceOriginal = true;
         replacementView.ReplacementConfirmed = true;
         check(replacementView.CanConfirm, "PNG UI: explicitly permitted replacement can be confirmed");
+        check(replacementView.OutputNotice.Contains("Replace originals") && replacementView.SelectedDetails.Contains("Replace only after validation") &&
+            !replacementView.SelectedDetails.Contains("Existing names add"), "PNG UI: replacement notices do not promise a numbered copy");
         replacementView.Preset = PngOptimizationPreset.Smallest;
         check(!replacementView.ReplacementConfirmed && !replacementView.CanConfirm, "PNG UI: changed loss policy requires fresh replacement consent");
         var admission = await trial.AdmitAsync(confirmed!);
@@ -130,6 +180,35 @@ internal static class PngOptimizationContracts
         }
         var corrupt = Path.Combine(root, "corrupt.png");
         File.WriteAllText(corrupt, "unsupported fixture");
+        await using (var convertVm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "direct-convert-scratch")),
+            new SuiteSettings { Convert = new(true), PlayCompletionSound = false }, publisher,
+            new LocalTrialStore(Path.Combine(root, "direct-convert-trial.json"))))
+        {
+            var prompts = 0;
+            var completedBatches = 0;
+            convertVm.ConversionRequested += (planner, _) =>
+            {
+                prompts++;
+                check(planner.Target == ImageFormat.Jpeg && !planner.CanConfirm, "quick Convert: transparent JPEG asks for preselected matte decision");
+                return Task.FromResult<ConfirmedImageBatch?>(null);
+            };
+            convertVm.QuickBatchCompleted += (_, _) => completedBatches++;
+            var direct = new OperationRequest(Guid.NewGuid(), "convert", "webp", [sourcePath, corrupt]);
+            convertVm.Admit(direct);
+            convertVm.Admit(direct);
+            convertVm.Admit(new(Guid.NewGuid(), "convert", "jpeg", [sourcePath]));
+            convertVm.Admit(new(Guid.NewGuid(), "convert", "png", [sourcePath]));
+            await convertVm.WaitForIdleAsync();
+            check(prompts == 1 && completedBatches == 3 && convertVm.Rows.Count == 4 &&
+                convertVm.Rows[0].Result.State == OperationState.Succeeded &&
+                convertVm.Rows[1].Result.State == OperationState.Unsupported && convertVm.Rows[2].Result.State == OperationState.Cancelled,
+                "quick Convert: safe WebP bypasses planner, mixed failure isolated, duplicate ignored, decision cancellation respected");
+            check(convertVm.Rows[3].Result.State == OperationState.Unchanged && convertVm.Rows[3].OutputPath == "" &&
+                convertVm.Summary.Contains("already in target format"), "quick Convert: matching target is a quiet no-op, not an error or extra copy");
+            check(convertVm.Rows[0].Result.Publication?.OutputPath?.EndsWith(" - Converted.webp") == true &&
+                SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original),
+                "quick Convert: named validated copy despite replacement preference; original unchanged");
+        }
         await using var vm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "ui-scratch")), publisher: publisher,
             trial: new LocalTrialStore(Path.Combine(root, "ui-trial.json")));
         var calls = 0;
@@ -148,11 +227,36 @@ internal static class PngOptimizationContracts
         check(calls == 1 && vm.Rows[0].Result.State == OperationState.Succeeded && vm.Rows[1].Result.State == OperationState.Unsupported &&
             vm.Summary.Contains("Optimization saved"), "PNG UI handoff: per-file outcomes and aggregate saved bytes");
         check(SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original), "PNG UI handoff: source still unchanged");
+        await using (var quickVm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "quick-scratch")),
+            new SuiteSettings { Optimize = new(true), PlayCompletionSound = false }, publisher,
+            new LocalTrialStore(Path.Combine(root, "quick-trial.json"))))
+        {
+            var started = 0;
+            var finished = 0;
+            quickVm.OptimizationRequested += (_, _) => throw new InvalidOperationException("Quick action opened a planner");
+            quickVm.QuickBatchStarted += (_, _) => started++;
+            quickVm.QuickBatchCompleted += (_, rows) =>
+            {
+                finished++;
+                check(rows.All(row => !row.Settings.PlayCompletionSound), "quick: immutable mute snapshot");
+            };
+            var quick = new OperationRequest(Guid.NewGuid(), "optimize", "auto", [sourcePath, corrupt]);
+            quickVm.Admit(quick);
+            quickVm.Admit(quick);
+            quickVm.Admit(new(Guid.NewGuid(), "optimize", "lossless", [sourcePath]));
+            quickVm.Settings = new();
+            await quickVm.WaitForIdleAsync();
+            check(started == 2 && finished == 2 && quickVm.Rows.Count == 3 && !quickVm.IsBusy, "quick: duplicate IDs ignored, queued batches drain once");
+            check(quickVm.Rows[0].Result.State == OperationState.Succeeded && quickVm.Rows[1].Result.State == OperationState.Unsupported &&
+                quickVm.Rows[2].Result.State == OperationState.Succeeded, "quick: mixed selection does not block valid files or later batches");
+            check(quickVm.Rows.Where(row => row.HasOutput).All(row => row.OutputPath != row.Path) &&
+                SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original), "quick: copies even when replacement permitted, original untouched");
+        }
         var precisionPath = Path.Combine(root, "precision.png");
         ImageInterruptionContracts.WriteNoisePng(precisionPath, 1024);
         var precisionFacts = await worker.ProbeAsync(new(Guid.NewGuid(), precisionPath), default, forOptimization: true);
         check(precisionFacts.PngLossyBlockReason is null, "PNG worker: lossy eligibility crosses IPC");
-        foreach (var preset in new[] { PngOptimizationPreset.Balanced, PngOptimizationPreset.Smallest })
+        foreach (var preset in new[] { PngOptimizationPreset.Auto, PngOptimizationPreset.Balanced, PngOptimizationPreset.Smallest })
         {
             var precisionPlan = PngOptimizationPlan.Create(Guid.NewGuid(), [precisionFacts with { ItemId = Guid.NewGuid() }], new("optimize", new()), preset: preset);
             var precisionResult = await new PngOptimizationExecutor(worker, publisher, activeTrial).ExecuteAsync(precisionPlan.Confirm(false, false), null, default);

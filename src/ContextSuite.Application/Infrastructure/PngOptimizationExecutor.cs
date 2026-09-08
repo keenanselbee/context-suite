@@ -30,9 +30,10 @@ internal sealed class PngOptimizationExecutor(WorkerClient worker, OutputPublish
                     report?.Invoke(item, new(item.Source.Path, OperationState.Running, $"Optimizing and verifying {plan.Preset} policy"));
                     var optimized = await worker.OptimizeAsync(new(item.Source, reservation.TemporaryPath, plan.SelectedPolicy), cancellationToken);
                     result = (await publisher.PublishAsync(reservation, optimized.Validation, cancellationToken)).ToFileResult();
-                    result = result with { EngineIdentity = optimized.EngineIdentity };
+                    result = result with { EngineIdentity = optimized.EngineIdentity,
+                        Message = result.Message + $" Requested: {plan.Preset}. Used: {optimized.OptimizationMethod}. {optimized.OptimizationReason}" };
                     if (result.Publication is { IsCommitted: true } publication)
-                        result = result with { Message = result.Message + $" {plan.Preset}{(plan.Preset == PngOptimizationPreset.Lossless ? "" : " (lossy)")}: {publication.SourceBytes:N0} → {publication.OutputBytes:N0} bytes; saved {publication.SourceBytes - publication.OutputBytes:N0} bytes ({100.0 * (publication.SourceBytes - publication.OutputBytes) / publication.SourceBytes:F1}%)." };
+                        result = result with { Message = result.Message + $" {publication.SourceBytes:N0} → {publication.OutputBytes:N0} bytes; saved {publication.SourceBytes - publication.OutputBytes:N0} bytes ({100.0 * (publication.SourceBytes - publication.OutputBytes) / publication.SourceBytes:F1}%)." };
                 }
                 catch (OperationCanceledException)
                 {

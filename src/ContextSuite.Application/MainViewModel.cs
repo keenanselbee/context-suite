@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
@@ -19,6 +20,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
     private readonly CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _active;
     private Task? _running;
+    private bool _busy;
     private int _batch;
     private string _summary = "Select files in Explorer and choose Analyze, Convert, or Optimize.";
     private ICommand? _cancelCommand;
@@ -27,13 +29,17 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
     public SuiteSettings Settings { get; set; } = settings ?? new();
     internal OutputPublisher? Publisher { get; } = publisher;
     public string RecoveryNotice { get; } = RecoveryMessage(publisher);
-    public bool IsBusy => _running is { IsCompleted: false };
+    public bool IsBusy => _busy;
+    public bool HasProblems => Rows.Any(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.Publication?.HasWarning == true);
+    public bool ShowDetails => HasProblems || Rows.Any(row => row.Operation == "analyze");
     public string Summary { get => _summary; private set { _summary = value; Changed(); } }
     public ICommand CancelCommand => _cancelCommand ??= new CancelPendingCommand(this);
     public ICommand SettingsCommand => _settingsCommand ??= new OpenSettingsCommand(this);
     public event Action<string>? SettingsRequested;
     public event Func<ConversionViewModel, CancellationToken, Task<ConfirmedImageBatch?>>? ConversionRequested;
     public event Func<OptimizationViewModel, CancellationToken, Task<ConfirmedPngOptimization?>>? OptimizationRequested;
+    public event Action<OperationRequest, FileRow[]>? QuickBatchStarted;
+    public event Action<OperationRequest, FileRow[]>? QuickBatchCompleted;
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ActivationReply Admit(OperationRequest? request)
@@ -52,10 +58,10 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         _received.Add(request.RequestId);
         var batchId = ++_batch;
         var snapshot = Settings.Capture(request.Operation);
-        var rows = request.Paths.Select(path => new FileRow(batchId, request.Operation, path, snapshot)).ToArray();
+        var rows = request.Paths.Select(path => new FileRow(batchId, request.Operation, path, snapshot, request.Action)).ToArray();
         foreach (var row in rows) Rows.Add(row);
         _pending.Enqueue((request, rows));
-        if (!IsBusy) _running = DrainAsync();
+        if (!IsBusy) { _busy = true; Changed(nameof(IsBusy)); _running = DrainAsync(); }
         return new(1, request.RequestId, true, "Selection received.");
     }
 
@@ -66,6 +72,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         {
             using var active = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
             _active = active;
+            if (batch.Request.IsQuickAction) QuickBatchStarted?.Invoke(batch.Request, batch.Rows);
             try
             {
                 if (batch.Request.Operation == "analyze")
@@ -73,12 +80,12 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
                     await AnalyzeBatchAsync(batch.Rows, active.Token);
                     continue;
                 }
-                if (batch.Request.Operation == "convert" && Publisher is not null && trial is not null && ConversionRequested is not null)
+                if (batch.Request.Operation == "convert" && Publisher is not null && trial is not null && (batch.Request.IsQuickConversion || ConversionRequested is not null))
                 {
                     await ConvertBatchAsync(batch.Request, batch.Rows, active.Token);
                     continue;
                 }
-                if (batch.Request.Operation == "optimize" && Publisher is not null && trial is not null && OptimizationRequested is not null)
+                if (batch.Request.Operation == "optimize" && Publisher is not null && trial is not null && (batch.Request.IsQuickOptimization || OptimizationRequested is not null))
                 {
                     await OptimizeBatchAsync(batch.Request, batch.Rows, active.Token);
                     continue;
@@ -102,9 +109,15 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
                 foreach (var row in batch.Rows)
                     if (row.Result.Publication?.IsCommitted != true) row.ApplyResult(new(row.Path, OperationState.Failed, "Worker unavailable — retry selection"));
             }
-            finally { _active = null; }
+            finally
+            {
+                _active = null;
+                RefreshSummary();
+                if (batch.Request.IsQuickAction) QuickBatchCompleted?.Invoke(batch.Request, batch.Rows);
+            }
         }
         RefreshSummary();
+        _busy = false;
         Changed(nameof(IsBusy));
     }
 
@@ -135,6 +148,11 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
 
     private async Task ConvertBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
     {
+        ImageFormat? directTarget = request.IsQuickConversion ? request.Action switch
+        {
+            "png" => ImageFormat.Png, "jpeg" => ImageFormat.Jpeg, "webp" => ImageFormat.WebP,
+            "bmp" => ImageFormat.Bmp, "tga" => ImageFormat.Tga, _ => throw new InvalidDataException("Unknown conversion target.")
+        } : null;
         var selection = new List<ConversionSelection>();
         for (var index = 0; index < rows.Length; index++)
         {
@@ -145,6 +163,11 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
             try
             {
                 var facts = await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken);
+                if (directTarget == facts.Format && facts.UnsupportedReason is null)
+                {
+                    row.ApplyResult(new(row.Path, OperationState.Unchanged, $"Already {facts.Format}; original kept. Use Optimize for same-format processing."));
+                    continue;
+                }
                 selection.Add(new(row.ItemId, row.Path, facts, null));
                 row.ApplyResult(new(row.Path, OperationState.Pending, "Waiting for conversion choices"));
             }
@@ -159,8 +182,21 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         }
         if (!selection.Any(s => s.Facts is not null)) return;
         await using var planner = new ConversionViewModel(worker, trial!, request.RequestId, selection, rows[0].Settings, PublicationSupport.ReplacementAvailable);
+        ConfirmedImageBatch? confirmed = null;
+        if (directTarget is { } target)
+        {
+            planner.Target = target;
+            // A one-click action never invents a matte, strips metadata or replaces originals.
+            // WebP defaults to lossless; custom quality remains available in More options.
+            planner.WebPLossless = planner.Target == ImageFormat.WebP;
+            var plan = ImageConversionPlanner.Create(request.RequestId, selection.Where(s => s.Facts is not null).Select(s => s.Facts!),
+                new(target, WebPLossless: planner.WebPLossless), rows[0].Settings);
+            if (plan.CanConfirmQuickCopy)
+                confirmed = plan.Confirm(true, false, false);
+        }
         Summary = $"Review conversion choices for batch {rows[0].Batch}. No files changed by this batch.";
-        var confirmed = await ConversionRequested!(planner, cancellationToken);
+        if (confirmed is null && ConversionRequested is not null)
+            confirmed = await ConversionRequested(planner, cancellationToken);
         if (confirmed is null)
         {
             foreach (var row in rows.Where(r => r.Result.State == OperationState.Pending))
@@ -169,12 +205,12 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         }
         cancellationToken.ThrowIfCancellationRequested();
         var byId = rows.ToDictionary(row => row.ItemId);
-        var completed = rows.Count(r => r.Result.State is OperationState.Failed or OperationState.Unsupported);
+        var completed = rows.Count(r => r.Result.State is OperationState.Failed or OperationState.Unsupported or OperationState.Unchanged);
         await new ImageBatchExecutor(worker, Publisher!, trial!).ExecuteAsync(confirmed, (item, result) =>
         {
             byId[item.Source.ItemId].ApplyResult(result);
             if (result.State != OperationState.Running) completed++;
-            Summary = $"Batch {rows[0].Batch}: {completed} of {rows.Length} finished. {result.Message}";
+            Summary = $"Converting: {completed} of {rows.Length} finished.";
         }, cancellationToken);
     }
 
@@ -185,8 +221,8 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         {
             cancellationToken.ThrowIfCancellationRequested();
             var row = rows[index];
-            Summary = $"Checking PNG {index + 1} of {rows.Length}. No optimization has been confirmed.";
-            row.ApplyResult(new(row.Path, OperationState.Running, "Checking lossless PNG support"));
+            Summary = $"Checking PNG {index + 1} of {rows.Length}. Originals are kept for quick actions.";
+            row.ApplyResult(new(row.Path, OperationState.Running, "Checking PNG support"));
             try
             {
                 var facts = await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken, forOptimization: true);
@@ -203,7 +239,18 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
             }
         }
         var planner = new OptimizationViewModel(trial!, request.RequestId, selection, rows[0].Settings, PublicationSupport.ReplacementAvailable);
-        var confirmed = await OptimizationRequested!(planner, cancellationToken);
+        ConfirmedPngOptimization? confirmed;
+        if (request.IsQuickOptimization)
+        {
+            planner.Preset = request.Action switch
+            {
+                "auto" => PngOptimizationPreset.Auto, "balanced" => PngOptimizationPreset.Balanced,
+                "smallest" => PngOptimizationPreset.Smallest, _ => PngOptimizationPreset.Lossless
+            };
+            // The explicit menu choice confirms only a copy plan. The executor still owns trial admission.
+            confirmed = planner.Plan?.HasExecutableItems == true ? planner.Plan.Confirm(false, false) : null;
+        }
+        else confirmed = await OptimizationRequested!(planner, cancellationToken);
         if (confirmed is null)
         {
             foreach (var row in rows.Where(row => row.Result.State == OperationState.Pending))
@@ -221,7 +268,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         {
             byId[item.Source.ItemId].ApplyResult(result);
             if (result.State != OperationState.Running) completed++;
-            Summary = $"Batch {rows[0].Batch}: {completed} of {rows.Length} finished. {result.Message}";
+            Summary = $"Optimizing: {completed} of {rows.Length} finished. Originals are kept for quick actions.";
         }, cancellationToken);
     }
 
@@ -241,9 +288,35 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         RefreshSummary();
     }
 
+    internal string RetryFailed()
+    {
+        // Inspect the latest attempt for each source/tool, not every historical error.
+        // Newly queued rows immediately suppress a second click, even before dispatch.
+        var failed = Rows.Where(row => row.Operation is "convert" or "optimize")
+            .GroupBy(row => row.Operation)
+            .SelectMany(tool => tool.GroupBy(row => row.Path, StringComparer.OrdinalIgnoreCase).Select(file => file.Last()))
+            .Where(row => row.Result.State == OperationState.Failed && row.Result.Publication?.IsCommitted != true).ToArray();
+        if (failed.Length == 0) return "No failed files to retry. Completed files are not processed again.";
+        var available = failed.Where(row => File.Exists(row.Path)).ToArray();
+        var received = 0;
+        foreach (var group in available.GroupBy(row => (row.Operation, row.Action)))
+        foreach (var chunk in group.Chunk(OperationRequest.MaximumPaths))
+        {
+            try
+            {
+                var reply = Admit(new(Guid.NewGuid(), group.Key.Operation, group.Key.Action, chunk.Select(row => row.Path).ToImmutableArray()));
+                if (reply.Accepted) received += chunk.Length;
+            }
+            catch (Exception error) when (error is InvalidDataException or ArgumentException or IOException)
+            { /* A disappeared file or rejected batch remains in the existing result history. */ }
+        }
+        var notQueued = failed.Length - received;
+        return $"{received} failed file(s) queued with their original menu action and current settings." +
+            (notQueued == 0 ? "" : $" {notQueued} could not be queued; check file availability and session capacity.");
+    }
+
     private void RefreshSummary()
     {
-        var prefix = $"{Rows.Count} files received across {_received.Count} batches.";
         var noChanges = Rows.All(r => r.Result.Publication?.IsCommitted != true);
         var completed = Rows.Count(r => r.Result.State == OperationState.Succeeded);
         var warnings = Rows.Count(r => r.Result.Publication?.HasWarning == true);
@@ -252,12 +325,23 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         var unchanged = Rows.Count(r => r.Result.State == OperationState.Unchanged);
         var unsupported = Rows.Count(r => r.Result.State == OperationState.Unsupported);
         var pending = Rows.Count - completed - failed - cancelled - unchanged - unsupported;
-        Summary = $"{prefix} {completed} completed ({warnings} warnings), {unchanged} unchanged, {failed} failed, " +
-            $"{cancelled} cancelled, {unsupported} unsupported, {pending} pending." + (noChanges ? " No files changed." : "");
+        var counts = new List<string>();
+        if (completed > 0) counts.Add($"{completed} completed" + (warnings > 0 ? $" ({warnings} warnings)" : ""));
+        var alreadyTarget = Rows.Count(row => row.Operation == "convert" && row.Result.State == OperationState.Unchanged);
+        if (unchanged > alreadyTarget) counts.Add($"{unchanged - alreadyTarget} with no smaller result");
+        if (alreadyTarget > 0) counts.Add($"{alreadyTarget} already in target format");
+        if (failed > 0) counts.Add($"{failed} failed");
+        if (unsupported > 0) counts.Add($"{unsupported} not supported");
+        if (cancelled > 0) counts.Add($"{cancelled} cancelled");
+        if (pending > 0) counts.Add($"{pending} waiting");
+        Summary = counts.Count == 0 ? "Choose a tool or drop files here to convert." : string.Join(" · ", counts) + ".";
+        if (noChanges && counts.Count > 0) Summary += " No files changed.";
         var optimized = Rows.Where(row => row.Operation == "optimize" && row.Result.Publication?.IsCommitted == true).ToArray();
         var saved = optimized.Sum(row => row.Result.Publication!.SourceBytes - row.Result.Publication.OutputBytes);
         var inputBytes = optimized.Sum(row => row.Result.Publication!.SourceBytes);
         if (saved > 0) Summary += $" Optimization saved {saved:N0} bytes ({100.0 * saved / inputBytes:F1}% of saved files' input size).";
+        Changed(nameof(HasProblems));
+        Changed(nameof(ShowDetails));
     }
 
     private static string RecoveryMessage(OutputPublisher? publisher)
@@ -302,16 +386,27 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
     }
 }
 
-internal sealed class FileRow(int batch, string operation, string path, BatchSettings settings) : INotifyPropertyChanged
+internal sealed class FileRow(int batch, string operation, string path, BatchSettings settings, string? action = null) : INotifyPropertyChanged
 {
     public Guid ItemId { get; } = Guid.NewGuid();
     public int Batch { get; set; } = batch;
     public string Operation { get; } = operation;
+    public string Action { get; } = action ?? (operation switch { "optimize" => "choose-preset", "analyze" => "open-details", _ => "choose-format" });
     public string Path { get; } = path;
+    public string Name => System.IO.Path.GetFileName(Path);
     public BatchSettings Settings { get; } = settings;
     public FileResult Result { get; private set; } = new(path, OperationState.Pending, "Pending");
     public DdsInfo? Analysis { get; private set; }
     public string Status => Result.Message;
+    public string Outcome => Result.Publication?.HasWarning == true ? "Saved — needs attention" : Result.State switch
+    {
+        OperationState.Succeeded => "Completed", OperationState.Unchanged => Operation == "convert" ? "Already in target format" : "No smaller result",
+        OperationState.Unsupported => "Not supported", OperationState.Failed => "Needs attention",
+        _ => Result.State.ToString()
+    };
+    public bool HasOutput => OutputPath.Length > 0;
+    public string Savings => Result.Publication is { IsCommitted: true } p && p.SourceBytes > p.OutputBytes
+        ? $"{100.0 * (p.SourceBytes - p.OutputBytes) / p.SourceBytes:F1}%" : "—";
     public string OutputPath => Result.Publication?.OutputPath ?? "";
     public string RetainedOriginalPath => Result.Publication?.RetainedOriginalPath ?? "";
     public string RecoveryRecordPath => Result.Publication?.RecoveryRecordPath ?? "";
@@ -343,7 +438,7 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
         if (!string.Equals(System.IO.Path.GetFullPath(result.Path), System.IO.Path.GetFullPath(Path), StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("The file result belongs to a different source.");
         Result = result;
-        foreach (var property in new[] { nameof(Result), nameof(Status), nameof(OutputPath), nameof(RetainedOriginalPath), nameof(RecoveryRecordPath), nameof(ResultDetails) })
+        foreach (var property in new[] { nameof(Result), nameof(Status), nameof(OutputPath), nameof(RetainedOriginalPath), nameof(RecoveryRecordPath), nameof(ResultDetails), nameof(Outcome), nameof(HasOutput), nameof(Savings) })
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
     public event PropertyChangedEventHandler? PropertyChanged;

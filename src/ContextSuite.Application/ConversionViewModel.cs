@@ -25,6 +25,9 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     private readonly CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _previewCancellation;
     private Task? _previewTask;
+    private Task _scheduledPreview = Task.CompletedTask;
+    private CancellationTokenSource? _previewDelay;
+    private bool _initialized;
     private ImageBatchPlan? _plan;
     private ImageFormat? _target;
     private string _quality = "90", _maximumDimension = "", _customMatte = "FFFFFF";
@@ -65,7 +68,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     public int SelectedIndex
     {
         get => _selectedIndex;
-        set { if (Set(ref _selectedIndex, value)) { InvalidatePreview(); _before = null; Changed(nameof(BeforePreview)); Changed(nameof(SelectedExplanation)); } }
+        set { if (Set(ref _selectedIndex, value)) { InvalidatePreview(); _before = null; Changed(nameof(BeforePreview)); Changed(nameof(SelectedExplanation)); Changed(nameof(SelectedFileDetails)); SchedulePreview(); } }
     }
     public bool IsJpeg => Target == ImageFormat.Jpeg;
     public bool NeedsMatte => Target is ImageFormat.Jpeg or ImageFormat.Bmp || (IsDdsWorkflow && DdsAlpha == DdsAlphaPolicy.Flatten);
@@ -83,6 +86,8 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     public string Message => _message;
     public string SelectedExplanation => SelectedIndex >= 0 && SelectedIndex < Rows.Count ?
         $"{Rows[SelectedIndex].Name}: {Rows[SelectedIndex].Status}" : "Select a row for its full explanation and preview.";
+    public string SelectedFileDetails => SelectedIndex >= 0 && SelectedIndex < Rows.Count ?
+        Rows[SelectedIndex].Details + Environment.NewLine + Rows[SelectedIndex].ProposedOutput : "";
     public string Warnings => _warnings;
     public string PreviewMessage => _previewMessage;
     public string TrialMessage => _trialStatus?.Message ?? "Checking local trial status…";
@@ -108,6 +113,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
             Changed(nameof(TrialMessage)); Changed(nameof(CanConfirm));
             _previewTask = RefreshPreviewAsync();
             await _previewTask;
+            _initialized = true;
         }
         catch (OperationCanceledException) { }
     }
@@ -173,7 +179,36 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
             foreach (var row in Rows) row.Update(null, null, _settings, false);
         }
         foreach (var property in new[] { nameof(IsDdsWorkflow), nameof(IsDdsTarget), nameof(IsDdsExport), nameof(CanResize), nameof(IsJpeg), nameof(NeedsMatte), nameof(IsWebP), nameof(HasQuality), nameof(HasCustomMatte), nameof(Message),
-            nameof(Warnings), nameof(HasWarnings), nameof(WarningsAcknowledged), nameof(ReplacementConfirmed), nameof(CanConfirm), nameof(OutputNotice), nameof(SelectedExplanation) }) Changed(property);
+            nameof(Warnings), nameof(HasWarnings), nameof(WarningsAcknowledged), nameof(ReplacementConfirmed), nameof(CanConfirm), nameof(OutputNotice), nameof(SelectedExplanation), nameof(SelectedFileDetails) }) Changed(property);
+        SchedulePreview();
+    }
+
+    private void SchedulePreview()
+    {
+        if (!_initialized || _lifetime.IsCancellationRequested) return;
+        _previewDelay?.Cancel();
+        var delay = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
+        _previewDelay = delay;
+        var previous = _scheduledPreview;
+        _scheduledPreview = RunAsync();
+        async Task RunAsync()
+        {
+            try
+            {
+                await Task.Delay(300, delay.Token);
+                await previous;
+                if (_previewTask is not null) await _previewTask;
+                delay.Token.ThrowIfCancellationRequested();
+                _previewTask = RefreshPreviewAsync();
+                await _previewTask;
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                if (_previewDelay == delay) _previewDelay = null;
+                delay.Dispose();
+            }
+        }
     }
 
     private void InvalidatePreview()
@@ -181,7 +216,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
         _revision++;
         _previewCancellation?.Cancel();
         _after = null;
-        _previewMessage = "Refresh to see these settings. Preview is capped at 512 pixels and does not create a converted file or start the trial.";
+        _previewMessage = "Preview updates automatically. It is capped at 512 pixels and does not create a file or start the trial.";
         Changed(nameof(AfterPreview)); Changed(nameof(PreviewMessage));
     }
 
@@ -254,6 +289,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     public async ValueTask DisposeAsync()
     {
         _lifetime.Cancel();
+        await _scheduledPreview;
         if (_previewTask is not null) await _previewTask;
         _lifetime.Dispose();
     }

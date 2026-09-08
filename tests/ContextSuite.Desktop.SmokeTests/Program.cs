@@ -212,6 +212,7 @@ internal static class Program
 
     private static bool VerifyRows(Window window, string[] files, string[] operations)
     {
+        window.FindFirstDescendant(cf => cf.ByAutomationId("FileDetails"))?.Patterns.ExpandCollapse.Pattern.Expand();
         var element = window.FindFirstDescendant(cf => cf.ByAutomationId("BatchResults"));
         if (element is null) return false;
         var grid = element.Patterns.Grid.Pattern;
@@ -222,11 +223,9 @@ internal static class Program
             for (var index = 0; index < files.Length; index++)
             {
                 var row = batch * files.Length + index;
-                var cells = Enumerable.Range(0, 4).Select(col => CellText(grid.GetItem(row, col))).ToArray();
-                if (cells[0] != (batch + 1).ToString() || cells[1] != operations[batch] ||
-                    !files.Contains(cells[2], StringComparer.OrdinalIgnoreCase) || !seen.Add(cells[2]) ||
-                    cells[3] != (operations[batch] == "convert" ? "The image is damaged or invalid. Check the source file and try another copy." :
-                        operations[batch] == "analyze" ? "Not a supported DDS header. No files changed." : "Unsupported \u2014 not implemented")) return false;
+                var cells = Enumerable.Range(0, 3).Select(col => CellText(grid.GetItem(row, col))).ToArray();
+                if (!files.Select(Path.GetFileName).Contains(cells[0], StringComparer.OrdinalIgnoreCase) || !seen.Add(cells[0]) ||
+                    cells[1] is not ("Needs attention" or "Not supported") || cells[2] != "—") return false;
             }
         }
         return true;

@@ -12,6 +12,13 @@ order below prioritizes image conversion; numbers are not a strict schedule.
 Current Position
 ----------------
 
+Current implementation priority (September 8): the broad
+[everyday image UX goal](quiet-first-ux-goal.md) integrates direct Optimize/Convert,
+PNG compatibility, compact UI, workflow reliability and an internal installer.
+Safe common Convert targets and Adam7 lossless fallback are implemented. Protected
+Afterburner metadata, desktop acceptance, held-out optimization acceptance and
+installed Explorer-to-output verification remain open; do not treat this as release readiness.
+
 As of September 6, 2026, the repository has completed a focused Windows 11 x64
 shell-integration discovery prototype. It proves:
 
@@ -66,6 +73,15 @@ quality coverage and broader comparison/metadata controls remain open.
 
 Next Goal And Current Execution Order
 ------------------------------------
+
+**Immediate product priority:** [quiet-first UX and best-effort optimization](quiet-first-ux-goal.md),
+under [decision 0015](decisions/0015-simple-context-menu-workflows.md). The initial
+Auto-first direct presets, safe candidate fallback, quiet completion and compact
+progress/problem UI are implemented with local automated evidence. Next, verify
+the installed menu and actual UI, then broaden PNG
+compatibility using observed real-file failures as part of this work. The sequence
+below records existing milestone history/dependencies, not a requirement to finish
+release signing or polish the old mandatory planner before this redesign.
 
 The [image output safety and settings goal](image-output-safety-goal.md) is locally
 implemented and verified, a bounded Milestone 2 slice.

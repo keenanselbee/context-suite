@@ -28,8 +28,26 @@ and Convert and Optimize contain no more than one level of child commands.
 
 Convert and Optimize end with a separator and **Settings...**. These entries
 open the corresponding shared settings section, not a media batch. The current
-native implementation has a planning action, separator, and Settings action;
-actual codec targets remain pending. Analyze has no submenu.
+native Convert implementation offers PNG, JPEG, WebP (lossless), BMP, TGA,
+More options, separator and Settings. Actions are `png`, `jpeg`, `webp`, `bmp`,
+`tga` and `choose-format`. Analyze has no submenu. Enumeration is bounded and
+does not decode media; the app checks actual capabilities and required decisions.
+
+[Decision 0015](decisions/0015-simple-context-menu-workflows.md) replaces the
+target Optimize experience with Auto, Lossless, Balanced, Smallest, separator,
+Settings, in that authored order. These actions are implemented with stable
+`auto`, `lossless`, `balanced`, and `smallest` IDs across shell, native host and
+managed app. `choose-preset` remains accepted for the advanced in-app planner,
+not an Explorer child. Installed-menu verification remains pending. Quiet success and
+sound belong to the out-of-process application, never Explorer enumeration.
+
+Automatic quiet shutdown and managed launcher forwarding share a short-lived,
+current-user/current-session mutex. A launcher holds it through ownership selection
+and acknowledgement; an idle owner must acquire it before closing its pipe. This
+prevents a new selection from entering the check-to-close gap. The mutex is not held
+while encoding, and peer/path validation remains mandatory. WPF dispatcher affinity
+is enforced for acquisition and release; contention waits asynchronously, bounded
+to 15 seconds. See [Microsoft's mutex scope and ownership documentation](https://learn.microsoft.com/en-us/dotnet/api/system.threading.mutex?view=net-10.0).
 
 Commands should appear in the modern Windows 11 context menu when supported by
 the chosen deployment model. A fallback experience may exist, but it must retain

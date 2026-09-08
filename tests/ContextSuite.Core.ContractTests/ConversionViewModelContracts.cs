@@ -66,5 +66,12 @@ internal static class ConversionViewModelContracts
         check(planner.CanConfirm && planner.OutputNotice.Contains("Keep originals", StringComparison.Ordinal), "conversion VM: safe copy remains available");
         planner.RemoveMetadata = true;
         check(!planner.WarningsAcknowledged, "conversion VM: metadata policy changes clear prior consent");
+        planner.MaximumDimension = "1";
+        planner.MaximumDimension = "2";
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while ((planner.AfterPreview is null || planner.IsPreviewBusy) && DateTime.UtcNow < deadline)
+            await Task.Delay(50);
+        check(planner.AfterPreview?.PixelWidth == 2 && !planner.WarningsAcknowledged && !File.Exists(trialPath),
+            "conversion VM: rapid edits automatically render latest preview without stale consent or trial admission");
     }
 }

@@ -88,8 +88,8 @@ Remaining Acceptance And Release Limits
   the in-app picker: keyboard/focus, light/dark/high contrast, scaling, long
   paths, all-unsupported selections, cancel, mixed results, retry and details.
   Compiled XAML and view-model tests are not interactive UI acceptance.
-- A direct `Optimize > Lossless` quick action remains planned; today's child
-  command opens the confirmation planner. No lossy presets are advertised.
+- Direct Auto/Lossless/Balanced/Smallest actions are now implemented under the
+  [quiet-first slice](quiet-first-ux-goal.md); installed-menu acceptance remains open.
 - Replacement reuses the existing restricted-platform publisher and tested
   recovery contracts; no additional live Recycle Bin test was performed here.
 - Independently review the selected upstream binary's transitive components,

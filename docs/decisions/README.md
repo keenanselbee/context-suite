@@ -74,6 +74,8 @@ design documents when an accepted decision changes their assumptions.
 Current Decisions
 -----------------
 
+- [0015: Simple context-menu workflows](0015-simple-context-menu-workflows.md) — accepted next priority; implementation pending
+
 - [0014: PNG precision presets](0014-png-precision-presets.md) — implemented locally; interactive acceptance pending
 
 - [0013: Lossless PNG optimization](0013-lossless-png-optimization.md) — implemented locally; interactive and commercial acceptance pending

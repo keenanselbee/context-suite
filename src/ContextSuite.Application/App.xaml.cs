@@ -19,6 +19,10 @@ public partial class App : System.Windows.Application
     private string _requestedSettingsSection = "convert";
     private ConversionWindow? _conversionWindow;
     private OptimizationWindow? _optimizationWindow;
+    private readonly QuietWorkflow _quiet = new();
+    private readonly System.Windows.Threading.DispatcherTimer _quietTimer = new() { Interval = TimeSpan.FromMilliseconds(200) };
+    private bool _userOpened;
+    private Task _sounds = Task.CompletedTask;
 
     public App() : this(ApplicationPaths.Production) { }
     internal App(ApplicationPaths paths) { _paths = paths; _settingsStore = new(paths.Settings); }
@@ -37,10 +41,14 @@ public partial class App : System.Windows.Application
             }
             OperationRequest? request = activationPath is null ? null :
                 await ActivationStore.ReadAsync(activationPath, CancellationToken.None);
-            _router = ActivationRouter.TryCreate();
-            if (_router is null)
+            using var handoff = new ActivationGate();
+            await handoff.EnterAsync(CancellationToken.None);
+            var forwardDeadline = DateTime.UtcNow.AddSeconds(12);
+            while ((_router = ActivationRouter.TryCreate()) is null)
             {
-                await ActivationRouter.ForwardAsync(request, CancellationToken.None);
+                try { await ActivationRouter.ForwardAsync(request, CancellationToken.None); }
+                catch (RouterClosingException) when (DateTime.UtcNow < forwardDeadline)
+                { await Task.Delay(100); continue; }
                 if (activationPath is not null) ActivationStore.Acknowledge(activationPath);
                 Shutdown();
                 return;
@@ -52,13 +60,32 @@ public partial class App : System.Windows.Application
             _viewModel.ConversionRequested += ShowConversionAsync;
             _viewModel.OptimizationRequested += ShowOptimizationAsync;
             var window = new MainWindow { DataContext = _viewModel };
+            window.InputNotice.Text = _settings.Warning ?? "";
             MainWindow = window;
             window.Closing += OnClosing;
+            window.Activated += (_, _) => { if (!window.ShowActivated) _userOpened = true; };
+            _viewModel.QuickBatchStarted += (incoming, rows) => _quiet.Begin(incoming.RequestId, rows[0].Settings.PlayCompletionSound, DateTimeOffset.UtcNow);
+            _viewModel.QuickBatchCompleted += (incoming, rows) =>
+            {
+                if (_closing) return;
+                if (_quiet.Complete(incoming.RequestId, rows.Select(row => row.Result).ToArray()))
+                    _sounds = PlayAfterAsync(_sounds);
+                if (_quiet.NeedsAttention)
+                {
+                    if (!_userOpened) window.ResultsGrid.SelectedItem = rows.FirstOrDefault(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.Publication?.HasWarning == true);
+                    window.Show();
+                }
+            };
+            _quietTimer.Tick += CheckQuietWindow;
+            _quietTimer.Start();
             _router.Start(incoming => Dispatcher.InvokeAsync(() =>
             {
+                if (_closing) return new ActivationReply(1, incoming?.RequestId ?? Guid.Empty, false, "Application is closing.");
                 var reply = _viewModel.Admit(incoming);
-                if (reply.Accepted)
+                if (reply.Accepted && incoming?.IsQuickAction != true && incoming?.IsSettingsRequest != true)
                 {
+                    _userOpened = true;
+                    window.ShowActivated = true;
                     window.Show();
                     if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
                     if (incoming?.IsSettingsRequest != true) (_optimizationWindow as Window ?? _conversionWindow as Window ?? window).Activate();
@@ -67,7 +94,10 @@ public partial class App : System.Windows.Application
             }).Task);
             var accepted = _viewModel.Admit(request);
             if (!accepted.Accepted) throw new InvalidDataException(accepted.Message);
-            window.Show();
+            _userOpened = (request?.IsQuickAction != true && request?.IsSettingsRequest != true) ||
+                !string.IsNullOrEmpty(_viewModel.RecoveryNotice) || _settings.Warning is not null;
+            window.ShowActivated = _userOpened;
+            if (_userOpened) window.Show();
             if (activationPath is not null) ActivationStore.Acknowledge(activationPath);
             ActivationStore.CleanupStale();
         }
@@ -83,10 +113,36 @@ public partial class App : System.Windows.Application
         }
     }
 
+    private static async Task PlayAfterAsync(Task previous)
+    {
+        try { await previous; await CompletionSound.PlayAsync(); }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or DllNotFoundException or EntryPointNotFoundException)
+        { /* A missing sound is not a media failure. */ }
+    }
+
+    private async void CheckQuietWindow(object? sender, EventArgs e)
+    {
+        if (_closing || _viewModel is null) return;
+        if (!_userOpened && _quiet.ShowProgress(DateTimeOffset.UtcNow)) MainWindow.Show();
+        if (_viewModel.IsBusy || _userOpened || _quiet.NeedsAttention || _settingsWindow is not null || _openingSettings) return;
+        MainWindow.Hide();
+        if (!_sounds.IsCompleted || _router!.HasConnectedClient) return;
+        using var handoff = new ActivationGate();
+        if (!handoff.TryEnter()) return;
+        _closing = true;
+        _quietTimer.Stop();
+        _router.StopAccepting();
+        await _viewModel.DisposeAsync();
+        await _router.DisposeAsync();
+        Shutdown();
+    }
+
     private async Task<ConfirmedImageBatch?> ShowConversionAsync(ConversionViewModel planner, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var completion = new TaskCompletionSource<ConfirmedImageBatch?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _userOpened = true;
+        MainWindow.Show();
         var window = new ConversionWindow { Owner = MainWindow, DataContext = planner };
         _conversionWindow = window;
         void Confirmed(ConfirmedImageBatch confirmed) { completion.TrySetResult(confirmed); window.Close(); }
@@ -106,6 +162,8 @@ public partial class App : System.Windows.Application
     {
         cancellationToken.ThrowIfCancellationRequested();
         var completion = new TaskCompletionSource<ConfirmedPngOptimization?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _userOpened = true;
+        MainWindow.Show();
         var window = new OptimizationWindow { Owner = MainWindow, DataContext = planner };
         _optimizationWindow = window;
         void Confirmed(ConfirmedPngOptimization confirmed) { completion.TrySetResult(confirmed); window.Close(); }
@@ -124,8 +182,6 @@ public partial class App : System.Windows.Application
     private async void ShowSettings(string section)
     {
         _requestedSettingsSection = section;
-        MainWindow.Show();
-        if (MainWindow.WindowState == WindowState.Minimized) MainWindow.WindowState = WindowState.Normal;
         if (_settingsWindow is not null)
         {
             ((SettingsViewModel)_settingsWindow.DataContext).SelectedSection = section == "optimize" ? 1 : 0;
@@ -141,7 +197,8 @@ public partial class App : System.Windows.Application
             if (_closing) return;
             _viewModel!.Settings = _settings.Settings;
             var settingsViewModel = new SettingsViewModel(_settingsStore, _settings, _requestedSettingsSection, PublicationSupport.ReplacementAvailable);
-            var window = new SettingsWindow { Owner = MainWindow, DataContext = settingsViewModel };
+            var window = new SettingsWindow { DataContext = settingsViewModel };
+            if (MainWindow.IsVisible) window.Owner = MainWindow;
             _settingsWindow = window;
             settingsViewModel.Saved += loaded =>
             {
@@ -162,6 +219,7 @@ public partial class App : System.Windows.Application
         if (_viewModel.IsBusy && MessageBox.Show("Cancel pending work and exit? Completed results will not be undone.",
             "Context Suite", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
         _closing = true;
+        _quietTimer.Stop();
         _router!.StopAccepting();
         await _viewModel.DisposeAsync();
         await _router.DisposeAsync();

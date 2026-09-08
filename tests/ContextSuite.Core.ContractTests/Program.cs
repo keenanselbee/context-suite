@@ -95,6 +95,41 @@ try
         await RejectAsync(() => JsonFrames.ReadAsync<ActivationMessage>(server, new CancellationTokenSource(50).Token), "blocked pipe cancellation");
     }
 
+    await OnUiThreadAsync(async () =>
+    {
+        using var owner = new ActivationGate();
+        Check(owner.TryEnter() && owner.TryEnter(), "handoff gate: same owner does not recursively acquire");
+        await OnUiThreadAsync(async () =>
+        {
+            using var contender = new ActivationGate();
+            Check(!contender.TryEnter(), "handoff gate: competing dispatcher cannot close during forwarding");
+            using var cancel = new CancellationTokenSource(TimeSpan.FromMilliseconds(75));
+            await RejectAsync(() => contender.EnterAsync(cancel.Token), "handoff gate: waiting is cancellable without blocking dispatcher");
+        });
+    });
+    await OnUiThreadAsync(async () =>
+    {
+        using var next = new ActivationGate();
+        Check(next.TryEnter(), "handoff gate: release allows next owner");
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+        await RejectAsync(() => next.EnterAsync(cancelled.Token), "handoff gate: pre-cancellation retained");
+    });
+    using (var abandoned = new Mutex(false, LocalPipe.SessionName + "-handoff",
+        new NamedWaitHandleOptions { CurrentUserOnly = true, CurrentSessionOnly = true }))
+    {
+        var acquired = false;
+        var thread = new Thread(() => acquired = abandoned.WaitOne(1000));
+        thread.Start();
+        Check(thread.Join(2000) && acquired, "handoff gate: terminated owner fixture acquired mutex");
+        await OnUiThreadAsync(() =>
+        {
+            using var recovered = new ActivationGate();
+            Check(recovered.TryEnter(), "handoff gate: abandoned owner recovers without stale lock cleanup");
+            return Task.CompletedTask;
+        });
+    }
+
     // Do not interfere with a running production application in the same session.
     await using (var router = ActivationRouter.TryCreate() ?? throw new IOException("Close Context Suite before running router contracts."))
     {
@@ -173,6 +208,31 @@ try
         vm.CancelCommand.Execute(null);
         Check(vm.Rows[0].Result.State == OperationState.Succeeded && vm.Rows[1].Result.State == OperationState.Succeeded,
             "UI cancellation never undoes committed results");
+    });
+
+    await OnUiThreadAsync(async () =>
+    {
+        await using var vm = new MainViewModel(new WorkerClient(Path.Combine(args[0], "missing-worker.exe")));
+        var retryPath = Path.Combine(args[0], "retry-source.png");
+        File.WriteAllText(retryPath, "disposable retry admission fixture");
+        var oldFailure = new FileRow(1, "convert", fixture, new("convert", new()), "webp");
+        var laterSuccess = new FileRow(2, "convert", fixture.ToUpperInvariant(), new("convert", new()), "png");
+        var retry = new FileRow(3, "optimize", retryPath, new("optimize", new()), "smallest");
+        var missing = new FileRow(4, "convert", Path.Combine(args[0], "missing-retry.png"), new("convert", new()), "jpeg");
+        foreach (var row in new[] { oldFailure, laterSuccess, retry, missing }) vm.Rows.Add(row);
+        foreach (var row in new[] { oldFailure, retry, missing }) vm.RecordResult(row, new(row.Path, OperationState.Failed, "Test failure"));
+        vm.RecordResult(laterSuccess, new(laterSuccess.Path, OperationState.Succeeded, "Test success"));
+        var message = vm.RetryFailed();
+        Check(vm.Rows.Count == 5 && vm.Rows[^1].Action == "smallest" && vm.Rows[^1].Path == retryPath &&
+            message.StartsWith("1 failed file(s) queued") && message.Contains("1 could not be queued"),
+            "retry: latest case-insensitive result suppresses old failure; original preset retained; missing source reported");
+        vm.RetryFailed();
+        Check(vm.Rows.Count == 5, "retry: double-click cannot duplicate queued retry");
+        vm.CancelCommand.Execute(null);
+        vm.RecordResult(vm.Rows[^1], new PublicationResult(retryPath, PublicationOutcome.CopyCreated, "Created", retryPath + ".out").ToFileResult());
+        vm.RetryFailed();
+        Check(vm.Rows.Count == 5 && vm.Rows[^1].Result.Publication?.IsCommitted == true,
+            "retry: completed retry never reprocesses historical failure or committed output");
     });
 
     if (args.Length >= 2)

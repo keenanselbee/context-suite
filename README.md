@@ -13,6 +13,14 @@ The project focuses on image and audio workflows that are understandable
 without codec expertise. It should never hide meaningful quality, transparency,
 metadata, or compatibility consequences.
 
+The primary UX goal is **right-click, choose, done** for a broad, nontechnical
+audience. [The quiet Optimize slice](docs/quiet-first-ux-goal.md) implements direct presets with
+Auto first, best-effort optimization, quiet successful completion and a much
+simpler progress/problem UI. Quick Optimize is implemented and tested locally;
+installed Explorer, accessibility and visual acceptance remain pending. Common
+Convert targets also run directly when safe; a preselected planner opens for
+meaningful decisions. Advanced in-app Optimize retains its planning window.
+
 
 Project Status
 --------------

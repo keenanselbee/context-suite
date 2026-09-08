@@ -179,6 +179,12 @@ Repository-Specific Notes
   validated semantic results to determine completion.
 - Keep common workflows understandable without codec expertise and place
   advanced controls behind a secondary surface.
+- Follow accepted decision 0015 as the next product priority: broad-audience
+  simplicity, context-menu-first direct actions, Auto first, best-effort results
+  within fixed quality limits, quiet success and compact progress/problem UI.
+  Direct Optimize and safe common Convert actions bypass planning with copy-only
+  output. Meaningful conversion decisions and advanced in-app Optimize use planners. Keep planned
+  behavior distinct from implemented and verified behavior in status reports.
 - Keep Explorer-facing code minimal and bounded. Do not load media engines,
   perform unbounded parsing, access the network, or display errors while Explorer
   enumerates commands.

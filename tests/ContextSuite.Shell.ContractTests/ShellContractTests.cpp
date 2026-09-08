@@ -95,8 +95,39 @@ bool ReadResult(
 }
 
 bool TestSettingsChildren(IEnumExplorerCommand* enumerator, IExplorerCommand* action,
-    const CommandExpectation& expectation, HANDLE completionEvent, const std::filesystem::path& resultPath)
+    const CommandExpectation& expectation, HANDLE completionEvent, const std::filesystem::path& resultPath,
+    IShellItemArray* selection, size_t pathCount)
 {
+    if (expectation.hasSubcommands)
+    {
+        const bool optimize = std::string_view(expectation.operation) == "optimize";
+        const std::vector<const wchar_t*> titles = optimize ? std::vector<const wchar_t*>{ L"Lossless", L"Balanced", L"Smallest" } :
+            std::vector<const wchar_t*>{ L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"More options..." };
+        const std::vector<const char*> actions = optimize ? std::vector<const char*>{ "lossless", "balanced", "smallest" } :
+            std::vector<const char*>{ "jpeg", "webp", "bmp", "tga", "choose-format" };
+        size_t index = 0;
+        GUID previous{};
+        action->GetCanonicalName(&previous);
+        for (const auto titleExpected : titles)
+        {
+            IExplorerCommand* preset = nullptr;
+            ULONG read = 0;
+            if (enumerator->Next(1, &preset, &read) != S_OK || read != 1 || preset == nullptr) return false;
+            PWSTR title = nullptr;
+            GUID id{};
+            bool valid = SUCCEEDED(preset->GetTitle(nullptr, &title)) && title != nullptr &&
+                std::wstring_view(title) == titleExpected && SUCCEEDED(preset->GetCanonicalName(&id)) && !IsEqualGUID(previous, id);
+            CoTaskMemFree(title);
+            DeleteFileW(resultPath.c_str());
+            SetEnvironmentVariableW(L"CONTEXT_SUITE_PROTOTYPE_TEST_RESULT", resultPath.c_str());
+            ResetEvent(completionEvent);
+            valid = valid && SUCCEEDED(preset->Invoke(selection, nullptr)) &&
+                WaitForSingleObject(completionEvent, 10000) == WAIT_OBJECT_0 && ReadResult(resultPath, expectation.operation, actions[index++], pathCount);
+            preset->Release();
+            if (!valid) return false;
+            previous = id;
+        }
+    }
     IExplorerCommand* children[2]{};
     ULONG fetched = 0;
     if (enumerator->Next(2, children, &fetched) != S_OK || fetched != 2)
@@ -122,7 +153,7 @@ bool TestSettingsChildren(IEnumExplorerCommand* enumerator, IExplorerCommand* ac
     if (extra != nullptr) extra->Release();
 
     IEnumExplorerCommand* clone = nullptr;
-    valid = valid && enumerator->Reset() == S_OK && enumerator->Skip(1) == S_OK &&
+    valid = valid && enumerator->Reset() == S_OK && enumerator->Skip(std::string_view(expectation.operation) == "optimize" ? 4 : 6) == S_OK &&
         SUCCEEDED(enumerator->Clone(&clone)) && clone != nullptr;
     if (clone != nullptr)
     {
@@ -219,7 +250,7 @@ bool TestCommand(
             SUCCEEDED(actionCommand->GetFlags(&flags)) && flags == ECF_DEFAULT;
         CoTaskMemFree(actualActionTitle);
         if (subcommandIsValid)
-            subcommandIsValid = TestSettingsChildren(enumerator, actionCommand, expectation, completionEvent, resultPath);
+            subcommandIsValid = TestSettingsChildren(enumerator, actionCommand, expectation, completionEvent, resultPath, selection, pathCount);
         if (enumerator != nullptr)
         {
             enumerator->Release();
@@ -321,8 +352,8 @@ int wmain(int argumentCount, wchar_t** arguments)
     const std::filesystem::path resultDirectory(arguments[2]);
     const CommandExpectation expectations[] = {
         {AnalyzeCommandClsid, L"Analyze", L"Open details...", "analyze", "open-details", false},
-        {ConvertCommandClsid, L"Convert", L"Choose format...", "convert", "choose-format", true},
-        {OptimizeCommandClsid, L"Optimize", L"Choose preset...", "optimize", "choose-preset", true},
+        {ConvertCommandClsid, L"Convert", L"PNG", "convert", "png", true},
+        {OptimizeCommandClsid, L"Optimize", L"Auto", "optimize", "auto", true},
     };
 
     bool succeeded = true;

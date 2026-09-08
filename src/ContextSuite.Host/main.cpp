@@ -259,8 +259,10 @@ bool ParseRequest(const std::string& content, ActivationRequest& request, std::w
     const bool isSettings = request.action == L"settings" && request.operation != L"analyze";
     const bool actionMatchesOperation = isSettings ||
         (request.operation == L"analyze" && request.action == L"open-details") ||
-        (request.operation == L"convert" && request.action == L"choose-format") ||
-        (request.operation == L"optimize" && request.action == L"choose-preset");
+        (request.operation == L"convert" && (request.action == L"choose-format" || request.action == L"png" ||
+            request.action == L"jpeg" || request.action == L"webp" || request.action == L"bmp" || request.action == L"tga")) ||
+        (request.operation == L"optimize" && (request.action == L"choose-preset" || request.action == L"auto" ||
+            request.action == L"lossless" || request.action == L"balanced" || request.action == L"smallest"));
     if (!actionMatchesOperation)
     {
         error = L"The requested action is not supported.";

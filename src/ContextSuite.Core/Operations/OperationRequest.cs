@@ -6,6 +6,9 @@ public sealed record OperationRequest(Guid RequestId, string Operation, string A
 {
     public const int MaximumPaths = 4096;
     public bool IsSettingsRequest => Action == "settings" && Operation is "convert" or "optimize";
+    public bool IsQuickOptimization => Operation == "optimize" && Action is "auto" or "lossless" or "balanced" or "smallest";
+    public bool IsQuickConversion => Operation == "convert" && Action is "png" or "jpeg" or "webp" or "bmp" or "tga";
+    public bool IsQuickAction => IsQuickOptimization || IsQuickConversion;
 
     public void Validate(bool requireExistingFiles = true)
     {
@@ -26,7 +29,7 @@ public sealed record OperationRequest(Guid RequestId, string Operation, string A
             "optimize" => "choose-preset",
             _ => throw new InvalidDataException("The operation is not supported.")
         };
-        if (Action != expectedAction)
+        if (Action != expectedAction && !IsQuickAction)
             throw new InvalidDataException("The action does not match its operation.");
 
         foreach (var path in Paths)

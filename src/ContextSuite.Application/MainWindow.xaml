@@ -1,61 +1,58 @@
 <Window x:Class="ContextSuite.Application.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:ContextSuite.Application.Infrastructure"
         Title="Context Suite" AutomationProperties.AutomationId="ContextSuiteWindow"
-        Width="1000" Height="620" MinWidth="700" MinHeight="440" AllowDrop="True" PreviewDrop="OnFilesDropped" PreviewDragOver="OnDragOver">
-    <Grid Margin="20" Background="Transparent">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <StackPanel>
-            <TextBlock Text="Context Suite" FontSize="26" FontWeight="SemiBold" />
-            <WrapPanel HorizontalAlignment="Right" Margin="0,8,0,0">
-            <Button Content="_Settings..." Command="{Binding SettingsCommand}"
-                    AutomationProperties.AutomationId="OpenSettings" Padding="12,6" HorizontalAlignment="Right" />
-            <Button Content="_Convert files..." Click="OnChooseFiles" Margin="8,0,0,0"
-                    AutomationProperties.AutomationId="ChooseConversionFiles" Padding="12,6" HorizontalAlignment="Right" />
-            <Button Content="_Analyze DDS..." Click="OnChooseAnalysisFiles" Margin="8,0,0,0"
-                    AutomationProperties.AutomationId="ChooseAnalysisFiles" Padding="12,6" HorizontalAlignment="Right" />
-            <Button Content="_Optimize PNG..." Click="OnChooseOptimizationFiles" Margin="8,0,0,0"
-                    AutomationProperties.AutomationId="ChooseOptimizationFiles" Padding="12,6" />
-            </WrapPanel>
+        Width="720" Height="460" MinWidth="560" MinHeight="340" AllowDrop="True" PreviewDrop="OnFilesDropped" PreviewDragOver="OnDragOver">
+    <Window.Resources><BooleanToVisibilityConverter x:Key="VisibleWhenTrue" /></Window.Resources>
+    <DockPanel Margin="20" Background="Transparent">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="Context Suite" FontSize="24" FontWeight="SemiBold" />
+            <ui:StatusTextBlock Text="{Binding Summary}" AutomationProperties.AutomationId="BatchSummary"
+                       AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap" Margin="0,12,0,8" />
+            <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,12"
+                         Visibility="{Binding IsBusy, Converter={StaticResource VisibleWhenTrue}}" AutomationProperties.Name="Processing files" />
+            <ui:StatusTextBlock Text="{Binding RecoveryNotice}" TextWrapping="Wrap" AutomationProperties.AutomationId="RecoveryNotice" />
+            <ui:StatusTextBlock x:Name="InputNotice" TextWrapping="Wrap" AutomationProperties.AutomationId="InputNotice" />
         </StackPanel>
-        <StackPanel Grid.Row="1" Margin="0,12,0,16">
-            <TextBlock TextWrapping="Wrap"
-                       Text="Convert PNG, JPEG, WebP, BMP, TGA and supported 2D DDS textures; optimize PNG losslessly; or analyze DDS headers without changing files. Drop files here to convert. Select a result row to read its details. Optimization keeps originals by default and saves only smaller verified results." />
-            <TextBlock Text="{Binding RecoveryNotice}" TextWrapping="Wrap" AutomationProperties.AutomationId="RecoveryNotice" />
-            <TextBlock x:Name="InputNotice" TextWrapping="Wrap" AutomationProperties.AutomationId="InputNotice" AutomationProperties.LiveSetting="Polite" />
-        </StackPanel>
-        <DataGrid x:Name="ResultsGrid" Grid.Row="2" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True"
-                  CanUserAddRows="False" AutomationProperties.AutomationId="BatchResults"
-                  AutomationProperties.Name="Selected files and operation results">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Batch" Binding="{Binding Batch}" Width="70" />
-                <DataGridTextColumn Header="Tool" Binding="{Binding Operation}" Width="90" />
-                <DataGridTextColumn Header="File" Binding="{Binding Path}" Width="*" />
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="220" />
-                <DataGridTextColumn Header="Output" Binding="{Binding OutputPath}" Width="SizeToHeader" />
-                <DataGridTextColumn Header="Retained original" Binding="{Binding RetainedOriginalPath}" Width="SizeToHeader" />
-                <DataGridTextColumn Header="Recovery record" Binding="{Binding RecoveryRecordPath}" Width="SizeToHeader" />
-            </DataGrid.Columns>
-        </DataGrid>
-        <ScrollViewer Grid.Row="3" MaxHeight="120" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
-            <TextBlock Text="{Binding SelectedItem.ResultDetails, ElementName=ResultsGrid}" TextWrapping="Wrap" FontSize="12"
-                       AutomationProperties.AutomationId="SelectedResultDetails" />
-        </ScrollViewer>
-        <DockPanel Grid.Row="4" Margin="0,16,0,0">
-            <Button DockPanel.Dock="Right" AutomationProperties.AutomationId="CancelPending"
-                    Content="Cancel _pending" Command="{Binding CancelCommand}" Padding="12,6" Margin="12,0,0,0" />
-            <Button DockPanel.Dock="Right" Content="Open output _folder" Click="OnOpenOutputFolder" Padding="10,6" Margin="8,0,0,0"
-                    AutomationProperties.AutomationId="OpenOutputFolder" />
-            <Button DockPanel.Dock="Right" Content="_Retry selected" Click="OnRetrySelected" Padding="10,6" Margin="8,0,0,0"
+        <WrapPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <Button Content="Cancel _work" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" Padding="12,6"
+                    AutomationProperties.AutomationId="CancelPending" />
+            <Button Content="_Retry failed" Click="OnRetrySelected" Padding="12,6" Margin="8,0,0,0"
                     AutomationProperties.AutomationId="RetrySelectedFiles" />
-            <TextBlock Text="{Binding Summary}" AutomationProperties.AutomationId="BatchSummary"
-                       VerticalAlignment="Center" TextWrapping="Wrap" />
-        </DockPanel>
-    </Grid>
+            <Button Content="_Settings..." Command="{Binding SettingsCommand}" Padding="12,6" Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="OpenSettings" />
+        </WrapPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <Expander Header="Files and details" AutomationProperties.AutomationId="FileDetails" IsExpanded="{Binding ShowDetails, Mode=OneWay}" Margin="0,8,0,0">
+                    <StackPanel>
+                        <DataGrid x:Name="ResultsGrid" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True"
+                                  CanUserAddRows="False" MaxHeight="240" MinHeight="80" AutomationProperties.AutomationId="BatchResults"
+                                  AutomationProperties.Name="Files and outcomes">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="*" MinWidth="140" />
+                                <DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}" Width="160" />
+                                <DataGridTextColumn Header="Saved" Binding="{Binding Savings}" Width="100" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <TextBlock Text="{Binding SelectedItem.ResultDetails, ElementName=ResultsGrid}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   AutomationProperties.AutomationId="SelectedResultDetails" />
+                        <Button Content="Open output _folder" Click="OnOpenOutputFolder" Padding="10,6" Margin="0,8,0,0" HorizontalAlignment="Left"
+                                IsEnabled="{Binding SelectedItem.HasOutput, ElementName=ResultsGrid}" AutomationProperties.AutomationId="OpenOutputFolder" />
+                    </StackPanel>
+                </Expander>
+                <Expander Header="More tools" AutomationProperties.AutomationId="MoreTools" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Drop files here to convert, or choose a tool." TextWrapping="Wrap" Margin="0,8" />
+                        <WrapPanel>
+                            <Button Content="_Convert files..." Click="OnChooseFiles" Padding="10,6" AutomationProperties.AutomationId="ChooseConversionFiles" />
+                            <Button Content="_Analyze DDS..." Click="OnChooseAnalysisFiles" Margin="8,0,0,0" Padding="10,6" AutomationProperties.AutomationId="ChooseAnalysisFiles" />
+                            <Button Content="_Optimize PNG..." Click="OnChooseOptimizationFiles" Margin="8,0,0,0" Padding="10,6" AutomationProperties.AutomationId="ChooseOptimizationFiles" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
 </Window>

@@ -4,6 +4,10 @@ Bounded PNG Precision Presets
 Status: accepted and implemented locally; interactive/release acceptance pending
 Date: 2026-09-08
 
+[Decision 0015](0015-simple-context-menu-workflows.md) supersedes the target
+planner-first experience and no-lossless-fallback rule. That redesign is planned;
+the implementation described here remains the current build until replaced.
+
 Decision
 --------
 

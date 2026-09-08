@@ -26,6 +26,7 @@ internal sealed class ActivationRouter : IAsyncDisposable
     }
 
     public void StopAccepting() { _accepting = false; }
+    public bool HasConnectedClient => _server.IsConnected;
 
     public static async Task ForwardAsync(OperationRequest? request, CancellationToken cancellationToken)
     {
@@ -40,6 +41,7 @@ internal sealed class ActivationRouter : IAsyncDisposable
         if (reply.Version != 1 || reply.RequestId != (request?.RequestId ?? Guid.Empty))
             throw new IOException("The existing application returned an invalid acknowledgement.");
         await JsonFrames.WriteAsync(client, new ActivationReceipt(1, reply.RequestId), timeout.Token);
+        if (!reply.Accepted && reply.Message == "Application is closing.") throw new RouterClosingException();
         if (!reply.Accepted)
             throw new IOException("The existing application did not accept this selection. Try again after closing it.");
     }
@@ -85,3 +87,5 @@ internal sealed class ActivationRouter : IAsyncDisposable
         _lifetime.Dispose();
     }
 }
+
+internal sealed class RouterClosingException : IOException;

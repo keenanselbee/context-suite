@@ -21,6 +21,7 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         _loaded = loaded;
         Convert = new ToolSettingsEditor(loaded.Settings.Convert);
         Optimize = new ToolSettingsEditor(loaded.Settings.Optimize);
+        PlayCompletionSound = loaded.Settings.PlayCompletionSound;
         _selectedSection = section == "optimize" ? 1 : 0;
         _message = loaded.Warning ?? "Preferences apply to future batches. Existing batches keep their settings.";
         CanEdit = loaded.CanSave;
@@ -33,6 +34,7 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
 
     public ToolSettingsEditor Convert { get; }
     public ToolSettingsEditor Optimize { get; }
+    public bool PlayCompletionSound { get; set; }
     public bool CanEdit { get; }
     public bool CanAllowReplacement { get; }
     public string ReplacementNotice { get; }
@@ -58,7 +60,7 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         IsSaving = true;
         try
         {
-            var settings = new SuiteSettings { Convert = Convert.Capture(), Optimize = Optimize.Capture() };
+            var settings = new SuiteSettings { Convert = Convert.Capture(), Optimize = Optimize.Capture(), PlayCompletionSound = PlayCompletionSound };
             var result = await _store.SaveAsync(settings, _loaded);
             Message = "Settings saved. Existing batches were not changed.";
             IsSaving = false;
@@ -85,10 +87,21 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     }
 }
 
-internal sealed class ToolSettingsEditor(ToolSettings settings)
+internal sealed class ToolSettingsEditor(ToolSettings settings) : INotifyPropertyChanged
 {
     public bool AllowReplacingOriginals { get; set; } = settings.AllowReplacingOriginals;
-    public string OutputDirectory { get; set; } = settings.OutputDirectory ?? "";
+    private string _outputDirectory = settings.OutputDirectory ?? "";
+    public string OutputDirectory
+    {
+        get => _outputDirectory;
+        set
+        {
+            if (_outputDirectory == value) return;
+            _outputDirectory = value;
+            PropertyChanged?.Invoke(this, new(nameof(OutputDirectory)));
+        }
+    }
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public ToolSettings Capture()
     {

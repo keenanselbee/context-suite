@@ -118,7 +118,7 @@ internal static class ImageConversionSmoke
             }, "visible before/after panels after layout settles");
             Capture(conversion, "jpeg-matte-planner");
             Control(conversion, "CancelImageConversion").AsButton().Invoke();
-            Wait(() => Control(main, "BatchSummary").Name.Contains("0 pending", StringComparison.Ordinal), "cancelled batch result");
+            Wait(() => !Control(main, "CancelPending").IsEnabled, "cancelled batch result");
             Check(!File.Exists(trial), "cancelling before confirmation leaves the trial unstarted");
 
             Activate(files);
@@ -150,25 +150,23 @@ internal static class ImageConversionSmoke
             Capture(conversion, "queued-resize-planner");
             Control(conversion, "ConfirmImageConversion").AsButton().Invoke();
             var jpeg = Path.Combine(inputs, "opaque - Converted.jpg");
-            Wait(() => File.Exists(jpeg) && Control(main, "BatchSummary").Name.Contains("0 pending", StringComparison.Ordinal), "queued JPEG publication");
+            Wait(() => File.Exists(jpeg) && !Control(main, "CancelPending").IsEnabled, "queued JPEG publication");
             using (var decoded = new Bitmap(jpeg)) Check(decoded.Width == 24 && decoded.Height == 18, "independent decoder verifies resize dimensions");
             using (var persisted = JsonDocument.Parse(File.ReadAllText(trial)))
                 Check(persisted.RootElement.GetProperty("StartedUtc").GetString() == started, "later batch does not restart trial");
             Check(Control(main, "BatchSummary").Name.Contains("3 completed", StringComparison.Ordinal), "aggregate results report three completed outputs across queued batches");
             Capture(main, "conversion-results");
 
+            Control(main, "FileDetails").Patterns.ExpandCollapse.Pattern.Expand();
             var completedRows = Control(main, "BatchResults").FindAllChildren(cf => cf.ByControlType(ControlType.DataItem));
             completedRows.Last().Patterns.SelectionItem.Pattern.Select();
             Control(main, "RetrySelectedFiles").AsButton().Invoke();
-            conversion = WaitWindow("ConversionWindow");
-            Wait(() => Control(conversion, "RefreshConversionPreview").IsEnabled, "retry source preview");
-            Check(!Control(conversion, "ConfirmImageConversion").IsEnabled &&
-                conversion.FindAllDescendants().Any(e => e.Name?.Contains("opaque.png", StringComparison.Ordinal) == true),
-                "retry opens a fresh explicit plan for the original source, not the converted file");
-            Control(conversion, "CancelImageConversion").AsButton().Invoke();
-            Wait(() => Control(main, "BatchSummary").Name.Contains("0 pending", StringComparison.Ordinal), "retry cancellation");
-
+            Wait(() => !Control(main, "CancelPending").IsEnabled, "failed-only retry completed");
+            Check(Control(main, "BatchSummary").Name.Contains("3 completed", StringComparison.Ordinal) &&
+                !Directory.EnumerateFiles(inputs, "*Converted (2)*").Any(),
+                "Retry failed does not reprocess a selected successful conversion");
             main.SetForeground();
+            Control(main, "MoreTools").Patterns.ExpandCollapse.Pattern.Expand();
             var chooseFiles = Control(main, "ChooseConversionFiles");
             chooseFiles.Focus();
             Wait(() => chooseFiles.Properties.HasKeyboardFocus.ValueOrDefault, "file-picker button focus");
@@ -192,7 +190,7 @@ internal static class ImageConversionSmoke
             Check(conversion.FindAllDescendants().Any(e => e.Name?.Contains("opaque.png", StringComparison.Ordinal) == true) &&
                 !Control(conversion, "ConfirmImageConversion").IsEnabled, "native file selection opens a fresh conversion plan");
             Control(conversion, "CancelImageConversion").AsButton().Invoke();
-            Wait(() => Control(main, "BatchSummary").Name.Contains("0 pending", StringComparison.Ordinal), "file-picked batch cancellation");
+            Wait(() => !Control(main, "CancelPending").IsEnabled, "file-picked batch cancellation");
             using (var persisted = JsonDocument.Parse(File.ReadAllText(trial)))
                 Check(persisted.RootElement.GetProperty("StartedUtc").GetString() == started && Directory.GetFiles(inputs).Length == 6,
                     "cancelled retry and file selection neither reset trial nor publish outputs");
@@ -224,7 +222,7 @@ internal static class ImageConversionSmoke
                 Check(conversion.FindAllDescendants().Any(e => e.Name?.Contains("opaque.png", StringComparison.Ordinal) == true) &&
                     !Control(conversion, "ConfirmImageConversion").IsEnabled, "real cross-window OLE file drop creates a fresh explicit conversion plan");
                 Control(conversion, "CancelImageConversion").AsButton().Invoke();
-                Wait(() => Control(main, "BatchSummary").Name.Contains("0 pending", StringComparison.Ordinal), "dropped batch cancellation");
+                Wait(() => !Control(main, "CancelPending").IsEnabled, "dropped batch cancellation");
             }
 
             // Expire only this test host's isolated record; this is not a production access override.
@@ -248,7 +246,7 @@ internal static class ImageConversionSmoke
             Control(main, "OpenOutputFolder").AsButton().Invoke();
             Wait(() => IsFolderOpen(inputs), "actual completed output folder in Explorer");
             Check(true, "opening a completed output folder remains available after trial expiry");
-            Wait(() => Control(main, "BatchSummary").Name.Contains("0 pending", StringComparison.Ordinal), "final queue idle");
+            Wait(() => !Control(main, "CancelPending").IsEnabled, "final queue idle");
             main.Close();
             Wait(() => owned[0].HasExited, "test application shutdown");
             for (var index = 0; index < files.Length; index++)
@@ -322,8 +320,12 @@ internal static class ImageConversionSmoke
         }
     }
 
-    private static AutomationElement Control(AutomationElement window, string id) =>
-        window.FindFirstDescendant(cf => cf.ByAutomationId(id)) ?? throw new PendingControlException("Missing UI control: " + id);
+    private static AutomationElement Control(AutomationElement window, string id)
+    {
+        if (id is "ConversionQuality" or "ConversionMaximumDimension")
+            window.FindFirstDescendant(cf => cf.ByAutomationId("ConversionSizeQuality"))?.Patterns.ExpandCollapse.Pattern.Expand();
+        return window.FindFirstDescendant(cf => cf.ByAutomationId(id)) ?? throw new PendingControlException("Missing UI control: " + id);
+    }
 
     private sealed class PendingControlException(string message) : Exception(message);
 
