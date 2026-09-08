@@ -5,7 +5,7 @@ Status: in progress; internal candidate tooling and Inno lifecycle integration
 implemented; signing, native upgrade/repair and isolated-machine acceptance pending.
 No commercial release approval.
 
-The [installer lifecycle integration](installer-recovery.md) passes 38 orchestration
+The [installer lifecycle integration](installer-recovery.md) passes 42 orchestration
 checks plus 52 recovery checks without Sandbox or a VM. Versioned extraction,
 active launch/uninstall and recovery are wired; native existing-install admission
 remains closed rather than being inferred from mocked platform tests.
@@ -235,3 +235,49 @@ Its receipt inventories the new helper scripts, versioned release template and
 application/package files, and records `nativeUpgradeAdmission: false`.
 See [integration evidence and limits](installer-recovery.md). This wraps the
 previous dirty-marked application candidate; it is not a clean-source release.
+
+Installer hardening evidence
+---------------------------
+
+The staging identity-ordering issue is fixed: incoming publisher and package
+names must match before pending recovery can run. Four no-mutation regression
+cases bring the lifecycle count to 42, alongside 52 recovery and 25 installer
+contracts. The signed native matrix remains entirely pending; see the new
+[signed-installer checklist](signed-installer-checklist.md) for exact cases,
+required evidence and outstanding owner decisions.
+
+A fresh application candidate was built with no dirty-source override from
+detached worktrees at public `119fe8375dad5e664186b3ac1730cdd61b65deb1` and private
+`d6e7524aa3b731d7ce656487946f07f9171011ce`. Both worktrees were clean at application
+build time. The exact curated engine transport was hash-verified, DDS was built
+from pinned source and Release was compiled anew. Candidate inventory and ZIP
+round-trip verification passed, as did 14 packaging checks. This establishes
+source-identified repeatable inputs on the existing development machine, not
+bit-identical native output, hosted CI or a clean Windows installation.
+
+Evidence root:
+`.codex-temp/release-hardening/debe924a3dcb47c59f5cbcec216574ff/public/`.
+The candidate is under that root at
+`artifacts/release-candidates/623f4bfb16f948e78c46e609b1ecc8c1/ContextSuite`;
+its manifest records `dirtySources: false`. ZIP SHA256:
+`898BA8C5537814FDF7211FA71F402988FA5FA64A7F35367ED8CB2133B4949D52`.
+
+Only after creating that application candidate, the hardened lifecycle script,
+test and builder were overlaid into the public build worktree. Its installer
+receipt explicitly distinguishes uncommitted installer sources from the clean
+application candidate and records the builder and every staged input's hash.
+The offline Inno build and receipt/hash verification pass. Installer evidence:
+`artifacts/installer-candidates/248c3ec8f9454f528d07ba670313c401/` under the same
+root; EXE SHA256:
+`A6D80F84264BF7368165799A79A119EBC0E0DF53A9C433B68CAE4C4A35F67C4E`.
+`installerSource.dirtySources` is true, `applicationCandidateDirtySources` is
+false, and `nativeUpgradeAdmission` remains false. Pinned compiler and offline
+runtime hashes/signatures were checked by the builder. Nothing was installed,
+registered, signed, committed or published.
+
+An initial attempt to wrap the candidate from the original worktree was rejected
+by exact DDS source-byte checks (Git checkout line-ending normalization differs
+between worktrees). Packaging succeeded from the matching build worktree; no
+source/engine pin was weakened or replaced. Detached worktrees, engine transport,
+test fixtures and internal artifacts are intentionally retained under ignored
+repository paths. They are not customer downloads.

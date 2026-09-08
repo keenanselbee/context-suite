@@ -1,7 +1,7 @@
 Installer Upgrade And Repair Recovery
 =====================================
 
-Status: Inno lifecycle integration implemented; 38 orchestration checks and 52
+Status: Inno lifecycle integration implemented; 42 orchestration checks and 52
 recovery checks pass locally. Native existing-install admission remains gated.
 
 The owner approved implementing and automatically testing recovery without
@@ -108,12 +108,17 @@ operations, reparse paths and unchanged user data. Local evidence:
 The public workflow now invokes the safe installer/recovery tests; hosted
 execution has not been run here.
 
-The integration superset adds 38 checks: first install, immutable staging,
+The integration superset adds 42 checks: first install, immutable staging,
 active launch, upgrade, repair after later app damage, failure compensation,
 uninstall retry, older-installer/active-newer-version handling, pending launch,
 exclusive locks, corrupted/incomplete extraction, foreign identity, bootstrap
 cleanup authorization, legacy rejection, unchanged user data, and source wiring.
-Evidence: `.codex-temp/installer-recovery/339e1bd7d5194581bdc030a3a5ff959e`.
+The staging coordinator now validates incoming publisher/package names before
+pending recovery, then checks the resolved active identity again afterward.
+Four regression cases cover both identity mismatches with the pointer before or
+after commit, asserting no Appx calls or changes to registrations, file/directory
+inventory, file hashes, last-write times or attributes. See current
+[hardening evidence](release-packaging-goal.md#installer-hardening-evidence).
 The stage copier simulates Inno extraction using real fixture files; it does not
 execute Inno's native file ledger. The test explicitly keeps Appx/signature calls
 mocked. Public CI calls the superset instead of running the backend matrix twice.

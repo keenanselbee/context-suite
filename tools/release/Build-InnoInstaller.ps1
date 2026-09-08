@@ -6,6 +6,11 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+$installerCommit = & git -C $repository rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw 'Cannot identify installer source revision.' }
+$installerChanges = @(& git -C $repository status --porcelain=v1 --untracked-files=all)
+if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect installer source state.' }
+$builderHash = (Get-FileHash -LiteralPath $PSCommandPath).Hash
 & (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate $Candidate
 $candidateRoot = (Resolve-Path -LiteralPath $Candidate).Path
 $identityRoot = (Resolve-Path -LiteralPath $IdentityDirectory).Path
@@ -121,8 +126,20 @@ $configuration = @(
 & $compiler --no-ide-signtools (Join-Path $staging 'ContextSuite.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Inno compilation failed.' }
 $installer = Join-Path $output "ContextSuite-$($identity.version)-win-x64-internal.exe"
+if ((& git -C $repository rev-parse HEAD) -ne $installerCommit -or
+    (Get-FileHash -LiteralPath $PSCommandPath).Hash -ne $builderHash) {
+    throw 'Installer source changed during compilation; discard this attempt.'
+}
+foreach ($file in Get-ChildItem -LiteralPath (Join-Path $repository 'packaging\inno') -File) {
+    $copy = if ($file.Extension -eq '.iss') { Join-Path $staging $file.Name } else { Join-Path $installation $file.Name }
+    if ((Get-FileHash -LiteralPath $file.FullName).Hash -ne (Get-FileHash -LiteralPath $copy).Hash) {
+        throw 'Installer helper changed while staging or compiling; discard this attempt.'
+    }
+}
 $receipt = [ordered]@{
     schema = 1; status = 'unsigned-internal-lifecycle-candidate'; nativeUpgradeAdmission = $false;
+    installerSource = [ordered]@{ publicCommit = $installerCommit; dirtySources = ($installerChanges.Count -ne 0);
+        builderSha256 = $builderHash; applicationCandidateDirtySources = [bool]$candidateManifest.dirtySources };
     candidateManifestSha256 = $identity.candidateManifestSha256;
     identityReceiptSha256 = (Get-FileHash -LiteralPath (Join-Path $identityRoot 'identity-candidates.json')).Hash;
     unsignedIdentityInputs = [bool]$UnsignedInternal; innoVersion = $pins.inno.version;
