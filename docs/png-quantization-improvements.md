@@ -11,6 +11,11 @@ Follow-up: the user approved these visual results on September 8, 2026.
 policies under a stricter metadata/representation boundary. Statements below
 describe the completed research phase, not current production status.
 
+Later user feedback found visible dark-gradient banding in production RGB6.
+The [dark-gradient palette comparison](png-palette-comparison.md) reopens the
+lossy strategy with metadata/alpha-preserving experiments; the earlier visual
+approval is not evidence that RGB precision works well on this image class.
+
 
 Experiments
 -----------

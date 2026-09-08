@@ -5,8 +5,15 @@ Status: bounded lossless PNG recompression implemented under
 [decision 0013](decisions/0013-lossless-png-optimization.md). See
 [goal evidence](png-optimization-goal.md). Bounded [Balanced/Smallest presets](png-lossy-presets.md)
 are implemented under [decision 0014](decisions/0014-png-precision-presets.md).
-Interactive release acceptance, direct quick actions and selectable metadata
-policies remain planned.
+Direct Auto/Lossless/Balanced/Smallest quick actions and lossless fallback are
+implemented. Interactive release acceptance and selectable metadata policies remain planned.
+
+Accepted next direction: [decision 0015](decisions/0015-simple-context-menu-workflows.md)
+and the [quiet-first UX plan](quiet-first-ux-goal.md) replace mandatory planning
+with direct Auto-first presets and best-effort candidate selection. This includes
+saving a useful lossless fallback when it wins. The initial slice is implemented
+with local policy, worker, shell and isolated quiet-launch evidence; human
+acceptance and wider PNG compatibility remain pending.
 
 
 Purpose
@@ -21,18 +28,32 @@ Explorer Experience
 -------------------
 
 **Optimize** is a top-level Explorer command. Its submenu shows only policies
-supported by the complete selection. Today, **Choose preset...** opens a
-Lossless/Balanced/Smallest preserve-metadata planner, defaulting to Lossless, with unsupported files explained before
-confirmation; **Settings...** remains separate. Planned direct PNG actions are:
+supported by the complete selection. Direct preset IDs execute copy-only batches;
+the bounded shell currently validates selection count, while content support is
+checked outside Explorer and inapplicable files get per-file explanations.
+The in-app picker retains advanced planning and replacement confirmation.
+Its planner shows preset, policy explanation and a two-column file/plan list.
+The selected file's full status stays readable below the list; dimensions and
+proposed paths are under File details. Output/replacement controls are collapsed
+initially, and replacement consent remains separately visible when requested.
+The body scrolls independently of the confirmation buttons. The advanced planner
+retains its conservative Lossless default; direct Explorer Auto remains first.
+Implemented direct PNG actions are:
 
+- **Auto** — the first/recommended action; a conservative, image-specific choice
+  among validated candidates, with worthwhile savings and bounded visual loss.
 - **Lossless** — pixels decode identically.
 - **Balanced** — bounded visual loss under a documented quality floor.
 - **Smallest** — stronger, clearly identified lossy reduction under its own
   quality floor.
-- **More options...** — opens comparison, metadata, destination, and replacement
-  controls.
+- Advanced comparison, metadata, destination and replacement controls belong
+  inside the application; they are not a mandatory menu/planner detour.
 - **Settings...** — after a separator at the bottom, opens the Optimize section
   of shared settings without starting work.
+
+Direct presets should complete without a success window: one optional Windows
+chime per successful batch, including No smaller result. Show compact cancellable
+progress only when useful; problems and necessary decisions get actionable UI.
 
 The default output is a collision-safe sibling file. Replacing the source is an
 explicit option and must use recoverable transactional publication.
@@ -78,8 +99,13 @@ The user-approved [expanded evaluation](png-quantization-improvements.md) select
 256/128-color palette. These remain ordinary 8-bit PNGs with bounded RGB sample
 changes and exact alpha. Production retains admitted metadata and representation;
 ICC/indexed/grayscale and unsupported chunks remain outside lossy admission.
-Candidates must beat both source size and lossless recompression, otherwise the
-file is Unchanged. Interactive production acceptance is still required.
+Each policy retains the smallest eligible result, including lossless fallback.
+Auto tests RGB7 with the Balanced quality floor and requires at least 5% additional
+savings against the smaller of source and lossless baseline before pixel changes.
+Balanced compares lossless/RGB7; Smallest compares lossless/RGB7/RGB6. Ties retain
+the gentler result. Lossy-ineligible but lossless-supported files use lossless.
+Encoder, cancellation and validation failures are not masked as fallback success.
+Interactive production acceptance is still required.
 
 The production implementation must not resolve tools from `reference/`. Each
 engine requires a pinned version, integrity hash, packaging location, supported
@@ -92,6 +118,22 @@ separately because removing optional metadata may be part of the selected policy
 
 Preset Semantics
 ----------------
+
+Approved next PNG research direction: retain **Auto, Lossless, Balanced, Smallest**
+in that order. Presets describe quality limits, not fixed colour counts. Auto
+favours near-original appearance and worthwhile savings; Balanced allows small
+changes with stricter gradient/detail protection; Smallest allows stronger loss
+without abandoning its floor. Select from a small bounded candidate set per image,
+keep lossless fallback for every preset, and never force additional degradation
+merely because Smallest was selected. Metadata and transparency preservation do
+not vary implicitly with the preset. No extra colour-count or dithering menu is
+needed for everyday users.
+
+The [512-colour/light-dither experiment](png-palette-comparison.md) is approved for
+broader testing, initially as a Smallest candidate. It is not an approved production
+replacement, a universal default or permission to loosen Balanced's limits.
+Current shipping-candidate behaviour remains documented above until integration
+and broader gradient/detail acceptance are complete.
 
 Each preset is a versioned policy, not a label over an open-ended retry ladder.
 It defines:
