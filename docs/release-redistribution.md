@@ -3,6 +3,15 @@ Release Redistribution Checklist
 
 Reviewed: 2026-09-07. Engineering review, not a legal opinion or release approval.
 
+PNG addition, 2026-09-08: development packaging now includes the pinned upstream
+oxipng 10.1.0 Windows x64 executable and its MIT license, with independent archive
+and file hashes. Before commercial distribution, inventory its transitive linked
+components, archive their actual source/notices, confirm applicable redistribution
+conditions and runtime requirements, and recheck advisories. The upstream binary
+and top-level MIT notice alone do not complete that review. See
+[decision 0013](decisions/0013-lossless-png-optimization.md). Do not treat the
+previous curated native link map as coverage for this additional executable.
+
 The curated development payload materially reduces the dependency inventory.
 The DDS development candidate additionally links pinned CPU DirectXTex (MIT)
 through the private bridge. Its license and hash/provenance identity now travel

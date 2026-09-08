@@ -142,7 +142,7 @@ internal static class ImageWorkerContracts
     }
 
     // Independent test fixture encoder. No private engine or image library is linked into the public tests.
-    internal static void WritePng(string path, bool transparent = false)
+    internal static void WritePng(string path, bool transparent = false, CompressionLevel compression = CompressionLevel.SmallestSize)
     {
         using var stream = File.Create(path);
         stream.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 });
@@ -152,7 +152,7 @@ internal static class ImageWorkerContracts
         header[8] = 8; header[9] = 6;
         Chunk("IHDR", header);
         using var compressed = new MemoryStream();
-        using (var zlib = new ZLibStream(compressed, CompressionLevel.SmallestSize, true))
+        using (var zlib = new ZLibStream(compressed, compression, true))
         {
             byte[] pixels = [0, 255,0,0,255, 0,255,0,255, 0,0,255,255, 0, 255,255,255,255, 0,0,0,255, 255,0,255,255];
             if (transparent) pixels[4] = 128;

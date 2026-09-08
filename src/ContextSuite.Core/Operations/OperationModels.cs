@@ -8,7 +8,7 @@ public enum AccessState { Trial, Paid, Expired, Unavailable }
 public sealed record MediaFact(string Section, string Name, string Value, FactCertainty Certainty);
 public sealed record OperationWarning(string Code, string Message);
 public sealed record OutputPolicy(OutputMode Mode = OutputMode.SiblingCopy, bool SkipIfLarger = true);
-public sealed record FileResult(string Path, OperationState State, string Message, PublicationResult? Publication = null);
+public sealed record FileResult(string Path, OperationState State, string Message, PublicationResult? Publication = null, string? EngineIdentity = null);
 public sealed record OperationProgress(Guid RequestId, int Completed, int Total);
 public sealed record MediaCapability(string Operation, string InputFormat, string? OutputFormat);
 public sealed record OperationPlan(Guid RequestId, string? TargetFormat, string? PresetId,

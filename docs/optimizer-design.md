@@ -1,7 +1,12 @@
 Context Optimizer Design
 ========================
 
-Status: initial design; PNG is the first planned implementation.
+Status: bounded lossless PNG recompression implemented under
+[decision 0013](decisions/0013-lossless-png-optimization.md). See
+[goal evidence](png-optimization-goal.md). Bounded [Balanced/Smallest presets](png-lossy-presets.md)
+are implemented under [decision 0014](decisions/0014-png-precision-presets.md).
+Interactive release acceptance, direct quick actions and selectable metadata
+policies remain planned.
 
 
 Purpose
@@ -16,7 +21,9 @@ Explorer Experience
 -------------------
 
 **Optimize** is a top-level Explorer command. Its submenu shows only policies
-supported by the complete selection. Initial PNG actions are:
+supported by the complete selection. Today, **Choose preset...** opens a
+Lossless/Balanced/Smallest preserve-metadata planner, defaulting to Lossless, with unsupported files explained before
+confirmation; **Settings...** remains separate. Planned direct PNG actions are:
 
 - **Lossless** — pixels decode identically.
 - **Balanced** — bounded visual loss under a documented quality floor.
@@ -58,11 +65,21 @@ Core Invariants
 PNG Version 1
 -------------
 
-The initial PNG engine design uses independently selected and pinned tools:
+The PNG engine design uses independently selected and pinned tools:
 
-- Lossless recompression through `oxipng` or an equivalently verified engine.
-- Lossy palette quantization through `pngquant` or an equivalently verified
-  engine, followed by lossless structural cleanup.
+- Implemented lossless recompression through pinned `oxipng` 10.1.0, with no
+  representation reductions and original metadata chunks retained exactly.
+- Implemented bounded lossy RGB precision reduction followed by the same cleanup,
+  with curated Magick.NET admission/reopen validation. No paid quantizer or
+  additional runtime dependency is introduced.
+
+The user-approved [expanded evaluation](png-quantization-improvements.md) selected
+7-bit/6-bit RGB precision policies for Balanced/Smallest instead of a fixed
+256/128-color palette. These remain ordinary 8-bit PNGs with bounded RGB sample
+changes and exact alpha. Production retains admitted metadata and representation;
+ICC/indexed/grayscale and unsupported chunks remain outside lossy admission.
+Candidates must beat both source size and lossless recompression, otherwise the
+file is Unchanged. Interactive production acceptance is still required.
 
 The production implementation must not resolve tools from `reference/`. Each
 engine requires a pinned version, integrity hash, packaging location, supported

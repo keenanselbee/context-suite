@@ -19,12 +19,15 @@ Build And Test
 # Complete foundation, requiring private source and staged curated inputs.
 # See tools/curated-engine/README.md for the reviewed native staging workflow.
 ./tools/dds-engine/Build-DdsEngine.ps1
+./tools/png-engine/Stage-PngEngine.ps1
 ./tools/Build-Production.ps1 -Configuration Release
 ./tools/Test-Foundation.ps1 -Configuration Release -Integration
 ./artifacts/production/Release/ContextSuite.Application.exe
 
 # Real image-engine/adapter contracts, requiring the private checkout.
 ./tools/Test-ImageConversion.ps1 -Configuration Release
+./tools/Test-PngQuantization.ps1 -Configuration Release # Research only; generates an offline comparison report.
+# Optional: -Corpus '.codex-temp/png-quantization/screenshots-<id>' for pre-copied research inputs.
 ./tools/Test-DdsCodec.ps1 -SkipNativeBuild
 # Opt-in desktop test of the actual conversion UI with isolated trial/settings.
 ./tools/Test-DesktopSmoke.ps1 -Configuration Release -Images
@@ -78,7 +81,9 @@ Implementation Boundaries
 This is one unfinished production application, not a demonstration edition.
 Convert selections now open the image planner and can produce validated
 PNG/JPEG/WebP/BMP/TGA/DDS copies after confirmation. Analyze reports DDS headers;
-Optimize remains unimplemented.
+Optimize now opens the bounded lossless PNG planner. See
+[PNG implementation and verification](png-optimization-goal.md); interactive
+optimization-window acceptance is still pending.
 The image worker, application executor and real conversion UI have focused
 integration tests; final goal acceptance and release checks remain separate.
 Trial admission precedes reserving/encoding/publishing.

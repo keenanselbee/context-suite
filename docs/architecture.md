@@ -5,6 +5,8 @@ Status: production process foundation implemented under decision 0007.
 Magick.NET with the pinned curated native engine is integrated into development
 packaging. Decision 0011 adds pinned CPU DirectXTex in the worker and public
 bounded DDS header analysis. Bounded DDS local acceptance passes; customer deployment remains pending.
+Decision 0013 adds lossless PNG recompression via a pinned, Windows-job-owned
+oxipng child of the worker. The application remains the sole publication owner.
 
 
 Architecture Goals
@@ -73,7 +75,8 @@ The app owns final publication; the worker produces and validates temporary
 outputs. Settings use versioned JSON in local application data. Typed image
 probe/preview/conversion IPC and trial-gated application publication now have
 real-worker integration tests, and the conversion UI now uses that path. The
-capability registry advertises twenty ordinary-image pairs and seven bounded DDS pairs, subject
+capability registry advertises twenty ordinary-image conversion pairs, seven bounded DDS
+conversion pairs and one lossless PNG optimization capability, subject
 to per-file probing and planning. The app requires the private
 checkout to build but does not reference the engine assemblies; only the worker
 links them. A test-only host compiles the real windows with isolated storage,

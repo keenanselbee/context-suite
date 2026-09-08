@@ -91,21 +91,21 @@ internal static class ImageInterruptionContracts
         }
     }
 
-    private static void WriteNoisePng(string path)
+    internal static void WriteNoisePng(string path, int dimension = 4096)
     {
         using var file = File.Create(path);
         file.Write(new byte[] { 137,80,78,71,13,10,26,10 });
         var header = new byte[13];
-        BinaryPrimitives.WriteUInt32BigEndian(header, 4096);
-        BinaryPrimitives.WriteUInt32BigEndian(header.AsSpan(4), 4096);
+        BinaryPrimitives.WriteUInt32BigEndian(header, (uint)dimension);
+        BinaryPrimitives.WriteUInt32BigEndian(header.AsSpan(4), (uint)dimension);
         header[8] = 8; header[9] = 2;
         Chunk("IHDR", header);
         using var compressed = new MemoryStream();
         using (var zlib = new ZLibStream(compressed, CompressionLevel.Fastest, true))
         {
             var random = new Random(7429);
-            var row = new byte[4096 * 3 + 1];
-            for (var y = 0; y < 4096; y++) { random.NextBytes(row); row[0] = 0; zlib.Write(row); }
+            var row = new byte[dimension * 3 + 1];
+            for (var y = 0; y < dimension; y++) { random.NextBytes(row); row[0] = 0; zlib.Write(row); }
         }
         Chunk("IDAT", compressed.ToArray()); Chunk("IEND", []);
         void Chunk(string name, byte[] bytes)
@@ -124,7 +124,7 @@ internal static class ImageInterruptionContracts
         }
     }
 
-    private sealed class DeadlineClock : TimeProvider
+    internal sealed class DeadlineClock : TimeProvider
     {
         public DeadlineTimer? Current { get; private set; }
         public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
@@ -134,7 +134,7 @@ internal static class ImageInterruptionContracts
         }
     }
 
-    private sealed class DeadlineTimer(TimerCallback callback, object? state, TimeSpan due) : ITimer
+    internal sealed class DeadlineTimer(TimerCallback callback, object? state, TimeSpan due) : ITimer
     {
         private int _disposed;
         public TimeSpan Due { get; private set; } = due;

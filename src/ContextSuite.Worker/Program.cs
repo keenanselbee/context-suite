@@ -50,6 +50,8 @@ try
                 reply = command.Command switch
                 {
                     "image-probe" => new(1, command.RequestId, [], Source: adapter.Probe(command.Probe!, lifetime.Token)),
+                    "png-probe" => new(1, command.RequestId, [], Source: adapter.ProbeOptimization(command.Probe!, lifetime.Token)),
+                    "png-optimize" => new(1, command.RequestId, [], ImageResult: await adapter.OptimizeAsync(command.Optimization!, lifetime.Token)),
                     "image-preview" => new(1, command.RequestId, [], Preview: adapter.Preview(command.Preview!, lifetime.Token)),
                     "image-convert" => new(1, command.RequestId, [], ImageResult: adapter.Convert(command.Work!, lifetime.Token)),
                     _ => throw new InvalidDataException("Unknown image operation.")

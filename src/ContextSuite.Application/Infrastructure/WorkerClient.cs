@@ -28,9 +28,9 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         return reply.Engine ?? throw new InvalidDataException("The media worker returned no engine identity.");
     }
 
-    public async Task<ImageSourceFacts> ProbeAsync(ImageProbe request, CancellationToken cancellationToken)
+    public async Task<ImageSourceFacts> ProbeAsync(ImageProbe request, CancellationToken cancellationToken, bool forOptimization = false)
     {
-        var reply = await SendAsync(new(1, Guid.NewGuid(), "image-probe", Probe: request), cancellationToken);
+        var reply = await SendAsync(new(1, Guid.NewGuid(), forOptimization ? "png-probe" : "image-probe", Probe: request), cancellationToken);
         var source = reply.Source ?? throw new InvalidDataException("Worker returned no image facts.");
         source.Validate();
         if (source.ItemId != request.ItemId || !string.Equals(source.Path, Path.GetFullPath(request.SourcePath), StringComparison.OrdinalIgnoreCase))
@@ -49,6 +49,17 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         return result;
     }
 
+    public async Task<ImageWorkResult> OptimizeAsync(PngOptimizationWork request, CancellationToken cancellationToken)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "png-optimize", Optimization: request), cancellationToken);
+        var result = reply.ImageResult ?? throw new InvalidDataException("Worker returned no optimization result.");
+        if (result.Validation.ItemId != request.Source.ItemId || !result.Validation.MatchesPlan ||
+            result.Width != request.Source.Width || result.Height != request.Source.Height || result.BitDepth != request.Source.BitDepth ||
+            result.OutputBytes is <= 0 or > 128 * 1024 * 1024 || string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 128)
+            throw new InvalidDataException("Worker result does not match the lossless optimization plan.");
+        return result;
+    }
+
     public async Task<ImagePreview> PreviewAsync(ImagePreviewRequest request, CancellationToken cancellationToken)
     {
         var reply = await SendAsync(new(1, Guid.NewGuid(), "image-preview", Preview: request), cancellationToken);
@@ -63,7 +74,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     {
         command.Validate();
         await _gate.WaitAsync(cancellationToken);
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command == "image-convert" ? 120 : 30),
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command is "image-convert" or "png-optimize" ? 120 : 30),
             timeProvider ?? TimeProvider.System);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
         try

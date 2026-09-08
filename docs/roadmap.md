@@ -55,6 +55,13 @@ The private catalog advertises twenty tested PNG/JPEG/WebP/BMP/TGA cross-format 
 plus five ordinary-image-to-DDS pairs, DDS-to-DDS and selected-color-mip DDS-to-PNG;
 the real adapter is used by the Convert planner and worker. Per-file probing and
 explicit planning still determine whether an individual variant is supported.
+The catalog also advertises bounded lossless PNG optimization (preserve pixels,
+representation and metadata; save only smaller verified output). Its automated
+acceptance is separate from the still-pending interactive optimization UI checks.
+The user-approved [expanded evaluation](png-quantization-improvements.md) led to
+[bounded RGB precision presets](png-lossy-presets.md), now implemented through
+the planner and private worker. Interactive production acceptance, held-out
+quality coverage and broader comparison/metadata controls remain open.
 
 
 Next Goal And Current Execution Order
@@ -88,6 +95,12 @@ Proceed in this order without renumbering existing milestone references:
    clean-machine verification remain gated.
    No release certification yet.
 5. Milestones 4 and 5 PNG optimization, reusing the output/settings foundation.
+   The bounded [lossless PNG slice](png-optimization-goal.md) is now implemented
+   under decision 0013, with automated engine/worker/publication checks. Interactive
+   planner acceptance and a direct Lossless menu action remain pending; Milestone 5
+   bounded lossy policies are implemented; interactive acceptance and broader
+   comparison/metadata controls remain open. Product work can proceed while signing and
+   native installer acceptance await owner decisions.
 6. Broader tested image capabilities, remaining Milestone 7 release work, then audio.
 
 The completed brief is [PNG/JPEG/WebP batch conversion](image-conversion-goal.md).
@@ -159,7 +172,9 @@ Resolve before the dependent media or release work:
 - Curated Magick native build and redistribution configuration under decision
   0010; package/precision are settled by 0009. CPU DirectXTex and the bounded DDS
   matrix are selected/pinned under 0011; complete their acceptance and redistribution gates.
-- Distribution of FFmpeg, `oxipng`, and `pngquant` or selected alternatives.
+- Lossless PNG uses pinned oxipng under decision 0013; its transitive release
+  inventory remains to review. Select distribution of FFmpeg and the lossy PNG
+  engine before their dependent slices.
 - Installer, signing, update, and diagnostics strategy.
 - Exact private engine adapters and optimization policy definitions.
 - Access-policy boundary for the three-day trial and purchase workflow
@@ -296,6 +311,10 @@ Exit criteria:
 
 Milestone 5: Batch Lossy PNG Policies
 -------------------------------------
+
+Current slice: [Balanced RGB7 and Smallest RGB6](png-lossy-presets.md) implemented
+with exact alpha, preserved accepted metadata and smaller-than-lossless gating.
+This does not complete the broader comparison UI or release acceptance below.
 
 Deliver:
 

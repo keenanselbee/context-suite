@@ -7,17 +7,18 @@ public sealed record ActivationMessage(int Version, OperationRequest? Request);
 public sealed record ActivationReply(int Version, Guid RequestId, bool Accepted, string Message);
 public sealed record ActivationReceipt(int Version, Guid RequestId);
 public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
-    ImageProbe? Probe = null, ImageWork? Work = null, ImagePreviewRequest? Preview = null)
+    ImageProbe? Probe = null, ImageWork? Work = null, ImagePreviewRequest? Preview = null, PngOptimizationWork? Optimization = null)
 {
     public void Validate()
     {
         if (Version != 1 || RequestId == Guid.Empty) throw new InvalidDataException("Invalid worker request identity.");
         var valid = Command switch
         {
-            "shutdown" or "capabilities" or "engine-info" => Probe is null && Work is null && Preview is null,
-            "image-probe" => Probe is not null && Work is null && Preview is null,
-            "image-convert" => Work is not null && Probe is null && Preview is null,
-            "image-preview" => Preview is not null && Probe is null && Work is null,
+            "shutdown" or "capabilities" or "engine-info" => Probe is null && Work is null && Preview is null && Optimization is null,
+            "image-probe" or "png-probe" => Probe is not null && Work is null && Preview is null && Optimization is null,
+            "image-convert" => Work is not null && Probe is null && Preview is null && Optimization is null,
+            "image-preview" => Preview is not null && Probe is null && Work is null && Optimization is null,
+            "png-optimize" => Optimization is not null && Probe is null && Work is null && Preview is null,
             _ => false
         };
         if (!valid) throw new InvalidDataException("Worker command payload does not match its operation.");

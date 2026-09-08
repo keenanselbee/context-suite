@@ -41,7 +41,8 @@ Proposed Policy And Open Decisions
 ---------------------------------
 
 - Local trial: [decision 0009](0009-first-image-engine-and-trial.md) settles
-  72 elapsed hours from the first confirmed valid conversion, atomic start,
+  72 elapsed hours from the first confirmed valid conversion (extended to
+  optimization by decision 0013), atomic start,
   clock-change handling, safe storage failures, and in-flight completion.
 - Activation: Polar license key with one active installation and customer
   deactivation for transfers. Target a non-expiring one-time purchase; confirm

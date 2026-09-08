@@ -33,6 +33,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
     public ICommand SettingsCommand => _settingsCommand ??= new OpenSettingsCommand(this);
     public event Action<string>? SettingsRequested;
     public event Func<ConversionViewModel, CancellationToken, Task<ConfirmedImageBatch?>>? ConversionRequested;
+    public event Func<OptimizationViewModel, CancellationToken, Task<ConfirmedPngOptimization?>>? OptimizationRequested;
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ActivationReply Admit(OperationRequest? request)
@@ -75,6 +76,11 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
                 if (batch.Request.Operation == "convert" && Publisher is not null && trial is not null && ConversionRequested is not null)
                 {
                     await ConvertBatchAsync(batch.Request, batch.Rows, active.Token);
+                    continue;
+                }
+                if (batch.Request.Operation == "optimize" && Publisher is not null && trial is not null && OptimizationRequested is not null)
+                {
+                    await OptimizeBatchAsync(batch.Request, batch.Rows, active.Token);
                     continue;
                 }
                 Summary = $"Checking available media implementations for {batch.Rows.Length} files…";
@@ -172,6 +178,53 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         }, cancellationToken);
     }
 
+    private async Task OptimizeBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
+    {
+        var selection = new List<ConversionSelection>();
+        for (var index = 0; index < rows.Length; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var row = rows[index];
+            Summary = $"Checking PNG {index + 1} of {rows.Length}. No optimization has been confirmed.";
+            row.ApplyResult(new(row.Path, OperationState.Running, "Checking lossless PNG support"));
+            try
+            {
+                var facts = await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken, forOptimization: true);
+                selection.Add(new(row.ItemId, row.Path, facts, null));
+                row.ApplyResult(new(row.Path, OperationState.Pending, "Waiting for optimization confirmation"));
+            }
+            catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or
+                InvalidOperationException or System.ComponentModel.Win32Exception or System.Text.Json.JsonException)
+            {
+                var message = error is MediaWorkerException ? error.Message : "Image could not be read. Check the file and retry.";
+                selection.Add(new(row.ItemId, row.Path, null, message));
+                row.ApplyResult(new(row.Path, error is MediaWorkerException { Failure: ImageFailure.UnsupportedInput }
+                    ? OperationState.Unsupported : OperationState.Failed, message));
+            }
+        }
+        var planner = new OptimizationViewModel(trial!, request.RequestId, selection, rows[0].Settings, PublicationSupport.ReplacementAvailable);
+        var confirmed = await OptimizationRequested!(planner, cancellationToken);
+        if (confirmed is null)
+        {
+            foreach (var row in rows.Where(row => row.Result.State == OperationState.Pending))
+            {
+                var reason = planner.Plan?.Items.FirstOrDefault(item => item.Source.ItemId == row.ItemId)?.BlockReason;
+                row.ApplyResult(new(row.Path, reason is null ? OperationState.Cancelled : OperationState.Unsupported,
+                    reason ?? "Optimization cancelled before confirmation"));
+            }
+            return;
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        var byId = rows.ToDictionary(row => row.ItemId);
+        var completed = rows.Count(row => row.Result.State is OperationState.Failed or OperationState.Unsupported);
+        await new PngOptimizationExecutor(worker, Publisher!, trial!).ExecuteAsync(confirmed, (item, result) =>
+        {
+            byId[item.Source.ItemId].ApplyResult(result);
+            if (result.State != OperationState.Running) completed++;
+            Summary = $"Batch {rows[0].Batch}: {completed} of {rows.Length} finished. {result.Message}";
+        }, cancellationToken);
+    }
+
     private void CancelPending()
     {
         _active?.Cancel();
@@ -201,6 +254,10 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         var pending = Rows.Count - completed - failed - cancelled - unchanged - unsupported;
         Summary = $"{prefix} {completed} completed ({warnings} warnings), {unchanged} unchanged, {failed} failed, " +
             $"{cancelled} cancelled, {unsupported} unsupported, {pending} pending." + (noChanges ? " No files changed." : "");
+        var optimized = Rows.Where(row => row.Operation == "optimize" && row.Result.Publication?.IsCommitted == true).ToArray();
+        var saved = optimized.Sum(row => row.Result.Publication!.SourceBytes - row.Result.Publication.OutputBytes);
+        var inputBytes = optimized.Sum(row => row.Result.Publication!.SourceBytes);
+        if (saved > 0) Summary += $" Optimization saved {saved:N0} bytes ({100.0 * saved / inputBytes:F1}% of saved files' input size).";
     }
 
     private static string RecoveryMessage(OutputPublisher? publisher)
@@ -259,6 +316,7 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
     public string RetainedOriginalPath => Result.Publication?.RetainedOriginalPath ?? "";
     public string RecoveryRecordPath => Result.Publication?.RecoveryRecordPath ?? "";
     public string ResultDetails => $"Source: {Path}\n{Status}" +
+        (Result.EngineIdentity is null ? "" : $"\nEngine / policy: {Result.EngineIdentity}") +
         (OutputPath.Length == 0 ? "" : $"\nOutput: {OutputPath}") +
         (RetainedOriginalPath.Length == 0 ? "" : $"\nRetained original: {RetainedOriginalPath}") +
         (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}") + AnalysisDetails;

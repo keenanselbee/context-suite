@@ -11,18 +11,22 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <DockPanel>
-            <Button Content="_Settings..." Command="{Binding SettingsCommand}" DockPanel.Dock="Right"
-                    AutomationProperties.AutomationId="OpenSettings" Padding="12,6" HorizontalAlignment="Right" />
-            <Button Content="_Convert files..." Click="OnChooseFiles" DockPanel.Dock="Right" Margin="0,0,8,0"
-                    AutomationProperties.AutomationId="ChooseConversionFiles" Padding="12,6" HorizontalAlignment="Right" />
-            <Button Content="_Analyze DDS..." Click="OnChooseAnalysisFiles" DockPanel.Dock="Right" Margin="0,0,8,0"
-                    AutomationProperties.AutomationId="ChooseAnalysisFiles" Padding="12,6" HorizontalAlignment="Right" />
+        <StackPanel>
             <TextBlock Text="Context Suite" FontSize="26" FontWeight="SemiBold" />
-        </DockPanel>
+            <WrapPanel HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button Content="_Settings..." Command="{Binding SettingsCommand}"
+                    AutomationProperties.AutomationId="OpenSettings" Padding="12,6" HorizontalAlignment="Right" />
+            <Button Content="_Convert files..." Click="OnChooseFiles" Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="ChooseConversionFiles" Padding="12,6" HorizontalAlignment="Right" />
+            <Button Content="_Analyze DDS..." Click="OnChooseAnalysisFiles" Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="ChooseAnalysisFiles" Padding="12,6" HorizontalAlignment="Right" />
+            <Button Content="_Optimize PNG..." Click="OnChooseOptimizationFiles" Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="ChooseOptimizationFiles" Padding="12,6" />
+            </WrapPanel>
+        </StackPanel>
         <StackPanel Grid.Row="1" Margin="0,12,0,16">
             <TextBlock TextWrapping="Wrap"
-                       Text="Convert PNG, JPEG, WebP, BMP, TGA and supported 2D DDS textures, or analyze DDS headers without changing files. Drop files here to convert. DDS export supports a selected color mip to PNG. Select a result row to read its details. Optimize is not implemented yet." />
+                       Text="Convert PNG, JPEG, WebP, BMP, TGA and supported 2D DDS textures; optimize PNG losslessly; or analyze DDS headers without changing files. Drop files here to convert. Select a result row to read its details. Optimization keeps originals by default and saves only smaller verified results." />
             <TextBlock Text="{Binding RecoveryNotice}" TextWrapping="Wrap" AutomationProperties.AutomationId="RecoveryNotice" />
             <TextBlock x:Name="InputNotice" TextWrapping="Wrap" AutomationProperties.AutomationId="InputNotice" AutomationProperties.LiveSetting="Polite" />
         </StackPanel>

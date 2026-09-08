@@ -2,8 +2,10 @@ Context Suite Product Design
 ============================
 
 Status: shell/process and output-safety foundations implemented; PNG/JPEG/WebP/BMP/TGA
-conversion has passed its bounded local acceptance matrix. Analysis, optimization and paid activation
-remain planned.
+conversion and bounded DDS analysis/conversion have passed local acceptance.
+Lossless and bounded lossy PNG optimization are implemented with automated contracts;
+interactive UI acceptance, broader analysis and paid activation remain pending.
+See [PNG precision presets](png-lossy-presets.md) for exact scope and remaining checks.
 
 
 Product Summary
@@ -203,9 +205,10 @@ contents. Access is checked by the application before work starts, never while
 Explorer constructs a menu. An admitted batch may finish after trial expiry,
 and its results remain available.
 
-The local trial starts at the first confirmed valid conversion and lasts 72
+The local trial starts at the first confirmed valid conversion or optimization and lasts 72
 elapsed hours; [decision 0009](decisions/0009-first-image-engine-and-trial.md)
-defines clock and failure handling. Browser activation
+and its [PNG extension](decisions/0013-lossless-png-optimization.md)
+define clock and failure handling. Browser activation
 is replaced by in-app key activation; paid offline grace, refresh, service
 outages, recovery, and post-trial feature availability require explicit policies.
 Polar is selected; pricing and license terms are still undecided. See the

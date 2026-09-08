@@ -47,7 +47,7 @@ internal sealed class LocalTrialStore
         try
         {
             var record = await ReadAsync(cancellationToken);
-            if (record is null) return new(LocalTrialState.NotStarted, "Your 72-hour trial starts when you confirm your first valid conversion.");
+            if (record is null) return new(LocalTrialState.NotStarted, "Your 72-hour trial starts when you confirm your first valid conversion or optimization.");
             var now = Observe(record.LastObservedUtc);
             return Status(record, now);
         }
@@ -60,6 +60,18 @@ internal sealed class LocalTrialStore
         ArgumentNullException.ThrowIfNull(confirmed);
         // Only the pure planner can construct confirmation, after all required choices.
         if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No confirmed conversion can execute.");
+        return await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+    }
+
+    public async Task<TrialAdmission> AdmitAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(confirmed);
+        if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No confirmed optimization can execute.");
+        return await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+    }
+
+    private async Task<TrialAdmission> AdmitBatchAsync(Guid batchId, CancellationToken cancellationToken)
+    {
         await _gate.WaitAsync(cancellationToken);
         try
         {
@@ -75,9 +87,9 @@ internal sealed class LocalTrialStore
             await SaveAsync(next, record is not null, cancellationToken);
             _hasSeenRecord = true;
             var status = Status(next, now);
-            return new(status, confirmed.Plan.BatchId, status.State == LocalTrialState.Active ? now : null);
+            return new(status, batchId, status.State == LocalTrialState.Active ? now : null);
         }
-        catch (Exception error) when (IsStorageError(error)) { return new(Unavailable(error), confirmed.Plan.BatchId); }
+        catch (Exception error) when (IsStorageError(error)) { return new(Unavailable(error), batchId); }
         finally { _gate.Release(); }
     }
 

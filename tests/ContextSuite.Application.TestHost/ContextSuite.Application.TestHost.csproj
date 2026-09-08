@@ -14,5 +14,6 @@
     <Page Include="..\..\src\ContextSuite.Application\MainWindow.xaml" Link="MainWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\SettingsWindow.xaml" Link="SettingsWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\ConversionWindow.xaml" Link="ConversionWindow.xaml" />
+    <Page Include="..\..\src\ContextSuite.Application\OptimizationWindow.xaml" Link="OptimizationWindow.xaml" />
   </ItemGroup>
 </Project>

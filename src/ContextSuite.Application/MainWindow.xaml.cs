@@ -30,6 +30,13 @@ public partial class MainWindow : System.Windows.Window
         if (picker.ShowDialog(this) == true) AddFiles(picker.FileNames, "analyze");
     }
 
+    private void OnChooseOptimizationFiles(object sender, RoutedEventArgs e)
+    {
+        var picker = new OpenFileDialog { Title = "Choose PNG files to optimize losslessly", Multiselect = true, CheckFileExists = true,
+            Filter = "PNG images (*.png)|*.png|All files (*.*)|*.*" };
+        if (picker.ShowDialog(this) == true) AddFiles(picker.FileNames, "optimize");
+    }
+
     private void OnFilesDropped(object sender, DragEventArgs e)
     {
         if (e.Data.GetData(DataFormats.FileDrop) is string[] paths) AddFiles(paths);
@@ -38,9 +45,9 @@ public partial class MainWindow : System.Windows.Window
 
     private void OnRetrySelected(object sender, RoutedEventArgs e)
     {
-        var rows = ResultsGrid.SelectedItems.Cast<FileRow>().Where(row => row.Operation == "convert").ToArray();
-        if (rows.Length == 0) { InputNotice.Text = "Select conversion rows to retry their original files with a new plan."; return; }
-        AddFiles(rows.Select(row => row.Path));
+        var rows = ResultsGrid.SelectedItems.Cast<FileRow>().Where(row => row.Operation is "convert" or "optimize").ToArray();
+        if (rows.Length == 0) { InputNotice.Text = "Select conversion or optimization rows to retry their originals with a new plan."; return; }
+        foreach (var group in rows.GroupBy(row => row.Operation)) AddFiles(group.Select(row => row.Path), group.Key);
     }
 
     private void AddFiles(IEnumerable<string> paths, string operation = "convert")
@@ -48,9 +55,10 @@ public partial class MainWindow : System.Windows.Window
         try
         {
             var selection = paths.Take(OperationRequest.MaximumPaths + 1).Select(Path.GetFullPath).ToImmutableArray();
-            var reply = ((MainViewModel)DataContext).Admit(new(Guid.NewGuid(), operation, operation == "analyze" ? "open-details" : "choose-format", selection));
+            var action = operation switch { "analyze" => "open-details", "optimize" => "choose-preset", _ => "choose-format" };
+            var reply = ((MainViewModel)DataContext).Admit(new(Guid.NewGuid(), operation, action, selection));
             InputNotice.Text = reply.Accepted ? (operation == "analyze" ? "Read-only analysis started. Select a result row for its details." :
-                "Selection received as a new batch. Review its conversion window when ready.") : reply.Message;
+                "Selection received as a new batch. Review its planning window when ready.") : reply.Message;
         }
         catch (Exception error) when (error is InvalidDataException or ArgumentException or IOException)
         { InputNotice.Text = "Could not add this selection. Use existing files only (no folders), up to 4,096 per batch."; }

@@ -18,6 +18,7 @@ public partial class App : System.Windows.Application
     private bool _openingSettings;
     private string _requestedSettingsSection = "convert";
     private ConversionWindow? _conversionWindow;
+    private OptimizationWindow? _optimizationWindow;
 
     public App() : this(ApplicationPaths.Production) { }
     internal App(ApplicationPaths paths) { _paths = paths; _settingsStore = new(paths.Settings); }
@@ -49,6 +50,7 @@ public partial class App : System.Windows.Application
             _viewModel = new MainViewModel(new WorkerClient(_paths.Worker, _paths.WorkerScratch), _settings.Settings, publisher, new LocalTrialStore(_paths.Trial));
             _viewModel.SettingsRequested += ShowSettings;
             _viewModel.ConversionRequested += ShowConversionAsync;
+            _viewModel.OptimizationRequested += ShowOptimizationAsync;
             var window = new MainWindow { DataContext = _viewModel };
             MainWindow = window;
             window.Closing += OnClosing;
@@ -59,7 +61,7 @@ public partial class App : System.Windows.Application
                 {
                     window.Show();
                     if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
-                    if (incoming?.IsSettingsRequest != true) (_conversionWindow as Window ?? window).Activate();
+                    if (incoming?.IsSettingsRequest != true) (_optimizationWindow as Window ?? _conversionWindow as Window ?? window).Activate();
                 }
                 return reply;
             }).Task);
@@ -98,6 +100,25 @@ public partial class App : System.Windows.Application
             return await completion.Task;
         }
         finally { planner.Confirmed -= Confirmed; _conversionWindow = null; }
+    }
+
+    private async Task<ConfirmedPngOptimization?> ShowOptimizationAsync(OptimizationViewModel planner, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var completion = new TaskCompletionSource<ConfirmedPngOptimization?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var window = new OptimizationWindow { Owner = MainWindow, DataContext = planner };
+        _optimizationWindow = window;
+        void Confirmed(ConfirmedPngOptimization confirmed) { completion.TrySetResult(confirmed); window.Close(); }
+        planner.Confirmed += Confirmed;
+        window.Closed += (_, _) => completion.TrySetResult(null);
+        window.Show();
+        using var registration = cancellationToken.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
+        try
+        {
+            await planner.InitializeAsync(cancellationToken);
+            return await completion.Task;
+        }
+        finally { planner.Confirmed -= Confirmed; _optimizationWindow = null; }
     }
 
     private async void ShowSettings(string section)

@@ -25,6 +25,7 @@ try
     await SettingsContracts.RunAsync(args[0], Check);
     await DdsContracts.RunAsync(args[0], Check);
     ImagePlanContracts.Run(args[0], Check);
+    await PngOptimizationContracts.RunAsync(args[0], Check);
     await TrialContracts.RunAsync(args[0], Check);
     await PublicationContracts.RunAsync(args[0], Check);
     await PublicationCrashContracts.RunAsync(args[0], Check);
@@ -177,6 +178,8 @@ try
     if (args.Length >= 2)
     {
         await ImageWorkerContracts.RunAsync(args[0], args[1], Check);
+        await PngOptimizationContracts.RunWorkerAsync(args[0], args[1], Check);
+        await PngInterruptionContracts.RunAsync(args[0], args[1], Check);
         await DdsWorkerContracts.RunAsync(args[0], args[1], Check);
         await ImageInterruptionContracts.RunAsync(args[0], args[1], Check);
         await ImageInterruptionContracts.RunAsync(args[0], args[1], (passed, name) => Check(passed, "DDS " + name), dds: true);
@@ -186,8 +189,8 @@ try
             from output in new[] { "png", "jpeg", "webp", "bmp", "tga" } where input != output
             select new MediaCapability("convert", input, output)).ToHashSet();
         expectedCapabilities.UnionWith(new[] { "png", "jpeg", "webp", "bmp", "tga" }.Select(input => new MediaCapability("convert", input, "dds")));
-        expectedCapabilities.UnionWith([new("convert", "dds", "dds"), new("convert", "dds", "png")]);
-        Check(capabilities.Length == 27 && expectedCapabilities.SetEquals(capabilities), "real private catalog advertises exactly the twenty ordinary and seven bounded DDS conversion pairs");
+        expectedCapabilities.UnionWith([new("convert", "dds", "dds"), new("convert", "dds", "png"), new("optimize", "png", "png")]);
+        Check(capabilities.Length == 28 && expectedCapabilities.SetEquals(capabilities), "real private catalog advertises 27 conversion pairs and bounded lossless PNG optimization");
         Check((await worker.GetCapabilitiesAsync(CancellationToken.None)).SequenceEqual(capabilities), "worker reuse retains capabilities");
         var engine = await worker.GetEngineIdentityAsync(CancellationToken.None);
         Check(engine.Package == "Magick.NET-Q16-x64" && engine.Version.Contains("14.17.1", StringComparison.Ordinal) &&

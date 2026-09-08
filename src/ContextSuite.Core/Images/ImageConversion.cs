@@ -23,7 +23,7 @@ public sealed record ImageSourceFacts(Guid ItemId, string Path, string Sha256, l
     ImageFormat Format, uint Width, uint Height, uint BitDepth, uint Orientation,
     bool HasTransparency, bool IsLossy, string ColorDescription,
     ImmutableArray<string> ProfileNames, bool HasOtherMetadata = false, string? UnsupportedReason = null, ImageResolution? Resolution = null,
-    bool HasGrayscaleProfile = false, DdsInfo? Texture = null)
+    bool HasGrayscaleProfile = false, DdsInfo? Texture = null, string? PngLossyBlockReason = "Lossy PNG eligibility requires an optimization probe.")
 {
     public void Validate()
     {

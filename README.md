@@ -34,7 +34,12 @@ with bounded BMP/TGA conversion bringing the catalog to twenty cross-format pair
 The completed bounded [DDS slice](docs/dds-conversion-goal.md) adds public header analysis,
 pinned CPU DirectXTex conversion, mip/color policies and safe publication: 27
 conditional conversion pairs total. All 33 focused image/DDS desktop checks pass.
-This is not release-ready: PNG optimization and paid activation remain planned.
+Bounded [lossless PNG optimization](docs/png-optimization-goal.md) now has a
+system-themed planner, private encoder, independent sample/metadata validation,
+trial-gated smaller-only publication and automated failure tests.
+[Balanced and Smallest](docs/png-lossy-presets.md) add bounded RGB precision reduction
+for supported 8-bit RGB/RGBA PNGs, with exact alpha and preserved accepted metadata. Interactive
+optimization UI acceptance and paid activation remain pending; this is not release-ready.
 An Inno Setup offline installer candidate now compiles. The
 [installer lifecycle integration](docs/installer-recovery.md) now wires versioned
 staging, active-release launch/uninstall and recovery, with automated failure
@@ -75,12 +80,14 @@ Production Foundation
 The WPF application, shared core, on-demand worker, bounded activation queue,
 and private-project composition now build. Convert has a working PNG/JPEG/WebP/BMP/TGA/DDS
 planner and private worker adapter, with trial-gated safe publication. Analyze
-reports bounded DDS headers; Optimize remains unimplemented. The bounded conversion acceptance
+reports bounded DDS headers; Optimize offers Lossless and bounded lossy PNG presets.
+The bounded conversion acceptance
 matrix passes; commercial release checks remain unfinished.
 
 ```powershell
 ./tools/Test-Foundation.ps1 -Configuration Release
 ./tools/dds-engine/Build-DdsEngine.ps1
+./tools/png-engine/Stage-PngEngine.ps1
 ./tools/Build-Production.ps1 -Configuration Release
 ./tools/Test-Foundation.ps1 -Configuration Release -Integration
 ./artifacts/production/Release/ContextSuite.Application.exe
@@ -118,7 +125,7 @@ The commercial direction is a three-day trial followed by Polar license-key
 activation, using hosted checkout without custom website accounts. Polar account
 approval is user-confirmed; app integration remains planned. Media processing
 remains local. Decision 0009 settles a 72-hour local trial starting at the first
-confirmed valid conversion; its store, execution gate and conversion UI are tested
+confirmed valid conversion or optimization; its store, execution gate and conversion UI are tested
 with isolated trial data. Paid offline-license
 policy, pricing and source-license terms remain open.
 See [build ownership](docs/decisions/0005-public-and-proprietary-builds.md) and
@@ -162,6 +169,7 @@ Documentation
 - [Analyzer design](docs/analyzer-design.md)
 - [Converter design](docs/converter-design.md)
 - [Optimizer design](docs/optimizer-design.md)
+- [Lossy PNG quantization evaluation](docs/png-quantization-evaluation.md)
 - [Shell integration](docs/shell-integration.md)
 - [Architecture](docs/architecture.md)
 - [Desktop smoke tests](docs/desktop-smoke-tests.md)

@@ -74,6 +74,10 @@ Initial Media Policy
 Minimal Trial Admission
 -----------------------
 
+Decision [0013](0013-lossless-png-optimization.md) extends first-use admission to
+the first confirmed valid conversion **or optimization**, using the same record,
+duration and failure rules. Existing trial records are never reset by this feature.
+
 This settles the local-trial portion of decision 0006, not paid activation:
 
 - Three days means **72 elapsed hours**, measured using UTC, not calendar dates

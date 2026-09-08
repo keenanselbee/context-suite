@@ -74,6 +74,10 @@ design documents when an accepted decision changes their assumptions.
 Current Decisions
 -----------------
 
+- [0014: PNG precision presets](0014-png-precision-presets.md) — implemented locally; interactive acceptance pending
+
+- [0013: Lossless PNG optimization](0013-lossless-png-optimization.md) — implemented locally; interactive and commercial acceptance pending
+
 - [0012: Inno offline installer](0012-inno-offline-installer.md) — accepted; internal first-install candidate, signing and lifecycle acceptance pending
 
 - [0011: DDS engine and texture policies](0011-dds-engine-and-texture-policies.md) — accepted; bounded local implementation and acceptance completed
