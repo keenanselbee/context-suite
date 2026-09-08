@@ -54,7 +54,15 @@ New-Item -ItemType Directory -Path $destination -Force | Out-Null
 Copy-Item -LiteralPath $dll -Destination $destination -Force
 Copy-Item -LiteralPath (Join-Path $source 'LICENSE') -Destination (Join-Path $destination 'DirectXTex.License.txt') -Force
 $generatorInstance = (Select-String -LiteralPath (Join-Path $build 'CMakeCache.txt') -Pattern '^CMAKE_GENERATOR_INSTANCE:INTERNAL=(.*)$').Matches.Groups[1].Value
+$compilerFiles = @(Get-ChildItem -LiteralPath (Join-Path $build 'CMakeFiles') -Recurse -Filter CMakeCXXCompiler.cmake)
+if ($compilerFiles.Count -ne 1) { throw 'Cannot identify the single DDS compiler configuration.' }
+$compilerText = Get-Content -LiteralPath $compilerFiles[0].FullName -Raw
+if ($compilerText -notmatch 'set\(CMAKE_CXX_COMPILER "[^"\r\n]+/VC/Tools/MSVC/(14\.\d+\.\d+)/bin/') {
+    throw 'Cannot establish the MSVC runtime prerequisite from the selected DDS toolset.'
+}
+$minimumRuntime = $Matches[1] + '.0'
 $identity = @{ revision = $pins.revision; archiveSha256 = $pins.archiveSha256; nativeSha256 = (Get-FileHash -LiteralPath $dll).Hash;
+    minimumVisualCppRuntime = $minimumRuntime;
     bridgeSourceSha256 = (Get-FileHash -LiteralPath (Join-Path $repository 'proprietary\native\dds\Bridge.cpp')).Hash;
     licenseSha256 = (Get-FileHash -LiteralPath (Join-Path $source 'LICENSE')).Hash;
     buildDefinitionSha256 = (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'CMakeLists.txt')).Hash;
