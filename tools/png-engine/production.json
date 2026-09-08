@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "engine": "oxipng",
+  "version": "10.1.0",
+  "url": "https://github.com/oxipng/oxipng/releases/download/v10.1.0/oxipng-10.1.0-x86_64-pc-windows-msvc.zip",
+  "archiveSha256": "D8067211E443E6B364139BF330AED487CF90B1574E080BCE40241BF17D842A67",
+  "archiveDirectory": "oxipng-10.1.0-x86_64-pc-windows-msvc",
+  "executableSha256": "F1A197F0DBC76D20CBE2A9CD7C4DBB98A0FDBA3E98BE445E0EBE10ECF20140AA",
+  "licenseSha256": "1BC9688D785FA50345F803824DDDE000BDABEDDA9D1803DC41A1FEDD81F784FC"
+}

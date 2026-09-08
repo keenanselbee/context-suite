@@ -58,6 +58,7 @@ $manifest = [ordered]@{
     dependencies = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Worker.deps.json') -Raw | ConvertFrom-Json).libraries;
     curatedEngine = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Engine.json') -Raw | ConvertFrom-Json);
     ddsEngine = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Dds.Engine.json') -Raw | ConvertFrom-Json);
+    pngEngine = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Png.Engine.json') -Raw | ConvertFrom-Json);
     files = $files
 }
 [IO.File]::WriteAllText((Join-Path $candidate 'release-manifest.json'), ($manifest | ConvertTo-Json -Depth 12), $utf8)

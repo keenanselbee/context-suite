@@ -60,6 +60,7 @@ $receiptPath = Join-Path $run 'verification.json'
 try {
     & (Join-Path $snapshot 'tools\curated-engine\Import-ProductionEngine.ps1') -Archive $engine
     & (Join-Path $snapshot 'tools\dds-engine\Build-DdsEngine.ps1')
+    & (Join-Path $snapshot 'tools\png-engine\Stage-PngEngine.ps1')
     & (Join-Path $snapshot 'tools\Build-Production.ps1') -Configuration Release
     & (Join-Path $snapshot 'tools\Test-DdsCodec.ps1') -SkipNativeBuild
     & (Join-Path $snapshot 'tools\Test-ImageConversion.ps1') -Configuration Release

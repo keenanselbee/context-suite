@@ -9,6 +9,7 @@ if (-not (Test-Path -LiteralPath $privateProject)) {
 }
 & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\curated-win-x64')
 & (Join-Path $PSScriptRoot 'dds-engine\Test-DdsEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\dds-win-x64')
+& (Join-Path $PSScriptRoot 'png-engine\Test-PngEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\png-win-x64')
 & dotnet build (Join-Path $repositoryRoot 'ContextSuite.Production.slnx') -c $Configuration --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Production foundation build failed.' }
 $output = Join-Path $repositoryRoot "artifacts\production\$Configuration"
