@@ -23,11 +23,14 @@ public sealed record ImageSourceFacts(Guid ItemId, string Path, string Sha256, l
     ImageFormat Format, uint Width, uint Height, uint BitDepth, uint Orientation,
     bool HasTransparency, bool IsLossy, string ColorDescription,
     ImmutableArray<string> ProfileNames, bool HasOtherMetadata = false, string? UnsupportedReason = null, ImageResolution? Resolution = null,
-    bool HasGrayscaleProfile = false, DdsInfo? Texture = null, string? PngLossyBlockReason = "Lossy PNG eligibility requires an optimization probe.")
+    bool HasGrayscaleProfile = false, DdsInfo? Texture = null, string? PngLossyBlockReason = "Lossy PNG eligibility requires an optimization probe.",
+    bool PngFdECRemovalRequired = false)
 {
     public void Validate()
     {
         Resolution?.Validate();
+        if (PngFdECRemovalRequired && Format != ImageFormat.Png)
+            throw new InvalidDataException("PNG metadata removal requires a PNG source.");
         if ((Format == ImageFormat.Dds) != (Texture is not null) || Texture is { } texture &&
             (texture.Width != Width || texture.Height != Height || texture.FileBytes != FileBytes || !texture.IsSupported2D))
             throw new InvalidDataException("DDS image facts do not match their admitted texture header.");

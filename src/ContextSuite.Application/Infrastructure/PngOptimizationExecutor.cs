@@ -23,13 +23,19 @@ internal sealed class PngOptimizationExecutor(WorkerClient worker, OutputPublish
                 {
                     report?.Invoke(item, new(item.Source.Path, OperationState.Running, "Preparing safe output"));
                     var plan = confirmed.Plan;
+                    var replace = plan.ReplaceOriginal && !item.Source.PngFdECRemovalRequired;
                     reservation = await publisher.ReserveAsync(new(item.Source.ItemId, item.Source.Path, "png", plan.Settings,
-                        plan.ReplaceOriginal, plan.ReplaceOriginal), cancellationToken);
+                        replace, replace), cancellationToken);
                     if (reservation.Record.Source.Sha256 != item.Source.Sha256)
                         throw new InvalidDataException("Source changed after planning.");
                     report?.Invoke(item, new(item.Source.Path, OperationState.Running, $"Optimizing and verifying {plan.Preset} policy"));
                     var optimized = await worker.OptimizeAsync(new(item.Source, reservation.TemporaryPath, plan.SelectedPolicy), cancellationToken);
+                    if (optimized.PngFdECRemoved != item.Source.PngFdECRemovalRequired)
+                        throw new InvalidDataException("Worker metadata policy differs from the reserved output.");
                     result = (await publisher.PublishAsync(reservation, optimized.Validation, cancellationToken)).ToFileResult();
+                    if (optimized.PngFdECRemoved && result.Publication is { Outcome: PublicationOutcome.CopyCreated } copy)
+                        result = result with { Publication = copy with { MetadataWarning = true },
+                            Message = "Optimized copy saved. Some metadata was removed (fdEC); your original is unchanged." };
                     result = result with { EngineIdentity = optimized.EngineIdentity,
                         Message = result.Message + $" Requested: {plan.Preset}. Used: {optimized.OptimizationMethod}. {optimized.OptimizationReason}" };
                     if (result.Publication is { IsCommitted: true } publication)

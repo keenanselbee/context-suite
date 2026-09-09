@@ -70,6 +70,8 @@ public partial class App : System.Windows.Application
                 if (_closing) return;
                 if (_quiet.Complete(incoming.RequestId, rows.Select(row => row.Result).ToArray()))
                     _sounds = PlayAfterAsync(_sounds);
+                else if (_quiet.WarningSoundRequested)
+                    _sounds = PlayAfterAsync(_sounds, warning: true);
                 if (_quiet.NeedsAttention)
                 {
                     if (!_userOpened) window.ResultsGrid.SelectedItem = rows.FirstOrDefault(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.Publication?.HasWarning == true);
@@ -113,9 +115,9 @@ public partial class App : System.Windows.Application
         }
     }
 
-    private static async Task PlayAfterAsync(Task previous)
+    private static async Task PlayAfterAsync(Task previous, bool warning = false)
     {
-        try { await previous; await CompletionSound.PlayAsync(); }
+        try { await previous; await CompletionSound.PlayAsync(warning); }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or DllNotFoundException or EntryPointNotFoundException)
         { /* A missing sound is not a media failure. */ }
     }

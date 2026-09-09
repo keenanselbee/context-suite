@@ -52,8 +52,8 @@ internal sealed class OptimizationViewModel : INotifyPropertyChanged
     private OptimizationRow? SelectedRow => SelectedIndex >= 0 && SelectedIndex < Rows.Count ? Rows[SelectedIndex] : null;
     public string SelectedStatus => SelectedRow?.Status ?? "Select a file to review its plan.";
     public string SelectedDetails => SelectedRow is { } row ?
-        $"{row.Name}\n{row.Details}\n{(row.CanExecute ? "Proposed output: " + row.ProposedOutput + (ReplaceOriginal ? "\nReplace only after validation; retain a backup if recycling fails." : "\nExisting names add (2), (3), and so on.") : row.Status)}" : "";
-    public string OutputNotice => ReplaceOriginal ? "Replace originals only after validation. No smaller result leaves the original unchanged." :
+        $"{row.Name}\n{row.Details}\n{(row.CanExecute ? "Proposed output: " + row.ProposedOutput + (ReplaceOriginal && !row.ForceCopy ? "\nReplace only after validation; retain a backup if recycling fails." : "\nExisting names add (2), (3), and so on.") : row.Status)}" : "";
+    public string OutputNotice => ReplaceOriginal ? "Replace originals only after validation. Files needing metadata removal always become separate copies. No smaller result leaves the original unchanged." :
         _settings.Preferences.OutputDirectory is { } directory ?
         $"Save new files in: {directory}" : "Save new files beside their originals, with - Optimized added to the name.";
     public string ReplacementNotice => CanReplaceOriginal ?
@@ -80,9 +80,11 @@ internal sealed class OptimizationViewModel : INotifyPropertyChanged
             var item = Plan?.Items.FirstOrDefault(item => item.Source.ItemId == selection.ItemId);
             var ready = item?.CanExecute == true;
             var path = ready ? Path.Combine(_settings.Preferences.OutputDirectory ?? Path.GetDirectoryName(selection.Path)!,
-                OutputNames.Create(selection.Path, "optimize", "png", replaceSource: ReplaceOriginal)) : "";
+                OutputNames.Create(selection.Path, "optimize", "png", replaceSource: ReplaceOriginal && item?.Source.PngFdECRemovalRequired != true)) : "";
             return new OptimizationRow(Path.GetFileName(selection.Path), selection.Facts is { } facts ? $"{facts.Width} × {facts.Height}, {facts.BitDepth}-bit, {facts.FileBytes:N0} bytes" : "",
-                selection.Failure ?? item?.BlockReason ?? $"{Preset} · preserve accepted metadata", path, ready);
+                selection.Failure ?? item?.BlockReason ?? (item?.Source.PngFdECRemovalRequired == true ?
+                    $"{Preset} · separate copy; fdEC metadata removed with a completion warning. Original unchanged." :
+                    $"{Preset} · preserve accepted metadata"), path, ready, item?.Source.PngFdECRemovalRequired == true);
         }).ToArray();
         foreach (var name in new[] { nameof(Rows), nameof(Preset), nameof(PolicyDescription), nameof(ReplaceOriginal), nameof(ReplacementConfirmed), nameof(CanConfirm), nameof(TrialMessage), nameof(Summary), nameof(SelectedStatus), nameof(SelectedDetails), nameof(OutputNotice) }) Changed(name);
         ConfirmCommand.Notify();
@@ -99,4 +101,4 @@ internal sealed class OptimizationViewModel : INotifyPropertyChanged
     }
 }
 
-internal sealed record OptimizationRow(string Name, string Details, string Status, string ProposedOutput, bool CanExecute);
+internal sealed record OptimizationRow(string Name, string Details, string Status, string ProposedOutput, bool CanExecute, bool ForceCopy = false);

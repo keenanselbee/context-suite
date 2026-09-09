@@ -94,6 +94,10 @@ Design Principles
   Progress and exception UI must be compact and actionable, not an engineering dashboard.
 - Recommend actions, but keep irreversible consequences visible until execution.
 - Preserve source files by default.
+- For the researched PNG `fdEC` exception, remove that chunk only from an
+  optimized copy, including when replacement is enabled. Report completion with
+  a compact metadata warning and one optional warning sound per batch, not a
+  failure. This does not authorize removing other unknown or meaningful metadata.
 - Explain meaningful quality and compatibility tradeoffs in plain language.
 - Never silently discard transparency, orientation, tags, artwork, animation,
   color information, or other meaningful capabilities.

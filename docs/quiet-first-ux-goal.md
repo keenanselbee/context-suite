@@ -178,7 +178,8 @@ Remaining acceptance before calling this UX finished:
   long-running batch cancellation and user-owned-window interaction review.
 - Held-out real-image Auto calibration; synthetic quality thresholds and earlier
   visual review of RGB precision are not proof of ideal Auto choices for all images.
-- Protected metadata handling (fdEC remains safely blocked), further planner
+- Broader protected metadata handling (the later [fdEC exception](optimizer-design.md#png-fdec-compatibility-exception)
+  now creates warning copies), further planner
   simplification and desktop acceptance of the new direct Convert actions.
 - Durable optional completion history for people who mute sound is not added;
   successful quick jobs leave their named output copies, with no resident process.

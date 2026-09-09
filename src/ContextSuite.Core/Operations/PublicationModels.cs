@@ -14,11 +14,11 @@ public enum PublicationOutcome { CopyCreated, SourceReplaced, OriginalRetained, 
 
 public sealed record PublicationResult(string SourcePath, PublicationOutcome Outcome, string Message,
     string? OutputPath = null, string? RetainedOriginalPath = null, string? RecoveryRecordPath = null,
-    long SourceBytes = 0, long OutputBytes = 0, bool CleanupWarning = false)
+    long SourceBytes = 0, long OutputBytes = 0, bool CleanupWarning = false, bool MetadataWarning = false)
 {
     public bool IsCommitted => Outcome is PublicationOutcome.CopyCreated or PublicationOutcome.SourceReplaced or
         PublicationOutcome.OriginalRetained or PublicationOutcome.BackupRetained or PublicationOutcome.RecoveryRequired;
-    public bool HasWarning => CleanupWarning || Outcome is PublicationOutcome.OriginalRetained or PublicationOutcome.BackupRetained or PublicationOutcome.RecoveryRequired;
+    public bool HasWarning => MetadataWarning || CleanupWarning || Outcome is PublicationOutcome.OriginalRetained or PublicationOutcome.BackupRetained or PublicationOutcome.RecoveryRequired;
 
     public FileResult ToFileResult()
     {

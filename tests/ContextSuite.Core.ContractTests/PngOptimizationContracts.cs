@@ -14,6 +14,13 @@ internal static class PngOptimizationContracts
     public static async Task RunAsync(string scratch, Action<bool, string> check)
     {
         var now = DateTimeOffset.UtcNow;
+        var warningQuiet = new QuietWorkflow();
+        var warningId = Guid.NewGuid();
+        warningQuiet.Begin(warningId, true, now);
+        var warningCopy = new PublicationResult("source", PublicationOutcome.CopyCreated, "Metadata removed", MetadataWarning: true).ToFileResult();
+        check(!warningQuiet.Complete(warningId, [warningCopy, warningCopy]) && warningQuiet.WarningSoundRequested && warningQuiet.NeedsAttention &&
+            warningCopy.State == OperationState.Succeeded, "metadata warning: successful copies, one warning signal per batch, no success chime");
+        check(!warningQuiet.Complete(warningId, [warningCopy]) && !warningQuiet.WarningSoundRequested, "metadata warning: no duplicate sound");
         var quiet = new QuietWorkflow();
         var quietId = Guid.NewGuid();
         quiet.Begin(quietId, true, now);
@@ -160,6 +167,19 @@ internal static class PngOptimizationContracts
         check(!declined.Admission.IsAllowed && declined.Results.All(result => result.State == OperationState.Failed), "PNG batch: subsequent expired batch cannot execute");
 
         var activeTrial = new LocalTrialStore(Path.Combine(root, "second-trial.json"));
+        var taggedPath = Path.Combine(root, "metadata.png");
+        ImageWorkerContracts.WritePng(taggedPath, true, CompressionLevel.NoCompression, fdEC: true);
+        var taggedOriginal = File.ReadAllBytes(taggedPath);
+        var taggedFacts = await worker.ProbeAsync(new(Guid.NewGuid(), taggedPath), default, forOptimization: true);
+        var taggedPlan = PngOptimizationPlan.Create(Guid.NewGuid(), [taggedFacts], new("optimize", new(true)), replaceOriginal: true);
+        // Replacement is permitted by the planner, but the executor must downgrade
+        // this item to a copy before reservation. This publisher refuses replacement.
+        var taggedResult = (await new PngOptimizationExecutor(worker, publisher, activeTrial)
+            .ExecuteAsync(taggedPlan.Confirm(true, true), null, default)).Results.Single();
+        check(taggedResult.State == OperationState.Succeeded && taggedResult.Publication is
+            { Outcome: PublicationOutcome.CopyCreated, MetadataWarning: true } &&
+            File.ReadAllBytes(taggedPath).SequenceEqual(taggedOriginal) && taggedResult.Message.Contains("fdEC"),
+            "fdEC batch: replacement enabled still creates a warning copy and never replaces/recycles source");
         var optimizedFacts = await worker.ProbeAsync(new(Guid.NewGuid(), first.OutputPath!), default, forOptimization: true);
         var noChange = PngOptimizationPlan.Create(Guid.NewGuid(), [optimizedFacts], new("optimize", new()));
         var stable = await new PngOptimizationExecutor(worker, publisher, activeTrial).ExecuteAsync(noChange.Confirm(false, false), null, default);

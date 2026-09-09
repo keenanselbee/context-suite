@@ -31,7 +31,9 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
     public string RecoveryNotice { get; } = RecoveryMessage(publisher);
     public bool IsBusy => _busy;
     public bool HasProblems => Rows.Any(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.Publication?.HasWarning == true);
-    public bool ShowDetails => HasProblems || Rows.Any(row => row.Operation == "analyze");
+    public bool ShowDetails => Rows.Any(row => row.Operation == "analyze" ||
+        row.Result.State is OperationState.Failed or OperationState.Unsupported ||
+        row.Result.Publication is { CleanupWarning: true } or { HasWarning: true, MetadataWarning: false });
     public string Summary { get => _summary; private set { _summary = value; Changed(); } }
     public ICommand CancelCommand => _cancelCommand ??= new CancelPendingCommand(this);
     public ICommand SettingsCommand => _settingsCommand ??= new OpenSettingsCommand(this);
@@ -335,6 +337,8 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         if (cancelled > 0) counts.Add($"{cancelled} cancelled");
         if (pending > 0) counts.Add($"{pending} waiting");
         Summary = counts.Count == 0 ? "Choose a tool or drop files here to convert." : string.Join(" · ", counts) + ".";
+        if (Rows.Any(row => row.Result.Publication?.MetadataWarning == true))
+            Summary += " Some metadata was removed from optimized copies. Those originals are unchanged.";
         if (noChanges && counts.Count > 0) Summary += " No files changed.";
         var optimized = Rows.Where(row => row.Operation == "optimize" && row.Result.Publication?.IsCommitted == true).ToArray();
         var saved = optimized.Sum(row => row.Result.Publication!.SourceBytes - row.Result.Publication.OutputBytes);
@@ -398,7 +402,8 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
     public FileResult Result { get; private set; } = new(path, OperationState.Pending, "Pending");
     public DdsInfo? Analysis { get; private set; }
     public string Status => Result.Message;
-    public string Outcome => Result.Publication?.HasWarning == true ? "Saved — needs attention" : Result.State switch
+    public string Outcome => Result.Publication?.MetadataWarning == true ? "Completed with warning" :
+        Result.Publication?.HasWarning == true ? "Saved — needs attention" : Result.State switch
     {
         OperationState.Succeeded => "Completed", OperationState.Unchanged => Operation == "convert" ? "Already in target format" : "No smaller result",
         OperationState.Unsupported => "Not supported", OperationState.Failed => "Needs attention",

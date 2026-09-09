@@ -4,11 +4,11 @@ namespace ContextSuite.Application.Infrastructure;
 
 internal static class CompletionSound
 {
-    public static Task PlayAsync() => Task.Run(() =>
+    public static Task PlayAsync(bool warning = false) => Task.Run(() =>
     {
         // Play synchronously on a background thread so quiet shutdown cannot truncate the chime.
         // SND_NODEFAULT prevents an unexpected system beep when the installed asset is missing.
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Media", "chimes.wav");
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Media", warning ? "Windows Exclamation.wav" : "chimes.wav");
         if (File.Exists(path)) PlaySound(path, IntPtr.Zero, 0x00020000 | 0x00000002);
     });
 

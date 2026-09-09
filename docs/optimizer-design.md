@@ -6,7 +6,9 @@ Status: bounded lossless PNG recompression implemented under
 [goal evidence](png-optimization-goal.md). Bounded [Balanced/Smallest presets](png-lossy-presets.md)
 are implemented under [decision 0014](decisions/0014-png-precision-presets.md).
 Direct Auto/Lossless/Balanced/Smallest quick actions and lossless fallback are
-implemented. Interactive release acceptance and selectable metadata policies remain planned.
+implemented. The researched `fdEC` exception now saves a copy with a metadata
+warning instead of rejecting optimization. Interactive release acceptance and
+general selectable metadata policies remain planned.
 
 Accepted next direction: [decision 0015](decisions/0015-simple-context-menu-workflows.md)
 and the [quiet-first UX plan](quiet-first-ux-goal.md) replace mandatory planning
@@ -94,7 +96,8 @@ PNG Version 1
 The PNG engine design uses independently selected and pinned tools:
 
 - Implemented lossless recompression through pinned `oxipng` 10.1.0, with no
-  representation reductions and original metadata chunks retained exactly.
+  representation reductions and original metadata chunks retained exactly,
+  except the explicit `fdEC` copy-and-warning policy below.
 - Implemented bounded RGB7 and dark-protected palette reduction followed by the
   same cleanup, with curated Magick.NET admission/reopen validation. Smallest
   uses a separately pinned ExoQuant helper; no paid quantizer is introduced.
@@ -106,6 +109,47 @@ Palette-ineligible inputs go directly to RGB7. Lossy-ineligible but
 lossless-supported representations use Lossless directly. Accepted palette output
 is indexed PNG with exact alpha and hidden RGB; admitted metadata is retained.
 ICC/indexed/grayscale and unsupported chunks remain outside lossy admission.
+
+PNG fdEC compatibility exception
+-------------------------------
+
+The owner approved automatic removal of the researched `fdEC` chunk from an
+in-memory working copy. Earlier five-image tests found identical decoded pixels,
+alpha and measured properties after removal; this does not establish the
+creator application's private semantics. That is why the original must remain.
+
+- Validate the source, including CRCs and chunk ordering, before normalization.
+- Remove only `fdEC`; retain all other chunks byte-for-byte. Existing animation,
+  color/profile and unknown unsafe-chunk restrictions still apply.
+- Run the selected fixed preset on the normalized image. Lossless retains exact
+  samples; lossy presets keep their existing quality limits and attempt budget.
+- Probe and worker agree on a typed removal flag. The application forces copy-only
+  before reserving output, even with replacement enabled, and rejects disagreement.
+- Publish only a validated smaller output. Removal alone may save 17 bytes for
+  the observed five-byte payload, without changing image samples.
+- Show **Completed with warning**: “Optimized copy saved. Some metadata was
+  removed (fdEC); your original is unchanged.” Keep details collapsed for a
+  metadata-only warning. Optional warning audio occurs once per batch, respecting
+  mute, instead of the success chime.
+
+This exception is implemented for PNG optimization, not a blanket conversion
+metadata policy. Generic conversion's explicit metadata decisions remain intact.
+Earlier research-only/unsupported notes are historical, superseded for `fdEC`
+optimization by this policy.
+
+Verification for this change: 898 engine/adapter contracts passed in both Debug
+and Release. The real-worker batch contract covers replacement-enabled metadata
+removal using a publisher that rejects replacement and a recycler that throws
+if called. Warning policy tests cover successful outcomes and one signal per batch.
+The reported Silksong screenshot was copied into `.codex-temp` and all four
+production recipes validated: 4,716,891 input bytes became 3,560,293 Lossless,
+2,603,988 Auto/Balanced, and 1,259,856 Smallest. All outcomes reported `fdEC`
+removal, exact alpha and hidden RGB, other retained metadata, and unchanged source.
+Visual/audio acceptance of the new warning surface remains a desktop check.
+Release foundation/integration verification passed 584 contracts. An earlier
+Debug run missed the timing window for observing the second Smallest encoder;
+the complete Release retry passed that cancellation case and the rest of the
+suite. No unrelated timing-test thresholds were weakened.
 Auto selects RGB7 only for lossy-admitted inputs of at least 4096 pixels, otherwise
 Lossless. A lossy Auto output must save at least 5% against the source, without
 encoding a baseline for comparison. RGB7 quality/benefit rejection permits one

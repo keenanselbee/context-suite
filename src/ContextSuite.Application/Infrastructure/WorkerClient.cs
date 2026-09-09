@@ -57,7 +57,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             result.Width != request.Source.Width || result.Height != request.Source.Height || result.BitDepth != request.Source.BitDepth ||
             result.OutputBytes is <= 0 or > 128 * 1024 * 1024 || string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 128 ||
             result.OptimizationMethod is not ("Lossless" or "RGB7 (lossy)" or "Palette (lossy)") || result.OptimizationReason?.Length > 512 ||
-            result.OptimizationAttempts is < 1 or > 2 ||
+            result.OptimizationAttempts is < 1 or > 2 || result.PngFdECRemoved != request.Source.PngFdECRemovalRequired ||
             (request.Policy == PngOptimizationPlan.Policy && result.OptimizationMethod != "Lossless") ||
             (request.Policy != PngOptimizationPlan.SmallestPolicy && result.OptimizationMethod == "Palette (lossy)"))
             throw new InvalidDataException("Worker result does not match the optimization plan.");

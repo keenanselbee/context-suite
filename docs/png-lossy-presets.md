@@ -80,7 +80,8 @@ Remaining Acceptance
   consent; use only disposable inputs for replacement checks.
 - Retain held-out real images and inspect more dark gradients/UI text before
   commercial quality claims. The three approved research screenshots are not
-  representative acceptance data, and fdEC remains unsupported in production.
+  representative acceptance data. The later [fdEC copy-and-warning exception](optimizer-design.md#png-fdec-compatibility-exception)
+  now admits that chunk for optimization without replacing the original.
 - Large-batch memory/performance and clean-machine interactive release testing
   remain open. These tests do not close installer/signing, redistribution, paid
   licensing or broader Milestone 5 comparison-UI work.

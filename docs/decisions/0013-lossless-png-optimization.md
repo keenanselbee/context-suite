@@ -7,6 +7,12 @@ Date: 2026-09-08
 [Decision 0014](0014-png-precision-presets.md) subsequently extends the planner
 with bounded lossy presets; this lossless policy and its preservation rules remain unchanged.
 
+Later compatibility amendment: the owner approved the [fdEC copy-and-warning
+exception](../optimizer-design.md#png-fdec-compatibility-exception). Only that chunk
+is removed before this recipe, with the source retained even when replacement
+is enabled. The original no-stripping statement below describes the recipe
+itself, not this explicit, reported normalization exception.
+
 Decision
 --------
 
