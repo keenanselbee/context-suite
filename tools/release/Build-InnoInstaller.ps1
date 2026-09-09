@@ -86,7 +86,7 @@ foreach ($entry in $candidateManifest.files | Where-Object { $_.path.StartsWith(
     if ((Get-FileHash -LiteralPath $copy).Hash -ne $entry.sha256) { throw 'Application changed while staging installer.' }
 }
 foreach ($name in 'ContextSuite.iss', 'Invoke-InstallerAction.ps1', 'ShellRegistration.ps1',
-    'InstallationRecovery.ps1', 'InstallerLifecycle.ps1', 'Launch-Active.ps1') {
+    'InstallationRecovery.ps1', 'InstallerLifecycle.ps1', 'ClassicShellRegistration.ps1', 'Launch-Active.ps1') {
     $destination = if ($name -like '*.iss') { $staging } else { $installation }
     Copy-Item -LiteralPath (Join-Path $repository "packaging\inno\$name") -Destination $destination
 }

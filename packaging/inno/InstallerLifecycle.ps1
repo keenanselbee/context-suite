@@ -90,6 +90,7 @@ function Start-SuiteInstallStage {
         Write-RecoveryJson (Join-Path $Root 'bootstrap.json') ([ordered]@{
             schema = 1; id = $Id; publisher = $Incoming.publisher;
             version = $Incoming.version; packages = $Incoming.packages
+            menuMode = (Get-SuiteMenuMode $Incoming); applicationDirectory = (Join-Path $Root "releases\$Id\app")
         })
     }
     $releases = Join-Path $Root 'releases'
@@ -115,6 +116,8 @@ function Complete-SuiteInstallStage {
     }
     # Inno copies the builder's template. Bind it to this unique staging run.
     $descriptor.id = $Id
+    $descriptor | Add-Member -Force NoteProperty menuMode (Get-SuiteMenuMode $Incoming)
+    $descriptor | Add-Member -Force NoteProperty applicationDirectory (Join-Path $Root "releases\$Id\app")
     Write-RecoveryJson $descriptorPath $descriptor
     $next = Read-SuiteRecoveryRelease $Root $Id -VerifyApplication
     if (Test-Path -LiteralPath (Join-Path $Root 'active.json')) {
@@ -125,6 +128,7 @@ function Complete-SuiteInstallStage {
         throw 'First-install journal does not match the staged release.'
     }
     Assert-SuiteInstallerIdentity $bootstrap $next
+    if ((Get-SuiteMenuMode $bootstrap) -ne (Get-SuiteMenuMode $next)) { throw 'Menu choice changed during installation.' }
     $lockPath = Join-Path $Root 'recovery.lock'
     if (Test-Path -LiteralPath $lockPath) { Assert-RecoveryPath $lockPath }
     $lock = [IO.FileStream]::new($lockPath, [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)

@@ -49,6 +49,40 @@ var
   RegistrationFailed: Boolean;
   StageId: String;
   LifecycleMutex: THandle;
+  MenuPage: TInputOptionWizardPage;
+
+function SelectedMenuMode: String;
+begin
+  Result := 'modern';
+  if Assigned(MenuPage) then
+    if MenuPage.SelectedValueIndex = 1 then Result := 'classic';
+end;
+
+procedure InitializeWizard;
+var
+  PreviousMode, OverrideValue: String;
+begin
+  MenuPage := CreateInputOptionPage(wpWelcome, 'Explorer menu',
+    'Where should Context Suite commands appear?',
+    'This only controls Context Suite. Your Windows right-click menu settings will not be changed.', True, False);
+  MenuPage.Add('Windows 11 menu');
+  MenuPage.Add('Classic menu (Show more options)');
+  MenuPage.SelectedValueIndex := 0;
+  PreviousMode := GetPreviousData('MenuMode', '');
+  if PreviousMode = 'classic' then MenuPage.SelectedValueIndex := 1
+  else if PreviousMode <> 'modern' then begin
+    { Best-effort detection of the common per-user classic override. Missing,
+      unreadable or nonempty values keep the Windows 11 default. }
+    if RegQueryStringValue(HKCU64,
+      'Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32', '', OverrideValue) then
+      if OverrideValue = '' then MenuPage.SelectedValueIndex := 1;
+  end;
+end;
+
+procedure RegisterPreviousData(PreviousDataKey: Integer);
+begin
+  if not RegistrationFailed then SetPreviousData(PreviousDataKey, 'MenuMode', SelectedMenuMode);
+end;
 
 function CreateMutexW(Attributes: THandle; InitialOwner: Boolean; Name: String): THandle;
   external 'CreateMutexW@kernel32.dll stdcall';
@@ -108,6 +142,7 @@ begin
     '\Invoke-InstallerAction.ps1" -Action ' + Action + ' -InstallDirectory "' + ExpandConstant('{app}') +
     '" -ResultPath "' + ResultFile + '"';
   if StageId <> '' then Arguments := Arguments + ' -ReleaseId "' + StageId + '"';
+  Arguments := Arguments + ' -MenuMode ' + SelectedMenuMode;
   Result := Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
     Arguments, '', SW_HIDE, ewWaitUntilTerminated, Code);
   Result := Result and (Code = 0);

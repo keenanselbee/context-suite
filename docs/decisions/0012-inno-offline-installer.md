@@ -17,9 +17,16 @@ Decision
 
 - Use pinned Inno Setup 7.1.0 x64, per-user installation under
   `%LOCALAPPDATA%\Programs\Context Suite`, with one application uninstall entry.
-- Preserve the three sparse identities from decision 0003, pointing at one
-  shared application payload. Final package names/publisher must be fixed against
-  the signing identity before customer installation is enabled.
+- For Windows 11 menu mode, preserve the three sparse identities from decision
+  0003, pointing at one shared application payload. Classic mode instead registers
+  the same three native commands through per-user IExplorerCommand leaf keys,
+  without registering the sparse packages. Final package names/publisher must be
+  fixed against the signing identity before customer installation is enabled.
+- Offer Windows 11 and Classic menu choices. Prefer a remembered choice; otherwise
+  detect the common explicit empty per-user classic-menu override, falling back
+  to Windows 11 when absent, unreadable or ambiguous. Never modify that override
+  or Windows' global menu configuration. This heuristic does not detect every
+  third-party Explorer customization.
 - Keep framework-dependent .NET deployment for this iteration. Bundle the
   official offline .NET 10 Windows Desktop x64 and Visual C++ x64 installers;
   detect each independently and run only missing prerequisites. Prerequisite

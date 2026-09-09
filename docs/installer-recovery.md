@@ -8,6 +8,45 @@ The owner approved implementing and automatically testing recovery without
 Sandbox or a manually maintained VM. Windows Home is not a development blocker.
 Mocked Appx tests cannot establish clean-machine or native lifecycle acceptance.
 
+Context menu selection
+----------------------
+
+Setup now offers **Windows 11 menu** and **Classic menu (Show more options)**.
+The initial selection uses Inno's remembered `MenuMode` first, then the common
+HKCU `Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32`
+override only when its explicit default string is empty, otherwise Windows 11.
+The user can change the selection. Detection is best-effort, not an official
+universal Windows preference API. No global Windows setting is written.
+
+Modern registers the existing three sparse packages. Classic registers six
+fixed current-user leaf keys (three in-process COM servers and three verbs),
+using the same native DLL, selection batching and commands. It does not also
+register modern packages. Ownership markers, expected values and child-key checks
+prevent cleanup of foreign registrations. Only owned leaf keys are removed;
+empty parent keys can remain. No recursive registry deletion is used.
+
+The chosen mode and exact application directory are stored with the immutable
+release and first-install journal. Uninstall uses that stored mode, not a fresh
+Windows detection. Older descriptors default to modern. Changing mode currently
+requires explicit uninstall/reinstall; native upgrade admission stays closed.
+Classic mode does not bypass the existing trusted package-input checks.
+
+Run `tools/release/Test-ClassicInstaller.ps1` for the lifecycle/recovery superset
+plus mocked classic first install, all six write-failure rollback points, retry,
+persisted-mode uninstall, foreign-value protection and selector source contracts.
+Native Explorer menu visibility, submenus, selection delivery and in-use DLL
+uninstall still require an explicitly scheduled live smoke check. No host
+registry or global menu preference is changed by this test.
+
+Current verification: 30 classic checks plus 42 lifecycle and 52 recovery
+checks passed; another 25 installer/input-rejection contracts passed. Inno 7.1.0
+compiled an unsigned internal candidate with both menu choices. Compilation and
+mocked registrations are not native install/uninstall acceptance or release clearance.
+
+References: [Microsoft ExplorerCommand sample](https://learn.microsoft.com/en-us/windows/win32/shell/samples-explorercommandverb),
+[Inno registry query](https://jrsoftware.org/ishelp/topic_isxfunc_regquerystringvalue.htm),
+[Inno previous data](https://jrsoftware.org/ishelp/topic_isxfunc_setpreviousdata.htm).
+
 Recovery contract
 -----------------
 

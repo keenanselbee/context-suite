@@ -3,7 +3,8 @@ param(
     [Parameter(Mandatory)][ValidateSet('Check', 'Runtime', 'Desktop', 'VisualCpp', 'Stage', 'Install', 'Uninstall')][string] $Action,
     [Parameter(Mandatory)][string] $InstallDirectory,
     [Parameter(Mandatory)][string] $ResultPath,
-    [string] $ReleaseId
+    [string] $ReleaseId,
+    [ValidateSet('modern', 'classic')][string] $MenuMode = 'modern'
 )
 $ErrorActionPreference = 'Stop'
 try {
@@ -11,6 +12,7 @@ try {
     . (Join-Path $PSScriptRoot 'InstallationRecovery.ps1')
     . (Join-Path $PSScriptRoot 'InstallerLifecycle.ps1')
     $metadata = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'installer.json') -Raw | ConvertFrom-Json
+    $metadata.release | Add-Member -Force NoteProperty menuMode $MenuMode
     if (-not [Environment]::Is64BitProcess -or $env:PROCESSOR_ARCHITECTURE -ne 'AMD64' -or
         [Environment]::OSVersion.Version.Build -lt 26100) { throw 'Windows 11 x64 build 26100 or newer is required.' }
     if ($Action -in 'Runtime', 'Desktop', 'VisualCpp') {
@@ -20,6 +22,7 @@ try {
         if ($Action -in 'Check', 'Stage') {
             Assert-SuiteLifecycleAdmission $InstallDirectory
             Assert-SuiteInstallAvailable $metadata
+            Assert-SuiteClassicAvailable
         }
         foreach ($definition in $metadata.packages) {
             $path = Join-Path $PSScriptRoot $definition.file

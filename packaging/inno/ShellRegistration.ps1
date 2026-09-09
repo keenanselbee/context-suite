@@ -1,5 +1,6 @@
 # Shared by the installer entry point and isolated platform-mock contracts.
 # No actions occur when this file is dot-sourced.
+. (Join-Path $PSScriptRoot 'ClassicShellRegistration.ps1')
 function Get-SuitePackages {
     param($Metadata)
     $result = @()
@@ -61,6 +62,7 @@ function Install-SuitePackages {
 
 function Uninstall-SuitePackages {
     param($Metadata)
+    if ((Get-SuiteMenuMode $Metadata) -eq 'classic') { Uninstall-SuiteClassic $Metadata; return }
     $installed = @(Get-SuitePackages $Metadata)
     # Validate every target before removing any. Never remove another publisher,
     # a newer version, a prototype, or packages for another Windows user.
