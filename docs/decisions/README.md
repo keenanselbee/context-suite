@@ -1,6 +1,9 @@
 Architecture Decisions
 ======================
 
+Latest: [0016: Fixed optimization recipes](0016-fixed-optimization-recipes.md) --
+implemented for PNG; bounded acceptance is recorded in [integration evidence](../fixed-preset-integration.md).
+
 Use this directory for decisions that constrain implementation, packaging,
 public behavior, or long-term maintenance. Do not create a decision record for a
 routine code choice that is obvious from the implementation.

@@ -5,15 +5,16 @@ Date: 2026-09-08
 Status: bounded production implementation; automated checks passed locally.
 Interactive window and commercial release acceptance remain pending.
 
-Approved next direction: presets remain Auto/Lossless/Balanced/Smallest, with
-quality-constrained, image-specific candidate selection rather than fixed palette
-sizes. Larger-palette evaluation is research only; the existing production RGB
-precision candidates have not been replaced. See the
-[preset research evidence](png-palette-comparison.md#preset-candidate-validation).
+Current implementation: [fixed recipes and one safety fallback](decisions/0016-fixed-optimization-recipes.md)
+for Auto/Lossless/Balanced/Smallest. Auto alone routes between conservative recipes;
+Smallest uses one dark-protected ExoQuant recipe rather than a palette search.
+See [integration evidence](fixed-preset-integration.md) for current limits, measured
+timing, visual approval and verification. The
+[preset research evidence](png-palette-comparison.md#preset-candidate-validation)
+records earlier experiments, not current implementation of the new defaults.
 
-Historical v1 evidence below is superseded for candidate selection and Explorer
-presentation by the [quiet-first implementation](quiet-first-ux-goal.md). Current
-policies allow lossless fallback, Auto and gentler candidates; the advanced planner
+Historical v1 evidence below is superseded for candidate selection by decision
+0016 and for Explorer presentation by the [quiet-first implementation](quiet-first-ux-goal.md). The advanced planner
 remains available inside the application, not through Choose preset in Explorer.
 
 The user's visual approval followed the [expanded research](png-quantization-improvements.md).
@@ -21,8 +22,8 @@ The user's visual approval followed the [expanded research](png-quantization-imp
 and its narrower admission boundary. No original screenshots were edited or added
 as distributable fixtures during integration.
 
-Implemented
------------
+Historical Precision Implementation
+-----------------------------------
 
 - Lossless/Balanced/Smallest selector in the system-themed WPF batch planner,
   explicit lossy/banding warnings and per-file unsupported explanations.

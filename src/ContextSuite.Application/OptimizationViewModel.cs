@@ -38,7 +38,7 @@ internal sealed class OptimizationViewModel : INotifyPropertyChanged
         PngOptimizationPreset.Auto => "Auto: balances size and quality with gentle lossy reduction only when worthwhile. Originals and accepted metadata are kept.",
         PngOptimizationPreset.Lossless => "Lossless: pixels, transparency, precision and accepted metadata stay identical.",
         PngOptimizationPreset.Balanced => "Balanced (lossy): slightly reduces RGB precision. Banding is possible; alpha and accepted metadata stay exact.",
-        _ => "Smallest (lossy): stronger RGB precision reduction. Banding may be visible, especially in dark gradients; alpha and accepted metadata stay exact."
+        _ => "Smallest (lossy): reduces colors with dark-gradient protection. Fine texture or detail may change. Uses one gentler fallback when needed; transparency and accepted metadata stay exact."
     };
     public string TrialMessage => _status?.Message ?? "Checking trial availability…";
     public bool CanReplaceOriginal => _replacementAvailable && _settings.Preferences.AllowReplacingOriginals && _settings.Preferences.OutputDirectory is null;

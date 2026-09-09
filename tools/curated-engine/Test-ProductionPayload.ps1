@@ -4,11 +4,13 @@ $ErrorActionPreference = 'Stop'
 & (Join-Path $PSScriptRoot 'Test-ProductionEngine.ps1') -Payload $Payload
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'dds-engine\Test-DdsEngine.ps1') -Payload $Payload
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'png-engine\Test-PngEngine.ps1') -Payload $Payload
+& (Join-Path (Split-Path $PSScriptRoot -Parent) 'palette-engine\Test-PaletteEngine.ps1') -Payload $Payload
 $allowed = @('Magick.Native-Q16-x64.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.Core.dll',
     'Magick.NET.Notice.txt', 'ContextSuite.Engine.json', 'ContextSuite.Shell.dll',
     'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'payload-inventory.json',
     'ContextSuite.Dds.Native.dll', 'ContextSuite.Dds.Engine.json', 'DirectXTex.License.txt',
-    'oxipng.exe', 'ContextSuite.Png.Engine.json', 'Oxipng.License.txt')
+    'oxipng.exe', 'ContextSuite.Png.Engine.json', 'Oxipng.License.txt',
+    'ContextSuite.Palette.exe', 'ContextSuite.Palette.Engine.json', 'ExoQuant.License.txt', 'Rust.Library.Notices.html')
 foreach ($name in 'Application', 'Worker') {
     foreach ($extension in 'exe', 'dll', 'pdb', 'deps.json', 'runtimeconfig.json') { $allowed += "ContextSuite.$name.$extension" }
 }

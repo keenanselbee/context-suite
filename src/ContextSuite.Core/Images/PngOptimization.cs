@@ -15,9 +15,9 @@ public sealed record PngOptimizationPlan(Guid BatchId, BatchSettings Settings, b
     ImmutableArray<PngOptimizationItem> Items, PngOptimizationPreset Preset = PngOptimizationPreset.Lossless)
 {
     public const string Policy = "png-lossless-preserve-v1";
-    public const string BalancedPolicy = "png-balanced-preserve-v2";
-    public const string SmallestPolicy = "png-smallest-preserve-v2";
-    public const string AutoPolicy = "png-auto-preserve-v1";
+    public const string BalancedPolicy = "png-balanced-fixed-v3";
+    public const string SmallestPolicy = "png-smallest-palette-v3";
+    public const string AutoPolicy = "png-auto-fixed-v2";
     public string SelectedPolicy => Preset switch
     {
         PngOptimizationPreset.Lossless => Policy,

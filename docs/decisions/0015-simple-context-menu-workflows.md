@@ -43,6 +43,11 @@ opens readable information because that information is the requested result.
 Best-Effort Presets
 ------------------
 
+The candidate-comparison strategy below records the initial implementation.
+[Decision 0016](0016-fixed-optimization-recipes.md) supersedes it with implemented
+fixed recipes and one safety fallback. The quiet UI and preservation principles
+here remain in force; see [current evidence](../fixed-preset-integration.md).
+
 Auto is the first and recommended choice: select a high-quality, worthwhile size
 reduction for each image without asking the user to choose an encoder. It is not
 permission for aggressive loss, metadata deletion, resizing or format conversion.

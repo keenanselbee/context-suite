@@ -45,9 +45,13 @@ conditional conversion pairs total. All 33 focused image/DDS desktop checks pass
 Bounded [lossless PNG optimization](docs/png-optimization-goal.md) now has a
 system-themed planner, private encoder, independent sample/metadata validation,
 trial-gated smaller-only publication and automated failure tests.
-[Balanced and Smallest](docs/png-lossy-presets.md) add bounded RGB precision reduction
+[Balanced and Smallest](docs/png-lossy-presets.md) add bounded RGB precision and dark-protected palette reduction
 for supported 8-bit RGB/RGBA PNGs, with exact alpha and preserved accepted metadata. Interactive
 optimization UI acceptance and paid activation remain pending; this is not release-ready.
+[Fixed optimization recipes](docs/decisions/0016-fixed-optimization-recipes.md)
+are now implemented: predictable presets, at most one safety fallback and
+gradient-protected Smallest. See [integration evidence](docs/fixed-preset-integration.md)
+for policy limits, measured latency and the scope of visual approval.
 An Inno Setup offline installer candidate now compiles. The
 [installer lifecycle integration](docs/installer-recovery.md) now wires versioned
 staging, active-release launch/uninstall and recovery, with automated failure

@@ -1,10 +1,13 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string] $EngineArchive,
+    [string] $PaletteCandidateDirectory,
     [switch] $IncludeWorkingChanges
 )
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+if (-not $PaletteCandidateDirectory) { $PaletteCandidateDirectory = Join-Path $repository 'artifacts\engines\palette-win-x64' }
+& (Join-Path $repository 'tools\palette-engine\Test-PaletteEngine.ps1') -Payload $PaletteCandidateDirectory
 $engine = (Resolve-Path -LiteralPath $EngineArchive).Path
 $run = Join-Path $repository ('.codex-temp\fresh-source-build\' + [guid]::NewGuid().ToString('N'))
 $snapshot = Join-Path $run 'source'
@@ -12,6 +15,8 @@ New-Item -ItemType Directory -Path $snapshot -Force | Out-Null
 $receipt = [ordered]@{
     status = 'started'; includesWorkingChanges = [bool]$IncludeWorkingChanges;
     engineArchiveSha256 = (Get-FileHash -LiteralPath $engine).Hash;
+    paletteExecutableSha256 = (Get-FileHash -LiteralPath (Join-Path $PaletteCandidateDirectory 'ContextSuite.Palette.exe')).Hash;
+    paletteProvenance = 'Imported pinned native candidate, not rebuilt by this source-snapshot test.';
     environment = 'Fresh source/output directories on existing development machine; shared SDKs and NuGet cache. Not a clean Windows install.';
     sources = @()
 }
@@ -61,6 +66,7 @@ try {
     & (Join-Path $snapshot 'tools\curated-engine\Import-ProductionEngine.ps1') -Archive $engine
     & (Join-Path $snapshot 'tools\dds-engine\Build-DdsEngine.ps1')
     & (Join-Path $snapshot 'tools\png-engine\Stage-PngEngine.ps1')
+    & (Join-Path $snapshot 'tools\palette-engine\Stage-PaletteEngine.ps1') -CandidateDirectory $PaletteCandidateDirectory
     & (Join-Path $snapshot 'tools\Build-Production.ps1') -Configuration Release
     & (Join-Path $snapshot 'tools\Test-DdsCodec.ps1') -SkipNativeBuild
     & (Join-Path $snapshot 'tools\Test-ImageConversion.ps1') -Configuration Release

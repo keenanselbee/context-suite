@@ -10,10 +10,15 @@ implemented. Interactive release acceptance and selectable metadata policies rem
 
 Accepted next direction: [decision 0015](decisions/0015-simple-context-menu-workflows.md)
 and the [quiet-first UX plan](quiet-first-ux-goal.md) replace mandatory planning
-with direct Auto-first presets and best-effort candidate selection. This includes
-saving a useful lossless fallback when it wins. The initial slice is implemented
+with direct Auto-first presets and best-effort processing. This includes
+saving a useful permitted fallback. The initial slice is implemented
 with local policy, worker, shell and isolated quiet-launch evidence; human
 acceptance and wider PNG compatibility remain pending.
+
+[Decision 0016](decisions/0016-fixed-optimization-recipes.md) now refines the
+implemented PNG policy: fixed recipes, Auto-only preflight routing, one
+primary attempt and at most one safety fallback. It prioritizes gradient/detail
+quality over reference file sizes. See [current integration evidence](fixed-preset-integration.md).
 
 
 Purpose
@@ -41,7 +46,7 @@ retains its conservative Lossless default; direct Explorer Auto remains first.
 Implemented direct PNG actions are:
 
 - **Auto** — the first/recommended action; a conservative, image-specific choice
-  among validated candidates, with worthwhile savings and bounded visual loss.
+  of one conservative recipe, with worthwhile savings and bounded visual loss.
 - **Lossless** — pixels decode identically.
 - **Balanced** — bounded visual loss under a documented quality floor.
 - **Smallest** — stronger, clearly identified lossy reduction under its own
@@ -90,20 +95,21 @@ The PNG engine design uses independently selected and pinned tools:
 
 - Implemented lossless recompression through pinned `oxipng` 10.1.0, with no
   representation reductions and original metadata chunks retained exactly.
-- Implemented bounded lossy RGB precision reduction followed by the same cleanup,
-  with curated Magick.NET admission/reopen validation. No paid quantizer or
-  additional runtime dependency is introduced.
+- Implemented bounded RGB7 and dark-protected palette reduction followed by the
+  same cleanup, with curated Magick.NET admission/reopen validation. Smallest
+  uses a separately pinned ExoQuant helper; no paid quantizer is introduced.
 
-The user-approved [expanded evaluation](png-quantization-improvements.md) selected
-7-bit/6-bit RGB precision policies for Balanced/Smallest instead of a fixed
-256/128-color palette. These remain ordinary 8-bit PNGs with bounded RGB sample
-changes and exact alpha. Production retains admitted metadata and representation;
+The original [precision evaluation](png-quantization-improvements.md) is historical.
+Balanced now uses only RGB7, with one lossless fallback. Smallest uses the fixed
+dark-protected palette, with one RGB7 fallback and no further lossless attempt.
+Palette-ineligible inputs go directly to RGB7. Lossy-ineligible but
+lossless-supported representations use Lossless directly. Accepted palette output
+is indexed PNG with exact alpha and hidden RGB; admitted metadata is retained.
 ICC/indexed/grayscale and unsupported chunks remain outside lossy admission.
-Each policy retains the smallest eligible result, including lossless fallback.
-Auto tests RGB7 with the Balanced quality floor and requires at least 5% additional
-savings against the smaller of source and lossless baseline before pixel changes.
-Balanced compares lossless/RGB7; Smallest compares lossless/RGB7/RGB6. Ties retain
-the gentler result. Lossy-ineligible but lossless-supported files use lossless.
+Auto selects RGB7 only for lossy-admitted inputs of at least 4096 pixels, otherwise
+Lossless. A lossy Auto output must save at least 5% against the source, without
+encoding a baseline for comparison. RGB7 quality/benefit rejection permits one
+Lossless fallback. Other presets require strictly smaller outputs.
 Encoder, cancellation and validation failures are not masked as fallback success.
 Interactive production acceptance is still required.
 
@@ -119,21 +125,19 @@ separately because removing optional metadata may be part of the selected policy
 Preset Semantics
 ----------------
 
-Approved next PNG research direction: retain **Auto, Lossless, Balanced, Smallest**
-in that order. Presets describe quality limits, not fixed colour counts. Auto
-favours near-original appearance and worthwhile savings; Balanced allows small
-changes with stricter gradient/detail protection; Smallest allows stronger loss
-without abandoning its floor. Select from a small bounded candidate set per image,
-keep lossless fallback for every preset, and never force additional degradation
-merely because Smallest was selected. Metadata and transparency preservation do
-not vary implicitly with the preset. No extra colour-count or dithering menu is
-needed for everyday users.
+Implemented defaults follow [decision 0016](decisions/0016-fixed-optimization-recipes.md):
+Auto routes to one conservative recipe, Lossless recompresses once, Balanced uses
+RGB7 with artifact safeguards, and Smallest uses one dark-protected ExoQuant
+recipe with detail anchors and adaptive dithering. No per-file competition among
+palettes, dithering settings or encoders. Each primary recipe has at most one
+predetermined fallback within the total deadline; no recursive retry ladder.
 
-The [512-colour/light-dither experiment](png-palette-comparison.md) is approved for
-broader testing, initially as a Smallest candidate. It is not an approved production
-replacement, a universal default or permission to loosen Balanced's limits.
-Current shipping-candidate behaviour remains documented above until integration
-and broader gradient/detail acceptance are complete.
+Smallest may produce a larger result than a reference optimizer to avoid obvious
+banding or distracting texture. Its versioned numeric limits and bounded visual
+approval are recorded in [integration evidence](fixed-preset-integration.md).
+Earlier [palette experiments](png-palette-comparison.md) are historical research,
+not additional runtime candidates. Metadata and transparency policies do not vary implicitly by
+preset, and ordinary users need no colour-count or dithering controls.
 
 Each preset is a versioned policy, not a label over an open-ended retry ladder.
 It defines:
@@ -146,9 +150,8 @@ It defines:
 - A maximum acceptable output-size relationship.
 - The exact validation contract.
 
-Content-oriented variants such as **Crisp UI** and **Smooth gradients** may be
-added after representative visual fixtures demonstrate that users can understand
-and benefit from the distinction.
+Do not add content-specific presets or technical controls for this implementation.
+Keep those distinctions inside the tested recipes and conservative Auto routing.
 
 
 Optimization Plan

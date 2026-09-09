@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "revision": "6ef61711b07e58c107decbd4721d9d50e646dac8",
+  "recipe": "dark4-anchor8-adaptive50-alpha16",
+  "compiler": "rustc 1.90.0",
+  "files": {
+    "ContextSuite.Palette.exe": "6F268233B46CE3A84FED6C085D3FBF5310E8D6F4E890AE1B323CDCF21D700F1E",
+    "ExoQuant.License.txt": "CBB5DD3EBF7EC24BB6F1531D06A8A990AE461C9F9B720145E0DF5E2248B6E445",
+    "Rust.Library.Notices.html": "025C0DD1236493FCD5B6386B68453852E6528722BD5F8DCE5949E94D225E7A60"
+  }
+}

@@ -85,8 +85,11 @@ Design Principles
 - Describe user goals before implementation details.
 - Prefer a single context-menu choice over opening a planner. Do not make users
   understand PNG variants, metadata chunks or encoder settings for ordinary work.
-- Treat Auto and named presets as bounded quality goals, not required encodings;
-  choose the smallest verified eligible result and use a safe gentler fallback.
+- Use fixed, versioned optimization recipes with quality and effort limits.
+  Auto selects one recipe through bounded preflight; named presets do not search
+  across methods. Allow at most one safe fallback, then retain the original.
+  See [decision 0016](decisions/0016-fixed-optimization-recipes.md) and the
+  [implemented PNG scope](fixed-preset-integration.md).
 - Keep fast success quiet except for one optional completion sound per batch.
   Progress and exception UI must be compact and actionable, not an engineering dashboard.
 - Recommend actions, but keep irreversible consequences visible until execution.

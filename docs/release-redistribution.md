@@ -3,6 +3,15 @@ Release Redistribution Checklist
 
 Reviewed: 2026-09-07. Engineering review, not a legal opinion or release approval.
 
+Palette addition, 2026-09-08: development packaging includes the source-built,
+pinned ExoQuant helper, its MIT notice and Rust 1.90.0 library third-party notices.
+The private adapter uses modified histogram traversal and corrected color-space
+conversion; the downloaded upstream source is unmodified. Exact output hashes
+are enforced by the staging/runtime guards. Archive the selected binary, source,
+toolchain provenance and all linked-component notices before distribution;
+top-level notices and successful local tests are not complete redistribution
+clearance. See [integration evidence](fixed-preset-integration.md).
+
 PNG addition, 2026-09-08: development packaging now includes the pinned upstream
 oxipng 10.1.0 Windows x64 executable and its MIT license, with independent archive
 and file hashes. Before commercial distribution, inventory its transitive linked

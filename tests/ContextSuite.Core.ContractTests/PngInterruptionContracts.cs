@@ -13,16 +13,21 @@ internal static class PngInterruptionContracts
     {
         var root = Path.Combine(scratch, "png-interruption-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
-        var sourcePath = Path.Combine(root, "noise.png");
-        ImageInterruptionContracts.WriteNoisePng(sourcePath, 2048);
-        var original = SHA256.HashData(File.ReadAllBytes(sourcePath));
+        var largeSource = Path.Combine(root, "noise.png");
+        var fallbackSource = Path.Combine(root, "fallback-noise.png");
+        ImageInterruptionContracts.WriteNoisePng(largeSource, 2048);
+        ImageInterruptionContracts.WriteNoisePng(fallbackSource, 1024);
         var clock = new ImageInterruptionContracts.DeadlineClock();
         await using var worker = new WorkerClient(executable, Path.Combine(root, "scratch"), clock);
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new NoRecycle());
         foreach (var policy in new[] { PngOptimizationPlan.Policy, PngOptimizationPlan.BalancedPolicy, PngOptimizationPlan.SmallestPolicy })
-        foreach (var fault in policy == PngOptimizationPlan.Policy ? new[] { "cancel", "worker-crash", "encoder-crash", "timeout" } :
+        foreach (var fault in policy != PngOptimizationPlan.SmallestPolicy ? new[] { "cancel", "worker-crash", "encoder-crash", "timeout" } :
             new[] { "cancel", "worker-crash", "encoder-crash", "timeout", "cancel-second" })
         {
+            // Full-size noise makes palette refinement slow; the smaller deterministic noise
+            // still rejects palette quality and exposes the real RGB7 fallback within the observation budget.
+            var sourcePath = fault == "cancel-second" ? fallbackSource : largeSource;
+            var original = SHA256.HashData(File.ReadAllBytes(sourcePath));
             var facts = await worker.ProbeAsync(new(Guid.NewGuid(), sourcePath), default, forOptimization: true);
             var reservation = await publisher.ReserveAsync(new(facts.ItemId, facts.Path, "png", new("optimize", new())));
             using var cancellation = new CancellationTokenSource();
@@ -35,7 +40,7 @@ internal static class PngInterruptionContracts
             {
                 while (!work.IsCompleted && timer.Elapsed < TimeSpan.FromSeconds(25) && encoder is null)
                 {
-                    foreach (var process in Process.GetProcessesByName("oxipng"))
+                    foreach (var process in Process.GetProcessesByName("oxipng").Concat(Process.GetProcessesByName("ContextSuite.Palette")))
                     {
                         try
                         {
