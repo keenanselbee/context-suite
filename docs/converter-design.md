@@ -6,7 +6,14 @@ removes the manual conversion workspace and routine planner in favor of direct
 format commands and focused necessary prompts. Copies stay the default; a new
 explicit Settings choice applies safe replacement to future commands, subject
 to mandatory copy exceptions. See the
-[active simplification goal](context-menu-simplification-goal.md) for verification.
+[completed simplification goal](context-menu-simplification-goal.md) for verification.
+
+Next scope follows [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md)
+and the [broad file support goal](broad-file-support-goal.md): common audio through
+an explicit tested container/codec input/output matrix. Images-to-PDF, PDF
+pages-to-images and Word/Excel/PowerPoint-to-PDF are selected for launch; exact
+variants, engines and fidelity follow the [document design](document-design.md).
+Neither expansion is implemented by the existing image adapters.
 
 Status: PNG/JPEG/WebP/BMP/TGA conversion, planner, preview and trial-gated publication
 implemented and verified locally for the bounded slice; release checks remain open.
@@ -285,7 +292,7 @@ Required First Image Release
 Non-Goals
 ---------
 
-Converter does not own same-representation size optimization, video, documents,
+Converter does not own same-representation size optimization, video conversion,
 cloud processing, AI editing, CD ripping, arbitrary engine commands, unrequested
 source removal, permanent-delete fallback, or dozens of obscure formats without
 demonstrated demand.

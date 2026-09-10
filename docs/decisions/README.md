@@ -77,7 +77,9 @@ design documents when an accepted decision changes their assumptions.
 Current Decisions
 -----------------
 
-- [0018: Context-menu utility and output preference](0018-context-menu-utility-and-output-preference.md) - accepted; implementation pending
+- [0019: Broad file analysis and media expansion](0019-broad-file-analysis-and-media-expansion.md) - accepted; document actions selected, implementation in progress
+
+- [0018: Context-menu utility and output preference](0018-context-menu-utility-and-output-preference.md) - implemented with owner manual acceptance; broader file scope under 0019
 
 - [0017: Paid access and release candidate](0017-paid-access-and-release-candidate.md) - accepted; implementation in progress
 

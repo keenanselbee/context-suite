@@ -1,23 +1,29 @@
 Context Suite Roadmap
 =====================
 
-Status: Milestone 1 foundation implemented locally; WPF UI smoke and manual
-classic Explorer handoff pass. Automated Explorer reliability, modern-menu and
-accessibility review, and hosted CI verification remain pending. Remaining
-Milestone 0 engine and release decisions are deferred to their dependent work.
-Milestone numbers retain their original scope identifiers. The current execution
-order below prioritizes image conversion; numbers are not a strict schedule.
+Status: image foundation and simplified context-menu UX implemented with owner
+manual acceptance. The active priority is [broad file support](broad-file-support-goal.md)
+under [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md).
+Signing is deferred. Native installer lifecycle, live commerce and remaining
+accessibility/environment checks remain separate release gates.
+Historical milestone numbers below retain their original scope identifiers;
+the new goal defines its own milestones and current completion criteria.
 
 
 Current Position
 ----------------
 
-Current implementation priority (September 8): the broad
-[everyday image UX goal](quiet-first-ux-goal.md) integrates direct Optimize/Convert,
-PNG compatibility, compact UI, workflow reliability and an internal installer.
-Safe common Convert targets and Adam7 lossless fallback are implemented. Protected
-Afterburner metadata, desktop acceptance, held-out optimization acceptance and
-installed Explorer-to-output verification remain open; do not treat this as release readiness.
+Current implementation priority (September 9): universal read-only Analyze,
+an offline common-file catalog, common audio and PDF/document support. The first
+Analyze/fallback, bounded JSON/XML structure analysis and 237-entry catalog are
+implemented; [coverage and limits](file-type-coverage.md) record verified scope.
+Broader analysis and audio remain pending. Images-to-PDF, PDF pages-to-images,
+PDF optimization and Word/Excel/PowerPoint-to-PDF are selected for launch;
+their engines, exact variants and implementation remain pending.
+The [new goal](broad-file-support-goal.md) records the current image baseline and
+latest checks. The following foundation history retains its original test scope;
+older pending UI items must be read alongside the completed
+[simplification evidence](context-menu-simplification-goal.md).
 
 As of September 6, 2026, the repository has completed a focused Windows 11 x64
 shell-integration discovery prototype. It proves:
@@ -75,14 +81,23 @@ quality coverage and broader comparison/metadata controls remain open.
 Next Goal And Current Execution Order
 ------------------------------------
 
-**Immediate product priority:** [quiet-first UX and best-effort optimization](quiet-first-ux-goal.md),
-under [decision 0015](decisions/0015-simple-context-menu-workflows.md). The initial
-Auto-first direct presets, safe candidate fallback, quiet completion and compact
-progress/problem UI are implemented with local automated evidence. Next, verify
-the installed menu and actual UI, then broaden PNG
-compatibility using observed real-file failures as part of this work. The sequence
-below records existing milestone history/dependencies, not a requirement to finish
-release signing or polish the old mandatory planner before this redesign.
+Follow the [broad file support milestones](broad-file-support-goal.md):
+
+1. Define the capability matrix, resource limits and fixture provenance. Resolve
+   document action scope while independent Analyze/audio work proceeds.
+2. Deliver generic Analyze results and route existing DDS facts into one compact
+   report. Unknown and misleadingly named files must remain useful outcomes.
+3. Build the reviewed offline catalog and tested identification rules, keeping
+   recognition separate from supported conversion and optimization.
+4. Add bounded image/audio/PDF/Office and selected other structural analysis.
+5. Deliver fixed audio conversion presets and lossless FLAC recompression through
+   an independently evaluated engine and explicit container/codec matrix.
+6. Implement the selected document actions after fidelity/dependency decisions.
+7. Complete real-engine, failure, performance, manual UI and isolated packaging
+   acceptance. Preserve separate release gates and defer signing.
+
+The following records existing milestone history/dependencies. They do not
+require an image-only public release before the broader goal can proceed.
 
 The [image output safety and settings goal](image-output-safety-goal.md) is locally
 implemented and verified, a bounded Milestone 2 slice.
@@ -95,7 +110,7 @@ forced-termination tests pass. Replacement is available only on verified Windows
 build 26200 x64 with ordinary local NTFS files, and permission remains off by
 default. See the goal brief for evidence and remaining manual coverage.
 
-Proceed in this order without renumbering existing milestone references:
+Historical image implementation sequence (retained milestone references):
 
 1. Completed bounded Milestone 2 settings/naming/publication safety foundation.
 2. Completed bounded Milestone 6 PNG/JPEG/WebP batch conversion using Magick.NET, adding
@@ -118,7 +133,7 @@ Proceed in this order without renumbering existing milestone references:
    bounded lossy policies are implemented; interactive acceptance and broader
    comparison/metadata controls remain open. Product work can proceed while signing and
    native installer acceptance await owner decisions.
-6. Broader tested image capabilities, remaining Milestone 7 release work, then audio.
+6. The former image-release-before-audio ordering is superseded by decision 0019.
 
 The completed brief is [PNG/JPEG/WebP batch conversion](image-conversion-goal.md).
 [Decision 0009](decisions/0009-first-image-engine-and-trial.md) settles the initial
@@ -147,8 +162,8 @@ Roadmap Principles
 - Treat multi-file Convert and Optimize invocations as first-class batches, not
   repeated single-file operations.
 - Make every advertised capability a tested contract.
-- Prefer a polished image-focused first release, then add audio on the same
-  foundation.
+- Preserve the tested image foundation while adding broad Analyze, common audio
+  and agreed document capabilities under decision 0019.
 - Use milestone exit criteria to decide readiness; incomplete work moves forward
   only when an explicit scope decision accepts the remaining risk.
 
@@ -156,7 +171,11 @@ Roadmap Principles
 Release Shape
 -------------
 
-The roadmap targets two product releases:
+The former image MVP followed by audio expansion is superseded by decision 0019.
+The next launch target combines the existing image utility with useful universal
+Analyze, a reviewed format catalog, common audio and agreed PDF/document support.
+The [active goal](broad-file-support-goal.md) separates required capabilities,
+open decisions and acceptance. Historical component scopes were:
 
 - **Image MVP** — all three Explorer roots, DDS and common image analysis,
   batch PNG optimization, and batch PNG/JPEG/WebP/TGA/BMP conversion, with first-class
@@ -167,7 +186,7 @@ The roadmap targets two product releases:
 Public source, documentation, tests, screenshots, and demo video support
 portfolio evaluation; there is no separate review/demo application. The one
 production build requires the private checkout. A downloadable trial will
-provide hands-on evaluation when ready. A paid image
+provide hands-on evaluation when ready. A paid
 release additionally requires the commercial access gate under Milestone 7;
 the first useful media slices can be developed before live purchase services.
 

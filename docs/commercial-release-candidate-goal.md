@@ -1,15 +1,15 @@
 Image Commercial Release Candidate
 ==================================
 
-Status: active; not commercial release clearance
+Status: retained image evidence and open release gates; not commercial release clearance
 
-Current product priority: complete the owner-approved
-[context-menu simplification](context-menu-simplification-goal.md) before final
-UI and package acceptance. Decision 0018 removes the general customer workspace
-and makes safe replacement an explicit persistent Settings choice, with copies
-as the default. Existing test/package evidence below predates that change.
+Current product priority: the [broad file support goal](broad-file-support-goal.md)
+under [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md).
+The owner accepted [context-menu simplification](context-menu-simplification-goal.md).
+Signing is deferred. Preserve the dated evidence and independent release gates
+below; they do not establish acceptance of new audio/document/catalog capabilities.
 
-Implement the approved [paid-access policy](decisions/0017-paid-access-and-release-candidate.md),
+Original image-only objective: implement the approved [paid-access policy](decisions/0017-paid-access-and-release-candidate.md),
 integrate it into the existing quiet image workflow, and produce verifiable
 release-candidate evidence without expanding image recipes or adding audio.
 

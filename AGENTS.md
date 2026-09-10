@@ -200,9 +200,17 @@ Repository-Specific Notes
 - Keep Explorer-facing code minimal and bounded. Do not load media engines,
   perform unbounded parsing, access the network, or display errors while Explorer
   enumerates commands.
-- Do not add video, documents, cloud processing, AI editing, CD ripping,
-  arbitrary engine commands, or obscure formats without an explicit
-  product-scope decision.
+- Follow decision 0019 and docs/broad-file-support-goal.md for the next priority:
+  useful read-only Analyze for every readable regular file, an offline common-type
+  catalog, common audio conversion/FLAC optimization and PDF/document analysis.
+  Selected launch document actions are images-to-PDF, PDF pages-to-images, PDF
+  optimization and Word/Excel/PowerPoint-to-PDF. Evaluate exact variants, engines
+  and fidelity under docs/document-design.md before enabling them.
+  Recognition does not authorize conversion. Keep the completed decision 0018 UX.
+- Do not add video conversion, archive extraction, cloud processing, AI editing,
+  CD ripping, arbitrary engine commands or obscure transformations without a new
+  product-scope decision. Signing remains deferred; product expansion does not
+  authorize installation, registration, live commerce, commits or publication.
 - Use `tools/Build.ps1` for the canonical native x64 build.
 - Use `tools/Build-Production.ps1` for production composition and
   stage the selected curated engine first via `tools/curated-engine/Stage-ProductionEngine.ps1`.

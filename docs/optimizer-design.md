@@ -1,6 +1,20 @@
 Context Optimizer Design
 ========================
 
+Next scope follows [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md)
+and the [broad file support goal](broad-file-support-goal.md). Preserve the verified
+PNG recipes and add bounded lossless FLAC recompression with decoded-sample and
+metadata validation. PDF optimization is selected for launch; engine choice and
+preservation policies remain pending under the [document design](document-design.md).
+These additions are planned; format recognition alone does not enable Optimize.
+
+The first FLAC core step now inventories bounded metadata and reconciles original
+descriptive blocks with the newly encoded STREAMINFO. Independent byte comparison
+and decoded-sample tests protect against an engine's metadata rewrite. Application
+blocks, unknown block types and seek tables still require handlers before
+recompression; the feature is not exposed as a customer action. See
+[current experiment and preservation evidence](audio-engine-evaluation.md).
+
 Current scope: [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md)
 removes the manual optimization workspace and routine preset planner. Direct
 presets default to copies and honor an explicit Settings choice for safe

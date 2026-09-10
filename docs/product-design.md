@@ -1,18 +1,30 @@
 Context Suite Product Design
 ============================
 
-Accepted priority: [context-menu simplification](context-menu-simplification-goal.md)
+Completed UX direction: [context-menu simplification](context-menu-simplification-goal.md)
 under [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md).
 Remove the general customer workspace and routine planners; retain focused
 decision prompts, Analyze, progress/problems, Settings and License. Output defaults
 to copies, with explicit Settings consent for safe replacement on future commands.
-The implementation now follows this scope; final visual/accessibility acceptance
-remains open. See the linked goal for current automated evidence.
+The implementation follows this scope with owner manual acceptance. Additional
+accessibility/theme/DPI and installed lifecycle coverage remain release gates.
+
+Accepted next priority: [broad file support](broad-file-support-goal.md) under
+[decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md).
+Analyze must give useful read-only results for every readable regular file,
+including a reviewed offline explanation of common types. Add common audio
+analysis/conversion and lossless FLAC optimization, plus PDF/Office/OpenDocument
+analysis. Selected launch actions include images-to-PDF, PDF pages-to-images,
+PDF optimization and Word/Excel/PowerPoint-to-PDF. These transformations remain
+planned; retain the simple customer surfaces above. Shared Analyze/fallback,
+bounded JSON/XML structure analysis and a 237-entry catalog are implemented with automated
+evidence; see [current coverage](file-type-coverage.md). Signing is deferred.
 
 Status: shell/process and output-safety foundations implemented; PNG/JPEG/WebP/BMP/TGA
 conversion and bounded DDS analysis/conversion have passed local acceptance.
 Lossless and bounded lossy PNG optimization are implemented with automated contracts;
-interactive UI acceptance, broader analysis and paid activation remain pending.
+broader analysis and live-provider paid activation remain pending. The owner
+accepted the simplified image UI; this does not certify all accessibility environments.
 See [PNG precision presets](png-lossy-presets.md) for exact scope and remaining checks.
 
 
@@ -20,7 +32,7 @@ Product Summary
 ---------------
 
 Context Suite is a local Windows application for understanding, converting, and
-optimizing media files from File Explorer. It serves people who know what they
+optimizing supported files from File Explorer. It serves people who know what they
 need to accomplish but may not know which codec, quality setting, or
 compatibility tradeoff applies.
 
@@ -209,7 +221,7 @@ superseding per-batch replacement consent.
 Release Sequence
 ----------------
 
-The accepted first image-release format target is PNG, JPEG, WebP, DDS, TGA,
+The implemented image foundation targets PNG, JPEG, WebP, DDS, TGA,
 and BMP. Bounded PNG/JPEG/WebP/BMP/TGA conversion is implemented today. Formats
 do not imply support for every variant or operation. A curated general-image
 engine is integrated into development packaging. Decision 0011 selects a pinned
@@ -232,8 +244,11 @@ The intended vertical slices are:
 Each slice should work from Explorer through validation before the next format
 family substantially expands the product surface.
 TIFF, GIF, ICO, and AVIF remain later candidates; HEIC/HEIF, camera RAW, and SVG
-import require separate scope and redistribution decisions. Audio follows the
-image release rather than expanding its format target.
+import require separate scope and redistribution decisions. Decision 0019
+supersedes the former image-release-before-audio ordering: broad Analyze, common
+audio and agreed document capabilities are now part of the next launch goal.
+See [broad file support](broad-file-support-goal.md) for the active sequence;
+the image slices above retain their existing implementation and evidence scope.
 
 
 Portfolio And Commercial Product
@@ -297,7 +312,8 @@ Explicit Non-Goals
 The initial product will not include:
 
 - Video conversion.
-- PDF or Office conversion.
+- Document transformations outside the selected PDF/Office actions in decision
+  0019 and their verified capability matrix.
 - Photo editing, filters, retouching, or background removal.
 - AI enhancement or generation.
 - Remote media processing or cloud media storage. Accounts are limited to the
