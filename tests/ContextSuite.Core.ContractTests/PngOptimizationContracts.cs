@@ -67,6 +67,12 @@ internal static class PngOptimizationContracts
         var source = new ImageSourceFacts(Guid.NewGuid(), Path.Combine(root, "source.png"), new string('0', 64), 100,
             ImageFormat.Png, 10, 20, 16, 6, true, false, "sRGB", ["exif"], HasOtherMetadata: true);
         var plan = PngOptimizationPlan.Create(Guid.NewGuid(), [source], new("optimize", new()));
+        await using (var boundaryWorker = new WorkerClient(Path.Combine(root, "missing-worker.exe")))
+        {
+            var executor = new PngOptimizationExecutor(boundaryWorker, new OutputPublisher(Path.Combine(root, "boundary-records"), null!), null!);
+            try { await executor.ExecuteAdmittedAsync(plan.Confirm(false, false), new(new(true, "Other batch"), Guid.NewGuid()), null, default); check(false, "PNG execution: unrelated admission"); }
+            catch (InvalidDataException) { check(boundaryWorker.ProcessId is null, "PNG execution: unrelated admission cannot start a worker or publication"); }
+        }
         check(plan.Confirm(false, false).Plan == plan && plan.Items[0].CanExecute, "PNG plan: preserves metadata and orientation without conversion normalization");
         Reject(() => PngOptimizationPlan.Create(Guid.NewGuid(), [source], new("convert", new())), "wrong settings owner");
         Reject(() => PngOptimizationPlan.Create(Guid.NewGuid(), [source, source], new("optimize", new())), "duplicate item identity");

@@ -11,6 +11,12 @@ internal sealed class FlacOptimizationExecutor(WorkerClient worker, OutputPublis
         Action<FlacOptimizationItem, FileResult>? report, CancellationToken token)
     {
         var admission = await access.AdmitOptimizationAsync(confirmed, token);
+        return await ExecuteAdmittedAsync(confirmed, admission, report, token);
+    }
+
+    internal async Task<AudioBatchExecution> ExecuteAdmittedAsync(ConfirmedFlacOptimization confirmed, OperationAdmission admission,
+        Action<FlacOptimizationItem, FileResult>? report, CancellationToken token)
+    {
         if (admission.BatchId != confirmed.Plan.BatchId) throw new InvalidDataException("Audio admission belongs to another batch.");
         var results = new List<FileResult>();
         foreach (var item in confirmed.Plan.Items)

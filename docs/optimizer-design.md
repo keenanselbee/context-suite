@@ -6,22 +6,26 @@ and the [broad file support goal](broad-file-support-goal.md). Preserve the veri
 PNG recipes and add bounded lossless FLAC recompression with decoded-sample and
 metadata validation. PDF optimization is selected for launch; engine choice and
 preservation policies remain pending under the [document design](document-design.md).
-These additions are planned; format recognition alone does not enable Optimize.
+FLAC direct dispatch is implemented for the optional verified audio engine; PDF
+actions remain planned. Format recognition alone does not enable Optimize.
 
 The first FLAC core step now inventories bounded metadata and reconciles original
 descriptive blocks with the newly encoded STREAMINFO. Independent byte comparison
 and decoded-sample tests protect against an engine's metadata rewrite. Application
 blocks and unknown block types still require handlers before
 recompression; seek tables now rebuild against complete frame indexes with
-CRC and seeked-decoding evidence. The feature is not exposed as a customer action. See
+CRC and seeked-decoding evidence. Auto and Lossless dispatch to this path when the
+verified audio engine is present; Balanced and Smallest remain PNG-only. See
 [current experiment and preservation evidence](audio-engine-evaluation.md).
 The private [FLAC optimization candidate](audio-conversion-policy.md) now connects
 that reconciler to encoding, exact decoded-sample checks and smaller-only results.
 FLAC worker commands and sequential application publication now have isolated
 copy/collision, source-change, access-expiry, cancellation and failure evidence.
 Complete frame/CRC validation also applies to sources without seek tables.
-Full metadata admission, broader recovery/crash coverage, production engine
-adoption and customer menu integration remain open.
+Mixed PNG/FLAC batches share one admission, settings snapshot and completion;
+expiry cannot stop the second family. Full metadata admission, broader
+recovery/crash coverage, production engine adoption and visible acceptance remain
+open. Missing engines and misleading file extensions are explained before admission.
 
 Current scope: [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md)
 removes the manual optimization workspace and routine preset planner. Direct

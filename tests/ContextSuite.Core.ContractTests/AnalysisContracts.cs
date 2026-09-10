@@ -211,6 +211,9 @@ internal static class AnalysisContracts
             Task.FromException<ContextSuite.Core.Audio.AudioProbeFacts>(new InvalidDataException("Test probe failure")));
         check(fallback.Identity.FormatId == "mp3" && fallback.Warnings.Any(warning => warning.Contains("Deeper audio")),
             "analysis: probe failure preserves basic information instead of failing the file");
+        var routing = await FileAnalysisReader.ReadAsync(audioPath, CancellationToken.None,
+            (_, _) => throw new InvalidOperationException("Header routing must not invoke deeper media parsing."), headerOnly: true);
+        check(routing.Facts.All(fact => !fact.Id.StartsWith("audio.probe.")), "analysis: header-only routing skips optional native probes");
         var empty = Path.Combine(root, "empty"); await File.WriteAllBytesAsync(empty, []);
         check((await FileAnalysisReader.ReadAsync(empty, CancellationToken.None)).Identity.Name == "Empty file",
             "analysis: zero-byte file survives real reader");

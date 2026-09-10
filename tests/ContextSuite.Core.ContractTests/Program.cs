@@ -21,6 +21,14 @@ if (args.Length == 4 && args[0] == "--flac-worker")
     Console.WriteLine($"Passed {checks} isolated FLAC workflow checks.");
     return 0;
 }
+if (args.Length == 4 && args[0] == "--audio-direct")
+{
+    var checks = 0;
+    await AudioDirectContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated direct-audio checks.");
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--pdf-worker")
 {
     var checks = 0;

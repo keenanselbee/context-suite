@@ -66,7 +66,7 @@
         </Grid.RowDefinitions>
         <StackPanel Margin="0,0,0,20">
             <TextBlock Text="Settings" FontSize="24" FontWeight="SemiBold" />
-            <TextBlock Text="Right-click images in Explorer to Convert, Optimize or Analyze."
+            <TextBlock Text="Right-click files in Explorer to Convert, Optimize or Analyze."
                        TextWrapping="Wrap" Margin="0,8,0,0" />
         </StackPanel>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"

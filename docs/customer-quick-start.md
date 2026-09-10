@@ -61,8 +61,17 @@ This candidate focuses on PNG, JPEG, WebP, BMP, TGA and bounded DDS texture
 conversion. Not every variant is supported: animation, oversized files and
 unsupported color/texture structures may need another workflow. Read the
 file's explanation; renaming its extension does not convert it. Optimize currently
-targets PNG, not every format that Convert supports. Audio and video are not part
-of this image candidate.
+targets PNG, not every format that Convert supports. Analyze also gives basic
+identification and common-use descriptions for other readable regular files;
+recognition does not mean conversion is available.
+
+In isolated audio testing, **Auto** and **Lossless** also optimize supported FLAC
+files while preserving decoded audio and admitted metadata. They share the same
+copy settings, batch progress and retry behavior. Balanced and Smallest are PNG
+presets. If the extension does not match the identified content, the app asks you
+to correct the name before optimizing. Normal packaging does not yet include the
+audio engine; audio conversion and video processing are not available in this
+packaged candidate.
 
 License and transfer
 --------------------

@@ -629,8 +629,8 @@ private:
     static constexpr const wchar_t* PresetTitles[] = { L"Auto", L"Lossless", L"Balanced", L"Smallest" };
     static constexpr const wchar_t* PresetActions[] = { L"auto", L"lossless", L"balanced", L"smallest" };
     static constexpr const wchar_t* PresetTooltips[] = {
-        L"Balance quality and size with gentle loss only when worthwhile; output follows Settings",
-        L"Reduce file size without changing pixels; output follows Settings",
+        L"Balance PNG size and quality; preserve FLAC audio exactly; output follows Settings",
+        L"Reduce size without changing pixels or audio samples; output follows Settings",
         L"Allow slight RGB precision loss for smaller files; output follows Settings",
         L"Allow stronger RGB precision loss; banding may be visible; output follows Settings" };
 };

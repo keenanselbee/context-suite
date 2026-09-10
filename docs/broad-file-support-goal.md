@@ -131,7 +131,12 @@ corrupt sources, cancellation and refusal of nonempty/hard-linked reservations.
 Every FLAC optimization validates complete source/output frame indexes and CRCs,
 including files without seek tables. Cross-format worker commands, full metadata
 admission, listening, broader hostile-file/crash/recovery coverage, payload review
-and actual customer UI acceptance remain pending. No audio menu is enabled.
+and actual customer UI acceptance remain pending. Existing Auto/Lossless actions
+now dispatch FLAC when the optional verified encoder is present, with 16 passing
+direct-audio checks. Mixed PNG/FLAC batches share one admission across expiry,
+retain settings/actions on retry and finish through the existing quiet workflow.
+Balanced/Smallest, misleading extensions and missing engines explain their limits
+before admission. Normal packaging still excludes the evaluation audio payload.
 
 The [qpdf experiment](pdf-engine-evaluation.md) now measures a generated structural
 rewrite with preserved inspected object graphs/decoded streams, encryption/error
@@ -144,20 +149,22 @@ including exact source/optimized rendered pixels and image alpha round trips.
 Broader rendering/native failure coverage and all PDF transformations remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,154 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
+1,157 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
 27 FLAC description/artwork, 22 seek-table and 24 new batch/IPC/access checks.
 The shared reservation-handle refactor also passes all 942 image-engine checks;
 104 private audio checks and 11 isolated worker/Analyze checks were rerun. The previous
-76 hidden view contracts were not rerun for this non-UI audio candidate slice. The
+76 hidden view contracts were not rerun for this dispatch slice. Thirteen existing
+image direct-command checks pass against fresh staging, and native shell contracts
+pass without registration or installation. The
 [catalog inventory](file-type-inventory.md) separates descriptions from detectors.
 The [source audit](catalog-source-review.json) records 223 references: 186 retrieved,
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/182fd3478db94d7d82852321125e02c6` includes the private
+`artifacts/production-staging/ea440b35199f45cf879be090fcde88c9` includes the private
 audio candidates and existing optional PDF worker integration: zero warnings/errors, curated engine identities, file allowlist,
-package dependencies and notice checks pass. `-SkipShell` was used; native shell
-rebuild, installed lifecycle and visible acceptance were not performed. The
+package dependencies and notice checks pass. Native shell was rebuilt in isolated
+scratch; installed lifecycle and visible acceptance were not performed. The
 evaluation audio and PDF engines are not part of this normal payload. Manual review remains
 pending; earlier image acceptance does not prove the expanded report UI.
 

@@ -13,7 +13,7 @@ internal static class FileAnalysisReader
 
     public static Task<FileAnalysis> ReadAsync(string path, CancellationToken cancellationToken,
         Func<ReadOnlyMemory<byte>, CancellationToken, Task<AudioProbeFacts>>? audioProbe = null,
-        Func<ReadOnlyMemory<byte>, CancellationToken, Task<PdfProbeFacts>>? pdfProbe = null) => Task.Run(async () =>
+        Func<ReadOnlyMemory<byte>, CancellationToken, Task<PdfProbeFacts>>? pdfProbe = null, bool headerOnly = false) => Task.Run(async () =>
     {
         cancellationToken.ThrowIfCancellationRequested();
         // Reuse the existing ordinary-path checks, without publication's one-link restriction.
@@ -41,6 +41,7 @@ internal static class FileAnalysisReader
         if (read != bytes.Length || stream.Length != length || File.GetLastWriteTimeUtc(handle) != modified)
             throw new IOException("The file changed during analysis. Try again after it finishes saving.");
         var analysis = HeaderAnalyzer.Analyze(path, bytes, length);
+        if (headerOnly) return analysis;
         if (pdfProbe is not null && analysis.Identity.FormatId == "pdf" && analysis.Identity.Basis == IdentificationBasis.Content)
         {
             if (length > WorkerCommand.MaximumPdfProbeBytes)

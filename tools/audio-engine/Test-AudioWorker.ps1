@@ -35,5 +35,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Isolated audio worker checks failed.' }
 if ($IncludeOptimization) {
     & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --flac-worker (Join-Path $scratch 'flac-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
     if ($LASTEXITCODE -ne 0) { throw 'Isolated FLAC workflow checks failed.' }
+    & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-direct (Join-Path $scratch 'direct-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
+    if ($LASTEXITCODE -ne 0) { throw 'Isolated direct audio checks failed.' }
 }
 Write-Output "Evaluation-only worker payload and results: $scratch"

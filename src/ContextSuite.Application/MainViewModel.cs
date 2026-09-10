@@ -9,6 +9,7 @@ using ContextSuite.Core.Transport;
 using ContextSuite.Core.Settings;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Analysis;
+using ContextSuite.Core.Audio;
 
 namespace ContextSuite.Application;
 
@@ -239,62 +240,90 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
 
     private async Task OptimizeBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
     {
-        var selection = new List<ConversionSelection>();
+        var images = new List<ImageSourceFacts>();
+        var audio = new List<AudioFileSource>();
         for (var index = 0; index < rows.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var row = rows[index];
-            Summary = $"Checking PNG {index + 1} of {rows.Length}.";
-            row.ApplyResult(new(row.Path, OperationState.Running, "Checking PNG support"));
+            Summary = $"Checking file {index + 1} of {rows.Length}.";
+            row.ApplyResult(new(row.Path, OperationState.Running, "Checking optimization support"));
             try
             {
-                var facts = await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken, forOptimization: true);
-                selection.Add(new(row.ItemId, row.Path, facts, null));
-                row.ApplyResult(new(row.Path, OperationState.Pending, "Waiting for optimization confirmation"));
+                var header = await FileAnalysisReader.ReadAsync(row.Path, cancellationToken, headerOnly: true);
+                if (header.Identity is { FormatId: "flac" or "png", Basis: IdentificationBasis.Content } identity &&
+                    !string.Equals(Path.GetExtension(row.Path), "." + identity.FormatId, StringComparison.OrdinalIgnoreCase))
+                {
+                    row.ApplyResult(new(row.Path, OperationState.Unsupported,
+                        $"This file contains {identity.Name}, but its filename has a different extension. Rename it to .{identity.FormatId} before optimizing."));
+                    continue;
+                }
+                if (header.Identity is { FormatId: "flac", Basis: IdentificationBasis.Content })
+                {
+                    if (request.Action is "balanced" or "smallest")
+                    {
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For FLAC, choose Auto or Lossless. Balanced and Smallest apply to PNG images."));
+                        continue;
+                    }
+                    if (!worker.HasFlacOptimizer)
+                    {
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "FLAC optimization is unavailable in this build."));
+                        continue;
+                    }
+                    audio.Add(await worker.ProbeFlacAsync(new(row.ItemId, row.Path), cancellationToken));
+                }
+                else if (header.Identity is { FormatId: "png", Basis: IdentificationBasis.Content })
+                    images.Add(await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken, forOptimization: true));
+                else
+                {
+                    row.ApplyResult(new(row.Path, OperationState.Unsupported, "Optimization supports PNG images and FLAC audio. Other files are kept unchanged."));
+                    continue;
+                }
+                row.ApplyResult(new(row.Path, OperationState.Pending, "Preparing optimization"));
             }
             catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or
                 InvalidOperationException or System.ComponentModel.Win32Exception or System.Text.Json.JsonException)
             {
-                var message = error is MediaWorkerException ? error.Message : "Image could not be read. Check the file and retry.";
-                selection.Add(new(row.ItemId, row.Path, null, message));
+                var message = error is MediaWorkerException ? error.Message : "File could not be read. Check the file and retry.";
                 row.ApplyResult(new(row.Path, error is MediaWorkerException { Failure: ImageFailure.UnsupportedInput }
                     ? OperationState.Unsupported : OperationState.Failed, message));
             }
         }
-        var planner = new OptimizationViewModel(trial!, request.RequestId, selection, rows[0].Settings, PublicationSupport.ReplacementAvailable);
-        ConfirmedPngOptimization? confirmed;
+        var snapshot = rows[0].Settings;
+        var replace = snapshot.Preferences.ReplaceOriginals && snapshot.Preferences.OutputDirectory is null && PublicationSupport.ReplacementAvailable;
+        var preset = request.Action switch
         {
-            planner.Preset = request.Action switch
-            {
-                "auto" => PngOptimizationPreset.Auto, "balanced" => PngOptimizationPreset.Balanced,
-                "smallest" => PngOptimizationPreset.Smallest, _ => PngOptimizationPreset.Lossless
-            };
-            planner.ReplaceOriginal = rows[0].Settings.Preferences.ReplaceOriginals &&
-                rows[0].Settings.Preferences.OutputDirectory is null && PublicationSupport.ReplacementAvailable;
-            // Explicit saved output preference is captured with the menu choice.
-            // The executor still owns access admission and publication validation.
-            confirmed = planner.Plan?.HasExecutableItems == true
-                ? planner.Plan.Confirm(planner.ReplaceOriginal, PublicationSupport.ReplacementAvailable) : null;
-        }
-        if (confirmed is null)
-        {
-            foreach (var row in rows.Where(row => row.Result.State == OperationState.Pending))
-            {
-                var reason = planner.Plan?.Items.FirstOrDefault(item => item.Source.ItemId == row.ItemId)?.BlockReason;
-                row.ApplyResult(new(row.Path, reason is null ? OperationState.Cancelled : OperationState.Unsupported,
-                    reason ?? "Optimization cancelled before confirmation"));
-            }
-            return;
-        }
-        cancellationToken.ThrowIfCancellationRequested();
+            "auto" => PngOptimizationPreset.Auto, "balanced" => PngOptimizationPreset.Balanced,
+            "smallest" => PngOptimizationPreset.Smallest, _ => PngOptimizationPreset.Lossless
+        };
+        var pngPlan = images.Count == 0 ? null : PngOptimizationPlan.Create(request.RequestId, images, snapshot, replace, preset);
+        var flacPlan = audio.Count == 0 ? null : FlacOptimizationPlan.Create(request.RequestId, audio, snapshot, replace);
         var byId = rows.ToDictionary(row => row.ItemId);
-        var completed = rows.Count(row => row.Result.State is OperationState.Failed or OperationState.Unsupported);
-        await new PngOptimizationExecutor(worker, Publisher!, trial!).ExecuteAsync(confirmed, (item, result) =>
+        foreach (var item in pngPlan?.Items ?? [])
+            if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));
+        foreach (var item in flacPlan?.Items ?? [])
+            if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));
+        var png = pngPlan?.HasExecutableItems == true ? pngPlan.Confirm(replace, PublicationSupport.ReplacementAvailable) : null;
+        var flac = flacPlan?.HasExecutableItems == true ? flacPlan.Confirm(replace, PublicationSupport.ReplacementAvailable) : null;
+        if (png is null && flac is null) return;
+        cancellationToken.ThrowIfCancellationRequested();
+        // One Explorer invocation is one admitted batch, including mixed families.
+        // Both confirmed plans carry the same request ID and settings snapshot.
+        var admission = png is not null ? await trial!.AdmitOptimizationAsync(png, cancellationToken)
+            : await trial!.AdmitOptimizationAsync(flac!, cancellationToken);
+        if (png is not null)
+            await new PngOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(png, admission,
+                (item, result) => Report(item.Source.ItemId, result), cancellationToken);
+        if (flac is not null)
+            await new FlacOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(flac, admission,
+                (item, result) => Report(item.Source.ItemId, result), cancellationToken);
+
+        void Report(Guid itemId, FileResult result)
         {
-            byId[item.Source.ItemId].ApplyResult(result);
-            if (result.State != OperationState.Running) completed++;
+            byId[itemId].ApplyResult(result);
+            var completed = rows.Count(row => row.Result.State is not (OperationState.Pending or OperationState.Running));
             Summary = $"Optimizing: {completed} of {rows.Length} finished.";
-        }, cancellationToken);
+        }
     }
 
     private void CancelPending()

@@ -12,6 +12,12 @@ internal static class FlacBatchContracts
         var blocked = source with { ItemId = Guid.NewGuid(), OptimizationBlockReason = "Unsupported application metadata" };
         var plan = FlacOptimizationPlan.Create(Guid.NewGuid(), [blocked, source], new("optimize", new()));
         var confirmed = plan.Confirm(false, false);
+        await using (var boundaryWorker = new WorkerClient(Path.Combine(scratch, "missing-worker.exe")))
+        {
+            var executor = new FlacOptimizationExecutor(boundaryWorker, new OutputPublisher(Path.Combine(scratch, "flac-boundary-records"), null!), null!);
+            try { await executor.ExecuteAdmittedAsync(confirmed, new(new(true, "Other batch"), Guid.NewGuid()), null, default); check(false, "FLAC execution: unrelated admission"); }
+            catch (InvalidDataException) { check(boundaryWorker.ProcessId is null, "FLAC execution: unrelated admission cannot start a worker or publication"); }
+        }
         check(confirmed.Plan.Items.Length == 2 && !confirmed.Plan.Items[0].CanExecute && confirmed.Plan.Items[1].CanExecute && !plan.ReplaceOriginal,
             "FLAC batch: mixed eligibility retains one immutable copy-default plan");
         Reject(() => FlacOptimizationPlan.Create(Guid.Empty, [source], new("optimize", new())), "empty batch identity");

@@ -488,3 +488,49 @@ using `-SkipShell`. It includes the final defensive malformed-plan checks, verif
 by the foundation run. Evaluation audio binaries remain excluded from normal
 packaging. No customer audio command, visible acceptance, install/registration,
 live Polar, listening acceptance or release clearance is implied.
+
+Direct FLAC and mixed-family dispatch (2026-09-10)
+-------------------------------------------------
+
+**16 isolated direct-audio checks** now pass through `MainViewModel.Admit`, the
+actual queue, worker client and transactional publisher. Existing Auto/Lossless
+actions dispatch FLAC; Balanced/Smallest explain their PNG-only scope. The run
+used the prior verified scratch worker payload (worker code was unchanged) and
+current application sources. Evidence:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  direct-eeaa430a6cc34163a65866aa9a3f2cad/direct-audio.json
+```
+
+The mixed PNG/FLAC batch used one real local-trial admission and completed both
+formats after expiry was advanced on PNG completion. Result formats, one quick
+completion, aggregate savings and quiet-state policy passed. Separate synthetic
+access tests covered activation/retry, deactivation, reactivation, duplicate retry
+clicks and changed saved output folders. Other checks covered corrupt FLAC among
+valid files, cancellation between families, missing engines and original hashes.
+This is component workflow evidence, not operation of the visible License window.
+
+The first attempt at `direct-3664f845fcc549c7bc30ec8f48783927` intentionally swapped
+extensions and reached the publisher's same-extension guard. Dispatch now gives
+content-based rename guidance before admission; tests verify those files remain
+unchanged. Normal mixed-format fixtures use matching extensions. A test helper's
+missing namespace was also corrected before the passing run. These findings did
+not weaken publication validation or authorize automatic renaming.
+
+**1,157 foundation contracts** pass, including rejection of another batch's
+admission by both executors and header-only routing without optional native probes.
+Fresh isolated Release stage
+`artifacts/production-staging/ea440b35199f45cf879be090fcde88c9` passed normal payload
+identities, allowlist, dependencies and notices. Native shell binaries were rebuilt
+under `.codex-temp/native-staging-ea440b35199f45cf879be090fcde88c9`; shell COM/host
+contracts passed complete three-file selections for all three independent tools.
+**13 existing image direct-command checks** passed against that stage at
+`.codex-temp/license-workflow/direct-66bba78d13024d8ea077d70b1bbf61d6`.
+
+The earlier 942 image-engine and 104 private-audio checks were not repeated because
+private engines were unchanged. The 76 hidden view contracts, visible UI, keyboard,
+screen-reader, theme/DPI and installed-shell acceptance were not run for this slice.
+Normal packaging excludes the evaluation audio engine. Its production curation,
+broader metadata/crash/fidelity coverage, listening and remaining release gates
+stay open. No installation, Explorer registration or live commerce was performed.

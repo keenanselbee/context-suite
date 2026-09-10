@@ -80,6 +80,12 @@ collisions, no-smaller-result handling, expiry between files, changed/corrupt
 sources, cancellation and unsafe reservations are covered. A refusing recycler
 ensures this workflow never uses the native Recycle Bin. It does not exercise a
 customer menu or authorize shipping the evaluation payload.
+The switch also runs `--audio-direct` through the real application queue and
+records `direct-results/direct-audio.json`. It covers Auto/Lossless FLAC dispatch,
+one admitted mixed PNG/FLAC batch across trial expiry, synthetic activation/retry,
+captured settings, quiet completion, cancellation, malformed files, misleading
+extensions and missing-engine fallback. These component checks do not operate
+Explorer or inspect visible windows, keyboard focus or assistive technology.
 
 See [recorded results](../../docs/audio-engine-evaluation.md) and the
 [engine comparison](../../docs/media-engine-evaluation.md). Supplier archive

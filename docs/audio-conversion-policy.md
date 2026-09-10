@@ -1,8 +1,8 @@
 Audio Conversion And FLAC Optimization Policy
 ============================================
 
-Status: typed conversion candidate and integrated FLAC worker/publication path;
-no customer audio command or shipping engine payload. Updated: 2026-09-10.
+Status: typed conversion candidate and direct FLAC Auto/Lossless dispatch;
+audio engine shipping adoption remains pending. Updated: 2026-09-10.
 
 The public `AudioConversionPlan` separates recognized container/codec pairs from
 conversion admission. Policy `audio-fixed-1` is implemented for isolated testing;
@@ -170,8 +170,25 @@ checks, smaller-result admission, cancellation and reservation cleanup. Copies
 remain default; overwrite requires existing explicit settings and platform gates.
 The isolated workflow verifies copies only, with native recycling forbidden.
 
+The application now routes existing Optimize Auto/Lossless commands to FLAC when
+the optional verified encoder is present. Balanced and Smallest remain PNG-only
+and explain that restriction. Bounded header inspection selects the family before
+native probing, without starting the trial or expanding document packages. A
+filename/content mismatch gives rename guidance before admission: the publisher's
+same-extension Optimize guard is retained. Renaming is a manual correction for an
+already identified format, never a substitute for conversion.
+
+Mixed PNG/FLAC selections share one settings snapshot, one paid/trial admission,
+one sequential worker and one quick-workflow completion. PNG work runs first,
+followed by FLAC, while result rows retain selection order. Each executor checks
+the admitted request ID before writing. A family cannot trigger a second admission
+after expiry. Existing Try again behavior keeps each failed action and file,
+captures current saved settings and suppresses duplicate retries. No planner is
+opened for optimization. Missing audio binaries give an unavailable-build result
+without starting a worker or trial.
+
 See [dated engine evidence](audio-engine-evaluation.md) for generated fixtures and
-test counts. No audio transformation is registered in the customer menu yet.
+test counts. Normal packaging still excludes the evaluation audio engine.
 Cross-format worker integration, broader metadata, crash/recovery coverage,
 listening, production payload and visible UI acceptance remain part of the
 [active goal](broad-file-support-goal.md).

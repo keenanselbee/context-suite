@@ -9,6 +9,13 @@ internal sealed class PngOptimizationExecutor(WorkerClient worker, OutputPublish
         Action<PngOptimizationItem, FileResult>? report, CancellationToken cancellationToken)
     {
         var admission = await trial.AdmitOptimizationAsync(confirmed, cancellationToken);
+        return await ExecuteAdmittedAsync(confirmed, admission, report, cancellationToken);
+    }
+
+    internal async Task<ImageBatchExecution> ExecuteAdmittedAsync(ConfirmedPngOptimization confirmed, OperationAdmission admission,
+        Action<PngOptimizationItem, FileResult>? report, CancellationToken cancellationToken)
+    {
+        if (admission.BatchId != confirmed.Plan.BatchId) throw new InvalidDataException("Optimization admission belongs to another batch.");
         var results = new List<FileResult>();
         foreach (var item in confirmed.Plan.Items)
         {
