@@ -5,24 +5,23 @@ using System.Text;
 
 namespace ContextSuite.Core.Audio;
 
-public sealed record FlacComment(string Name, string Value);
 public sealed record FlacPicture(uint Type, string MediaType, string Description, uint Width, uint Height,
     uint BitsPerPixel, uint Colors, int DataBytes, string Sha256, bool IsLinked);
-public sealed record FlacDescriptions(string? Vendor, ImmutableArray<FlacComment> Comments, ImmutableArray<FlacPicture> Pictures);
+public sealed record FlacDescriptions(string? Vendor, ImmutableArray<AudioComment> Comments, ImmutableArray<FlacPicture> Pictures);
 
 // Bounded descriptive inventory, preserving duplicate comments. Picture dimensions
 // are declarations only; no embedded image or linked resource is opened here.
 public static class FlacDescriptiveMetadata
 {
-    public const int MaximumComments = 4096;
-    public const int MaximumTextBytes = 256 * 1024;
+    public const int MaximumComments = VorbisComments.MaximumComments;
+    public const int MaximumTextBytes = VorbisComments.MaximumTextBytes;
     public const int MaximumPictures = 31;
     private static readonly UTF8Encoding Utf8 = new(false, true);
 
     public static FlacDescriptions Read(FlacMetadataHeader header)
     {
         string? vendor = null;
-        var comments = ImmutableArray.CreateBuilder<FlacComment>();
+        var comments = ImmutableArray.CreateBuilder<AudioComment>();
         var pictures = ImmutableArray.CreateBuilder<FlacPicture>();
         var icons = new HashSet<uint>();
         var textBytes = 0;
@@ -34,17 +33,8 @@ public static class FlacDescriptiveMetadata
                 var offset = 0;
                 if (block.Type == 4)
                 {
-                    vendor = Text(data, ref offset, true, ref textBytes);
-                    var count = Number(data, ref offset, true);
-                    if (count > MaximumComments) throw new InvalidDataException("FLAC comments exceed their count budget.");
-                    for (var index = 0; index < count; index++)
-                    {
-                        var field = Text(data, ref offset, true, ref textBytes);
-                        var split = field.IndexOf('=');
-                        if (split <= 0 || field.AsSpan(0, split).ContainsAnyExceptInRange(' ', '~'))
-                            throw new InvalidDataException("FLAC comment names require printable ASCII and a value separator.");
-                        comments.Add(new(field[..split], field[(split + 1)..]));
-                    }
+                    var list = VorbisComments.Read(data, ref textBytes, out offset);
+                    vendor = list.Vendor; comments.AddRange(list.Comments);
                     RequireEnd(data, offset);
                 }
                 else if (block.Type == 6)

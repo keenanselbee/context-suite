@@ -618,3 +618,66 @@ audio checks. The normal stage excludes evaluation audio/PDF engines. This build
 used `-SkipShell`; visible UI, native shell, image engine, installer, independent
 listening and live commerce were not rerun. Audio conversion worker/menu
 integration, remaining metadata handlers, engine adoption and release gates stay open.
+
+Ogg inventory and short Vorbis framing (2026-09-10)
+---------------------------------------------------
+
+**1,266 foundation contracts** now pass, including 47 Ogg inventory cases.
+The shared UTF-8 comment reader retains ordered values and applies the format's
+ASCII name range through 0x7D. FLAC keeps its aggregate comment/picture text
+budget and raw optimization behavior. Conversion comments and native probes now
+share technical provenance exclusions; copied M4A container labels otherwise
+caused false missing-comment failures in the new output validation.
+
+Ogg source and encoded-output admission validates complete page framing/CRCs,
+continuation and stream identity, bounded packets, header order and descriptive
+values. Native decoding remains responsible for codec setup, audio and pre-skip.
+Chained/multiplexed streams, damaged/trailing data, nonzero Opus header gain,
+preserved binary comment extensions and unsupported semantic comments stop
+conversion. The inventory is bounded, not a general Ogg conformance decoder.
+
+The **200 combined private checks** include **51 new Ogg cases**: six-format
+stereo conversions, Unicode/multiline values, ASCII WAV output, malformed and
+unsupported metadata, source preservation/cleanup, short Vorbis extents and
+six-channel Vorbis/Opus round trips. The final public name-boundary correction
+was verified by foundation contracts after this combined native run.
+
+The short six-channel fixture exposed a real framing defect in the pinned
+default encode/decode path. Independent local diagnostic packing variants
+produced these decoded sample counts:
+
+| Input frames | Default packing | Packet pages |
+| --- | --- | --- |
+| 1 | 128 | 1 |
+| 64 | 128 | 64 |
+| 128 | 0 | 128 |
+| 129 | 704 | 129 |
+| 256 | 128 | 256 |
+| 511 | 512 | 511 |
+| 1,024 | 896 | 1,024 |
+| 9,600 | 9,472 | 9,600 |
+
+The fixed Vorbis recipe now uses `-page_duration 1`; this changes page packing,
+not sample validation. A full-scale single-sample impulse (RMS error about 0.424)
+and the 9,600-frame fixture with a 535 Hz LFE signal (about 0.199) still exceed
+the 0.15 signal-error limit and are refused. A normal bass LFE fixture passes
+the separate layout round trip. These are generated numerical checks, not
+listening or independent-decoder acceptance. Default packing diagnostics and
+measurements remain under `.codex-temp/ogg-trim-boundaries-20260910`; their small
+authored harnesses are `.codex-temp/OggTrimProbe.cs` and `OggTrimMeasure.cs`.
+
+Combined native evidence is
+`.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/adapter-4e951a3cd59f4713a86d5936c587bb68/encoding-adapter.json`.
+The isolated Release build at
+`artifacts/production-staging/27fb9e8c75d54f6ab82aa29aca79d4c4` passes with zero
+warnings/errors and normal curated identities, file inventory and notices.
+It uses `-SkipShell` and excludes evaluation audio/PDF engines. No installation,
+Explorer change, native recycling, live commerce or visible acceptance was performed.
+The evaluation-only worker copy passed 11 Analyze, 14 FLAC workflow and 16
+direct-audio checks. Results are under
+`.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/worker-cfbc466b3a42436b8f31170cb2074256/`
+in `results/analysis-results.txt`, `flac-results/flac-workflow.json` and
+`direct-results/direct-audio.json`. These protect existing app workflows;
+they do not implement an audio conversion menu.
+MP3/ID3 and M4A source metadata, audio conversion worker/menu admission,
+independent fidelity/listening, engine adoption and document actions remain open.

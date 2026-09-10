@@ -10,10 +10,13 @@ internal static class FlacConversionMetadataContracts
             "FLAC conversion: exact Unicode and multiline values survive inventory");
         check(tags["album_artist"] == "Artist" && tags["track"] == "2/9" && tags["disc"] == "1" && tags["disc_subtitle"] == "Disc",
             "FLAC conversion: comment aliases have explicit canonical names");
-        FlacConversionMetadata.RequireTags(tags, tags);
+        AudioCommentConversion.RequireTags(tags, tags);
         check(true, "FLAC conversion: unchanged descriptive values validate");
+        check(AudioCommentConversion.Read(new[] { "ENCODER", "major_brand", "minor_version", "compatible_brands", "handler_name", "vendor_id" }
+            .Select(key => new AudioComment(key, "Technical provenance"))).IsEmpty,
+            "Audio conversion: raw inventory and native probes share technical provenance exclusions");
         foreach (var changed in new[] { tags.Remove("title"), tags.SetItem("title", "Changed") })
-            Reject(() => FlacConversionMetadata.RequireTags(tags, changed), "missing or changed output comment");
+            Reject(() => AudioCommentConversion.RequireTags(tags, changed), "missing or changed output comment");
         foreach (var fields in new[] { new[] { "ARTIST=First", "artist=Second" }, new[] { "DESCRIPTION=One", "COMMENT=Two" },
             new[] { "TRACK=1", "TRACKNUMBER=1" } })
             Reject(() => Read(fields), "duplicate or aliased comments");

@@ -44,6 +44,15 @@ the [encoder's documented implementation](https://www.ffmpeg.org/doxygen/trunk/l
 Independent FLAC-decoder/player compatibility and extreme-value coverage remain
 release gates; experimental mode is not enabled for other codecs.
 
+Vorbis uses `-page_duration 1` to flush each encoded packet to an Ogg page.
+The pinned default packing produced incorrect decoded lengths for generated
+short clips whose audio shared one final page. Separate packet pages retained
+the intended count; no samples are padded, truncated or ignored by validation.
+The additional page overhead is accepted for correct framing. Extreme signals
+can still fail the unchanged signal-error bound, including the generated
+full-scale one-sample impulse and a 535 Hz LFE signal. This is not a listening
+quality certification or permission to omit low-frequency-channel information.
+
 Private candidate and process ownership
 --------------------------------------
 
@@ -127,7 +136,7 @@ are padding. Inventory covers metadata after the sample chunk too; appended data
 outside the RIFF extent is rejected. Same-format byte retention remains a no-op.
 
 Private candidate results now distinguish `SourceMetadataVerified` from sample
-validation. It is true for admitted WAV/FLAC conversion, byte-identical same-format
+validation. It is true for admitted WAV/FLAC/Vorbis/Opus conversion, byte-identical same-format
 retention and the separately validated FLAC optimization path. Other cross-format
 source containers remain unverified candidates even when flattened probe tags
 match. Their metadata handlers, artwork transport, application conversion admission
@@ -161,6 +170,42 @@ values (including tab/newline/carriage return); Unicode WAV encoding remains
 undecided. Unsupported output tags fail validation instead of silently disappearing.
 Same-format retention and raw-preserving FLAC optimization keep their separate
 policies; these conversion restrictions do not remove their richer metadata support.
+
+Ogg Vorbis and Opus conversion metadata admission
+-------------------------------------------------
+
+`OggMetadata` scans the complete input with one reusable page buffer and bounded
+packet storage. It checks page CRCs, serial/sequence continuity, beginning/end and
+continuation flags, packet completion and monotonic granules. Input remains under
+512 MiB; limits are 131,072 pages and 1 MiB per packet. Encoded Vorbis/Opus
+candidates must also pass this inventory and agree with the planned audio
+properties and probed comments. It restores the caller's
+stream position on success, failure and cancellation. This follows the
+[Ogg framing specification](https://xiph.org/ogg/doc/framing.html); it is not a
+managed audio decoder or full codec conformance validator.
+
+One logical Vorbis or Opus stream is admitted. Chained/multiplexed streams and
+trailing data stop conversion. Vorbis identification/comment/setup headers must
+be ordered; native decoding validates the setup and audio. Opus version 1,
+mapping families 0/1 and one to eight channels are handled, with family 0 limited
+to mono/stereo. Rate and channel facts must agree with the native probe. Nonzero
+Opus header gain requires further policy because it changes playback amplitude.
+Pre-skip remains a decoder responsibility; the final granule is recorded as a
+container extent, not an independently proven decoded sample count. See
+[Opus encapsulation](https://www.rfc-editor.org/rfc/rfc7845.html).
+
+FLAC, Vorbis and Opus now share the bounded
+[UTF-8 comment-list structure](https://xiph.org/vorbis/doc/v-comment.html) and
+conversion alias/value rules. Vorbis requires its comment framing byte; Opus
+trailing data is discardable only when its first low bit permits this. Preserved
+binary extensions, duplicate comments, artwork, chapter/loop/gain semantics and
+unmapped output values prevent conversion. All admitted descriptive values must
+match source and output probes. Unicode-to-WAV still requires an explicit text
+encoding policy. MP3/ID3 and M4A source metadata handlers remain pending.
+Raw comment admission and native probe filtering share the same technical-tag
+exclusions: encoder, major_brand, minor_version, compatible_brands, handler_name
+and vendor_id. This avoids treating copied M4A container labels as missing
+descriptive comments when validating an Ogg output.
 
 FLAC optimization candidate
 ----------------------------

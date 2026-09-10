@@ -12,7 +12,7 @@ internal static class FlacDescriptionContracts
         var picture = Picture("image/png", "Cover ü", [1, 2, 3]);
         var header = FlacMetadata.Parse(FlacMetadataContracts.File((4, comment), (6, picture)));
         var details = FlacDescriptiveMetadata.Read(header);
-        check(details.Vendor == "Context Suite fixture" && details.Comments.Length == 4 && details.Comments[2] == new FlacComment("artist", "Second"),
+        check(details.Vendor == "Context Suite fixture" && details.Comments.Length == 4 && details.Comments[2] == new AudioComment("artist", "Second"),
             "FLAC descriptions: duplicate case-insensitive names retain distinct ordered values");
         check(details.Comments[0].Value == "Authored ü" && details.Comments[3].Value.Contains('\n'), "FLAC descriptions: Unicode and multiline values survive");
         check(details.Pictures.Single() is { MediaType: "image/png", Description: "Cover ü", Width: 2, Height: 1, DataBytes: 3, IsLinked: false },
@@ -21,6 +21,9 @@ internal static class FlacDescriptionContracts
             .Pictures.Single().IsLinked, "FLAC descriptions: linked artwork is recognized without resolving it");
         Reject(Comments("BROKEN"), 4, "missing value separator");
         Reject(Comments("=empty-name"), 4, "empty name");
+        Reject(Comments("BAD~=Value"), 4, "comment name beyond 0x7D");
+        check(FlacDescriptiveMetadata.Read(FlacMetadata.Parse(FlacMetadataContracts.File((4, Comments("}=Value")))))
+            .Comments.Single().Name == "}", "FLAC descriptions: highest permitted comment-name character");
         Reject(Comments("Ü=not-ascii-name"), 4, "non-ASCII name");
         Reject(comment[..^1], 4, "truncated field");
         Reject(comment.Concat(new byte[] { 0 }).ToArray(), 4, "trailing field bytes");
