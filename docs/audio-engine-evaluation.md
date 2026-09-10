@@ -1,8 +1,8 @@
 Audio Engine Evaluation Results
 ===============================
 
-Date: 2026-09-09. Status: isolated generated-fixture experiment; no production
-audio adapter, audio menu commands or shipping dependency added.
+Date: 2026-09-09. Status: generated-fixture evaluation and private integration
+candidates; no audio transformation menu commands or shipping dependency added.
 
 Provenance and reproduction
 ---------------------------
@@ -220,7 +220,7 @@ installed application. This is managed staging evidence, not fresh native shell
 or release packaging acceptance. A test-harness array-type compilation error in
 the first attempt was corrected before the passing run.
 
-The latest foundation suite passes 944 contracts, including prefix/lease/fallback
+That integration step passed 944 foundation contracts, including prefix/lease/fallback
 and protocol checks. All 76 hidden view contracts also pass. These checks do not
 prove visible layout, keyboard or screen-reader acceptance of the new audio facts.
 
@@ -240,6 +240,66 @@ Remaining work
 
 The earlier 36-pair run used the then-current 894 foundation baseline; the new
 preservation code initially had 919 passing foundation contracts; typed audio
-probing and integration raise the latest total to 944. The 76 hidden view checks
+probing and integration raised that total to 944. The 76 hidden view checks
 were rerun for integration and retain their nonvisual scope. No engine result proves document
 actions, installed-shell behavior, accessibility or commercial release readiness.
+
+Typed conversion and private encoding milestone
+------------------------------------------------
+
+The [fixed policy](audio-conversion-policy.md) and private `AudioEncodingAdapter`
+now cover generated conversions and FLAC recompression. These are candidate
+components; they do not register worker transformation commands or authorize
+application publication. Missing metadata and unmeasured resampling fidelity
+remain explicit limitations rather than successful publication receipts.
+
+The final run passed **70 combined checks**: the original 13 probe checks, 36
+format pairs (30 encodes and six same-format unchanged results), nine wider
+precision/rate/layout cases, four FLAC optimization/cleanup checks, four encoder
+consent/lifetime checks, and four native-launcher checks. Evidence:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  adapter-97c3b2ed549845569d54893b68c0ef36/encoding-adapter.json
+```
+
+All converted two-second matrix inputs retained 96,000 decoded stereo frames,
+their tested tags and original file hashes. The wider authored fixtures cover
+PCM8/16/24/32, float32/64, 96 kHz 24-bit 5.1, and 44.1/8 kHz mono to Opus.
+Signed integer fixtures include full-scale minimum/maximum values. Floating-to-
+FLAC is an acknowledged 24-bit quantization, not an exact result. Resampling has
+explicit consent and frame/rate checks; time-aligned signal/listening comparison
+is still missing. These fixtures contain generated signals, not licensed music
+or speech, and do not establish listening or broad player compatibility.
+
+The owned child fixture proves seekable input, native write denial on that input,
+job membership before its work, bounded output rejection, and cancellation after
+the child signals that it is running. The launcher terminates and awaits it.
+This tests the launcher with an authored child, not every native FFmpeg failure
+phase or an OS sandbox. Engine file leases and conversion/optimization scratch
+cleanup are also checked. Both success and refusal keep customer paths out of
+native input arguments.
+
+FLAC optimization reconciled original metadata bytes and preserved exact decoded
+samples while reducing the padded fixture from **332,860 to 62,516 bytes**.
+A second pass never enlarged the result. An application-block canary was refused.
+Seek-table rebuilding, application metadata handlers, real artwork/cuesheets and
+publication/recovery remain required work.
+
+Failed iterations retained actionable evidence:
+
+- `adapter-5c5e15f75f0646999bb2a06f6e121d37`: pipe-based MP3 decoding failed the
+  exact frame-count check; the candidate now uses seekable inherited handles.
+- `adapter-28715a094b9846169776d4eeaa50bf13`: M4A stream language was absent from
+  WAVE; explicit non-conflicting descriptive tags are now also mapped globally.
+- `adapter-c17d6b27c51246d1a04352616b9a6b09`: PCM8 expected an 8-bit FLAC stream;
+  this encoder stores it sample-exactly as PCM16, now explicit in the plan.
+- `adapter-d73758e4248a4167a73cbf7a2541a445`: PCM32 was silently encoded as PCM24;
+  the 32-bit-only encoder option and exact-sample/precision checks address it.
+- `adapter-edea3b4c41d842378ea7ecb17774ef6d`: low-rate Opus output decoded at 48 kHz;
+  every non-48-kHz source now requires explicit resampling acknowledgement.
+
+The first redirected foundation rerun stopped because PowerShell treated an
+expected router diagnostic as an error. The process was confirmed absent before
+rerunning through the documented script without merging stderr. It is not counted
+as a passed run. Current foundation/build totals are recorded in the active goal.

@@ -13,6 +13,11 @@ authors metadata-only FLAC prefixes for framing and byte-preservation contracts.
 Picture/cuesheet payloads in those tests are placeholders, not rendering or full
 semantic fixtures. The separate [audio experiment](../../docs/audio-engine-evaluation.md)
 authors real encoded media for sample equality and comment preservation evidence.
+The private audio encoding contracts additionally author PCM8/16/24/32 and
+float32/64 WAVE fixtures, signed full-scale values, an extensible 5.1 declaration,
+low-rate mono, FLAC padding/application canaries and a disposable native child.
+These are generated signals and process fixtures, not representative music/speech
+or a listening-quality corpus; see [the policy](../../docs/audio-conversion-policy.md).
 
 The managed contract harness creates a small UTF-8 text file under the supplied
 repository-local scratch directory and removes it in `finally`. Its complete

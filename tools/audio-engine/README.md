@@ -48,6 +48,11 @@ component with the generated six-format inputs. It verifies runtime engine-file
 hashes/leases, typed replies, cancellation, limits, protocol rejection and disabled
 engine report files. It writes `probe-adapter.json` under a fresh scratch directory;
 it does not add an audio payload to the production application or enable a menu.
+It also writes `encoding-adapter.json` after the private candidate's 36 format
+pairs, wider PCM/float/rate/layout fixtures, FLAC recompression and native child
+ownership checks. Generated outputs stay under the new evidence directory.
+Read [the candidate policy and limits](../../docs/audio-conversion-policy.md)
+before interpreting these results as transformation or release readiness.
 
 `Test-AudioWorker.ps1` copies a fresh production stage into repository scratch,
 adds the evaluation engine to that copy, and exercises the actual application

@@ -33,8 +33,9 @@ uncommitted. Keep the repositories' histories separate, protect unrelated edits,
 and exclude secrets and generated scratch/payloads. Parent-repository commit
 authorization does not itself authorize private-repository commits. The owner
 explicitly authorized these checkpoints for both public and private repositories
-on 2026-09-09. The bounded PDFium rendering evaluation passed 12/12 checks; the
-accumulated implementation and evaluation work is now at its commit checkpoint.
+on 2026-09-09. The first checkpoint committed the accumulated work in four public
+commits ending at `d5dff37` and four private commits ending at `82fb7e7`.
+Repeat this review/verification/commit workflow after each coherent milestone.
 
 Starting evidence
 -----------------
@@ -102,6 +103,17 @@ Its 47 contracts cover limits, malformed inputs, bounded seeking and source
 preservation; see [document implementation and limits](document-design.md).
 This adds no renderer or document transformation.
 
+The [typed audio policy and private encoding candidate](audio-conversion-policy.md)
+now exercise six-format conversion and lossless FLAC recompression with 70 passing
+combined checks. Seekable inherited input preserves MP3 gapless sample counts;
+the native process joins its Windows job before parsing. Tests cover wider
+precision, surround, explicit Opus resampling, metadata reconciliation and running
+child cancellation. The 36 format pairs include six unchanged same-format cases.
+Audio worker transformation commands, full metadata/artwork admission, listening,
+streaming large-file validation, application publication/access/recovery, payload
+review and actual customer UI acceptance remain pending. The candidate is not a
+publishable receipt and adds no menu capability.
+
 The [qpdf experiment](pdf-engine-evaluation.md) now measures a generated structural
 rewrite with preserved inspected object graphs/decoded streams, encryption/error
 behavior and 13 passing checks. It found a signature-summary blind spot; zero
@@ -113,14 +125,15 @@ including exact source/optimized rendered pixels and image alpha round trips.
 Broader rendering/native failure coverage and all PDF transformations remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,034 foundation contracts and 76 rerun hidden view contracts pass. The
+1,064 foundation contracts pass, including 30 audio-plan checks. The previous
+76 hidden view contracts were not rerun for this non-UI audio candidate slice. The
 [catalog inventory](file-type-inventory.md) separates descriptions from detectors.
 The [source audit](catalog-source-review.json) records 223 references: 186 retrieved,
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/b6cd87374f0946ba92c76ca7a80737b2` includes the optional
-PDF worker integration: zero warnings/errors, curated engine identities, file allowlist,
+`artifacts/production-staging/71c9e09249cf4516b0b199d47ad7a8a7` includes the private
+audio candidates and existing optional PDF worker integration: zero warnings/errors, curated engine identities, file allowlist,
 package dependencies and notice checks pass. `-SkipShell` was used; native shell
 rebuild, installed lifecycle and visible acceptance were not performed. The
 evaluation audio and PDF engines are not part of this normal payload. Manual review remains

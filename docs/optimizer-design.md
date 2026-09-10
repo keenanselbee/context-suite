@@ -14,6 +14,9 @@ and decoded-sample tests protect against an engine's metadata rewrite. Applicati
 blocks, unknown block types and seek tables still require handlers before
 recompression; the feature is not exposed as a customer action. See
 [current experiment and preservation evidence](audio-engine-evaluation.md).
+The private [FLAC optimization candidate](audio-conversion-policy.md) now connects
+that reconciler to encoding, exact decoded-sample checks and smaller-only results.
+Worker commands, application publication and full metadata admission remain open.
 
 Current scope: [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md)
 removes the manual optimization workspace and routine preset planner. Direct
