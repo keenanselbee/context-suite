@@ -50,26 +50,27 @@ public static class FlacMetadata
         return new(blocks.ToImmutable(), offset, rate, channels, precision, (long)(packed & 0xfffffffffUL));
     }
 
-    public static ImmutableArray<string> RecompressionRestrictions(FlacMetadataHeader header)
+    public static ImmutableArray<string> RecompressionRestrictions(FlacMetadataHeader header, bool rebuildSeekTable = false)
     {
         var reasons = ImmutableArray.CreateBuilder<string>();
         if (header.Blocks.Any(block => block.Type == 2))
             reasons.Add("Application-specific metadata needs a preservation handler before this file can be recompressed.");
-        if (header.Blocks.Any(block => block.Type == 3))
+        if (!rebuildSeekTable && header.Blocks.Any(block => block.Type == 3))
             reasons.Add("The seek table must be rebuilt for new audio frames before this file can be recompressed.");
         if (header.Blocks.Any(block => block.Type >= 7))
             reasons.Add("Unrecognized metadata needs a preservation handler before this file can be recompressed.");
         return reasons.ToImmutable();
     }
 
-    public static byte[] CreateRecompressionHeader(FlacMetadataHeader source, FlacMetadataHeader encoded)
+    public static byte[] CreateRecompressionHeader(FlacMetadataHeader source, FlacMetadataHeader encoded, ImmutableArray<FlacFrame> frames = default)
     {
-        var restrictions = RecompressionRestrictions(source);
+        var restrictions = RecompressionRestrictions(source, !frames.IsDefault);
         if (!restrictions.IsEmpty) throw new NotSupportedException(string.Join(" ", restrictions));
         RequireSameAudioDeclarations(source, encoded);
         // The encoder's frame-size fields and checksum belong to the new frames.
         // Original descriptive metadata, cuesheets and pictures remain byte-exact.
-        var blocks = new[] { encoded.Blocks[0] }.Concat(source.Blocks.Where(block => block.Type is not (0 or 1))).ToArray();
+        var blocks = new[] { encoded.Blocks[0] }.Concat(source.Blocks.Where(block => block.Type is not (0 or 1))
+            .Select(block => block.Type == 3 ? new FlacMetadataBlock(3, ImmutableArray.Create(FlacSeekTable.Rebuild(block.Data.AsSpan(), frames))) : block)).ToArray();
         var length = 4L + blocks.Sum(block => 4L + block.Data.Length);
         if (length > MaximumHeaderBytes || blocks.Length > MaximumBlocks)
             throw new InvalidDataException("Reconciled FLAC metadata exceeds the budget.");
@@ -89,10 +90,11 @@ public static class FlacMetadata
         return result;
     }
 
-    public static void RequirePreservedMetadata(FlacMetadataHeader source, FlacMetadataHeader output)
+    public static void RequirePreservedMetadata(FlacMetadataHeader source, FlacMetadataHeader output, ImmutableArray<FlacFrame> frames = default)
     {
         RequireSameAudioDeclarations(source, output);
-        var original = source.Blocks.Where(block => block.Type is not (0 or 1)).ToArray();
+        var original = source.Blocks.Where(block => block.Type is not (0 or 1)).Select(block => block.Type == 3 && !frames.IsDefault
+            ? new FlacMetadataBlock(3, ImmutableArray.Create(FlacSeekTable.Rebuild(block.Data.AsSpan(), frames))) : block).ToArray();
         var produced = output.Blocks.Where(block => block.Type is not (0 or 1)).ToArray();
         if (original.Length != produced.Length || original.Where((block, index) =>
             block.Type != produced[index].Type || !block.Data.AsSpan().SequenceEqual(produced[index].Data.AsSpan())).Any())

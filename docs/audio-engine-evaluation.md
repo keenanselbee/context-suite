@@ -391,3 +391,45 @@ checks**, including attached-picture IPC and explicit embedded-artwork report fa
 The read-only flow retained original hashes, avoided licensing/publication and
 continued after malformed audio. No new visible layout, screen-reader, theme/DPI,
 installed-shell or customer audio-operation acceptance is implied.
+
+FLAC seek-table rebuilding
+-------------------------
+
+The seek-table slice passed **104 combined private audio checks**: the prior 85,
+11 bounded packet-index parsing checks and eight real seek/preservation checks.
+Evidence:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  adapter-fdccc93acbbd460ab6e2276ec20a8f42/encoding-adapter.json
+```
+
+The generated level-0/1,024-sample-block source carries 34 seek slots and padding.
+Optimization reduced **411,760 to 79,986 bytes**, retaining exact decoded samples
+and descriptive metadata. Both streams had 94 frames; their byte offsets changed.
+A fresh output packet index and frame CRC scan agreed with every rebuilt point.
+Seeked 50 ms output segments at samples 0, 6,000, 24,000 and 86,400 matched the
+same segments of a complete linear source decode. Stale source offsets and a
+corrupted frame checksum were refused; original hash and scratch cleanup passed.
+
+The first run (`adapter-73f20a80e33e47778b1406da3ee78ac8`) used an already identically
+encoded fixture. Its assertion correctly failed because the table did not change.
+The fixture was strengthened with different source compression; production encoding
+was not changed to satisfy the test. Native changed-frame-boundary and long-file
+seeking are still unverified. Synthetic contracts exercise changed boundaries,
+coalesced points/placeholders, ordering, frame gaps/overlaps, extents and bounds.
+Twenty-two new public checks bring the foundation total to **1,130**. An initial
+test compilation error from target-typed construction in a params call was fixed
+before the passing run.
+
+These checks use the pinned FFmpeg decoder and frame parser. Managed CRC/extent
+validation adds checks but is not an independent decoder, sandbox or complete
+FLAC conformance proof. Publication, recovery, remaining metadata, customer UI
+and production payload adoption remain open.
+
+Fresh isolated Release stage
+`artifacts/production-staging/92679db2410b4025882f7324faefb3cc` built with zero
+warnings/errors and passed the normal curated identities, allowlist, dependency
+and notice checks with `-SkipShell`. No new UI or installed-shell acceptance was
+run for this internal seek-table slice; normal packaging still excludes the
+evaluation audio engine.

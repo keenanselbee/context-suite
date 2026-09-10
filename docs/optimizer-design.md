@@ -11,8 +11,9 @@ These additions are planned; format recognition alone does not enable Optimize.
 The first FLAC core step now inventories bounded metadata and reconciles original
 descriptive blocks with the newly encoded STREAMINFO. Independent byte comparison
 and decoded-sample tests protect against an engine's metadata rewrite. Application
-blocks, unknown block types and seek tables still require handlers before
-recompression; the feature is not exposed as a customer action. See
+blocks and unknown block types still require handlers before
+recompression; seek tables now rebuild against complete frame indexes with
+CRC and seeked-decoding evidence. The feature is not exposed as a customer action. See
 [current experiment and preservation evidence](audio-engine-evaluation.md).
 The private [FLAC optimization candidate](audio-conversion-policy.md) now connects
 that reconciler to encoding, exact decoded-sample checks and smaller-only results.

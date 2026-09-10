@@ -101,7 +101,7 @@ FLAC optimization candidate
 `OptimizeFlacAsync` uses `flac-lossless-1`, compression level 8, exact decoded
 samples, known STREAMINFO agreement and the existing raw metadata reconciler.
 Original non-padding descriptive blocks retain their bytes/order. Unknown
-application blocks, seek tables and other unsupported block types prevent
+application blocks and other unsupported block types prevent
 rewriting; handlers remain pending. Only a smaller reconciled result is returned;
 otherwise the original byte snapshot is returned. This is still a worker
 integration candidate, not a registered Optimize capability or publication receipt.
@@ -120,9 +120,27 @@ picture declarations plus payload digests. Bounds are 4,096 comments, 256 KiB of
 aggregate descriptive text and 31 pictures inside the existing 32 MiB header
 budget. Image dimensions are declarations, not trusted decoding instructions.
 Linked artwork is recognized without resolving it and prevents optimization
-until a location-preservation policy exists. Cuesheet semantics, seek-table
-rebuilding, other metadata handlers and hostile embedded-image acceptance remain
+until a location-preservation policy exists. Cuesheet semantics,
+other metadata handlers and hostile embedded-image acceptance remain
 open; this inventory is not a complete FLAC conformance validator.
+
+Seek tables now have a dedicated rebuild path following
+[RFC 9639 section 8.5](https://www.rfc-editor.org/rfc/rfc9639.html#section-8.5).
+Before rewriting, source seek points must match a complete native frame index.
+The index must cover contiguous samples and all audio bytes, use the declared
+sample clock and agree with known STREAMINFO sample counts. A managed scan checks
+each indexed frame's sync bytes and full-frame CRC16. This uses the pinned
+engine's packet interpretation, not an independent FLAC decoder.
+
+After encoding, each original target maps to the preceding output frame.
+Offsets remain relative to the first audio frame, so moving metadata does not
+invalidate them. Points mapping to one frame coalesce; unused and existing
+placeholder slots stay reserved. Descriptive blocks retain their original bytes.
+The legacy metadata-only API still refuses seek-table rewriting without an index.
+Bounds are 65,536 seek slots, 131,072 indexed frames and 8 MiB packet JSON; the
+indexing/CRC passes share the operation's 120-second deadline. They are separate
+from the quick probe's 15-second limit. Native variable-boundary/long-seek corpus
+and malformed-frame coverage remain acceptance work.
 
 See [dated engine evidence](audio-engine-evaluation.md) for test counts, generated
 fixtures and remaining acceptance. The full six-format matrix, broader metadata,

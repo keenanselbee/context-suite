@@ -58,6 +58,10 @@ The artwork fixture adds two authored PNG covers (including alpha), duplicate
 comments, multiline lyrics and Unicode text. It checks raw metadata and decoded
 RGBA preservation during FLAC optimization, plus refusal of linked/malformed
 metadata. `authored-artwork.flac` can be passed to the worker check below.
+Seek-table fixtures add lower-compression FLAC with authored seek slots, require
+rebuilt offsets, compare seeked output against a linear source decode and reject
+stale offsets/frame corruption. Their packet-index tests cover invalid clock,
+number, structure and size declarations. Results remain in `encoding-adapter.json`.
 Read [the candidate policy and limits](../../docs/audio-conversion-policy.md)
 before interpreting these results as transformation or release readiness.
 

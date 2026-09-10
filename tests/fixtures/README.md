@@ -24,6 +24,10 @@ including one translucent pixel, and package them into FLAC with authored
 duplicate artists, lyrics, Unicode descriptions and ReplayGain text. They contain
 no downloaded artwork or music. Public descriptive-metadata tests use placeholder
 image bytes for framing only; their passing results do not prove image decoding.
+The private seek fixture re-encodes generated audio at level 0 with 1,024-sample
+blocks and inserts authored seek points/placeholders and zero padding. It compares
+seeked output with linear source samples. Public synthetic frame indexes test
+boundary changes and malformed tables without claiming native decode acceptance.
 These are generated signals and process fixtures, not representative music/speech
 or a listening-quality corpus; see [the policy](../../docs/audio-conversion-policy.md).
 
