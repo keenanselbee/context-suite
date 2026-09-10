@@ -29,6 +29,12 @@ jobs:
       - name: Compile isolated real-UI test host (no interactive run)
         shell: pwsh
         run: dotnet build tests/ContextSuite.Application.TestHost/ContextSuite.Application.TestHost.csproj -c Release
+      - name: Hidden layout and accessibility contracts (no desktop input)
+        shell: pwsh
+        run: dotnet run --project tests/ContextSuite.Application.TestHost -c Release --no-build -- --view-contracts
+      - name: License workflow harness guards (no window or network)
+        shell: pwsh
+        run: dotnet run --project tests/ContextSuite.Application.TestHost -c Release --no-build -- --license-workflow-contracts
       - name: Missing private implementation errors
         shell: pwsh
         run: ./tools/Test-PrivateBoundary.ps1
