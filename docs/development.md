@@ -26,6 +26,8 @@ Build And Test
 
 # Real image-engine/adapter contracts, requiring the private checkout.
 ./tools/Test-ImageConversion.ps1 -Configuration Release
+./tools/Test-Licensing.ps1 -Configuration Release # Synthetic HTTP only; never activates a real key.
+./tools/Test-LicenseSandbox.ps1 # Compile only; -Launch requires explicit live sandbox/desktop permission.
 ./tools/Test-PngQuantization.ps1 -Configuration Release # Research only; generates an offline comparison report.
 # Optional: -Corpus '.codex-temp/png-quantization/screenshots-<id>' for pre-copied research inputs.
 ./tools/Test-DdsCodec.ps1 -SkipNativeBuild
@@ -53,6 +55,10 @@ independently through `tools/Build.ps1` and `ContextSuite.sln`. No build or test
 installs packages or restarts Explorer. When deployed beside the production app,
 the shell DLL chooses it; otherwise it retains the native prototype host.
 Installed packages are not automatically switched to this new output directory.
+However, rebuilding an already registered development directory updates its files.
+`New-ReleaseCandidate.ps1` now uses fresh isolated staging instead. For a standalone
+unregistered production build, pass `-StagingId ([guid]::NewGuid())` to
+`Build-Production.ps1`; the output is reported under `artifacts/production-staging/`.
 
 For an explicitly requested local Explorer smoke test, switch the existing three
 development identities with `./tools/Install-ShellPrototype.ps1 -Production
@@ -72,6 +78,10 @@ Implementation Boundaries
 - Application: WPF window/view model, bounded in-memory selection queue, activation
   forwarding, request-file handling, and on-demand worker ownership.
 - Worker: authenticated local connection and real private capability discovery.
+- Commercial: private Polar transport/composition in `proprietary/src/ContextSuite.Commercial`.
+  The WPF app links this small assembly, never the private media engine. The public
+  test host supplies no online provider. Shipping composition is production-only;
+  ordinary tests cannot switch the installed app to sandbox or grant access.
 - Private: real image adapter and production composition; the catalog advertises
   twenty tested ordinary-image pairs and seven bounded DDS pairs. No fake encoder or licensing
   bypass is supplied.
@@ -86,7 +96,8 @@ Optimize now opens the bounded lossless PNG planner. See
 optimization-window acceptance is still pending.
 The image worker, application executor and real conversion UI have focused
 integration tests; final goal acceptance and release checks remain separate.
-Trial admission precedes reserving/encoding/publishing.
+Shared trial/paid admission precedes reserving/encoding/publishing. See
+[licensing verification](licensing-verification.md) for policy, protection and test evidence.
 UI tests compile the same app sources into a test-only host with isolated paths
 and real trial enforcement. No permissive shipping access implementation exists;
 live Polar access remains deferred. Only the worker links private image engines;

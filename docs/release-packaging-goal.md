@@ -35,10 +35,14 @@ Implemented workflow
 3. Build DDS from pinned source using `tools/dds-engine/Build-DdsEngine.ps1`.
    Retain its source/bridge/build-definition identity and native hash.
 4. Run `tools/release/New-ReleaseCandidate.ps1`. Both repositories must be clean;
-   the script builds Release and copies only the approved payload minus symbols
+   the script builds Release into a unique `artifacts/production-staging/<id>`
+   directory, leaving `artifacts/production/Release` unchanged even when registered
+   with Explorer, and copies only the approved payload minus symbols
    and the obsolete development inventory into a new candidate directory.
    `-AllowDirty` is for local verification only and visibly records dirty source
    provenance; such output is not an exact committed-source release.
+   Staging directories cannot be reused; a repeated identifier is rejected before
+   build/copy work. Ordinary development builds retain their existing output path.
 5. `release-manifest.json` identifies both commits, SDK/toolset, package
    dependencies, engines and every payload file's length and SHA256. The ZIP
    hash is printed and written to `archive.sha256` separately. The finished ZIP
@@ -60,6 +64,14 @@ release tag containing `curated-win-x64.zip`. GitHub's job token reads that
 private asset; no credential is embedded in the payload. A moved/replaced asset
 cannot bypass the separately committed native/notice hashes. No arbitrary URL
 or public pull-request input can supply an engine implementation.
+
+That same private release must also contain the three separately pinned palette
+assets: `ContextSuite.Palette.exe`, `ExoQuant.License.txt`, and
+`Rust.Library.Notices.html`. The workflow downloads those fixed names and stages
+them only after matching `tools/palette-engine/production.json`; it never rebuilds
+or repins a different executable just to pass CI. These assets still need an
+explicitly authorized upload. The workflow now invokes synthetic licensing
+contracts as well; the public workflow runs hidden XAML/accessibility contracts.
 
 The workflow imports the reviewed image engine, builds DDS, runs public/private
 contracts and packaging checks, then exports only the candidate ZIP and revision
@@ -99,7 +111,8 @@ The publisher must match the eventual trusted signing certificate. Customer
 installation must not enable Developer Mode, import a development certificate,
 remove prototype identities implicitly, reset trials or delete user settings.
 Microsoft documents [signed external-location packages](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps).
-Production publisher/identity and signing remain open. Upgrade/repair remains
+The display publisher is Keenan Selbee; exact signed package identity and signing
+remain open. Upgrade/repair remains
 disabled until lifecycle recovery is implemented and verified.
 
 Inno installer candidate

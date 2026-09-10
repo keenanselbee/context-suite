@@ -34,8 +34,14 @@ foreach ($name in 'Application', 'Worker') {
         if (-not $expected.Contains("app/ContextSuite.$name.$extension")) { throw 'Incomplete application/worker payload.' }
     }
 }
-foreach ($required in 'ContextSuite.Core.dll', 'ContextSuite.Private.dll', 'ContextSuite.Shell.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.Core.dll') {
+foreach ($required in 'ContextSuite.Core.dll', 'ContextSuite.Private.dll', 'ContextSuite.Commercial.dll', 'ContextSuite.Shell.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.Core.dll') {
     if (-not $expected.Contains("app/$required")) { throw "Missing runtime component: $required" }
+}
+foreach ($entry in @(@{ name='Application'; recorded=$manifest.applicationDependencies }, @{ name='Worker'; recorded=$manifest.dependencies })) {
+    $actual = (Get-Content -LiteralPath (Join-Path $root "app/ContextSuite.$($entry.name).deps.json") -Raw | ConvertFrom-Json).libraries
+    $actualLines = @($actual.PSObject.Properties | Sort-Object Name | ForEach-Object { $_.Name + '=' + ($_.Value | ConvertTo-Json -Depth 12 -Compress) })
+    $recordedLines = @($entry.recorded.PSObject.Properties | Sort-Object Name | ForEach-Object { $_.Name + '=' + ($_.Value | ConvertTo-Json -Depth 12 -Compress) })
+    if (($actualLines -join "`n") -cne ($recordedLines -join "`n")) { throw "Candidate $($entry.name) dependency evidence differs from its payload." }
 }
 foreach ($tool in 'Analyze', 'Convert', 'Optimize') {
     foreach ($suffix in '.ico', 'Square44x44Logo.png', 'Square150x150Logo.png') {

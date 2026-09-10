@@ -45,6 +45,13 @@ $script:passed++
 if ($Candidate) {
     & (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate $Candidate
     $script:passed++
+    $candidateManifest = Get-Content -LiteralPath (Join-Path $Candidate 'release-manifest.json') -Raw | ConvertFrom-Json
+    if ($candidateManifest.productionStagingId) {
+        $stageId = [guid]::ParseExact($candidateManifest.productionStagingId, 'N')
+        if (Test-Path -LiteralPath (Join-Path $repository ('artifacts\production-staging\' + $stageId.ToString('N')))) {
+            Expect-Rejection { & (Join-Path $repository 'tools\Build-Production.ps1') -StagingId $stageId } 'existing isolated staging cannot be overwritten'
+        }
+    }
     $copy = Join-Path $scratch 'candidate'
     Copy-Item -LiteralPath $Candidate -Destination $copy -Recurse
     $sentinel = Join-Path $copy 'app\unexpected.pdb'
@@ -60,6 +67,19 @@ if ($Candidate) {
     Expect-Rejection { & (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate $copy } 'missing worker'
     Copy-Item -LiteralPath (Join-Path $Candidate 'app\ContextSuite.Worker.exe') -Destination $worker
     $manifestPath = Join-Path $copy 'release-manifest.json'
+    $commercial = Join-Path $copy 'app\ContextSuite.Commercial.dll'
+    Remove-Item -LiteralPath $commercial
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $manifest.files = @($manifest.files | Where-Object path -ne 'app/ContextSuite.Commercial.dll')
+    [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 12))
+    Expect-Rejection { & (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate $copy } 'missing commercial runtime and inventory entry'
+    Copy-Item -LiteralPath (Join-Path $Candidate 'app\ContextSuite.Commercial.dll') -Destination $commercial
+    Copy-Item -LiteralPath (Join-Path $Candidate 'release-manifest.json') -Destination $manifestPath -Force
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $manifest.applicationDependencies = [pscustomobject]@{}
+    [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 12))
+    Expect-Rejection { & (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate $copy } 'missing application dependency evidence'
+    Copy-Item -LiteralPath (Join-Path $Candidate 'release-manifest.json') -Destination $manifestPath -Force
     $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
     # Deleting a file AND its receipt entry must not bypass required-file checks.
     $icon = Join-Path $copy 'app\Assets\Analyze.ico'

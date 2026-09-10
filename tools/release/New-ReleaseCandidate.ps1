@@ -14,8 +14,9 @@ foreach ($repo in @($repository, (Join-Path $repository 'proprietary'))) {
 }
 if ($dirty -and -not $AllowDirty) { throw 'Candidate requires clean public/private checkouts. -AllowDirty is local verification only and records dirty provenance.' }
 # Always build here; a pre-existing development folder is not evidence for these revisions.
+$stagingId = [guid]::NewGuid()
 & (Join-Path $repository 'tools\dds-engine\Build-DdsEngine.ps1')
-& (Join-Path $repository 'tools\Build-Production.ps1') -Configuration Release
+& (Join-Path $repository 'tools\Build-Production.ps1') -Configuration Release -StagingId $stagingId
 for ($index = 0; $index -lt 2; $index++) {
     $repo = @($repository, (Join-Path $repository 'proprietary'))[$index]
     if ((& git -C $repo rev-parse HEAD) -ne $revisions[$index] -or
@@ -23,7 +24,7 @@ for ($index = 0; $index -lt 2; $index++) {
         throw 'Source revisions or clean state changed during the build; discard this attempt and rebuild.'
     }
 }
-$source = Join-Path $repository 'artifacts\production\Release'
+$source = Join-Path $repository ('artifacts\production-staging\' + $stagingId.ToString('N'))
 $output = Join-Path $repository ('artifacts\release-candidates\' + [guid]::NewGuid().ToString('N'))
 $candidate = Join-Path $output 'ContextSuite'
 $app = Join-Path $candidate 'app'
@@ -55,7 +56,9 @@ $files = @(Get-ChildItem -LiteralPath $candidate -Recurse -File | Sort-Object Fu
 $manifest = [ordered]@{
     schema = 1; status = 'unsigned-internal-candidate'; publicCommit = $revisions[0]; privateCommit = $revisions[1];
     dirtySources = $dirty; dotnetSdk = (& dotnet --version); visualCppToolset = $vcVersion;
+    configuration = 'Release'; productionStagingId = $stagingId.ToString('N');
     dependencies = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Worker.deps.json') -Raw | ConvertFrom-Json).libraries;
+    applicationDependencies = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Application.deps.json') -Raw | ConvertFrom-Json).libraries;
     curatedEngine = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Engine.json') -Raw | ConvertFrom-Json);
     ddsEngine = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Dds.Engine.json') -Raw | ConvertFrom-Json);
     pngEngine = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Png.Engine.json') -Raw | ConvertFrom-Json);

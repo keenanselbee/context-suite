@@ -68,6 +68,7 @@ try {
     & (Join-Path $snapshot 'tools\png-engine\Stage-PngEngine.ps1')
     & (Join-Path $snapshot 'tools\palette-engine\Stage-PaletteEngine.ps1') -CandidateDirectory $PaletteCandidateDirectory
     & (Join-Path $snapshot 'tools\Build-Production.ps1') -Configuration Release
+    & (Join-Path $snapshot 'tools\Test-Licensing.ps1') -Configuration Release
     & (Join-Path $snapshot 'tools\Test-DdsCodec.ps1') -SkipNativeBuild
     & (Join-Path $snapshot 'tools\Test-ImageConversion.ps1') -Configuration Release
     $receipt.status = 'passed'
