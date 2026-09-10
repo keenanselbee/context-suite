@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ContextSuite.Core.Images;
+using ContextSuite.Core.Audio;
 
 namespace ContextSuite.Application.Infrastructure;
 
@@ -30,6 +31,14 @@ internal sealed class LocalTrialStore : IOperationAccess
     async Task<OperationAdmission> IOperationAccess.AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken)
     {
         var admission = await AdmitAsync(confirmed, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
+    async Task<OperationAdmission> IOperationAccess.AdmitOptimizationAsync(ConfirmedFlacOptimization confirmed, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(confirmed);
+        if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No confirmed FLAC optimization can execute.");
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
         return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
     }
 

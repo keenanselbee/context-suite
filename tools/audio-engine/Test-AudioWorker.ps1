@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $ProductionStage, [Parameter(Mandatory)][string] $PreparedDirectory,
-    [Parameter(Mandatory)][string] $FixtureDirectory, [string] $ArtworkFixture)
+    [Parameter(Mandatory)][string] $FixtureDirectory, [string] $ArtworkFixture, [switch] $IncludeOptimization)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $stage = (Resolve-Path -LiteralPath $ProductionStage).Path
@@ -32,4 +32,8 @@ Copy-Item -LiteralPath (Join-Path $prepared 'evaluation.json') -Destination $aud
 Copy-Item -LiteralPath (Join-Path $prepared ('unpacked\' + $pin.archiveDirectory + '\LICENSE.txt')) -Destination $audio
 & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-worker (Join-Path $scratch 'results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures @artworkArguments
 if ($LASTEXITCODE -ne 0) { throw 'Isolated audio worker checks failed.' }
+if ($IncludeOptimization) {
+    & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --flac-worker (Join-Path $scratch 'flac-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
+    if ($LASTEXITCODE -ne 0) { throw 'Isolated FLAC workflow checks failed.' }
+}
 Write-Output "Evaluation-only worker payload and results: $scratch"

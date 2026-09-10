@@ -1,5 +1,6 @@
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Licensing;
+using ContextSuite.Core.Audio;
 
 namespace ContextSuite.Application.Infrastructure;
 
@@ -13,6 +14,8 @@ internal interface IOperationAccess
     Task<OperationAccessStatus> ReadAccessAsync(CancellationToken cancellationToken = default);
     Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken cancellationToken);
     Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken);
+    Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedFlacOptimization confirmed, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("This access implementation does not admit FLAC operations.");
 }
 
 // Media and Explorer never see the key or service. Paid batches bypass trial
@@ -37,6 +40,14 @@ internal sealed class OperationAccess(LocalTrialStore trial, PaidLicenseManager 
     public async Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken)
     {
         if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No valid optimization was confirmed.");
+        var status = await paid.ReadStatusAsync(cancellationToken);
+        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
+        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+    }
+
+    public async Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedFlacOptimization confirmed, CancellationToken cancellationToken)
+    {
+        if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No valid FLAC optimization was confirmed.");
         var status = await paid.ReadStatusAsync(cancellationToken);
         if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
         return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);

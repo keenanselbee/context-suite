@@ -17,6 +17,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     private string? _scratchDirectory;
     public int? ProcessId => _process?.Id;
     public bool HasAudioProbe => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "audio-engine", "ffprobe.exe"));
+    public bool HasFlacOptimizer => HasAudioProbe && File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "audio-engine", "ffmpeg.exe"));
     public bool HasPdfProbe => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-engine", "qpdf.exe"));
 
     public async Task<PdfProbeFacts> ProbePdfAsync(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
@@ -42,6 +43,29 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         var reply = await SendAsync(new(1, Guid.NewGuid(), "capabilities"), cancellationToken);
         if (reply.Capabilities is null) throw new InvalidDataException("The media worker returned no capabilities.");
         return reply.Capabilities;
+    }
+
+    public async Task<AudioFileSource> ProbeFlacAsync(AudioFileProbe request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "flac-probe", AudioFile: request), token);
+        if (reply.AudioSource is not { } source || reply.AudioResult is not null || reply.Source is not null || reply.ImageResult is not null ||
+            reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0 || source.ItemId != request.ItemId || source.Path != request.Path)
+            throw new InvalidDataException("Invalid FLAC source response.");
+        source.Validate();
+        return source;
+    }
+
+    public async Task<AudioWorkResult> OptimizeFlacAsync(FlacOptimizationWork work, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "flac-optimize", FlacWork: work), token);
+        if (reply.AudioResult is not { } result || reply.AudioSource is not null || reply.Source is not null || reply.ImageResult is not null ||
+            reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0 || result.Validation is null ||
+            result.Validation.ItemId != work.Source.ItemId || !result.Validation.MatchesPlan || result.Validation.Sha256 is not { Length: 64 } ||
+            !result.Validation.Sha256.All(char.IsAsciiHexDigit) || result.SourceSha256 != work.Source.Sha256 || result.SourceBytes != work.Source.FileBytes ||
+            result.OutputBytes is <= 0 or > AudioFileSource.MaximumFileBytes || result.DecodedFrames <= 0 || result.Policy != work.Policy ||
+            string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 256)
+            throw new InvalidDataException("Invalid FLAC validation response.");
+        return result;
     }
 
     public async Task<ImageEngineIdentity> GetEngineIdentityAsync(CancellationToken cancellationToken)
@@ -100,7 +124,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     {
         command.Validate();
         await _gate.WaitAsync(cancellationToken);
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command is "image-convert" or "png-optimize" ? 120 : 30),
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command == "flac-optimize" ? 150 : command.Command is "image-convert" or "png-optimize" ? 120 : 30),
             timeProvider ?? TimeProvider.System);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
         try
@@ -131,9 +155,11 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
                 throw new InvalidDataException("The media worker returned unexpected audio data.");
             if (command.Command != "pdf-probe" && reply.Pdf is not null)
                 throw new InvalidDataException("The media worker returned unexpected PDF data.");
+            if (command.Command != "flac-probe" && reply.AudioSource is not null || command.Command != "flac-optimize" && reply.AudioResult is not null)
+                throw new InvalidDataException("The media worker returned unexpected file-audio data.");
             if (reply.Failure is { } failure)
             {
-                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.Capabilities.Length != 0)
+                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null || reply.Capabilities.Length != 0)
                     throw new InvalidDataException("Worker failure response contains invalid or contradictory data.");
                 throw new MediaWorkerException(failure);
             }

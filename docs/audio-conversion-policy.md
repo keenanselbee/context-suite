@@ -1,8 +1,8 @@
 Audio Conversion And FLAC Optimization Policy
 ============================================
 
-Status: typed policy and private integration candidate; no customer audio
-transformation command or shipping engine payload. Date: 2026-09-09.
+Status: typed conversion candidate and integrated FLAC worker/publication path;
+no customer audio command or shipping engine payload. Updated: 2026-09-10.
 
 The public `AudioConversionPlan` separates recognized container/codec pairs from
 conversion admission. Policy `audio-fixed-1` is implemented for isolated testing;
@@ -77,7 +77,8 @@ and output SHA-256 digests. Disposal removes that owned candidate; failed work
 removes its known scratch files. The caller's source position is restored.
 Native input uses a synchronous owned snapshot even when the caller uses an
 asynchronous file handle. There is no application publication, recycling or
-paid-access operation in this component; worker integration remains pending.
+paid-access operation in this component; the FLAC worker/application integration
+below owns those boundaries.
 
 Validation checks container/codec, sample rate, channel count/layout, FLAC
 precision, decoded frame count and finite samples. Lossless paths require exact
@@ -103,8 +104,8 @@ samples, known STREAMINFO agreement and the existing raw metadata reconciler.
 Original non-padding descriptive blocks retain their bytes/order. Unknown
 application blocks and other unsupported block types prevent
 rewriting; handlers remain pending. Only a smaller reconciled result is returned;
-otherwise the original byte snapshot is returned. This is still a worker
-integration candidate, not a registered Optimize capability or publication receipt.
+otherwise the original byte snapshot is returned. This encoding artifact is not
+itself a registered Optimize capability or publication receipt.
 
 `CreateFlacOptimization` admits one FLAC audio stream plus explicitly reported
 attached pictures. Ordinary video and cross-format artwork conversion remain
@@ -126,7 +127,9 @@ open; this inventory is not a complete FLAC conformance validator.
 
 Seek tables now have a dedicated rebuild path following
 [RFC 9639 section 8.5](https://www.rfc-editor.org/rfc/rfc9639.html#section-8.5).
-Before rewriting, source seek points must match a complete native frame index.
+Every FLAC optimization validates complete source and output native frame indexes,
+including files without seek tables. Existing source seek points must match the
+source index before rewriting.
 The index must cover contiguous samples and all audio bytes, use the declared
 sample clock and agree with known STREAMINFO sample counts. A managed scan checks
 each indexed frame's sync bytes and full-frame CRC16. This uses the pinned
@@ -142,7 +145,33 @@ indexing/CRC passes share the operation's 120-second deadline. They are separate
 from the quick probe's 15-second limit. Native variable-boundary/long-seek corpus
 and malformed-frame coverage remain acceptance work.
 
-See [dated engine evidence](audio-engine-evaluation.md) for test counts, generated
-fixtures and remaining acceptance. The full six-format matrix, broader metadata,
-listening, worker/access/publication/recovery, production payload and visible UI
-gates remain part of the [active goal](broad-file-support-goal.md).
+FLAC worker and application publication
+--------------------------------------
+
+`flac-probe` and `flac-optimize` carry bounded file references and typed facts,
+not complete recordings. Inspection uses a validated synchronous read-only source
+handle, held against writes/deletion and inherited without its customer path.
+Encoding and decoding continue to use owned snapshots. Inspection hashes the
+whole source but does not promise full frame validation; that occurs during work.
+Source facts and the digest are checked again before encoding.
+
+`AudioFileAdapter` writes only an existing empty, single-link application
+reservation with the expected item filename. Shared `ReservedMediaOutput` checks
+the opened handle and ordinary path, rejecting redirects, unavailable files and
+hard links. Image output retains its 128 MiB cap; audio explicitly selects 512 MiB.
+The FLAC client deadline is 150 seconds for inspection plus encoding/validation;
+the encoder retains its separate 120-second bound.
+
+`FlacOptimizationPlan` snapshots settings and eligibility. Confirmed batches use
+the existing paid/trial admission once; expiry blocks new work without revoking
+admitted work. `FlacOptimizationExecutor` processes items sequentially through the
+existing transactional publisher, including collision-safe naming, source-change
+checks, smaller-result admission, cancellation and reservation cleanup. Copies
+remain default; overwrite requires existing explicit settings and platform gates.
+The isolated workflow verifies copies only, with native recycling forbidden.
+
+See [dated engine evidence](audio-engine-evaluation.md) for generated fixtures and
+test counts. No audio transformation is registered in the customer menu yet.
+Cross-format worker integration, broader metadata, crash/recovery coverage,
+listening, production payload and visible UI acceptance remain part of the
+[active goal](broad-file-support-goal.md).

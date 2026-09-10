@@ -25,7 +25,7 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
             source.Streams.Any(stream => stream.Kind != "audio" && !stream.AttachedPicture))
             throw new NotSupportedException("FLAC optimization requires one audio stream and preserved attached pictures only.");
         var audio = source with { Streams = source.Streams.Where(stream => stream.Kind == "audio").ToImmutableArray() };
-        return Create(audio, AudioFormat.Flac) with { AlreadyTarget = false, Policy = "flac-lossless-1" };
+        return Create(audio, AudioFormat.Flac) with { AlreadyTarget = false, Policy = FlacOptimizationPlan.Policy };
     }
 
     public static AudioConversionPlan Create(AudioProbeFacts source, AudioFormat target)

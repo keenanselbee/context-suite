@@ -17,7 +17,11 @@ CRC and seeked-decoding evidence. The feature is not exposed as a customer actio
 [current experiment and preservation evidence](audio-engine-evaluation.md).
 The private [FLAC optimization candidate](audio-conversion-policy.md) now connects
 that reconciler to encoding, exact decoded-sample checks and smaller-only results.
-Worker commands, application publication and full metadata admission remain open.
+FLAC worker commands and sequential application publication now have isolated
+copy/collision, source-change, access-expiry, cancellation and failure evidence.
+Complete frame/CRC validation also applies to sources without seek tables.
+Full metadata admission, broader recovery/crash coverage, production engine
+adoption and customer menu integration remain open.
 
 Current scope: [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md)
 removes the manual optimization workspace and routine preset planner. Direct

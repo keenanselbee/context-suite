@@ -433,3 +433,58 @@ warnings/errors and passed the normal curated identities, allowlist, dependency
 and notice checks with `-SkipShell`. No new UI or installed-shell acceptance was
 run for this internal seek-table slice; normal packaging still excludes the
 evaluation audio engine.
+
+FLAC worker, batch admission and publication (2026-09-10)
+--------------------------------------------------------
+
+The actual worker and application executor passed **14 isolated FLAC workflow
+checks** with a scratch copy of Release stage
+`artifacts/production-staging/f4b4f20e6cb84fcab29d06168d7478a7` plus the pinned
+evaluation engine. The preceding **11 worker/Analyze checks** also passed.
+Evidence is retained at:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  worker-c4e98ce8a3f0424fb82559092d42f199/flac-results/flac-workflow.json
+  worker-c4e98ce8a3f0424fb82559092d42f199/results/analysis-results.txt
+```
+
+Generated padded sources shrank from **332,860 to 62,516 bytes** with preserved
+original hashes and descriptive metadata. One shared worker handled both files
+under one actual local-trial admission, including expiry after the first output.
+New expired work produced no reservation. A pre-existing output canary remained
+unchanged and the publisher chose the expected numbered name. Re-optimizing the
+compressed output returned no smaller result without creating another file.
+
+Changed source identity was rejected. A corrupted frame failed while the next
+valid file completed in the same worker. Cancellation after the first completed
+file retained that output and skipped the second. Nonempty and hard-linked
+reservations refused writes. Publication records and temporary reservations were
+closed after the tested successes, failures, no-change and cancellation. The
+test recycler always refuses: no native recycling or overwrite acceptance is
+claimed. This does not cover crash injection, cancellation at every publication
+phase, long-file worker limits or customer UI.
+
+All FLAC optimizations now require complete source/output frame indexes and CRCs,
+including files without seek tables, to prevent unnoticed trailing/unindexed
+audio bytes from being omitted. **104 private audio checks** passed again at:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  adapter-af648a64fbde4ded85cdb353ca63c80c/encoding-adapter.json
+```
+
+Shared output-handle validation retained **942 passing image-engine contracts**
+at `.codex-temp/image-tests/engine-dc2415ab5f47443ca808799b057aaabb`.
+The final **1,154 foundation contracts** include 24 new FLAC plan/IPC/trial/paid
+checks. An initial integration-harness build lacked the executor source link;
+the test project was corrected before the passing workflow. Source-facts
+comparison uses typed values across IPC rather than dictionary serialization order.
+
+Final isolated Release stage
+`artifacts/production-staging/182fd3478db94d7d82852321125e02c6` built with zero
+warnings/errors and passed curated identities, allowlist, dependencies and notices
+using `-SkipShell`. It includes the final defensive malformed-plan checks, verified
+by the foundation run. Evaluation audio binaries remain excluded from normal
+packaging. No customer audio command, visible acceptance, install/registration,
+live Polar, listening acceptance or release clearance is implied.

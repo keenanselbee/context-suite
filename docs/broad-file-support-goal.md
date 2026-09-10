@@ -124,10 +124,14 @@ metadata and FLAC application handlers remain pending. Seek tables now rebuild
 from verified source/output frame indexes; a generated fixture retains exact
 audio and matches linear source samples at four actual seek positions. Native
 changed-frame-boundary and long-seek coverage remain open.
-Audio worker transformation commands, full metadata/artwork admission, listening,
-hostile-file/crash coverage, application publication/access/recovery, payload
-review and actual customer UI acceptance remain pending. The candidate is not a
-publishable receipt and adds no menu capability.
+FLAC worker commands and sequential application publication/access now pass 14
+isolated workflow checks: validated smaller named copies, collisions, original
+hashes, admission across expiry, new-work denial, no smaller result, changed and
+corrupt sources, cancellation and refusal of nonempty/hard-linked reservations.
+Every FLAC optimization validates complete source/output frame indexes and CRCs,
+including files without seek tables. Cross-format worker commands, full metadata
+admission, listening, broader hostile-file/crash/recovery coverage, payload review
+and actual customer UI acceptance remain pending. No audio menu is enabled.
 
 The [qpdf experiment](pdf-engine-evaluation.md) now measures a generated structural
 rewrite with preserved inspected object graphs/decoded streams, encryption/error
@@ -140,15 +144,17 @@ including exact source/optimized rendered pixels and image alpha round trips.
 Broader rendering/native failure coverage and all PDF transformations remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,130 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
-27 FLAC description/artwork and 22 seek-table checks. The previous
+1,154 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
+27 FLAC description/artwork, 22 seek-table and 24 new batch/IPC/access checks.
+The shared reservation-handle refactor also passes all 942 image-engine checks;
+104 private audio checks and 11 isolated worker/Analyze checks were rerun. The previous
 76 hidden view contracts were not rerun for this non-UI audio candidate slice. The
 [catalog inventory](file-type-inventory.md) separates descriptions from detectors.
 The [source audit](catalog-source-review.json) records 223 references: 186 retrieved,
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/92679db2410b4025882f7324faefb3cc` includes the private
+`artifacts/production-staging/182fd3478db94d7d82852321125e02c6` includes the private
 audio candidates and existing optional PDF worker integration: zero warnings/errors, curated engine identities, file allowlist,
 package dependencies and notice checks pass. `-SkipShell` was used; native shell
 rebuild, installed lifecycle and visible acceptance were not performed. The
@@ -391,9 +397,10 @@ checks, pricing, support/refund terms, source/product terms and redistribution
 review are independent gates. Keep them visible without blocking read-only
 analysis or independent implementation work unnecessarily.
 
-No new commits, installed-app or Explorer-registration changes, purchases, live
-Polar requests, publishing, private uploads, reference execution or unapproved
-native recycling are authorized by this plan. Preserve both repositories and
+The standing commit checkpoint authorization above covers both repositories.
+Installed-app or Explorer-registration changes, purchases, live Polar requests,
+publishing, private uploads, reference execution and unapproved native recycling
+still require separate authorization. Preserve both repositories and
 use generated disposable fixtures in repository-local scratch directories.
 
 Research starting points

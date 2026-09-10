@@ -73,6 +73,13 @@ licensing/publication calls. The test does not alter the source stage's inventor
 install an application, register Explorer or claim native shell acceptance.
 Optional `-ArtworkFixture <generated authored-artwork.flac>` adds actual IPC and
 Analyze checks for embedded-artwork facts; the file must be under audio scratch.
+Optional `-IncludeOptimization` also exercises the FLAC worker commands, real
+trial admission and application publisher using generated padded FLAC files.
+It writes `flac-results/flac-workflow.json` after all checks pass. Copies and name
+collisions, no-smaller-result handling, expiry between files, changed/corrupt
+sources, cancellation and unsafe reservations are covered. A refusing recycler
+ensures this workflow never uses the native Recycle Bin. It does not exercise a
+customer menu or authorize shipping the evaluation payload.
 
 See [recorded results](../../docs/audio-engine-evaluation.md) and the
 [engine comparison](../../docs/media-engine-evaluation.md). Supplier archive

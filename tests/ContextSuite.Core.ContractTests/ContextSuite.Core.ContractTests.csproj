@@ -14,6 +14,7 @@
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\QuietWorkflow.cs" Link="Runtime\QuietWorkflow.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\OptimizationViewModel.cs" Link="Runtime\OptimizationViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PngOptimizationExecutor.cs" Link="Runtime\PngOptimizationExecutor.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\FlacOptimizationExecutor.cs" Link="Runtime\FlacOptimizationExecutor.cs" />
     <ProjectReference Include="..\..\src\ContextSuite.Core\ContextSuite.Core.csproj" />
     <Compile Include="..\..\src\Shared\LocalPipe.cs" Link="Runtime\LocalPipe.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ActivationRouter.cs" Link="Runtime\ActivationRouter.cs" />

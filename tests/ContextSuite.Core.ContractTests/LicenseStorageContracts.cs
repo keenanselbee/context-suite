@@ -3,6 +3,8 @@ using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Images;
 using ContextSuite.Application;
+using ContextSuite.Core.Audio;
+using System.Collections.Immutable;
 
 namespace ContextSuite.Core.ContractTests;
 
@@ -27,6 +29,11 @@ internal static class LicenseStorageContracts
         var convert = ImageConversionPlanner.Create(Guid.NewGuid(), [facts], new(ImageFormat.WebP), new("convert", new())).Confirm(false, false, false);
         var optimize = PngOptimizationPlan.Create(Guid.NewGuid(), [facts], new("optimize", new())).Confirm(false, false);
         var paidAdmission = await access.AdmitConversionAsync(convert, default);
+        var audio = new AudioFileSource(Guid.NewGuid(), Path.Combine(root, "fixture.flac"), new string('B', 64), 100,
+            new("flac", 2, [new(0, "audio", "flac", 48000, 2, 16, null, 2, "stereo", ImmutableDictionary<string, string>.Empty)], ImmutableDictionary<string, string>.Empty));
+        var flac = FlacOptimizationPlan.Create(Guid.NewGuid(), [audio], new("optimize", new())).Confirm(false, false);
+        var flacAdmission = await access.AdmitOptimizationAsync(flac, default);
+        check(flacAdmission.IsAllowed && !File.Exists(trialPath), "license: paid FLAC admission does not start trial");
         check(paidAdmission.IsAllowed && (await access.AdmitOptimizationAsync(optimize, default)).IsAllowed && !File.Exists(trialPath),
             "license: both paid operation paths admit without starting trial");
         check(!Encoding.UTF8.GetString(await File.ReadAllBytesAsync(path)).Contains(key), "license: DPAPI file contains no plaintext key");
@@ -52,6 +59,8 @@ internal static class LicenseStorageContracts
         check(!(await reopened.ReadStatusAsync()).CanStart, "license: 30 days since last successful validation expires");
         check(paidAdmission.IsAllowed && !(await access.AdmitOptimizationAsync(optimize, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid expiry preserves old admission and cannot fall back to a new trial");
+        check(flacAdmission.IsAllowed && !(await access.AdmitOptimizationAsync(flac, default)).IsAllowed && !File.Exists(trialPath),
+            "license: paid FLAC expiry preserves admission and cannot fall back to trial");
         clock.Now = clock.Now.AddDays(-2);
         check(!(await reopened.ReadStatusAsync()).CanStart, "license: persisted expiry observation prevents clock rollback revival");
         service.ValidationState = LicenseReplyState.Granted;

@@ -32,6 +32,7 @@ try
     var catalog = new ProductionCatalog();
     ImageAdapter? adapter = null;
     AudioProbeAdapter? audio = null;
+    AudioFileAdapter? audioFiles = null;
     PdfProbeAdapter? pdf = null;
     try
     {
@@ -50,6 +51,13 @@ try
         try
         {
             if (command.Command == "capabilities") reply = new(1, command.RequestId, catalog.Capabilities.ToArray());
+            else if (command.Command is "flac-probe" or "flac-optimize")
+            {
+                audioFiles ??= new AudioFileAdapter(Path.Combine(AppContext.BaseDirectory, "audio-engine"), args[5]);
+                reply = command.Command == "flac-probe"
+                    ? new(1, command.RequestId, [], AudioSource: await audioFiles.ProbeFlacAsync(command.AudioFile!, lifetime.Token))
+                    : new(1, command.RequestId, [], AudioResult: await audioFiles.OptimizeFlacAsync(command.FlacWork!, lifetime.Token));
+            }
             else if (command.Command == "audio-probe")
             {
                 audio ??= new AudioProbeAdapter(Path.Combine(AppContext.BaseDirectory, "audio-engine"));
@@ -76,13 +84,13 @@ try
         }
         catch (Exception error) when (error is IOException or InvalidDataException or ArgumentException or InvalidOperationException or
             UnauthorizedAccessException or ImageMagick.MagickException or System.Xml.XmlException or TimeoutException or System.ComponentModel.Win32Exception or
-            System.Runtime.InteropServices.COMException or TypeInitializationException or DllNotFoundException or EntryPointNotFoundException or BadImageFormatException or OutOfMemoryException)
+            System.Runtime.InteropServices.COMException or TypeInitializationException or DllNotFoundException or EntryPointNotFoundException or BadImageFormatException or OutOfMemoryException or OperationCanceledException)
         {
             // A damaged/unsupported item is not a worker crash. Do not return engine strings containing file paths.
             var failure = error switch
             {
                 ImageFailureException known => known.Failure,
-                TimeoutException => ImageFailure.TimedOut,
+                TimeoutException or OperationCanceledException => ImageFailure.TimedOut,
                 InvalidDataException or ArgumentException or System.Xml.XmlException => ImageFailure.InvalidInput,
                 UnauthorizedAccessException or IOException => ImageFailure.FileAccess,
                 ImageMagick.MagickResourceLimitErrorException => ImageFailure.ResourceLimit,
@@ -95,7 +103,7 @@ try
         await JsonFrames.WriteAsync(pipe, reply, lifetime.Token);
     }
     }
-    finally { audio?.Dispose(); pdf?.Dispose(); }
+    finally { audioFiles?.Dispose(); audio?.Dispose(); pdf?.Dispose(); }
     return 0;
 }
 catch (Exception error) when (error is IOException or InvalidDataException or OperationCanceledException or ArgumentException or
