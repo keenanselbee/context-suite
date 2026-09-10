@@ -117,8 +117,8 @@ inventory, and same-rate decoded frame count must agree with the sample extent.
 Mapped INFO fields are title, artist, album, comment, date, genre, track, copyright
 and encoder software. Descriptive values must survive the source probe and actual
 encoded output. The encoder label is technical provenance and may change on
-re-encoding. Text currently requires printable ASCII with proper NUL termination;
-non-ASCII/code-page interpretation, control characters, duplicate values and
+re-encoding. Text currently requires ASCII with proper NUL termination; carriage
+return, newline and tab are allowed. Non-ASCII/code-page interpretation, other control characters, duplicate values and
 unmapped fields need a preservation handler. Do not infer permission to drop them.
 
 Cue points, sampler loops, broadcast metadata, iXML, associated labels, embedded
@@ -127,12 +127,40 @@ are padding. Inventory covers metadata after the sample chunk too; appended data
 outside the RIFF extent is rejected. Same-format byte retention remains a no-op.
 
 Private candidate results now distinguish `SourceMetadataVerified` from sample
-validation. It is true for admitted WAV conversion, byte-identical same-format
+validation. It is true for admitted WAV/FLAC conversion, byte-identical same-format
 retention and the separately validated FLAC optimization path. Other cross-format
 source containers remain unverified candidates even when flattened probe tags
 match. Their metadata handlers, artwork transport, application conversion admission
 and menu integration remain required; WAV coverage does not fulfill the six-format
 launch matrix by itself.
+
+FLAC conversion metadata admission
+----------------------------------
+
+Cross-format FLAC conversion now inventories the original blocks and ordered
+UTF-8 comments before encoding. STREAMINFO, padding, seek tables and comments
+are admitted; application data, cue sheets, artwork and unknown blocks need
+preservation handlers. The complete source frame index and CRCs are validated,
+and any seek table must match those frames. Same-rate decoded length must match
+the declared sample count when present.
+
+Comment names use an explicit alias map for album artist, track/disc number,
+disc subtitle and description, consistent with the native
+[Vorbis-comment mappings](https://www.ffmpeg.org/doxygen/trunk/vorbiscomment_8c.html).
+The pinned native fixture verifies these aliases. Every descriptive value must
+survive both source probing and output probing exactly. Duplicate or colliding
+aliases stop conversion; technical encoder/vendor provenance may change.
+Chapter, loop, artwork and playback-gain comments require a separate policy.
+Limits are 128 fields, 128 characters per mapped name and 4,096 per value;
+NUL is refused. These limits supplement the bounded FLAC header parser.
+
+Unicode, multiline values, quotes and backslashes pass as literal quoted native
+arguments with no shell. NUL and command lines longer than 32,766 UTF-16 code
+units are rejected before process creation. FLAC-to-WAV currently requires ASCII
+values (including tab/newline/carriage return); Unicode WAV encoding remains
+undecided. Unsupported output tags fail validation instead of silently disappearing.
+Same-format retention and raw-preserving FLAC optimization keep their separate
+policies; these conversion restrictions do not remove their richer metadata support.
 
 FLAC optimization candidate
 ----------------------------

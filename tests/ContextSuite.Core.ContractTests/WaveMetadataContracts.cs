@@ -30,11 +30,14 @@ internal static class WaveMetadataContracts
         var duplicate = await Read(FileOf(("fmt ", format), ("data", samples), ("LIST", Info(("INAM", Text("First")), ("INAM", Text("Second"))))));
         check(duplicate.Tags.Select(tag => tag.Value).SequenceEqual(["First", "Second"]) && duplicate.UnsupportedChunks.Any(item => item.Contains("duplicate")),
             "WAV inventory: repeated INFO values remain visible and block flattened mapping");
-        foreach (var value in new[] { Encoding.UTF8.GetBytes("Café\0"), Encoding.ASCII.GetBytes("line\nline\0") })
+        foreach (var value in new[] { Encoding.UTF8.GetBytes("Café\0"), Encoding.ASCII.GetBytes("line\u0001line\0") })
         {
             var result = await Read(FileOf(("fmt ", format), ("data", samples), ("LIST", Info(("INAM", value)))));
             check(result.UnsupportedChunks.Any(item => item.Contains("text encoding or controls")), "WAV inventory: ambiguous text encoding and control values require explicit handling");
         }
+        var multiline = await Read(FileOf(("fmt ", format), ("data", samples), ("LIST", Info(("ICMT", Text("Line one\r\nLine two\n\tIndented"))))));
+        check(multiline.UnsupportedChunks.IsEmpty && multiline.Tags.Single().Value == "Line one\r\nLine two\n\tIndented",
+            "WAV inventory: ordinary multiline comments and tabs remain literal metadata");
         var unknownInfo = await Read(FileOf(("fmt ", format), ("data", samples), ("LIST", Info(("IENG", Text("Engineer"))))));
         check(unknownInfo.UnsupportedChunks.Contains("LIST/INFO/IENG"), "WAV inventory: unmapped INFO is not silently discarded");
         var padding = await Read(FileOf(("JUNK", new byte[] { 1, 2, 3 }), ("fmt ", format), ("PAD ", new byte[5]), ("data", samples)));

@@ -64,6 +64,7 @@ try
     await PdfAnalysisContracts.RunAsync(args[0], Check);
     FlacMetadataContracts.Run(Check);
     FlacDescriptionContracts.Run(Check);
+    FlacConversionMetadataContracts.Run(Check);
     FlacSeekContracts.Run(Check);
     await FlacBatchContracts.RunAsync(args[0], Check);
     AudioProbeContracts.Run(Check);

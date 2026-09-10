@@ -145,7 +145,10 @@ public static class WaveMetadata
             if (terminator < 0 || data[terminator..].IndexOfAnyExcept((byte)0) >= 0)
                 throw new InvalidDataException("WAV INFO text is not correctly terminated.");
             data = data[..terminator];
-            if (data.ContainsAnyExceptInRange((byte)32, (byte)126))
+            var unsupportedText = false;
+            foreach (var value in data)
+                if (value > 126 || (value < 32 && value is not (9 or 10 or 13))) { unsupportedText = true; break; }
+            if (unsupportedText)
             { unsupported.Add("LIST/INFO/" + id + " text encoding or controls"); continue; }
             if (!data.IsEmpty) tags.Add(new(id, name, Encoding.ASCII.GetString(data)));
         }

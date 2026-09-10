@@ -92,6 +92,13 @@ captured settings, quiet completion, cancellation, malformed files, misleading
 extensions and missing-engine fallback. These component checks do not operate
 Explorer or inspect visible windows, keyboard focus or assistive technology.
 
+The latest adapter run passes 149 combined checks. FLAC conversion cases include
+original-block inventory, literal Unicode/multiline tag transport, canonical
+comment aliases, refusal of unsupported metadata, stale seek tables and corrupt
+frames. WAV allows ordinary ASCII line breaks and tabs; Unicode WAV text remains
+outside the admitted conversion policy. This is candidate validation, not a
+shipping audio conversion command or listening acceptance.
+
 See [recorded results](../../docs/audio-engine-evaluation.md) and the
 [engine comparison](../../docs/media-engine-evaluation.md). Supplier archive
 retention is limited; this evaluation pin must never fall back silently to latest.

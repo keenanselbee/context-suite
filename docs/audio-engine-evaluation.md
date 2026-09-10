@@ -578,3 +578,43 @@ using `-SkipShell`. Its separate evaluation-engine copy passed **11 worker/Analy
 Normal packaging still excludes evaluation audio binaries. Image-engine, native
 shell, hidden/visible UI and installed lifecycle checks were not repeated for this
 metadata-only implementation slice. No native recycling or live commerce was used.
+
+FLAC conversion inventory and literal text transport (2026-09-10)
+----------------------------------------------------------------
+
+**1,216 foundation contracts** pass, including 25 new FLAC conversion metadata
+contracts and one additional WAV multiline case. Cross-format FLAC admission now
+examines original metadata blocks and ordered UTF-8 comments rather than relying
+on a flattened probe alone. Descriptive values must match both source and output
+probes. Unmapped blocks, duplicate/aliased values and chapter/loop/playback-gain
+semantics stop conversion. Complete frame indexes/CRCs and present seek tables
+must validate before encoding. Raw-preserving optimization is unchanged.
+
+**149 combined private audio checks** pass. The 25 new FLAC cases cover six
+baseline targets, Unicode/multiline values in five non-WAV targets (including
+same-format retention), ASCII multiline WAV output, comment aliases, unsupported
+metadata, corrupt/trailing frames, stale seek offsets, source hashes and scratch
+cleanup. Six launcher checks prove literal argument boundaries for empty values,
+spaces, quotes, trailing backslashes, Unicode and multiline text, plus refusal of
+NUL and oversized native command lines. WAV Unicode text remains an explicit
+policy gap; this does not certify arbitrary comments or other input containers.
+
+Native evidence:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  adapter-26f020b6f5ea4c849ef61203bd56b7c1/encoding-adapter.json
+  worker-b9fbf0167fa14ed4a6d787d71df8fcf2/
+    results/analysis-results.txt
+    flac-results/flac-workflow.json
+    direct-results/direct-audio.json
+```
+
+Fresh isolated Release stage
+`artifacts/production-staging/e4cc9bc6df3e48db8afc9231ef8fb046` passed with zero
+warnings/errors, curated identities, file allowlist, dependencies and notices.
+The evaluation-only worker copy passed 11 Analyze, 14 FLAC workflow and 16 direct
+audio checks. The normal stage excludes evaluation audio/PDF engines. This build
+used `-SkipShell`; visible UI, native shell, image engine, installer, independent
+listening and live commerce were not rerun. Audio conversion worker/menu
+integration, remaining metadata handlers, engine adoption and release gates stay open.

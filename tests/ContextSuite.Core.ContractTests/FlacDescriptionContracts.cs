@@ -67,7 +67,7 @@ internal static class FlacDescriptionContracts
         }
     }
 
-    private static byte[] Comments(params string[] fields)
+    internal static byte[] Comments(params string[] fields)
     {
         using var stream = new MemoryStream(); using var writer = new BinaryWriter(stream);
         var vendor = Encoding.UTF8.GetBytes("Context Suite fixture"); writer.Write(vendor.Length); writer.Write(vendor); writer.Write(fields.Length);
