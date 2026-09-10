@@ -50,7 +50,10 @@ engine report files. It writes `probe-adapter.json` under a fresh scratch direct
 it does not add an audio payload to the production application or enable a menu.
 It also writes `encoding-adapter.json` after the private candidate's 36 format
 pairs, wider PCM/float/rate/layout fixtures, FLAC recompression and native child
-ownership checks. Generated outputs stay under the new evidence directory.
+ownership checks. It also generates a five-minute PCM24 recording to test the
+file API beyond the old encoded/decoded array limits, managed allocation,
+artifact leases/disposal and cancellation after native output is observed.
+Generated outputs stay under the new evidence directory.
 Read [the candidate policy and limits](../../docs/audio-conversion-policy.md)
 before interpreting these results as transformation or release readiness.
 

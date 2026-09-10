@@ -250,7 +250,7 @@ Typed conversion and private encoding milestone
 The [fixed policy](audio-conversion-policy.md) and private `AudioEncodingAdapter`
 now cover generated conversions and FLAC recompression. These are candidate
 components; they do not register worker transformation commands or authorize
-application publication. Missing metadata and unmeasured resampling fidelity
+application publication. Missing metadata and independent resampling fidelity
 remain explicit limitations rather than successful publication receipts.
 
 The final run passed **70 combined checks**: the original 13 probe checks, 36
@@ -269,7 +269,7 @@ PCM8/16/24/32, float32/64, 96 kHz 24-bit 5.1, and 44.1/8 kHz mono to Opus.
 Signed integer fixtures include full-scale minimum/maximum values. Floating-to-
 FLAC is an acknowledged 24-bit quantization, not an exact result. Resampling has
 explicit consent and frame/rate checks; time-aligned signal/listening comparison
-is still missing. These fixtures contain generated signals, not licensed music
+was still missing at this milestone (see the streaming follow-up below). These fixtures contain generated signals, not licensed music
 or speech, and do not establish listening or broad player compatibility.
 
 The owned child fixture proves seekable input, native write denial on that input,
@@ -303,3 +303,47 @@ The first redirected foundation rerun stopped because PowerShell treated an
 expected router diagnostic as an error. The process was confirmed absent before
 rerunning through the documented script without merging stderr. It is not counted
 as a passed run. Current foundation/build totals are recorded in the active goal.
+
+Streaming file candidate follow-up
+----------------------------------
+
+The file API now avoids complete encoded/decoded media arrays. It owns a bounded
+snapshot, captures canonical decoded samples to scratch with fixed-size buffers,
+then compares the output incrementally. A successful result holds a read lease
+and source/output digests until disposed. The small-fixture byte API remains for
+compatibility. See the [current bounds](audio-conversion-policy.md).
+
+The follow-up passed **77 combined audio checks**, including seven new file
+contracts. Evidence:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  adapter-339c4af469b64e49abfd1763c3d342ff/encoding-adapter.json
+```
+
+An independently generated five-minute PCM24 stereo WAVE (86,400,044 bytes)
+converted to FLAC (36,984,654 bytes) and back to WAVE (86,400,102 bytes), retaining
+all 14,400,000 decoded frames exactly. Each decoded reference was 230,400,000
+bytes, exceeding the former 128 MiB array limit. Both operations together took
+6,399 ms and allocated 1,980,256 managed bytes in this run. This is measured
+managed allocation, not native peak memory or a general performance guarantee.
+Returned artifacts excluded writers; disposal removed their owned scratch.
+
+Cancellation was requested after a filesystem notification exposed the decoded
+reference. Windows exposed its full 230,400,000 bytes in this run, so this proves
+cancellation during a running multi-phase operation, not interruption mid-decode.
+Cleanup and the original source digest/stream position passed. The earlier
+`adapter-eb4d545b58ce4b5a9965d423911408e5` attempt exposed a startup race: cancellation
+could kill a suspended child before job assignment, yielding access denied.
+The launcher now establishes job ownership before registering cancellation and
+reports cancellation if it races native resume. Pipe consumers are awaited even
+when resume fails, before their streams and reference file are disposed.
+
+Resampled Opus output now has time-aligned maximum/RMS error measurements against
+a reference at the planned rate. The shared engine is not an independent fidelity
+oracle. Seventeen new public sample contracts cover fragmented reads, late sample
+differences, finite samples, framing, bounds, unequal lengths and cancellation.
+The first public rerun revealed that its rejection helper did not catch
+`InvalidDataException`; the helper was corrected before 1,081 contracts passed.
+Audio metadata admission, worker/publication integration, hostile-file and crash
+coverage, representative listening and payload adoption remain open.

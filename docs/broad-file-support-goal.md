@@ -104,13 +104,19 @@ preservation; see [document implementation and limits](document-design.md).
 This adds no renderer or document transformation.
 
 The [typed audio policy and private encoding candidate](audio-conversion-policy.md)
-now exercise six-format conversion and lossless FLAC recompression with 70 passing
+now exercise six-format conversion and lossless FLAC recompression with 77 passing
 combined checks. Seekable inherited input preserves MP3 gapless sample counts;
 the native process joins its Windows job before parsing. Tests cover wider
 precision, surround, explicit Opus resampling, metadata reconciliation and running
 child cancellation. The 36 format pairs include six unchanged same-format cases.
+The file API now validates with fixed-size buffers and owned decoded scratch,
+returning a read-leased candidate with source/output digests. A five-minute PCM24
+round trip retains exact samples beyond the old array limits; running-operation
+cancellation, artifact disposal and low managed allocation pass. Resampled output
+now has time-aligned sample-error measurements, still requiring independent
+fidelity and listening acceptance.
 Audio worker transformation commands, full metadata/artwork admission, listening,
-streaming large-file validation, application publication/access/recovery, payload
+hostile-file/crash coverage, application publication/access/recovery, payload
 review and actual customer UI acceptance remain pending. The candidate is not a
 publishable receipt and adds no menu capability.
 
@@ -125,14 +131,15 @@ including exact source/optimized rendered pixels and image alpha round trips.
 Broader rendering/native failure coverage and all PDF transformations remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,064 foundation contracts pass, including 30 audio-plan checks. The previous
+1,081 foundation contracts pass, including 30 audio-plan and 17 streaming sample
+checks. The previous
 76 hidden view contracts were not rerun for this non-UI audio candidate slice. The
 [catalog inventory](file-type-inventory.md) separates descriptions from detectors.
 The [source audit](catalog-source-review.json) records 223 references: 186 retrieved,
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/71c9e09249cf4516b0b199d47ad7a8a7` includes the private
+`artifacts/production-staging/976f5e9e0e73485690dc211911281bc8` includes the private
 audio candidates and existing optional PDF worker integration: zero warnings/errors, curated engine identities, file allowlist,
 package dependencies and notice checks pass. `-SkipShell` was used; native shell
 rebuild, installed lifecycle and visible acceptance were not performed. The

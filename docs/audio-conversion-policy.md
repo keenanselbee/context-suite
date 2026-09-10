@@ -61,19 +61,30 @@ network/filesystem sandbox; supported-container external-resource and DLL-loadin
 acceptance remain required. The separate quick Analyze probe still reads a pipe
 prefix and retains its existing duration/coverage limitations.
 
-Current bounds are 64 MiB encoded input/output, 128 MiB decoded float64 bytes per
-comparison side, 64 KiB diagnostics, and 120 seconds for the operation (individual
-probes retain 15-second limits). Large/long media require a streaming comparison
-before broad release; these limits are not the final whole-song capacity promise.
-Candidate output and snapshots are cleaned after work. There is no application
-publication, recycling or paid-access operation in this component.
+The file API accepts at most 512 MiB input and requires output below 512 MiB.
+Decoded float64 data is bounded to 1 GiB per side; fixed 64 KiB buffers capture an
+owned reference file and compare decoded output incrementally. The small-fixture
+byte-array API retains a 64 MiB input/output limit. Diagnostics are bounded to
+64 KiB and work to 120 seconds (individual probes retain 15-second limits).
+These are current resource bounds, not a promise that every file within them
+will finish before the deadline. Scratch capacity must accommodate the encoded
+snapshots/candidates and decoded reference.
+
+`AudioEncodingArtifact` retains one read-only candidate lease and records source
+and output SHA-256 digests. Disposal removes that owned candidate; failed work
+removes its known scratch files. The caller's source position is restored.
+Native input uses a synchronous owned snapshot even when the caller uses an
+asynchronous file handle. There is no application publication, recycling or
+paid-access operation in this component; worker integration remains pending.
 
 Validation checks container/codec, sample rate, channel count/layout, FLAC
 precision, decoded frame count and finite samples. Lossless paths require exact
 float64 decoded values, retaining the full signed PCM32 range. The lossy RMSE
 bound detects gross errors; it is not a listening-quality guarantee. Resampled
-output has no reported time-aligned error metric yet and cannot pass final
-fidelity acceptance on these facts alone.
+output is now compared with a reference decoded at the planned output rate.
+This gives time-aligned sample-error measurements, but both sides use the same
+pinned engine. Independent resampler fidelity and listening acceptance remain
+required; resampling is never reported as exact preservation of source samples.
 
 Descriptive tags are merged only when global/stream values do not conflict,
 mapped explicitly, then compared with actual output. The candidate reports missing

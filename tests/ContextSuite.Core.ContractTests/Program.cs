@@ -49,6 +49,7 @@ try
     FlacMetadataContracts.Run(Check);
     AudioProbeContracts.Run(Check);
     AudioConversionContracts.Run(Check);
+    await AudioSampleContracts.RunAsync(Check);
     ImagePlanContracts.Run(args[0], Check);
     await PngOptimizationContracts.RunAsync(args[0], Check);
     await TrialContracts.RunAsync(args[0], Check);
