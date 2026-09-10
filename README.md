@@ -18,8 +18,13 @@ audience. [The quiet Optimize slice](docs/quiet-first-ux-goal.md) implements dir
 Auto first, best-effort optimization, quiet successful completion and a much
 simpler progress/problem UI. Quick Optimize is implemented and tested locally;
 installed Explorer, accessibility and visual acceptance remain pending. Common
-Convert targets also run directly when safe; a preselected planner opens for
-meaningful decisions. Advanced in-app Optimize retains its planning window.
+Convert targets also run directly when safe; focused dialogs handle necessary
+transparency and DDS decisions. The manual workspace and routine Optimize planner
+are removed. Standalone launch opens Settings/help. Copies are the default;
+Settings offers explicit per-tool replacement for future commands. Old
+permission-only settings migrate to copies. See the
+[simplification goal](docs/context-menu-simplification-goal.md) for evidence and
+remaining visual acceptance.
 
 
 Project Status
@@ -41,13 +46,15 @@ The curated native engine is now integrated into production development builds,
 with bounded BMP/TGA conversion bringing the catalog to twenty cross-format pairs.
 The completed bounded [DDS slice](docs/dds-conversion-goal.md) adds public header analysis,
 pinned CPU DirectXTex conversion, mip/color policies and safe publication: 27
-conditional conversion pairs total. All 33 focused image/DDS desktop checks pass.
+conditional conversion pairs total. Earlier focused image/DDS desktop checks
+passed before the current simplification; final customer-surface acceptance
+remains open.
 Bounded [lossless PNG optimization](docs/png-optimization-goal.md) now has a
-system-themed planner, private encoder, independent sample/metadata validation,
+direct commands, a private encoder, independent sample/metadata validation,
 trial-gated smaller-only publication and automated failure tests.
 [Balanced and Smallest](docs/png-lossy-presets.md) add bounded RGB precision and dark-protected palette reduction
 for supported 8-bit RGB/RGBA PNGs, with exact alpha and preserved accepted metadata. Interactive
-optimization UI acceptance and paid activation remain pending; this is not release-ready.
+optimization/licensing UI acceptance and live paid activation remain pending; this is not release-ready.
 [Fixed optimization recipes](docs/decisions/0016-fixed-optimization-recipes.md)
 are now implemented: predictable presets, at most one safety fallback and
 gradient-protected Smallest. See [integration evidence](docs/fixed-preset-integration.md)
@@ -130,16 +137,18 @@ commercial trial is planned for people who want to run the application.
 
 Public components may be built and tested independently where supported. The
 native prototype commands remain independent. Production composition now builds;
-paid licensing is not implemented. The image conversion flow and its bounded
+paid licensing is locally implemented and contract-tested, not live-verified. The image conversion flow and its bounded
 media/failure acceptance matrix are verified locally.
 
 The commercial direction is a three-day trial followed by Polar license-key
 activation, using hosted checkout without custom website accounts. Polar account
-approval is user-confirmed; app integration remains planned. Media processing
+approval is user-confirmed; app integration has synthetic-provider evidence. Media processing
 remains local. Decision 0009 settles a 72-hour local trial starting at the first
 confirmed valid conversion or optimization; its store, execution gate and conversion UI are tested
-with isolated trial data. Paid offline-license
-policy, pricing and source-license terms remain open.
+with isolated trial data. One purchase includes all future updates; paid access
+uses daily validation and 30-day offline grace. Final pricing and source-license
+terms remain release decisions. See the active
+[commercial release-candidate goal](docs/commercial-release-candidate-goal.md).
 See [build ownership](docs/decisions/0005-public-and-proprietary-builds.md) and
 [commercial access](docs/decisions/0006-trial-and-purchase-access.md).
 The [Polar integration plan](docs/polar-integration.md) records setup information

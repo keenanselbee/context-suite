@@ -6,7 +6,7 @@ using ContextSuite.Core.Dds;
 namespace ContextSuite.Core.Images;
 
 public enum ImageFormat { Png, Jpeg, WebP, Bmp, Tga, Dds }
-public enum ImageMetadataMode { Preserve, RemoveDescriptive }
+public enum ImageMetadataMode { Preserve, RemoveDescriptive, Automatic }
 
 // EXIF-compatible units: 1 = aspect only, 2 = pixels/inch, 3 = pixels/cm.
 // A divisor retains PNG pixels/metre exactly when represented as pixels/cm.
@@ -92,20 +92,27 @@ public sealed record ImageBatchPlan(Guid BatchId, ImageConversionOptions Options
 {
     public bool HasExecutableItems => Items.Any(i => i.CanExecute);
 
-    // Format facts and resolution-only normalization do not remove capabilities.
-    // EXIF/XMP normalization can remove thumbnails, so that still needs review.
-    public bool CanConfirmQuickCopy => !ReplaceOriginal && !Items.IsDefaultOrEmpty &&
-        Items.All(item => item.CanExecute && item.Warnings.All(warning =>
+    public bool RequiresReview(OperationWarning warning) => Options.Metadata != ImageMetadataMode.Automatic ||
+        warning.Code is not ("loss-not-restored" or "untagged-srgb" or "metadata-normalization" or "metadata-removal" or
+            "color-profile-conversion" or "lossy-transcode" or "precision-reduction");
+
+    // Automatic output needs no routine metadata review. Transparency still
+    // needs a choice even when another file in the selection could run directly.
+    public bool CanConfirmQuickAction => (!ReplaceOriginal || Settings.Preferences.ReplaceOriginals) && !Items.IsDefaultOrEmpty &&
+        !Items.Any(item => item.Source.UnsupportedReason is null && item.Source.Format != Options.Target &&
+            item.Source.HasTransparency && !Options.SupportsAlpha && Options.MatteRgb is null) &&
+        HasExecutableItems && Items.Where(item => item.CanExecute).All(item => item.Warnings.All(warning =>
+            !RequiresReview(warning) ||
             warning.Code is "loss-not-restored" or "untagged-srgb" ||
             warning.Code == "metadata-normalization" && !item.Source.ProfileNames.Any(name =>
                 name.Equals("exif", StringComparison.OrdinalIgnoreCase) || name.Equals("xmp", StringComparison.OrdinalIgnoreCase))));
 
-    // Confirmation belongs to this exact immutable plan, not a reusable settings preference.
+    // Confirmation binds the menu choice and its captured settings to this exact plan.
     public ConfirmedImageBatch Confirm(bool warningsAcknowledged, bool replacementConfirmed, bool replacementAvailable)
     {
         ImageConversionPlanner.ValidateBatch(this);
         if (!HasExecutableItems) throw new InvalidDataException("No selected files can execute this conversion.");
-        if (Items.Any(i => i.CanExecute && !i.Warnings.IsEmpty) && !warningsAcknowledged)
+        if (Items.Any(i => i.CanExecute && i.Warnings.Any(RequiresReview)) && !warningsAcknowledged)
             throw new InvalidDataException("Review and acknowledge the conversion consequences first.");
         Settings.SelectOutput(ReplaceOriginal, replacementConfirmed, false, replacementAvailable);
         return new ConfirmedImageBatch(this);
@@ -127,6 +134,8 @@ public static class ImageConversionPlanner
         ArgumentNullException.ThrowIfNull(options);
         options.Validate();
         var items = sources.Take(4097).Select(source => PlanItem(source, options)).ToImmutableArray();
+        if (options.Metadata == ImageMetadataMode.Automatic && items.Any(item => AutomaticOmitsMetadata(item.Source, options.Target)))
+            replaceOriginal = false;
         var plan = new ImageBatchPlan(batchId, options, settings, replaceOriginal, items);
         ValidateBatch(plan);
         return plan;
@@ -140,6 +149,9 @@ public static class ImageConversionPlanner
             plan.Items.Any(i => i?.Source is null || i.Warnings.IsDefault) || plan.Items.Select(i => i.Source.ItemId).Distinct().Count() != plan.Items.Length)
             throw new InvalidDataException("The conversion batch is invalid.");
         plan.Options.Validate();
+        if (plan.ReplaceOriginal && plan.Options.Metadata == ImageMetadataMode.Automatic &&
+            plan.Items.Any(item => AutomaticOmitsMetadata(item.Source, plan.Options.Target)))
+            throw new InvalidDataException("Automatic metadata omission requires keeping the original.");
         foreach (var item in plan.Items)
         {
             var expected = PlanItem(item.Source, plan.Options);
@@ -149,6 +161,10 @@ public static class ImageConversionPlanner
                 throw new InvalidDataException("The conversion plan no longer matches its facts and options.");
         }
     }
+
+    public static bool AutomaticOmitsMetadata(ImageSourceFacts source, ImageFormat target) =>
+        source.HasOtherMetadata || source.ProfileNames.Any(name => name.ToLowerInvariant() is not ("icc" or "icm")) ||
+        (target is ImageFormat.Bmp or ImageFormat.Tga or ImageFormat.Dds && (source.ProfileNames.Length != 0 || source.Resolution is not null));
 
     private static ImageItemPlan PlanItem(ImageSourceFacts source, ImageConversionOptions options)
     {
@@ -166,6 +182,8 @@ public static class ImageConversionPlanner
         var depth = options.Target == ImageFormat.Png && source.BitDepth > 8 ? 16u : 8u;
         var warnings = ImmutableArray.CreateBuilder<OperationWarning>();
         var blocked = source.UnsupportedReason;
+        if (options.Metadata == ImageMetadataMode.Automatic && (source.Format == ImageFormat.Dds || options.Target == ImageFormat.Dds))
+            blocked ??= "Choose the explicit image information policy in the DDS dialog.";
         if (source.Format == options.Target && source.Format != ImageFormat.Dds) blocked ??= "Same-format re-encoding belongs to Optimize.";
         if (source.HasTransparency && !options.SupportsAlpha && options.MatteRgb is null && options.Target != ImageFormat.Dds)
             blocked ??= "Select and preview an explicit background color for transparency.";
@@ -237,6 +255,8 @@ public static class ImageConversionPlanner
             warnings.Add(new("precision-reduction", "The target reduces channel precision to 8 bits."));
         if (options.Metadata == ImageMetadataMode.RemoveDescriptive)
             warnings.Add(new("metadata-removal", "Descriptive metadata, location, resolution/aspect hints and embedded thumbnails will be removed; color interpretation is retained."));
+        if (options.Metadata == ImageMetadataMode.Automatic && AutomaticOmitsMetadata(source, options.Target))
+            warnings.Add(new("metadata-removal", "The new copy keeps supported image information. Unsupported extras or outdated thumbnails may be omitted; the original is kept."));
         if (source.HasTransparency && !options.SupportsAlpha && options.MatteRgb is not null)
             warnings.Add(new("alpha-flattening", "Transparency will be composited against the selected background."));
         if (source.HasGrayscaleProfile && source.HasTransparency && !options.SupportsAlpha)

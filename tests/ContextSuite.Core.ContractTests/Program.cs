@@ -22,6 +22,8 @@ await File.WriteAllTextAsync(fixture, "A deliberately non-media fixture; no tran
 var passed = 0;
 try
 {
+    PaidLicenseContracts.Run(Check);
+    await LicenseStorageContracts.RunAsync(args[0], Check);
     await SettingsContracts.RunAsync(args[0], Check);
     await DdsContracts.RunAsync(args[0], Check);
     ImagePlanContracts.Run(args[0], Check);
@@ -46,6 +48,10 @@ try
     Check(ActivationParser.Parse(Encoding.UTF8.GetBytes(RequestText().Replace("\n", "\r\n"))).Paths.Length == 1, "CRLF activation");
     foreach (var pair in new[] { ("convert", "choose-format"), ("optimize", "choose-preset") })
         Check(ActivationParser.Parse(Encoding.UTF8.GetBytes(RequestText(pair.Item1, pair.Item2))).Operation == pair.Item1, pair.Item1);
+    Check(ActivationParser.Parse(Encoding.UTF8.GetBytes(RequestText("convert", "dds"))).IsQuickConversion,
+        "DDS menu activation retains direct-command lifecycle");
+    Check(ActivationParser.Parse(Encoding.UTF8.GetBytes(RequestText("optimize", "choose-preset"))).IsQuickOptimization,
+        "legacy optimization activation uses direct lossless default");
     Reject(() => ActivationParser.Parse([]), "empty activation");
     Reject(() => ActivationParser.Parse(new byte[ActivationParser.MaximumBytes + 1]), "oversized activation");
     Reject(() => ActivationParser.Parse([0xff]), "invalid UTF-8");
@@ -179,9 +185,9 @@ try
         Check(vm.Admit(request).Accepted && vm.Admit(request).Accepted && vm.Rows.Count == 1, "duplicate request ID");
         vm.Admit(request with { RequestId = Guid.NewGuid(), Operation = "convert", Action = "choose-format" });
         vm.Settings = new SuiteSettings { Convert = new(true) };
-        Check(!vm.Rows[^1].Settings.Preferences.AllowReplacingOriginals, "queued file retains its settings snapshot");
+        Check(!vm.Rows[^1].Settings.Preferences.ReplaceOriginals, "queued file retains its settings snapshot");
         vm.Admit(request with { RequestId = Guid.NewGuid(), Operation = "convert", Action = "choose-format" });
-        Check(vm.Rows[^1].Settings.Preferences.AllowReplacingOriginals, "future batch captures changed preferences");
+        Check(vm.Rows[^1].Settings.Preferences.ReplaceOriginals, "future batch captures changed preferences");
         vm.Admit(request with { RequestId = Guid.NewGuid(), Paths = [fixture, fixture, fixture] });
         Check(vm.Rows.TakeLast(3).Select(row => row.Batch).Distinct().Count() == 1, "shared batch identity");
         vm.CancelCommand.Execute(null);
@@ -224,10 +230,12 @@ try
         vm.RecordResult(laterSuccess, new(laterSuccess.Path, OperationState.Succeeded, "Test success"));
         var message = vm.RetryFailed();
         Check(vm.Rows.Count == 5 && vm.Rows[^1].Action == "smallest" && vm.Rows[^1].Path == retryPath &&
-            message.StartsWith("1 failed file(s) queued") && message.Contains("1 could not be queued"),
+            message.StartsWith("1 file(s) could not be restarted"),
             "retry: latest case-insensitive result suppresses old failure; original preset retained; missing source reported");
         vm.RetryFailed();
         Check(vm.Rows.Count == 5, "retry: double-click cannot duplicate queued retry");
+        Check(!vm.DisplayRows.Contains(retry) && vm.DisplayRows.Contains(missing) && vm.Rows.Contains(retry),
+            "retry: accepted attempt replaces stale failure in display while missing file and history remain");
         vm.CancelCommand.Execute(null);
         vm.RecordResult(vm.Rows[^1], new PublicationResult(retryPath, PublicationOutcome.CopyCreated, "Created", retryPath + ".out").ToFileResult());
         vm.RetryFailed();

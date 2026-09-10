@@ -3,12 +3,12 @@ using ContextSuite.Core.Operations;
 
 namespace ContextSuite.Application.Infrastructure;
 
-internal sealed class PngOptimizationExecutor(WorkerClient worker, OutputPublisher publisher, LocalTrialStore trial)
+internal sealed class PngOptimizationExecutor(WorkerClient worker, OutputPublisher publisher, IOperationAccess trial)
 {
     public async Task<ImageBatchExecution> ExecuteAsync(ConfirmedPngOptimization confirmed,
         Action<PngOptimizationItem, FileResult>? report, CancellationToken cancellationToken)
     {
-        var admission = await trial.AdmitAsync(confirmed, cancellationToken);
+        var admission = await trial.AdmitOptimizationAsync(confirmed, cancellationToken);
         var results = new List<FileResult>();
         foreach (var item in confirmed.Plan.Items)
         {
@@ -23,9 +23,8 @@ internal sealed class PngOptimizationExecutor(WorkerClient worker, OutputPublish
                 {
                     report?.Invoke(item, new(item.Source.Path, OperationState.Running, "Preparing safe output"));
                     var plan = confirmed.Plan;
-                    var replace = plan.ReplaceOriginal && !item.Source.PngFdECRemovalRequired;
                     reservation = await publisher.ReserveAsync(new(item.Source.ItemId, item.Source.Path, "png", plan.Settings,
-                        replace, replace), cancellationToken);
+                        plan.ReplaceOriginal, plan.ReplaceOriginal), cancellationToken);
                     if (reservation.Record.Source.Sha256 != item.Source.Sha256)
                         throw new InvalidDataException("Source changed after planning.");
                     report?.Invoke(item, new(item.Source.Path, OperationState.Running, $"Optimizing and verifying {plan.Preset} policy"));
@@ -33,9 +32,9 @@ internal sealed class PngOptimizationExecutor(WorkerClient worker, OutputPublish
                     if (optimized.PngFdECRemoved != item.Source.PngFdECRemovalRequired)
                         throw new InvalidDataException("Worker metadata policy differs from the reserved output.");
                     result = (await publisher.PublishAsync(reservation, optimized.Validation, cancellationToken)).ToFileResult();
-                    if (optimized.PngFdECRemoved && result.Publication is { Outcome: PublicationOutcome.CopyCreated } copy)
-                        result = result with { Publication = copy with { MetadataWarning = true },
-                            Message = "Optimized copy saved. Some metadata was removed (fdEC); your original is unchanged." };
+                    // fdEC is an explicitly approved silent exception. Follow the
+                    // selected output policy and preserve normal publication status
+                    // (including any unrelated cleanup warning).
                     result = result with { EngineIdentity = optimized.EngineIdentity,
                         Message = result.Message + $" Requested: {plan.Preset}. Used: {optimized.OptimizationMethod}. {optimized.OptimizationReason}" };
                     if (result.Publication is { IsCommitted: true } publication)

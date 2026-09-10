@@ -1,7 +1,7 @@
 Trial And Purchase Access
 =========================
 
-Status: accepted; local trial settled in decision 0009, paid-access policies remain open
+Status: accepted; trial settled in decision 0009, paid policy settled in decision 0017
 Date: 2026-09-06
 
 
@@ -37,8 +37,8 @@ add invasive hardware fingerprinting, scattered hidden trial records, or
 anti-debugging machinery as part of the initial release.
 
 
-Proposed Policy And Open Decisions
----------------------------------
+Policy And Remaining Release Decisions
+--------------------------------------
 
 - Local trial: [decision 0009](0009-first-image-engine-and-trial.md) settles
   72 elapsed hours from the first confirmed valid conversion (extended to
@@ -47,16 +47,18 @@ Proposed Policy And Open Decisions
 - Activation: Polar license key with one active installation and customer
   deactivation for transfers. Target a non-expiring one-time purchase; confirm
   the actual dashboard settings and customer-facing terms before release.
-- Offline access: recommended after successful activation; license lifetime,
-  refresh requirements, and outage behavior are not yet selected.
+- Offline access: [decision 0017](0017-paid-access-and-release-candidate.md)
+  accepts 30 days from successful validation, daily refresh and cached access
+  during outages without extending the deadline.
 - Settings and existing results remain available after trial expiry; new
-  conversion is blocked. Confirm standalone Analyzer access, license recovery,
-  device transfers, refunds/revocation, and supported access states.
-- Polar is selected; the user reports account approval. Pricing, upgrade rights,
+  conversion/optimization is blocked. Analyzer stays available. Portal-assisted
+  transfer is accepted; actual refund/revocation behavior still needs live testing.
+- Polar is selected; the user reports account approval. All future updates are
+  included in one purchase. Final pricing,
   public-source licensing, and customer-facing terms remain undecided.
 
-Implement the settled local-trial policy with its failure tests; resolve the
-remaining paid policies before a paid release. Polar's online JSON validation is not a signed
+Implement the settled access policy with its failure tests; verify the
+remaining live-provider and release gates before sale. Polar's online JSON validation is not a signed
 offline license. A custom signing service is not part of the initial plan.
 
 

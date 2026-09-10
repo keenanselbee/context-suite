@@ -3,12 +3,21 @@ param(
     [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release',
     [switch] $Explorer,
     [switch] $Images,
-    [switch] $SkipBuild
+    [switch] $SkipBuild,
+    [string] $WorkerPath
 )
 
 $ErrorActionPreference = 'Stop'
 if ($Images -and $Explorer) { throw 'Choose Images or Explorer, not both. Image UI tests use isolated test composition.' }
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
+if ($Images) {
+    if (-not $WorkerPath) { throw 'Image mode requires an explicit verified staged -WorkerPath.' }
+    $worker = (Resolve-Path -LiteralPath $WorkerPath).Path
+    $staging = [IO.Path]::GetFullPath((Join-Path $repositoryRoot 'artifacts\production-staging')) + '\'
+    if (-not $worker.StartsWith($staging, [StringComparison]::OrdinalIgnoreCase) -or
+        [IO.Path]::GetFileName($worker) -cne 'ContextSuite.Worker.exe') { throw 'Use a worker from isolated production staging.' }
+    & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload (Split-Path $worker -Parent)
+}
 $scratch = Join-Path $repositoryRoot '.codex-temp\desktop-smoke'
 New-Item -ItemType Directory -Path $scratch -Force | Out-Null
 $lock = $null
@@ -29,18 +38,17 @@ try {
             }
         }
     }
-    if (-not $SkipBuild) {
+    if (-not $SkipBuild -and -not $Images) {
         & (Join-Path $PSScriptRoot 'Build-Production.ps1') -Configuration $Configuration -SkipShell
     }
     $app = Join-Path $repositoryRoot "artifacts\production\$Configuration\ContextSuite.Application.exe"
-    if (-not (Test-Path -LiteralPath $app)) { throw "NOT RUN: missing production application: $app" }
+    if (-not $Images -and -not (Test-Path -LiteralPath $app)) { throw "NOT RUN: missing production application: $app" }
     $mode = if ($Images) { 'images' } elseif ($Explorer) { 'explorer' } else { 'wpf' }
     $arguments = @($app, $scratch, $mode)
     if ($Images) {
         & dotnet build (Join-Path $repositoryRoot 'tests\ContextSuite.Application.TestHost\ContextSuite.Application.TestHost.csproj') -c $Configuration --nologo
         if ($LASTEXITCODE -ne 0) { throw 'Isolated UI test host build failed.' }
         $hostPath = Join-Path $repositoryRoot "artifacts\managed\bin\ContextSuite.Application.TestHost\$Configuration\net10.0-windows\ContextSuite.Application.TestHost.exe"
-        $worker = Join-Path $repositoryRoot "artifacts\production\$Configuration\ContextSuite.Worker.exe"
         $arguments = @($hostPath, $scratch, $mode, $worker)
     }
     & dotnet run --project (Join-Path $repositoryRoot 'tests\ContextSuite.Desktop.SmokeTests\ContextSuite.Desktop.SmokeTests.csproj') -c $Configuration -- @arguments

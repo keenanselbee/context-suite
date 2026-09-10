@@ -14,14 +14,14 @@ $allowed = @('Magick.Native-Q16-x64.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.
 foreach ($name in 'Application', 'Worker') {
     foreach ($extension in 'exe', 'dll', 'pdb', 'deps.json', 'runtimeconfig.json') { $allowed += "ContextSuite.$name.$extension" }
 }
-foreach ($name in 'Core', 'Private') { $allowed += "ContextSuite.$name.dll", "ContextSuite.$name.pdb" }
+foreach ($name in 'Core', 'Private', 'Commercial') { $allowed += "ContextSuite.$name.dll", "ContextSuite.$name.pdb" }
 foreach ($name in 'Analyze', 'Convert', 'Optimize') { $allowed += "Assets\$name.ico", "Assets\$($name)Square44x44Logo.png", "Assets\$($name)Square150x150Logo.png" }
 $allowed += 'Assets\StoreLogo.png'
 $root = [IO.Path]::GetFullPath($Payload).TrimEnd('\')
 foreach ($file in Get-ChildItem -LiteralPath $root -Recurse -File) {
     if ($file.FullName.Substring($root.Length + 1) -notin $allowed) { throw "Unreviewed production file: $($file.FullName)" }
 }
-foreach ($required in 'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'ContextSuite.Engine.json') {
+foreach ($required in 'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'ContextSuite.Engine.json', 'ContextSuite.Commercial.dll') {
     if (-not (Test-Path -LiteralPath (Join-Path $root $required)) -or (Get-Item -LiteralPath (Join-Path $root $required)).Length -eq 0) { throw "Missing/empty production notice/identity: $required" }
 }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent

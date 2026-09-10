@@ -57,6 +57,27 @@ internal static class ImagePlanContracts
         Reject(() => Plan(facts with { Resolution = new(0, 1, 2) }), "zero directional resolution");
         check(Plan(facts with { Resolution = new(11811, 11811, 3, 100) }).Items[0].Warnings.Any(w => w.Code == "metadata-normalization"),
             "image plan: physical resolution preservation is disclosed");
+        var extra = facts with { BitDepth = 8, HasOtherMetadata = true, ProfileNames = ["icc", "exif", "xmp", "extra"] };
+        foreach (var target in new[] { ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Bmp, ImageFormat.Tga })
+        {
+            var automatic = Plan(extra, new(target, Metadata: ImageMetadataMode.Automatic));
+            check(automatic.CanConfirmQuickAction && automatic.Confirm(false, false, false).Plan == automatic,
+                "automatic metadata: ordinary " + target + " copy needs no acknowledgement");
+        }
+        var permission = new BatchSettings("convert", new(ReplaceOriginals: true));
+        var protectedCopy = ImageConversionPlanner.Create(Guid.NewGuid(), [extra], new(ImageFormat.Tga, Metadata: ImageMetadataMode.Automatic), permission, true);
+        check(!protectedCopy.ReplaceOriginal && protectedCopy.CanConfirmQuickAction,
+            "automatic metadata: omission overrides replacement with a copy");
+        Reject(() => (protectedCopy with { ReplaceOriginal = true }).Confirm(true, true, true), "forged automatic metadata replacement");
+        check(!Plan(transparent, new(ImageFormat.Jpeg, Metadata: ImageMetadataMode.Automatic)).CanConfirmQuickAction,
+            "automatic metadata: transparency still requires a background");
+        var mixedAlpha = ImageConversionPlanner.Create(Guid.NewGuid(), [extra, transparent with { ItemId = Guid.NewGuid() }],
+            new(ImageFormat.Jpeg, Metadata: ImageMetadataMode.Automatic), settings);
+        check(!mixedAlpha.CanConfirmQuickAction, "automatic metadata: mixed selection does not silently skip a background choice");
+        var mixedUnsupported = ImageConversionPlanner.Create(Guid.NewGuid(), [extra, facts with { ItemId = Guid.NewGuid(), UnsupportedReason = "Unsupported color interpretation" }],
+            new(ImageFormat.WebP, Metadata: ImageMetadataMode.Automatic), settings);
+        check(mixedUnsupported.CanConfirmQuickAction && mixedUnsupported.Items.Count(item => item.CanExecute) == 1,
+            "automatic metadata: unsupported file does not block independent valid copies");
         foreach (var options in new[] { new ImageConversionOptions((ImageFormat)999), new(ImageFormat.Jpeg, Quality: 0),
             new(ImageFormat.Png, WebPLossless: true), new(ImageFormat.WebP, MatteRgb: 0), new(ImageFormat.Jpeg, MaximumDimension: 0) })
             Reject(() => Plan(facts, options), "invalid options");

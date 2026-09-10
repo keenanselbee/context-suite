@@ -34,13 +34,13 @@ internal sealed class SettingsStore(string path)
                 if (root.ValueKind != JsonValueKind.Object ||
                     !root.TryGetProperty("SchemaVersion", out var version) ||
                     version.ValueKind != JsonValueKind.Number ||
-                    !version.TryGetInt32(out var schema) || schema != SuiteSettings.CurrentSchemaVersion)
+                    !version.TryGetInt32(out var schema) || schema is not (1 or SuiteSettings.CurrentSchemaVersion))
                     return new(new(), revision, false, "Unsupported settings version. Defaults are active; the file will not be overwritten.");
                 var repaired = false;
                 var settings = new SuiteSettings
                 {
-                    Convert = ReadTool(root, "Convert", ref repaired),
-                    Optimize = ReadTool(root, "Optimize", ref repaired),
+                    Convert = ReadTool(root, "Convert", schema, ref repaired),
+                    Optimize = ReadTool(root, "Optimize", schema, ref repaired),
                     PlayCompletionSound = !root.TryGetProperty("PlayCompletionSound", out var sound) || sound.ValueKind != JsonValueKind.False
                 };
                 return new(settings, revision, true, repaired ? "Some settings were invalid and use safe defaults. Save to apply the repaired values." : null);
@@ -102,7 +102,7 @@ internal sealed class SettingsStore(string path)
         finally { TryDeleteOwnedFile(temporary); }
     }
 
-    private static ToolSettings ReadTool(JsonElement root, string name, ref bool repaired)
+    private static ToolSettings ReadTool(JsonElement root, string name, int schema, ref bool repaired)
     {
         if (!root.TryGetProperty(name, out var tool) || tool.ValueKind != JsonValueKind.Object)
         {
@@ -110,18 +110,20 @@ internal sealed class SettingsStore(string path)
             return new();
         }
         var allow = false;
-        if (tool.TryGetProperty("AllowReplacingOriginals", out var replace) &&
+        // Version one granted permission for a later per-batch choice. It must
+        // never migrate to standing replacement consent, even with extra fields.
+        if (schema == SuiteSettings.CurrentSchemaVersion && tool.TryGetProperty("ReplaceOriginals", out var replace) &&
             replace.ValueKind is JsonValueKind.True or JsonValueKind.False) allow = replace.GetBoolean();
-        else repaired = true;
+        else if (schema != 1) repaired = true;
         string? directory = null;
         if (tool.TryGetProperty("OutputDirectory", out var output) && output.ValueKind != JsonValueKind.Null)
         {
             if (output.ValueKind == JsonValueKind.String)
             {
                 try { directory = output.GetString(); ValidateDirectory(directory); }
-                catch (ArgumentException) { directory = null; repaired = true; }
+                catch (ArgumentException) { directory = null; allow = false; repaired = true; }
             }
-            else repaired = true;
+            else { allow = false; repaired = true; }
         }
         return new(allow, directory);
     }

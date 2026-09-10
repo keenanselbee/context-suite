@@ -1,6 +1,14 @@
 Context Suite Product Design
 ============================
 
+Accepted priority: [context-menu simplification](context-menu-simplification-goal.md)
+under [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md).
+Remove the general customer workspace and routine planners; retain focused
+decision prompts, Analyze, progress/problems, Settings and License. Output defaults
+to copies, with explicit Settings consent for safe replacement on future commands.
+The implementation now follows this scope; final visual/accessibility acceptance
+remains open. See the linked goal for current automated evidence.
+
 Status: shell/process and output-safety foundations implemented; PNG/JPEG/WebP/BMP/TGA
 conversion and bounded DDS analysis/conversion have passed local acceptance.
 Lossless and bounded lossy PNG optimization are implemented with automated contracts;
@@ -24,7 +32,7 @@ The product promise is:
 The overarching UX goal is simplicity for a broad audience: **select files,
 right-click, choose, done**. Routine successful work should rarely require the
 application UI. Direct, understandable menu actions are the primary interface;
-settings, technical detail and advanced planning are secondary.
+Settings, technical details and focused decision prompts are secondary.
 
 [Decision 0015](decisions/0015-simple-context-menu-workflows.md) establishes the
 next direction: Auto first, direct presets, best-effort processing within the
@@ -94,10 +102,22 @@ Design Principles
   Progress and exception UI must be compact and actionable, not an engineering dashboard.
 - Recommend actions, but keep irreversible consequences visible until execution.
 - Preserve source files by default.
-- For the researched PNG `fdEC` exception, remove that chunk only from an
-  optimized copy, including when replacement is enabled. Report completion with
-  a compact metadata warning and one optional warning sound per batch, not a
-  failure. This does not authorize removing other unknown or meaningful metadata.
+- Ordinary raster conversion uses automatic image-information handling: apply
+  orientation, retain/transform color correctly, preserve supported EXIF/XMP and
+  resolution, and quietly omit incompatible extras from a new copy. Such omission
+  forces copy output even with replacement enabled. No routine review checkbox,
+  warning sound or failure status. Strict preservation and privacy removal remain
+  secondary choices; automatic handling is not a personal-data scrub.
+- Convert's menu format selects the tested default encoding on a copy. Prompt for
+  actual ambiguity (such as transparency background or DDS interpretation), not
+  ordinary metadata or encoding consequences. Keep failure reporting per file.
+- Direct app opening is a Settings/help landing with Explorer instructions;
+  previews, file tables and manual processing are secondary, not the first screen.
+- For the researched PNG `fdEC` exception, removal is explicitly approved without
+  a warning or forced-copy restriction. Follow the normal selected copy/replacement
+  policy, validation and recovery safeguards. Use ordinary quiet success and the
+  optional success chime. This does not authorize removing other unknown or
+  meaningful metadata.
 - Explain meaningful quality and compatibility tradeoffs in plain language.
 - Never silently discard transparency, orientation, tags, artwork, animation,
   color information, or other meaningful capabilities.
@@ -143,8 +163,11 @@ and delegates analysis, planning, conversion, optimization, validation, and
 result presentation to an out-of-process host.
 
 Convert and Optimize each end with a separated **Settings...** action opening
-their section of one shared settings window. Quick actions preserve originals;
-replacement requires an explicit planning choice and confirmation.
+their section of one shared settings window. Commands create copies by default.
+Saving Overwrite originals is explicit consent for future commands of that tool;
+mandatory copy exceptions and validated publication still apply. Schema-one
+permission-only settings migrate to copies. Standalone launch opens Settings
+with Explorer instructions; there is no manual file-picker/drop workspace.
 
 Application and Settings windows follow Windows' app light/dark mode, accent,
 and contrast theme automatically, including changes while windows are open.
@@ -178,7 +201,9 @@ basenames rather than stripping existing suffixes. Explicit replacement publishe
 validated output before recycling the old file, retaining an original/backup
 when recycling fails. No permanent-delete fallback or app-managed backup browser
 is planned. See [decision 0008](decisions/0008-output-naming-settings-and-replacement.md)
-for naming, settings snapshots, consent, and the required Windows verification.
+for naming, settings snapshots and the required Windows verification, with
+[decision 0018](decisions/0018-context-menu-utility-and-output-preference.md)
+superseding per-batch replacement consent.
 
 
 Release Sequence
@@ -240,8 +265,11 @@ The local trial starts at the first confirmed valid conversion or optimization a
 elapsed hours; [decision 0009](decisions/0009-first-image-engine-and-trial.md)
 and its [PNG extension](decisions/0013-lossless-png-optimization.md)
 define clock and failure handling. Browser activation
-is replaced by in-app key activation; paid offline grace, refresh, service
-outages, recovery, and post-trial feature availability require explicit policies.
+is replaced by in-app key activation. The accepted
+[paid-access policy](decisions/0017-paid-access-and-release-candidate.md) grants
+all future updates, one active installation with transfer, daily revalidation,
+30-day offline grace and free Analyze access after trial expiry. Implementation
+and actual activation/transfer verification remain in progress.
 Polar is selected; pricing and license terms are still undecided. See the
 [Polar integration plan](polar-integration.md). Keep protection modest and accept
 that determined users may reset local trials or modify binaries. See

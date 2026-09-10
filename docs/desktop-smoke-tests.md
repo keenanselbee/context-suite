@@ -1,14 +1,22 @@
 Desktop Smoke Tests
 ===================
 
+Current simplification status (2026-09-09): image-mode desktop assertions have
+been rewritten for direct commands and necessary DDS/matte prompts. The test
+project builds without warnings/errors, but this updated interactive sequence
+has **not run**. Earlier passes below describe the former UI. Use the
+[simplification goal](context-menu-simplification-goal.md) for current automated
+evidence and open visual/accessibility gates.
+
+
 Non-interactive view checks
 --------------------------
 
 Run `./tools/Test-ViewContracts.ps1 -Configuration Release` without reserving the
-keyboard or mouse. It loads the actual four production windows into the isolated
+keyboard or mouse. It loads the actual production windows into the isolated
 test host, measures their minimum-size layout without showing them, checks the
 UIA names/live settings of status controls, and checks collapsed advanced panels,
-planner columns and Escape/confirmation wiring. It starts no worker or trial and
+result/decision columns and Escape/confirmation wiring. It starts no worker or trial and
 does not send desktop input, install packages or change the system theme.
 
 The 2026-09-08 run passed 34 checks. These prove that the views load and expose
@@ -57,13 +65,16 @@ tests run. Do not run foundation integration tests at the same time.
 
 ```powershell
 ./tools/Test-DesktopSmoke.ps1 -Configuration Release
-./tools/Test-DesktopSmoke.ps1 -Configuration Release -Images
+./tools/Test-DesktopSmoke.ps1 -Configuration Release -Images -WorkerPath <verified-staged-worker>
 ./tools/Test-DesktopSmoke.ps1 -Configuration Release -Explorer -SkipBuild
 ```
 
 The first command builds production and tests the WPF window via normal
 activation-file entry points. SkipBuild skips the production build only; the
-test project is still built. Image mode also builds the isolated host. Explorer mode additionally requires existing
+test project is still built. Image mode builds only the isolated host and test
+project, validates the explicit staged worker, and never refreshes a production
+or registered development payload. Its activation files stay inside the test
+profile. Explorer mode additionally requires existing
 healthy production shell registration for the same executable/configuration.
 None of these commands installs packages, kills existing app instances, restarts
 Explorer, or changes file associations. Missing prerequisites are not passes.
@@ -114,27 +125,25 @@ never silently converted to successful tests.
 Image Conversion Mode
 ---------------------
 
-`-Images` passes 26 checks locally (2026-09-06). It uses independently generated
-GDI+ PNG fixtures and a deliberately damaged JPEG file. The real planner enforces
-target/matte/metadata choices, consequence acknowledgement and consent reset.
-Transparent JPEG confirmation also requires a current matte preview.
-It renders encoded before/after previews, cancels without starting a trial,
-queues repeated normal activations, produces actual WebP/JPEG copies and verifies
-resize through an independent decoder. It then expires only the isolated trial
-record and verifies blocked conversion, available settings, and unchanged sources.
-Native file picking and retrying a completed row both open fresh plans for the
-original source. Cancelling those plans publishes nothing and leaves the trial
-start unchanged. The native picker filename is set/read back through ValuePattern
-and its Open split-button is invoked through UIA, avoiding fragile filename
-keyboard focus. Earlier failed automation attempts remain separate evidence.
-An owned external WinForms drag source exercises real OLE file-drop into blank
-window space and verifies a Copy result and a fresh plan. Output-folder opening
-is verified in Explorer after expiry. The test leaves its own Explorer tab open
-instead of risking other user tabs. Synthetic drag-source foreground failures
-remain separate evidence; the passing harness verifies focus before mouse input.
-The test explicitly selects metadata removal through the UI. Physical-resolution
-preservation, including fractional PNG resolution and EXIF round trips, is covered
-separately by the adapter matrix.
+The current `-Images` sequence uses independently generated PNG fixtures and a
+damaged JPEG. It opens a read-only Analyze report, forwards an explicit DDS
+command and checks texture interpretation, metadata handling and actual preview,
+then cancels without publication. A transparent JPEG command checks its fixed
+target, matte choice, automatic preview, keyboard traversal and Escape.
+
+Routine WebP and opaque JPEG commands then execute directly, including mixed
+valid/damaged input and queued forwarding. An independent decoder verifies full
+source dimensions; the harness checks named copies, unchanged sources, one app
+owner, no lingering conversion dialog and failed-only retry. It expires only
+its isolated trial, checks blocked direct conversion and Settings access, then
+changes and cancels the output preference and checks that consent was not saved.
+Escape should close idle results. It does not open Explorer, a file picker or
+an OLE drag source. No native recycling is performed.
+
+The replacement/copy publication and simulated activation/retry paths are
+verified independently by `tools/Test-LicenseWorkflow.ps1 -DirectCommands`.
+The desktop sequence is compiled but unverified until it runs on an available
+interactive desktop; it must not inherit the old planner's passing status.
 
 The test-only entry point reads `CONTEXTSUITE_TEST_ROOT` and
 `CONTEXTSUITE_TEST_WORKER` in its own assembly and injects normal application
@@ -144,10 +153,10 @@ This is evidence for the actual windows/view models with isolated composition;
 the distinct production-executable smoke still covers non-converting activation,
 settings and lifecycle. Do not claim live paid licensing or complete media coverage.
 
-Successful initial image evidence is recorded in the [completed goal](image-conversion-goal.md).
+Historical initial image evidence is recorded in the [completed goal](image-conversion-goal.md).
 The [BMP/TGA integration](bmp-tga-and-engine-integration.md) adds three planner
 checks for BMP matte/preview consent and TGA preview without trial consumption;
-all 29 image UI checks pass on an idle unlocked desktop. Output-folder checks
+all 29 image UI checks passed on the former UI on an idle unlocked desktop. Output-folder checks
 also compare actual shell folder identity and tolerate individual closing COM windows.
 The dark before/after preview was visually reviewed. The test waits for preview
 layout before taking its capture; earlier failed owner-window lookup/focus runs
@@ -157,7 +166,7 @@ are retained instead of relabeled as passes.
 Future Coverage
 ---------------
 
-The DDS extension passes all 33 image UI checks in
+The historical DDS extension passed all 33 image UI checks in
 `.codex-temp/desktop-smoke/images-883ea7a9ede344d6b640bfce8519623c`.
 It adds explicit source interpretation, actual DDS preview before confirmation,
 no trial consumption from preview, and invalidation after storage changes.
@@ -186,8 +195,8 @@ Application appearance follows Windows through application-level WPF Fluent
 The repository check guards that setting and prevents per-window overrides.
 WPF owns live app-mode/accent updates and contrast-theme resources (see
 [Microsoft's Fluent guide](https://github.com/dotnet/wpf/blob/main/Documentation/docs/using-fluent.md)).
-The dark-mode desktop run passes and its main/settings captures have been visually
-reviewed. This is not proof of a live Windows theme transition. To finish manual
+The former dark-mode desktop run passed and its old main/settings captures were
+visually reviewed. The simplified surfaces still require that review. This is not proof of a live Windows theme transition. To finish manual
 theme coverage, keep both windows open and change Windows Settings >
 Personalization > Colors > app mode between Light and Dark, then try a contrast
 theme under Accessibility. Confirm controls, selection, focus, text, and scrollbars

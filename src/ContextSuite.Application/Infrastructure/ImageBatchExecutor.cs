@@ -3,16 +3,16 @@ using ContextSuite.Core.Operations;
 
 namespace ContextSuite.Application.Infrastructure;
 
-internal sealed record ImageBatchExecution(TrialAdmission Admission, IReadOnlyList<FileResult> Results);
+internal sealed record ImageBatchExecution(OperationAdmission Admission, IReadOnlyList<FileResult> Results);
 
 // The only application path from confirmed image plans to final output publication.
 // Access is admitted once, before any output reservation; an admitted batch can finish after expiry.
-internal sealed class ImageBatchExecutor(WorkerClient worker, OutputPublisher publisher, LocalTrialStore trial)
+internal sealed class ImageBatchExecutor(WorkerClient worker, OutputPublisher publisher, IOperationAccess trial)
 {
     public async Task<ImageBatchExecution> ExecuteAsync(ConfirmedImageBatch confirmed,
         Action<ImageItemPlan, FileResult>? report, CancellationToken cancellationToken)
     {
-        var admission = await trial.AdmitAsync(confirmed, cancellationToken);
+        var admission = await trial.AdmitConversionAsync(confirmed, cancellationToken);
         var results = new List<FileResult>();
         foreach (var item in confirmed.Plan.Items)
         {

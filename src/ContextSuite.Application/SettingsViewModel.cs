@@ -23,12 +23,12 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         Optimize = new ToolSettingsEditor(loaded.Settings.Optimize);
         PlayCompletionSound = loaded.Settings.PlayCompletionSound;
         _selectedSection = section == "optimize" ? 1 : 0;
-        _message = loaded.Warning ?? "Preferences apply to future batches. Existing batches keep their settings.";
+        _message = loaded.Warning ?? "Changes apply the next time you run Convert or Optimize.";
         CanEdit = loaded.CanSave;
         CanAllowReplacement = CanEdit && replacementAvailable;
         ReplacementNotice = replacementAvailable
-            ? "Replacement also requires confirmation for each batch. Quick actions always create copies."
-            : "Replacement is unavailable until Windows safety verification is complete. Copies remain the default.";
+            ? "After the new file is validated, the original goes to the Recycle Bin. If overwriting is unsafe, we keep the original and save a copy instead."
+            : "Overwriting is unavailable on this Windows version. Originals will be kept.";
         _saveCommand = new SaveSettingsCommand(this);
     }
 
@@ -38,11 +38,12 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     public bool CanEdit { get; }
     public bool CanAllowReplacement { get; }
     public string ReplacementNotice { get; }
-    public string NamingExample => SelectedSection == 0 ? "gamma - Converted.png   /   gamma - BC7-sRGB.dds" : "gamma - Optimized.webp";
+    public string SectionHeading => SelectedSection == 0 ? "Convert settings" : "Optimize settings";
+    public string NamingExample => SelectedSection == 0 ? "gamma - Converted.png   /   gamma - BC7-sRGB.dds" : "gamma - Optimized.png";
     public int SelectedSection
     {
         get => _selectedSection;
-        set { _selectedSection = value; Changed(); Changed(nameof(NamingExample)); }
+        set { _selectedSection = value; Changed(); Changed(nameof(NamingExample)); Changed(nameof(SectionHeading)); }
     }
     public bool IsSaving
     {
@@ -89,7 +90,19 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
 
 internal sealed class ToolSettingsEditor(ToolSettings settings) : INotifyPropertyChanged
 {
-    public bool AllowReplacingOriginals { get; set; } = settings.AllowReplacingOriginals;
+    private bool _replaceOriginals = settings.ReplaceOriginals;
+    public bool ReplaceOriginals
+    {
+        get => _replaceOriginals;
+        set
+        {
+            if (_replaceOriginals == value) return;
+            _replaceOriginals = value;
+            PropertyChanged?.Invoke(this, new(nameof(ReplaceOriginals)));
+            PropertyChanged?.Invoke(this, new(nameof(CreateCopies)));
+        }
+    }
+    public bool CreateCopies { get => !ReplaceOriginals; set { if (value) ReplaceOriginals = false; } }
     private string _outputDirectory = settings.OutputDirectory ?? "";
     public string OutputDirectory
     {
@@ -105,6 +118,6 @@ internal sealed class ToolSettingsEditor(ToolSettings settings) : INotifyPropert
 
     public ToolSettings Capture()
     {
-        return new ToolSettings(AllowReplacingOriginals, string.IsNullOrWhiteSpace(OutputDirectory) ? null : OutputDirectory.Trim());
+        return new ToolSettings(ReplaceOriginals, string.IsNullOrWhiteSpace(OutputDirectory) ? null : OutputDirectory.Trim());
     }
 }

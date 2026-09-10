@@ -7,6 +7,7 @@ public partial class SettingsWindow : Window
     public SettingsWindow()
     {
         InitializeComponent();
+        _ = new Infrastructure.ContentWindowSizing(this);
         Closing += (_, e) => e.Cancel = DataContext is SettingsViewModel { IsSaving: true };
     }
 
@@ -14,6 +15,8 @@ public partial class SettingsWindow : Window
     {
         Close();
     }
+
+    private void OnLicense(object sender, RoutedEventArgs e) { ((App)System.Windows.Application.Current).ShowLicense(); }
 
     private void OnBrowseFolder(object sender, RoutedEventArgs e)
     {

@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Release', [switch] $SkipBuild, [switch] $Convert,
+param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Release', [switch] $SkipBuild, [switch] $Convert, [string] $WorkerPath,
     [ValidateRange(1, 20)][int] $Rounds = 1, [ValidateRange(0, 2000)][int] $SpacingMilliseconds = 0)
 
 # Real application, isolated settings/trial and generated images. No input automation,
@@ -9,15 +9,19 @@ $repositoryRoot = Split-Path $PSScriptRoot -Parent
 if (Get-Process -Name 'ContextSuite.Application', 'ContextSuite.Application.TestHost', 'ContextSuite.Worker' -ErrorAction SilentlyContinue) {
     throw 'Close Context Suite and wait for other integration tests before running quiet smoke.'
 }
-if (-not $SkipBuild) { & (Join-Path $PSScriptRoot 'Build-Production.ps1') -Configuration $Configuration -SkipShell }
+if (-not $WorkerPath) { throw 'Provide an explicit worker from isolated production staging with -WorkerPath.' }
+$worker = (Resolve-Path -LiteralPath $WorkerPath).Path
+$staging = [IO.Path]::GetFullPath((Join-Path $repositoryRoot 'artifacts\production-staging')) + '\'
+if (-not $worker.StartsWith($staging, [StringComparison]::OrdinalIgnoreCase) -or
+    [IO.Path]::GetFileName($worker) -cne 'ContextSuite.Worker.exe') { throw 'Use a worker from isolated production staging.' }
+& (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload (Split-Path $worker -Parent)
 & dotnet build (Join-Path $repositoryRoot 'tests\ContextSuite.Application.TestHost\ContextSuite.Application.TestHost.csproj') -c $Configuration --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Quiet test host build failed.' }
 $runRoot = Join-Path $repositoryRoot ('.codex-temp\quiet-smoke\' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
-$requestRoot = Join-Path $env:LOCALAPPDATA 'ContextSuite\Prototype\Activations'
+$requestRoot = Join-Path $runRoot 'ActivationCleanup'
 New-Item -ItemType Directory -Path $requestRoot -Force | Out-Null
 $testHost = Join-Path $repositoryRoot "artifacts\managed\bin\ContextSuite.Application.TestHost\$Configuration\net10.0-windows\ContextSuite.Application.TestHost.exe"
-$worker = Join-Path $repositoryRoot "artifacts\production\$Configuration\ContextSuite.Worker.exe"
 Add-Type -AssemblyName System.Drawing
 $source = Join-Path $runRoot 'test image.png'
 $bitmap = New-Object System.Drawing.Bitmap 32,32

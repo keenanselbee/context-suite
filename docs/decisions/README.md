@@ -1,8 +1,8 @@
 Architecture Decisions
 ======================
 
-Latest: [0016: Fixed optimization recipes](0016-fixed-optimization-recipes.md) --
-implemented for PNG; bounded acceptance is recorded in [integration evidence](../fixed-preset-integration.md).
+Latest: [0018: Context-menu utility and output preference](0018-context-menu-utility-and-output-preference.md) --
+accepted; implementation tracked in the [simplification goal](../context-menu-simplification-goal.md).
 
 Use this directory for decisions that constrain implementation, packaging,
 public behavior, or long-term maintenance. Do not create a decision record for a
@@ -76,6 +76,10 @@ design documents when an accepted decision changes their assumptions.
 
 Current Decisions
 -----------------
+
+- [0018: Context-menu utility and output preference](0018-context-menu-utility-and-output-preference.md) - accepted; implementation pending
+
+- [0017: Paid access and release candidate](0017-paid-access-and-release-candidate.md) - accepted; implementation in progress
 
 - [0015: Simple context-menu workflows](0015-simple-context-menu-workflows.md) — accepted next priority; implementation pending
 

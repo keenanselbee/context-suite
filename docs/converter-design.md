@@ -1,19 +1,39 @@
 Context Converter Design
 ========================
 
+Current scope: [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md)
+removes the manual conversion workspace and routine planner in favor of direct
+format commands and focused necessary prompts. Copies stay the default; a new
+explicit Settings choice applies safe replacement to future commands, subject
+to mandatory copy exceptions. See the
+[active simplification goal](context-menu-simplification-goal.md) for verification.
+
 Status: PNG/JPEG/WebP/BMP/TGA conversion, planner, preview and trial-gated publication
 implemented and verified locally for the bounded slice; release checks remain open.
 
-Direct PNG/JPEG/WebP/BMP/TGA menu targets now create safe copies without a planner
-when no meaningful decision is needed. Defaults are full size, preserved metadata,
-JPEG quality 90 and lossless WebP. Existing replacement preferences never authorize
-a quick action to remove an original. Transparency backgrounds, metadata changes,
-precision reduction, lossy-to-lossy processing and DDS still require the preselected
-planner. Informational notices about lost detail not being restored or untagged
-BMP/TGA sRGB are not extra confirmation gates. Resolution-only normalization also
-proceeds quietly; EXIF/XMP normalization still requires review because it can remove
-embedded thumbnails. The planner refreshes previews after
-a 300 ms pause in edits; size/quality and technical file details are secondary.
+Direct PNG/JPEG/WebP/BMP/TGA menu targets run without a planner
+when no meaningful decision is needed. Defaults are full size, automatic metadata,
+JPEG quality 90 and lossless WebP. Copies are the default. Explicit schema-two
+Overwrite originals settings authorize future replacement; old permission-only
+settings migrate to copies. Automatic preserves normalized EXIF/XMP,
+resolution and ICC where supported; unsupported extras and stale thumbnails may
+be omitted quietly from the new copy. BMP/TGA receive sRGB pixels, not a discarded
+color transform. Automatic omission forces a copy even when replacement was requested.
+The optimizer's separately approved `fdEC` exception is unchanged.
+
+Choosing a format accepts its ordinary encoding/precision limits on a copy; no
+routine metadata acknowledgement or warning sound is required. Transparency
+backgrounds and DDS still require explicit choices and preview. Unknown critical
+PNG chunks, unsupported HDR/color interpretation and animation remain guarded.
+An unsupported file does not block independent valid files; a mixed selection
+needing a transparency background still opens the choices window.
+
+The focused conversion dialog keeps its target fixed to the selected command,
+with optional file details and preview. Only necessary transparency or DDS choices
+are visible; DDS retains explicit descriptive-information handling. Preview work
+starts when requested or needed, then refreshes after a 300 ms edit pause.
+Expired access offers License and retry of the same selected command/files.
+Standalone launch opens Settings with Explorer instructions and License.
 See [current UX verification](quiet-first-ux-goal.md) for pending desktop acceptance.
 
 
@@ -92,7 +112,7 @@ BMP/TGA input and output are implemented across all twenty cross-format pairs.
 BMP accepts 24-bit uncompressed Windows INFOHEADER files; TGA accepts bounded
 24/32-bit true-color raw/RLE files. BMP outputs require an explicit matte for
 transparency; TGA retains alpha. Both outputs are eight-bit untagged sRGB with
-explicit metadata/color-loss policy. See the exact variant boundaries and
+automatic copy metadata handling and sRGB transformation. See the exact variant boundaries and
 [verification evidence](bmp-tga-and-engine-integration.md). Engine coder
 availability alone is not support.
 
@@ -200,21 +220,23 @@ Selecting multiple files and invoking Convert creates one coordinated batch.
   already published outputs remain intact and are reported accurately.
 
 
-Full Planning Surface
----------------------
+Necessary Decision Dialog
+-------------------------
 
-The Converter window should contain:
+The focused conversion dialog contains:
 
-- File and folder input plus drag-and-drop.
-- A queue with source properties, intended output, status, and warnings.
-- A destination-context or output-format selector.
-- A concise conversion-plan summary.
-- Image quality and maximum-dimension controls where relevant.
-- Transparency, metadata, and output naming controls.
-- An Advanced section for technical settings.
-- A primary Convert action.
-- A result view with output size, important property changes, failures, and next
-  actions.
+- The selected format and a concise selection/status summary.
+- Fixed full-size/quality defaults; output follows captured Settings.
+- Collapsed file details and an on-demand preview.
+- Visible transparency-background controls only when the selection needs them.
+- Explicit advanced DDS controls when working with textures.
+- Meaningful decision acknowledgement; no repeated replacement-consent checkbox.
+- Fixed Convert/Cancel actions and an activation action when access is blocked.
+
+No manual file picker or drag-and-drop workspace is exposed. The main window
+shows compact progress, problems and per-file results only when needed.
+Legacy choose-format requests retain a focused target-choice compatibility path;
+the current menu offers direct targets, including a dedicated DDS action.
 
 Image conversions should support a zoomable before-and-after preview. Audio
 conversions should first provide source and proposed-output summaries; A/B audio
@@ -232,7 +254,9 @@ Execution And Results
 - Use `name - Converted.ext` or a meaningful DDS suffix such as
   `name - BC7-sRGB.dds`, numbering collisions from `(2)`. Preserve existing source
   suffixes. Follow [decision 0008](decisions/0008-output-naming-settings-and-replacement.md)
-  for settings, per-batch consent, and replacement/recycling failure handling.
+  for naming and replacement/recycling failure handling;
+  [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md)
+  defines saved replacement consent and migration.
 - Report actual output format, properties, size, warnings, and path.
 - Offer useful next actions such as opening the folder, copying the output,
   retrying failures, or revising the plan.
@@ -244,12 +268,14 @@ Required First Image Release
 - PNG, JPEG, WebP, TGA, and BMP conversion for explicitly tested variants/pairs.
 - DDS representation conversion under the separately accepted texture policy;
   the target does not promise every BC format or texture structure at launch.
-- Explorer activation, drag-and-drop, and file selection.
+- Explorer activation of the complete selection.
 - Multiple-file queue.
 - Output recommendation with a concise explanation.
-- Image quality and maximum-dimension controls.
+- Fixed reviewed quality defaults and original dimensions.
 - Transparency detection and matte preview.
-- Explicit metadata preservation or removal.
+- Automatic metadata handling by default; strict preservation or descriptive
+  removal remains a secondary option. Automatic is not a privacy scrub: supported
+  EXIF/XMP (including location) is retained.
 - Collision-safe naming and atomic publication.
 - Cancellation and per-file failure handling.
 - Completed-output validation.

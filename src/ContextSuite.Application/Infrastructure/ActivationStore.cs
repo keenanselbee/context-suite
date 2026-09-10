@@ -45,11 +45,11 @@ internal static class ActivationStore
         File.Delete(path);
     }
 
-    public static void CleanupStale()
+    public static void CleanupStale(string directory)
     {
-        if (!Directory.Exists(DirectoryPath)) return;
-        RejectReparsePoints(DirectoryPath);
-        foreach (var path in Directory.EnumerateFiles(DirectoryPath).Take(256))
+        if (!Directory.Exists(directory)) return;
+        RejectReparsePoints(directory);
+        foreach (var path in Directory.EnumerateFiles(directory).Take(256))
         {
             if ((Path.GetExtension(path) is ".request" or ".tmp") &&
                 Guid.TryParseExact(Path.GetFileNameWithoutExtension(path), "D", out _) &&

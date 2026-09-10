@@ -4,6 +4,12 @@ Output Naming, Settings, And Replacement
 Status: accepted and implemented; native replacement verified on Windows build 26200 x64, local NTFS
 Date: 2026-09-06
 
+The consent model is superseded by
+[decision 0018](0018-context-menu-utility-and-output-preference.md): copies remain
+the default, but a new explicit Settings choice will authorize safe replacement
+for future commands. Legacy permission-only settings do not grant that consent.
+The publication/recovery rules below remain in force; the new workflow is pending.
+
 
 Context
 -------

@@ -6,7 +6,7 @@ namespace ContextSuite.Core.Images;
 public enum PngOptimizationPreset { Lossless, Balanced, Smallest, Auto }
 
 // Fixed recipes; no alpha changes or resizing. The researched fdEC exception
-// requires a copy and an explicit completion warning, even with replacement on.
+// permits silent removal under the selected normal copy/replacement policy.
 public sealed record PngOptimizationItem(ImageSourceFacts Source, string? BlockReason)
 {
     public bool CanExecute => BlockReason is null;

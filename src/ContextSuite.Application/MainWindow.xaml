@@ -3,8 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="clr-namespace:ContextSuite.Application.Infrastructure"
         Title="Context Suite" AutomationProperties.AutomationId="ContextSuiteWindow"
-        Width="720" Height="460" MinWidth="560" MinHeight="340" AllowDrop="True" PreviewDrop="OnFilesDropped" PreviewDragOver="OnDragOver">
-    <Window.Resources><BooleanToVisibilityConverter x:Key="VisibleWhenTrue" /></Window.Resources>
+        Width="720" Height="540" MinWidth="560" MinHeight="380">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="VisibleWhenTrue" />
+        <Style x:Key="ResultCellText" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="4,3" />
+            <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}" />
+        </Style>
+    </Window.Resources>
     <DockPanel Margin="20" Background="Transparent">
         <StackPanel DockPanel.Dock="Top">
             <TextBlock Text="Context Suite" FontSize="24" FontWeight="SemiBold" />
@@ -17,39 +24,36 @@
         </StackPanel>
         <WrapPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
             <Button Content="Cancel _work" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" Padding="12,6"
+                    Visibility="{Binding IsBusy, Converter={StaticResource VisibleWhenTrue}}"
                     AutomationProperties.AutomationId="CancelPending" />
-            <Button Content="_Retry failed" Click="OnRetrySelected" Padding="12,6" Margin="8,0,0,0"
+            <Button Content="_Try again" ToolTip="Run unfinished files again with the same format or preset. Completed files are skipped." Click="OnRetrySelected" Padding="12,6" Margin="8,0,0,0"
+                    Visibility="{Binding CanRetry, Converter={StaticResource VisibleWhenTrue}}"
                     AutomationProperties.AutomationId="RetrySelectedFiles" />
             <Button Content="_Settings..." Command="{Binding SettingsCommand}" Padding="12,6" Margin="8,0,0,0"
                     AutomationProperties.AutomationId="OpenSettings" />
+            <Button Content="_License..." Click="OnLicense" Padding="12,6" Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="OpenLicense" />
+            <Button Content="_Close" Click="OnClose" IsCancel="True" Padding="12,6" Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="CloseResults" />
         </WrapPanel>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel>
-                <Expander Header="Files and details" AutomationProperties.AutomationId="FileDetails" IsExpanded="{Binding ShowDetails, Mode=OneWay}" Margin="0,8,0,0">
+                <Expander Header="Files and details" AutomationProperties.AutomationId="FileDetails" IsExpanded="{Binding ShowDetails, Mode=OneWay}" Margin="0,8,0,0"
+                          Visibility="{Binding HasResults, Converter={StaticResource VisibleWhenTrue}}">
                     <StackPanel>
-                        <DataGrid x:Name="ResultsGrid" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True"
+                        <DataGrid x:Name="ResultsGrid" ItemsSource="{Binding DisplayRows}" AutoGenerateColumns="False" IsReadOnly="True"
                                   CanUserAddRows="False" MaxHeight="240" MinHeight="80" AutomationProperties.AutomationId="BatchResults"
                                   AutomationProperties.Name="Files and outcomes">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="*" MinWidth="140" />
-                                <DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}" Width="160" />
-                                <DataGridTextColumn Header="Saved" Binding="{Binding Savings}" Width="100" />
+                                <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
+                                <DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
+                                <DataGridTextColumn Header="Saved" Binding="{Binding Savings}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
                             </DataGrid.Columns>
                         </DataGrid>
                         <TextBlock Text="{Binding SelectedItem.ResultDetails, ElementName=ResultsGrid}" TextWrapping="Wrap" Margin="0,8,0,0"
                                    AutomationProperties.AutomationId="SelectedResultDetails" />
                         <Button Content="Open output _folder" Click="OnOpenOutputFolder" Padding="10,6" Margin="0,8,0,0" HorizontalAlignment="Left"
                                 IsEnabled="{Binding SelectedItem.HasOutput, ElementName=ResultsGrid}" AutomationProperties.AutomationId="OpenOutputFolder" />
-                    </StackPanel>
-                </Expander>
-                <Expander Header="More tools" AutomationProperties.AutomationId="MoreTools" Margin="0,12,0,0">
-                    <StackPanel>
-                        <TextBlock Text="Drop files here to convert, or choose a tool." TextWrapping="Wrap" Margin="0,8" />
-                        <WrapPanel>
-                            <Button Content="_Convert files..." Click="OnChooseFiles" Padding="10,6" AutomationProperties.AutomationId="ChooseConversionFiles" />
-                            <Button Content="_Analyze DDS..." Click="OnChooseAnalysisFiles" Margin="8,0,0,0" Padding="10,6" AutomationProperties.AutomationId="ChooseAnalysisFiles" />
-                            <Button Content="_Optimize PNG..." Click="OnChooseOptimizationFiles" Margin="8,0,0,0" Padding="10,6" AutomationProperties.AutomationId="ChooseOptimizationFiles" />
-                        </WrapPanel>
                     </StackPanel>
                 </Expander>
             </StackPanel>

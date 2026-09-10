@@ -1,11 +1,27 @@
 [CmdletBinding()]
-param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Debug', [switch] $SkipShell)
+param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Debug', [switch] $SkipShell,
+    [guid] $StagingId = [guid]::Empty)
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
+# Candidate builds get a new, non-reusable staging directory. They must never
+# refresh the development payload that Explorer may currently have registered.
+$output = if ($StagingId -eq [guid]::Empty) { Join-Path $repositoryRoot "artifacts\production\$Configuration" }
+    else { Join-Path $repositoryRoot ('artifacts\production-staging\' + $StagingId.ToString('N')) }
+if ($StagingId -ne [guid]::Empty -and (Test-Path -LiteralPath $output)) {
+    throw 'Production staging already exists. Use a new StagingId; existing payloads are never overwritten.'
+}
+if ($StagingId -ne [guid]::Empty) {
+    # Reserve before the build; concurrent requests for the same ID cannot both
+    # pass the earlier existence check and then overwrite one another's output.
+    New-Item -ItemType Directory -Path $output -ErrorAction Stop | Out-Null
+}
 $privateProject = Join-Path $repositoryRoot 'proprietary\src\ContextSuite.Private\ContextSuite.Private.csproj'
 if (-not (Test-Path -LiteralPath $privateProject)) {
     throw 'Production requires the compatible context-suite-private repository at proprietary/. There is no public demo build.'
+}
+if (-not (Test-Path -LiteralPath (Join-Path $repositoryRoot 'proprietary\src\ContextSuite.Commercial\ApplicationComposition.cs'))) {
+    throw 'Production requires the compatible context-suite-private commercial composition. Update the private checkout before building.'
 }
 & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\curated-win-x64')
 & (Join-Path $PSScriptRoot 'dds-engine\Test-DdsEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\dds-win-x64')
@@ -13,7 +29,6 @@ if (-not (Test-Path -LiteralPath $privateProject)) {
 & (Join-Path $PSScriptRoot 'palette-engine\Test-PaletteEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\palette-win-x64')
 & dotnet build (Join-Path $repositoryRoot 'ContextSuite.Production.slnx') -c $Configuration --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Production foundation build failed.' }
-$output = Join-Path $repositoryRoot "artifacts\production\$Configuration"
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 $dotnetRoot = Split-Path (Get-Command dotnet -CommandType Application).Source -Parent
 foreach ($entry in @(@('LICENSE.txt', 'DotNet.License.txt'), @('ThirdPartyNotices.txt', 'DotNet.ThirdPartyNotices.txt'))) {
@@ -42,8 +57,9 @@ if (Get-ChildItem -LiteralPath $output -Filter '*TestHost*' -File) {
     throw 'Test-only application hosts must not be included in production output.'
 }
 if (-not $SkipShell) {
-    & (Join-Path $PSScriptRoot 'Build.ps1') -Configuration $Configuration
-    $native = Join-Path $repositoryRoot "artifacts\bin\x64\$Configuration"
+    $native = if ($StagingId -eq [guid]::Empty) { Join-Path $repositoryRoot "artifacts\bin\x64\$Configuration" }
+        else { Join-Path $repositoryRoot ('.codex-temp\native-staging-' + $StagingId.ToString('N')) }
+    & (Join-Path $PSScriptRoot 'Build.ps1') -Configuration $Configuration -OutputDirectory $native
     Copy-Item -LiteralPath (Join-Path $native 'ContextSuite.Shell.dll') -Destination $output -Force
     & (Join-Path $PSScriptRoot 'New-PrototypeAssets.ps1') -OutputDirectory $output
 }

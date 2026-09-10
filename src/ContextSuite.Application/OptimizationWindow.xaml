@@ -49,14 +49,17 @@
                 <TextBlock Text="I consent to recycling originals after successful optimization. If recycling fails, keep the backup and show its location."
                            TextWrapping="Wrap" />
             </CheckBox>
-            <ui:StatusTextBlock Text="{Binding TrialMessage}" TextWrapping="Wrap" Margin="0,12,0,0"
-                                AutomationProperties.AutomationId="OptimizationTrialStatus"/>
         </StackPanel>
         </ScrollViewer>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="_Optimize" Command="{Binding ConfirmCommand}" Padding="22,7" Margin="0,0,8,0"
-                    AutomationProperties.Name="Start PNG optimization" AutomationProperties.AutomationId="ConfirmPngOptimization"/>
-            <Button Content="Cancel" IsCancel="True" Click="Cancel_Click" Padding="18,7" AutomationProperties.AutomationId="CancelPngOptimization"/>
+        <StackPanel Grid.Row="2" Margin="0,12,0,0">
+            <ui:StatusTextBlock Text="{Binding TrialMessage}" TextWrapping="Wrap" Margin="0,0,0,12"
+                                AutomationProperties.AutomationId="OptimizationTrialStatus"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="{Binding LicenseActionLabel}" Click="OnLicense" Padding="18,7" Margin="0,0,8,0" AutomationProperties.AutomationId="OptimizationLicense" />
+                <Button Content="_Optimize" Command="{Binding ConfirmCommand}" Padding="22,7" Margin="0,0,8,0"
+                        AutomationProperties.Name="Start PNG optimization" AutomationProperties.AutomationId="ConfirmPngOptimization"/>
+                <Button Content="Cancel" IsCancel="True" Click="Cancel_Click" Padding="18,7" AutomationProperties.AutomationId="CancelPngOptimization"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Window>

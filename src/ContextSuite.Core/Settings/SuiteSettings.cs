@@ -2,11 +2,11 @@ using ContextSuite.Core.Operations;
 
 namespace ContextSuite.Core.Settings;
 
-public sealed record ToolSettings(bool AllowReplacingOriginals = false, string? OutputDirectory = null);
+public sealed record ToolSettings(bool ReplaceOriginals = false, string? OutputDirectory = null);
 
 public sealed record SuiteSettings
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public ToolSettings Convert { get; init; } = new();
     public ToolSettings Optimize { get; init; } = new();
@@ -32,7 +32,7 @@ public sealed record BatchSettings(string Operation, ToolSettings Preferences, b
     {
         if (Operation is not ("convert" or "optimize"))
             throw new InvalidDataException("This operation does not publish output.");
-        if (requestReplacement && (!Preferences.AllowReplacingOriginals || !confirmed || quickAction ||
+        if (requestReplacement && (!Preferences.ReplaceOriginals || !confirmed ||
             !replacementAvailable || Preferences.OutputDirectory is not null))
             throw new InvalidDataException("Replacement requires an available, explicitly confirmed source-folder plan.");
         return new OutputPolicy(requestReplacement ? OutputMode.RecoverableReplacement : OutputMode.SiblingCopy,

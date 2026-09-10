@@ -164,7 +164,8 @@ internal static class Program
                 .Patterns.SelectionItem.Pattern.IsSelected.Value, "correct settings section");
             if (!VerifyRows(_window!, files, ["analyze", "convert", "optimize"]))
                 throw new InvalidOperationException("Settings activation changed the media queue.");
-            var field = settings!.FindFirstDescendant(cf => cf.ByAutomationId("OutputFolder"))!.AsTextBox();
+            settings!.FindFirstDescendant(cf => cf.ByAutomationId("CopyOptions"))!.Patterns.ExpandCollapse.Pattern.Expand();
+            var field = settings.FindFirstDescendant(cf => cf.ByAutomationId("OutputFolder"))!.AsTextBox();
             if (field.IsEnabled)
             {
                 field.Focus();

@@ -1,0 +1,55 @@
+<Window x:Class="ContextSuite.Application.LicenseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:ContextSuite.Application.Infrastructure"
+        Title="Context Suite — License" Width="620" SizeToContent="Height" MinWidth="480" MinHeight="340" MaxHeight="720"
+        WindowStartupLocation="CenterOwner" AutomationProperties.AutomationId="LicenseWindow">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+    </Window.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="24">
+        <TextBlock Text="Your Context Suite license" FontSize="24" Margin="0,0,0,12" />
+        <TextBlock Text="One purchase. All future updates. One active installation, transferable through Polar." TextWrapping="Wrap" />
+        <Label Content="License _key" Target="{Binding ElementName=LicenseKey}" Margin="0,12,0,0" />
+        <PasswordBox x:Name="LicenseKey" MaxLength="512" Padding="8" IsEnabled="{Binding CanActivate}"
+                     AutomationProperties.Name="License key" AutomationProperties.AutomationId="LicenseKey" />
+        <WrapPanel Margin="0,12,0,12" IsEnabled="{Binding CanAct}">
+            <Button Content="_Activate" Click="OnActivate" IsEnabled="{Binding CanActivate}" Padding="12,6" AutomationProperties.AutomationId="ActivateLicense" />
+            <Button Content="_Validate online" Click="OnValidate" IsEnabled="{Binding CanValidate}" Padding="12,6" Margin="8,0,0,0" />
+            <Button Content="_Deactivate..." Click="OnDeactivate" IsEnabled="{Binding CanDeactivate}" Padding="12,6" Margin="8,0,0,0" />
+        </WrapPanel>
+        <ui:StatusTextBlock Text="{Binding Message}" TextWrapping="Wrap" AutomationProperties.AutomationId="LicenseStatus" />
+        <TextBlock Text="After online validation, paid access works offline for up to 30 days. Analyze remains available when access expires." TextWrapping="Wrap" Margin="0,12,0,0" />
+        <StackPanel x:Name="RecoveryPanel" Margin="0,16,0,0"
+                    AutomationProperties.AutomationId="LicenseRecovery"
+                    Visibility="{Binding ShowRecovery, Converter={StaticResource BooleanToVisibility}}">
+                <TextBlock Text="Check your activation in Polar" FontWeight="SemiBold" TextWrapping="Wrap" />
+                <TextBlock Text="Before trying again, check whether Polar still lists this installation as active." TextWrapping="Wrap" Margin="0,8,0,8" />
+                <TextBlock Text="1. Open the customer portal from your purchase email.&#x0a;2. Find your license and deactivate this installation if it is listed.&#x0a;3. Confirm below to enter your key again." TextWrapping="Wrap" Margin="0,0,0,8" />
+                <CheckBox x:Name="PortalConfirmed" IsEnabled="{Binding CanRecover}">
+                    <TextBlock Text="I checked Polar. This installation is no longer active there." TextWrapping="Wrap" />
+                </CheckBox>
+                <Button Content="Ready to activate again" Click="OnRecover" HorizontalAlignment="Left" Padding="12,6" Margin="0,8,0,0" AutomationProperties.AutomationId="ConfirmLicenseRecovery">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="IsEnabled" Value="False" />
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding CanRecover}" Value="True" />
+                                        <Condition Binding="{Binding IsChecked, ElementName=PortalConfirmed}" Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="IsEnabled" Value="True" />
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <TextBlock Text="This clears only the saved activation on this PC. It does not cancel your purchase or reset your trial." TextWrapping="Wrap" Margin="0,8,0,0" />
+        </StackPanel>
+        <Button Content="_Close" Click="OnClose" IsCancel="True" HorizontalAlignment="Right" Padding="12,6" Margin="0,16,0,0"
+                AutomationProperties.AutomationId="CloseLicense" />
+    </StackPanel>
+    </ScrollViewer>
+</Window>

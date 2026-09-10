@@ -26,6 +26,11 @@ Product Language
 - Distinguish **lossless**, **visually lossless**, and **lossy** accurately.
 - Never claim that conversion to a lossless format restores lost quality.
 - Use **source** for the original file and **output** for a created result.
+- Label the saved destructive output choice **Overwrite originals**. Explain
+  the result plainly: "After the new file is validated, the original goes to the
+  Recycle Bin." Explain that unsafe overwrites create copies. Keep backup naming
+  and same-format publication mechanics in recovery details and technical docs,
+  not the main Settings explanation. Do not imply permanent deletion.
 
 
 Repository Layout
@@ -132,6 +137,11 @@ Converters And Optimizers
 - Require an explicit matte before converting transparent media to an opaque
   format.
 - Warn before lossy-to-lossy processing and state the selected quality policy.
+- Exception for explicitly selected raster conversion formats with automatic
+  copy output: ordinary encoding/precision limits and omission of unsupported
+  descriptive extras are details, not acknowledgement gates. Apply orientation
+  and color correctly, and keep the original. Transparency and DDS choices remain
+  explicit; DDS workflows retain their explicit information-handling choices.
 - Reject an optimization output that is larger than its source unless another
   requested transformation explains the increase.
 - Never overwrite a source by default. Explicit replacement must be recoverable
@@ -177,6 +187,13 @@ Apply this section if the accepted desktop UI decision uses XAML and MVVM.
   [Microsoft's WPF guidance](https://learn.microsoft.com/en-us/accessibility-tools-docs/items/wpf/text_livesetting).
 - Do not rely on color alone to communicate success, warnings, or failures.
 - Keep primary workflows usable without opening advanced settings.
+- Size windows to their content height. Opening an inline expandable section
+  grows the window; closing it removes the unused space. Keep the user's width,
+  cap height to the current monitor's work area, and scroll content when needed.
+  Refit after a disclosure or tab change even if the user previously resized the
+  window. Leave maximized windows maximized.
+- Make Settings tabs visibly selectable, with a strong selected indicator and
+  a heading in the content panel identifying which tool the settings affect.
 
 
 Errors And Diagnostics

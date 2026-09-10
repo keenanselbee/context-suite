@@ -9,16 +9,50 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        if (args is ["--direct-command-contracts", var stagedWorker]) return DirectCommandContracts.RunAsync(stagedWorker).GetAwaiter().GetResult();
         if (args is ["--view-contracts"]) return ViewContracts.Run();
-        if (args.Length != 2 || args[0] != "--activation-file") return 2;
+        if (args is ["--license-workflow-contracts"]) return LicenseWorkflowContracts.RunAsync().GetAwaiter().GetResult();
+        var licenseWorkflow = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_LICENSE_WORKFLOW") == "1";
+        if (!(licenseWorkflow && args.Length == 0) && (args.Length != 2 || args[0] != "--activation-file")) return 2;
         var configuredRoot = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_ROOT");
         var worker = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_WORKER");
         if (configuredRoot is null || worker is null) return 2;
         var root = Path.GetFullPath(configuredRoot);
         if (!Directory.Exists(root) || !root.Contains(Path.DirectorySeparatorChar + ".codex-temp" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) return 2;
-        var app = new App(new(Path.Combine(root, "settings.json"), Path.Combine(root, "Access", "trial.json"),
-            Path.Combine(root, "Publications"), Path.GetFullPath(worker), Path.Combine(root, "WorkerScratch")));
+        if (licenseWorkflow)
+        {
+            LicenseWorkflowFixture.Prepare(root);
+            if (args.Length == 2)
+            {
+                var directory = Path.Combine(root, "ActivationCleanup");
+                var path = Path.GetFullPath(args[1]);
+                if (!string.Equals(Path.GetDirectoryName(path), directory, StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(path) != ".request" || !Guid.TryParseExact(Path.GetFileNameWithoutExtension(path), "D", out var id)) return 2;
+                Directory.CreateDirectory(directory);
+                File.WriteAllText(path, $"ContextSuiteActivation/1\nrequestId={id:D}\noperation=convert\naction=tga\npathCount=1\npath={Path.Combine(root, "fixture.png")}\n");
+            }
+        }
+        var app = new App(new ApplicationPaths(Path.Combine(root, "settings.json"), Path.Combine(root, "Access", "trial.json"),
+            Path.Combine(root, "Publications"), Path.GetFullPath(worker), Path.Combine(root, "WorkerScratch"))
+            { ActivationCleanupDirectory = Path.Combine(root, "ActivationCleanup") },
+            licenseWorkflow ? new LicenseWorkflowFixture() : null, async (path, token) =>
+            {
+                // Test-only request ingestion: no changes to production activation ACLs.
+                var full = Path.GetFullPath(path);
+                if (!string.Equals(Path.GetDirectoryName(full), Path.Combine(root, "ActivationCleanup"), StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(full) != ".request" || !Guid.TryParseExact(Path.GetFileNameWithoutExtension(full), "D", out var id))
+                    throw new InvalidDataException("Test activation must be inside its isolated request directory.");
+                var request = ContextSuite.Core.Activation.ActivationParser.Parse(await File.ReadAllBytesAsync(full, token));
+                if (request.RequestId != id) throw new InvalidDataException("Test request identifier mismatch.");
+                return request;
+            });
         app.InitializeComponent();
+        if (licenseWorkflow)
+            System.Windows.EventManager.RegisterClassHandler(typeof(System.Windows.Window), System.Windows.FrameworkElement.LoadedEvent,
+                new System.Windows.RoutedEventHandler((sender, _) =>
+                {
+                    if (sender is System.Windows.Window window) window.Title += " - SIMULATED LICENSE TEST";
+                }));
         if (Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_QUIET_TRACE") == "1")
         {
             var timer = System.Diagnostics.Stopwatch.StartNew();

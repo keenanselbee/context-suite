@@ -160,7 +160,10 @@ Repository-Specific Notes
 - Preserve source files by default and publish only validated outputs through a
   collision-safe, transactional output workflow.
 - Follow decision 0008 for Windows-style output names, immutable settings
-  snapshots, and explicit replacement consent. Recycle originals/backups only
+  snapshots, and explicit replacement consent, with decision 0018 superseding
+  per-batch consent: a new explicit per-tool Settings choice authorizes future
+  replacement. Legacy permission-only settings must migrate to copies, never
+  silently become standing overwrite consent. Recycle originals/backups only
   after publication; never fall back to permanent deletion. Replacement remains
   gated on Windows failure tests. Do not add a custom backup manager or app Undo.
 - Use `tools/Test-PublicationWindows.ps1 -Recycle` only for explicit opt-in native
@@ -169,6 +172,12 @@ Repository-Specific Notes
   environments with equivalent native evidence; see docs/image-output-safety-goal.md.
 - Never silently discard transparency, orientation, metadata, tags, artwork,
   animation, color information, or another meaningful media capability.
+- Accepted raster-conversion exception: Automatic handles ordinary metadata
+  quietly on a copy, preserving supported information and applying orientation
+  and color correctly. Unsupported extras/stale thumbnails may be omitted; this
+  forces copy output even with replacement enabled. A format selection accepts
+  ordinary encoding/precision limits on that copy, not silent alpha/HDR/animation
+  loss. Strict preservation and descriptive removal stay secondary options.
 - Require an explicit matte choice before converting transparent media to an
   opaque image format.
 - Warn before lossy-to-lossy audio or image processing, state the selected loss
@@ -182,8 +191,11 @@ Repository-Specific Notes
 - Follow accepted decision 0015 as the next product priority: broad-audience
   simplicity, context-menu-first direct actions, Auto first, best-effort results
   within fixed quality limits, quiet success and compact progress/problem UI.
-  Direct Optimize and safe common Convert actions bypass planning with copy-only
-  output. Meaningful conversion decisions and advanced in-app Optimize use planners. Keep planned
+  Decision 0018 now narrows the customer UI to direct commands, necessary prompts,
+  Analyze, progress/problems, Settings and License. Remove the general workspace
+  and routine planners. Copies remain default; explicit Settings consent will
+  allow safe replacement on future direct actions, retaining mandatory copy
+  exceptions. Track implementation in docs/context-menu-simplification-goal.md. Keep planned
   behavior distinct from implemented and verified behavior in status reports.
 - Keep Explorer-facing code minimal and bounded. Do not load media engines,
   perform unbounded parsing, access the network, or display errors while Explorer

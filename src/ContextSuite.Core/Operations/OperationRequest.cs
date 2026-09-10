@@ -6,8 +6,8 @@ public sealed record OperationRequest(Guid RequestId, string Operation, string A
 {
     public const int MaximumPaths = 4096;
     public bool IsSettingsRequest => Action == "settings" && Operation is "convert" or "optimize";
-    public bool IsQuickOptimization => Operation == "optimize" && Action is "auto" or "lossless" or "balanced" or "smallest";
-    public bool IsQuickConversion => Operation == "convert" && Action is "png" or "jpeg" or "webp" or "bmp" or "tga";
+    public bool IsQuickOptimization => Operation == "optimize" && Action is "auto" or "lossless" or "balanced" or "smallest" or "choose-preset";
+    public bool IsQuickConversion => Operation == "convert" && Action is "png" or "jpeg" or "webp" or "bmp" or "tga" or "dds";
     public bool IsQuickAction => IsQuickOptimization || IsQuickConversion;
 
     public void Validate(bool requireExistingFiles = true)

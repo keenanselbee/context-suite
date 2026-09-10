@@ -1,12 +1,15 @@
 Polar Integration Plan
 ======================
 
-Status: provider selected; implementation deferred
+Status: paid policy accepted; implementation in progress
 Date: 2026-09-06
 
-The user reports that Polar has approved the account. No dashboard configuration,
-purchase, license activation, download delivery, or refund flow has been verified
-from this repository. No live credentials are needed for this documentation.
+The user reports Polar approval and supplied sandbox checkout, confirmation email,
+license grant and benefit-setting screenshots. Desktop activation, download
+delivery and refund flow remain unverified. No live credentials are needed here.
+The [accepted paid policy](decisions/0017-paid-access-and-release-candidate.md)
+settles lifetime updates, daily refresh, 30-day offline grace, one active
+installation with transfer and free Analyzer access after trial expiry.
 This plan implements the direction in
 [decision 0006](decisions/0006-trial-and-purchase-access.md).
 
@@ -14,7 +17,7 @@ This plan implements the direction in
 Product Setup To Confirm
 -----------------------
 
-- Product: Context Suite, one-time purchase; price and upgrade rights still open.
+- Product: Context Suite, one-time purchase including all future updates; final price remains open.
 - Fulfillment: Polar delivers license keys and the installer when release-ready.
 - License benefit: visible, prefix CONTEXT, one activation, customer deactivation
   enabled, no usage quota, and no paid-key expiry. These are intended settings,
@@ -35,15 +38,16 @@ That file is not required for reading or validating these public docs.
 
 | Value | Production | Sandbox |
 | --- | --- | --- |
-| Organization ID | `<organization-id>` | Pending |
-| Product ID | `<product-id>` | Pending |
-| License benefit ID | `<license-benefit-id>` | Pending |
-| Checkout URL | `<checkout-url>` | Pending |
+| Organization ID | Recorded privately | Recorded privately |
+| Product ID | Recorded privately | Recorded privately |
+| License benefit ID | Recorded privately | Recorded privately |
+| Checkout URL | Recorded privately | Recorded privately |
 | Customer portal URL | `<customer-portal-url>` | Pending |
 
 The organization, product, and license benefit IDs and checkout URL were supplied
 by the user during production onboarding. Confirm their environment and product
-association before runtime use; checkout and benefit delivery remain untested.
+association before release use; sandbox checkout and benefit delivery have
+owner-provided screenshot evidence, but desktop activation remains unverified.
 The organization slug and support email are recorded with the private values.
 The portal URL follows the documented slug-based format; verify it opens the
 correct organization before shipping. See
@@ -65,11 +69,11 @@ Implementation Boundary
 
 Keep the public access-policy contract and UI in the public repository. Implement
 Polar-specific transport and commercial composition in the existing private
-project under proprietary/, after reading its own instructions. Use ordinary
+`ContextSuite.Commercial` project under proprietary/. Use ordinary
 asynchronous HTTP behind the existing boundary; do not introduce a service,
 custom login system, or multi-provider framework merely for future flexibility.
 
-The application will collect the customer key, activate it against the configured
+The application collects the customer key, activates it against the configured
 environment, and retain the returned activation ID. Subsequent validation must
 check the expected organization, license benefit, activation, granted status,
 and expiry rather than treating any successful HTTP response as paid access.
@@ -77,8 +81,8 @@ Use the customer-facing license endpoints; never ship a merchant bearer token.
 See [Polar license documentation](https://polar.sh/docs/features/benefits/license-keys).
 
 Store customer activation state in protected per-user application storage, never
-source control, logs, shell request files, or worker messages. Proposed protection
-is Windows user-scoped encryption; confirm recovery semantics before coding.
+source control, logs, shell request files, or worker messages. Implemented protection
+is Windows DPAPI CurrentUser with bounded, atomic storage and pending-operation recovery.
 Use minimal installation data rather than hardware serials, IP binding, or media
 paths. A one-instance limit is modest enforcement, not proof of unique hardware.
 
@@ -87,7 +91,7 @@ Explorer menu enumeration or media parsing. Already admitted batches finish and
 their results remain accessible after expiry. Network calls need cancellation,
 bounded timeouts, and distinct invalid-license versus service-unavailable states.
 
-Offline grace and revalidation timing require a decision. A locally cached JSON
+Daily refresh and 30-day offline grace are accepted and implemented. A locally cached JSON
 response is not a provider-signed offline entitlement; local encryption does not
 make it one. Do not add a custom signing backend or promise indefinite offline
 access. Recovery after a lost activation response must not blindly create more
@@ -97,14 +101,14 @@ instances; provide a retry/reconciliation or portal-deactivation path.
 Implementation And Release Checklist
 ------------------------------------
 
-- [ ] Capture the non-secret configuration above and verify the benefit settings.
-- [ ] Decide trial start/clock rules, post-trial feature access, offline grace,
-  refresh frequency, device/reinstall recovery, refunds, and upgrade rights.
-- [ ] Exercise checkout and benefit delivery in Polar's separate
+- [x] Capture non-secret configuration and owner-provided sandbox benefit settings.
+- [x] Decide trial start/clock rules, post-trial feature access, offline grace,
+  refresh frequency, transfer recovery and lifetime upgrade rights in decision 0017.
+- [x] Owner exercised checkout and benefit delivery in Polar's separate
   [sandbox environment](https://polar.sh/docs/integrate/sandbox).
-- [ ] Implement private adapter, public activation UI, protected storage, and
+- [x] Implement private adapter, public activation UI, protected storage, and
   admission policy without changing media or Explorer responsibilities.
-- [ ] Add deterministic contract tests with synthetic keys and simulated HTTP;
+- [x] Add deterministic contract tests with synthetic keys and simulated HTTP;
   do not make ordinary tests contact Polar or use customer credentials.
 - [ ] Verify first activation, repeated validation without consuming another
   slot, second-installation rejection, deactivation, and successful transfer.
@@ -120,3 +124,8 @@ Implementation And Release Checklist
 Do not delay useful media slices for commerce implementation. Account approval
 settles onboarding, not release readiness. This documentation does not authorize
 live purchases, refunds, uploads, or dashboard changes.
+
+See [licensing implementation and verification](licensing-verification.md) for
+local test evidence and customer recovery instructions. The remaining checklist
+items require live-provider or installed/interactive evidence; synthetic tests
+do not satisfy those release gates.

@@ -14,15 +14,15 @@ internal static class SettingsContracts
         var path = Path.Combine(directory, "settings.json");
         var store = new SettingsStore(path);
         var original = await store.LoadAsync();
-        check(original.CanSave && original.Revision is null && !original.Settings.Convert.AllowReplacingOriginals &&
-            !original.Settings.Optimize.AllowReplacingOriginals, "settings: missing file uses copy-only defaults");
+        check(original.CanSave && original.Revision is null && !original.Settings.Convert.ReplaceOriginals &&
+            !original.Settings.Optimize.ReplaceOriginals, "settings: missing file uses copy-only defaults");
         var snapshot = original.Settings.Capture("convert");
         var changed = original.Settings with { Convert = new(true, directory), PlayCompletionSound = false };
         var saved = await store.SaveAsync(changed, original);
         check((await store.LoadAsync()).Settings == changed, "settings: typed roundtrip");
         check(snapshot.Preferences == new ToolSettings(), "settings: captured batch remains unchanged");
         check(snapshot.PlayCompletionSound && !changed.Capture("optimize").PlayCompletionSound, "settings: completion mute captured per batch");
-        check(!changed.Capture("optimize").Preferences.AllowReplacingOriginals, "settings: per-tool replacement consent");
+        check(!changed.Capture("optimize").Preferences.ReplaceOriginals, "settings: per-tool replacement consent");
         await RejectAsync(() => store.SaveAsync(new(), original), check, "settings: reject stale save");
 
         var oldBytes = await File.ReadAllBytesAsync(path);
@@ -56,12 +56,30 @@ internal static class SettingsContracts
             check((await store.LoadAsync()).Warning is null, "settings: explicit save repairs malformed settings");
         }
         await File.WriteAllTextAsync(path,
-            "{\"SchemaVersion\":1,\"Convert\":{\"AllowReplacingOriginals\":\"yes\",\"OutputDirectory\":\"relative\"},\"Optimize\":{\"AllowReplacingOriginals\":true}}");
+            "{\"SchemaVersion\":2,\"Convert\":{\"ReplaceOriginals\":\"yes\",\"OutputDirectory\":\"relative\"},\"Optimize\":{\"ReplaceOriginals\":true}}");
         var repaired = await store.LoadAsync();
-        check(repaired.Settings.Convert == new ToolSettings() && repaired.Settings.Optimize.AllowReplacingOriginals &&
+        check(repaired.Settings.Convert == new ToolSettings() && repaired.Settings.Optimize.ReplaceOriginals &&
             repaired.Warning is not null, "settings: repair invalid fields independently");
         await RejectAsync(() => store.SaveAsync(new() { Convert = new(false, "relative") }, repaired), check,
             "settings: cannot persist relative output folder");
+        foreach (var extra in new[] { "", ",\"ReplaceOriginals\":true" })
+        {
+            var legacy = "{\"SchemaVersion\":1,\"Convert\":{\"AllowReplacingOriginals\":true" + extra +
+                "},\"Optimize\":{\"AllowReplacingOriginals\":true" + extra + "},\"PlayCompletionSound\":false}";
+            await File.WriteAllTextAsync(path, legacy);
+            var migrated = await store.LoadAsync();
+            check(migrated.CanSave && migrated.Warning is null && migrated.Settings.SchemaVersion == 2 &&
+                !migrated.Settings.Convert.ReplaceOriginals && !migrated.Settings.Optimize.ReplaceOriginals && !migrated.Settings.PlayCompletionSound &&
+                await File.ReadAllTextAsync(path) == legacy, "settings: legacy consent loads as copies without rewriting the file");
+            await store.SaveAsync(migrated.Settings, migrated);
+            check(!(await store.LoadAsync()).Settings.Convert.ReplaceOriginals, "settings: saving migrated preferences does not enable replacement");
+        }
+        foreach (var folder in new[] { "\"relative\"", "false" })
+        {
+            await File.WriteAllTextAsync(path, "{\"SchemaVersion\":2,\"Convert\":{\"ReplaceOriginals\":true,\"OutputDirectory\":" + folder + "}}");
+            check(!(await store.LoadAsync()).Settings.Convert.ReplaceOriginals,
+                "settings: repairing an invalid output folder cannot redirect replacement onto the source");
+        }
         await File.WriteAllTextAsync(path, new string(' ', 65537));
         check(!(await store.LoadAsync()).CanSave, "settings: bounded input size");
 
@@ -81,14 +99,16 @@ internal static class SettingsContracts
 
         var allowed = new SuiteSettings { Convert = new(true) }.Capture("convert");
         check(allowed.SelectOutput(false, false, true, false).Mode == OutputMode.SiblingCopy,
-            "policy: quick action remains a copy despite permission");
+            "policy: mandatory copy override remains available with saved replacement preference");
+        check(allowed.SelectOutput(true, true, true, true).Mode == OutputMode.RecoverableReplacement,
+            "policy: direct command honors explicit saved replacement consent");
         check(allowed.SelectOutput(true, true, false, true).Mode == OutputMode.RecoverableReplacement,
             "policy: verified confirmed replacement");
         foreach (var policy in new Action[]
         {
             () => snapshot.SelectOutput(true, true, false, true),
             () => allowed.SelectOutput(true, false, false, true),
-            () => allowed.SelectOutput(true, true, true, true),
+            () => allowed.SelectOutput(true, false, true, true),
             () => allowed.SelectOutput(true, true, false, false),
             () => changed.Capture("convert").SelectOutput(true, true, false, true),
             () => changed.Capture("analyze").SelectOutput(false, false, false, false)

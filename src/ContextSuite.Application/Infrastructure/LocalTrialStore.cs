@@ -13,8 +13,26 @@ internal sealed record TrialAdmission(LocalTrialStatus Status, Guid BatchId, Dat
 }
 
 // Local trial bookkeeping only. No key validation, hidden copies, reset switch or permissive fallback.
-internal sealed class LocalTrialStore
+internal sealed class LocalTrialStore : IOperationAccess
 {
+    async Task<OperationAccessStatus> IOperationAccess.ReadAccessAsync(CancellationToken cancellationToken)
+    {
+        var status = await ReadStatusAsync(cancellationToken);
+        return new(status.State is LocalTrialState.NotStarted or LocalTrialState.Active, status.Message);
+    }
+
+    async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken cancellationToken)
+    {
+        var admission = await AdmitAsync(confirmed, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
+    async Task<OperationAdmission> IOperationAccess.AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken)
+    {
+        var admission = await AdmitAsync(confirmed, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
     private sealed record TrialRecord(int SchemaVersion, DateTimeOffset StartedUtc, DateTimeOffset LastObservedUtc);
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -168,7 +186,7 @@ internal sealed class LocalTrialStore
     private static LocalTrialStatus Status(TrialRecord record, DateTimeOffset now)
     {
         var expires = record.StartedUtc + Duration;
-        return now >= expires ? new(LocalTrialState.Expired, "Your trial has expired. New conversions are unavailable; existing results remain available.", expires) :
+        return now >= expires ? new(LocalTrialState.Expired, "Your trial has expired. Activate a license to convert or optimize. Analyze remains available.", expires) :
             new(LocalTrialState.Active, "Trial active. Already admitted batches may finish after expiry.", expires);
     }
 

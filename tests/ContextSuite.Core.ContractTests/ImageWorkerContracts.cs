@@ -32,6 +32,22 @@ internal static class ImageWorkerContracts
         WritePng(alphaPath, true);
         await ConversionViewModelContracts.RunAsync(root, worker, await worker.ProbeAsync(new(Guid.NewGuid(), alphaPath), CancellationToken.None), check);
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new NoRecycle());
+        var extrasPath = Path.Combine(root, "metadata-extra.png");
+        WritePng(extrasPath, fdEC: true);
+        var extrasHash = SHA256.HashData(File.ReadAllBytes(extrasPath));
+        await using (var direct = new ContextSuite.Application.MainViewModel(
+            new WorkerClient(executable, Path.Combine(root, "automatic-worker")),
+            new ContextSuite.Core.Settings.SuiteSettings { Convert = new(true) }, publisher,
+            new LocalTrialStore(Path.Combine(root, "automatic-trial.json"))))
+        {
+            direct.ConversionRequested += (_, _) => throw new InvalidOperationException("Routine metadata must not open the planner.");
+            direct.Admit(new(Guid.NewGuid(), "convert", "webp", [extrasPath]));
+            direct.Admit(new(Guid.NewGuid(), "convert", "tga", [extrasPath]));
+            await direct.WaitForIdleAsync();
+            check(direct.Rows.All(row => row.Result.State == OperationState.Succeeded && row.HasOutput && row.OutputPath != extrasPath) &&
+                !direct.HasProblems && extrasHash.SequenceEqual(SHA256.HashData(File.ReadAllBytes(extrasPath))),
+                "automatic conversion: metadata copies cross real IPC without planner, warning or original cleanup");
+        }
         foreach (var target in new[] { ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Bmp, ImageFormat.Tga })
         {
             var options = new ImageConversionOptions(target);

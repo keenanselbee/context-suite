@@ -54,15 +54,15 @@ internal static class PngOptimizationContracts
             ImageFormat.Png, 10, 20, 8, 1, false, false, "sRGB", []);
         ImageBatchPlan QuickPlan(ImageSourceFacts facts, ImageFormat target = ImageFormat.WebP) =>
             ImageConversionPlanner.Create(Guid.NewGuid(), [facts], new(target, WebPLossless: target == ImageFormat.WebP), new("convert", new()));
-        check(QuickPlan(directSource).CanConfirmQuickCopy && QuickPlan(directSource with { Resolution = new(300,300,2) }).CanConfirmQuickCopy,
+        check(QuickPlan(directSource).CanConfirmQuickAction && QuickPlan(directSource with { Resolution = new(300,300,2) }).CanConfirmQuickAction,
             "quick Convert: preservation and resolution-only normalization need no dialog");
-        check(QuickPlan(directSource with { Format = ImageFormat.Jpeg, IsLossy = true }, ImageFormat.Png).CanConfirmQuickCopy &&
-            QuickPlan(directSource, ImageFormat.Bmp).CanConfirmQuickCopy, "quick Convert: informational format notices need no consent");
+        check(QuickPlan(directSource with { Format = ImageFormat.Jpeg, IsLossy = true }, ImageFormat.Png).CanConfirmQuickAction &&
+            QuickPlan(directSource, ImageFormat.Bmp).CanConfirmQuickAction, "quick Convert: informational format notices need no consent");
         foreach (var guarded in new[] { directSource with { ProfileNames = ["exif"] }, directSource with { HasOtherMetadata = true },
             directSource with { BitDepth = 16 } })
-            check(!QuickPlan(guarded).CanConfirmQuickCopy, "quick Convert: metadata or precision consequence requires review");
-        check(!QuickPlan(directSource with { HasTransparency = true }, ImageFormat.Jpeg).CanConfirmQuickCopy &&
-            !QuickPlan(directSource with { Format = ImageFormat.WebP, IsLossy = true }, ImageFormat.Jpeg).CanConfirmQuickCopy,
+            check(!QuickPlan(guarded).CanConfirmQuickAction, "quick Convert: metadata or precision consequence requires review");
+        check(!QuickPlan(directSource with { HasTransparency = true }, ImageFormat.Jpeg).CanConfirmQuickAction &&
+            !QuickPlan(directSource with { Format = ImageFormat.WebP, IsLossy = true }, ImageFormat.Jpeg).CanConfirmQuickAction,
             "quick Convert: matte and lossy transcode never bypassed");
         var source = new ImageSourceFacts(Guid.NewGuid(), Path.Combine(root, "source.png"), new string('0', 64), 100,
             ImageFormat.Png, 10, 20, 16, 6, true, false, "sRGB", ["exif"], HasOtherMetadata: true);
@@ -171,15 +171,28 @@ internal static class PngOptimizationContracts
         ImageWorkerContracts.WritePng(taggedPath, true, CompressionLevel.NoCompression, fdEC: true);
         var taggedOriginal = File.ReadAllBytes(taggedPath);
         var taggedFacts = await worker.ProbeAsync(new(Guid.NewGuid(), taggedPath), default, forOptimization: true);
-        var taggedPlan = PngOptimizationPlan.Create(Guid.NewGuid(), [taggedFacts], new("optimize", new(true)), replaceOriginal: true);
-        // Replacement is permitted by the planner, but the executor must downgrade
-        // this item to a copy before reservation. This publisher refuses replacement.
+        var taggedPlan = PngOptimizationPlan.Create(Guid.NewGuid(), [taggedFacts], new("optimize", new(true)));
         var taggedResult = (await new PngOptimizationExecutor(worker, publisher, activeTrial)
-            .ExecuteAsync(taggedPlan.Confirm(true, true), null, default)).Results.Single();
+            .ExecuteAsync(taggedPlan.Confirm(false, false), null, default)).Results.Single();
         check(taggedResult.State == OperationState.Succeeded && taggedResult.Publication is
-            { Outcome: PublicationOutcome.CopyCreated, MetadataWarning: true } &&
-            File.ReadAllBytes(taggedPath).SequenceEqual(taggedOriginal) && taggedResult.Message.Contains("fdEC"),
-            "fdEC batch: replacement enabled still creates a warning copy and never replaces/recycles source");
+            { Outcome: PublicationOutcome.CopyCreated, HasWarning: false } &&
+            File.ReadAllBytes(taggedPath).SequenceEqual(taggedOriginal),
+            "fdEC batch: normal copy selection preserves source without a metadata warning");
+        var taggedQuiet = new QuietWorkflow();
+        taggedQuiet.Begin(taggedPlan.BatchId, true, DateTimeOffset.UtcNow);
+        check(taggedQuiet.Complete(taggedPlan.BatchId, [taggedResult]) && !taggedQuiet.NeedsAttention && !taggedQuiet.WarningSoundRequested,
+            "fdEC batch: ordinary success chime, no warning sound or problem window");
+        var replaceFacts = taggedFacts with { ItemId = Guid.NewGuid() };
+        var replacePlan = PngOptimizationPlan.Create(Guid.NewGuid(), [replaceFacts], new("optimize", new(true)), replaceOriginal: true);
+        var replacementPublisher = new OutputPublisher(Path.Combine(root, "replacement-records"), new RetainBackup(), replacementVerified: true);
+        var replaced = (await new PngOptimizationExecutor(worker, replacementPublisher, activeTrial)
+            .ExecuteAsync(replacePlan.Confirm(true, true), null, default)).Results.Single();
+        check(replaced.State == OperationState.Succeeded && replaced.Publication is
+            { Outcome: PublicationOutcome.BackupRetained, MetadataWarning: false } replacement &&
+            replacement.OutputPath == taggedPath && !File.ReadAllBytes(taggedPath).SequenceEqual(taggedOriginal) &&
+            File.ReadAllBytes(replacement.RetainedOriginalPath!).SequenceEqual(taggedOriginal),
+            "fdEC batch: confirmed replacement follows normal publication and retains exact recovery backup when recycling declines");
+        check(replaced.Publication!.HasWarning, "fdEC batch: unrelated recovery warning is not suppressed");
         var optimizedFacts = await worker.ProbeAsync(new(Guid.NewGuid(), first.OutputPath!), default, forOptimization: true);
         var noChange = PngOptimizationPlan.Create(Guid.NewGuid(), [optimizedFacts], new("optimize", new()));
         var stable = await new PngOptimizationExecutor(worker, publisher, activeTrial).ExecuteAsync(noChange.Confirm(false, false), null, default);
@@ -201,7 +214,7 @@ internal static class PngOptimizationContracts
         var corrupt = Path.Combine(root, "corrupt.png");
         File.WriteAllText(corrupt, "unsupported fixture");
         await using (var convertVm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "direct-convert-scratch")),
-            new SuiteSettings { Convert = new(true), PlayCompletionSound = false }, publisher,
+            new SuiteSettings { PlayCompletionSound = false }, publisher,
             new LocalTrialStore(Path.Combine(root, "direct-convert-trial.json"))))
         {
             var prompts = 0;
@@ -227,33 +240,21 @@ internal static class PngOptimizationContracts
                 convertVm.Summary.Contains("already in target format"), "quick Convert: matching target is a quiet no-op, not an error or extra copy");
             check(convertVm.Rows[0].Result.Publication?.OutputPath?.EndsWith(" - Converted.webp") == true &&
                 SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original),
-                "quick Convert: named validated copy despite replacement preference; original unchanged");
+                "quick Convert: default named validated copy; original unchanged");
         }
         await using var vm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "ui-scratch")), publisher: publisher,
             trial: new LocalTrialStore(Path.Combine(root, "ui-trial.json")));
-        var calls = 0;
-        vm.OptimizationRequested += async (planner, token) =>
-        {
-            calls++;
-            await planner.InitializeAsync(token);
-            check(planner.Rows.Count == 2 && planner.Rows.Count(row => row.CanExecute) == 1, "PNG UI handoff: mixed selection remains one planner");
-            ConfirmedPngOptimization? result = null;
-            planner.Confirmed += value => result = value;
-            planner.ConfirmCommand.Execute(null);
-            return result;
-        };
         vm.Admit(new(Guid.NewGuid(), "optimize", "choose-preset", [sourcePath, corrupt]));
         await vm.WaitForIdleAsync();
-        check(calls == 1 && vm.Rows[0].Result.State == OperationState.Succeeded && vm.Rows[1].Result.State == OperationState.Unsupported &&
-            vm.Summary.Contains("Optimization saved"), "PNG UI handoff: per-file outcomes and aggregate saved bytes");
-        check(SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original), "PNG UI handoff: source still unchanged");
+        check(vm.Rows[0].Result.State == OperationState.Succeeded && vm.Rows[1].Result.State == OperationState.Unsupported &&
+            vm.Summary.Contains("Optimization saved"), "PNG legacy direct action: per-file outcomes and aggregate saved bytes");
+        check(SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original), "PNG legacy direct action: source still unchanged");
         await using (var quickVm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "quick-scratch")),
-            new SuiteSettings { Optimize = new(true), PlayCompletionSound = false }, publisher,
+            new SuiteSettings { PlayCompletionSound = false }, publisher,
             new LocalTrialStore(Path.Combine(root, "quick-trial.json"))))
         {
             var started = 0;
             var finished = 0;
-            quickVm.OptimizationRequested += (_, _) => throw new InvalidOperationException("Quick action opened a planner");
             quickVm.QuickBatchStarted += (_, _) => started++;
             quickVm.QuickBatchCompleted += (_, rows) =>
             {
@@ -270,7 +271,7 @@ internal static class PngOptimizationContracts
             check(quickVm.Rows[0].Result.State == OperationState.Succeeded && quickVm.Rows[1].Result.State == OperationState.Unsupported &&
                 quickVm.Rows[2].Result.State == OperationState.Succeeded, "quick: mixed selection does not block valid files or later batches");
             check(quickVm.Rows.Where(row => row.HasOutput).All(row => row.OutputPath != row.Path) &&
-                SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original), "quick: copies even when replacement permitted, original untouched");
+                SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original), "quick: default copies, original untouched");
         }
         var precisionPath = Path.Combine(root, "precision.png");
         ImageInterruptionContracts.WriteNoisePng(precisionPath, 1024);
@@ -294,6 +295,11 @@ internal static class PngOptimizationContracts
     {
         public Task<RecycleResult> RecycleAsync(string path, FileFingerprint expected, CancellationToken cancellationToken) =>
             throw new InvalidOperationException("Copy-only PNG tests must never recycle.");
+    }
+    private sealed class RetainBackup : IFileRecycler
+    {
+        public Task<RecycleResult> RecycleAsync(string path, FileFingerprint expected, CancellationToken cancellationToken) =>
+            Task.FromResult(new RecycleResult(false, "Backup retained for disposable contract verification."));
     }
 
     private sealed class TestClock : TimeProvider

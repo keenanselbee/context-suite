@@ -55,7 +55,8 @@ This does not complete Milestone 2 or the other media milestones.
 The public/private repository direction and three-day commercial trial are now
 recorded in decisions 0005 and 0006. The single production foundation builds;
 trial storage/admission is now connected to the tested conversion UI;
-Polar license activation is not implemented. Decision 0007 accepts the
+Polar activation is locally implemented with synthetic-provider contracts;
+live-provider and interactive acceptance remain pending. Decision 0007 accepts the
 WPF application and worker foundation, including application reuse, sequential
 worker execution, IPC, publication ownership, settings, and source allocation.
 The private catalog advertises twenty tested PNG/JPEG/WebP/BMP/TGA cross-format pairs
@@ -415,11 +416,12 @@ Exit criteria:
 Commercial Access Gate For The Paid Image Release
 ------------------------------------------------
 
-Before implementation, settle trial start and elapsed-time rules, feature access
-after expiry, offline-license duration/refresh, outage behavior, recovery/device
-transfers, and refunds/revocation. Confirm pricing, source/distribution terms,
+Decision 0017 settles elapsed-time rules, feature access after expiry, lifetime
+updates, 30-day offline grace/daily refresh, outage behavior and transfer recovery.
+Verify actual refunds/revocation, pricing and source/distribution terms,
 independently of media-engine selection. Polar is selected and account approval
-is user-confirmed; configuration and integration remain unverified. Follow the
+is user-confirmed; sandbox configuration is recorded and local integration is
+contract-tested, but live activation remains unverified. Follow the
 [Polar integration plan](polar-integration.md). Do not build custom website
 accounts. Commercial integration need not block component development. Resolve
 production admission before exposing executable paid media operations; there is

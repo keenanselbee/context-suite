@@ -98,7 +98,7 @@ const CommandDefinition& GetDefinition(CommandKind kind)
         L"Optimize the selected media files with Context Suite",
         L"optimize",
         L"Auto",
-        L"Balance quality and size; keep originals and preserve metadata",
+        L"Balance quality and size; output follows Settings and preserve metadata",
         L"auto",
         L"Optimize.ico",
         true,
@@ -624,15 +624,15 @@ private:
     const CommandDefinition& definition_;
     CommandRole role_;
     unsigned preset_;
-    static constexpr const wchar_t* ConvertTitles[] = { L"PNG", L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"More options..." };
-    static constexpr const wchar_t* ConvertActions[] = { L"png", L"jpeg", L"webp", L"bmp", L"tga", L"choose-format" };
+    static constexpr const wchar_t* ConvertTitles[] = { L"PNG", L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS..." };
+    static constexpr const wchar_t* ConvertActions[] = { L"png", L"jpeg", L"webp", L"bmp", L"tga", L"dds" };
     static constexpr const wchar_t* PresetTitles[] = { L"Auto", L"Lossless", L"Balanced", L"Smallest" };
     static constexpr const wchar_t* PresetActions[] = { L"auto", L"lossless", L"balanced", L"smallest" };
     static constexpr const wchar_t* PresetTooltips[] = {
-        L"Balance quality and size with gentle loss only when worthwhile; keep originals",
-        L"Reduce file size without changing pixels; keep originals",
-        L"Allow slight RGB precision loss for smaller files; keep originals",
-        L"Allow stronger RGB precision loss; banding may be visible; keep originals" };
+        L"Balance quality and size with gentle loss only when worthwhile; output follows Settings",
+        L"Reduce file size without changing pixels; output follows Settings",
+        L"Allow slight RGB precision loss for smaller files; output follows Settings",
+        L"Allow stronger RGB precision loss; banding may be visible; output follows Settings" };
 };
 
 class CommandEnumerator final : public IEnumExplorerCommand

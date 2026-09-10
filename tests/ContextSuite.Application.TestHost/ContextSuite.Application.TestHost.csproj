@@ -12,6 +12,7 @@
     <Compile Include="..\..\src\ContextSuite.Application\**\*.cs" Link="Application\%(RecursiveDir)%(Filename)%(Extension)" />
     <ApplicationDefinition Include="..\..\src\ContextSuite.Application\App.xaml" Link="App.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\MainWindow.xaml" Link="MainWindow.xaml" />
+    <Page Include="..\..\src\ContextSuite.Application\LicenseWindow.xaml" Link="LicenseWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\SettingsWindow.xaml" Link="SettingsWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\ConversionWindow.xaml" Link="ConversionWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\OptimizationWindow.xaml" Link="OptimizationWindow.xaml" />

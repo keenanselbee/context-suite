@@ -24,6 +24,33 @@ local evidence, not complete visual/accessibility or commercial acceptance.
 Current expansion (2026-09-08)
 -----------------------------
 
+2026-09-09 follow-up: ordinary raster conversion now defaults to Automatic
+metadata rather than requiring users to review routine omissions. The smaller
+options window collapses details/privacy/preview; preview work is on demand except
+for transparency and DDS. Direct app opening shows Explorer help instead of an
+empty queue. See [Converter design](converter-design.md) for the exact policy.
+The refreshed unsigned archive/installer now includes this follow-up; identities
+and hashes are in the [commercial-release evidence](commercial-release-candidate-goal.md).
+Fresh interactive visual acceptance remains required; automated checks alone are
+not desktop acceptance.
+
+Local automated evidence for this follow-up:
+
+- 942 real engine/adapter contracts, including automatic metadata, ICC, all eight
+  orientations, exact lossless pixels, ancillary extras and unknown critical chunks.
+- 672 foundation contracts with the isolated real worker, including direct
+  metadata copies with no planner/warning/recycling, licensing and interruption checks.
+- 51 hidden-window contracts, 10 isolated licensing-harness checks, and public
+  source/theme/53-document validation passed. Desktop smoke source builds; its
+  updated interactive flow has not been run.
+- Current isolated app/worker build:
+  `artifacts/production-staging/0da1beb3a4cf4665b6ac0d897040832b`.
+  Worker integration used `01fcbe432b93490f8c5788f5cb9f0e2e`; the later rebuild adds
+  the final idle-job button visibility adjustment, verified by hidden view checks.
+- Installed registration/payload was not targeted. A subsequent packaging-only
+  pass rebuilt the unsigned internal installer, without running it. No provider
+  request was made and no source was committed for this UX pass.
+
 - Advanced Optimize now follows the compact planner layout: two-column file/plan
   list, readable selected status, collapsed file/output details and separately
   visible replacement consent. The body scrolls while confirmation stays outside
@@ -179,7 +206,7 @@ Remaining acceptance before calling this UX finished:
 - Held-out real-image Auto calibration; synthetic quality thresholds and earlier
   visual review of RGB precision are not proof of ideal Auto choices for all images.
 - Broader protected metadata handling (the later [fdEC exception](optimizer-design.md#png-fdec-compatibility-exception)
-  now creates warning copies), further planner
+  now permits silent removal under normal output selection), further planner
   simplification and desktop acceptance of the new direct Convert actions.
 - Durable optional completion history for people who mute sound is not added;
   successful quick jobs leave their named output copies, with no resident process.

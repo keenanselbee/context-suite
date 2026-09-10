@@ -3,19 +3,21 @@ param(
     [ValidateSet('Debug', 'Release')]
     [string] $Configuration = 'Debug',
 
-    [switch] $SkipBuild
+    [switch] $SkipBuild,
+    [string] $OutputDirectory
 )
 
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
 if (-not $SkipBuild) {
-    & (Join-Path $PSScriptRoot 'Build.ps1') -Configuration $Configuration
+    & (Join-Path $PSScriptRoot 'Build.ps1') -Configuration $Configuration -OutputDirectory $OutputDirectory
 }
 
-$hostExecutable = Join-Path $repositoryRoot "artifacts\bin\x64\$Configuration\ContextSuite.Host.exe"
-$contractTests = Join-Path $repositoryRoot "artifacts\bin\x64\$Configuration\ContextSuite.Shell.ContractTests.exe"
-$shellLibrary = Join-Path $repositoryRoot "artifacts\bin\x64\$Configuration\ContextSuite.Shell.dll"
+if (-not $OutputDirectory) { $OutputDirectory = Join-Path $repositoryRoot "artifacts\bin\x64\$Configuration" }
+$hostExecutable = Join-Path $OutputDirectory 'ContextSuite.Host.exe'
+$contractTests = Join-Path $OutputDirectory 'ContextSuite.Shell.ContractTests.exe'
+$shellLibrary = Join-Path $OutputDirectory 'ContextSuite.Shell.dll'
 $packageDefinitions = @(
     @{
         Operation = 'Analyze'

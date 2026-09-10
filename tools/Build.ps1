@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [ValidateSet('Debug', 'Release')]
-    [string] $Configuration = 'Debug'
+    [string] $Configuration = 'Debug',
+    [string] $OutputDirectory
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,17 +25,20 @@ if (-not (Test-Path -LiteralPath $msbuild)) {
     throw "MSBuild was not found at $msbuild."
 }
 
-& $msbuild (Join-Path $repositoryRoot 'ContextSuite.sln') `
-    /m `
-    /nologo `
-    /verbosity:minimal `
-    /property:Configuration=$Configuration `
-    /property:Platform=x64
+$buildArguments = @((Join-Path $repositoryRoot 'ContextSuite.sln'), '/m', '/nologo', '/verbosity:minimal',
+    "/property:Configuration=$Configuration", '/property:Platform=x64')
+if ($OutputDirectory) {
+    $outputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
+    if (-not $outputDirectory.StartsWith($repositoryRoot + '\', [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Native output must stay inside this repository.'
+    }
+    $buildArguments += "/property:OutDir=$($outputDirectory.Replace('\', '/'))/"
+} else { $outputDirectory = Join-Path $repositoryRoot "artifacts\bin\x64\$Configuration" }
+& $msbuild @buildArguments
 if ($LASTEXITCODE -ne 0) {
     throw "Context Suite build failed with exit code $LASTEXITCODE."
 }
 
-$outputDirectory = Join-Path $repositoryRoot "artifacts\bin\x64\$Configuration"
 & (Join-Path $PSScriptRoot 'New-PrototypeAssets.ps1') -OutputDirectory $outputDirectory
 
 Write-Output "Built Context Suite shell prototype at $outputDirectory"

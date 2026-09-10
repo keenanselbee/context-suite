@@ -13,6 +13,7 @@ internal static class ConversionViewModelContracts
         var trial = new LocalTrialStore(trialPath);
         await using var planner = new ConversionViewModel(worker, trial, Guid.NewGuid(),
             [new(alpha.ItemId, alpha.Path, alpha, null)], new("convert", new()), false);
+        planner.PreviewExpanded = true;
         await planner.InitializeAsync();
         check(planner.Target is null && !planner.CanConfirm && !File.Exists(trialPath), "conversion VM: explicit target, preview does not admit trial");
         check(planner.BeforePreview?.PixelWidth == alpha.Width && planner.AfterPreview is null, "conversion VM: real worker preview becomes a bounded WPF bitmap");
@@ -63,7 +64,7 @@ internal static class ConversionViewModelContracts
         check(!planner.CanConfirm, "conversion VM: UI cannot override disabled replacement permission");
         planner.ReplaceOriginal = false;
         planner.WarningsAcknowledged = true;
-        check(planner.CanConfirm && planner.OutputNotice.Contains("Keep originals", StringComparison.Ordinal), "conversion VM: safe copy remains available");
+        check(planner.CanConfirm && planner.OutputNotice.Contains("Originals kept", StringComparison.Ordinal), "conversion VM: safe copy remains available");
         planner.RemoveMetadata = true;
         check(!planner.WarningsAcknowledged, "conversion VM: metadata policy changes clear prior consent");
         planner.MaximumDimension = "1";

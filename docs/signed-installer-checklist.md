@@ -8,7 +8,8 @@ mocked contracts or compiling an EXE does not authorize opening that gate.
 Decisions before a native run
 ----------------------------
 
-- Owner: choose the legal publisher/display name and trusted signing route.
+- Publisher/display name is owner-selected: **Keenan Selbee**. Complete trusted
+  signing onboarding and confirm the exact certificate subject.
   Recommendation: use one stable publisher for the EXE and all three sparse
   identities; settle its exact certificate subject before freezing manifests.
   Do not infer the certificate subject from a website name or test publisher.

@@ -4,6 +4,7 @@ namespace ContextSuite.Application.Infrastructure;
 // UI tests compile the real application sources into their test-only host and supply isolated paths here.
 internal sealed record ApplicationPaths(string Settings, string Trial, string Publications, string Worker, string WorkerScratch)
 {
+    public string ActivationCleanupDirectory { get; init; } = ActivationStore.DirectoryPath;
     public static ApplicationPaths Production { get; } = new(SettingsStore.DefaultPath, LocalTrialStore.DefaultPath,
         OutputPublisher.DefaultRecordDirectory, Path.Combine(AppContext.BaseDirectory, "ContextSuite.Worker.exe"),
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ContextSuite", "WorkerScratch"));

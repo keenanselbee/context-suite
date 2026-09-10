@@ -4,6 +4,11 @@ Simple Context-Menu Workflows
 Status: accepted; initial quiet Optimize slice implemented, broader acceptance pending
 Date: 2026-09-08
 
+[Decision 0018](0018-context-menu-utility-and-output-preference.md) further narrows
+the accepted customer UI and replaces the always-copy quick-action rule with
+copies by default and explicit persistent replacement consent in Settings.
+Its implementation is pending; the lifecycle and safety principles below remain.
+
 Decision
 --------
 

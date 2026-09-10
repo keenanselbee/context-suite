@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -13,7 +13,7 @@ using ContextSuite.Core.Dds;
 namespace ContextSuite.Application;
 
 internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings = null, OutputPublisher? publisher = null,
-    LocalTrialStore? trial = null) : INotifyPropertyChanged, IAsyncDisposable
+    IOperationAccess? trial = null) : INotifyPropertyChanged, IAsyncDisposable
 {
     private readonly Queue<(OperationRequest Request, FileRow[] Rows)> _pending = new();
     private readonly HashSet<Guid> _received = [];
@@ -30,8 +30,16 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
     internal OutputPublisher? Publisher { get; } = publisher;
     public string RecoveryNotice { get; } = RecoveryMessage(publisher);
     public bool IsBusy => _busy;
-    public bool HasProblems => Rows.Any(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.Publication?.HasWarning == true);
-    public bool ShowDetails => Rows.Any(row => row.Operation == "analyze" ||
+    public bool HasResults => Rows.Count != 0;
+    public bool IsLanding => Rows.Count == 0;
+    public IEnumerable<FileRow> DisplayRows => Rows.Where(row => !row.WasRetried);
+    private IEnumerable<FileRow> RetryCandidates => Rows.Where(row => row.Operation is "convert" or "optimize")
+        .GroupBy(row => row.Operation)
+        .SelectMany(tool => tool.GroupBy(row => row.Path, StringComparer.OrdinalIgnoreCase).Select(file => file.Last()))
+        .Where(row => row.Result.State == OperationState.Failed && row.Result.Publication?.IsCommitted != true);
+    public bool CanRetry => !IsBusy && RetryCandidates.Any();
+    public bool HasProblems => DisplayRows.Any(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.Publication?.HasWarning == true);
+    public bool ShowDetails => DisplayRows.Any(row => row.Operation == "analyze" ||
         row.Result.State is OperationState.Failed or OperationState.Unsupported ||
         row.Result.Publication is { CleanupWarning: true } or { HasWarning: true, MetadataWarning: false });
     public string Summary { get => _summary; private set { _summary = value; Changed(); } }
@@ -39,7 +47,6 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
     public ICommand SettingsCommand => _settingsCommand ??= new OpenSettingsCommand(this);
     public event Action<string>? SettingsRequested;
     public event Func<ConversionViewModel, CancellationToken, Task<ConfirmedImageBatch?>>? ConversionRequested;
-    public event Func<OptimizationViewModel, CancellationToken, Task<ConfirmedPngOptimization?>>? OptimizationRequested;
     public event Action<OperationRequest, FileRow[]>? QuickBatchStarted;
     public event Action<OperationRequest, FileRow[]>? QuickBatchCompleted;
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -62,8 +69,9 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         var snapshot = Settings.Capture(request.Operation);
         var rows = request.Paths.Select(path => new FileRow(batchId, request.Operation, path, snapshot, request.Action)).ToArray();
         foreach (var row in rows) Rows.Add(row);
+        Changed(nameof(HasResults)); Changed(nameof(IsLanding)); Changed(nameof(DisplayRows));
         _pending.Enqueue((request, rows));
-        if (!IsBusy) { _busy = true; Changed(nameof(IsBusy)); _running = DrainAsync(); }
+        if (!IsBusy) { _busy = true; Changed(nameof(IsBusy)); Changed(nameof(CanRetry)); _running = DrainAsync(); }
         return new(1, request.RequestId, true, "Selection received.");
     }
 
@@ -87,7 +95,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
                     await ConvertBatchAsync(batch.Request, batch.Rows, active.Token);
                     continue;
                 }
-                if (batch.Request.Operation == "optimize" && Publisher is not null && trial is not null && (batch.Request.IsQuickOptimization || OptimizationRequested is not null))
+                if (batch.Request.Operation == "optimize" && Publisher is not null && trial is not null)
                 {
                     await OptimizeBatchAsync(batch.Request, batch.Rows, active.Token);
                     continue;
@@ -120,7 +128,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         }
         RefreshSummary();
         _busy = false;
-        Changed(nameof(IsBusy));
+        Changed(nameof(IsBusy)); Changed(nameof(CanRetry));
     }
 
     internal async Task WaitForIdleAsync()
@@ -153,7 +161,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         ImageFormat? directTarget = request.IsQuickConversion ? request.Action switch
         {
             "png" => ImageFormat.Png, "jpeg" => ImageFormat.Jpeg, "webp" => ImageFormat.WebP,
-            "bmp" => ImageFormat.Bmp, "tga" => ImageFormat.Tga, _ => throw new InvalidDataException("Unknown conversion target.")
+            "bmp" => ImageFormat.Bmp, "tga" => ImageFormat.Tga, "dds" => ImageFormat.Dds, _ => throw new InvalidDataException("Unknown conversion target.")
         } : null;
         var selection = new List<ConversionSelection>();
         for (var index = 0; index < rows.Length; index++)
@@ -165,7 +173,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
             try
             {
                 var facts = await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken);
-                if (directTarget == facts.Format && facts.UnsupportedReason is null)
+                if (directTarget is not ImageFormat.Dds && directTarget == facts.Format && facts.UnsupportedReason is null)
                 {
                     row.ApplyResult(new(row.Path, OperationState.Unchanged, $"Already {facts.Format}; original kept. Use Optimize for same-format processing."));
                     continue;
@@ -187,14 +195,26 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         ConfirmedImageBatch? confirmed = null;
         if (directTarget is { } target)
         {
+            planner.TargetFixed = true;
             planner.Target = target;
-            // A one-click action never invents a matte, strips metadata or replaces originals.
-            // WebP defaults to lossless; custom quality remains available in More options.
+            // The menu target and immutable Settings choice confirm routine work.
+            // Automatic metadata omission can still force a copy of this batch.
             planner.WebPLossless = planner.Target == ImageFormat.WebP;
-            var plan = ImageConversionPlanner.Create(request.RequestId, selection.Where(s => s.Facts is not null).Select(s => s.Facts!),
-                new(target, WebPLossless: planner.WebPLossless), rows[0].Settings);
-            if (plan.CanConfirmQuickCopy)
-                confirmed = plan.Confirm(true, false, false);
+            if (!planner.IsDdsWorkflow)
+            {
+                var plan = ImageConversionPlanner.Create(request.RequestId, selection.Where(s => s.Facts is not null).Select(s => s.Facts!),
+                    new(target, WebPLossless: planner.WebPLossless, Metadata: ImageMetadataMode.Automatic), rows[0].Settings,
+                    rows[0].Settings.Preferences.ReplaceOriginals && rows[0].Settings.Preferences.OutputDirectory is null && PublicationSupport.ReplacementAvailable);
+                if (!plan.HasExecutableItems && !planner.NeedsBackgroundChoice)
+                {
+                    foreach (var item in plan.Items)
+                        rows.First(row => row.ItemId == item.Source.ItemId).ApplyResult(new(item.Source.Path,
+                            OperationState.Unsupported, item.BlockReason ?? "This file cannot use the selected format."));
+                    return;
+                }
+                if (plan.CanConfirmQuickAction)
+                    confirmed = plan.Confirm(true, plan.ReplaceOriginal, PublicationSupport.ReplacementAvailable);
+            }
         }
         Summary = $"Review conversion choices for batch {rows[0].Batch}. No files changed by this batch.";
         if (confirmed is null && ConversionRequested is not null)
@@ -223,7 +243,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         {
             cancellationToken.ThrowIfCancellationRequested();
             var row = rows[index];
-            Summary = $"Checking PNG {index + 1} of {rows.Length}. Originals are kept for quick actions.";
+            Summary = $"Checking PNG {index + 1} of {rows.Length}.";
             row.ApplyResult(new(row.Path, OperationState.Running, "Checking PNG support"));
             try
             {
@@ -242,17 +262,19 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         }
         var planner = new OptimizationViewModel(trial!, request.RequestId, selection, rows[0].Settings, PublicationSupport.ReplacementAvailable);
         ConfirmedPngOptimization? confirmed;
-        if (request.IsQuickOptimization)
         {
             planner.Preset = request.Action switch
             {
                 "auto" => PngOptimizationPreset.Auto, "balanced" => PngOptimizationPreset.Balanced,
                 "smallest" => PngOptimizationPreset.Smallest, _ => PngOptimizationPreset.Lossless
             };
-            // The explicit menu choice confirms only a copy plan. The executor still owns trial admission.
-            confirmed = planner.Plan?.HasExecutableItems == true ? planner.Plan.Confirm(false, false) : null;
+            planner.ReplaceOriginal = rows[0].Settings.Preferences.ReplaceOriginals &&
+                rows[0].Settings.Preferences.OutputDirectory is null && PublicationSupport.ReplacementAvailable;
+            // Explicit saved output preference is captured with the menu choice.
+            // The executor still owns access admission and publication validation.
+            confirmed = planner.Plan?.HasExecutableItems == true
+                ? planner.Plan.Confirm(planner.ReplaceOriginal, PublicationSupport.ReplacementAvailable) : null;
         }
-        else confirmed = await OptimizationRequested!(planner, cancellationToken);
         if (confirmed is null)
         {
             foreach (var row in rows.Where(row => row.Result.State == OperationState.Pending))
@@ -270,7 +292,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         {
             byId[item.Source.ItemId].ApplyResult(result);
             if (result.State != OperationState.Running) completed++;
-            Summary = $"Optimizing: {completed} of {rows.Length} finished. Originals are kept for quick actions.";
+            Summary = $"Optimizing: {completed} of {rows.Length} finished.";
         }, cancellationToken);
     }
 
@@ -294,11 +316,8 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
     {
         // Inspect the latest attempt for each source/tool, not every historical error.
         // Newly queued rows immediately suppress a second click, even before dispatch.
-        var failed = Rows.Where(row => row.Operation is "convert" or "optimize")
-            .GroupBy(row => row.Operation)
-            .SelectMany(tool => tool.GroupBy(row => row.Path, StringComparer.OrdinalIgnoreCase).Select(file => file.Last()))
-            .Where(row => row.Result.State == OperationState.Failed && row.Result.Publication?.IsCommitted != true).ToArray();
-        if (failed.Length == 0) return "No failed files to retry. Completed files are not processed again.";
+        var failed = RetryCandidates.ToArray();
+        if (failed.Length == 0) return "No files need another attempt. Completed files are skipped.";
         var available = failed.Where(row => File.Exists(row.Path)).ToArray();
         var received = 0;
         foreach (var group in available.GroupBy(row => (row.Operation, row.Action)))
@@ -307,45 +326,51 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
             try
             {
                 var reply = Admit(new(Guid.NewGuid(), group.Key.Operation, group.Key.Action, chunk.Select(row => row.Path).ToImmutableArray()));
-                if (reply.Accepted) received += chunk.Length;
+                if (reply.Accepted)
+                {
+                    received += chunk.Length;
+                    foreach (var row in chunk) row.WasRetried = true;
+                }
             }
             catch (Exception error) when (error is InvalidDataException or ArgumentException or IOException)
             { /* A disappeared file or rejected batch remains in the existing result history. */ }
         }
         var notQueued = failed.Length - received;
-        return $"{received} failed file(s) queued with their original menu action and current settings." +
-            (notQueued == 0 ? "" : $" {notQueued} could not be queued; check file availability and session capacity.");
+        RefreshSummary();
+        return notQueued == 0 ? "" : $"{notQueued} file(s) could not be restarted. Check that the files are still available.";
     }
 
     private void RefreshSummary()
     {
-        var noChanges = Rows.All(r => r.Result.Publication?.IsCommitted != true);
-        var completed = Rows.Count(r => r.Result.State == OperationState.Succeeded);
-        var warnings = Rows.Count(r => r.Result.Publication?.HasWarning == true);
-        var failed = Rows.Count(r => r.Result.State == OperationState.Failed);
-        var cancelled = Rows.Count(r => r.Result.State == OperationState.Cancelled);
-        var unchanged = Rows.Count(r => r.Result.State == OperationState.Unchanged);
-        var unsupported = Rows.Count(r => r.Result.State == OperationState.Unsupported);
-        var pending = Rows.Count - completed - failed - cancelled - unchanged - unsupported;
+        var current = DisplayRows.ToArray();
+        var noChanges = current.All(r => r.Result.Publication?.IsCommitted != true);
+        var completed = current.Count(r => r.Result.State == OperationState.Succeeded);
+        var warnings = current.Count(r => r.Result.Publication?.HasWarning == true);
+        var failed = current.Count(r => r.Result.State == OperationState.Failed);
+        var cancelled = current.Count(r => r.Result.State == OperationState.Cancelled);
+        var unchanged = current.Count(r => r.Result.State == OperationState.Unchanged);
+        var unsupported = current.Count(r => r.Result.State == OperationState.Unsupported);
+        var pending = current.Length - completed - failed - cancelled - unchanged - unsupported;
         var counts = new List<string>();
         if (completed > 0) counts.Add($"{completed} completed" + (warnings > 0 ? $" ({warnings} warnings)" : ""));
-        var alreadyTarget = Rows.Count(row => row.Operation == "convert" && row.Result.State == OperationState.Unchanged);
+        var alreadyTarget = current.Count(row => row.Operation == "convert" && row.Result.State == OperationState.Unchanged);
         if (unchanged > alreadyTarget) counts.Add($"{unchanged - alreadyTarget} with no smaller result");
         if (alreadyTarget > 0) counts.Add($"{alreadyTarget} already in target format");
         if (failed > 0) counts.Add($"{failed} failed");
         if (unsupported > 0) counts.Add($"{unsupported} not supported");
         if (cancelled > 0) counts.Add($"{cancelled} cancelled");
         if (pending > 0) counts.Add($"{pending} waiting");
-        Summary = counts.Count == 0 ? "Choose a tool or drop files here to convert." : string.Join(" · ", counts) + ".";
-        if (Rows.Any(row => row.Result.Publication?.MetadataWarning == true))
+        Summary = counts.Count == 0 ? "Select files in Explorer and choose Analyze, Convert, or Optimize." : string.Join(" · ", counts) + ".";
+        if (current.Any(row => row.Result.Publication?.MetadataWarning == true))
             Summary += " Some metadata was removed from optimized copies. Those originals are unchanged.";
         if (noChanges && counts.Count > 0) Summary += " No files changed.";
-        var optimized = Rows.Where(row => row.Operation == "optimize" && row.Result.Publication?.IsCommitted == true).ToArray();
+        var optimized = current.Where(row => row.Operation == "optimize" && row.Result.Publication?.IsCommitted == true).ToArray();
         var saved = optimized.Sum(row => row.Result.Publication!.SourceBytes - row.Result.Publication.OutputBytes);
         var inputBytes = optimized.Sum(row => row.Result.Publication!.SourceBytes);
         if (saved > 0) Summary += $" Optimization saved {saved:N0} bytes ({100.0 * saved / inputBytes:F1}% of saved files' input size).";
         Changed(nameof(HasProblems));
         Changed(nameof(ShowDetails));
+        Changed(nameof(DisplayRows)); Changed(nameof(CanRetry));
     }
 
     private static string RecoveryMessage(OutputPublisher? publisher)
@@ -394,6 +419,7 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
 {
     public Guid ItemId { get; } = Guid.NewGuid();
     public int Batch { get; set; } = batch;
+    public bool WasRetried { get; set; }
     public string Operation { get; } = operation;
     public string Action { get; } = action ?? (operation switch { "optimize" => "choose-preset", "analyze" => "open-details", _ => "choose-format" });
     public string Path { get; } = path;

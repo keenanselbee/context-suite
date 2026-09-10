@@ -7,8 +7,14 @@
     <ContextSuitePrivateBuildOnly>true</ContextSuitePrivateBuildOnly>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../proprietary/src/ContextSuite.Commercial/ContextSuite.Commercial.csproj"
+                      Condition="Exists('../../proprietary/src/ContextSuite.Commercial/ContextSuite.Commercial.csproj')" />
+    <Compile Include="../../proprietary/src/ContextSuite.Commercial/ApplicationComposition.cs" Link="Composition/ApplicationComposition.cs" />
     <ProjectReference Include="..\ContextSuite.Core\ContextSuite.Core.csproj" />
     <Compile Include="..\Shared\LocalPipe.cs" Link="Infrastructure\LocalPipe.cs" />
   </ItemGroup>
   <Import Project="..\..\tools\Require-Private.targets" />
+  <Target Name="RequireCommercialComposition" BeforeTargets="PrepareForBuild;CollectPackageReferences">
+    <Error Condition="!Exists('../../proprietary/src/ContextSuite.Commercial/ApplicationComposition.cs')" Text="Context Suite production requires the compatible context-suite-private commercial composition. Update the private checkout before building." />
+  </Target>
 </Project>

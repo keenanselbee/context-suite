@@ -102,9 +102,9 @@ bool TestSettingsChildren(IEnumExplorerCommand* enumerator, IExplorerCommand* ac
     {
         const bool optimize = std::string_view(expectation.operation) == "optimize";
         const std::vector<const wchar_t*> titles = optimize ? std::vector<const wchar_t*>{ L"Lossless", L"Balanced", L"Smallest" } :
-            std::vector<const wchar_t*>{ L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"More options..." };
+            std::vector<const wchar_t*>{ L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS..." };
         const std::vector<const char*> actions = optimize ? std::vector<const char*>{ "lossless", "balanced", "smallest" } :
-            std::vector<const char*>{ "jpeg", "webp", "bmp", "tga", "choose-format" };
+            std::vector<const char*>{ "jpeg", "webp", "bmp", "tga", "dds" };
         size_t index = 0;
         GUID previous{};
         action->GetCanonicalName(&previous);

@@ -15,11 +15,12 @@ namespace ContextSuite.Application;
 
 internal sealed record ConversionSelection(Guid ItemId, string Path, ImageSourceFacts? Facts, string? Failure);
 internal sealed record FormatChoice(string Label, ImageFormat Value);
+internal sealed record MetadataChoice(string Label, ImageMetadataMode Value);
 
 internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsyncDisposable
 {
     private readonly WorkerClient _worker;
-    private readonly LocalTrialStore _trial;
+    private readonly IOperationAccess _trial;
     private readonly Guid _batchId;
     private readonly BatchSettings _settings;
     private readonly CancellationTokenSource _lifetime = new();
@@ -28,22 +29,25 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     private Task _scheduledPreview = Task.CompletedTask;
     private CancellationTokenSource? _previewDelay;
     private bool _initialized;
+    private bool _previewExpanded;
     private ImageBatchPlan? _plan;
     private ImageFormat? _target;
     private string _quality = "90", _maximumDimension = "", _customMatte = "FFFFFF";
     private int _matteChoice, _selectedIndex;
-    private bool _webPLossless, _removeMetadata, _replaceOriginal, _warningsAcknowledged, _replacementConfirmed, _previewBusy;
+    private bool _webPLossless, _replaceOriginal, _warningsAcknowledged, _replacementConfirmed, _previewBusy;
     private int _revision;
     private bool _hasMattePreview;
     private string _message = "Choose a target format to prepare this batch.", _warnings = "", _previewMessage = "Select a file and refresh the preview.";
-    private LocalTrialStatus? _trialStatus;
+    private OperationAccessStatus? _trialStatus;
+    private ImageMetadataMode _metadataMode = ImageMetadataMode.Automatic;
     private BitmapSource? _before, _after;
 
-    public ConversionViewModel(WorkerClient worker, LocalTrialStore trial, Guid batchId,
+    public ConversionViewModel(WorkerClient worker, IOperationAccess trial, Guid batchId,
         IReadOnlyList<ConversionSelection> selection, BatchSettings settings, bool replacementAvailable)
     {
         _worker = worker; _trial = trial; _batchId = batchId; _settings = settings;
-        CanReplaceOriginal = replacementAvailable && settings.Preferences.AllowReplacingOriginals && settings.Preferences.OutputDirectory is null;
+        CanReplaceOriginal = replacementAvailable && settings.Preferences.ReplaceOriginals && settings.Preferences.OutputDirectory is null;
+        _replaceOriginal = CanReplaceOriginal;
         Rows = new(selection.Select(item => new ConversionRow(item)));
         _ddsMips = selection.Any(item => item.Facts?.Texture is not null) ? DdsMipPolicy.Preserve : DdsMipPolicy.Generate;
         _selectedIndex = Math.Max(0, selection.ToList().FindIndex(s => s.Facts?.HasTransparency == true));
@@ -55,11 +59,17 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     public IReadOnlyList<FormatChoice> Formats { get; } = [new("PNG — lossless", ImageFormat.Png), new("JPEG", ImageFormat.Jpeg), new("WebP", ImageFormat.WebP), new("BMP — 24-bit RGB", ImageFormat.Bmp), new("TGA — true color / alpha", ImageFormat.Tga), new("DDS — game texture", ImageFormat.Dds)];
     public IReadOnlyList<string> MatteChoices { get; } = ["Choose a background", "White", "Black", "Custom RGB"];
     public ObservableCollection<ConversionRow> Rows { get; }
-    public ImageFormat? Target { get => _target; set { if (Set(ref _target, value)) RefreshPlan(); } }
+    public bool TargetFixed { get; set; }
+    public bool NeedsTargetChoice => !TargetFixed;
+    public string Heading => Target is { } target ? $"Convert to {target}" : "Choose a format";
+    public ImageFormat? Target { get => _target; set { if (Set(ref _target, value)) { _webPLossless = value == ImageFormat.WebP; if (IsDdsWorkflow && _metadataMode == ImageMetadataMode.Automatic) _metadataMode = ImageMetadataMode.Preserve; RefreshPlan(); Changed(nameof(Heading)); Changed(nameof(NeedsTargetChoice)); } } }
     public string Quality { get => _quality; set { if (Set(ref _quality, value)) RefreshPlan(); } }
     public string MaximumDimension { get => _maximumDimension; set { if (Set(ref _maximumDimension, value)) RefreshPlan(); } }
     public bool WebPLossless { get => _webPLossless; set { if (Set(ref _webPLossless, value)) RefreshPlan(); } }
-    public bool RemoveMetadata { get => _removeMetadata; set { if (Set(ref _removeMetadata, value)) RefreshPlan(); } }
+    public bool RemoveMetadata { get => MetadataMode == ImageMetadataMode.RemoveDescriptive; set => MetadataMode = value ? ImageMetadataMode.RemoveDescriptive : ImageMetadataMode.Automatic; }
+    public IReadOnlyList<MetadataChoice> MetadataChoices { get; } = [new("Automatic (recommended)", ImageMetadataMode.Automatic), new("Keep all supported information", ImageMetadataMode.Preserve), new("Remove personal information", ImageMetadataMode.RemoveDescriptive)];
+    public IReadOnlyList<MetadataChoice> DdsMetadataChoices { get; } = [new("Preserve image information", ImageMetadataMode.Preserve), new("Remove descriptive information", ImageMetadataMode.RemoveDescriptive)];
+    public ImageMetadataMode MetadataMode { get => _metadataMode; set { if (Set(ref _metadataMode, value)) { Changed(nameof(RemoveMetadata)); RefreshPlan(); } } }
     public int MatteChoice { get => _matteChoice; set { if (Set(ref _matteChoice, value)) RefreshPlan(); } }
     public string CustomMatte { get => _customMatte; set { if (Set(ref _customMatte, value)) RefreshPlan(); } }
     public bool ReplaceOriginal { get => _replaceOriginal; set { if (Set(ref _replaceOriginal, value)) RefreshPlan(); } }
@@ -75,27 +85,33 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     public bool IsWebP => Target == ImageFormat.WebP;
     public bool HasQuality => IsJpeg || (IsWebP && !WebPLossless);
     public bool HasCustomMatte => NeedsMatte && MatteChoice == 3;
+    public bool NeedsBackgroundChoice => NeedsMatte && Rows.Any(row => row.Selection.Facts?.HasTransparency == true);
+    public bool NeedsVisiblePreview => NeedsBackgroundChoice || IsDdsWorkflow;
+    public bool PreviewExpanded { get => _previewExpanded; set { if (Set(ref _previewExpanded, value) && value) SchedulePreview(); } }
+    public bool AccessBlocked => _trialStatus is { CanStart: false };
+    public bool HasAccessStatus => _trialStatus?.CanStart != true;
+    public bool EffectiveReplacement => _plan?.ReplaceOriginal == true;
     public bool CanReplaceOriginal { get; }
     public bool HasWarnings => _warnings.Length != 0;
     public bool IsPreviewBusy => _previewBusy;
     public bool CanConfirm => _plan?.HasExecutableItems == true && !_previewBusy &&
-        _trialStatus?.State is LocalTrialState.NotStarted or LocalTrialState.Active &&
-        (!HasWarnings || WarningsAcknowledged) && (!ReplaceOriginal || (CanReplaceOriginal && ReplacementConfirmed)) &&
+        _trialStatus?.CanStart == true &&
+        (!HasWarnings || WarningsAcknowledged) && (!EffectiveReplacement || (CanReplaceOriginal && ReplacementConfirmed)) &&
         (!IsDdsWorkflow || _hasDdsPreview) &&
         (_hasMattePreview || _plan.Options.SupportsAlpha || !_plan.Items.Any(item => item.CanExecute && item.Source.HasTransparency));
-    public string Message => _message;
+    public string Message => AccessBlocked ? "Activate your license to convert these files." : _message;
     public string SelectedExplanation => SelectedIndex >= 0 && SelectedIndex < Rows.Count ?
         $"{Rows[SelectedIndex].Name}: {Rows[SelectedIndex].Status}" : "Select a row for its full explanation and preview.";
     public string SelectedFileDetails => SelectedIndex >= 0 && SelectedIndex < Rows.Count ?
         Rows[SelectedIndex].Details + Environment.NewLine + Rows[SelectedIndex].ProposedOutput : "";
     public string Warnings => _warnings;
     public string PreviewMessage => _previewMessage;
-    public string TrialMessage => _trialStatus?.Message ?? "Checking local trial status…";
-    public string OutputNotice => ReplaceOriginal
+    public string TrialMessage => _trialStatus?.Message ?? "Checking license and trial status…";
+    public string OutputNotice => ReplaceOriginal && !EffectiveReplacement ? "An original contains information this format cannot keep. A new copy will be saved instead." : EffectiveReplacement
         ? "Publish the converted file, then move its original to the Recycle Bin. A cleanup failure retains the original and is reported. No permanent-delete fallback."
         : IsDdsTarget ? "Keep originals. New names include the texture representation, such as ‘ - BC7-sRGB’; collisions get (2), (3), and so on. Proposed paths are finalized safely at publication." :
-            "Keep originals. New names use ‘ - Converted’; existing names get (2), (3), and so on. Proposed paths below are finalized safely at publication.";
-    public string ReplacementNotice => CanReplaceOriginal ? "Replacement is optional and requires consent for this batch." :
+            "Originals kept. Save a new ‘ - Converted’ copy beside each file.";
+    public string ReplacementNotice => CanReplaceOriginal ? "Replacement follows your saved Settings choice." :
         "Replacement is unavailable: it requires permission in Settings, source-folder output, and a verified Windows/NTFS location. Copies remain available.";
     public BitmapSource? BeforePreview => _before;
     public BitmapSource? AfterPreview => _after;
@@ -109,11 +125,24 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     {
         try
         {
-            _trialStatus = await _trial.ReadStatusAsync(_lifetime.Token);
-            Changed(nameof(TrialMessage)); Changed(nameof(CanConfirm));
-            _previewTask = RefreshPreviewAsync();
-            await _previewTask;
+            await RefreshAccessAsync();
+            if (PreviewExpanded)
+            {
+                _previewTask = RefreshPreviewAsync();
+                await _previewTask;
+            }
             _initialized = true;
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    public async Task RefreshAccessAsync()
+    {
+        try
+        {
+            _trialStatus = await _trial.ReadAccessAsync(_lifetime.Token);
+            Changed(nameof(TrialMessage)); Changed(nameof(CanConfirm));
+            Changed(nameof(AccessBlocked)); Changed(nameof(HasAccessStatus)); Changed(nameof(Message));
         }
         catch (OperationCanceledException) { }
     }
@@ -140,7 +169,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
             matte = rgb;
         }
         return new(target, quality, IsWebP && WebPLossless, maximum, IsDdsWorkflow ? null : matte,
-            RemoveMetadata ? ImageMetadataMode.RemoveDescriptive : ImageMetadataMode.Preserve,
+            IsDdsWorkflow && MetadataMode == ImageMetadataMode.Automatic ? ImageMetadataMode.Preserve : MetadataMode,
             IsDdsWorkflow ? TextureOptions(matte) : null, IsDdsExport ? SelectedMip() : null);
     }
 
@@ -149,7 +178,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
         InvalidatePreview();
         _hasMattePreview = false;
         _hasDdsPreview = false;
-        _warningsAcknowledged = false; _replacementConfirmed = false;
+        _warningsAcknowledged = false; _replacementConfirmed = CanReplaceOriginal;
         _plan = null; _warnings = "";
         try
         {
@@ -159,17 +188,16 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
                 _plan = ImageConversionPlanner.Create(_batchId, sources, options, _settings, ReplaceOriginal);
             var plans = _plan?.Items.ToDictionary(i => i.Source.ItemId);
             foreach (var row in Rows)
-                row.Update(plans?.GetValueOrDefault(row.Selection.ItemId), options, _settings, ReplaceOriginal);
+                row.Update(plans?.GetValueOrDefault(row.Selection.ItemId), options, _settings, EffectiveReplacement);
             if (_plan is null) _message = sources.Length == 0 ? "No supported images could be read. Originals are unchanged." : "Choose a target format to prepare this batch.";
             else
             {
                 var executable = _plan.Items.Count(i => i.CanExecute);
                 var skipped = Rows.Count - executable;
-                _message = $"{executable} ready to convert; {skipped} will be skipped. Review the per-file plan below.";
-                var warnings = _plan.Items.Where(i => i.CanExecute).SelectMany(i => i.Warnings).Select(w => w.Message).Distinct().ToList();
+                _message = skipped == 0 ? $"{executable} file(s) selected." : $"{executable} file(s) can be converted; {skipped} cannot use this format. See Files and details.";
+                var warnings = _plan.Items.Where(i => i.CanExecute).SelectMany(i => i.Warnings).Where(_plan.RequiresReview).Select(w => w.Message).Distinct().ToList();
                 if (!options!.SupportsAlpha && _plan.Items.Any(item => item.CanExecute && item.Source.HasTransparency))
                     warnings.Add("Refresh the preview of a transparent image with this background before converting.");
-                if (skipped != 0) warnings.Add($"{skipped} selected file(s) cannot use this plan and will be skipped.");
                 _warnings = string.Join(Environment.NewLine, warnings.Select(w => "• " + w));
             }
         }
@@ -179,13 +207,14 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
             foreach (var row in Rows) row.Update(null, null, _settings, false);
         }
         foreach (var property in new[] { nameof(IsDdsWorkflow), nameof(IsDdsTarget), nameof(IsDdsExport), nameof(CanResize), nameof(IsJpeg), nameof(NeedsMatte), nameof(IsWebP), nameof(HasQuality), nameof(HasCustomMatte), nameof(Message),
-            nameof(Warnings), nameof(HasWarnings), nameof(WarningsAcknowledged), nameof(ReplacementConfirmed), nameof(CanConfirm), nameof(OutputNotice), nameof(SelectedExplanation), nameof(SelectedFileDetails) }) Changed(property);
+            nameof(Warnings), nameof(HasWarnings), nameof(WarningsAcknowledged), nameof(ReplacementConfirmed), nameof(CanConfirm), nameof(OutputNotice), nameof(SelectedExplanation), nameof(SelectedFileDetails), nameof(EffectiveReplacement), nameof(NeedsBackgroundChoice), nameof(NeedsVisiblePreview) }) Changed(property);
+        if (NeedsVisiblePreview) PreviewExpanded = true;
         SchedulePreview();
     }
 
     private void SchedulePreview()
     {
-        if (!_initialized || _lifetime.IsCancellationRequested) return;
+        if (!_initialized || !PreviewExpanded || _lifetime.IsCancellationRequested) return;
         _previewDelay?.Cancel();
         var delay = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
         _previewDelay = delay;
