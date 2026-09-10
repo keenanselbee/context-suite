@@ -96,6 +96,44 @@ metadata, duplicate values, chapters, loops, artwork and supported omission
 decisions remain open. Technical encoder/container labels are not descriptive-tag
 preservation claims.
 
+WAV conversion metadata admission
+---------------------------------
+
+`WaveMetadata` now walks the complete RIFF chunk chain before a WAV conversion
+can encode. It follows the [RIFF chunk and word-alignment rules](https://learn.microsoft.com/en-us/windows/win32/xaudio2/resource-interchange-file-format--riff-),
+checking the declared file extent, chunk extents, one format before one sample
+chunk, frame alignment and any fact sample count. It seeks past sample data and
+preserves the caller's stream position. Limits are 512 MiB input, 4,096 total
+chunks (including INFO fields) and 256 KiB of INFO bytes, under the existing
+operation deadline. RF64, RIFX and other RIFF variants are not admitted by this
+inventory.
+
+The current handler accepts PCM8/16/24/32 and IEEE float32/64, including recognized
+extensible subtypes. Extensible speaker masks must agree with channel count;
+nonstandard mono/stereo speaker positions and differing valid/storage precision
+require further policy work. Native codec/rate/channel facts must agree with this
+inventory, and same-rate decoded frame count must agree with the sample extent.
+
+Mapped INFO fields are title, artist, album, comment, date, genre, track, copyright
+and encoder software. Descriptive values must survive the source probe and actual
+encoded output. The encoder label is technical provenance and may change on
+re-encoding. Text currently requires printable ASCII with proper NUL termination;
+non-ASCII/code-page interpretation, control characters, duplicate values and
+unmapped fields need a preservation handler. Do not infer permission to drop them.
+
+Cue points, sampler loops, broadcast metadata, iXML, associated labels, embedded
+ID3 and unknown chunks stop conversion before encoding. Declared JUNK/PAD chunks
+are padding. Inventory covers metadata after the sample chunk too; appended data
+outside the RIFF extent is rejected. Same-format byte retention remains a no-op.
+
+Private candidate results now distinguish `SourceMetadataVerified` from sample
+validation. It is true for admitted WAV conversion, byte-identical same-format
+retention and the separately validated FLAC optimization path. Other cross-format
+source containers remain unverified candidates even when flattened probe tags
+match. Their metadata handlers, artwork transport, application conversion admission
+and menu integration remain required; WAV coverage does not fulfill the six-format
+launch matrix by itself.
+
 FLAC optimization candidate
 ----------------------------
 

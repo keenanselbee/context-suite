@@ -64,6 +64,11 @@ stale offsets/frame corruption. Their packet-index tests cover invalid clock,
 number, structure and size declarations. Results remain in `encoding-adapter.json`.
 Read [the candidate policy and limits](../../docs/audio-conversion-policy.md)
 before interpreting these results as transformation or release readiness.
+The adapter suite also verifies admitted WAV INFO preservation across all target
+recipes, plus refusal of cue/loop, broadcast/iXML, unmapped or duplicate INFO and
+ambiguous text. Authored extra-chunk files remain in the new evidence directory.
+Conversion checks the complete RIFF chain, including metadata after samples;
+unsupported information is never implicitly waived by a successful native probe.
 
 `Test-AudioWorker.ps1` copies a fresh production stage into repository scratch,
 adds the evaluation engine to that copy, and exercises the actual application

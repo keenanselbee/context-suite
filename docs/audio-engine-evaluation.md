@@ -534,3 +534,47 @@ screen-reader, theme/DPI and installed-shell acceptance were not run for this sl
 Normal packaging excludes the evaluation audio engine. Its production curation,
 broader metadata/crash/fidelity coverage, listening and remaining release gates
 stay open. No installation, Explorer registration or live commerce was performed.
+
+WAV inventory and conversion admission (2026-09-10)
+--------------------------------------------------
+
+**33 new public WAV inventory contracts** bring the foundation total to **1,190**.
+They cover INFO after samples, native-tag disagreement, cue/loop/broadcast/iXML/
+ID3/unknown chunks, associated labels, duplicate values, ambiguous encoding and
+controls, padding, IEEE float/fact counts, extensible PCM precision/speaker masks,
+RIFF/chunk extents, repeated format/data, partial frames, malformed INFO, resource
+limits and pre-cancellation. A four-MiB generated sample region is skipped while
+the inventory reads fewer than 256 bytes, including INFO after the audio.
+
+The private suite passed **118 combined audio checks**. Fourteen new cases verify
+the metadata-coverage flag, admitted tags and decoded frames across all six target
+recipes, refusal of cue/loop/broadcast/iXML/unmapped/duplicate/ambiguous metadata,
+source hashes, trailing-byte rejection and scratch cleanup. Evidence:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  adapter-2fc5676707894f39902a80455899ff65/encoding-adapter.json
+```
+
+`SourceMetadataVerified` is independent of exact-sample or signal-error validation.
+Admitted WAV conversions now require both inventoried source values and output
+values to agree. Byte-identical same-format retention and the separately validated
+FLAC optimizer set that flag through their own preservation paths. Other
+cross-format sources remain candidates with unverified metadata coverage.
+This does not enable an audio conversion menu or complete artwork transport,
+Unicode/code-page handling, broader metadata or independent listening acceptance.
+
+Fresh isolated Release stage
+`artifacts/production-staging/112da8268e674d5fb70efd33cfb6dc4f` built with zero
+warnings/errors and passed curated identities, allowlist, dependencies and notices
+using `-SkipShell`. Its separate evaluation-engine copy passed **11 worker/Analyze,
+14 FLAC workflow and 16 direct-audio checks** at:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  worker-c7c93fe1a45649a799d96adb993aa52c/
+```
+
+Normal packaging still excludes evaluation audio binaries. Image-engine, native
+shell, hidden/visible UI and installed lifecycle checks were not repeated for this
+metadata-only implementation slice. No native recycling or live commerce was used.

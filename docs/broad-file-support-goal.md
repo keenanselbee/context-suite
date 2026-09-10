@@ -104,7 +104,7 @@ preservation; see [document implementation and limits](document-design.md).
 This adds no renderer or document transformation.
 
 The [typed audio policy and private encoding candidate](audio-conversion-policy.md)
-now exercise six-format conversion and lossless FLAC recompression with 104 passing
+now exercise six-format conversion and lossless FLAC recompression with 118 passing
 combined checks. Seekable inherited input preserves MP3 gapless sample counts;
 the native process joins its Windows job before parsing. Tests cover wider
 precision, surround, explicit Opus resampling, metadata reconciliation and running
@@ -115,6 +115,12 @@ round trip retains exact samples beyond the old array limits; running-operation
 cancellation, artifact disposal and low managed allocation pass. Resampled output
 now has time-aligned sample-error measurements, still requiring independent
 fidelity and listening acceptance.
+WAV conversion now inventories the complete RIFF chunk chain before encoding,
+with bounded reads that seek past sample data. Admitted INFO fields must survive
+native probing and actual output. Unhandled markers/loops, broadcast/unknown
+metadata, repeated fields and ambiguous text stop conversion. The private
+candidate records source metadata coverage separately from sample validation;
+equivalent cross-format handlers for other source containers remain required.
 Native FLAC optimization now retains embedded cover images and ordered duplicate
 comments, with generated RGBA/audio equality evidence. Bounded descriptive
 inventory distinguishes linked artwork, which still prevents rewriting.
@@ -149,22 +155,23 @@ including exact source/optimized rendered pixels and image alpha round trips.
 Broader rendering/native failure coverage and all PDF transformations remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,157 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
-27 FLAC description/artwork, 22 seek-table and 24 new batch/IPC/access checks.
-The shared reservation-handle refactor also passes all 942 image-engine checks;
-104 private audio checks and 11 isolated worker/Analyze checks were rerun. The previous
-76 hidden view contracts were not rerun for this dispatch slice. Thirteen existing
-image direct-command checks pass against fresh staging, and native shell contracts
-pass without registration or installation. The
+1,190 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
+27 FLAC description/artwork, 22 seek-table, 24 batch/IPC/access and 33 WAV inventory checks.
+118 private audio checks pass. The earlier shared reservation-handle refactor
+passed all 942 image-engine checks; those and the 76 hidden view contracts were
+not rerun for this metadata slice. Thirteen existing image direct-command checks
+and native shell contracts passed the preceding dispatch stage without
+registration or installation. The
 [catalog inventory](file-type-inventory.md) separates descriptions from detectors.
 The [source audit](catalog-source-review.json) records 223 references: 186 retrieved,
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/ea440b35199f45cf879be090fcde88c9` includes the private
+`artifacts/production-staging/112da8268e674d5fb70efd33cfb6dc4f` includes the private
 audio candidates and existing optional PDF worker integration: zero warnings/errors, curated engine identities, file allowlist,
-package dependencies and notice checks pass. Native shell was rebuilt in isolated
-scratch; installed lifecycle and visible acceptance were not performed. The
+package dependencies and notice checks pass. This internal metadata build used
+`-SkipShell`; the preceding dispatch slice rebuilt and tested native shell in
+isolated scratch. Installed lifecycle and visible acceptance were not performed. The
 evaluation audio and PDF engines are not part of this normal payload. Manual review remains
 pending; earlier image acceptance does not prove the expanded report UI.
 
