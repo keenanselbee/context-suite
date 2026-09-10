@@ -13,6 +13,22 @@ using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
 if (args.Length == 2 && args[0] == "--recycle") return await WindowsRecycleContracts.RunAsync(args[1]);
+if (args.Length == 4 && args[0] == "--pdf-worker")
+{
+    var checks = 0;
+    await PdfWorkerContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated PDF-worker checks.");
+    return 0;
+}
+if (args.Length == 4 && args[0] == "--audio-worker")
+{
+    var checks = 0;
+    await AudioWorkerContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated audio-worker checks.");
+    return 0;
+}
 if (args.Length == 3 && args[0] == "--recycle-images") return await WindowsRecycleContracts.RunImagesAsync(args[1], args[2]);
 if (args.Length == 3 && args[0] == "--crash-publication") return await PublicationCrashContracts.RunChildAsync(args[1], args[2]);
 if (args.Length is < 1 or > 3) throw new ArgumentException("Expected scratch directory, optional worker executable, and optional application executable.");
@@ -26,6 +42,12 @@ try
     await LicenseStorageContracts.RunAsync(args[0], Check);
     await SettingsContracts.RunAsync(args[0], Check);
     await DdsContracts.RunAsync(args[0], Check);
+    await AnalysisContracts.RunAsync(args[0], Check);
+    await DocumentAnalysisContracts.RunAsync(args[0], Check);
+    PdfProbeContracts.Run(Check);
+    await PdfAnalysisContracts.RunAsync(args[0], Check);
+    FlacMetadataContracts.Run(Check);
+    AudioProbeContracts.Run(Check);
     ImagePlanContracts.Run(args[0], Check);
     await PngOptimizationContracts.RunAsync(args[0], Check);
     await TrialContracts.RunAsync(args[0], Check);

@@ -122,7 +122,8 @@ internal static class DdsContracts
             await File.WriteAllTextAsync(badPath, "not a DDS");
             viewModel.Admit(new(Guid.NewGuid(), "analyze", "open-details", [badPath, path]));
             await viewModel.WaitForIdleAsync();
-            check(viewModel.Rows[0].Result.State == OperationState.Unsupported && viewModel.Rows[1].Analysis?.Format == DdsFormat.Rgba8,
+            check(viewModel.Rows[0].Result.State == OperationState.Succeeded && viewModel.Rows[0].Analysis?.Identity.FormatId == "text" &&
+                viewModel.Rows[1].Analysis?.Texture?.Format == DdsFormat.Rgba8,
                 "DDS: mixed Analyze batch continues without launching worker or consuming trial");
             check(viewModel.Rows[1].ResultDetails.Contains("not proof of authored linear", StringComparison.Ordinal),
                 "DDS: report distinguishes storage from color meaning");

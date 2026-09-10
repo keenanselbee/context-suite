@@ -4,6 +4,8 @@ using ContextSuite.Core.Transport;
 using ContextSuite.Core.Images;
 using ContextSuite.Private;
 using ContextSuite.Private.Images;
+using ContextSuite.Private.Audio;
+using ContextSuite.Private.Pdf;
 using ContextSuite.Runtime;
 
 if (args.Length != 6 || args[0] != "--pipe" || args[2] != "--parent" || args[4] != "--scratch" || !Path.IsPathFullyQualified(args[5]) ||
@@ -29,6 +31,10 @@ try
     LocalPipe.VerifyPeer(pipe, false, parentId, parent.MainModule!.FileName!);
     var catalog = new ProductionCatalog();
     ImageAdapter? adapter = null;
+    AudioProbeAdapter? audio = null;
+    PdfProbeAdapter? pdf = null;
+    try
+    {
     while (!lifetime.IsCancellationRequested)
     {
         var command = await JsonFrames.ReadAsync<WorkerCommand>(pipe, lifetime.Token);
@@ -44,6 +50,16 @@ try
         try
         {
             if (command.Command == "capabilities") reply = new(1, command.RequestId, catalog.Capabilities.ToArray());
+            else if (command.Command == "audio-probe")
+            {
+                audio ??= new AudioProbeAdapter(Path.Combine(AppContext.BaseDirectory, "audio-engine"));
+                reply = new(1, command.RequestId, [], Audio: await audio.ProbeAsync(command.AudioBytes!, lifetime.Token));
+            }
+            else if (command.Command == "pdf-probe")
+            {
+                pdf ??= new PdfProbeAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-engine"), args[5]);
+                reply = new(1, command.RequestId, [], Pdf: await pdf.ProbeAsync(command.PdfBytes!, lifetime.Token));
+            }
             else
             {
                 adapter ??= new ImageAdapter(args[5]);
@@ -59,13 +75,14 @@ try
             }
         }
         catch (Exception error) when (error is IOException or InvalidDataException or ArgumentException or InvalidOperationException or
-            UnauthorizedAccessException or ImageMagick.MagickException or System.Xml.XmlException or
+            UnauthorizedAccessException or ImageMagick.MagickException or System.Xml.XmlException or TimeoutException or System.ComponentModel.Win32Exception or
             System.Runtime.InteropServices.COMException or TypeInitializationException or DllNotFoundException or EntryPointNotFoundException or BadImageFormatException or OutOfMemoryException)
         {
             // A damaged/unsupported item is not a worker crash. Do not return engine strings containing file paths.
             var failure = error switch
             {
                 ImageFailureException known => known.Failure,
+                TimeoutException => ImageFailure.TimedOut,
                 InvalidDataException or ArgumentException or System.Xml.XmlException => ImageFailure.InvalidInput,
                 UnauthorizedAccessException or IOException => ImageFailure.FileAccess,
                 ImageMagick.MagickResourceLimitErrorException => ImageFailure.ResourceLimit,
@@ -77,6 +94,8 @@ try
         }
         await JsonFrames.WriteAsync(pipe, reply, lifetime.Token);
     }
+    }
+    finally { audio?.Dispose(); pdf?.Dispose(); }
     return 0;
 }
 catch (Exception error) when (error is IOException or InvalidDataException or OperationCanceledException or ArgumentException or

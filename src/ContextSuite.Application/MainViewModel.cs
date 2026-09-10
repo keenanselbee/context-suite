@@ -8,7 +8,7 @@ using ContextSuite.Core.Operations;
 using ContextSuite.Core.Transport;
 using ContextSuite.Core.Settings;
 using ContextSuite.Core.Images;
-using ContextSuite.Core.Dds;
+using ContextSuite.Core.Analysis;
 
 namespace ContextSuite.Application;
 
@@ -142,17 +142,18 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
         {
             cancellationToken.ThrowIfCancellationRequested();
             var row = rows[index];
-            Summary = $"Reading DDS header {index + 1} of {rows.Length}. No files changed.";
-            row.ApplyResult(new(row.Path, OperationState.Running, "Reading DDS header"));
+            Summary = $"Analyzing file {index + 1} of {rows.Length}. No files changed.";
+            row.ApplyResult(new(row.Path, OperationState.Running, "Reading file information"));
             try
             {
-                var facts = await DdsParser.ReadAsync(row.Path, cancellationToken);
+                var facts = await FileAnalysisReader.ReadAsync(row.Path, cancellationToken,
+                    worker.HasAudioProbe ? worker.ProbeAudioAsync : null, worker.HasPdfProbe ? worker.ProbePdfAsync : null);
                 row.ApplyAnalysis(facts);
             }
             catch (InvalidDataException)
-            { row.ApplyResult(new(row.Path, OperationState.Unsupported, "Not a supported DDS header. No files changed.")); }
-            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-            { row.ApplyResult(new(row.Path, OperationState.Failed, "Could not read this file. Check access and retry.")); }
+            { row.ApplyResult(new(row.Path, OperationState.Unsupported, "This path cannot be analyzed. Choose an available regular file; linked paths and offline placeholders are not read.")); }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException or Win32Exception)
+            { row.ApplyResult(new(row.Path, OperationState.Failed, "Could not read a stable file header. Check that the file is available and has finished saving, then run Analyze again.")); }
         }
     }
 
@@ -426,12 +427,13 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
     public string Name => System.IO.Path.GetFileName(Path);
     public BatchSettings Settings { get; } = settings;
     public FileResult Result { get; private set; } = new(path, OperationState.Pending, "Pending");
-    public DdsInfo? Analysis { get; private set; }
+    public FileAnalysis? Analysis { get; private set; }
+    public bool HasAnalysis => Analysis is not null;
     public string Status => Result.Message;
     public string Outcome => Result.Publication?.MetadataWarning == true ? "Completed with warning" :
         Result.Publication?.HasWarning == true ? "Saved — needs attention" : Result.State switch
     {
-        OperationState.Succeeded => "Completed", OperationState.Unchanged => Operation == "convert" ? "Already in target format" : "No smaller result",
+        OperationState.Succeeded => Operation == "analyze" ? Analysis?.Identity.Name ?? "Analyzed" : "Completed", OperationState.Unchanged => Operation == "convert" ? "Already in target format" : "No smaller result",
         OperationState.Unsupported => "Not supported", OperationState.Failed => "Needs attention",
         _ => Result.State.ToString()
     };
@@ -441,25 +443,39 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
     public string OutputPath => Result.Publication?.OutputPath ?? "";
     public string RetainedOriginalPath => Result.Publication?.RetainedOriginalPath ?? "";
     public string RecoveryRecordPath => Result.Publication?.RecoveryRecordPath ?? "";
-    public string ResultDetails => $"Source: {Path}\n{Status}" +
+    public string OperationDetails => HasAnalysis ? "" : $"Source: {Path}\n{Status}" +
         (Result.EngineIdentity is null ? "" : $"\nEngine / policy: {Result.EngineIdentity}") +
         (OutputPath.Length == 0 ? "" : $"\nOutput: {OutputPath}") +
         (RetainedOriginalPath.Length == 0 ? "" : $"\nRetained original: {RetainedOriginalPath}") +
-        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}") + AnalysisDetails;
+        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}");
 
-    private string AnalysisDetails => Analysis is not { } dds ? "" :
-        $"\nHeader: {(dds.HasDx10Header ? "DX10 extended" : "Legacy DDS")}; FourCC: 0x{dds.RawFourCc:X8}; DXGI: {dds.RawDxgiFormat}" +
-        $"\nFormat: {dds.Format}; structure: {dds.Kind}; dimensions: {dds.Width} x {dds.Height} x {dds.Depth}; array count: {dds.ArraySize}; mip levels: {dds.MipLevels}" +
-        $"\nColor interpretation: {(dds.IsSrgb ? "sRGB explicitly declared" : dds.IsTypeless ? "Typeless; typed interpretation required" : "No sRGB declaration; not proof of authored linear color or texture purpose")}" +
-        $"\nAlpha mode: {(Enum.IsDefined((DdsAlphaMode)dds.RawAlphaMode) ? ((DdsAlphaMode)dds.RawAlphaMode).ToString() : "Unrecognized")} ({dds.RawAlphaMode})" +
-        $"\nFile size: {dds.FileBytes:N0} bytes; expected payload: {(dds.ExpectedPayloadBytes is { } size ? $"{size:N0} bytes" : "Unavailable for this layout")}" +
-        "\nHeader analysis only; no pixels decoded and no files changed. Conversion separately validates supported 2D textures." +
-        string.Concat(dds.Warnings.Select(warning => "\nWarning: " + warning));
+    public string AnalysisSummary => Analysis is not { } analysis ? "" :
+        $"What it is: {analysis.Identity.Name} ({(analysis.Identity.Basis == IdentificationBasis.Filename ? "filename hint" : analysis.Identity.Confidence.ToString().ToLowerInvariant())})\n" +
+        $"Commonly used for: {analysis.Identity.CommonUses}\nFile size: {analysis.FileBytes:N0} bytes" +
+        (analysis.FilenameHints.IsDefaultOrEmpty || analysis.FilenameHints.All(hint => hint.Id == analysis.Identity.FormatId) ? "" :
+            "\nFilename hints (not confirmed): " + string.Join("; ", analysis.FilenameHints.Select(hint => hint.Name + " — " + hint.CommonUses))) +
+        string.Concat(analysis.Warnings.Select(warning => "\n" + warning));
 
-    public void ApplyAnalysis(DdsInfo facts)
+    public string AnalysisDetails => Analysis is not { } analysis ? "" :
+        $"Source: {Path}\n{string.Join("\n", analysis.Identity.Evidence)}\n" +
+        string.Join("\n", analysis.Facts.GroupBy(fact => fact.Group).Select(group => group.Key + ":\n" +
+            string.Join("\n", group.Select(fact => $"{fact.Label}: {FactText(fact)}")))) +
+        $"\nRead-only analysis; no files changed. Analyzer {FileAnalysis.AnalyzerVersion}; catalog {FileTypeCatalog.Default.Revision}.";
+
+    public string ResultDetails => HasAnalysis ? AnalysisSummary + "\n" + AnalysisDetails : OperationDetails;
+
+    private static string FactText(AnalysisFact fact) => fact.Availability switch
+    {
+        FactAvailability.Unknown => "Unknown", FactAvailability.NotEncoded => "Not encoded",
+        FactAvailability.Unavailable => "Not checked by this analyzer",
+        _ => (fact.Text ?? fact.Integer?.ToString("N0") ?? (fact.Boolean is { } value ? value ? "Yes" : "No" : "Unknown")) +
+            (fact.Availability == FactAvailability.Derived ? " (derived)" : "")
+    };
+
+    public void ApplyAnalysis(FileAnalysis facts)
     {
         Analysis = facts;
-        ApplyResult(new(Path, OperationState.Succeeded, $"{facts.Format} {facts.Width} x {facts.Height}; {facts.MipLevels} mip(s)" +
+        ApplyResult(new(Path, OperationState.Succeeded, facts.Identity.Name +
             (facts.Warnings.IsEmpty ? "" : $"; {facts.Warnings.Length} warning(s)")));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Analysis)));
     }
@@ -469,7 +485,7 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
         if (!string.Equals(System.IO.Path.GetFullPath(result.Path), System.IO.Path.GetFullPath(Path), StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("The file result belongs to a different source.");
         Result = result;
-        foreach (var property in new[] { nameof(Result), nameof(Status), nameof(OutputPath), nameof(RetainedOriginalPath), nameof(RecoveryRecordPath), nameof(ResultDetails), nameof(Outcome), nameof(HasOutput), nameof(Savings) })
+        foreach (var property in new[] { nameof(Result), nameof(Status), nameof(OutputPath), nameof(RetainedOriginalPath), nameof(RecoveryRecordPath), nameof(ResultDetails), nameof(Outcome), nameof(HasOutput), nameof(Savings), nameof(HasAnalysis), nameof(AnalysisSummary), nameof(AnalysisDetails), nameof(OperationDetails) })
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
     public event PropertyChangedEventHandler? PropertyChanged;

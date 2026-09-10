@@ -30,6 +30,21 @@ remaining visual acceptance.
 Project Status
 --------------
 
+The current priority is the [broad file support goal](docs/broad-file-support-goal.md):
+useful Analyze results for every readable regular file, an offline common-type
+catalog, common audio, and PDF/document support. The first Analyze source slice
+now handles unknown/empty files, initial header identification and existing DDS
+details, bounded JSON/XML structure analysis, WAVE/FLAC header facts,
+bounded OOXML/OpenDocument package analysis and a 237-entry offline catalog.
+See [exact coverage](docs/file-type-coverage.md), including remaining source review.
+Broader analysis and audio transformations remain pending. Selected document launch actions are
+images-to-PDF, PDF pages-to-images, PDF optimization and Word/Excel/PowerPoint-to-PDF;
+engines and implementation remain pending. The [goal record](docs/broad-file-support-goal.md)
+identifies the latest isolated staging and its limited acceptance scope.
+The owner accepted the image utility's simplified UI; screen-reader, additional
+themes/DPI and installed lifecycle coverage remain separate gates. Signing is
+deferred. The following records describe the existing image foundation.
+
 Product design and technical discovery are in progress. A native x64 shell
 prototype now registers **Analyze**, **Convert**, and **Optimize** as independent
 Windows 11 Explorer commands and hands the complete selection to a separate host

@@ -1,0 +1,2672 @@
+{
+  "schemaVersion": 1,
+  "revision": "2026-09-09.2",
+  "types": [
+    {
+      "id": "3gp",
+      "name": "3GPP media container",
+      "family": "Video",
+      "commonUses": "Mobile-device audio and video recordings and messaging media.",
+      "extensions": [
+        ".3gp",
+        ".3g2"
+      ],
+      "source": "https://www.3gpp.org/technologies/codecs"
+    },
+    {
+      "id": "3mf",
+      "name": "3D Manufacturing Format",
+      "family": "3D, CAD or game asset",
+      "commonUses": "3D manufacturing models with geometry and additional printing-related information.",
+      "extensions": [
+        ".3mf"
+      ],
+      "source": "https://3mf.io/specification/"
+    },
+    {
+      "id": "7z",
+      "name": "7-Zip archive",
+      "family": "Archive or package",
+      "commonUses": "Files bundled with compression and optional encryption in the 7z format.",
+      "extensions": [
+        ".7z"
+      ],
+      "source": "https://www.7-zip.org/7z.html"
+    },
+    {
+      "id": "aab",
+      "name": "Android App Bundle",
+      "family": "Archive or package",
+      "commonUses": "Android publishing packages used to generate device-specific installable applications.",
+      "extensions": [
+        ".aab"
+      ],
+      "source": "https://developer.android.com/guide/app-bundle"
+    },
+    {
+      "id": "aac",
+      "name": "AAC audio stream",
+      "family": "Audio",
+      "commonUses": "AAC-encoded audio, often transported as a sequence of framed audio packets.",
+      "extensions": [
+        ".aac",
+        ".adts"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000036.shtml"
+    },
+    {
+      "id": "access",
+      "name": "Access database",
+      "family": "Data",
+      "commonUses": "Microsoft Access databases containing tables and potentially forms, queries and application logic.",
+      "extensions": [
+        ".mdb",
+        ".accdb"
+      ],
+      "source": "https://learn.microsoft.com/en-us/office/client-developer/access/desktop-database-reference/microsoft-access-database-engine-sql-reference"
+    },
+    {
+      "id": "aiff",
+      "name": "AIFF audio",
+      "family": "Audio",
+      "commonUses": "Audio recording and interchange, including compressed AIFF-C variants.",
+      "extensions": [
+        ".aif",
+        ".aiff",
+        ".aifc"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000005.shtml"
+    },
+    {
+      "id": "ape",
+      "name": "Monkey's Audio",
+      "family": "Audio",
+      "commonUses": "Losslessly compressed audio for music storage and archiving.",
+      "extensions": [
+        ".ape"
+      ],
+      "source": "https://www.monkeysaudio.com/"
+    },
+    {
+      "id": "apk",
+      "name": "Android package",
+      "family": "Archive or package",
+      "commonUses": "An installable Android application package containing code and resources.",
+      "extensions": [
+        ".apk"
+      ],
+      "source": "https://developer.android.com/guide/components/fundamentals"
+    },
+    {
+      "id": "arrow",
+      "name": "Apache Arrow data",
+      "family": "Data",
+      "commonUses": "Columnar data exchanged between analytical applications; Feather uses Arrow file storage.",
+      "extensions": [
+        ".arrow",
+        ".feather"
+      ],
+      "source": "https://arrow.apache.org/docs/format/Columnar.html"
+    },
+    {
+      "id": "aseprite",
+      "name": "Aseprite sprite",
+      "family": "Image",
+      "commonUses": "Editable pixel art, sprites, layers and animation frames.",
+      "extensions": [
+        ".aseprite",
+        ".ase"
+      ],
+      "source": "https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md"
+    },
+    {
+      "id": "asf",
+      "name": "Advanced Systems Format",
+      "family": "Video",
+      "commonUses": "Windows Media video, audio and metadata organized for playback or streaming.",
+      "extensions": [
+        ".asf",
+        ".wmv"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/wmformat/overview-of-the-asf-format"
+    },
+    {
+      "id": "ass",
+      "name": "ASS/SSA subtitles",
+      "family": "Document",
+      "commonUses": "Styled subtitles with timing, positioning and other presentation information.",
+      "extensions": [
+        ".ass",
+        ".ssa"
+      ],
+      "source": "https://aegisub.org/docs/latest/ass_tags/",
+      "textCompatible": true
+    },
+    {
+      "id": "au",
+      "name": "AU audio",
+      "family": "Audio",
+      "commonUses": "Audio interchange used by Unix and older multimedia applications; encodings vary.",
+      "extensions": [
+        ".au",
+        ".snd"
+      ],
+      "source": "https://www.opengroup.org/view-standards-information-base-historical"
+    },
+    {
+      "id": "audacity",
+      "name": "Audacity project",
+      "family": "Audio",
+      "commonUses": "Editable Audacity recording and editing projects; older projects may depend on a separate data folder.",
+      "extensions": [
+        ".aup",
+        ".aup3"
+      ],
+      "source": "https://manual.audacityteam.org/man/audacity_projects.html"
+    },
+    {
+      "id": "avi",
+      "name": "AVI video",
+      "family": "Video",
+      "commonUses": "Windows video and audio interchange; the contained codecs can vary widely.",
+      "extensions": [
+        ".avi"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/directshow/avi-riff-file-reference"
+    },
+    {
+      "id": "avif",
+      "name": "AVIF image",
+      "family": "Image",
+      "commonUses": "Compact images using AV1 coding, including high-dynamic-range and transparent variants.",
+      "extensions": [
+        ".avif"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000540.shtml"
+    },
+    {
+      "id": "avro",
+      "name": "Apache Avro data",
+      "family": "Data",
+      "commonUses": "Schema-described records stored or exchanged by data-processing systems.",
+      "extensions": [
+        ".avro"
+      ],
+      "source": "https://avro.apache.org/docs/1.12.0/specification/"
+    },
+    {
+      "id": "batch",
+      "name": "Windows batch script",
+      "family": "Source code",
+      "commonUses": "Commands for the Windows command interpreter.",
+      "extensions": [
+        ".bat",
+        ".cmd"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/cmd",
+      "textCompatible": true
+    },
+    {
+      "id": "bethesda-archive",
+      "name": "Bethesda game archive",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Packaged game resources used by Bethesda titles; archive layouts depend on the game.",
+      "extensions": [
+        ".bsa",
+        ".ba2"
+      ],
+      "source": "https://en.uesp.net/wiki/Skyrim_Mod:Archive_File_Format"
+    },
+    {
+      "id": "bibtex",
+      "name": "BibTeX bibliography",
+      "family": "Source code",
+      "commonUses": "Bibliographic records used by citation and typesetting tools.",
+      "extensions": [
+        ".bib"
+      ],
+      "source": "https://www.bibtex.org/Format/",
+      "textCompatible": true
+    },
+    {
+      "id": "blend",
+      "name": "Blender project",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Blender scenes containing objects, materials, animation and other project data.",
+      "extensions": [
+        ".blend"
+      ],
+      "source": "https://docs.blender.org/manual/en/latest/files/blend/index.html"
+    },
+    {
+      "id": "bmp",
+      "name": "Windows bitmap",
+      "family": "Image",
+      "commonUses": "Raster images used by Windows applications; pixel storage and compression vary by header type.",
+      "extensions": [
+        ".bmp",
+        ".dib"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/gdi/bitmap-storage"
+    },
+    {
+      "id": "bzip2",
+      "name": "Bzip2 compressed data",
+      "family": "Archive or package",
+      "commonUses": "Compressed data, sometimes wrapping a TAR archive.",
+      "extensions": [
+        ".bz2",
+        ".bzip2",
+        ".tbz",
+        ".tbz2"
+      ],
+      "source": "https://sourceware.org/bzip2/manual/manual.html"
+    },
+    {
+      "id": "c",
+      "name": "C source or header",
+      "family": "Source code",
+      "commonUses": "Programs and declarations written in C; some header names are shared with C++.",
+      "extensions": [
+        ".c",
+        ".h"
+      ],
+      "source": "https://gcc.gnu.org/onlinedocs/gcc/Overall-Options.html",
+      "textCompatible": true
+    },
+    {
+      "id": "cab",
+      "name": "Windows cabinet",
+      "family": "Archive or package",
+      "commonUses": "Compressed files packaged for Windows installation and distribution.",
+      "extensions": [
+        ".cab"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/msi/cabinet-files"
+    },
+    {
+      "id": "caf",
+      "name": "Core Audio file",
+      "family": "Audio",
+      "commonUses": "Audio and associated metadata used by Apple audio applications.",
+      "extensions": [
+        ".caf"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000591.shtml"
+    },
+    {
+      "id": "camera-raw",
+      "name": "Camera raw image",
+      "family": "Image",
+      "commonUses": "Camera sensor data for photographic processing. These extensions represent different manufacturer formats.",
+      "extensions": [
+        ".cr2",
+        ".cr3",
+        ".nef",
+        ".nrw",
+        ".arw",
+        ".raf",
+        ".rw2",
+        ".orf",
+        ".pef",
+        ".srw"
+      ],
+      "source": "https://helpx.adobe.com/camera-raw/kb/camera-raw-plug-supported-cameras.html"
+    },
+    {
+      "id": "certificate",
+      "name": "Certificate or encoded key data",
+      "family": "Data",
+      "commonUses": "Certificates, public keys or private-key material in several possible encodings. The suffix does not identify the exact object.",
+      "extensions": [
+        ".pem",
+        ".crt",
+        ".cer",
+        ".der",
+        ".key"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc7468.html",
+      "textCompatible": true
+    },
+    {
+      "id": "chm",
+      "name": "Compiled HTML Help",
+      "family": "Document",
+      "commonUses": "Packaged Windows help content with HTML pages and navigation.",
+      "extensions": [
+        ".chm"
+      ],
+      "source": "https://learn.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-1-4-sdk"
+    },
+    {
+      "id": "cmake",
+      "name": "CMake build configuration",
+      "family": "Configuration or system data",
+      "commonUses": "Build-system configuration and reusable modules for CMake.",
+      "extensions": [
+        ".cmake"
+      ],
+      "source": "https://cmake.org/cmake/help/latest/manual/cmake-language.7.html",
+      "textCompatible": true,
+      "fileNames": [
+        "CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "collada",
+      "name": "COLLADA scene",
+      "family": "3D, CAD or game asset",
+      "commonUses": "3D scenes and assets exchanged using an XML-based format.",
+      "extensions": [
+        ".dae"
+      ],
+      "source": "https://www.khronos.org/collada/",
+      "textCompatible": true
+    },
+    {
+      "id": "cpp",
+      "name": "C++ source or header",
+      "family": "Source code",
+      "commonUses": "Programs and declarations written in C++; shared header suffixes do not establish the language.",
+      "extensions": [
+        ".cpp",
+        ".cc",
+        ".cxx",
+        ".hpp",
+        ".hh",
+        ".hxx",
+        ".h"
+      ],
+      "source": "https://gcc.gnu.org/onlinedocs/gcc/Overall-Options.html",
+      "textCompatible": true
+    },
+    {
+      "id": "crx",
+      "name": "Chrome extension",
+      "family": "Archive or package",
+      "commonUses": "Packaged Chromium browser extensions with a signed package envelope.",
+      "extensions": [
+        ".crx"
+      ],
+      "source": "https://www.chromium.org/developers/design-documents/crx-package-format/"
+    },
+    {
+      "id": "csharp",
+      "name": "C# source",
+      "family": "Source code",
+      "commonUses": "Source code for applications and libraries written in C#.",
+      "extensions": [
+        ".cs"
+      ],
+      "source": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/",
+      "textCompatible": true
+    },
+    {
+      "id": "css",
+      "name": "CSS style sheet",
+      "family": "Source code",
+      "commonUses": "Rules controlling the presentation of web pages and other styled documents.",
+      "extensions": [
+        ".css"
+      ],
+      "source": "https://www.w3.org/TR/CSS/",
+      "textCompatible": true
+    },
+    {
+      "id": "csv",
+      "name": "Comma-separated table",
+      "family": "Data",
+      "commonUses": "Tabular data exchanged between spreadsheets, databases and analysis tools.",
+      "extensions": [
+        ".csv"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc4180.html",
+      "textCompatible": true
+    },
+    {
+      "id": "cue",
+      "name": "Cue sheet",
+      "family": "Audio",
+      "commonUses": "Text instructions describing track boundaries and referenced media for disc images or audio albums.",
+      "extensions": [
+        ".cue"
+      ],
+      "source": "https://www.gnu.org/software/ccd2cue/manual/html_node/CUE-sheet-format.html",
+      "textCompatible": true
+    },
+    {
+      "id": "cur",
+      "name": "Windows cursor",
+      "family": "Image",
+      "commonUses": "Mouse pointer artwork; animated cursor variants may contain multiple frames.",
+      "extensions": [
+        ".cur",
+        ".ani"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors"
+    },
+    {
+      "id": "dart",
+      "name": "Dart source",
+      "family": "Source code",
+      "commonUses": "Dart programs, including Flutter application code.",
+      "extensions": [
+        ".dart"
+      ],
+      "source": "https://dart.dev/language",
+      "textCompatible": true
+    },
+    {
+      "id": "dbase",
+      "name": "dBASE table",
+      "family": "Data",
+      "commonUses": "Record-oriented table data, also used as attributes in some geographic datasets.",
+      "extensions": [
+        ".dbf"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000325.shtml"
+    },
+    {
+      "id": "dds",
+      "name": "DDS texture",
+      "family": "Image",
+      "commonUses": "Textures for games and other 3D applications, including compressed textures and mip levels.",
+      "extensions": [
+        ".dds"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide"
+    },
+    {
+      "id": "deb",
+      "name": "Debian package",
+      "family": "Archive or package",
+      "commonUses": "Installable software packages for Debian-based systems.",
+      "extensions": [
+        ".deb"
+      ],
+      "source": "https://manpages.debian.org/bookworm/dpkg-dev/deb.5.en.html"
+    },
+    {
+      "id": "desktop-entry",
+      "name": "Desktop entry",
+      "family": "Configuration or system data",
+      "commonUses": "Application-launcher or related desktop integration settings on freedesktop-compatible systems.",
+      "extensions": [
+        ".desktop"
+      ],
+      "source": "https://specifications.freedesktop.org/desktop-entry-spec/latest/",
+      "textCompatible": true
+    },
+    {
+      "id": "dicom",
+      "name": "DICOM medical data",
+      "family": "Data",
+      "commonUses": "Medical images and associated clinical or equipment metadata. Identification is not clinical interpretation.",
+      "extensions": [
+        ".dcm",
+        ".dicom"
+      ],
+      "source": "https://www.dicomstandard.org/current"
+    },
+    {
+      "id": "djvu",
+      "name": "DjVu document",
+      "family": "Document",
+      "commonUses": "Compact scanned documents and page images, sometimes with searchable text.",
+      "extensions": [
+        ".djvu",
+        ".djv"
+      ],
+      "source": "https://djvu.org/resources/"
+    },
+    {
+      "id": "dmg",
+      "name": "Apple disk image",
+      "family": "Archive or package",
+      "commonUses": "Disk images commonly used to distribute macOS software or store a virtual volume.",
+      "extensions": [
+        ".dmg"
+      ],
+      "source": "https://support.apple.com/guide/disk-utility/create-a-disk-image-dskutl11888/mac"
+    },
+    {
+      "id": "dng",
+      "name": "Digital Negative image",
+      "family": "Image",
+      "commonUses": "Camera image data intended for raw-photo editing and archival workflows.",
+      "extensions": [
+        ".dng"
+      ],
+      "source": "https://helpx.adobe.com/camera-raw/digital-negative.html"
+    },
+    {
+      "id": "doc",
+      "name": "Legacy Word document",
+      "family": "Document",
+      "commonUses": "Formatted text documents and templates used by older versions of Microsoft Word.",
+      "extensions": [
+        ".doc",
+        ".dot"
+      ],
+      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-doc/ccd7b486-7881-484c-a137-51170af7cc22"
+    },
+    {
+      "id": "dockerfile",
+      "name": "Docker build instructions",
+      "family": "Configuration or system data",
+      "commonUses": "Instructions used to build a container image.",
+      "extensions": [],
+      "source": "https://docs.docker.com/reference/dockerfile/",
+      "textCompatible": true,
+      "fileNames": [
+        "Dockerfile",
+        "Containerfile"
+      ]
+    },
+    {
+      "id": "docx",
+      "name": "Word document",
+      "family": "Document",
+      "commonUses": "Editable reports, letters and other formatted text documents. Some variants are templates or may contain macros.",
+      "extensions": [
+        ".docx",
+        ".docm",
+        ".dotx",
+        ".dotm"
+      ],
+      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/"
+    },
+    {
+      "id": "dwg",
+      "name": "AutoCAD drawing",
+      "family": "3D, CAD or game asset",
+      "commonUses": "CAD drawings and design data used by AutoCAD and compatible applications.",
+      "extensions": [
+        ".dwg"
+      ],
+      "source": "https://www.autodesk.com/products/autocad/overview"
+    },
+    {
+      "id": "dxf",
+      "name": "Drawing Exchange Format",
+      "family": "3D, CAD or game asset",
+      "commonUses": "CAD drawing data exchanged in text or binary form.",
+      "extensions": [
+        ".dxf"
+      ],
+      "source": "https://help.autodesk.com/cloudhelp/2021/ENU/AutoCAD-DXF/files/GUID-235B22E0-A567-4CF6-92D3-38A2306D73F3.htm",
+      "textCompatible": true
+    },
+    {
+      "id": "editorconfig",
+      "name": "EditorConfig settings",
+      "family": "Configuration or system data",
+      "commonUses": "Editor settings such as indentation and line endings for matching files.",
+      "extensions": [],
+      "source": "https://spec.editorconfig.org/",
+      "textCompatible": true,
+      "fileNames": [
+        ".editorconfig"
+      ]
+    },
+    {
+      "id": "elf",
+      "name": "ELF program or library",
+      "family": "Program or development data",
+      "commonUses": "Executable, object or shared-library data used by many Unix-like systems.",
+      "extensions": [
+        ".elf",
+        ".so"
+      ],
+      "source": "https://gabi.xinuos.com/elf/"
+    },
+    {
+      "id": "elixir",
+      "name": "Elixir source",
+      "family": "Source code",
+      "commonUses": "Elixir application code and scripts.",
+      "extensions": [
+        ".ex",
+        ".exs"
+      ],
+      "source": "https://hexdocs.pm/elixir/introduction.html",
+      "textCompatible": true
+    },
+    {
+      "id": "eml",
+      "name": "Email message",
+      "family": "Document",
+      "commonUses": "A saved email message with headers, body and possible attachments.",
+      "extensions": [
+        ".eml"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc5322.html",
+      "textCompatible": true
+    },
+    {
+      "id": "environment",
+      "name": "Environment configuration",
+      "family": "Configuration or system data",
+      "commonUses": "Environment-variable assignments for development or application configuration; values may contain secrets.",
+      "extensions": [
+        ".env"
+      ],
+      "source": "https://nodejs.org/api/environment_variables.html",
+      "textCompatible": true,
+      "fileNames": [
+        ".env"
+      ]
+    },
+    {
+      "id": "eps",
+      "name": "Encapsulated PostScript",
+      "family": "Image",
+      "commonUses": "Placing PostScript artwork into publishing documents. It is a program-like description, not just stored pixels.",
+      "extensions": [
+        ".eps",
+        ".epsf"
+      ],
+      "source": "https://www.adobe.com/jp/print/postscript/pdfs/5002.EPSF_Spec.pdf",
+      "textCompatible": true
+    },
+    {
+      "id": "epub",
+      "name": "EPUB publication",
+      "family": "Document",
+      "commonUses": "Electronic books and other packaged publications with text, images and navigation.",
+      "extensions": [
+        ".epub"
+      ],
+      "source": "https://www.w3.org/TR/epub-33/"
+    },
+    {
+      "id": "erlang",
+      "name": "Erlang source",
+      "family": "Source code",
+      "commonUses": "Erlang modules and shared declarations.",
+      "extensions": [
+        ".erl",
+        ".hrl"
+      ],
+      "source": "https://www.erlang.org/doc/system/reference_manual.html",
+      "textCompatible": true
+    },
+    {
+      "id": "event-log",
+      "name": "Windows event log",
+      "family": "System data",
+      "commonUses": "Saved Windows event records for diagnostics and auditing.",
+      "extensions": [
+        ".evtx",
+        ".evt"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/wes/windows-event-log"
+    },
+    {
+      "id": "exr",
+      "name": "OpenEXR image",
+      "family": "Image",
+      "commonUses": "High-dynamic-range imagery and multiple image channels for rendering and visual effects.",
+      "extensions": [
+        ".exr"
+      ],
+      "source": "https://openexr.com/en/latest/TechnicalIntroduction.html"
+    },
+    {
+      "id": "fbx",
+      "name": "FBX scene",
+      "family": "3D, CAD or game asset",
+      "commonUses": "3D scenes, models, rigs and animation exchanged between content-creation tools.",
+      "extensions": [
+        ".fbx"
+      ],
+      "source": "https://help.autodesk.com/view/FBX/2020/ENU/"
+    },
+    {
+      "id": "fits",
+      "name": "FITS scientific data",
+      "family": "Data",
+      "commonUses": "Astronomical images, tables and related scientific metadata.",
+      "extensions": [
+        ".fits",
+        ".fit",
+        ".fts"
+      ],
+      "source": "https://fits.gsfc.nasa.gov/fits_standard.html"
+    },
+    {
+      "id": "flac",
+      "name": "FLAC audio",
+      "family": "Audio",
+      "commonUses": "Music and audio stored with lossless compression.",
+      "extensions": [
+        ".flac"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc9639.html"
+    },
+    {
+      "id": "flv",
+      "name": "Flash video",
+      "family": "Video",
+      "commonUses": "Video and audio for older Flash-based playback and streaming systems.",
+      "extensions": [
+        ".flv",
+        ".f4v"
+      ],
+      "source": "https://www.adobe.com/content/dam/acom/en/devnet/flv/video_file_format_spec_v10.pdf"
+    },
+    {
+      "id": "font-collection",
+      "name": "Font collection",
+      "family": "Font",
+      "commonUses": "Multiple related fonts stored together with potentially shared font tables.",
+      "extensions": [
+        ".ttc",
+        ".otc"
+      ],
+      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff"
+    },
+    {
+      "id": "fortran",
+      "name": "Fortran source",
+      "family": "Source code",
+      "commonUses": "Fortran programs, commonly used for scientific and numerical computing.",
+      "extensions": [
+        ".f",
+        ".for",
+        ".f90",
+        ".f95",
+        ".f03",
+        ".f08"
+      ],
+      "source": "https://gcc.gnu.org/onlinedocs/gfortran/",
+      "textCompatible": true
+    },
+    {
+      "id": "fsharp",
+      "name": "F# source",
+      "family": "Source code",
+      "commonUses": "F# programs, signature declarations and scripts.",
+      "extensions": [
+        ".fs",
+        ".fsi",
+        ".fsx"
+      ],
+      "source": "https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/",
+      "textCompatible": true
+    },
+    {
+      "id": "geojson",
+      "name": "GeoJSON geographic data",
+      "family": "Data",
+      "commonUses": "Geographic features and coordinates encoded as JSON.",
+      "extensions": [
+        ".geojson"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc7946.html",
+      "textCompatible": true
+    },
+    {
+      "id": "gif",
+      "name": "GIF image",
+      "family": "Image",
+      "commonUses": "Small indexed-color graphics and simple animations.",
+      "extensions": [
+        ".gif"
+      ],
+      "source": "https://www.w3.org/Graphics/GIF/spec-gif89a.txt"
+    },
+    {
+      "id": "gitignore",
+      "name": "Git ignore rules",
+      "family": "Configuration or system data",
+      "commonUses": "Patterns controlling which untracked files Git normally ignores.",
+      "extensions": [],
+      "source": "https://git-scm.com/docs/gitignore",
+      "textCompatible": true,
+      "fileNames": [
+        ".gitignore"
+      ]
+    },
+    {
+      "id": "gltf",
+      "name": "glTF scene",
+      "family": "3D, CAD or game asset",
+      "commonUses": "3D scenes and assets for efficient interchange and loading; GLB uses a binary container.",
+      "extensions": [
+        ".gltf",
+        ".glb"
+      ],
+      "source": "https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html"
+    },
+    {
+      "id": "go",
+      "name": "Go source",
+      "family": "Source code",
+      "commonUses": "Programs and packages written in Go.",
+      "extensions": [
+        ".go"
+      ],
+      "source": "https://go.dev/ref/spec",
+      "textCompatible": true
+    },
+    {
+      "id": "godot-resource",
+      "name": "Godot resource or scene",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Resources and scenes saved by the Godot engine in text or binary form.",
+      "extensions": [
+        ".tres",
+        ".res",
+        ".tscn",
+        ".scn"
+      ],
+      "source": "https://docs.godotengine.org/en/stable/tutorials/scripting/resources.html"
+    },
+    {
+      "id": "gpx",
+      "name": "GPS exchange data",
+      "family": "Data",
+      "commonUses": "Waypoints, routes and recorded tracks exchanged by GPS and mapping applications.",
+      "extensions": [
+        ".gpx"
+      ],
+      "source": "https://www.topografix.com/gpx.asp",
+      "textCompatible": true
+    },
+    {
+      "id": "gzip",
+      "name": "GZIP compressed data",
+      "family": "Archive or package",
+      "commonUses": "A compressed data stream. Files such as .tar.gz combine GZIP with another archive format.",
+      "extensions": [
+        ".gz",
+        ".gzip"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc1952.html"
+    },
+    {
+      "id": "har",
+      "name": "HTTP archive",
+      "family": "Data",
+      "commonUses": "Recorded web request and response information for debugging; it can include private request data.",
+      "extensions": [
+        ".har"
+      ],
+      "source": "https://w3c.github.io/web-performance/specs/HAR/Overview.html",
+      "textCompatible": true
+    },
+    {
+      "id": "haskell",
+      "name": "Haskell source",
+      "family": "Source code",
+      "commonUses": "Programs written in Haskell, including literate source variants.",
+      "extensions": [
+        ".hs",
+        ".lhs"
+      ],
+      "source": "https://www.haskell.org/onlinereport/haskell2010/",
+      "textCompatible": true
+    },
+    {
+      "id": "hdf5",
+      "name": "HDF5 dataset",
+      "family": "Data",
+      "commonUses": "Hierarchical scientific and engineering datasets. The .hdf suffix may also refer to older HDF formats.",
+      "extensions": [
+        ".h5",
+        ".hdf5",
+        ".hdf"
+      ],
+      "source": "https://support.hdfgroup.org/documentation/hdf5/latest/_f_m_t3.html"
+    },
+    {
+      "id": "heif",
+      "name": "HEIF image container",
+      "family": "Image",
+      "commonUses": "Photographs and image sequences, commonly created by phones and cameras; codec and auxiliary data vary.",
+      "extensions": [
+        ".heif",
+        ".heic",
+        ".hif"
+      ],
+      "source": "https://nokiatech.github.io/heif/"
+    },
+    {
+      "id": "html",
+      "name": "HTML document",
+      "family": "Source code",
+      "commonUses": "Web-page structure and content, potentially referencing scripts and external resources.",
+      "extensions": [
+        ".html",
+        ".htm",
+        ".xhtml"
+      ],
+      "source": "https://html.spec.whatwg.org/",
+      "textCompatible": true
+    },
+    {
+      "id": "ical",
+      "name": "Calendar data",
+      "family": "Document",
+      "commonUses": "Calendar events, tasks and scheduling information exchanged between applications.",
+      "extensions": [
+        ".ics",
+        ".ical"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc5545.html",
+      "textCompatible": true
+    },
+    {
+      "id": "icns",
+      "name": "Apple icon",
+      "family": "Image",
+      "commonUses": "Application and document icons for macOS.",
+      "extensions": [
+        ".icns"
+      ],
+      "source": "https://developer.apple.com/library/archive/documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/Optimizing/Optimizing.html"
+    },
+    {
+      "id": "ico",
+      "name": "Windows icon",
+      "family": "Image",
+      "commonUses": "Application and website icons, often containing several sizes in one file.",
+      "extensions": [
+        ".ico"
+      ],
+      "source": "https://learn.microsoft.com/en-us/previous-versions/ms997538(v=msdn.10)"
+    },
+    {
+      "id": "iges",
+      "name": "IGES CAD data",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Engineering curves, surfaces and other CAD geometry exchanged between systems.",
+      "extensions": [
+        ".iges",
+        ".igs"
+      ],
+      "source": "https://nvlpubs.nist.gov/nistpubs/Legacy/IR/nbsir82-2631.pdf",
+      "textCompatible": true
+    },
+    {
+      "id": "illustrator",
+      "name": "Illustrator artwork",
+      "family": "Image",
+      "commonUses": "Editable vector artwork for illustration and design; internal representation depends on version and save options.",
+      "extensions": [
+        ".ai"
+      ],
+      "source": "https://helpx.adobe.com/illustrator/using/saving-artwork.html"
+    },
+    {
+      "id": "ini",
+      "name": "INI-style configuration",
+      "family": "Configuration or system data",
+      "commonUses": "Application settings; these suffixes cover multiple configuration syntaxes.",
+      "extensions": [
+        ".ini",
+        ".cfg",
+        ".conf"
+      ],
+      "source": "https://docs.python.org/3/library/configparser.html",
+      "textCompatible": true
+    },
+    {
+      "id": "iso",
+      "name": "ISO disc image",
+      "family": "Archive or package",
+      "commonUses": "An image of an optical-disc filesystem for distribution, archiving or virtual mounting.",
+      "extensions": [
+        ".iso"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000348.shtml"
+    },
+    {
+      "id": "java",
+      "name": "Java source",
+      "family": "Source code",
+      "commonUses": "Source code for programs and libraries written in Java.",
+      "extensions": [
+        ".java"
+      ],
+      "source": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-7.html",
+      "textCompatible": true
+    },
+    {
+      "id": "java-archive",
+      "name": "Java archive",
+      "family": "Archive or package",
+      "commonUses": "Java classes, resources and deployment metadata packaged for Java applications.",
+      "extensions": [
+        ".jar",
+        ".war",
+        ".ear"
+      ],
+      "source": "https://docs.oracle.com/en/java/javase/25/docs/specs/jar/jar.html"
+    },
+    {
+      "id": "java-class",
+      "name": "Java class file",
+      "family": "Program or development data",
+      "commonUses": "Compiled Java Virtual Machine code and class metadata.",
+      "extensions": [
+        ".class"
+      ],
+      "source": "https://docs.oracle.com/javase/specs/jvms/se25/html/jvms-4.html"
+    },
+    {
+      "id": "javascript",
+      "name": "JavaScript source",
+      "family": "Source code",
+      "commonUses": "JavaScript programs or modules; JSX variants can include component markup.",
+      "extensions": [
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx"
+      ],
+      "source": "https://tc39.es/ecma262/",
+      "textCompatible": true
+    },
+    {
+      "id": "jpeg",
+      "name": "JPEG image",
+      "family": "Image",
+      "commonUses": "Photographs and other images where compact storage is more important than preserving every original pixel.",
+      "extensions": [
+        ".jpg",
+        ".jpeg",
+        ".jpe",
+        ".jfif"
+      ],
+      "source": "https://www.w3.org/Graphics/JPEG/"
+    },
+    {
+      "id": "jpeg2000",
+      "name": "JPEG 2000 image",
+      "family": "Image",
+      "commonUses": "Raster imagery using JPEG 2000 coding, including archival and specialist imaging workflows.",
+      "extensions": [
+        ".jp2",
+        ".j2k",
+        ".jpf",
+        ".jpx"
+      ],
+      "source": "https://jpeg.org/jpeg2000/"
+    },
+    {
+      "id": "json",
+      "name": "JSON data",
+      "family": "Data",
+      "commonUses": "Structured data exchanged by applications, configuration files and web services.",
+      "extensions": [
+        ".json"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc8259.html",
+      "textCompatible": true
+    },
+    {
+      "id": "json-lines",
+      "name": "JSON Lines data",
+      "family": "Data",
+      "commonUses": "Sequences of JSON values, commonly used for logs, records and streaming data.",
+      "extensions": [
+        ".jsonl",
+        ".ndjson"
+      ],
+      "source": "https://jsonlines.org/",
+      "textCompatible": true
+    },
+    {
+      "id": "julia",
+      "name": "Julia source",
+      "family": "Source code",
+      "commonUses": "Julia programs used for numerical computing and other applications.",
+      "extensions": [
+        ".jl"
+      ],
+      "source": "https://docs.julialang.org/en/v1/manual/getting-started/",
+      "textCompatible": true
+    },
+    {
+      "id": "jxl",
+      "name": "JPEG XL image",
+      "family": "Image",
+      "commonUses": "Raster images stored with JPEG XL lossless or lossy compression.",
+      "extensions": [
+        ".jxl"
+      ],
+      "source": "https://jpeg.org/jpegxl/"
+    },
+    {
+      "id": "keynote",
+      "name": "Keynote presentation",
+      "family": "Document",
+      "commonUses": "Slides created with Apple's Keynote application. The same suffix can also identify unrelated key data.",
+      "extensions": [
+        ".key"
+      ],
+      "source": "https://support.apple.com/guide/keynote/welcome/mac"
+    },
+    {
+      "id": "kindle",
+      "name": "Kindle e-book",
+      "family": "Document",
+      "commonUses": "Electronic books packaged for Kindle applications and devices; layout and internal representation depend on the variant.",
+      "extensions": [
+        ".azw",
+        ".azw3"
+      ],
+      "source": "https://manual.calibre-ebook.com/faq.html"
+    },
+    {
+      "id": "kml",
+      "name": "KML geographic data",
+      "family": "Data",
+      "commonUses": "Maps, geographic features and visual annotations; KMZ packages KML and resources in ZIP.",
+      "extensions": [
+        ".kml",
+        ".kmz"
+      ],
+      "source": "https://www.ogc.org/standard/kml/"
+    },
+    {
+      "id": "kotlin",
+      "name": "Kotlin source",
+      "family": "Source code",
+      "commonUses": "Kotlin application code and scripts, including Android and other JVM projects.",
+      "extensions": [
+        ".kt",
+        ".kts"
+      ],
+      "source": "https://kotlinlang.org/docs/basic-syntax.html",
+      "textCompatible": true
+    },
+    {
+      "id": "krita",
+      "name": "Krita document",
+      "family": "Image",
+      "commonUses": "Editable digital paintings and animation projects created in Krita.",
+      "extensions": [
+        ".kra"
+      ],
+      "source": "https://docs.krita.org/en/general_concepts/file_formats/file_kra.html"
+    },
+    {
+      "id": "latex",
+      "name": "TeX/LaTeX source",
+      "family": "Source code",
+      "commonUses": "Typesetting source and supporting styles or classes for documents and publications.",
+      "extensions": [
+        ".tex",
+        ".sty",
+        ".cls"
+      ],
+      "source": "https://www.latex-project.org/help/documentation/",
+      "textCompatible": true
+    },
+    {
+      "id": "less",
+      "name": "Less style source",
+      "family": "Source code",
+      "commonUses": "Style-sheet source with features that are compiled into CSS.",
+      "extensions": [
+        ".less"
+      ],
+      "source": "https://lesscss.org/",
+      "textCompatible": true
+    },
+    {
+      "id": "lua",
+      "name": "Lua script",
+      "family": "Source code",
+      "commonUses": "Lua programs, often used to script applications and games.",
+      "extensions": [
+        ".lua"
+      ],
+      "source": "https://www.lua.org/manual/5.4/",
+      "textCompatible": true
+    },
+    {
+      "id": "lz4",
+      "name": "LZ4 compressed data",
+      "family": "Archive or package",
+      "commonUses": "Fast-compressed data streams using an LZ4 framing format.",
+      "extensions": [
+        ".lz4"
+      ],
+      "source": "https://github.com/lz4/lz4/blob/dev/doc/lz4_Frame_format.md"
+    },
+    {
+      "id": "m3u",
+      "name": "M3U playlist",
+      "family": "Audio",
+      "commonUses": "Lists of media locations; M3U8 is also used for HTTP Live Streaming playlists.",
+      "extensions": [
+        ".m3u",
+        ".m3u8"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc8216.html",
+      "textCompatible": true
+    },
+    {
+      "id": "m4a",
+      "name": "MPEG-4 audio container",
+      "family": "Audio",
+      "commonUses": "Audio and audiobooks in an MPEG-4 container. AAC and ALAC are possible codecs; the suffix does not prove which.",
+      "extensions": [
+        ".m4a",
+        ".m4b"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000155.shtml"
+    },
+    {
+      "id": "makefile",
+      "name": "Make build instructions",
+      "family": "Configuration or system data",
+      "commonUses": "Build rules and dependencies for Make-compatible build tools.",
+      "extensions": [
+        ".mk",
+        ".mak"
+      ],
+      "source": "https://www.gnu.org/software/make/manual/make.html",
+      "textCompatible": true,
+      "fileNames": [
+        "Makefile",
+        "GNUmakefile"
+      ]
+    },
+    {
+      "id": "markdown",
+      "name": "Markdown text",
+      "family": "Source code",
+      "commonUses": "Lightweight formatted text for documentation, notes and other documents.",
+      "extensions": [
+        ".md",
+        ".markdown"
+      ],
+      "source": "https://spec.commonmark.org/0.31.2/",
+      "textCompatible": true
+    },
+    {
+      "id": "matlab-data",
+      "name": "MATLAB data",
+      "family": "Data",
+      "commonUses": "Saved MATLAB variables, arrays and related data; storage depends on format version.",
+      "extensions": [
+        ".mat"
+      ],
+      "source": "https://www.mathworks.com/help/matlab/import_export/mat-file-versions.html"
+    },
+    {
+      "id": "matlab-script",
+      "name": "MATLAB script or function",
+      "family": "Source code",
+      "commonUses": "MATLAB commands and functions used for computation and analysis; .m is ambiguous.",
+      "extensions": [
+        ".m"
+      ],
+      "source": "https://www.mathworks.com/help/matlab/matlab_prog/create-scripts.html",
+      "textCompatible": true
+    },
+    {
+      "id": "matroska",
+      "name": "Matroska media container",
+      "family": "Video",
+      "commonUses": "Video, audio, subtitles and other tracks bundled into one multimedia file.",
+      "extensions": [
+        ".mkv",
+        ".mka",
+        ".mks"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc9559.html"
+    },
+    {
+      "id": "mhtml",
+      "name": "Archived web page",
+      "family": "Document",
+      "commonUses": "A web page and related resources bundled using MIME messages.",
+      "extensions": [
+        ".mht",
+        ".mhtml"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc2557.html",
+      "textCompatible": true
+    },
+    {
+      "id": "midi",
+      "name": "MIDI sequence",
+      "family": "Audio",
+      "commonUses": "Timed musical performance instructions for instruments and software, rather than a recording of sound.",
+      "extensions": [
+        ".mid",
+        ".midi",
+        ".kar"
+      ],
+      "source": "https://midi.org/standard-midi-files"
+    },
+    {
+      "id": "minidump",
+      "name": "Crash dump",
+      "family": "System data",
+      "commonUses": "Process or system memory and diagnostic state captured for debugging.",
+      "extensions": [
+        ".dmp",
+        ".mdmp"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/debug/minidump-files"
+    },
+    {
+      "id": "mobi",
+      "name": "Mobipocket e-book",
+      "family": "Document",
+      "commonUses": "Electronic books for Mobipocket and some older Kindle readers; the extension can have other meanings.",
+      "extensions": [
+        ".mobi",
+        ".prc"
+      ],
+      "source": "https://manual.calibre-ebook.com/faq.html"
+    },
+    {
+      "id": "mp3",
+      "name": "MP3 audio",
+      "family": "Audio",
+      "commonUses": "Compressed music, speech and other audio for broad playback compatibility.",
+      "extensions": [
+        ".mp3"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000012.shtml"
+    },
+    {
+      "id": "mp4",
+      "name": "MPEG-4 media container",
+      "family": "Video",
+      "commonUses": "Video, audio and related streams for playback and sharing. The container does not identify the codecs.",
+      "extensions": [
+        ".mp4",
+        ".m4v"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000155.shtml"
+    },
+    {
+      "id": "mpeg",
+      "name": "MPEG program stream",
+      "family": "Video",
+      "commonUses": "Multiplexed video and audio, including DVD video-object files.",
+      "extensions": [
+        ".mpg",
+        ".mpeg",
+        ".mpe",
+        ".vob"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/browse_list.shtml"
+    },
+    {
+      "id": "mpeg-ts",
+      "name": "MPEG transport stream",
+      "family": "Video",
+      "commonUses": "Packetized video and audio used for broadcasting, recording and streaming.",
+      "extensions": [
+        ".ts",
+        ".m2ts",
+        ".mts",
+        ".m2t"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/browse_list.shtml"
+    },
+    {
+      "id": "msg",
+      "name": "Outlook message",
+      "family": "Document",
+      "commonUses": "An Outlook message or related item stored with its properties and possible attachments.",
+      "extensions": [
+        ".msg"
+      ],
+      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-oxmsg/b046868c-9fbf-41ae-9ffb-8de2bd4eec82"
+    },
+    {
+      "id": "msi",
+      "name": "Windows Installer database",
+      "family": "Archive or package",
+      "commonUses": "Windows installation databases or patches describing software deployment and maintenance.",
+      "extensions": [
+        ".msi",
+        ".msp"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/msi/windows-installer-file-extensions"
+    },
+    {
+      "id": "msix",
+      "name": "Windows app package",
+      "family": "Archive or package",
+      "commonUses": "Windows application packages or bundles containing application files and deployment metadata.",
+      "extensions": [
+        ".msix",
+        ".appx",
+        ".msixbundle",
+        ".appxbundle"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/msix/overview"
+    },
+    {
+      "id": "mz",
+      "name": "DOS executable header",
+      "family": "Program",
+      "commonUses": "DOS programs and the initial header of several later executable formats. More information is needed to identify the program type.",
+      "extensions": [],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/debug/pe-format"
+    },
+    {
+      "id": "netcdf",
+      "name": "NetCDF dataset",
+      "family": "Data",
+      "commonUses": "Scientific arrays and metadata, commonly used for climate and environmental data; .cdf is ambiguous.",
+      "extensions": [
+        ".nc",
+        ".nc4",
+        ".cdf"
+      ],
+      "source": "https://docs.unidata.ucar.edu/netcdf-c/current/file_format_specifications.html"
+    },
+    {
+      "id": "notebook",
+      "name": "Jupyter notebook",
+      "family": "Source code",
+      "commonUses": "Notebook documents combining code cells, explanatory text and saved outputs.",
+      "extensions": [
+        ".ipynb"
+      ],
+      "source": "https://nbformat.readthedocs.io/en/latest/format_description.html",
+      "textCompatible": true
+    },
+    {
+      "id": "npy",
+      "name": "NumPy array",
+      "family": "Data",
+      "commonUses": "NumPy array data; NPZ packages one or more arrays in a ZIP container.",
+      "extensions": [
+        ".npy",
+        ".npz"
+      ],
+      "source": "https://numpy.org/doc/stable/reference/generated/numpy.lib.format.html"
+    },
+    {
+      "id": "nuget",
+      "name": "NuGet package",
+      "family": "Archive or package",
+      "commonUses": "Libraries, build assets or symbols distributed through the NuGet package format.",
+      "extensions": [
+        ".nupkg",
+        ".snupkg"
+      ],
+      "source": "https://learn.microsoft.com/en-us/nuget/what-is-nuget"
+    },
+    {
+      "id": "numbers",
+      "name": "Numbers spreadsheet",
+      "family": "Document",
+      "commonUses": "Spreadsheets created with Apple's Numbers application.",
+      "extensions": [
+        ".numbers"
+      ],
+      "source": "https://support.apple.com/guide/numbers/welcome/mac"
+    },
+    {
+      "id": "object-code",
+      "name": "Compiled object file",
+      "family": "Program or development data",
+      "commonUses": "Compiled code or data used as input to a linker; .obj also names some 3D models.",
+      "extensions": [
+        ".o",
+        ".obj"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/debug/pe-format"
+    },
+    {
+      "id": "objective-c",
+      "name": "Objective-C source",
+      "family": "Source code",
+      "commonUses": "Objective-C or Objective-C++ application code; .m is also used by MATLAB.",
+      "extensions": [
+        ".m",
+        ".mm"
+      ],
+      "source": "https://gcc.gnu.org/onlinedocs/gcc/Overall-Options.html",
+      "textCompatible": true
+    },
+    {
+      "id": "odg",
+      "name": "OpenDocument drawing",
+      "family": "Document",
+      "commonUses": "Editable drawings and drawing templates for OpenDocument applications.",
+      "extensions": [
+        ".odg",
+        ".otg"
+      ],
+      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html"
+    },
+    {
+      "id": "odp",
+      "name": "OpenDocument presentation",
+      "family": "Document",
+      "commonUses": "Slide presentations and templates for OpenDocument applications.",
+      "extensions": [
+        ".odp",
+        ".otp"
+      ],
+      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html"
+    },
+    {
+      "id": "ods",
+      "name": "OpenDocument spreadsheet",
+      "family": "Document",
+      "commonUses": "Workbooks and spreadsheet templates for OpenDocument applications.",
+      "extensions": [
+        ".ods",
+        ".ots"
+      ],
+      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html"
+    },
+    {
+      "id": "odt",
+      "name": "OpenDocument text",
+      "family": "Document",
+      "commonUses": "Editable text documents and templates for applications supporting OpenDocument.",
+      "extensions": [
+        ".odt",
+        ".ott"
+      ],
+      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html"
+    },
+    {
+      "id": "ogg",
+      "name": "Ogg container",
+      "family": "Media container",
+      "commonUses": "Storing audio or other media streams, including Vorbis and Opus audio. The container name alone does not establish its codec.",
+      "extensions": [
+        ".ogg",
+        ".oga",
+        ".ogv",
+        ".opus",
+        ".ogx"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc3533.html"
+    },
+    {
+      "id": "ole",
+      "name": "Compound file container",
+      "family": "Document or application data",
+      "commonUses": "Storing several related data streams in one file, including older Office documents and other application data.",
+      "extensions": [],
+      "source": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/53989ce4-7b05-4f8d-829b-d08d6148375b"
+    },
+    {
+      "id": "openraster",
+      "name": "OpenRaster image",
+      "family": "Image",
+      "commonUses": "Layered raster artwork exchanged between supporting painting applications.",
+      "extensions": [
+        ".ora"
+      ],
+      "source": "https://www.openraster.org/"
+    },
+    {
+      "id": "opentype",
+      "name": "OpenType font",
+      "family": "Font",
+      "commonUses": "Scalable fonts with layout and typographic information.",
+      "extensions": [
+        ".otf"
+      ],
+      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/"
+    },
+    {
+      "id": "orc",
+      "name": "Apache ORC data",
+      "family": "Data",
+      "commonUses": "Column-oriented datasets used by analytical processing systems.",
+      "extensions": [
+        ".orc"
+      ],
+      "source": "https://orc.apache.org/specification/"
+    },
+    {
+      "id": "pages",
+      "name": "Pages document",
+      "family": "Document",
+      "commonUses": "Editable documents created with Apple's Pages application.",
+      "extensions": [
+        ".pages"
+      ],
+      "source": "https://support.apple.com/guide/pages/welcome/mac"
+    },
+    {
+      "id": "parquet",
+      "name": "Apache Parquet data",
+      "family": "Data",
+      "commonUses": "Column-oriented datasets for analytics and data exchange.",
+      "extensions": [
+        ".parquet"
+      ],
+      "source": "https://parquet.apache.org/docs/file-format/"
+    },
+    {
+      "id": "pcap",
+      "name": "Packet capture",
+      "family": "Data",
+      "commonUses": "Recorded network packets for troubleshooting and analysis; .cap is also used by unrelated formats.",
+      "extensions": [
+        ".pcap",
+        ".cap"
+      ],
+      "source": "https://www.tcpdump.org/manpages/pcap-savefile.5.html"
+    },
+    {
+      "id": "pcapng",
+      "name": "PCAP Next Generation capture",
+      "family": "Data",
+      "commonUses": "Recorded network packets with extensible interface and capture metadata.",
+      "extensions": [
+        ".pcapng"
+      ],
+      "source": "https://www.ietf.org/archive/id/draft-ietf-opsawg-pcapng-05.html"
+    },
+    {
+      "id": "pdb",
+      "name": "Program debug database",
+      "family": "Program or development data",
+      "commonUses": "Debugging symbols and related program information; .pdb is also used for molecular data.",
+      "extensions": [
+        ".pdb"
+      ],
+      "source": "https://github.com/microsoft/microsoft-pdb"
+    },
+    {
+      "id": "pdf",
+      "name": "PDF document",
+      "family": "Document",
+      "commonUses": "Sharing and printing documents with a fixed page layout.",
+      "extensions": [
+        ".pdf"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000030.shtml"
+    },
+    {
+      "id": "pe",
+      "name": "Windows executable image",
+      "family": "Program or library",
+      "commonUses": "Windows programs, shared libraries and system components. Identification does not establish that a file is safe to run.",
+      "extensions": [
+        ".exe",
+        ".dll",
+        ".sys",
+        ".scr",
+        ".cpl",
+        ".ocx"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/debug/pe-format"
+    },
+    {
+      "id": "perl",
+      "name": "Perl source",
+      "family": "Source code",
+      "commonUses": "Perl programs and reusable modules.",
+      "extensions": [
+        ".pl",
+        ".pm"
+      ],
+      "source": "https://perldoc.perl.org/perl",
+      "textCompatible": true
+    },
+    {
+      "id": "php",
+      "name": "PHP source",
+      "family": "Source code",
+      "commonUses": "PHP programs and templates commonly used in server-side web applications.",
+      "extensions": [
+        ".php",
+        ".phtml"
+      ],
+      "source": "https://www.php.net/manual/en/language.basic-syntax.php",
+      "textCompatible": true
+    },
+    {
+      "id": "pickle",
+      "name": "Python pickle data",
+      "family": "Data",
+      "commonUses": "Serialized Python objects. Reading them as code can execute behavior, so Analyze does not unpickle them.",
+      "extensions": [
+        ".pkl",
+        ".pickle"
+      ],
+      "source": "https://docs.python.org/3/library/pickle.html"
+    },
+    {
+      "id": "pkcs12",
+      "name": "PKCS #12 key container",
+      "family": "Data",
+      "commonUses": "Certificates and potentially private keys packaged for transfer or installation.",
+      "extensions": [
+        ".p12",
+        ".pfx"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc7292.html"
+    },
+    {
+      "id": "plist",
+      "name": "Apple property list",
+      "family": "Data",
+      "commonUses": "Structured settings and application data in XML or binary property-list form.",
+      "extensions": [
+        ".plist"
+      ],
+      "source": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/PropertyLists/Introduction/Introduction.html",
+      "textCompatible": true
+    },
+    {
+      "id": "pls",
+      "name": "PLS playlist",
+      "family": "Audio",
+      "commonUses": "Lists of audio tracks or stream locations for media players.",
+      "extensions": [
+        ".pls"
+      ],
+      "source": "https://wiki.videolan.org/Playlist/",
+      "textCompatible": true
+    },
+    {
+      "id": "ply",
+      "name": "PLY geometry",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Polygon meshes or point data, often with color or other per-element attributes.",
+      "extensions": [
+        ".ply"
+      ],
+      "source": "https://paulbourke.net/dataformats/ply/"
+    },
+    {
+      "id": "png",
+      "name": "PNG image",
+      "family": "Image",
+      "commonUses": "Screenshots, graphics and images that need lossless storage or transparency.",
+      "extensions": [
+        ".png",
+        ".apng"
+      ],
+      "source": "https://www.w3.org/TR/png-3/"
+    },
+    {
+      "id": "pnm",
+      "name": "Portable anymap image",
+      "family": "Image",
+      "commonUses": "Simple raster images used for processing and interchange, with monochrome, grayscale and color variants.",
+      "extensions": [
+        ".pbm",
+        ".pgm",
+        ".ppm",
+        ".pnm",
+        ".pam"
+      ],
+      "source": "https://netpbm.sourceforge.net/doc/"
+    },
+    {
+      "id": "postscript",
+      "name": "PostScript document",
+      "family": "Document",
+      "commonUses": "Page descriptions and graphics for publishing and printing systems.",
+      "extensions": [
+        ".ps"
+      ],
+      "source": "https://www.adobe.com/jp/print/postscript/pdfs/PLRM.pdf",
+      "textCompatible": true
+    },
+    {
+      "id": "powershell",
+      "name": "PowerShell script",
+      "family": "Source code",
+      "commonUses": "PowerShell automation scripts, modules and data or module manifests.",
+      "extensions": [
+        ".ps1",
+        ".psm1",
+        ".psd1"
+      ],
+      "source": "https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_scripts",
+      "textCompatible": true
+    },
+    {
+      "id": "ppt",
+      "name": "Legacy PowerPoint presentation",
+      "family": "Document",
+      "commonUses": "Slides, templates and slide shows stored in older PowerPoint binary formats.",
+      "extensions": [
+        ".ppt",
+        ".pot",
+        ".pps"
+      ],
+      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/6be79dde-33c1-4c1b-8ccc-4b2301c08662"
+    },
+    {
+      "id": "pptx",
+      "name": "PowerPoint presentation",
+      "family": "Presentation",
+      "commonUses": "Slide presentations containing text, graphics and other media. Some variants are templates or may contain macros.",
+      "extensions": [
+        ".pptx",
+        ".pptm",
+        ".potx",
+        ".potm",
+        ".ppsx",
+        ".ppsm"
+      ],
+      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/"
+    },
+    {
+      "id": "properties",
+      "name": "Java properties",
+      "family": "Configuration or system data",
+      "commonUses": "Named configuration values for Java and other applications.",
+      "extensions": [
+        ".properties"
+      ],
+      "source": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Properties.html",
+      "textCompatible": true
+    },
+    {
+      "id": "psd",
+      "name": "Photoshop document",
+      "family": "Image",
+      "commonUses": "Editable artwork with layers, masks and other Photoshop editing information.",
+      "extensions": [
+        ".psd",
+        ".psb"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000523.shtml"
+    },
+    {
+      "id": "python",
+      "name": "Python source",
+      "family": "Source code",
+      "commonUses": "Python programs, scripts or type declarations.",
+      "extensions": [
+        ".py",
+        ".pyw",
+        ".pyi"
+      ],
+      "source": "https://docs.python.org/3/reference/lexical_analysis.html",
+      "textCompatible": true
+    },
+    {
+      "id": "python-bytecode",
+      "name": "Python bytecode",
+      "family": "Program or development data",
+      "commonUses": "Cached compiled Python code; compatibility depends on the Python version.",
+      "extensions": [
+        ".pyc",
+        ".pyo"
+      ],
+      "source": "https://docs.python.org/3/library/importlib.html"
+    },
+    {
+      "id": "qcow2",
+      "name": "QEMU virtual disk",
+      "family": "Archive or package",
+      "commonUses": "Virtual-machine disk images with features such as allocation-on-demand and snapshots.",
+      "extensions": [
+        ".qcow",
+        ".qcow2"
+      ],
+      "source": "https://www.qemu.org/docs/master/interop/qcow2.html"
+    },
+    {
+      "id": "qoi",
+      "name": "QOI image",
+      "family": "Image",
+      "commonUses": "Lossless raster image exchange using a small, simple encoding.",
+      "extensions": [
+        ".qoi"
+      ],
+      "source": "https://qoiformat.org/"
+    },
+    {
+      "id": "quicktime",
+      "name": "QuickTime movie",
+      "family": "Video",
+      "commonUses": "Movies and media tracks for playback, editing and production workflows.",
+      "extensions": [
+        ".mov",
+        ".qt"
+      ],
+      "source": "https://developer.apple.com/documentation/quicktime-file-format"
+    },
+    {
+      "id": "r",
+      "name": "R source",
+      "family": "Source code",
+      "commonUses": "R commands and programs for statistics, data analysis and visualization.",
+      "extensions": [
+        ".r",
+        ".rscript"
+      ],
+      "source": "https://cran.r-project.org/doc/manuals/r-release/R-lang.html",
+      "textCompatible": true
+    },
+    {
+      "id": "radiance",
+      "name": "Radiance HDR image",
+      "family": "Image",
+      "commonUses": "High-dynamic-range lighting and image data, including environment maps.",
+      "extensions": [
+        ".hdr",
+        ".rgbe"
+      ],
+      "source": "https://radsite.lbl.gov/radiance/refer/filefmts.pdf"
+    },
+    {
+      "id": "rar",
+      "name": "RAR archive",
+      "family": "Archive or package",
+      "commonUses": "Compressed file archives, sometimes split across volumes or protected by a password.",
+      "extensions": [
+        ".rar"
+      ],
+      "source": "https://www.rarlab.com/technote.htm"
+    },
+    {
+      "id": "reg",
+      "name": "Windows Registry data",
+      "family": "Data",
+      "commonUses": "Text used to export or apply Windows Registry settings; Analyze does not import it.",
+      "extensions": [
+        ".reg"
+      ],
+      "source": "https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users",
+      "textCompatible": true
+    },
+    {
+      "id": "rpm",
+      "name": "RPM package",
+      "family": "Archive or package",
+      "commonUses": "Software packages and metadata for RPM-based systems.",
+      "extensions": [
+        ".rpm"
+      ],
+      "source": "https://rpm.org/docs/4.20.x/manual/format.html"
+    },
+    {
+      "id": "rtf",
+      "name": "Rich Text Format",
+      "family": "Document",
+      "commonUses": "Formatted text exchanged between word processors and other applications.",
+      "extensions": [
+        ".rtf"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000473.shtml",
+      "textCompatible": true
+    },
+    {
+      "id": "ruby",
+      "name": "Ruby source",
+      "family": "Source code",
+      "commonUses": "Ruby programs, build tasks and package specifications.",
+      "extensions": [
+        ".rb",
+        ".rake",
+        ".gemspec"
+      ],
+      "source": "https://docs.ruby-lang.org/en/master/syntax_rdoc.html",
+      "textCompatible": true
+    },
+    {
+      "id": "rust",
+      "name": "Rust source",
+      "family": "Source code",
+      "commonUses": "Rust programs and libraries.",
+      "extensions": [
+        ".rs"
+      ],
+      "source": "https://doc.rust-lang.org/reference/",
+      "textCompatible": true
+    },
+    {
+      "id": "sass",
+      "name": "Sass style source",
+      "family": "Source code",
+      "commonUses": "Style-sheet source compiled into CSS; SCSS and indented Sass use different syntax.",
+      "extensions": [
+        ".scss",
+        ".sass"
+      ],
+      "source": "https://sass-lang.com/documentation/syntax/",
+      "textCompatible": true
+    },
+    {
+      "id": "scala",
+      "name": "Scala source",
+      "family": "Source code",
+      "commonUses": "Scala programs and scripts, commonly targeting the JVM.",
+      "extensions": [
+        ".scala",
+        ".sc"
+      ],
+      "source": "https://docs.scala-lang.org/tour/basics.html",
+      "textCompatible": true
+    },
+    {
+      "id": "shapefile",
+      "name": "ESRI shapefile geometry",
+      "family": "Data",
+      "commonUses": "Geographic feature geometry, usually accompanied by separate index and attribute files.",
+      "extensions": [
+        ".shp"
+      ],
+      "source": "https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf"
+    },
+    {
+      "id": "shell-script",
+      "name": "Shell script",
+      "family": "Source code",
+      "commonUses": "Commands interpreted by a Unix-style shell; syntax depends on the intended shell.",
+      "extensions": [
+        ".sh",
+        ".bash",
+        ".zsh"
+      ],
+      "source": "https://www.gnu.org/software/bash/manual/bash.html",
+      "textCompatible": true
+    },
+    {
+      "id": "soundfont",
+      "name": "SoundFont instrument bank",
+      "family": "Audio",
+      "commonUses": "Instrument samples and playback settings used by software synthesizers.",
+      "extensions": [
+        ".sf2",
+        ".sf3"
+      ],
+      "source": "https://www.fluidsynth.org/"
+    },
+    {
+      "id": "sql",
+      "name": "SQL script",
+      "family": "Source code",
+      "commonUses": "Database queries and schema or data operations. SQL dialects differ between database systems.",
+      "extensions": [
+        ".sql"
+      ],
+      "source": "https://www.postgresql.org/docs/current/sql-syntax.html",
+      "textCompatible": true
+    },
+    {
+      "id": "sqlite",
+      "name": "SQLite database",
+      "family": "Data",
+      "commonUses": "A database containing tables, indexes and other SQLite objects. Generic .db names are not proof of SQLite.",
+      "extensions": [
+        ".sqlite",
+        ".sqlite3",
+        ".db",
+        ".db3"
+      ],
+      "source": "https://www.sqlite.org/fileformat.html"
+    },
+    {
+      "id": "srt",
+      "name": "SubRip subtitles",
+      "family": "Document",
+      "commonUses": "Timed subtitle text for video playback.",
+      "extensions": [
+        ".srt"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000569.shtml",
+      "textCompatible": true
+    },
+    {
+      "id": "static-library",
+      "name": "Static code library",
+      "family": "Program or development data",
+      "commonUses": "Compiled objects packaged for linking into software; formats depend on the toolchain.",
+      "extensions": [
+        ".a",
+        ".lib"
+      ],
+      "source": "https://sourceware.org/binutils/docs/binutils/ar.html"
+    },
+    {
+      "id": "step",
+      "name": "STEP product data",
+      "family": "3D, CAD or game asset",
+      "commonUses": "CAD product geometry and related data exchanged between engineering tools.",
+      "extensions": [
+        ".step",
+        ".stp"
+      ],
+      "source": "https://www.nist.gov/publications/introduction-iso-10303-step-standard-product-data-exchange",
+      "textCompatible": true
+    },
+    {
+      "id": "stl",
+      "name": "STL mesh",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Triangulated surfaces for 3D printing and manufacturing workflows; binary and text variants exist.",
+      "extensions": [
+        ".stl"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000504.shtml"
+    },
+    {
+      "id": "svg",
+      "name": "SVG vector image",
+      "family": "Image",
+      "commonUses": "Scalable diagrams, logos and illustrations described with XML. Files may contain active or external content.",
+      "extensions": [
+        ".svg"
+      ],
+      "source": "https://www.w3.org/TR/SVG2/",
+      "textCompatible": true
+    },
+    {
+      "id": "swift",
+      "name": "Swift source",
+      "family": "Source code",
+      "commonUses": "Swift application and library code.",
+      "extensions": [
+        ".swift"
+      ],
+      "source": "https://docs.swift.org/swift-book/documentation/the-swift-programming-language/",
+      "textCompatible": true
+    },
+    {
+      "id": "tar",
+      "name": "TAR archive",
+      "family": "Archive or package",
+      "commonUses": "Multiple files and filesystem metadata bundled into a single archive.",
+      "extensions": [
+        ".tar"
+      ],
+      "source": "https://www.gnu.org/software/tar/manual/html_node/Standard.html"
+    },
+    {
+      "id": "tar-gzip",
+      "name": "GZIP-compressed TAR archive",
+      "family": "Archive or package",
+      "commonUses": "Files bundled as a TAR archive and then compressed with GZIP.",
+      "extensions": [
+        ".tar.gz",
+        ".tgz"
+      ],
+      "source": "https://www.gnu.org/software/tar/manual/html_node/gzip.html"
+    },
+    {
+      "id": "text",
+      "name": "Text",
+      "family": "Text or structured data",
+      "commonUses": "Notes, source code, configuration and other readable data. Text alone does not identify an application or purpose.",
+      "extensions": [
+        ".txt",
+        ".text",
+        ".log"
+      ],
+      "source": "https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-2/",
+      "textCompatible": true
+    },
+    {
+      "id": "tga",
+      "name": "Targa image",
+      "family": "Image",
+      "commonUses": "Raster images and artwork exchanged between graphics and game tools.",
+      "extensions": [
+        ".tga",
+        ".targa"
+      ],
+      "source": "https://imagemagick.org/formats/"
+    },
+    {
+      "id": "tiff",
+      "name": "TIFF image",
+      "family": "Image",
+      "commonUses": "Scanned pages, photography and publishing images, sometimes with multiple pages.",
+      "extensions": [
+        ".tif",
+        ".tiff"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000022.shtml"
+    },
+    {
+      "id": "toml",
+      "name": "TOML configuration",
+      "family": "Data",
+      "commonUses": "Readable application and project configuration organized into named values and tables.",
+      "extensions": [
+        ".toml"
+      ],
+      "source": "https://toml.io/en/v1.0.0",
+      "textCompatible": true
+    },
+    {
+      "id": "torrent",
+      "name": "BitTorrent metadata",
+      "family": "Data",
+      "commonUses": "Metadata describing shared files and how peers locate them; it does not contain the downloaded content itself.",
+      "extensions": [
+        ".torrent"
+      ],
+      "source": "https://www.bittorrent.org/beps/bep_0003.html"
+    },
+    {
+      "id": "tracker",
+      "name": "Tracker music module",
+      "family": "Audio",
+      "commonUses": "Music combining sequenced patterns with instrument or sample information for tracker players.",
+      "extensions": [
+        ".mod",
+        ".xm",
+        ".it",
+        ".s3m",
+        ".mptm"
+      ],
+      "source": "https://wiki.openmpt.org/Manual:_Module_formats"
+    },
+    {
+      "id": "truetype",
+      "name": "TrueType font",
+      "family": "Font",
+      "commonUses": "Scalable fonts using TrueType outlines, sometimes with additional OpenType features.",
+      "extensions": [
+        ".ttf"
+      ],
+      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/"
+    },
+    {
+      "id": "tsv",
+      "name": "Tab-separated table",
+      "family": "Data",
+      "commonUses": "Tabular data with tab characters separating fields; the .tab suffix also has other uses.",
+      "extensions": [
+        ".tsv",
+        ".tab"
+      ],
+      "source": "https://www.iana.org/assignments/media-types/text/tab-separated-values",
+      "textCompatible": true
+    },
+    {
+      "id": "typescript",
+      "name": "TypeScript source",
+      "family": "Source code",
+      "commonUses": "Typed JavaScript-related source code and declarations; .ts is also used for video streams.",
+      "extensions": [
+        ".ts",
+        ".tsx",
+        ".d.ts"
+      ],
+      "source": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html",
+      "textCompatible": true
+    },
+    {
+      "id": "unitypackage",
+      "name": "Unity asset package",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Assets and metadata exported for transfer between Unity projects.",
+      "extensions": [
+        ".unitypackage"
+      ],
+      "source": "https://docs.unity3d.com/Manual/AssetPackages.html"
+    },
+    {
+      "id": "unreal-asset",
+      "name": "Unreal Engine asset",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Unreal Engine assets or maps; companion files and the matching engine version may be required.",
+      "extensions": [
+        ".uasset",
+        ".umap"
+      ],
+      "source": "https://dev.epicgames.com/documentation/en-us/unreal-engine/assets-and-packages-in-unreal-engine"
+    },
+    {
+      "id": "usd",
+      "name": "Universal Scene Description",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Composed 3D scenes, assets and animation; text, binary and packaged forms exist.",
+      "extensions": [
+        ".usd",
+        ".usda",
+        ".usdc",
+        ".usdz"
+      ],
+      "source": "https://openusd.org/release/intro.html"
+    },
+    {
+      "id": "valve-package",
+      "name": "Valve package",
+      "family": "3D, CAD or game asset",
+      "commonUses": "Game resources packaged for Valve engine applications.",
+      "extensions": [
+        ".vpk"
+      ],
+      "source": "https://developer.valvesoftware.com/wiki/VPK"
+    },
+    {
+      "id": "vbscript",
+      "name": "VBScript source",
+      "family": "Source code",
+      "commonUses": "Automation scripts written in VBScript.",
+      "extensions": [
+        ".vbs"
+      ],
+      "source": "https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/scripting-articles/d1wf56tt(v=vs.84)",
+      "textCompatible": true
+    },
+    {
+      "id": "vcard",
+      "name": "Contact card",
+      "family": "Document",
+      "commonUses": "Names, contact details and related personal information exchanged between address books.",
+      "extensions": [
+        ".vcf",
+        ".vcard"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc6350.html",
+      "textCompatible": true
+    },
+    {
+      "id": "vhd",
+      "name": "Virtual Hard Disk",
+      "family": "Archive or package",
+      "commonUses": "Virtual disk contents used by Windows virtualization and related tools; VHD and VHDX have different layouts.",
+      "extensions": [
+        ".vhd",
+        ".vhdx"
+      ],
+      "source": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-vhdx/83e061f8-f6e2-4de1-91bd-5d518a43d477"
+    },
+    {
+      "id": "vmdk",
+      "name": "VMware virtual disk",
+      "family": "Archive or package",
+      "commonUses": "Virtual-machine disk data or a descriptor referring to disk extents.",
+      "extensions": [
+        ".vmdk"
+      ],
+      "source": "https://knowledge.broadcom.com/external/article/320398/virtual-disk-formats.html"
+    },
+    {
+      "id": "vsix",
+      "name": "Visual Studio extension",
+      "family": "Archive or package",
+      "commonUses": "Packaged extensions for Visual Studio or Visual Studio Code; their manifests and compatibility differ.",
+      "extensions": [
+        ".vsix"
+      ],
+      "source": "https://learn.microsoft.com/en-us/visualstudio/extensibility/shipping-visual-studio-extensions"
+    },
+    {
+      "id": "wasm",
+      "name": "WebAssembly module",
+      "family": "Program or development data",
+      "commonUses": "Portable compiled modules loaded by WebAssembly runtimes.",
+      "extensions": [
+        ".wasm"
+      ],
+      "source": "https://webassembly.github.io/spec/core/binary/index.html"
+    },
+    {
+      "id": "wave",
+      "name": "WAVE audio",
+      "family": "Audio",
+      "commonUses": "Audio recording, editing and exchange. The container can hold different audio encodings.",
+      "extensions": [
+        ".wav",
+        ".wave"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/xaudio2/resource-interchange-file-format--riff-"
+    },
+    {
+      "id": "wavefront",
+      "name": "Wavefront model",
+      "family": "3D, CAD or game asset",
+      "commonUses": "3D mesh geometry and material descriptions. The .obj suffix can also mean compiled object code.",
+      "extensions": [
+        ".obj",
+        ".mtl"
+      ],
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000507.shtml",
+      "textCompatible": true
+    },
+    {
+      "id": "wavpack",
+      "name": "WavPack audio",
+      "family": "Audio",
+      "commonUses": "Audio stored using WavPack lossless, lossy or hybrid compression modes.",
+      "extensions": [
+        ".wv"
+      ],
+      "source": "https://www.wavpack.com/"
+    },
+    {
+      "id": "webm",
+      "name": "WebM media container",
+      "family": "Video",
+      "commonUses": "Web-oriented video and audio using the WebM container and supported codecs.",
+      "extensions": [
+        ".webm"
+      ],
+      "source": "https://www.webmproject.org/docs/container/"
+    },
+    {
+      "id": "webp",
+      "name": "WebP image",
+      "family": "Image",
+      "commonUses": "Compact web images, including lossless, lossy, transparent and animated variants.",
+      "extensions": [
+        ".webp"
+      ],
+      "source": "https://developers.google.com/speed/webp/docs/riff_container"
+    },
+    {
+      "id": "webvtt",
+      "name": "WebVTT captions",
+      "family": "Document",
+      "commonUses": "Timed captions, subtitles and other text tracks for web media.",
+      "extensions": [
+        ".vtt"
+      ],
+      "source": "https://www.w3.org/TR/webvtt1/",
+      "textCompatible": true
+    },
+    {
+      "id": "wheel",
+      "name": "Python wheel",
+      "family": "Archive or package",
+      "commonUses": "Built Python distributions containing modules and installation metadata.",
+      "extensions": [
+        ".whl"
+      ],
+      "source": "https://packaging.python.org/en/latest/specifications/binary-distribution-format/"
+    },
+    {
+      "id": "wim",
+      "name": "Windows imaging archive",
+      "family": "Archive or package",
+      "commonUses": "Windows deployment images and their component files; encoding and compression vary.",
+      "extensions": [
+        ".wim",
+        ".esd"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/work-with-windows-images"
+    },
+    {
+      "id": "windows-shortcut",
+      "name": "Windows shortcut",
+      "family": "System data",
+      "commonUses": "A shortcut describing a target file or application and launch settings; Analyze does not follow it.",
+      "extensions": [
+        ".lnk"
+      ],
+      "source": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-shllink/747629b3-b5be-452a-8101-b9a2ec49978c"
+    },
+    {
+      "id": "windows-url",
+      "name": "Internet shortcut",
+      "family": "Configuration or system data",
+      "commonUses": "A Windows shortcut to a URL; Analyze does not open the target.",
+      "extensions": [
+        ".url"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/lwef/internet-shortcuts",
+      "textCompatible": true
+    },
+    {
+      "id": "wma",
+      "name": "Windows Media audio",
+      "family": "Audio",
+      "commonUses": "Audio distributed using Windows Media technology, with several encoding variants.",
+      "extensions": [
+        ".wma"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/wmformat/overview-of-the-asf-format"
+    },
+    {
+      "id": "woff",
+      "name": "WOFF web font",
+      "family": "Font",
+      "commonUses": "Packaged font data for delivery to web browsers.",
+      "extensions": [
+        ".woff"
+      ],
+      "source": "https://www.w3.org/TR/WOFF/"
+    },
+    {
+      "id": "woff2",
+      "name": "WOFF2 web font",
+      "family": "Font",
+      "commonUses": "Web font data compressed using the WOFF2 format.",
+      "extensions": [
+        ".woff2"
+      ],
+      "source": "https://www.w3.org/TR/WOFF2/"
+    },
+    {
+      "id": "xcf",
+      "name": "GIMP image",
+      "family": "Image",
+      "commonUses": "Editable GIMP projects retaining layers and other working image data.",
+      "extensions": [
+        ".xcf"
+      ],
+      "source": "https://docs.gimp.org/3.0/en/gimp-images-out.html"
+    },
+    {
+      "id": "xls",
+      "name": "Legacy Excel workbook",
+      "family": "Document",
+      "commonUses": "Spreadsheets and templates stored in older Excel binary formats.",
+      "extensions": [
+        ".xls",
+        ".xlt"
+      ],
+      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xls/cd03cb5f-ca02-4934-a391-bb674cb8aa06"
+    },
+    {
+      "id": "xlsb",
+      "name": "Excel binary workbook",
+      "family": "Document",
+      "commonUses": "Excel spreadsheets stored as binary workbook parts inside a package.",
+      "extensions": [
+        ".xlsb"
+      ],
+      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/acc8aa92-1f02-4167-99f5-84f9f676b95a"
+    },
+    {
+      "id": "xlsx",
+      "name": "Excel workbook",
+      "family": "Spreadsheet",
+      "commonUses": "Tables, calculations, charts and data organized into worksheets. Some variants are templates or may contain macros.",
+      "extensions": [
+        ".xlsx",
+        ".xlsm",
+        ".xltx",
+        ".xltm"
+      ],
+      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/"
+    },
+    {
+      "id": "xml",
+      "name": "XML document",
+      "family": "Data",
+      "commonUses": "Structured markup and data used by many document and application formats.",
+      "extensions": [
+        ".xml"
+      ],
+      "source": "https://www.w3.org/TR/xml/",
+      "textCompatible": true
+    },
+    {
+      "id": "xpi",
+      "name": "Firefox extension",
+      "family": "Archive or package",
+      "commonUses": "Packaged browser extensions and associated resources for Firefox.",
+      "extensions": [
+        ".xpi"
+      ],
+      "source": "https://extensionworkshop.com/documentation/publish/package-your-extension/"
+    },
+    {
+      "id": "xps",
+      "name": "XML Paper Specification document",
+      "family": "Document",
+      "commonUses": "Fixed-layout pages intended to preserve document appearance for viewing and printing.",
+      "extensions": [
+        ".xps",
+        ".oxps"
+      ],
+      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-388/"
+    },
+    {
+      "id": "xz",
+      "name": "XZ compressed data",
+      "family": "Archive or package",
+      "commonUses": "Compressed data streams, often used to distribute software or TAR archives.",
+      "extensions": [
+        ".xz",
+        ".txz"
+      ],
+      "source": "https://tukaani.org/xz/format.html"
+    },
+    {
+      "id": "yaml",
+      "name": "YAML data",
+      "family": "Data",
+      "commonUses": "Readable structured configuration and data for applications and automation.",
+      "extensions": [
+        ".yaml",
+        ".yml"
+      ],
+      "source": "https://yaml.org/spec/1.2.2/",
+      "textCompatible": true
+    },
+    {
+      "id": "zip",
+      "name": "ZIP container",
+      "family": "Archive or packaged document",
+      "commonUses": "Bundling files for storage or sharing. Some document and application formats also use ZIP containers.",
+      "extensions": [
+        ".zip",
+        ".zipx"
+      ],
+      "source": "https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT"
+    },
+    {
+      "id": "zstd",
+      "name": "Zstandard compressed data",
+      "family": "Archive or package",
+      "commonUses": "Compressed data using Zstandard, including wrapped archives.",
+      "extensions": [
+        ".zst",
+        ".zstd",
+        ".tzst"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc8878.html"
+    }
+  ]
+}

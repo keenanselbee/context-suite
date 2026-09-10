@@ -41,7 +41,7 @@
                 <Expander Header="Files and details" AutomationProperties.AutomationId="FileDetails" IsExpanded="{Binding ShowDetails, Mode=OneWay}" Margin="0,8,0,0"
                           Visibility="{Binding HasResults, Converter={StaticResource VisibleWhenTrue}}">
                     <StackPanel>
-                        <DataGrid x:Name="ResultsGrid" ItemsSource="{Binding DisplayRows}" AutoGenerateColumns="False" IsReadOnly="True"
+                        <DataGrid x:Name="ResultsGrid" ItemsSource="{Binding DisplayRows}" AutoGenerateColumns="False" IsReadOnly="True" IsSynchronizedWithCurrentItem="True"
                                   CanUserAddRows="False" MaxHeight="240" MinHeight="80" AutomationProperties.AutomationId="BatchResults"
                                   AutomationProperties.Name="Files and outcomes">
                             <DataGrid.Columns>
@@ -50,8 +50,17 @@
                                 <DataGridTextColumn Header="Saved" Binding="{Binding Savings}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
                             </DataGrid.Columns>
                         </DataGrid>
-                        <TextBlock Text="{Binding SelectedItem.ResultDetails, ElementName=ResultsGrid}" TextWrapping="Wrap" Margin="0,8,0,0"
+                        <TextBlock Text="{Binding SelectedItem.OperationDetails, ElementName=ResultsGrid}" TextWrapping="Wrap" Margin="0,8,0,0"
                                    AutomationProperties.AutomationId="SelectedResultDetails" />
+                        <TextBlock Text="{Binding SelectedItem.AnalysisSummary, ElementName=ResultsGrid}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Visibility="{Binding SelectedItem.HasAnalysis, ElementName=ResultsGrid, Converter={StaticResource VisibleWhenTrue}}"
+                                   AutomationProperties.AutomationId="AnalysisSummary" />
+                        <Expander Header="Technical details" IsExpanded="False" Margin="0,8,0,0"
+                                  Visibility="{Binding SelectedItem.HasAnalysis, ElementName=ResultsGrid, Converter={StaticResource VisibleWhenTrue}}"
+                                  AutomationProperties.AutomationId="AnalysisTechnicalDetails">
+                            <TextBlock Text="{Binding SelectedItem.AnalysisDetails, ElementName=ResultsGrid}" TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="AnalysisFacts" />
+                        </Expander>
                         <Button Content="Open output _folder" Click="OnOpenOutputFolder" Padding="10,6" Margin="0,8,0,0" HorizontalAlignment="Left"
                                 IsEnabled="{Binding SelectedItem.HasOutput, ElementName=ResultsGrid}" AutomationProperties.AutomationId="OpenOutputFolder" />
                     </StackPanel>

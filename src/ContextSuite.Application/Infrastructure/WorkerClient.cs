@@ -3,6 +3,8 @@ using System.IO.Pipes;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Transport;
 using ContextSuite.Core.Images;
+using ContextSuite.Core.Audio;
+using ContextSuite.Core.Analysis;
 using ContextSuite.Runtime;
 
 namespace ContextSuite.Application.Infrastructure;
@@ -14,6 +16,26 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     private NamedPipeServerStream? _pipe;
     private string? _scratchDirectory;
     public int? ProcessId => _process?.Id;
+    public bool HasAudioProbe => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "audio-engine", "ffprobe.exe"));
+    public bool HasPdfProbe => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-engine", "qpdf.exe"));
+
+    public async Task<PdfProbeFacts> ProbePdfAsync(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "pdf-probe", PdfBytes: bytes.ToArray()), cancellationToken);
+        if (reply.Pdf is null || reply.Audio is not null || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null ||
+            reply.Engine is not null || reply.Capabilities.Length != 0) throw new InvalidDataException("Invalid PDF probe response.");
+        reply.Pdf.Validate();
+        return reply.Pdf;
+    }
+
+    public async Task<AudioProbeFacts> ProbeAudioAsync(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "audio-probe", AudioBytes: bytes.ToArray()), cancellationToken);
+        if (reply.Audio is null || reply.Pdf is not null || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null ||
+            reply.Engine is not null || reply.Capabilities.Length != 0) throw new InvalidDataException("Invalid audio probe response.");
+        reply.Audio.Validate();
+        return reply.Audio;
+    }
 
     public async Task<MediaCapability[]> GetCapabilitiesAsync(CancellationToken cancellationToken)
     {
@@ -105,9 +127,13 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             var reply = await JsonFrames.ReadAsync<WorkerReply>(_pipe!, timeout.Token);
             if (reply.Version != 1 || reply.RequestId != command.RequestId || reply.Capabilities is null)
                 throw new InvalidDataException("The media worker returned an invalid response.");
+            if (command.Command != "audio-probe" && reply.Audio is not null)
+                throw new InvalidDataException("The media worker returned unexpected audio data.");
+            if (command.Command != "pdf-probe" && reply.Pdf is not null)
+                throw new InvalidDataException("The media worker returned unexpected PDF data.");
             if (reply.Failure is { } failure)
             {
-                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0)
+                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.Capabilities.Length != 0)
                     throw new InvalidDataException("Worker failure response contains invalid or contradictory data.");
                 throw new MediaWorkerException(failure);
             }

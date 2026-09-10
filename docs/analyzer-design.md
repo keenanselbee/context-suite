@@ -1,7 +1,37 @@
 Context Analyzer Design
 =======================
 
-Status: bounded DDS header analysis is implemented; broader analysis remains planned.
+Status: generic Analyze fallback, initial header identification, DDS details,
+bounded JSON/XML structure analysis, WAVE/FLAC header facts, document package analysis and a 237-entry descriptive catalog are
+implemented. The [coverage inventory](file-type-coverage.md) records exact
+facts, limits and tests; broader catalog/family analysis remains in progress.
+
+Optional deeper audio probing is now connected to the worker and Analyze. It
+enriches collapsed details from a bounded byte snapshot and retains the header
+report on probe failure. The evaluation audio payload is only present in isolated
+test staging; normal production packaging and wider acceptance remain pending.
+
+Optional [PDF probing](pdf-engine-evaluation.md) is also connected. It reports
+pages, encryption and document inventories from a complete bounded snapshot,
+retaining unavailable content facts for password-required inputs and header
+fallback on failure. Zero reported signature fields never means unsigned. Its
+evaluation engine is absent from normal packaging; PDF transformations remain
+unimplemented.
+
+Bounded [OOXML/OpenDocument package inspection](document-design.md) identifies
+supported document families and reports declared sheet/slide counts. Encrypted,
+unsupported and over-budget parts retain basic facts. This does not enable
+document transformation or validate rendered layout.
+
+Implementation follows the [broad file support goal](broad-file-support-goal.md)
+and [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md).
+Every readable regular file receives basic facts and an honest result, even when
+its type is unknown. A reviewed offline catalog explains common uses; it does not
+claim what a particular file contains or enable unsupported transformations.
+Extension hints remain distinct from signature/container evidence. Show confirmed,
+likely, ambiguous or unknown identity without invented confidence percentages.
+Deeper image, audio, PDF and Office/OpenDocument analysis augments this fallback.
+Analyze remains local, read-only and independent of paid transformation admission.
 
 
 Purpose

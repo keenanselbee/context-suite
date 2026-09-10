@@ -1,0 +1,1582 @@
+{
+  "catalogRevision": "2026-09-09.2",
+  "reviewDate": "2026-09-09",
+  "scope": "Reference reachability and document-title review, not exhaustive factual, reuse-rights or format-variant acceptance. Unavailable does not prove a link is broken. No source content or third-party database is imported.",
+  "sources": [
+    {
+      "url": "https://3mf.io/specification/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "3mf"
+      ]
+    },
+    {
+      "url": "https://aegisub.org/docs/latest/ass_tags/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "ass"
+      ]
+    },
+    {
+      "url": "https://arrow.apache.org/docs/format/Columnar.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "arrow"
+      ]
+    },
+    {
+      "url": "https://avro.apache.org/docs/1.12.0/specification/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "avro"
+      ]
+    },
+    {
+      "url": "https://cmake.org/cmake/help/latest/manual/cmake-language.7.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "cmake"
+      ]
+    },
+    {
+      "url": "https://cran.r-project.org/doc/manuals/r-release/R-lang.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "r"
+      ]
+    },
+    {
+      "url": "https://dart.dev/language",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "dart"
+      ]
+    },
+    {
+      "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/assets-and-packages-in-unreal-engine",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "unreal-asset"
+      ]
+    },
+    {
+      "url": "https://developer.android.com/guide/app-bundle",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "aab"
+      ]
+    },
+    {
+      "url": "https://developer.android.com/guide/components/fundamentals",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "apk"
+      ]
+    },
+    {
+      "url": "https://developer.apple.com/documentation/quicktime-file-format",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "quicktime"
+      ]
+    },
+    {
+      "url": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/PropertyLists/Introduction/Introduction.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "plist"
+      ]
+    },
+    {
+      "url": "https://developer.apple.com/library/archive/documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/Optimizing/Optimizing.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "icns"
+      ]
+    },
+    {
+      "url": "https://developer.valvesoftware.com/wiki/VPK",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "valve-package"
+      ]
+    },
+    {
+      "url": "https://developers.google.com/speed/webp/docs/riff_container",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "webp"
+      ]
+    },
+    {
+      "url": "https://djvu.org/resources/",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "djvu"
+      ]
+    },
+    {
+      "url": "https://doc.rust-lang.org/reference/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "rust"
+      ]
+    },
+    {
+      "url": "https://docs.blender.org/manual/en/latest/files/blend/index.html",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "blend"
+      ]
+    },
+    {
+      "url": "https://docs.docker.com/reference/dockerfile/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "dockerfile"
+      ]
+    },
+    {
+      "url": "https://docs.gimp.org/3.0/en/gimp-images-out.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "xcf"
+      ]
+    },
+    {
+      "url": "https://docs.godotengine.org/en/stable/tutorials/scripting/resources.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "godot-resource"
+      ]
+    },
+    {
+      "url": "https://docs.julialang.org/en/v1/manual/getting-started/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "julia"
+      ]
+    },
+    {
+      "url": "https://docs.krita.org/en/general_concepts/file_formats/file_kra.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "krita"
+      ]
+    },
+    {
+      "url": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "odg",
+        "odp",
+        "ods",
+        "odt"
+      ]
+    },
+    {
+      "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Properties.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "properties"
+      ]
+    },
+    {
+      "url": "https://docs.oracle.com/en/java/javase/25/docs/specs/jar/jar.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "java-archive"
+      ]
+    },
+    {
+      "url": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-7.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "java"
+      ]
+    },
+    {
+      "url": "https://docs.oracle.com/javase/specs/jvms/se25/html/jvms-4.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "java-class"
+      ]
+    },
+    {
+      "url": "https://docs.python.org/3/library/configparser.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "ini"
+      ]
+    },
+    {
+      "url": "https://docs.python.org/3/library/importlib.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "python-bytecode"
+      ]
+    },
+    {
+      "url": "https://docs.python.org/3/library/pickle.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "pickle"
+      ]
+    },
+    {
+      "url": "https://docs.python.org/3/reference/lexical_analysis.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "python"
+      ]
+    },
+    {
+      "url": "https://docs.ruby-lang.org/en/master/syntax_rdoc.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "ruby"
+      ]
+    },
+    {
+      "url": "https://docs.scala-lang.org/tour/basics.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "scala"
+      ]
+    },
+    {
+      "url": "https://docs.swift.org/swift-book/documentation/the-swift-programming-language/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "swift"
+      ]
+    },
+    {
+      "url": "https://docs.unidata.ucar.edu/netcdf-c/current/file_format_specifications.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "netcdf"
+      ]
+    },
+    {
+      "url": "https://docs.unity3d.com/Manual/AssetPackages.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "unitypackage"
+      ]
+    },
+    {
+      "url": "https://ecma-international.org/publications-and-standards/standards/ecma-376/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "docx",
+        "pptx",
+        "xlsx"
+      ]
+    },
+    {
+      "url": "https://ecma-international.org/publications-and-standards/standards/ecma-388/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "xps"
+      ]
+    },
+    {
+      "url": "https://en.uesp.net/wiki/Skyrim_Mod:Archive_File_Format",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "bethesda-archive"
+      ]
+    },
+    {
+      "url": "https://extensionworkshop.com/documentation/publish/package-your-extension/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "xpi"
+      ]
+    },
+    {
+      "url": "https://fits.gsfc.nasa.gov/fits_standard.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "fits"
+      ]
+    },
+    {
+      "url": "https://gabi.xinuos.com/elf/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "elf"
+      ]
+    },
+    {
+      "url": "https://gcc.gnu.org/onlinedocs/gcc/Overall-Options.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "c",
+        "cpp",
+        "objective-c"
+      ]
+    },
+    {
+      "url": "https://gcc.gnu.org/onlinedocs/gfortran/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "fortran"
+      ]
+    },
+    {
+      "url": "https://git-scm.com/docs/gitignore",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "gitignore"
+      ]
+    },
+    {
+      "url": "https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "aseprite"
+      ]
+    },
+    {
+      "url": "https://github.com/lz4/lz4/blob/dev/doc/lz4_Frame_format.md",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "lz4"
+      ]
+    },
+    {
+      "url": "https://github.com/microsoft/microsoft-pdb",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "pdb"
+      ]
+    },
+    {
+      "url": "https://go.dev/ref/spec",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "go"
+      ]
+    },
+    {
+      "url": "https://help.autodesk.com/cloudhelp/2021/ENU/AutoCAD-DXF/files/GUID-235B22E0-A567-4CF6-92D3-38A2306D73F3.htm",
+      "retrieval": "indexed",
+      "catalogIds": [
+        "dxf"
+      ]
+    },
+    {
+      "url": "https://help.autodesk.com/view/FBX/2020/ENU/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "fbx"
+      ]
+    },
+    {
+      "url": "https://helpx.adobe.com/camera-raw/digital-negative.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "dng"
+      ]
+    },
+    {
+      "url": "https://helpx.adobe.com/camera-raw/kb/camera-raw-plug-supported-cameras.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "camera-raw"
+      ]
+    },
+    {
+      "url": "https://helpx.adobe.com/illustrator/using/saving-artwork.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "illustrator"
+      ]
+    },
+    {
+      "url": "https://hexdocs.pm/elixir/introduction.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "elixir"
+      ]
+    },
+    {
+      "url": "https://html.spec.whatwg.org/",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "html"
+      ]
+    },
+    {
+      "url": "https://imagemagick.org/formats/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "tga"
+      ]
+    },
+    {
+      "url": "https://jpeg.org/jpeg2000/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "jpeg2000"
+      ]
+    },
+    {
+      "url": "https://jpeg.org/jpegxl/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "jxl"
+      ]
+    },
+    {
+      "url": "https://jsonlines.org/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "json-lines"
+      ]
+    },
+    {
+      "url": "https://knowledge.broadcom.com/external/article/320398/virtual-disk-formats.html",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "vmdk"
+      ]
+    },
+    {
+      "url": "https://kotlinlang.org/docs/basic-syntax.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "kotlin"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "csharp"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "fsharp"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/nuget/what-is-nuget",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "nuget"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/office/client-developer/access/desktop-database-reference/microsoft-access-database-engine-sql-reference",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "access"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-doc/ccd7b486-7881-484c-a137-51170af7cc22",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "doc"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-oxmsg/b046868c-9fbf-41ae-9ffb-8de2bd4eec82",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "msg"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/6be79dde-33c1-4c1b-8ccc-4b2301c08662",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "ppt"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xls/cd03cb5f-ca02-4934-a391-bb674cb8aa06",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "xls"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/acc8aa92-1f02-4167-99f5-84f9f676b95a",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "xlsb"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/53989ce4-7b05-4f8d-829b-d08d6148375b",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "ole"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-shllink/747629b3-b5be-452a-8101-b9a2ec49978c",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "windows-shortcut"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-vhdx/83e061f8-f6e2-4de1-91bd-5d518a43d477",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "vhd"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_scripts",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "powershell"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/previous-versions/ms997538(v=msdn.10)",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "ico"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-1-4-sdk",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "chm"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/scripting-articles/d1wf56tt(v=vs.84)",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "vbscript"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "reg"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/typography/opentype/spec/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "opentype",
+        "truetype"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "font-collection"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/visualstudio/extensibility/shipping-visual-studio-extensions",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "vsix"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/work-with-windows-images",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "wim"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/cmd",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "batch"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/msix/overview",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "msix"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/debug/minidump-files",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "minidump"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/debug/pe-format",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "mz",
+        "object-code",
+        "pe"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "dds"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/directshow/avi-riff-file-reference",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "avi"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/gdi/bitmap-storage",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "bmp"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/lwef/internet-shortcuts",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "windows-url"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "cur"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/msi/cabinet-files",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "cab"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/msi/windows-installer-file-extensions",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "msi"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/wes/windows-event-log",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "event-log"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/wmformat/overview-of-the-asf-format",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "asf",
+        "wma"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/xaudio2/resource-interchange-file-format--riff-",
+      "retrieval": "indexed",
+      "catalogIds": [
+        "wave"
+      ]
+    },
+    {
+      "url": "https://lesscss.org/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "less"
+      ]
+    },
+    {
+      "url": "https://manpages.debian.org/bookworm/dpkg-dev/deb.5.en.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "deb"
+      ]
+    },
+    {
+      "url": "https://manual.audacityteam.org/man/audacity_projects.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "audacity"
+      ]
+    },
+    {
+      "url": "https://manual.calibre-ebook.com/faq.html",
+      "retrieval": "indexed",
+      "catalogIds": [
+        "kindle",
+        "mobi"
+      ]
+    },
+    {
+      "url": "https://midi.org/standard-midi-files",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "midi"
+      ]
+    },
+    {
+      "url": "https://nbformat.readthedocs.io/en/latest/format_description.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "notebook"
+      ]
+    },
+    {
+      "url": "https://netpbm.sourceforge.net/doc/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "pnm"
+      ]
+    },
+    {
+      "url": "https://nodejs.org/api/environment_variables.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "environment"
+      ]
+    },
+    {
+      "url": "https://nokiatech.github.io/heif/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "heif"
+      ]
+    },
+    {
+      "url": "https://numpy.org/doc/stable/reference/generated/numpy.lib.format.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "npy"
+      ]
+    },
+    {
+      "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/IR/nbsir82-2631.pdf",
+      "retrieval": "indexed",
+      "catalogIds": [
+        "iges"
+      ]
+    },
+    {
+      "url": "https://openexr.com/en/latest/TechnicalIntroduction.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "exr"
+      ]
+    },
+    {
+      "url": "https://openusd.org/release/intro.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "usd"
+      ]
+    },
+    {
+      "url": "https://orc.apache.org/specification/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "orc"
+      ]
+    },
+    {
+      "url": "https://packaging.python.org/en/latest/specifications/binary-distribution-format/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "wheel"
+      ]
+    },
+    {
+      "url": "https://parquet.apache.org/docs/file-format/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "parquet"
+      ]
+    },
+    {
+      "url": "https://paulbourke.net/dataformats/ply/",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "ply"
+      ]
+    },
+    {
+      "url": "https://perldoc.perl.org/perl",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "perl"
+      ]
+    },
+    {
+      "url": "https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "zip"
+      ]
+    },
+    {
+      "url": "https://qoiformat.org/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "qoi"
+      ]
+    },
+    {
+      "url": "https://radsite.lbl.gov/radiance/refer/filefmts.pdf",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "radiance"
+      ]
+    },
+    {
+      "url": "https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "gltf"
+      ]
+    },
+    {
+      "url": "https://rpm.org/docs/4.20.x/manual/format.html",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "rpm"
+      ]
+    },
+    {
+      "url": "https://sass-lang.com/documentation/syntax/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "sass"
+      ]
+    },
+    {
+      "url": "https://sourceware.org/binutils/docs/binutils/ar.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "static-library"
+      ]
+    },
+    {
+      "url": "https://sourceware.org/bzip2/manual/manual.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "bzip2"
+      ]
+    },
+    {
+      "url": "https://spec.commonmark.org/0.31.2/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "markdown"
+      ]
+    },
+    {
+      "url": "https://spec.editorconfig.org/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "editorconfig"
+      ]
+    },
+    {
+      "url": "https://specifications.freedesktop.org/desktop-entry-spec/latest/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "desktop-entry"
+      ]
+    },
+    {
+      "url": "https://support.apple.com/guide/disk-utility/create-a-disk-image-dskutl11888/mac",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "dmg"
+      ]
+    },
+    {
+      "url": "https://support.apple.com/guide/keynote/welcome/mac",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "keynote"
+      ]
+    },
+    {
+      "url": "https://support.apple.com/guide/numbers/welcome/mac",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "numbers"
+      ]
+    },
+    {
+      "url": "https://support.apple.com/guide/pages/welcome/mac",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "pages"
+      ]
+    },
+    {
+      "url": "https://support.hdfgroup.org/documentation/hdf5/latest/_f_m_t3.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "hdf5"
+      ]
+    },
+    {
+      "url": "https://tc39.es/ecma262/",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "javascript"
+      ]
+    },
+    {
+      "url": "https://toml.io/en/v1.0.0",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "toml"
+      ]
+    },
+    {
+      "url": "https://tukaani.org/xz/format.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "xz"
+      ]
+    },
+    {
+      "url": "https://w3c.github.io/web-performance/specs/HAR/Overview.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "har"
+      ]
+    },
+    {
+      "url": "https://webassembly.github.io/spec/core/binary/index.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "wasm"
+      ]
+    },
+    {
+      "url": "https://wiki.openmpt.org/Manual:_Module_formats",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "tracker"
+      ]
+    },
+    {
+      "url": "https://wiki.videolan.org/Playlist/",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "pls"
+      ]
+    },
+    {
+      "url": "https://www.3gpp.org/technologies/codecs",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "3gp"
+      ]
+    },
+    {
+      "url": "https://www.7-zip.org/7z.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "7z"
+      ]
+    },
+    {
+      "url": "https://www.adobe.com/content/dam/acom/en/devnet/flv/video_file_format_spec_v10.pdf",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "flv"
+      ]
+    },
+    {
+      "url": "https://www.adobe.com/jp/print/postscript/pdfs/5002.EPSF_Spec.pdf",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "eps"
+      ]
+    },
+    {
+      "url": "https://www.adobe.com/jp/print/postscript/pdfs/PLRM.pdf",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "postscript"
+      ]
+    },
+    {
+      "url": "https://www.autodesk.com/products/autocad/overview",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "dwg"
+      ]
+    },
+    {
+      "url": "https://www.bibtex.org/Format/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "bibtex"
+      ]
+    },
+    {
+      "url": "https://www.bittorrent.org/beps/bep_0003.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "torrent"
+      ]
+    },
+    {
+      "url": "https://www.chromium.org/developers/design-documents/crx-package-format/",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "crx"
+      ]
+    },
+    {
+      "url": "https://www.dicomstandard.org/current",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "dicom"
+      ]
+    },
+    {
+      "url": "https://www.erlang.org/doc/system/reference_manual.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "erlang"
+      ]
+    },
+    {
+      "url": "https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "shapefile"
+      ]
+    },
+    {
+      "url": "https://www.fluidsynth.org/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "soundfont"
+      ]
+    },
+    {
+      "url": "https://www.gnu.org/software/bash/manual/bash.html",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "shell-script"
+      ]
+    },
+    {
+      "url": "https://www.gnu.org/software/ccd2cue/manual/html_node/CUE-sheet-format.html",
+      "retrieval": "indexed",
+      "catalogIds": [
+        "cue"
+      ]
+    },
+    {
+      "url": "https://www.gnu.org/software/make/manual/make.html",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "makefile"
+      ]
+    },
+    {
+      "url": "https://www.gnu.org/software/tar/manual/html_node/Standard.html",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "tar"
+      ]
+    },
+    {
+      "url": "https://www.gnu.org/software/tar/manual/html_node/gzip.html",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "tar-gzip"
+      ]
+    },
+    {
+      "url": "https://www.haskell.org/onlinereport/haskell2010/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "haskell"
+      ]
+    },
+    {
+      "url": "https://www.iana.org/assignments/media-types/text/tab-separated-values",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "tsv"
+      ]
+    },
+    {
+      "url": "https://www.ietf.org/archive/id/draft-ietf-opsawg-pcapng-05.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "pcapng"
+      ]
+    },
+    {
+      "url": "https://www.khronos.org/collada/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "collada"
+      ]
+    },
+    {
+      "url": "https://www.latex-project.org/help/documentation/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "latex"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/browse_list.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "mpeg",
+        "mpeg-ts"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000005.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "aiff"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000012.shtml",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "mp3"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000022.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "tiff"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000030.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "pdf"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000036.shtml",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "aac"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000155.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "m4a",
+        "mp4"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000325.shtml",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "dbase"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000348.shtml",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "iso"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000473.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "rtf"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000504.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "stl"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000507.shtml",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "wavefront"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000523.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "psd"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000540.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "avif"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000569.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "srt"
+      ]
+    },
+    {
+      "url": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000591.shtml",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "caf"
+      ]
+    },
+    {
+      "url": "https://www.lua.org/manual/5.4/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "lua"
+      ]
+    },
+    {
+      "url": "https://www.mathworks.com/help/matlab/import_export/mat-file-versions.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "matlab-data"
+      ]
+    },
+    {
+      "url": "https://www.mathworks.com/help/matlab/matlab_prog/create-scripts.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "matlab-script"
+      ]
+    },
+    {
+      "url": "https://www.monkeysaudio.com/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "ape"
+      ]
+    },
+    {
+      "url": "https://www.nist.gov/publications/introduction-iso-10303-step-standard-product-data-exchange",
+      "retrieval": "indexed",
+      "catalogIds": [
+        "step"
+      ]
+    },
+    {
+      "url": "https://www.ogc.org/standard/kml/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "kml"
+      ]
+    },
+    {
+      "url": "https://www.opengroup.org/view-standards-information-base-historical",
+      "retrieval": "indexed",
+      "catalogIds": [
+        "au"
+      ]
+    },
+    {
+      "url": "https://www.openraster.org/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "openraster"
+      ]
+    },
+    {
+      "url": "https://www.php.net/manual/en/language.basic-syntax.php",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "php"
+      ]
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/sql-syntax.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "sql"
+      ]
+    },
+    {
+      "url": "https://www.qemu.org/docs/master/interop/qcow2.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "qcow2"
+      ]
+    },
+    {
+      "url": "https://www.rarlab.com/technote.htm",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "rar"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc1952.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "gzip"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc2557.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "mhtml"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc3533.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "ogg"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc4180.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "csv"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc5322.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "eml"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc5545.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "ical"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc6350.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "vcard"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc7292.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "pkcs12"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc7468.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "certificate"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc7946.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "geojson"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc8216.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "m3u"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc8259.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "json"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc8878.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "zstd"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc9559.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "matroska"
+      ]
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc9639.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "flac"
+      ]
+    },
+    {
+      "url": "https://www.sqlite.org/fileformat.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "sqlite"
+      ]
+    },
+    {
+      "url": "https://www.tcpdump.org/manpages/pcap-savefile.5.html",
+      "retrieval": "unavailable",
+      "catalogIds": [
+        "pcap"
+      ]
+    },
+    {
+      "url": "https://www.topografix.com/gpx.asp",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "gpx"
+      ]
+    },
+    {
+      "url": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "typescript"
+      ]
+    },
+    {
+      "url": "https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-2/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "text"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/Graphics/GIF/spec-gif89a.txt",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "gif"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/Graphics/JPEG/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "jpeg"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/TR/CSS/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "css"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/TR/SVG2/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "svg"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/TR/WOFF/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "woff"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/TR/WOFF2/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "woff2"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/TR/epub-33/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "epub"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/TR/png-3/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "png"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/TR/webvtt1/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "webvtt"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/TR/xml/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "xml"
+      ]
+    },
+    {
+      "url": "https://www.wavpack.com/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "wavpack"
+      ]
+    },
+    {
+      "url": "https://www.webmproject.org/docs/container/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "webm"
+      ]
+    },
+    {
+      "url": "https://yaml.org/spec/1.2.2/",
+      "retrieval": "retrieved",
+      "catalogIds": [
+        "yaml"
+      ]
+    }
+  ]
+}

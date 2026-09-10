@@ -170,6 +170,23 @@ internal static class ViewContracts
                 "license: busy recovery keeps instructions visible and disables submission");
             license.DataContext = licenseModel;
             var results = Find<DataGrid>(main, "BatchResults");
+            var analysisRow = new FileRow(1, "analyze", @"C:\fixture.pdf", new("analyze", new()));
+            analysisRow.ApplyAnalysis(Core.Analysis.HeaderAnalyzer.Analyze(analysisRow.Path, "%PDF-1.7\n"u8, 9));
+            main.DataContext = new { HasResults = true, ShowDetails = true, DisplayRows = new[] { analysisRow } };
+            ((FrameworkElement)main.Content).UpdateLayout();
+            Check(results.SelectedItem == analysisRow && Find<TextBlock>(main, "AnalysisSummary").Text.Contains("PDF document"),
+                "analysis: first selected file shows its ordinary summary without another click");
+            Check(!Find<Expander>(main, "AnalysisTechnicalDetails").IsExpanded &&
+                Find<TextBlock>(main, "AnalysisFacts").Text.Contains("document objects were not parsed"),
+                "analysis: technical evidence is bound but starts collapsed");
+            var scriptRow = new FileRow(2, "analyze", @"C:\example.py", new("analyze", new()));
+            scriptRow.ApplyAnalysis(Core.Analysis.HeaderAnalyzer.Analyze(scriptRow.Path, "Readable text"u8, 13));
+            results.ItemsSource = new[] { scriptRow };
+            results.SelectedItem = scriptRow;
+            ((FrameworkElement)main.Content).UpdateLayout();
+            Check(Find<TextBlock>(main, "AnalysisSummary").Text.Contains("Python source (filename hint)") &&
+                !Find<Expander>(main, "AnalysisTechnicalDetails").IsExpanded,
+                "analysis: ordinary report labels filename-only identity without opening technical details");
             const string longName = "A long image filename with several descriptive words that should stay readable when the results window is narrow.png";
             results.ItemsSource = new[] { new { Name = longName, Outcome = "Needs attention", Savings = "—" } };
             Find<Expander>(main, "FileDetails").IsExpanded = true;
