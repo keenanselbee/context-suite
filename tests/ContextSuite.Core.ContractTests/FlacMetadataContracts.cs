@@ -60,7 +60,7 @@ internal static class FlacMetadataContracts
         catch (InvalidDataException) { check(true, message); }
     }
 
-    private static byte[] File(params (byte Type, byte[] Data)[] additional)
+    internal static byte[] File(params (byte Type, byte[] Data)[] additional)
     {
         var streamInfo = new byte[34]; streamInfo[0] = 16; streamInfo[2] = 16;
         BinaryPrimitives.WriteUInt64BigEndian(streamInfo.AsSpan(10), (48000UL << 44) | (1UL << 41) | (15UL << 36) | 96000);

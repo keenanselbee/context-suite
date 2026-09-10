@@ -54,6 +54,10 @@ ownership checks. It also generates a five-minute PCM24 recording to test the
 file API beyond the old encoded/decoded array limits, managed allocation,
 artifact leases/disposal and cancellation after native output is observed.
 Generated outputs stay under the new evidence directory.
+The artwork fixture adds two authored PNG covers (including alpha), duplicate
+comments, multiline lyrics and Unicode text. It checks raw metadata and decoded
+RGBA preservation during FLAC optimization, plus refusal of linked/malformed
+metadata. `authored-artwork.flac` can be passed to the worker check below.
 Read [the candidate policy and limits](../../docs/audio-conversion-policy.md)
 before interpreting these results as transformation or release readiness.
 
@@ -63,6 +67,8 @@ view-model, IPC client and worker with generated inputs. Results must include
 useful audio facts, fallback after malformed input, unchanged originals and no
 licensing/publication calls. The test does not alter the source stage's inventory,
 install an application, register Explorer or claim native shell acceptance.
+Optional `-ArtworkFixture <generated authored-artwork.flac>` adds actual IPC and
+Analyze checks for embedded-artwork facts; the file must be under audio scratch.
 
 See [recorded results](../../docs/audio-engine-evaluation.md) and the
 [engine comparison](../../docs/media-engine-evaluation.md). Supplier archive

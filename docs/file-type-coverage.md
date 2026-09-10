@@ -115,6 +115,13 @@ Verification
   through the worker and Analyze and has 11 isolated workflow checks; normal
   packaging still omits the evaluation audio payload.
   See [their independent scope](audio-engine-evaluation.md).
+  A later artwork slice adds explicit attached-picture facts with an
+  `embedded artwork` label and omits irrelevant audio-only fields for those
+  streams. Its isolated worker/Analyze run has 14 checks; fresh overall foundation
+  totals and staging are tracked in the [active goal](broad-file-support-goal.md).
+  The new full-header FLAC descriptive inventory is used by private optimization,
+  not by the bounded header-only Analyze reader. It does not change the header
+  coverage claims above.
   Another 47 document contracts cover bounded ZIP32/OOXML/OpenDocument inspection,
   unsupported/malformed fallback and source preservation; see [document evidence](document-design.md).
   Another 29 [PDF parser/typed-fact checks](pdf-engine-evaluation.md) and 14 PDF

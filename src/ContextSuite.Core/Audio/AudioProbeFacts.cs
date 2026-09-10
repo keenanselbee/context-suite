@@ -17,7 +17,8 @@ public sealed record AudioProbeFacts(string Container, decimal? ReportedDuration
         {
             if (stream is null || stream.Index < 0 || !indices.Add(stream.Index) || stream.Kind is null || stream.Kind.Length > 32 ||
                 stream.Codec is null || stream.Codec.Length > 64 || stream.ChannelLayout?.Length > 128 || stream.SampleRate <= 0 ||
-                stream.Channels <= 0 || stream.SampleBits is <= 0 or > 64 || stream.BitRate < 0 || stream.ReportedDurationSeconds < 0)
+                stream.Channels <= 0 || stream.SampleBits is <= 0 or > 64 || stream.BitRate < 0 || stream.ReportedDurationSeconds < 0 ||
+                stream.AttachedPicture && stream.Kind != "video")
                 throw new InvalidDataException("Invalid audio probe stream.");
             CheckTags(stream.Tags);
         }

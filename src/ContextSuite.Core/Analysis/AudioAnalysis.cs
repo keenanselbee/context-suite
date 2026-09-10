@@ -26,9 +26,15 @@ public static class AudioAnalysis
         facts.Add(new("audio.probe.tags", "Audio probe", "Reported container tag fields", Integer: probe.Tags.Count, Availability: FactAvailability.Derived));
         foreach (var stream in probe.Streams)
         {
-            var group = $"Stream {stream.Index}: {stream.Kind}";
+            var group = $"Stream {stream.Index}: {(stream.AttachedPicture ? "embedded artwork" : stream.Kind)}";
             var id = "audio.probe.stream." + stream.Index.ToString(CultureInfo.InvariantCulture);
             facts.Add(new(id + ".codec", group, "Reported codec", Text: stream.Codec, Availability: FactAvailability.Derived));
+            if (stream.AttachedPicture)
+            {
+                facts.Add(new(id + ".artwork", group, "Reported role", Text: "Embedded artwork", Availability: FactAvailability.Derived));
+                AddNumber("tags", "Reported artwork tag fields", stream.Tags.Count);
+                continue;
+            }
             AddNumber("rate", "Reported sample rate (Hz)", stream.SampleRate);
             AddNumber("channels", "Reported channels", stream.Channels);
             AddNumber("precision", "Reported sample precision (bits)", stream.SampleBits);

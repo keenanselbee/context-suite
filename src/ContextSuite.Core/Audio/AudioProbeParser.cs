@@ -30,9 +30,11 @@ public static class AudioProbeParser
                 var bits = Integer(stream, "bits_per_raw_sample");
                 if (rate > int.MaxValue || channels > int.MaxValue || bits > 64)
                     throw new InvalidDataException("Audio probe sample declarations are invalid.");
+                var picture = stream.TryGetProperty("disposition", out var disposition) ? Integer(disposition, "attached_pic") : null;
+                if (picture is not (null or 0 or 1)) throw new InvalidDataException("Invalid attached-picture disposition.");
                 result.Add(new((int)index, Text(stream, "codec_type", 32) ?? "unknown", Text(stream, "codec_name", 64) ?? "unknown",
                     rate is > 0 ? (int)rate : null, channels is > 0 ? (int)channels : null, bits is > 0 ? (int)bits : null,
-                    Integer(stream, "bit_rate"), Number(stream, "duration"), Text(stream, "channel_layout", 128), Tags(stream)));
+                    Integer(stream, "bit_rate"), Number(stream, "duration"), Text(stream, "channel_layout", 128), Tags(stream), picture == 1));
             }
             var facts = new AudioProbeFacts(Text(format, "format_name", 128) ?? "unknown", Number(format, "duration"), result.ToImmutable(), Tags(format));
             facts.Validate();

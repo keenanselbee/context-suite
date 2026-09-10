@@ -19,6 +19,11 @@ low-rate mono, FLAC padding/application canaries and a disposable native child.
 A generated five-minute PCM24 stereo signal exercises file-based encoding and
 decoding beyond the earlier array limits; streaming contracts also use fragmented
 sample streams, non-finite values and framing/length mismatches.
+The private artwork fixtures independently encode two 2-by-1 RGBA PNG covers,
+including one translucent pixel, and package them into FLAC with authored
+duplicate artists, lyrics, Unicode descriptions and ReplayGain text. They contain
+no downloaded artwork or music. Public descriptive-metadata tests use placeholder
+image bytes for framing only; their passing results do not prove image decoding.
 These are generated signals and process fixtures, not representative music/speech
 or a listening-quality corpus; see [the policy](../../docs/audio-conversion-policy.md).
 

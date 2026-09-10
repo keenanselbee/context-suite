@@ -347,3 +347,47 @@ The first public rerun revealed that its rejection helper did not catch
 `InvalidDataException`; the helper was corrected before 1,081 contracts passed.
 Audio metadata admission, worker/publication integration, hostile-file and crash
 coverage, representative listening and payload adoption remain open.
+
+Embedded FLAC artwork and descriptive metadata
+----------------------------------------------
+
+The next run passed **85 combined audio checks**, adding eight real-engine
+artwork/preservation checks. Evidence:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  adapter-b662a7860d534fbba2b24146ff436f50/encoding-adapter.json
+```
+
+An authored FLAC with front/back PNG covers, alpha, Unicode descriptions, duplicate
+artist fields, multiline lyrics, ReplayGain text and padding shrank from
+**324,903 to 62,755 bytes**. All 96,000 audio frames remained exact; original
+vendor/comment/picture block bytes and order were retained. Each embedded cover
+decoded to its authored RGBA bytes both before and after optimization. These are
+two tiny generated images, not broad artwork codec/color-profile acceptance.
+The original digest and scratch cleanup also passed on successful and refused work.
+
+Cross-format artwork conversion still refuses pending a preservation path.
+Linked artwork is rejected before native probing; malformed descriptive UTF-8
+is rejected. The earlier `adapter-1e1b9684f99141a68f2255656b833a62` attempt found
+multiline lyrics entering command-line tag mapping. FLAC recompression now restores
+original raw blocks without that unnecessary mapping. This does not resolve
+multiline/duplicate metadata transport across other audio containers.
+
+Twenty-seven public description, disposition, plan and report checks bring the
+foundation total to **1,108**. A fresh isolated Release stage at
+`artifacts/production-staging/d3991827a072434389d91b1de6556aa5` built with zero
+warnings/errors and passed its normal inventory/dependency/notices checks using
+`-SkipShell`. Normal staging still excludes the evaluation audio payload.
+
+Adding that payload to a separate scratch copy passed **14 actual worker/Analyze
+checks**, including attached-picture IPC and explicit embedded-artwork report facts:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  worker-8b7dd6867cc245b99d3a03415f1ea6ef/results/analysis-results.txt
+```
+
+The read-only flow retained original hashes, avoided licensing/publication and
+continued after malformed audio. No new visible layout, screen-reader, theme/DPI,
+installed-shell or customer audio-operation acceptance is implied.

@@ -25,7 +25,9 @@ Fixed target policies
 The policy accepts one audio stream in WAVE PCM/float, native FLAC, MP3,
 M4A/AAC or Ogg Vorbis/Opus. ALAC and other codecs are not admitted by recognizing
 their container. Additional streams/artwork and unknown multichannel layouts
-require preservation work before conversion. Rates are bounded to 8–192 kHz and
+require preservation work before conversion. Native FLAC optimization now has a
+separate raw-preservation path for embedded artwork, described below.
+Rates are bounded to 8–192 kHz and
 channels to 1–8, with target-specific restrictions. This policy range is not a
 claim that every rate/layout pair has passed engine tests.
 
@@ -103,6 +105,24 @@ application blocks, seek tables and other unsupported block types prevent
 rewriting; handlers remain pending. Only a smaller reconciled result is returned;
 otherwise the original byte snapshot is returned. This is still a worker
 integration candidate, not a registered Optimize capability or publication receipt.
+
+`CreateFlacOptimization` admits one FLAC audio stream plus explicitly reported
+attached pictures. Ordinary video and cross-format artwork conversion remain
+outside that path. The original picture/comment blocks are restored before
+output probing and exact audio validation. Artwork stream tags do not override
+album/audio tags, and original duplicate and multiline comments are not rebuilt
+from the probe's flattened dictionary or passed back as command-line arguments.
+
+`FlacDescriptiveMetadata` inventories comments and pictures according to
+[RFC 9639 sections 8.6 and 8.8](https://www.rfc-editor.org/rfc/rfc9639.html#section-8.6).
+It keeps ordered duplicate fields, checks UTF-8 and field framing, and records
+picture declarations plus payload digests. Bounds are 4,096 comments, 256 KiB of
+aggregate descriptive text and 31 pictures inside the existing 32 MiB header
+budget. Image dimensions are declarations, not trusted decoding instructions.
+Linked artwork is recognized without resolving it and prevents optimization
+until a location-preservation policy exists. Cuesheet semantics, seek-table
+rebuilding, other metadata handlers and hostile embedded-image acceptance remain
+open; this inventory is not a complete FLAC conformance validator.
 
 See [dated engine evidence](audio-engine-evaluation.md) for test counts, generated
 fixtures and remaining acceptance. The full six-format matrix, broader metadata,

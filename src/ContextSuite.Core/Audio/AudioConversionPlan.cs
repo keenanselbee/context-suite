@@ -16,6 +16,18 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
 {
     public const string CurrentPolicy = "audio-fixed-1";
 
+    // Only for native FLAC recompression with separately verified raw metadata
+    // preservation. This does not authorize artwork omission during conversion.
+    public static AudioConversionPlan CreateFlacOptimization(AudioProbeFacts source)
+    {
+        source.Validate();
+        if (source.Container != "flac" || source.Streams.Count(stream => stream.Kind == "audio") != 1 ||
+            source.Streams.Any(stream => stream.Kind != "audio" && !stream.AttachedPicture))
+            throw new NotSupportedException("FLAC optimization requires one audio stream and preserved attached pictures only.");
+        var audio = source with { Streams = source.Streams.Where(stream => stream.Kind == "audio").ToImmutableArray() };
+        return Create(audio, AudioFormat.Flac) with { AlreadyTarget = false, Policy = "flac-lossless-1" };
+    }
+
     public static AudioConversionPlan Create(AudioProbeFacts source, AudioFormat target)
     {
         source.Validate();
