@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "status": "isolated evaluation only; not a production dependency",
+  "supplier": "BtbN/FFmpeg-Builds",
+  "release": "autobuild-2026-09-09-14-51",
+  "version": "n9.0.1-27-g9b0578816c",
+  "variant": "win64-lgpl-shared-9.0",
+  "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-09-09-14-51/ffmpeg-n9.0.1-27-g9b0578816c-win64-lgpl-shared-9.0.zip",
+  "archiveSha256": "575642722B7C7079C6855C166ED1EA9D5B7451CDF70919871229E4E1EBE24A34",
+  "archiveDirectory": "ffmpeg-n9.0.1-27-g9b0578816c-win64-lgpl-shared-9.0",
+  "digestSource": "https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/tags/autobuild-2026-09-09-14-51"
+}

@@ -1,0 +1,63 @@
+Isolated Audio Engine Evaluation
+===============================
+
+These tools evaluate a pinned third-party FFmpeg build independently of the
+installed Context Suite application. They do not stage a production dependency,
+install software, change PATH or touch Explorer registrations.
+
+From the repository root:
+
+```powershell
+.\tools\audio-engine\Prepare-AudioEvaluation.ps1
+.\tools\audio-engine\Test-AudioEvaluation.ps1 -PreparedDirectory '<printed scratch directory>'
+.\tools\audio-engine\Test-AudioEvaluation.ps1 -PreparedDirectory '<printed scratch directory>' -PreservationOnly
+.\tools\audio-engine\Test-AudioAdapter.ps1 -PreparedDirectory '<printed scratch directory>' -FixtureDirectory '<completed matrix directory>'
+.\tools\audio-engine\Test-AudioWorker.ps1 -ProductionStage '<fresh isolated production stage>' -PreparedDirectory '<printed scratch directory>' -FixtureDirectory '<completed matrix directory>'
+```
+
+Preparation downloads the exact archive in `evaluation.json`, verifies its
+published SHA-256 and retains an unpacked file/hash inventory under
+`.codex-temp/audio-engine/<id>`. Evaluation verifies the archive and inventory,
+then builds the public, isolated .NET probe and creates a fresh `matrix-<id>`
+subdirectory. Both scripts retain evidence instead of replacing previous runs.
+
+The probe authors stereo PCM audio, creates six input formats, crosses them with
+six output formats, checks properties and decoded samples, and records four
+ordinary tags. It also tests a FLAC application-block preservation canary. Each
+subprocess has a 20-second deadline and bounded diagnostic output; matrix decode
+outputs have a 16 MiB cap. Only fixed generated local paths and explicit engine
+arguments are used. This is an experiment harness, not the production worker
+isolation implementation or a way to process customer files.
+
+`matrix.json` records per-pair arguments, hashes, timing, native peak working set
+when available, sample differences and tag gaps. `version.txt`, `encoders.txt`,
+generated source/output media and decoded sample files remain beside it. A zero
+exit means the narrow matrix checks pass, not that precision choices, listening,
+all metadata, hostile files, worker integration or release acceptance are complete.
+The separate optimization canary reports preservation failure without concealing
+the otherwise successful conversion matrix.
+
+`-PreservationOnly` runs the public core FLAC metadata reconciliation against
+freshly encoded disposable media. It verifies rejection of the encoder's changed
+vendor/comment bytes, exact restored metadata and decoded samples, smaller output,
+an unchanged original and refusal of an application-specific block. Its evidence
+is `preservation.json`; it does not rerun the conversion matrix.
+
+`Test-AudioAdapter.ps1` requires the private repository and tests its probe
+component with the generated six-format inputs. It verifies runtime engine-file
+hashes/leases, typed replies, cancellation, limits, protocol rejection and disabled
+engine report files. It writes `probe-adapter.json` under a fresh scratch directory;
+it does not add an audio payload to the production application or enable a menu.
+
+`Test-AudioWorker.ps1` copies a fresh production stage into repository scratch,
+adds the evaluation engine to that copy, and exercises the actual application
+view-model, IPC client and worker with generated inputs. Results must include
+useful audio facts, fallback after malformed input, unchanged originals and no
+licensing/publication calls. The test does not alter the source stage's inventory,
+install an application, register Explorer or claim native shell acceptance.
+
+See [recorded results](../../docs/audio-engine-evaluation.md) and the
+[engine comparison](../../docs/media-engine-evaluation.md). Supplier archive
+retention is limited; this evaluation pin must never fall back silently to latest.
+Actual production adoption needs retained reproducible source/dependency inputs,
+license/notice review and an intentionally bounded capability build.
