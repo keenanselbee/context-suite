@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "status": "isolated evaluation only; not a production dependency",
+  "supplier": "qpdf/qpdf",
+  "version": "12.4.1",
+  "variant": "msvc64",
+  "url": "https://github.com/qpdf/qpdf/releases/download/v12.4.1/qpdf-12.4.1-msvc64.zip",
+  "archiveSha256": "3CD016CD433EF7232E42F4C13348A49CC14907A3C7278EF4F99120593126F7A6",
+  "digestSource": "https://api.github.com/repos/qpdf/qpdf/releases/tags/v12.4.1",
+  "sourceUrl": "https://github.com/qpdf/qpdf/releases/download/v12.4.1/qpdf-12.4.1.tar.gz",
+  "sourceSha256": "F045AA277BE2356FF53A89A8622945958291177D2483AFC20EDE7C8A8CD3873C"
+}

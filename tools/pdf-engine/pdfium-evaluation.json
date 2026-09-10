@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "status": "isolated evaluation only; not a production dependency",
+  "supplier": "bblanchon/pdfium-binaries",
+  "release": "chromium/8044",
+  "variant": "pdfium-win-x64 (without V8)",
+  "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8044/pdfium-win-x64.tgz",
+  "archiveSha256": "78A17D9A5F14467631C26A3AC8741B27A0471ECC05BD6A119B523598160A0537",
+  "digestSource": "https://api.github.com/repos/bblanchon/pdfium-binaries/releases/tags/chromium/8044"
+}

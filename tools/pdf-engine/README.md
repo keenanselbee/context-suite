@@ -1,0 +1,44 @@
+Isolated PDF Engine Evaluation
+=============================
+
+These tools evaluate an independently sourced pinned qpdf build using generated
+disposable files. They do not install anything or change production staging,
+Explorer registrations, PATH, licensing or customer files. The tools are not a
+second application edition or an approved production adapter.
+
+From the repository root:
+
+```powershell
+.\tools\pdf-engine\Prepare-PdfEvaluation.ps1
+.\tools\pdf-engine\Test-PdfEvaluation.ps1 -PreparedDirectory '<printed repository-local scratch directory>'
+.\tools\pdf-engine\Test-PdfAdapter.ps1 -PreparedDirectory '<prepared directory>' -FixtureDirectory '<generated matrix directory>'
+.\tools\pdf-engine\Test-PdfWorker.ps1 -ProductionStage '<fresh isolated production stage>' -PreparedDirectory '<prepared directory>' -FixtureDirectory '<generated matrix directory>'
+```
+
+Preparation downloads and verifies the exact archive in `evaluation.json`, then
+records its extracted inventory. Testing rechecks that inventory, authors files
+in a new `matrix-*` directory, runs bounded diagnostics and writes `report.json`
+plus generated PDFs and inspection JSON. Retain failed runs as evidence; never
+silently select a newer upstream build. Do not pass customer files to this harness.
+
+Read [the evidence and limits](../../docs/pdf-engine-evaluation.md), especially the
+signature-summary omission and the limited generated-page rendering evidence.
+The private adapter and worker are now connected for isolated tests. The package
+remains evaluation-only; shipping it requires broader process/resource acceptance
+and completed redistribution review. The worker test creates an augmented copy of
+the supplied isolated stage; it never modifies that stage or claims its augmented
+file list is production-approved.
+
+The separate PDFium evaluation uses a pinned non-V8 Windows build:
+
+```powershell
+.\tools\pdf-engine\Prepare-PdfiumEvaluation.ps1
+.\tools\pdf-engine\Build-PdfiumEvaluation.ps1 -PreparedDirectory '<printed PDFium directory>'
+.\tools\pdf-engine\Test-PdfiumEvaluation.ps1 -PreparedDirectory '<PDFium directory>' -FixtureDirectory '<generated qpdf matrix directory>'
+```
+
+The native build uses the installed Visual Studio x64 C++ tools and Windows SDK,
+with no installation or production-stage changes. Testing compares rendered
+pixels, checks form drawing, records signature/encryption observations and
+round-trips an authored BGRA image. JSON and PNG evidence stays in a new scratch
+directory. This is not a general PDF converter or a production sandbox.
