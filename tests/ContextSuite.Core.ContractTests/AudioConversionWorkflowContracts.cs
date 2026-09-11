@@ -68,6 +68,33 @@ internal static class AudioConversionWorkflowContracts
             "Audio conversion: expired access starts no publication");
         var freshAccess = new CountingAccess(new LocalTrialStore(Path.Combine(scratch, "fresh-access", "trial.json")));
         var fresh = new AudioConversionExecutor(worker, publisher, freshAccess);
+        var mp3Bytes = await File.ReadAllBytesAsync(sources[AudioFormat.Mp3]);
+        using var mp3Input = new MemoryStream(mp3Bytes);
+        var mp3Inventory = await Mp3Metadata.ReadAsync(mp3Input, default);
+        var legacyTag = new byte[128]; "TAG"u8.CopyTo(legacyTag); "Legacy album"u8.CopyTo(legacyTag.AsSpan(63));
+        legacyTag[126] = 7; legacyTag[127] = 17;
+        var legacyPath = Path.Combine(scratch, "Legacy.mp3");
+        await File.WriteAllBytesAsync(legacyPath, mp3Bytes[checked((int)mp3Inventory.AudioOffset)..].Concat(legacyTag).ToArray());
+        hashes[legacyPath] = await Hash(legacyPath);
+        var legacy = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), legacyPath), AudioFormat.Flac, default);
+        var legacyResult = await fresh.ExecuteAsync(AudioConversionBatch.Create(Guid.NewGuid(), [legacy], AudioFormat.Flac, new("convert", new())).Confirm(all, false, false), null, default);
+        if (legacyResult.Results.Single().Publication is not { Outcome: PublicationOutcome.CopyCreated, OutputPath: { } legacyOutput })
+            throw new InvalidDataException("Legacy MP3 did not publish a validated copy.");
+        var legacyFacts = (await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), legacyOutput), AudioFormat.Flac, default)).Facts;
+        check(legacyFacts.Tags["album"] == "Legacy album" && legacyFacts.Tags["genre"] == "Rock" && legacyFacts.Tags["track"] == "7",
+            "Audio conversion: legacy MP3 album, track and genre survive actual worker publication");
+        // The native probe prefers v2 values; full conversion must still catch
+        // a contradictory v1 trailer before publishing anything.
+        var conflictPath = Path.Combine(scratch, "Conflicting.mp3");
+        "Contradictory album"u8.CopyTo(legacyTag.AsSpan(63));
+        await File.WriteAllBytesAsync(conflictPath, mp3Bytes.Concat(legacyTag).ToArray()); hashes[conflictPath] = await Hash(conflictPath);
+        var conflict = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), conflictPath), AudioFormat.Flac, default);
+        var conflictResult = await fresh.ExecuteAsync(AudioConversionBatch.Create(Guid.NewGuid(), [conflict, legacy], AudioFormat.Flac, new("convert", new())).Confirm(all, false, false), null, default);
+        check(conflictResult.Results[0].State == OperationState.Unsupported &&
+            conflictResult.Results[0].Publication is { Outcome: PublicationOutcome.Failed, OutputPath: null } && await Hash(conflictPath) == hashes[conflictPath] &&
+            conflictResult.Results[1].State == OperationState.Succeeded && worker.ProcessId == workerId,
+            "Audio conversion: conflicting legacy tags retain original and the next file still completes");
+        reports.Add(new { legacyResult, legacyFacts, conflictResult });
         var changedPath = Path.Combine(scratch, "Changed.wav"); File.Copy(sources[AudioFormat.Wave], changedPath);
         var changed = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), changedPath), AudioFormat.Flac, default);
         await File.AppendAllTextAsync(changedPath, "changed"); var changedHash = await Hash(changedPath);

@@ -104,7 +104,7 @@ preservation; see [document implementation and limits](document-design.md).
 This adds no renderer or document transformation.
 
 The [typed audio policy and private encoding candidate](audio-conversion-policy.md)
-now exercise six-format conversion and lossless FLAC recompression with 269 passing
+now exercise six-format conversion and lossless FLAC recompression with 292 passing
 combined checks. Seekable inherited input preserves MP3 gapless sample counts;
 the native process joins its Windows job before parsing. Tests cover wider
 precision, surround, explicit Opus resampling, metadata reconciliation and running
@@ -130,8 +130,10 @@ descriptive value must survive output probing. Chained/multiplexed streams,
 corruption, semantic tags and nonzero Opus playback gain prevent conversion;
 MP3 now inventories supported ID3v2.3/v2.4 text and complete MPEG frame boundaries;
 explicit admitted tags compensate for a pinned native unsynchronisation parsing
-defect. ID3v1/APE, numeric genres, language-specific/named comments, artwork and
-other frame handlers remain pending. M4A now inventories one local AAC-LC track,
+defect. ID3v1.0/1.1 text, track and genre plus numeric ID3v2 genres now pass
+preservation checks. Agreeing v1/v2 fields retain richer values; contradictory
+values block conversion. APE, composite/unreviewed genres, language-specific/named
+comments, artwork and other frame handlers remain pending. M4A now inventories one local AAC-LC track,
 sample tables, ordinary tags and simple priming edits before cross-format native
 probing. External references, artwork/freeform tags, timestamps, extended headers,
 complex edits and other unsupported structures require further handlers.
@@ -182,29 +184,30 @@ including exact source/optimized rendered pixels and image alpha round trips.
 Broader rendering/native failure coverage and all PDF transformations remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,422 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
+1,456 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
 29 FLAC description/artwork, 22 seek-table, 24 batch/IPC/access, 34 WAV inventory,
-26 FLAC/shared conversion metadata, 47 Ogg inventory, 52 MP3 inventory and 53 M4A
+26 FLAC/shared conversion metadata, 47 Ogg inventory, 86 MP3 inventory and 53 M4A
 inventory checks, 35 audio conversion batch/IPC/access checks and two additional
-paid-audio-admission checks, plus 14 direct-action/quality-decision checks. The 269
-private audio checks from the preceding metadata slice were not rerun; this slice
-passed 50 conversion, 20 direct-conversion, 11 Analyze, 14 FLAC workflow and 16
-direct-audio checks through the real worker (111 total). The earlier shared
+paid-audio-admission checks, plus 14 direct-action/quality-decision checks. All 292
+combined private audio checks pass, including 61 MP3 preservation checks. This slice
+passed 52 conversion, 20 direct-conversion, 11 Analyze, 14 FLAC workflow and 16
+direct-audio checks through the real worker (113 total). The earlier shared
 reservation-handle refactor passed all 942 image-engine checks; those were not
-rerun. All 86 hidden view contracts, 13 existing image direct-command checks and
-native shell contracts passed, including the expanded Convert menu's complete
+rerun. The preceding 86 hidden view contracts, 13 image direct-command checks and
+native shell contracts were not repeated for this parser-only change. They passed the expanded Convert menu's complete
 multi-file activation without registration or installation. The
 [catalog inventory](file-type-inventory.md) separates descriptions from detectors.
 The [source audit](catalog-source-review.json) records 223 references: 186 retrieved,
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/449797dd9d6447e5891f05b2a96da634` includes the private
+`artifacts/production-staging/4338b5fdd1e0489b8bf77d004c3bb7f6` includes the private
 audio candidates, direct quality window and existing optional PDF worker
 integration. Release compilation, curated engine identities, file allowlist,
-package dependencies and notice checks pass. Native shell was built into isolated
-scratch. See [dated audio evidence](audio-engine-evaluation.md) for the tested stage
-and final layout-only rebuild. Installed lifecycle and visible acceptance were not performed. The
+package dependencies and notice checks pass, with zero compiler warnings/errors.
+This parser-only stage used `-SkipShell`; the preceding stage built native shell
+into isolated scratch. See [dated audio evidence](audio-engine-evaluation.md).
+Installed lifecycle and visible acceptance were not performed. The
 evaluation audio and PDF engines are not part of this normal payload. Manual review remains
 pending; earlier image acceptance does not prove the expanded report UI.
 

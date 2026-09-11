@@ -220,7 +220,8 @@ and agree with the native probe. The frame count includes encoder-information
 frames and is not a decoded duration. Native decoding owns bit-reservoir/audio
 validity and gapless trim; this inventory does not validate MPEG audio CRCs or
 arbitrary ancillary payloads. Free-format audio, emphasis/copyright flags,
-trailing tags/data and truncated frames require further handling or are refused.
+trailing tags other than a validated ID3v1 trailer, undeclared data and truncated
+frames require further handling or are refused.
 
 Limits are 2 MiB of ID3 data, 4,096 tag frames, the shared 256 KiB text budget,
 one million MPEG frames and the existing 512 MiB file/deadline bounds. The caller's
@@ -236,10 +237,35 @@ grouping and textual genre; encoder identity is technical provenance. Custom
 text fields use the shared alias/semantic rules. Latin-1 and BOM-qualified UTF-16
 are accepted in both versions; v2.4 also supports UTF-16BE and UTF-8. Single
 undefined-language comments with an empty description are supported. Duplicate
-or multiple values, numeric genre codes, named/language-specific comments,
+or multiple values, composite/refined genres, named/language-specific comments,
 artwork, lyrics, chapters, ratings, objects/private frames, extended headers,
-compression/encryption/status flags, ID3v1/APE and older ID3 versions need handlers.
+compression/encryption/status flags, APE and older ID3v2 versions need handlers.
 Refusal retains originals; these gaps remain part of completing common MP3 support.
+
+A final 128-byte ID3v1.0/1.1 trailer is now inventoried separately from MPEG
+frames. Latin-1 title, artist, album, year and comment fields, the v1.1 track byte
+and defined genre are preserved. NUL/space padding is removed; nonpadding data
+after a terminator and ambiguous control/code-page bytes are refused. Only one
+trailer is admitted and its boundary cannot conceal a truncated audio frame.
+See the [ID3v1 layout and encoding](https://id3.org/id3v2-00) in Appendix A.
+
+When both tag versions occur, missing fields are added and agreeing fields are
+combined. A fully occupied legacy field may be the fixed-width prefix of a richer
+v2 value; a shorter padded mismatch is a conflict. An agreeing year may retain
+the v2 date, and an agreeing track retains leading zeros and an optional total.
+Contradictory title/artist/album/comment/year/track/genre values block conversion;
+native probe precedence cannot silently discard them. The merged result still
+obeys the shared field/value limits.
+
+Genre codes 0-147 map to their defined names, including established Winamp
+extensions; an ID3v1 genre byte of 255 is unclassified. Numeric v2 text and legacy
+parenthesized references are recognized, as are Remix/Cover and redundant matching
+refinements. Version-three escaped parentheses and version-four literal text are
+kept distinct. Multiple references, different refinements and unreviewed numeric
+codes remain unsupported. The mappings follow
+[ID3v2.3 genre semantics and Appendix A](https://id3lib.sourceforge.net/id3/id3v2.3.0.html)
+and the [established extension assignments](https://ffmpeg.org/doxygen/trunk/id3v1_8c_source.html).
+These are file-declared classifications, not inferred musical qualities.
 
 The pinned native probe truncates an authored v2.3 unsynchronised title from
 `AÿàB` to `Aÿà`. MP3 conversion therefore uses the complete managed inventory as

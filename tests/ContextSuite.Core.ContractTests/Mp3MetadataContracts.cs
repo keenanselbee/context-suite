@@ -37,7 +37,19 @@ internal static class Mp3MetadataContracts
             await Reject(FileOf(Tag(4, Frame(4, id, Text(3, "Extra")))), "unmapped frame " + id);
         await Reject(FileOf(Tag(4, Frame(4, "TIT2", Text(3, "One")), Frame(4, "TIT2", Text(3, "Two")))), "duplicate tags");
         await Reject(FileOf(Tag(4, Frame(4, "TIT2", Text(3, "One\0Two")))), "multiple text values");
-        await Reject(FileOf(Tag(4, Frame(4, "TCON", Text(3, "(17)")))), "numeric genre interpretation");
+        foreach (var (encoded, expected) in new[] { ("0", "Blues"), ("(17)", "Rock"), ("(017)Rock", "Rock"),
+            ("125", "Dance Hall"), ("147", "SynthPop"), ("(RX)", "Remix"), ("CR", "Cover"), ("((Live)", "(Live)") })
+        {
+            using var stream = new MemoryStream(FileOf(Tag(3, Frame(3, "TCON", Text(0, encoded)))));
+            check((await Mp3Metadata.ReadAsync(stream, default)).Tags["genre"] == expected, "MP3 inventory: canonical genre " + encoded);
+        }
+        foreach (var encoded in new[] { "(17)(20)", "(17)Indie", "(999)", "148", "99999999999999999", "()", "(17" })
+            await Reject(FileOf(Tag(4, Frame(4, "TCON", Text(3, encoded)))), "unsupported genre " + encoded);
+        foreach (var (encoded, expected) in new[] { ("17", "Rock"), ("(17)", "Rock"), ("(Live)", "(Live)"), ("((Live)", "((Live)") })
+        {
+            using var stream = new MemoryStream(FileOf(Tag(4, Frame(4, "TCON", Text(3, encoded)))));
+            check((await Mp3Metadata.ReadAsync(stream, default)).Tags["genre"] == expected, "MP3 inventory: v2.4 numeric or literal genre " + encoded);
+        }
         await Reject(FileOf(Tag(4, Frame(4, "TXXX", Text(3, "REPLAYGAIN_TRACK_GAIN\0-3 dB")))), "custom gain semantics");
         foreach (ushort flags in new ushort[] { 4, 8, 64, 4096 })
             await Reject(FileOf(Tag(4, Frame(4, "TIT2", Text(3, "Flag"), flags))), "unsupported frame flags");
@@ -57,7 +69,43 @@ internal static class Mp3MetadataContracts
         await Reject(FileOf(Tag(4, Frame(4, "COMM", new byte[] { 3 }.Concat("eng\0English"u8.ToArray()).ToArray()))), "comment language mapping");
         using (var stream = new MemoryStream(FileOf(Tag(4, Frame(4, "COMM", new byte[] { 3 }.Concat("und\0Neutral"u8.ToArray()).ToArray())))))
             check((await Mp3Metadata.ReadAsync(stream, default)).Tags["comment"] == "Neutral", "MP3 inventory: undefined-language unnamed comment");
-        await Reject(FileOf([]).Concat("TAG"u8.ToArray()).Concat(new byte[125]).ToArray(), "trailing ID3v1");
+        var legacy = Legacy("Legacy title", "Artist", "Album", "1997", "Comment", 7, 17);
+        using (var stream = new MemoryStream(FileOf([]).Concat(legacy).ToArray()))
+        {
+            stream.Position = 11; var result = await Mp3Metadata.ReadAsync(stream, default);
+            check(result.Tags.Count == 7 && result.Tags["title"] == "Legacy title" && result.Tags["artist"] == "Artist" &&
+                result.Tags["album"] == "Album" && result.Tags["date"] == "1997" && result.Tags["comment"] == "Comment" &&
+                result.Tags["track"] == "7" && result.Tags["genre"] == "Rock" && result.AudioFrames == 2 && stream.Position == 11,
+                "MP3 inventory: complete ID3v1.1 metadata and frame extent");
+        }
+        using (var stream = new MemoryStream(FileOf([]).Concat(Legacy("Caf\u00e9", "", "", "", new string('c', 30), 0, 255)).ToArray()))
+        {
+            var result = await Mp3Metadata.ReadAsync(stream, default);
+            check(result.Tags.Count == 2 && result.Tags["title"] == "Caf\u00e9" && result.Tags["comment"].Length == 30,
+                "MP3 inventory: Latin-1, full v1.0 comment and unclassified genre");
+        }
+        var longTitle = new string('T', 30) + " full title";
+        var modern = Tag(4, Frame(4, "TIT2", Text(3, longTitle)), Frame(4, "TDRC", Text(3, "1997-08-16")),
+            Frame(4, "TRCK", Text(3, "07/12")), Frame(4, "TCON", Text(3, "Rock")));
+        using (var stream = new MemoryStream(FileOf(modern).Concat(Legacy(longTitle[..30], "Artist", "Album", "1997", "Comment", 7, 17)).ToArray()))
+        {
+            var result = await Mp3Metadata.ReadAsync(stream, default);
+            check(result.Tags["title"] == longTitle && result.Tags["date"] == "1997-08-16" && result.Tags["track"] == "07/12" &&
+                result.Tags["artist"] == "Artist", "MP3 inventory: agreeing v1 truncation/year/track retains richer v2 and adds missing values");
+        }
+        foreach (var (id, value) in new[] { ("TIT2", "Other title"), ("TPE1", "Other artist"), ("TALB", "Other album"),
+            ("TDRC", "1998"), ("TRCK", "8/12"), ("TCON", "Pop"), ("TXXX", "comment\0Other comment") })
+            await Reject(FileOf(Tag(4, Frame(4, id, Text(3, value)))).Concat(legacy).ToArray(), "conflicting legacy " + id);
+        await Reject(FileOf(Tag(4, Frame(4, "TIT2", Text(3, "Legacy title extended")))).Concat(legacy).ToArray(), "padded legacy prefix is not fixed-width truncation");
+        var hidden = legacy.ToArray(); hidden[18] = 65;
+        await Reject(FileOf([]).Concat(hidden).ToArray(), "hidden legacy text after terminator");
+        var codePage = legacy.ToArray(); codePage[3] = 128;
+        await Reject(FileOf([]).Concat(codePage).ToArray(), "legacy control/code-page ambiguity");
+        var unknownGenre = legacy.ToArray(); unknownGenre[127] = 254;
+        await Reject(FileOf([]).Concat(unknownGenre).ToArray(), "unknown legacy genre");
+        await Reject(FileOf([]).Concat(legacy).Concat(legacy).ToArray(), "multiple legacy trailers");
+        await Reject(FileOf([])[..^1].Concat(legacy).ToArray(), "legacy trailer cannot conceal truncated audio");
+        await Reject(FileOf([]).Concat(legacy[..^1]).ToArray(), "truncated legacy trailer");
         await Reject(FileOf([]).Concat("APETAGEX"u8.ToArray()).ToArray(), "trailing APE");
         await Reject(FileOf([]).Concat(new byte[] { 1, 2, 3, 4 }).ToArray(), "undeclared trailing bytes");
         await Reject(FileOf([])[..^1], "truncated MPEG frame");
@@ -75,7 +123,7 @@ internal static class Mp3MetadataContracts
         await Reject(FileOf(missingEscape), "missing unsynchronisation escape");
         using var bounded = new CountingStream(Enumerable.Repeat(AudioFrame(), 3000).SelectMany(frame => frame).ToArray());
         var large = await Mp3Metadata.ReadAsync(bounded, default);
-        check(large.AudioFrames == 3000 && bounded.BytesRead == 12003, "MP3 inventory: seeks past over 1 MiB of compressed samples");
+        check(large.AudioFrames == 3000 && bounded.BytesRead == 12131, "MP3 inventory: seeks past over 1 MiB of compressed samples plus one bounded trailer check");
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel(); bounded.Position = 9;
         try { await Mp3Metadata.ReadAsync(bounded, cancelled.Token); check(false, "MP3 inventory: cancellation"); }
         catch (OperationCanceledException) { check(bounded.Position == 9, "MP3 inventory: cancellation restores position"); }
@@ -87,6 +135,14 @@ internal static class Mp3MetadataContracts
             catch (Exception ex) when (ex is InvalidDataException or NotSupportedException)
             { check(stream.Position == 2, "MP3 inventory rejects " + name + " and restores position"); }
         }
+    }
+    private static byte[] Legacy(string title, string artist, string album, string year, string comment, byte track, byte genre)
+    {
+        var bytes = new byte[128]; "TAG"u8.CopyTo(bytes);
+        foreach (var (value, offset, length) in new[] { (title, 3, 30), (artist, 33, 30), (album, 63, 30), (year, 93, 4), (comment, 97, track == 0 ? 30 : 28) })
+            Encoding.Latin1.GetBytes(value.AsSpan(), bytes.AsSpan(offset, length));
+        if (track != 0) bytes[126] = track;
+        bytes[127] = genre; return bytes;
     }
     internal static byte[] Tag(int version, params byte[][] frames)
     {

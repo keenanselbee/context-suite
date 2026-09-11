@@ -902,3 +902,67 @@ expanded installed menu's layout. Metadata/artwork coverage, independent decodin
 and listening, production audio adoption, hostile-file/crash/recovery coverage and
 required PDF/Office actions remain open. No installer, signing, live commerce or
 release acceptance was performed. The broad-file goal remains active.
+
+Legacy MP3 tags and genre preservation (2026-09-10)
+--------------------------------------------------
+
+The complete MP3 inventory now reads one final ID3v1.0/1.1 trailer, preserves
+Latin-1 text and track/genre fields, and reconciles agreeing v1/v2 values without
+letting native probe precedence discard conflicts. Defined numeric genres are
+converted to names before explicitly writing output metadata. See the
+[exact policy and specification sources](audio-conversion-policy.md).
+The extra trailer check reads at most 128 bytes; the 3,000-frame bounded fixture
+now reads 12,131 bytes while seeking past more than 1 MiB of compressed samples.
+
+**1,456 foundation contracts** pass, including **86 MP3 inventory checks**.
+The 34 added checks cover genre forms and boundaries, version-specific literal
+parentheses, complete legacy fields, Latin-1, full v1.0 comments, combined tags,
+fixed-width truncation versus padded conflicts, year/track refinement, hidden
+text, code-page ambiguity, unknown genres, duplicate/truncated trailers and
+audio truncation. Original positions are restored on refusal and cancellation.
+
+**292 combined private audio checks** pass, including **61 MP3 checks**. Legacy
+fields are exercised across all six targets, with five real conversions and one
+byte-retaining MP3 no-op. Latin-1 text reaches FLAC/M4A/Vorbis/Opus exactly; WAV
+retains its existing ASCII policy. Numeric/special genres, combined v1/v2 tags,
+contradiction refusal, decoded frame counts, source hashes and cleanup pass.
+Evidence under the prepared engine directory:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  adapter-691c441403914cfdb1dfa1eeada425d0/
+    encoding-adapter.json
+    mp3-legacy.mp3
+    mp3-legacy-combined.mp3
+  worker-524ddeef10e84841afb3625ed582ba1b/
+    conversion-verified/audio-conversion-workflow.json
+    conversion-direct-results/audio-conversion-direct.json
+    results/analysis-results.txt
+    flac-results/flac-workflow.json
+    direct-results/direct-audio.json
+```
+
+The worker suite passes **52 conversion, 20 direct-conversion, 11 Analyze,
+14 FLAC workflow and 16 direct FLAC checks (113 total)**. Two new publication
+checks verify actual legacy album/track/genre transport and rejection of a
+contradictory trailer while the next file completes on the same worker.
+The initial conversion run incorrectly expected a null publication result after
+refusal; the publisher correctly returned its failed reservation-cleanup record.
+The corrected check requires Failed with no output path and an unchanged source.
+`conversion-results` retains the initial diagnostic run; `conversion-verified`
+is the completed evidence. Copies and a refusing recycler exclude native recycling.
+
+Fresh isolated Release stage
+`artifacts/production-staging/4338b5fdd1e0489b8bf77d004c3bb7f6` passes with zero
+warnings/errors, curated identities, payload allowlist, dependency and notice
+checks. It uses `-SkipShell`; normal packaging excludes the evaluation audio/PDF
+engines. Private production adapter recipes did not change; the new inventory
+flows through the existing explicit metadata and output-validation path.
+
+APE, artwork, language-specific comments, additional genre conventions, broader
+metadata, native Analyze tag reconciliation, independent fidelity/listening,
+production audio curation and the required document actions remain pending.
+The preceding 86 hidden views, 13 image direct-command and native shell contracts
+were not rerun for this parser change; neither were the earlier 942 image-engine
+checks. Visible UI, screen-reader/themes/DPI, installer/signing and live commerce
+were not tested. The broad-file and commercial release goals remain incomplete.

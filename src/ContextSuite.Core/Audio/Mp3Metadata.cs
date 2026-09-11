@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Text;
 
 namespace ContextSuite.Core.Audio;
@@ -59,8 +60,17 @@ public static class Mp3Metadata
             }
             else source.Position = 0;
             var audioOffset = source.Position;
+            var audioEnd = source.Length;
+            byte[]? legacy = null;
+            if (audioEnd - audioOffset >= 128)
+            {
+                source.Position = audioEnd - 128;
+                var trailer = new byte[128]; await source.ReadExactlyAsync(trailer, token);
+                if (trailer.AsSpan(0, 3).SequenceEqual("TAG"u8)) { legacy = trailer; audioEnd -= 128; }
+                source.Position = audioOffset;
+            }
             var count = 0; var rate = 0; var channels = 0;
-            while (source.Position < source.Length)
+            while (source.Position < audioEnd)
             {
                 token.ThrowIfCancellationRequested();
                 if (++count > MaximumAudioFrames) throw new InvalidDataException("MP3 frame count exceeds its budget.");
@@ -80,13 +90,15 @@ public static class Mp3Metadata
                 var frameChannels = ((bits >> 6) & 3) == 3 ? 1 : 2;
                 var bitrate = (version == 3 ? Mpeg1Bitrates : LowRateBitrates)[bitrateIndex];
                 var bytes = (version == 3 ? 144000 : 72000) * bitrate / frameRate + (int)((bits >> 9) & 1);
-                if (bytes < 4 || bytes > source.Length - start) throw new InvalidDataException("MP3 audio frame is truncated.");
+                if (bytes < 4 || bytes > audioEnd - start) throw new InvalidDataException("MP3 audio frame is truncated.");
                 if (count == 1) { rate = frameRate; channels = frameChannels; }
                 else if (frameRate != rate || frameChannels != channels) throw new NotSupportedException("MP3 rate/channel changes need a conversion policy.");
                 source.Position = start + bytes;
             }
             if (count == 0) throw new InvalidDataException("MP3 contains no audio frames.");
-            return new(rate, channels, count, audioOffset, AudioCommentConversion.Read(comments));
+            var tags = AudioCommentConversion.Read(comments);
+            if (legacy is not null) tags = MergeLegacy(legacy, tags);
+            return new(rate, channels, count, audioOffset, tags);
         }
         catch (EndOfStreamException ex) { throw new InvalidDataException("MP3 tag or frame is truncated.", ex); }
         finally { source.Position = position; }
@@ -149,13 +161,59 @@ public static class Mp3Metadata
             else if (Names.TryGetValue(id, out var name))
             {
                 key = name; valueText = Decode(data[1..], encoding, ref textBytes, true);
-                if (id == "TCON" && (valueText.All(char.IsAsciiDigit) || valueText.StartsWith('(') || valueText is "RX" or "CR"))
-                    throw new NotSupportedException("Numeric ID3 genre forms need a canonical genre mapping.");
+                if (id == "TCON") valueText = Id3Genres.FromText(valueText, version);
             }
             else throw new NotSupportedException("ID3 frame needs a preservation handler: " + id);
             comments.Add(new(key, valueText));
         }
         return comments.ToImmutable();
+    }
+
+    private static ImmutableDictionary<string, string> MergeLegacy(byte[] trailer, ImmutableDictionary<string, string> modern)
+    {
+        var result = modern.ToBuilder();
+        var hasTrack = trailer[125] == 0 && trailer[126] != 0;
+        foreach (var (key, offset, length) in new[] { ("title", 3, 30), ("artist", 33, 30), ("album", 63, 30),
+            ("date", 93, 4), ("comment", 97, hasTrack ? 28 : 30) })
+        {
+            var field = trailer.AsSpan(offset, length);
+            var end = field.IndexOf((byte)0);
+            if (end >= 0)
+            {
+                if (field[end..].ContainsAnyExcept((byte)0, (byte)32)) throw new NotSupportedException("ID3v1 contains data after a text terminator.");
+                field = field[..end];
+            }
+            var value = Encoding.Latin1.GetString(field).TrimEnd(' ');
+            if (value.Any(character => char.IsControl(character) && character is not ('\t' or '\r' or '\n')))
+                throw new NotSupportedException("ID3v1 text needs an explicit legacy code-page interpretation.");
+            if (value.Length == 0) continue;
+            if (!result.TryGetValue(key, out var full)) { result.Add(key, value); continue; }
+            if (full == value) continue;
+            // A fully occupied fixed-width field can be the legacy truncation
+            // of an agreeing v2 value. A padded shorter mismatch is a conflict.
+            if (value.Length == length && full.StartsWith(value, StringComparison.Ordinal) &&
+                (key != "date" || full.Length > 4 && full[4] == '-')) continue;
+            throw new NotSupportedException("ID3v1 and ID3v2 contain conflicting " + key + " values; originals were kept.");
+        }
+        if (hasTrack)
+        {
+            var track = trailer[126];
+            if (result.TryGetValue("track", out var full))
+            {
+                var leading = full.Split('/')[0];
+                if (!uint.TryParse(leading, NumberStyles.None, CultureInfo.InvariantCulture, out var number) || number != track)
+                    throw new NotSupportedException("ID3v1 and ID3v2 contain conflicting track numbers.");
+            }
+            else result.Add("track", track.ToString(CultureInfo.InvariantCulture));
+        }
+        if (trailer[127] != 255)
+        {
+            var genre = Id3Genres.FromNumber(trailer[127]);
+            if (result.TryGetValue("genre", out var full) && !full.Equals(genre, StringComparison.OrdinalIgnoreCase))
+                throw new NotSupportedException("ID3v1 and ID3v2 contain conflicting genres.");
+            result.TryAdd("genre", genre);
+        }
+        return AudioCommentConversion.Read(result.Select(tag => new AudioComment(tag.Key, tag.Value)));
     }
 
     private static string Decode(ReadOnlySpan<byte> data, byte encoding, ref int textBytes, bool single)

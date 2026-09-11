@@ -92,9 +92,10 @@ captured settings, quiet completion, cancellation, malformed files, misleading
 extensions and missing-engine fallback. These component checks do not operate
 Explorer or inspect visible windows, keyboard focus or assistive technology.
 
-Optional `-IncludeConversion` runs 50 checks through the audio file probe,
+Optional `-IncludeConversion` runs 52 checks through the audio file probe,
 conversion worker, confirmed batch, local trial and transactional publisher.
-It covers all 30 cross-format pairs and six no-op cases, collisions, expiry,
+It covers all 30 cross-format pairs and six no-op cases, legacy MP3 tag transport
+and conflict refusal, collisions, expiry,
 changed sources, unsupported metadata, cancellation, alternate folders and
 refusal of nonempty/hard-linked reservations. It records
 `conversion-results/audio-conversion-workflow.json`. It then runs 20 additional
@@ -107,7 +108,7 @@ recycler excludes native recycling. The tests call the actual decision model;
 they do not operate Explorer or inspect visible windows. Use both switches to
 verify the existing audio workflows alongside conversion.
 
-The latest adapter run passes 269 combined checks. FLAC conversion cases include
+The latest adapter run passes 292 combined checks. FLAC conversion cases include
 original-block inventory, literal Unicode/multiline tag transport, canonical
 comment aliases, refusal of unsupported metadata, stale seek tables and corrupt
 frames. WAV allows ordinary ASCII line breaks and tabs; Unicode WAV text remains
@@ -120,10 +121,14 @@ that behavior without relaxing sample counts or signal-error limits. The
 private test host also accepts `--ogg-preservation <pinned-bin> <generated-fixtures>
 <new-evidence>` for focused diagnostics; the normal adapter script includes all
 51 of these checks.
-MP3 adds 38 cases for ID3 versions/encodings, exact unsynchronised values across
+MP3 includes 61 cases for ID3 versions/encodings, exact unsynchronised values across
 outputs, unsupported metadata, complete frame boundaries and low-rate gapless
 decoding. `--mp3-preservation` accepts the same three arguments for a focused run.
-These cases do not finish ID3v1/APE, genre codes, language-specific comments,
+The MP3 suite now also converts generated ID3v1.0/1.1 trailers, Latin-1 text,
+track/genre fields and agreeing combined v1/v2 tags. It verifies original hashes,
+actual output tags and decoded extents, and refuses contradictory trailers.
+Codes 0-147 use reviewed names; composite or unreviewed genres remain refused.
+These cases do not finish APE, additional genre conventions, language-specific comments,
 artwork or the remaining M4A metadata variants. The native Analyze probe retains its separately
 documented unsynchronised-tag reporting limitation.
 
