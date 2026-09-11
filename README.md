@@ -46,7 +46,9 @@ A structural PDF optimization candidate now passes isolated worker, paid-access
 and copy-publication checks, plus independent two-page rendering comparison.
 Auto/Lossless dispatch now includes PDFs in the same batch as PNG and FLAC, with
 mandatory PDF copies. Broader fidelity, engine adoption and the other document
-actions remain pending. The [goal record](docs/broad-file-support-goal.md)
+actions remain pending. PDF-to-PNG now has optional worker and numbered page-copy
+publication coverage, including partial failure and cancellation; its direct
+context-menu UI is still pending. The [goal record](docs/broad-file-support-goal.md)
 identifies the latest isolated staging and its limited acceptance scope.
 The owner accepted the image utility's simplified UI; screen-reader, additional
 themes/DPI and installed lifecycle coverage remain separate gates. Signing is

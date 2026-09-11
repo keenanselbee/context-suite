@@ -30,7 +30,7 @@ public sealed record DdsRepresentation(DdsCompression Compression, TextureTransf
 public static class OutputNames
 {
     public static string Create(string sourcePath, string operation, string targetExtension,
-        int ordinal = 1, DdsRepresentation? representation = null, bool replaceSource = false)
+        int ordinal = 1, DdsRepresentation? representation = null, bool replaceSource = false, int? pageNumber = null)
     {
         if (operation is not ("convert" or "optimize") || ordinal < 1)
             throw new InvalidDataException("The output operation or collision number is invalid.");
@@ -39,9 +39,13 @@ public static class OutputNames
             throw new InvalidDataException("The target extension is invalid.");
         if (representation is not null && (operation != "convert" || extension != "dds"))
             throw new InvalidDataException("DDS representation names require DDS conversion.");
+        if (pageNumber is not null && (pageNumber is < 1 or > 4096 || operation != "convert" || extension != "png" ||
+            !string.Equals(Path.GetExtension(sourcePath), ".pdf", StringComparison.OrdinalIgnoreCase) || representation is not null || replaceSource))
+            throw new InvalidDataException("Numbered page outputs require PDF-to-PNG copies.");
         var basename = Path.GetFileNameWithoutExtension(sourcePath);
         if (string.IsNullOrWhiteSpace(basename)) throw new InvalidDataException("The source basename is empty.");
         var suffix = representation?.Suffix ?? (operation == "convert" ? "Converted" : "Optimized");
+        if (pageNumber is { } page) suffix = "Page " + page.ToString("D3", CultureInfo.InvariantCulture);
         var number = ordinal == 1 ? "" : $" ({ordinal.ToString(CultureInfo.InvariantCulture)})";
         var name = $"{basename}{(replaceSource ? "" : " - " + suffix)}{number}.{extension}";
         if (name.Length > 255 || name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)

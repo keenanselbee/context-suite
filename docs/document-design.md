@@ -1,7 +1,7 @@
 Document Support Design
 =======================
 
-Status: bounded package analysis and optional structural PDF optimization worker/publication implemented; PDF page renderer candidate verified separately; remaining transformations and launch acceptance pending
+Status: bounded package analysis, optional structural PDF optimization and PDF page conversion worker/publication implemented; direct PDF conversion UI, remaining transformations and launch acceptance pending
 
 Boundary
 --------
@@ -182,7 +182,7 @@ PDF page renderer candidate (2026-09-10)
 --------------------------------------
 
 The optional private renderer returns page geometry and one PNG page at a time.
-It is not yet connected to worker dispatch, application publication or Explorer.
+The first checkpoint covered the adapter; worker/publication follow below.
 Policy `pdf-pages-png-150-1` selects 150 DPI, straight BGRA8 rendering on transparent
 backing, visible annotations and stored form appearances. PNG encoding retains
 exact rendered pixels and an explicit sRGB profile, and records physical density
@@ -229,12 +229,76 @@ physical-density test now accepts the integer PNG unit conversion. Normal Releas
 stage `artifacts/production-staging/a2469abd2ce342c6aae6135f0983c8b7` builds without
 warnings/errors and passes payload checks using `-SkipShell`. It excludes PDFium.
 
-Next: review all-page output budgets, numbered names, collision reservation,
-partial failure/cancellation and recovery before worker/direct-command integration.
-Inspect the entire source once, use one access admission per selected-file batch,
-and publish only validated page copies. Images-to-PDF and required Office-to-PDF
-remain separate implementation work. Wider fonts/ICC/CMYK/rotation/scan/form/XFA
+The worker checkpoint below adds batch budgets and page publication. Direct-command
+integration, images-to-PDF and required Office-to-PDF remain separate implementation
+work. Wider fonts/ICC/CMYK/rotation/scan/form/XFA
 and damaged-document fidelity, in-flight renderer interruption, UNC paths,
 dependency redistribution/runtime inventory and production engine adoption remain
 open. Existing image/worker/UI suites were not rerun for this adapter-only slice;
 manual, screen-reader, theme, DPI and installer acceptance are not implied.
+
+PDF page worker and publication (2026-09-10)
+------------------------------------------
+
+Typed `pdf-raster-probe` and `pdf-render-page` commands connect the optional
+renderer to the existing sequential worker. Replies contain bounded source/page
+facts and output validation, never PNG byte arrays. Request validation rejects
+unrelated or contradictory payloads. Page output IDs differ from document IDs;
+only an existing empty single-link `.context-suite-{outputId}.tmp` reservation is
+writable. The private adapter holds the original read lease through rendering and
+copying, validates the PNG, and checks the reserved output digest after flushing.
+The parent client gives inspection/rendering a 120-second overall deadline around
+the adapter's 60-second native deadline.
+
+The confirmed conversion plan bounds the whole selection to 4,096 pages and
+512 million pixels, validates every inspected page and takes an immutable Convert
+settings snapshot. It always creates copies, including with Overwrite originals
+selected. One ordinary trial/paid admission covers the entire selected-file batch;
+expiry does not interrupt admitted work. Paid expiry cannot start a new trial.
+Execution adds a 2 GiB cumulative output limit and keeps only one page reservation
+active at a time. Page names are `Document - Page 001.png`, `Page 002.png`, etc.;
+existing-name collisions append `(2)`, `(3)`, and so on separately from page numbers.
+
+Publication is atomic per page, not per document. Each page uses the existing
+validated rename and recovery journal. Completed copies remain if a later page
+fails or cancellation arrives. Failure stops remaining pages of that document;
+later selected documents continue. Results retain document identity, page index,
+individual outcome and each committed output path. No automatic rollback removes
+completed copies, and the source PDF is never overwritten or recycled. The direct
+UI must aggregate these results clearly and expose partial completion before this
+workflow becomes a customer command. Retained journal evidence is not automatic
+recovery or visible recovery acceptance.
+
+Regression testing exposed a scratch-cleanup race: a qpdf child could still hold
+its snapshot briefly after the parent worker exited. Worker shutdown now retries
+removal of that one owned directory for at most two seconds, rechecking ancestry
+and refusing links on every attempt. Persistent failure retains evidence. A
+controlled lock-release contract verifies that shutdown waits and completes cleanup.
+The failed run is retained under qpdf evaluation `worker-452b9a19d86f4cca80b370533d5a004b`;
+its original and final outputs were safe, but an owned scratch snapshot remained.
+
+Verification passes 1,752 combined foundation/image-worker checks: 1,552 public
+contracts (including page plan/protocol/naming and paid access) plus 200 real-worker
+checks, including the new delayed cleanup contract and existing PNG/DDS/image
+interruption coverage. The final page workflow passes 25 checks, and the PDF
+regression passes 98 checks: 11 Analyze, 17 optimization/publication, 51 native
+failure/recovery and 19 direct mixed PNG/FLAC/PDF Optimize. The 24 private raster
+and 292 private audio checks from the preceding adapter checkpoint were not rerun;
+the new worker workflow exercises the added reserved-output adapter method.
+
+Page evidence: `.codex-temp/pdfium-engine/cee300f69505476e87893226200b171e/`
+`page-worker-002af046e66b422895e6073819aff509/results/pdf-page-workflow.json`, with
+separate before/after-move recovery directories. PDF regression evidence:
+`.codex-temp/pdf-engine/3edb2e8361e04782a91ef8364bd3a537/`
+`worker-1be40cb521e14414880d678d8bac259f`. The combined image-worker log is
+`.codex-temp/pdf-page-integration.log`; final page/PDF logs are
+`.codex-temp/pdf-page-workflow-final.log` and `pdf-page-regression-final.log`.
+Fresh isolated Release stage `artifacts/production-staging/7c3aa9f749f040d0a82fcba1035245ec`
+has zero build warnings/errors and passes normal payload checks with `-SkipShell`.
+Evaluation wrappers add engines only to copies in scratch; normal packaging still
+excludes them. No installation, Explorer registration, recycling or live Polar ran.
+
+Next is direct PDF-to-PNG integration with per-document summaries, partial-output
+reporting and retry behavior. In-flight renderer-specific interruption, broader
+PDF fidelity, all other required document actions, production engine adoption,
+visible/accessibility acceptance and independent release gates remain open.

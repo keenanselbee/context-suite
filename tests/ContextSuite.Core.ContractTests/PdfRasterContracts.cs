@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Collections.Immutable;
 using ContextSuite.Core.Pdf;
 
 internal static class PdfRasterContracts
@@ -36,6 +37,31 @@ internal static class PdfRasterContracts
         Reject(() => new PdfRasterDocument([page, page]).Validate(), "duplicate page");
         Reject(() => new PdfRasterPage(0, 0, 10000, 10000, 4800, 4800).Validate(), "page exceeds pixel budget");
         Reject(() => new PdfRasterPage(0, 0, 20000, 1, 9600, 0.48).Validate(), "page exceeds encoder dimension budget");
+        var source = new PdfRasterSource(Guid.NewGuid(), Path.GetFullPath("fixture.pdf"), new('A', 64), 100, new([page]));
+        var settings = new ContextSuite.Core.Settings.BatchSettings("convert", new(ReplaceOriginals: true));
+        var plan = PdfPageConversionPlan.Create(Guid.NewGuid(), [source], settings).Confirm();
+        check(plan.Plan.Sources.Single() == source, "PDF raster: confirmed page selection retains source facts with overwrite preference");
+        Reject(() => PdfPageConversionPlan.Create(Guid.NewGuid(), [source, source], settings), "duplicate PDF source identity");
+        Reject(() => PdfPageConversionPlan.Create(Guid.NewGuid(), [source], settings with { Operation = "optimize" }), "wrong operation settings");
+        Reject(() => PdfPageConversionPlan.Create(Guid.NewGuid(), [], settings), "empty PDF selection");
+        var largePages = Enumerable.Range(0, 33).Select(index => new PdfRasterPage(index, 0, 4000, 4000, 1920, 1920)).ToImmutableArray();
+        Reject(() => PdfPageConversionPlan.Create(Guid.NewGuid(), [source with { Document = new(largePages) }], settings), "aggregate pixel budget");
+        var manyPages = Enumerable.Range(0, 4096).Select(index => page with { Index = index }).ToImmutableArray();
+        Reject(() => PdfPageConversionPlan.Create(Guid.NewGuid(), [source with { Document = new(manyPages) }, source with { ItemId = Guid.NewGuid() }], settings), "aggregate page budget");
+        var id = Guid.NewGuid();
+        var work = new PdfPageWork(source, 0, id, Path.Combine(Path.GetDirectoryName(source.Path)!, $".context-suite-{id:N}.tmp"));
+        new ContextSuite.Core.Transport.WorkerCommand(1, Guid.NewGuid(), "pdf-render-page", PdfPage: work).Validate();
+        check(true, "PDF raster: typed page command accepts a distinct output reservation");
+        Reject(() => (work with { OutputId = source.ItemId }).Validate(), "source identity cannot identify page output");
+        Reject(() => (work with { TemporaryPath = source.Path }).Validate(), "page output cannot target source");
+        Reject(() => (work with { Policy = "other" }).Validate(), "unknown page policy");
+        Reject(() => new ContextSuite.Core.Transport.WorkerCommand(1, Guid.NewGuid(), "pdf-render-page", PdfPage: work, PdfFile: new(source.ItemId, source.Path)).Validate(), "contradictory page request");
+        Reject(() => new ContextSuite.Core.Transport.WorkerCommand(1, Guid.NewGuid(), "capabilities", PdfPage: work).Validate(), "page payload on unrelated command");
+        check(ContextSuite.Core.Operations.OutputNames.Create(source.Path, "convert", "png", pageNumber: 1) == "fixture - Page 001.png" &&
+            ContextSuite.Core.Operations.OutputNames.Create(source.Path, "convert", "png", 2, pageNumber: 12) == "fixture - Page 012 (2).png",
+            "PDF raster: page numbers remain distinct from collision ordinals");
+        Reject(() => ContextSuite.Core.Operations.OutputNames.Create(source.Path, "convert", "png", replaceSource: true, pageNumber: 1), "page naming cannot authorize replacement");
+        Reject(() => ContextSuite.Core.Operations.OutputNames.Create(source.Path, "convert", "png", pageNumber: 0), "page numbers start at one");
 
         void Reject(Action action, string message)
         {

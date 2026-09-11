@@ -38,6 +38,12 @@ internal static class LicenseStorageContracts
             [new(Guid.NewGuid(), Path.Combine(root, "fixture.pdf"), new('C', 64), 100, new(2, false, false, 0, 0, 0, 0, false))],
             new("optimize", new())).Confirm();
         var pdfAdmission = await access.AdmitOptimizationAsync(pdf, default);
+        var pdfPages = ContextSuite.Core.Pdf.PdfPageConversionPlan.Create(Guid.NewGuid(),
+            [new(Guid.NewGuid(), Path.Combine(root, "pages.pdf"), new('D', 64), 100, new([new(0, 0, 150, 150, 72, 72)]))],
+            new("convert", new())).Confirm();
+        var pageAdmission = await access.AdmitConversionAsync(pdfPages, default);
+        check(pageAdmission.IsAllowed && pageAdmission.BatchId == pdfPages.Plan.BatchId && !File.Exists(trialPath),
+            "license: paid PDF page conversion does not start trial");
         check(pdfAdmission.IsAllowed && pdfAdmission.BatchId == pdf.Plan.BatchId && !File.Exists(trialPath),
             "license: paid PDF optimization does not start trial");
         var audioConversion = AudioConversionBatch.Create(Guid.NewGuid(), [audio], AudioFormat.Wave, new("convert", new())).Confirm(0, false, false);
@@ -73,6 +79,8 @@ internal static class LicenseStorageContracts
             "license: paid FLAC expiry preserves admission and cannot fall back to trial");
         check(pdfAdmission.IsAllowed && !(await access.AdmitOptimizationAsync(pdf, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid PDF expiry preserves admission and cannot fall back to trial");
+        check(pageAdmission.IsAllowed && !(await access.AdmitConversionAsync(pdfPages, default)).IsAllowed && !File.Exists(trialPath),
+            "license: paid PDF page expiry preserves admission and cannot fall back to trial");
         check(audioAdmission.IsAllowed && !(await access.AdmitConversionAsync(audioConversion, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid audio conversion expiry preserves admission and cannot fall back to trial");
         clock.Now = clock.Now.AddDays(-2);

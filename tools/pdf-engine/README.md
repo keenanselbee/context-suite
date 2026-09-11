@@ -82,5 +82,11 @@ also be built. The wrapper verifies host/source/runtime identities, generates
 fresh comparison pixels through the separate evaluation bridge and runs the
 private adapter contracts. It records separate `raster-reference-*` and
 `raster-adapter-*` directories. No renderer is added to normal production staging.
-The candidate returns validated PNG bytes; application publication and the direct
-PDF-to-PNG command remain pending. See [the document design](../../docs/document-design.md).
+The adapter also fills checked page reservations through an optional worker
+command. `Test-PdfPageWorker.ps1 -ProductionStage '<isolated production stage>'
+-PreparedDirectory '<prepared PDFium directory>' -FixtureDirectory '<generated
+qpdf matrix>'` copies the stage into new repository scratch and adds the verified
+renderer there. It exercises batch access, numbered PNG copies, collisions,
+partial cancellation/failure and retained recovery evidence. No installed payload
+is changed. The direct PDF-to-PNG command remains pending; see
+[the document design](../../docs/document-design.md).

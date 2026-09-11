@@ -57,6 +57,19 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The subsequent 2026-09-10 page-publication checkpoint connects PDF inspection and
+per-page rendering to the optional worker. One conversion admission covers a
+bounded page batch. Numbered PNG copies use the existing publication journals;
+completed pages and originals survive later failure/cancellation. A scratch-lock
+cleanup race found by regression testing is fixed with bounded, owned-directory
+retries. Fresh verification: 1,752 combined foundation/image-worker checks
+(1,552 public plus 200 real-worker checks), 25 PDF page-workflow checks and all
+98 existing PDF worker/optimization/failure/direct checks. Final isolated Release
+stage `7c3aa9f749f040d0a82fcba1035245ec` passes build/payload checks with zero warnings
+or errors. Direct PDF-to-PNG UI and production renderer adoption are still open;
+this does not complete the broad-file goal. Details and retained evidence are in
+[the document design](document-design.md).
+
 The 2026-09-10 PDF page-rendering checkpoint adds an optional isolated native
 PDFium host, bounded public page protocol and private PNG validation adapter.
 Fresh checks pass: 1,535 foundation, 24 raster adapter, 12 separate PDFium

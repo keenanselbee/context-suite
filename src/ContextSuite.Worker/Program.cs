@@ -34,6 +34,7 @@ try
     AudioProbeAdapter? audio = null;
     AudioFileAdapter? audioFiles = null;
     PdfProbeAdapter? pdf = null;
+    PdfRasterAdapter? pdfRaster = null;
     try
     {
     while (!lifetime.IsCancellationRequested)
@@ -66,6 +67,13 @@ try
             {
                 audio ??= new AudioProbeAdapter(Path.Combine(AppContext.BaseDirectory, "audio-engine"));
                 reply = new(1, command.RequestId, [], Audio: await audio.ProbeAsync(command.AudioBytes!, lifetime.Token));
+            }
+            else if (command.Command is "pdf-raster-probe" or "pdf-render-page")
+            {
+                pdfRaster ??= new PdfRasterAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-renderer"), args[5]);
+                reply = command.Command == "pdf-raster-probe"
+                    ? new(1, command.RequestId, [], PdfRaster: await pdfRaster.ProbeAsync(command.PdfFile!, lifetime.Token))
+                    : new(1, command.RequestId, [], PdfPageResult: await pdfRaster.RenderFileAsync(command.PdfPage!, lifetime.Token));
             }
             else if (command.Command is "pdf-probe" or "pdf-file-probe" or "pdf-optimize")
             {
@@ -113,7 +121,7 @@ try
         await JsonFrames.WriteAsync(pipe, reply, lifetime.Token);
     }
     }
-    finally { audioFiles?.Dispose(); audio?.Dispose(); pdf?.Dispose(); }
+    finally { audioFiles?.Dispose(); audio?.Dispose(); pdf?.Dispose(); pdfRaster?.Dispose(); }
     return 0;
 }
 catch (Exception error) when (error is IOException or InvalidDataException or OperationCanceledException or ArgumentException or
