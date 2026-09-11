@@ -37,7 +37,9 @@ now handles unknown/empty files, initial header identification and existing DDS
 details, bounded JSON/XML structure analysis, WAVE/FLAC header facts,
 bounded OOXML/OpenDocument package analysis and a 237-entry offline catalog.
 See [exact coverage](docs/file-type-coverage.md), including remaining source review.
-Broader analysis and audio transformations remain pending. Selected document launch actions are
+Audio conversion now has isolated worker/publication coverage for all 30
+cross-format pairs; direct audio Convert commands, quality prompts and production
+engine adoption remain pending. Broader analysis remains in progress. Selected document launch actions are
 images-to-PDF, PDF pages-to-images, PDF optimization and Word/Excel/PowerPoint-to-PDF;
 engines and implementation remain pending. The [goal record](docs/broad-file-support-goal.md)
 identifies the latest isolated staging and its limited acceptance scope.

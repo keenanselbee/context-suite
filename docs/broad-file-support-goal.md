@@ -153,8 +153,14 @@ isolated workflow checks: validated smaller named copies, collisions, original
 hashes, admission across expiry, new-work denial, no smaller result, changed and
 corrupt sources, cancellation and refusal of nonempty/hard-linked reservations.
 Every FLAC optimization validates complete source/output frame indexes and CRCs,
-including files without seek tables. Cross-format worker commands, full metadata
-admission, listening, broader hostile-file/crash/recovery coverage, payload review
+including files without seek tables. Audio conversion now has typed file-based
+worker commands and sequential application publication: 50 isolated checks cover
+all 30 cross-format pairs, six same-format no-ops, metadata/refusal behavior,
+collisions, expiry, cancellation, changed sources and unsafe reservations. The
+confirmed batch combines required quality choices; paid/trial admission applies
+once, and encoding must verify the source metadata before publication. Direct
+audio Convert menu routing, its compact quality prompt, full metadata admission,
+listening, broader hostile-file/crash/recovery coverage, payload review
 and actual customer UI acceptance remain pending. Existing Auto/Lossless actions
 now dispatch FLAC when the optional verified encoder is present, with 16 passing
 direct-audio checks. Mixed PNG/FLAC batches share one admission across expiry,
@@ -173,11 +179,13 @@ including exact source/optimized rendered pixels and image alpha round trips.
 Broader rendering/native failure coverage and all PDF transformations remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,371 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
+1,408 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
 29 FLAC description/artwork, 22 seek-table, 24 batch/IPC/access, 34 WAV inventory,
 26 FLAC/shared conversion metadata, 47 Ogg inventory, 52 MP3 inventory and 53 M4A
-inventory checks.
-269 private audio checks pass. The earlier shared reservation-handle refactor
+inventory checks, 35 audio conversion batch/IPC/access checks and two additional
+paid-audio-admission checks. The 269 private audio checks from the preceding
+metadata slice were not rerun; this slice passed 50 conversion, 11 Analyze,
+14 FLAC workflow and 16 direct-audio checks through the real worker. The earlier shared reservation-handle refactor
 passed all 942 image-engine checks; those and the 76 hidden view contracts were
 not rerun for this metadata slice. Thirteen existing image direct-command checks
 and native shell contracts passed the preceding dispatch stage without
@@ -187,7 +195,7 @@ The [source audit](catalog-source-review.json) records 223 references: 186 retri
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/8f66c6e26f61480ea13d31452c0bfc09` includes the private
+`artifacts/production-staging/7758790beffd4ae583b5da4ab377f8ff` includes the private
 audio candidates and existing optional PDF worker integration: zero warnings/errors, curated engine identities, file allowlist,
 package dependencies and notice checks pass. This internal metadata build used
 `-SkipShell`; the preceding dispatch slice rebuilt and tested native shell in

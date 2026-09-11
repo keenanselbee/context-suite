@@ -10,7 +10,8 @@ public sealed record ActivationReply(int Version, Guid RequestId, bool Accepted,
 public sealed record ActivationReceipt(int Version, Guid RequestId);
 public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     ImageProbe? Probe = null, ImageWork? Work = null, ImagePreviewRequest? Preview = null, PngOptimizationWork? Optimization = null,
-    byte[]? AudioBytes = null, byte[]? PdfBytes = null, AudioFileProbe? AudioFile = null, FlacOptimizationWork? FlacWork = null)
+    byte[]? AudioBytes = null, byte[]? PdfBytes = null, AudioFileProbe? AudioFile = null, FlacOptimizationWork? FlacWork = null,
+    AudioFormat? AudioTarget = null, AudioConversionWork? AudioWork = null)
 {
     public const int MaximumAudioProbeBytes = 1024 * 1024;
     // A complete seekable PDF snapshot is required; base64 stays below the IPC frame limit.
@@ -18,6 +19,25 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     public void Validate()
     {
         if (Version != 1 || RequestId == Guid.Empty) throw new InvalidDataException("Invalid worker request identity.");
+        if (Command is "audio-file-probe" or "audio-convert")
+        {
+            if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
+                PdfBytes is not null || FlacWork is not null) throw new InvalidDataException("Unexpected data in audio conversion request.");
+            if (Command == "audio-file-probe")
+            {
+                if (AudioWork is not null || AudioTarget is not { } target || !Enum.IsDefined(target) || AudioFile is null ||
+                    AudioFile.ItemId == Guid.Empty || string.IsNullOrWhiteSpace(AudioFile.Path) || !Path.IsPathFullyQualified(AudioFile.Path) ||
+                    AudioFile.Path.Length > 32700 || AudioFile.Path.IndexOfAny(['\0', '\r', '\n']) >= 0)
+                    throw new InvalidDataException("Invalid audio file probe target or source.");
+            }
+            else
+            {
+                if (AudioFile is not null || AudioTarget is not null || AudioWork is null) throw new InvalidDataException("Invalid audio conversion payload.");
+                AudioWork.Validate();
+            }
+            return;
+        }
+        if (AudioTarget is not null || AudioWork is not null) throw new InvalidDataException("Unexpected audio conversion payload.");
         if (Command is "flac-probe" or "flac-optimize")
         {
             if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null || PdfBytes is not null)

@@ -1,14 +1,16 @@
 Audio Conversion And FLAC Optimization Policy
 ============================================
 
-Status: typed conversion candidate and direct FLAC Auto/Lossless dispatch;
-audio engine shipping adoption remains pending. Updated: 2026-09-10.
+Status: typed audio conversion, worker/publication integration and direct FLAC
+Auto/Lossless dispatch. Audio Convert menu/quality UI and engine shipping adoption
+remain pending. Updated: 2026-09-10.
 
 The public `AudioConversionPlan` separates recognized container/codec pairs from
 conversion admission. Policy `audio-fixed-1` is implemented for isolated testing;
 its lossy recipes still require representative listening and compatibility review.
 No arbitrary engine arguments, normalization, trimming or automatic downmixing
-are exposed. Same-format Convert returns the existing bytes without re-encoding.
+are exposed. The encoding API retains same-format bytes; the application batch
+skips same-format files without publication or trial admission.
 
 Fixed target policies
 ---------------------
@@ -385,6 +387,48 @@ without starting a worker or trial.
 
 See [dated engine evidence](audio-engine-evaluation.md) for generated fixtures and
 test counts. Normal packaging still excludes the evaluation audio engine.
-Cross-format worker integration, broader metadata, crash/recovery coverage,
+Broader metadata, audio Convert menu/quality UI, crash/recovery coverage,
 listening, production payload and visible UI acceptance remain part of the
 [active goal](broad-file-support-goal.md).
+
+Audio conversion worker and publication
+----------------------------------------
+
+`audio-file-probe` and `audio-convert` use bounded file references, target enums,
+typed source facts and explicit consent flags. No complete recordings or arbitrary
+engine arguments cross IPC. Probing holds a validated read-only source handle,
+hashes the source and plans the target without starting access. Standard M4A
+cross-format probes inventory local structure before native parsing. A successful
+probe is not complete metadata admission: encoding must pass the container's full
+preservation checks and actual output validation before publication.
+
+`AudioConversionBatch` freezes target, files and captured Convert settings. It
+combines required lossy-transcoding, resampling and precision decisions for the
+executable items. Confirmation reconstructs the expected plan and rejects changed
+eligibility, rates or consent requirements. Unsupported and already-target items
+remain identifiable; an all-unchanged selection cannot start an operation.
+Copies remain default. An alternate output folder always keeps originals;
+replacement still requires saved consent and the existing verified-platform gate.
+
+`AudioConversionExecutor` admits one confirmed batch through existing paid/trial
+access, then uses one sequential worker and the shared transactional publisher.
+Already-target items receive unchanged results without an output. The publisher's
+reserved source digest/length must match the plan. The file adapter rechecks
+source facts/digest, fixed encoding policy, consent, metadata verification, decoded
+length and required exact-sample validation. Only then does it fill the existing
+empty, single-link reservation. The shared copy helper verifies the reserved
+output digest and length again; final naming/publication belongs to the app.
+
+Conversion uses the existing 512 MiB encoded and 1 GiB decoded limits, a 30-second
+file-probe bound, 120-second encoding bound and 150-second worker-client bound for
+inspection plus work. Unsupported features return a stable per-file failure
+category; they do not terminate the worker or prevent a later file. Cancellation
+and failures abandon uncommitted reservations and preserve committed outputs.
+
+The isolated workflow verifies all 30 cross-format pairs, six no-op cases,
+collisions, access expiry, source changes, unsupported metadata/references,
+cancellation, alternate folders and unsafe reservations. Tests inject a refusing
+recycler; no native overwrite/recycling acceptance is implied. Paid-access
+contracts also verify no trial fallback after paid expiry. Customer direct
+dispatch, the focused consent dialog, retries through that dispatch, listening,
+broader metadata, crash recovery and shipping-engine acceptance remain open.

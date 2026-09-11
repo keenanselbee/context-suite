@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $ProductionStage, [Parameter(Mandatory)][string] $PreparedDirectory,
-    [Parameter(Mandatory)][string] $FixtureDirectory, [string] $ArtworkFixture, [switch] $IncludeOptimization)
+    [Parameter(Mandatory)][string] $FixtureDirectory, [string] $ArtworkFixture, [switch] $IncludeOptimization, [switch] $IncludeConversion)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $stage = (Resolve-Path -LiteralPath $ProductionStage).Path
@@ -37,5 +37,9 @@ if ($IncludeOptimization) {
     if ($LASTEXITCODE -ne 0) { throw 'Isolated FLAC workflow checks failed.' }
     & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-direct (Join-Path $scratch 'direct-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
     if ($LASTEXITCODE -ne 0) { throw 'Isolated direct audio checks failed.' }
+}
+if ($IncludeConversion) {
+    & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-conversion-worker (Join-Path $scratch 'conversion-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
+    if ($LASTEXITCODE -ne 0) { throw 'Isolated audio conversion workflow checks failed.' }
 }
 Write-Output "Evaluation-only worker payload and results: $scratch"

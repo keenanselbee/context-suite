@@ -43,6 +43,13 @@ internal sealed class LocalTrialStore : IOperationAccess
     }
 
     private sealed record TrialRecord(int SchemaVersion, DateTimeOffset StartedUtc, DateTimeOffset LastObservedUtc);
+    async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedAudioConversion confirmed, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(confirmed);
+        if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No confirmed audio conversion can execute.");
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,

@@ -34,6 +34,10 @@ internal static class LicenseStorageContracts
         var flac = FlacOptimizationPlan.Create(Guid.NewGuid(), [audio], new("optimize", new())).Confirm(false, false);
         var flacAdmission = await access.AdmitOptimizationAsync(flac, default);
         check(flacAdmission.IsAllowed && !File.Exists(trialPath), "license: paid FLAC admission does not start trial");
+        var audioConversion = AudioConversionBatch.Create(Guid.NewGuid(), [audio], AudioFormat.Wave, new("convert", new())).Confirm(0, false, false);
+        var audioAdmission = await access.AdmitConversionAsync(audioConversion, default);
+        check(audioAdmission.IsAllowed && audioAdmission.BatchId == audioConversion.Plan.BatchId && !File.Exists(trialPath),
+            "license: paid audio conversion does not start trial");
         check(paidAdmission.IsAllowed && (await access.AdmitOptimizationAsync(optimize, default)).IsAllowed && !File.Exists(trialPath),
             "license: both paid operation paths admit without starting trial");
         check(!Encoding.UTF8.GetString(await File.ReadAllBytesAsync(path)).Contains(key), "license: DPAPI file contains no plaintext key");
@@ -61,6 +65,8 @@ internal static class LicenseStorageContracts
             "license: paid expiry preserves old admission and cannot fall back to a new trial");
         check(flacAdmission.IsAllowed && !(await access.AdmitOptimizationAsync(flac, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid FLAC expiry preserves admission and cannot fall back to trial");
+        check(audioAdmission.IsAllowed && !(await access.AdmitConversionAsync(audioConversion, default)).IsAllowed && !File.Exists(trialPath),
+            "license: paid audio conversion expiry preserves admission and cannot fall back to trial");
         clock.Now = clock.Now.AddDays(-2);
         check(!(await reopened.ReadStatusAsync()).CanStart, "license: persisted expiry observation prevents clock rollback revival");
         service.ValidationState = LicenseReplyState.Granted;

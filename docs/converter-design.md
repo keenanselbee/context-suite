@@ -161,10 +161,13 @@ Image Safety Rules
 Planned Audio Scope
 -------------------
 
-The [fixed audio policy and private candidate](audio-conversion-policy.md) now
-implement typed target decisions and isolated real-engine conversion checks.
-Customer commands, publication, metadata completeness and production payload
-acceptance remain pending; the scope below is still the launch requirement.
+The [fixed audio policy and worker integration](audio-conversion-policy.md) now
+implement typed target/consent decisions and application-owned publication through
+the real worker. All 30 cross-format pairs pass generated-fixture copy workflows;
+six same-format cases remain unchanged without admission. Customer menu routing,
+the compact quality prompt, metadata completeness, independent fidelity/listening
+and production payload acceptance remain pending. The scope below is still the
+launch requirement.
 
 The first audio release should analyze and accept WAV, FLAC, MP3, M4A/AAC, and
 Ogg/Opus. Outputs may include MP3, M4A/AAC, FLAC, WAV, and Ogg/Opus only where

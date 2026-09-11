@@ -790,3 +790,55 @@ worker/menu admission, production engine adoption, document transformations or
 the active broad-file goal. No image-engine, native-shell or visible UI acceptance
 was rerun for this metadata slice; installation, live commerce and signing were
 not performed.
+
+Audio conversion worker and publication (2026-09-10)
+----------------------------------------------------
+
+**1,408 foundation contracts** pass: 35 new audio batch/IPC/access checks and
+two paid-audio-admission checks supplement the preceding 1,371. They cover fixed
+targets, combined quality consent, forged-plan rejection, same-format no-op
+admission, copy defaults, overwrite gates, contradictory worker payloads and
+batch identity. Synthetic paid access bypasses trial bookkeeping and cannot
+fall back to a new trial after expiry. No live license service is involved.
+
+**50 isolated audio conversion workflow checks** pass through the real worker
+and application publisher. All 30 cross-format pairs create validated named copies;
+the six same-format plans remain unchanged without starting the trial. Additional
+checks cover one admission across expiry, output collisions, expired-work denial,
+changed sources, unsupported metadata with continued worker use, external M4A
+references, mixed converted/no-op batches, cancellation, alternate folders and
+nonempty/hard-linked reservations. Output formats are reprobed, original hashes
+are retained and publication records/reservations are empty at completion. A
+refusing recycler ensures these are copy workflows, not native overwrite tests.
+
+The existing **11 Analyze, 14 FLAC workflow and 16 direct-audio checks** also pass
+against the final stage, for **91 audio workflow checks** total. The preceding
+269-check private encoding suite was not rerun: encoding recipes and sample
+validation are unchanged; the new file-adapter/publication path is exercised by
+the real-worker matrix. New unsupported-feature handling returns a stable failure
+category instead of allowing `NotSupportedException` to terminate the worker.
+
+Final evidence is under
+`.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/worker-3de59d034c60422db7e46217c6dd9662/`:
+
+```text
+conversion-results/audio-conversion-workflow.json
+results/analysis-results.txt
+flac-results/flac-workflow.json
+direct-results/direct-audio.json
+```
+
+Fresh isolated Release stage
+`artifacts/production-staging/7758790beffd4ae583b5da4ab377f8ff` passes with zero
+warnings/errors, curated identities, payload allowlist, dependencies and notices.
+It uses `-SkipShell`; audio/PDF evaluation engines are still excluded from the
+normal payload. The test script adds them only to a separate evaluation copy.
+Repository/public-boundary, system-theme policy and 64 documentation files pass.
+
+This delivers the file-based audio conversion and publisher integration, not the
+customer menu. Direct audio Convert routing, compact quality consent, dispatch
+retry behavior, expanded metadata/artwork coverage, independent fidelity/listening,
+audio payload adoption, broader crash/recovery and required document actions
+remain open. No hidden/visible UI, image-engine, native-shell, installer, signing
+or live-commerce acceptance was rerun for this slice. The broad-file goal remains
+active.

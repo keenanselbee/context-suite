@@ -13,6 +13,14 @@ using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
 if (args.Length == 2 && args[0] == "--recycle") return await WindowsRecycleContracts.RunAsync(args[1]);
+if (args.Length == 4 && args[0] == "--audio-conversion-worker")
+{
+    var checks = 0;
+    await AudioConversionWorkflowContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated audio conversion workflow checks.");
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--flac-worker")
 {
     var checks = 0;
@@ -68,6 +76,7 @@ try
     await OggMetadataContracts.RunAsync(Check);
     await Mp3MetadataContracts.RunAsync(Check);
     await M4aMetadataContracts.RunAsync(Check);
+    await AudioBatchContracts.RunAsync(args[0], Check);
     FlacSeekContracts.Run(Check);
     await FlacBatchContracts.RunAsync(args[0], Check);
     AudioProbeContracts.Run(Check);

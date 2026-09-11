@@ -13,6 +13,8 @@ internal interface IOperationAccess
 {
     Task<OperationAccessStatus> ReadAccessAsync(CancellationToken cancellationToken = default);
     Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken cancellationToken);
+    Task<OperationAdmission> AdmitConversionAsync(ConfirmedAudioConversion confirmed, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("This access implementation does not admit audio conversions.");
     Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken);
     Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedFlacOptimization confirmed, CancellationToken cancellationToken) =>
         throw new NotSupportedException("This access implementation does not admit FLAC operations.");
@@ -42,6 +44,14 @@ internal sealed class OperationAccess(LocalTrialStore trial, PaidLicenseManager 
         if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No valid optimization was confirmed.");
         var status = await paid.ReadStatusAsync(cancellationToken);
         if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
+        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+    }
+
+    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedAudioConversion confirmed, CancellationToken cancellationToken)
+    {
+        if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No valid audio conversion was confirmed.");
+        var status = await paid.ReadStatusAsync(cancellationToken);
+        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
         return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
     }
 

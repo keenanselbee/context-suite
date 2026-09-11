@@ -73,8 +73,8 @@ unsupported information is never implicitly waived by a successful native probe.
 `Test-AudioWorker.ps1` copies a fresh production stage into repository scratch,
 adds the evaluation engine to that copy, and exercises the actual application
 view-model, IPC client and worker with generated inputs. Results must include
-useful audio facts, fallback after malformed input, unchanged originals and no
-licensing/publication calls. The test does not alter the source stage's inventory,
+useful audio facts, fallback after malformed input, unchanged originals and, in
+the default Analyze mode, no licensing/publication calls. The test does not alter the source stage's inventory,
 install an application, register Explorer or claim native shell acceptance.
 Optional `-ArtworkFixture <generated authored-artwork.flac>` adds actual IPC and
 Analyze checks for embedded-artwork facts; the file must be under audio scratch.
@@ -91,6 +91,16 @@ one admitted mixed PNG/FLAC batch across trial expiry, synthetic activation/retr
 captured settings, quiet completion, cancellation, malformed files, misleading
 extensions and missing-engine fallback. These component checks do not operate
 Explorer or inspect visible windows, keyboard focus or assistive technology.
+
+Optional `-IncludeConversion` runs 50 checks through the audio file probe,
+conversion worker, confirmed batch, local trial and transactional publisher.
+It covers all 30 cross-format pairs and six no-op cases, collisions, expiry,
+changed sources, unsupported metadata, cancellation, alternate folders and
+refusal of nonempty/hard-linked reservations. It records
+`conversion-results/audio-conversion-workflow.json`. A refusing recycler excludes
+native recycling; the tests do not operate a customer audio Convert menu or its
+pending quality prompt. Use both switches to verify the existing audio workflows
+alongside conversion.
 
 The latest adapter run passes 269 combined checks. FLAC conversion cases include
 original-block inventory, literal Unicode/multiline tag transport, canonical

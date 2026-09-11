@@ -6,14 +6,15 @@ namespace ContextSuite.Core.Audio;
 
 public sealed record AudioFileProbe(Guid ItemId, string Path);
 public sealed record AudioFileSource(Guid ItemId, string Path, string Sha256, long FileBytes,
-    AudioProbeFacts Facts, string? OptimizationBlockReason = null)
+    AudioProbeFacts Facts, string? OptimizationBlockReason = null, string? ConversionBlockReason = null)
 {
     public const long MaximumFileBytes = 512L * 1024 * 1024;
     public void Validate()
     {
         if (ItemId == Guid.Empty || string.IsNullOrWhiteSpace(Path) || !System.IO.Path.IsPathFullyQualified(Path) ||
             Path.Length > 32700 || Path.IndexOfAny(['\0', '\r', '\n']) >= 0 || Sha256 is null || Sha256.Length != 64 ||
-            !Sha256.All(char.IsAsciiHexDigit) || FileBytes is <= 0 or > MaximumFileBytes || Facts is null || OptimizationBlockReason?.Length > 1024)
+            !Sha256.All(char.IsAsciiHexDigit) || FileBytes is <= 0 or > MaximumFileBytes || Facts is null ||
+            OptimizationBlockReason?.Length > 1024 || ConversionBlockReason?.Length > 1024)
             throw new InvalidDataException("Audio source facts are incomplete or exceed their bounds.");
         Facts.Validate();
     }

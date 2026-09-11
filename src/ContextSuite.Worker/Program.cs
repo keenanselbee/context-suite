@@ -51,12 +51,16 @@ try
         try
         {
             if (command.Command == "capabilities") reply = new(1, command.RequestId, catalog.Capabilities.ToArray());
-            else if (command.Command is "flac-probe" or "flac-optimize")
+            else if (command.Command is "flac-probe" or "flac-optimize" or "audio-file-probe" or "audio-convert")
             {
                 audioFiles ??= new AudioFileAdapter(Path.Combine(AppContext.BaseDirectory, "audio-engine"), args[5]);
-                reply = command.Command == "flac-probe"
-                    ? new(1, command.RequestId, [], AudioSource: await audioFiles.ProbeFlacAsync(command.AudioFile!, lifetime.Token))
-                    : new(1, command.RequestId, [], AudioResult: await audioFiles.OptimizeFlacAsync(command.FlacWork!, lifetime.Token));
+                reply = command.Command switch
+                {
+                    "flac-probe" => new(1, command.RequestId, [], AudioSource: await audioFiles.ProbeFlacAsync(command.AudioFile!, lifetime.Token)),
+                    "flac-optimize" => new(1, command.RequestId, [], AudioResult: await audioFiles.OptimizeFlacAsync(command.FlacWork!, lifetime.Token)),
+                    "audio-file-probe" => new(1, command.RequestId, [], AudioSource: await audioFiles.ProbeConversionAsync(command.AudioFile!, command.AudioTarget!.Value, lifetime.Token)),
+                    _ => new(1, command.RequestId, [], AudioResult: await audioFiles.ConvertAsync(command.AudioWork!, lifetime.Token))
+                };
             }
             else if (command.Command == "audio-probe")
             {
@@ -82,7 +86,7 @@ try
                 };
             }
         }
-        catch (Exception error) when (error is IOException or InvalidDataException or ArgumentException or InvalidOperationException or
+        catch (Exception error) when (error is IOException or InvalidDataException or ArgumentException or InvalidOperationException or NotSupportedException or
             UnauthorizedAccessException or ImageMagick.MagickException or System.Xml.XmlException or TimeoutException or System.ComponentModel.Win32Exception or
             System.Runtime.InteropServices.COMException or TypeInitializationException or DllNotFoundException or EntryPointNotFoundException or BadImageFormatException or OutOfMemoryException or OperationCanceledException)
         {
@@ -90,6 +94,7 @@ try
             var failure = error switch
             {
                 ImageFailureException known => known.Failure,
+                NotSupportedException => ImageFailure.UnsupportedInput,
                 TimeoutException or OperationCanceledException => ImageFailure.TimedOut,
                 InvalidDataException or ArgumentException or System.Xml.XmlException => ImageFailure.InvalidInput,
                 UnauthorizedAccessException or IOException => ImageFailure.FileAccess,
