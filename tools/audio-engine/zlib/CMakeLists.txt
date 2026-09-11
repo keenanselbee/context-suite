@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.18)
+project(ContextSuiteZlibDependency LANGUAGES C)
+
+if(NOT WIN32 OR NOT CMAKE_C_COMPILER_ID STREQUAL "MSVC" OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "This dependency recipe requires Windows x64 MSVC.")
+endif()
+if(NOT IS_DIRECTORY "${ZLIB_SOURCE}")
+    message(FATAL_ERROR "Use the pinned source from Build-AudioDependency.ps1.")
+endif()
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+set(ZLIB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(ZLIB_BUILD_STATIC ON CACHE BOOL "" FORCE)
+set(ZLIB_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(ZLIB_INSTALL OFF CACHE BOOL "" FORCE)
+add_subdirectory("${ZLIB_SOURCE}" zlib)
+target_compile_options(zlibstatic PRIVATE /GS /guard:cf /guard:ehcont)
+
+# Exercise the upstream codec example without its install/find-package tests.
+# Its generated gzip fixture stays in the binary directory.
+add_executable(ContextSuite.Zlib.Example "${ZLIB_SOURCE}/test/example.c")
+target_compile_definitions(ContextSuite.Zlib.Example PRIVATE ZLIB_BUILD)
+target_link_libraries(ContextSuite.Zlib.Example PRIVATE ZLIB::ZLIBSTATIC)
+target_link_options(ContextSuite.Zlib.Example PRIVATE /guard:cf /CETCOMPAT)
+enable_testing()
+add_test(NAME ContextSuite.Zlib.Example COMMAND ContextSuite.Zlib.Example)

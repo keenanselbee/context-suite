@@ -146,7 +146,7 @@ Actual production adoption needs retained reproducible source/dependency inputs,
 license/notice review and an intentionally bounded capability build.
 
 Use `Prepare-AudioSources.ps1` to retain the currently pinned FFmpeg, supplier
-recipe, Ogg, Vorbis, Opus, supplier LAME, stable LAME 4.0, GNU make and NASM source
+recipe, Ogg, Vorbis, Opus, supplier LAME, stable LAME 4.0, GNU make, NASM and zlib source
 archives in a new repository scratch directory.
 Use `-SourceDirectory '<existing repository scratch directory>' -VerifyOnly` to
 verify them without downloads or writes. Hash/size mismatches are refused; no
@@ -156,7 +156,7 @@ bounded reads, a per-file inventory and a deterministic pinned ZIP. SVN properti
 and history are not exported. Stable LAME and GNU make retain their original
 release tarballs; NASM retains its original source ZIP. The checked tar reader
 rejects unsafe paths, links and oversized entries before extraction. Python 3.14
-is required for tar verification too. Source schema 3 requires all nine archives,
+is required for tar verification too. Source schema 4 requires all ten archives,
 including when verifying an older cache. The
 [curation record](../../docs/audio-engine-curation.md) lists unresolved SVN-property,
 Opus bootstrap, toolchain and transitive inputs, plus the preliminary Opus findings
@@ -197,3 +197,13 @@ version and Git Bash/recursive/incremental/failure checks. NASM runs version and
 Win64 COFF assembly/link/execution checks. Neither tool is installed or staged
 with the customer app. See [audio build tools](../../docs/audio-build-tools.md)
 for compiler compatibility fixes, the retained NASM warning and exact evidence.
+
+`-Dependency Zlib` builds the pinned static zlib 1.3.2 library and runs its upstream
+codec example for the PNG artwork dependency. The isolated
+`Build-AudioEngine.py` composes explicit completed dependencies into a fresh
+FFmpeg workspace; `Check-AudioConfiguration.py` gates the generated component
+selection. See [commands, scope and current results](../../docs/audio-ffmpeg-build.md)
+before using this unaccepted candidate path. `Test-AudioCandidate.py` verifies
+candidate and independent runtime identities, tests six generated audio targets
+with both decoders and exercises embedded PNG decoding. Its smoke evidence does
+not replace the full adapter/worker, metadata, compiler or listening review.

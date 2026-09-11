@@ -32,7 +32,9 @@ string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 add_executable(gnumake ${make_sources})
 target_include_directories(gnumake PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/src" "${MAKE_SOURCE}/src"
     "${CMAKE_CURRENT_BINARY_DIR}/lib" "${MAKE_SOURCE}/lib" "${MAKE_SOURCE}/src/w32/include")
-target_compile_definitions(gnumake PRIVATE _CONSOLE HAVE_CONFIG_H)
+# Git Bash's command-line transport loses nested awk backslashes in this native
+# make port. Its documented script-file mode preserves the complete recipe.
+target_compile_definitions(gnumake PRIVATE _CONSOLE HAVE_CONFIG_H BATCH_MODE_ONLY_SHELL)
 target_compile_options(gnumake PRIVATE /GS /guard:cf /guard:ehcont)
 target_link_options(gnumake PRIVATE /guard:cf /CETCOMPAT)
 target_link_libraries(gnumake PRIVATE kernel32 user32 gdi32 winspool comdlg32 advapi32

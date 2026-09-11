@@ -17,7 +17,7 @@ for ($ancestor = $directory; $ancestor -and $ancestor -ne $repository; $ancestor
     }
 }
 $pin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'source-inputs.json') -Raw | ConvertFrom-Json
-if ($pin.schema -ne 3 -or $pin.archives.Count -ne 9) { throw 'Unsupported source inventory.' }
+if ($pin.schema -ne 4 -or $pin.archives.Count -ne 10) { throw 'Unsupported source inventory.' }
 if (-not (Test-Path -LiteralPath $directory)) {
     if ($VerifyOnly) { throw 'Source directory does not exist.' }
     New-Item -ItemType Directory -Path $directory | Out-Null
@@ -48,6 +48,7 @@ foreach ($archive in $pin.archives) {
                 'lame-stable' { @('4.0', 'https://downloads.sourceforge.net/project/lame/lame/4.0/lame-4.0.tar.gz', 'lame-stable.tar.gz', 'lame-4.0/', 'release-tar') }
                 'make' { @('4.4.1', 'https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz', 'make.tar.gz', 'make-4.4.1/', 'release-tar') }
                 'nasm' { @('3.02', 'https://www.nasm.us/pub/nasm/releasebuilds/3.02/nasm-3.02.zip', 'nasm.zip', '', 'release-zip') }
+                'zlib' { @('1.3.2', 'https://zlib.net/zlib-1.3.2.tar.gz', 'zlib.tar.gz', 'zlib-1.3.2/', 'release-tar') }
                 default { throw 'Unsupported release source input.' }
             }
             if ($archive.revision -ne $release[0] -or $archive.url -ne $release[1] -or

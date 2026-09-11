@@ -1,7 +1,7 @@
 Audio Engine Curation
 =====================
 
-Status: nine source inputs retained and isolated audio dependency recipes tested,
+Status: ten source inputs retained and isolated audio dependency recipes tested,
 2026-09-11. The tested audio adapter and direct commands remain optional because
 normal production staging has no adopted audio payload. This work does not enable
 an unreviewed supplier bundle.
@@ -9,8 +9,13 @@ an unreviewed supplier bundle.
 The [current dependency build record](audio-dependency-builds.md) covers Opus,
 Ogg/Vorbis and LAME, including independent generated-MP3 decoding. The supplier's
 LAME snapshot is an alpha; stable LAME 4.0 now passes a separate source build and
-generated-media check. Complete FFmpeg composition remains open. The sections
+generated-media check. Final FFmpeg adoption remains open. The sections
 below retain earlier source/Opus evidence.
+The [restricted FFmpeg build work](audio-ffmpeg-build.md) adds verified zlib source
+and a codec check for PNG artwork, plus an exact generated-component gate. The
+fresh native build now passes version/loading and six-format independent-decoder
+smoke checks, including actual PNG artwork decoding. Compiler/hardening review,
+the complete adapter/worker matrix and production adoption remain pending.
 
 Why staging still excludes the evaluation engine
 ------------------------------------------------
@@ -27,7 +32,7 @@ Retained inputs
 ---------------
 
 [source-inputs.json](../tools/audio-engine/source-inputs.json) pins archive hashes,
-sizes, revisions and expected source/license entries for nine inputs:
+sizes, revisions and expected source/license entries for ten inputs:
 
 | Input | Revision | Evidence |
 | --- | --- | --- |
@@ -40,6 +45,7 @@ sizes, revisions and expected source/license entries for nine inputs:
 | Stable LAME | `4.0` | Original tarball from the official SourceForge release endpoint |
 | GNU make | `4.4.1` | Original GNU release tarball; build tool only |
 | NASM | `3.02` | Original source ZIP from the official release directory; build tool only |
+| zlib | `1.3.2` | Original release tarball matching the publisher's SHA256; PNG artwork dependency |
 
 Sources were independently downloaded, without reference binaries or source
 copying. The retained supplier recipe is read-only research and has not been
@@ -66,8 +72,9 @@ retained without playback or execution; partial failures stay in scratch.
 
 The three release archives are pinned by locally measured SHA256 and size from
 their official HTTPS endpoints; publisher signatures have not been verified.
-Schema 3 requires all nine files, totaling 45,902,328 bytes. Existing six-file
-caches need the three new inputs before `-VerifyOnly` or a dependency build.
+Schema 3 introduced nine files, totaling 45,902,328 bytes. Schema 4 adds the
+1,502,830-byte zlib archive, for ten inputs totaling 47,405,158 bytes. Older caches
+need the new inputs before `-VerifyOnly` or a dependency build.
 The original release archives remain intact; they are not repackaged into ZIPs.
 
 The [tar reader](../tools/audio-engine/Read-SourceTar.py) requires Python 3.14,

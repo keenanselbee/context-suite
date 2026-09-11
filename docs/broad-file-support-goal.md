@@ -57,6 +57,18 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [restricted FFmpeg work](audio-ffmpeg-build.md) now passes the real
+generated-component gate with the complete audio/artwork selection. It adds
+publisher-checksummed zlib 1.3.2 and a passing native codec example; ten source
+archives verify. Seven configuration-gate checks pass. Full compilation exposed
+native make path/quoting differences; the source overrides and tested script-file
+mode address them. A fresh full build now succeeds with correct version identity,
+unchanged upstream sources and a seven-file runtime. Six generated audio targets
+pass candidate/independent decoding with exact frame counts; PNG artwork decodes.
+Eleven native diagnostics remain recorded for review, and final hardening,
+adapter/worker replay and source/notice/runtime adoption remain open. This is
+bounded native smoke evidence, not full audio or release acceptance.
+
 The next 2026-09-11 [audio build-tool checkpoint](audio-build-tools.md) builds GNU
 make 4.4.1 and NASM 3.02 in repository scratch. Both pass their two native/workflow
 tests, with 395/1,375 unchanged source files. Make has no compiler diagnostics;

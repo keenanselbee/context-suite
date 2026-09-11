@@ -34,7 +34,7 @@ def main():
     (directory / "Makefile").write_text(r"""include config.mak
 .SHELLFLAGS := --noprofile --norc -c
 .PHONY: all recurse fail
-all: joined recurse
+all: joined recurse escaped
 a b: %: input.txt
 	@printf '%s\n' '$@' > '$@'
 joined: a b
@@ -42,6 +42,8 @@ joined: a b
 	@test '$(EXPECTED)' = 'alpha beta'
 recurse:
 	@$(MAKE) --no-print-directory -f Child.mk
+escaped:
+	@printf '%s\n' 'C:\fixture\file.c' | awk '{gsub(/\\/, "/"); print}' > escaped
 fail:
 	@exit 7
 """)
@@ -50,6 +52,10 @@ fail:
                    if key.upper() not in ("MAKEFLAGS", "GNUMAKEFLAGS", "MFLAGS", "MAKELEVEL", "MAKEFILES")}
     # Git's shell and Unix commands are already installed; changes affect only children.
     environment["PATH"] = str(bash.parents[1] / "usr/bin") + os.pathsep + environment["PATH"]
+    temporary = directory / "temporary"
+    temporary.mkdir()
+    for name in ("TMP", "TEMP", "TMPDIR"):
+        environment[name] = short_path(temporary)
     command = [short_path(executable), "--no-print-directory", "-j2", "SHELL=" + shell]
     outputs = []
     for arguments, expected_exit in (([], 0), ([], 0), (["fail"], 2)):
@@ -61,6 +67,8 @@ fail:
         if not arguments:
             if (directory / "joined").read_bytes() != b"a\nb\n" or (directory / "child").read_bytes() != b"recursive child\n":
                 raise ValueError("Parallel prerequisite or recursive output differs")
+            if (directory / "escaped").read_bytes() != b"C:/fixture/file.c\n":
+                raise ValueError("Shell backslash/quote transport differs")
             current = [(directory / name).stat().st_mtime_ns for name in ("a", "b", "joined", "child")]
             if len(outputs) == 1:
                 timestamps = current

@@ -1,11 +1,17 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $SourceDirectory,
-      [Parameter(Mandatory)][ValidateSet('Opus', 'OggVorbis', 'Lame', 'LameStable', 'Make', 'Nasm')][string] $Dependency)
+      [Parameter(Mandatory)][ValidateSet('Opus', 'OggVorbis', 'Lame', 'LameStable', 'Make', 'Nasm', 'Zlib')][string] $Dependency)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 & (Join-Path $PSScriptRoot 'Prepare-AudioSources.ps1') -SourceDirectory $SourceDirectory -VerifyOnly
 $pins = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'source-inputs.json') -Raw | ConvertFrom-Json).archives
 switch ($Dependency) {
+    'Zlib' {
+        $sourceIds = @('zlib')
+        $recipeName = 'zlib'
+        $testCount = 1
+        $artifacts = @('zlib/Release/zs.lib', 'zlib/zconf.h', 'Release/ContextSuite.Zlib.Example.exe')
+    }
     'Nasm' {
         $sourceIds = @('nasm')
         $recipeName = 'nasm'

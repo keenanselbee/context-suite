@@ -37,7 +37,8 @@ unchanged. This build has zero compiler warnings/errors.
 Two CTest cases pass: release-version identity and an authored workflow using the
 existing Git Bash. The workflow checks included variables, shell quoting,
 parallel prerequisites, ordered combined output, recursive make, an incremental
-no-op and propagation of a recipe's nonzero exit. Every generated file stays in
+no-op and propagation of a recipe's nonzero exit. A subsequent FFmpeg integration
+check adds a nested backslash/awk regression. Every generated file stays in
 the workflow directory. Child environment changes do not persist in Windows.
 
 An initial test exposed recursive `$(MAKE)` expansion breaking at the space in
@@ -45,6 +46,15 @@ the executable path. The workflow now obtains the existing Windows short path
 for make and Bash; it refuses missing or still-spaced paths. The upcoming FFmpeg
 build must use that spelling for make as well as its source/build paths. This is
 not a claim that arbitrary whitespace in upstream makefiles is supported.
+
+The FFmpeg follow-up also exposes nested quoting that the original smoke did not
+cover. `HAVE_CYGWIN_SHELL` does not fix it with this Git Bash version. The final
+recipe selects upstream's documented `BATCH_MODE_ONLY_SHELL`: make writes complete
+recipes into temporary scripts, preserving the awk expression. The new regression
+and all earlier checks pass at `audio-make-6c3e7d5d0bb44a18b065ab047957b9d9`, with
+zero compiler diagnostics and unchanged source. `TMP`, `TEMP` and `TMPDIR` point
+inside each workflow/build workspace. This supersedes the table's initial make
+recipe for the full FFmpeg build.
 
 NASM
 ----
