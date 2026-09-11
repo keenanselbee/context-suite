@@ -102,6 +102,11 @@ OpenDocument analysis remains required; OpenDocument-to-PDF has not been selecte
 Exact legacy/modern input variants, presets and engine choices remain to be
 evaluated. No rendering engine is adopted or installed by this scope decision.
 
+The [legacy PDF experiment](office-engine-evaluation.md) now covers passive
+generated DOC/XLS/PPT roundtrips through the candidate. Page/text assertions pass;
+Excel/PowerPoint rendering differs from their modern baselines. This is evidence
+to resolve before adopting a fidelity policy, not an accepted legacy input matrix.
+
 The [engine comparison and experiment matrix](media-engine-evaluation.md) records
 candidate capabilities, proposed fixed policies and independent acceptance oracles.
 The first [qpdf experiment](pdf-engine-evaluation.md) passes 13 narrow generated-file

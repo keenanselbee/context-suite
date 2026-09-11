@@ -5,9 +5,10 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "LegacyAnalysis")) return 2;
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "LegacyAnalysis" or "LegacyPdf")) return 2;
 var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths";
-var profileStyles = !profileMatrix ? new[] { "default" } : args[3] == "ProfileLengths"
+var legacyPdf = args.Length == 4 && args[3] == "LegacyPdf";
+var profileStyles = legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "ProfileLengths"
     ? new[] { "length-90", "length-110", "length-130", "length-150", "length-170" }
     : new[] { "short-ascii", "short-unicode", "long-ascii", "long-unicode" };
 var prepared = Path.GetFullPath(args[0]); var qpdf = Path.GetFullPath(args[1]); var pdfium = Path.GetFullPath(args[2]);
@@ -20,7 +21,7 @@ var fixtures = Path.Combine(root, "fixtures"); Directory.CreateDirectory(fixture
 var results = new List<object>();
 Console.WriteLine("Office evaluation evidence: " + root);
 var version = await RunOffice("version", ["--version"]); Console.WriteLine(version.Output.Trim());
-if (args.Length == 4 && args[3] == "LegacyAnalysis")
+if (args.Length == 4 && args[3] is "LegacyAnalysis" or "LegacyPdf")
 {
     foreach (var (name, extension, filter) in new[] { ("Word ü.docx", "doc", "MS Word 97"),
         ("Excel ü.xlsx", "xls", "MS Excel 97"), ("PowerPoint ü.pptx", "ppt", "MS PowerPoint 97") })
@@ -52,15 +53,21 @@ if (args.Length == 4 && args[3] == "LegacyAnalysis")
             Scope = "LibreOffice-produced copies of authored passive fixtures; legacy parser interoperability, not Microsoft Office layout fidelity or customer legacy export." }, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"PASS: generated {extension}: likely content identity, {analysis.FileBytes} bytes, bounded analysis and unchanged originals/copy, {conversion.Milliseconds} ms.");
     }
-    return 0;
+    if (!legacyPdf) return 0;
+    results.Clear(); // Preserve generation evidence in legacy-analysis.json; keep PDF results separate.
 }
+var baselines = new Dictionary<string, (string Folder, JsonElement Render, string[] Text)>();
+var comparisons = new List<object>();
 foreach (var (name, filter, expectedPages) in new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) })
 {
-    if (args.Length == 4 && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
+    if (args.Length == 4 && !legacyPdf && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
     foreach (var profileStyle in profileStyles)
     {
-        var source = Path.Combine(fixtures, name); var hash = Hash(source);
-        var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name)); Directory.CreateDirectory(folder);
+        var extension = filter switch { "writer_pdf_Export" => "doc", "calc_pdf_Export" => "xls", _ => "ppt" };
+        var source = legacyPdf && profileStyle == "legacy"
+            ? Path.Combine(root, "legacy-" + extension, Path.ChangeExtension(name, extension)) : Path.Combine(fixtures, name);
+        var hash = Hash(source);
+        var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name) + (legacyPdf ? "-" + profileStyle : "")); Directory.CreateDirectory(folder);
         // Keep input and output paths identical across profile variants, then retain each result separately.
         var outputFolder = profileMatrix ? Path.Combine(root, "conversion") : folder; Directory.CreateDirectory(outputFolder);
         var options = new Dictionary<string, object>();
@@ -102,12 +109,28 @@ foreach (var (name, filter, expectedPages) in new[] { ("Word ü.docx", "writer_p
         };
         if (!textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
         if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
-        results.Add(new { Source = name, SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile,
+        results.Add(new { Source = Path.GetFileName(source), SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile,
             PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds,
             ConversionOutput = conversion.Output, Diagnostics = conversion.Error, Text = text, Render = rendered.RootElement.Clone() });
         if (profileMatrix) File.Move(pdf, Path.Combine(folder, Path.GetFileName(pdf)));
         SaveResults();
-        Console.WriteLine($"PASS: {name} ({profileStyle}, {conversion.Profile!.Length} profile characters): {pages} independently parsed/rendered pages, expected text/geometry, original unchanged, {conversion.Milliseconds} ms.");
+        Console.WriteLine($"PASS: {Path.GetFileName(source)} ({profileStyle}, {conversion.Profile!.Length} profile characters): {pages} independently parsed/rendered pages, expected text/geometry, original unchanged, {conversion.Milliseconds} ms.");
+        if (legacyPdf)
+        {
+            if (profileStyle == "modern") baselines.Add(name, (folder, rendered.RootElement.Clone(), text));
+            else
+            {
+                var baseline = baselines[name];
+                var comparison = LegacyPdfComparison.Compare(baseline.Folder, baseline.Render, baseline.Text, folder, rendered.RootElement, text);
+                comparisons.Add(new { Family = extension, Comparison = comparison });
+                File.WriteAllText(Path.Combine(root, "legacy-pdf-comparison.json"), JsonSerializer.Serialize(new
+                {
+                    Version = version.Output.Trim(), Results = comparisons,
+                    Scope = "Same-engine modern versus generated legacy roundtrip at 96 DPI. Differences are observations, not accepted fidelity tolerances or independent Microsoft Office baselines."
+                }, new JsonSerializerOptions { WriteIndented = true }));
+                Console.WriteLine($"OBSERVED: {extension} legacy roundtrip: normalized text equal={comparison.TextEqual}, exact rendered pages={comparison.Pages.Count(page => page.ExactPixels)}/{comparison.Pages.Length}.");
+            }
+        }
     }
 }
 return 0;
@@ -115,8 +138,8 @@ return 0;
 void SaveResults()
 {
     File.WriteAllText(Path.Combine(root, "office-evaluation.json"), JsonSerializer.Serialize(new { Version = version.Output.Trim(), ProfileMatrix = profileMatrix,
-        Mode = profileMatrix ? args[3] : "Conversion", Results = results,
-        Scope = "Generated passive modern Office fixtures only; bounded text/geometry checks, not broad font/layout fidelity, arbitrary-document isolation or launch acceptance. Profile-matrix observations include failed conversions." }, new JsonSerializerOptions { WriteIndented = true }));
+        Mode = profileMatrix || legacyPdf ? args[3] : "Conversion", Results = results,
+        Scope = "Authored passive Office fixtures and generated legacy copies only; bounded text/geometry checks, not broad font/layout fidelity, arbitrary-document isolation or launch acceptance. Profile-matrix observations include failed conversions." }, new JsonSerializerOptions { WriteIndented = true }));
 }
 
 async Task<RunResult> RunOffice(string name, string[] arguments, string profileStyle = "default")

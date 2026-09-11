@@ -1,7 +1,8 @@
 Office-to-PDF Engine Evaluation
 ==============================
 
-Status: initial passive modern-format experiment passed, 2026-09-10. Required
+Status: passive modern/legacy PDF exports tested through 2026-09-11; legacy Excel
+and PowerPoint roundtrips have measured rendering differences. Required
 Word/Excel/PowerPoint-to-PDF remains unimplemented in the customer application.
 This checkpoint does not adopt or package LibreOffice. Follow the
 [document design](document-design.md) and [broad-file goal](broad-file-support-goal.md).
@@ -193,3 +194,61 @@ page/text/geometry checks. Evidence is under
 `evaluation-ffd14d61fd9048b58946333d1443d485`, with log
 `.codex-temp/office-profile-regression.log`. Native isolation, broader fidelity,
 production integration and the remaining Office acceptance gates remain open.
+
+Legacy PDF roundtrip comparison (2026-09-11)
+-------------------------------------------
+
+The `-LegacyPdf` experiment first generates DOC/XLS/PPT copies of the authored
+passive fixtures with the fixed Word 97, Excel 97 and PowerPoint 97 filters.
+The [bounded legacy analyzer](legacy-document-analysis.md) checks their content
+identity and source/copy preservation. It then exports both modern and legacy
+versions to PDF using the same options and fresh 90-character profiles. It accepts
+no arbitrary document paths and does not enable a customer Office command.
+
+All six PDF exports pass qpdf checks, PDFium parsing/rendering, expected page
+counts, authored text/geometry assertions and unchanged-source hashes. Normalized
+extracted text matches between each modern/legacy pair. These are narrow fixture
+passes, not general conversion or fidelity acceptance:
+
+| Family | Modern / legacy export time | Pages | Exact 96-DPI pixel comparison |
+| --- | --- | --- | --- |
+| Word | 8,365 / 8,542 ms | 2 / 2 | Both pages equal |
+| Excel | 8,779 / 8,130 ms | 1 / 1 | 2,551 changed pixels; maximum channel difference 255 |
+| PowerPoint | 8,312 / 8,394 ms | 2 / 2 | 2,728 and 2,746 changed pixels; maximum channel difference 76 |
+
+Word/Excel page geometry stays 612 by 792 pt. PowerPoint height changes from
+405.014 to 405.071 pt (width 720 pt), though both render to 960 by 541 pixels.
+The authored geometry check allows 0.1 pt; this does **not** make the observed
+height/pixel differences acceptable for release. The comparison records exact
+BGRA differences including alpha and excluding row padding. Different pixel
+dimensions would be reported as incomparable, without resampling. No visual
+tolerance or image-quality score is used to hide differences.
+
+An independent Python standard-library calculation verified all five pixel and
+normalized-text comparison results and generated review PNGs from the raw BGRA
+output. All five legacy pages, plus modern Excel and the first modern PowerPoint
+page, were visually inspected. Text/table/slide content was readable with no
+observed clipping. That visual review neither cancels the measured differences
+nor proves the absence of finer layout defects. It is not application UI,
+keyboard, screen-reader, theme/DPI or installed-shell acceptance.
+
+Retained evidence is under
+`.codex-temp/office-engine/a56167ab9fb54686971491918ccd26f8/evaluation-6bbf7608805549b28281f56ffa9620f7`:
+`legacy-analysis.json`, `office-evaluation.json`, `legacy-pdf-comparison.json`,
+per-conversion diagnostics, originals/legacy copies/PDFs, raw renders and ten
+review PNGs. Logs are `.codex-temp/legacy-pdf-office.log` and
+`.codex-temp/legacy-pdf-pixel-verification.log`; the independent scratch calculation
+is `.codex-temp/Verify-LegacyPdfPixels.py`.
+
+The evaluation probe builds in Release with zero warnings/errors. Edited
+PowerShell syntax and repository boundary/theme/documentation/whitespace checks
+pass. No production build, worker/UI regression suite, installation, registration,
+native recycling or new AppContainer profile ran for this tools-only checkpoint.
+
+The legacy files and both PDF versions are produced by the same engine. Therefore
+this measures a combined modern-to-legacy-to-PDF roundtrip, not fidelity of an
+independently authored Microsoft Office legacy file. The causes and acceptability
+of Excel/PowerPoint differences remain unresolved; separate engine nondeterminism,
+legacy storage/import/export changes and actual rendering before setting a
+customer fidelity policy. Independent baseline documents, broader features,
+isolation, runtime/font inventory and production integration remain required.

@@ -58,6 +58,17 @@ JSON. This tests parser interoperability with LibreOffice-produced files, not
 Microsoft Office fidelity or a customer legacy conversion command. Only one
 experiment switch may be selected. See [analysis scope](../../docs/legacy-document-analysis.md).
 
+`-LegacyPdf` also generates those legacy copies, then converts both modern and
+legacy versions to PDF with the same fixed export options and fresh profiles.
+Every PDF must pass the existing qpdf/PDFium page, authored text, geometry and
+original-preservation checks. The runner compares corresponding 96-DPI BGRA
+renders and normalized extracted text, retaining `legacy-pdf-comparison.json`.
+Pixel equality is exact, includes alpha and excludes stride padding. Different
+pixel dimensions are recorded as incomparable, never rescaled into equality.
+Differences are observations requiring review; no visual-loss tolerance is
+silently accepted. These same-engine roundtrips are not Microsoft Office reference
+baselines, customer legacy-file coverage or general fidelity acceptance.
+
 The child wrapper provides a 60-second deadline, bounded diagnostics and an owned
 process-tree kill attempt. Its profile disables macros, active content, Python
 runtime and automatic update checks. **It is not a filesystem/network sandbox**,

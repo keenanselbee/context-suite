@@ -57,6 +57,16 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [legacy Office PDF experiment](office-engine-evaluation.md)
+exports both authored modern fixtures and generated DOC/XLS/PPT copies. All six
+pass independent page/text/geometry/preservation checks; Word's rendered pages
+match exactly, while Excel/PowerPoint have recorded pixel differences and
+PowerPoint has a small slide-height change. These remain fidelity observations,
+not accepted tolerances. Five legacy renders received visual review; no app UI
+acceptance is implied. The next Office work must resolve those differences using
+broader independent baselines alongside isolation and production integration.
+No production payload, installed state or AppContainer profile changed.
+
 On 2026-09-11 bounded [legacy DOC/XLS/PPT analysis](legacy-document-analysis.md)
 adds likely content identity from root stream names and supported binary headers,
 with useful compound facts and explicit unsupported/malformed fallback. It passes
