@@ -52,6 +52,9 @@
     {
       "id": "opus",
       "revision": "3da9f7a6db1c05c3996cb363a9d1931a978bf1be",
+      "packageVersion": "1.6.1-contextsuite-g3da9f7a6db1c",
+      "versionBase": "v1.6.1 (22244de5a79bd1d6d623c32e72bf1954b56235be); the pinned revision is 50 commits ahead, zero behind",
+      "versionEvidence": "https://github.com/xiph/opus/compare/22244de5a79bd1d6d623c32e72bf1954b56235be...3da9f7a6db1c05c3996cb363a9d1931a978bf1be",
       "url": "https://github.com/xiph/opus/archive/3da9f7a6db1c05c3996cb363a9d1931a978bf1be.zip",
       "file": "opus.zip",
       "bytes": 5596912,

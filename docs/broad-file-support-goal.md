@@ -57,6 +57,16 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [Opus dependency recipe](audio-engine-curation.md) supplies explicit
+source-version reporting and corrects the preliminary MSVC compiler flag issue
+without changing upstream files. Its repository command builds in fresh scratch,
+checks five upstream tests plus linked version identity, rejects compiler
+diagnostics and records tool/source/output hashes. This advances the actual
+curated dependency build. The final fresh run passes all six tests with no
+compiler warnings/errors and 752 unchanged source files; two bad-input and three
+launcher checks pass. The remaining codecs, FFmpeg composition, full audio
+matrix, source/notice review and production adoption still need completion.
+
 The next 2026-09-11 [audio source checkpoint](audio-engine-curation.md) adds LAME
 SVN r6761: 418 file contents, a deterministic pinned ZIP and bounded HTTP export.
 All six retained archives verify; a fresh LAME download reproduces its pinned ZIP,

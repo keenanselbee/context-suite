@@ -1,10 +1,10 @@
 Audio Engine Curation
 =====================
 
-Status: six source inputs retained and preliminary Opus build tested, 2026-09-11.
-The tested audio adapter and
-direct commands remain optional because normal production staging has no adopted
-audio payload. This work does not enable an unreviewed supplier bundle.
+Status: six source inputs retained and an isolated Opus dependency recipe added,
+2026-09-11. The tested audio adapter and direct commands remain optional because
+normal production staging has no adopted audio payload. This work does not enable
+an unreviewed supplier bundle.
 
 Why staging still excludes the evaluation engine
 ------------------------------------------------
@@ -120,6 +120,65 @@ build or customer-media processing ran. The preliminary dependency build below
 uses existing Visual Studio tools. The existing evaluation media evidence remains valid
 only for its pinned binaries and stated fixtures.
 
+Opus dependency recipe
+----------------------
+
+[Build-OpusDependency.ps1](../tools/audio-engine/Build-OpusDependency.ps1) verifies
+the retained source cache, extracts the pinned archive into a fresh repository
+scratch directory and builds with existing Visual Studio 2026 x64 tools and
+Windows SDK 10.0.26100.0. It records source/output hashes, actual compiler and
+CMake identities, recipe/configuration hashes and retained logs. It neither
+installs software nor updates a production payload. This is a repeatable build
+recipe; bit-for-bit reproducibility across machines is not established.
+
+The repository-owned [CMake wrapper](../tools/audio-engine/opus/CMakeLists.txt)
+keeps upstream files unchanged. Static library/tests are enabled, dynamic CRT
+linkage retained, and programs, shared library, neural features, fixed point,
+float approximation and fast math disabled. Hardening and stack protection stay
+enabled. It refuses neural source entries in the library target.
+
+Two issues from the preliminary build below are corrected:
+
+- Version identity is `1.6.1-contextsuite-g3da9f7a6db1c`. Upstream
+  [ancestry evidence](https://github.com/xiph/opus/compare/22244de5a79bd1d6d623c32e72bf1954b56235be...3da9f7a6db1c05c3996cb363a9d1931a978bf1be)
+  places the pinned revision 50 commits after the 1.6.1 tag, with no commits
+  behind. The suffix identifies this source snapshot; it does not claim an
+  unmodified 1.6.1 release. A separately linked executable checks the library's
+  runtime version string, supplementing the five upstream codec tests.
+- The pinned upstream CMake sets its clang-cl flag to `false BOOL`. CMake's
+  [normal-variable syntax](https://cmake.org/cmake/help/latest/command/set.html)
+  joins those values into a list rather than a typed Boolean, so that condition
+  enables a GCC-only flag under MSVC. The wrapper removes `-msse4.1` from the six
+  affected sources using [target-directory source properties](https://cmake.org/cmake/help/latest/command/set_source_files_properties.html).
+  SSE runtime dispatch and other compiler options remain enabled. Source files
+  are not patched and compiler diagnostics are not suppressed.
+
+The wrapper requires all six tests to pass with a 120-second per-test deadline,
+rejects compiler warnings/errors and rechecks every extracted source file after
+execution. It rejects missing tools and nonzero native exits rather than reusing
+a stale exit code. Full FFmpeg/dependency linkage, the Context Suite audio matrix,
+final source/notice/toolchain inventory and production adoption remain separate.
+
+The final recipe passes a fresh build with zero compiler warnings/errors and all
+six tests in 67.59 seconds at
+`.codex-temp/audio-opus-fe2313bd2762482aafe5f9a2089d4f1a`. Runtime version identity
+matches, all 752 source files remain unchanged, and the recorded recipe/script
+hashes match the reviewed worktree. `dependency-build.json` and configuration,
+build, test and version logs remain there. The initial wrapper run also passed
+six tests at `.codex-temp/audio-opus-6f5b83cbf99b43b299cef79ad29c79b2`.
+
+Two input checks refuse an outside-scratch cache and a same-length modified Opus
+archive before extraction/build; evidence is at
+`.codex-temp/opus-build-refusal-5e91ed3d6a7d499d8162a380538b765b`. Three launcher
+checks accept zero exit, reject nonzero exit and reject a missing executable at
+`.codex-temp/opus-launcher-guards-3ba30785020e4899a142ca802cefcfa2`.
+The tests caught and corrected an exit-code scoping error introduced while adding
+that safeguard. The intermediate attempt at
+`.codex-temp/audio-opus-8dd269a08547419f83c1a780e4ada221` stopped after configuration;
+it is not a passed build. All evidence stays in repository scratch. PowerShell
+syntax, new-file whitespace and repository source-boundary/theme/69-document
+checks pass. Context Suite engine/worker, UI and installed-shell tests did not run.
+
 Preliminary Opus dependency build
 --------------------------------
 
@@ -134,11 +193,10 @@ the archive, with no added source files. The generated library project has no
 All five upstream CTest tests pass: decode, padding, API, encode and extensions
 (74.33 seconds total, sequential, with a 120-second per-test limit). This is codec
 dependency evidence, not the Context Suite conversion matrix. Two build issues
-remain before adopting this recipe: archive version detection falls back to `0`,
-and MSVC reports D9002 for an ignored `-msse4.1` option. Record an explicit source
-version and resolve the compiler-option mismatch before a curated candidate.
-The reproducible repository build wrapper and final toolchain/link inventory are
-also still pending.
+were found in this preliminary run: archive version detection falls back to `0`,
+and MSVC reports D9002 for an ignored `-msse4.1` option.
+The subsequent wrapper above addresses both findings; final toolchain/link
+inventory and the complete audio candidate remain pending.
 
 The build is retained at
 `.codex-temp/audio-native-2bf17687968146ef9d4a32b04355c76f`, with configuration,

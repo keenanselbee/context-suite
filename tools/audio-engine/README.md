@@ -154,6 +154,20 @@ LAME's fixed SVN revision is exported over HTTP using Python 3.14 or later, with
 bounded reads, a per-file inventory and a deterministic pinned ZIP. SVN properties
 and history are not exported. The
 [curation record](../../docs/audio-engine-curation.md) lists unresolved SVN-property,
-Opus bootstrap, toolchain and transitive inputs, plus preliminary native Opus
-build/test evidence and its remaining warnings. These archives do not constitute
+Opus bootstrap, toolchain and transitive inputs, plus the preliminary Opus findings
+and subsequent verified dependency recipe. These archives do not constitute
 a complete source-distribution bundle or authorize production adoption.
+
+Build the pinned Opus dependency using existing Visual Studio 2026 x64 tools:
+
+```powershell
+.\tools\audio-engine\Build-OpusDependency.ps1 -SourceDirectory '<verified source cache>'
+```
+
+The command creates a fresh `.codex-temp/audio-opus-<id>` directory, verifies and
+extracts the source, builds a static library and runs five upstream tests plus a
+linked-version check. It retains logs, source/output hashes and compiler/recipe
+identity in `dependency-build.json`. No downloads, installation or production
+staging run. The repository wrapper supplies a truthful source version and fixes
+the pinned CMake/MSVC flag mismatch without editing upstream files. This Opus
+dependency does not yet provide the complete curated FFmpeg audio payload.
