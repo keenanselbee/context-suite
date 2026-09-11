@@ -41,5 +41,7 @@ if ($IncludeOptimization) {
 if ($IncludeConversion) {
     & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-conversion-worker (Join-Path $scratch 'conversion-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
     if ($LASTEXITCODE -ne 0) { throw 'Isolated audio conversion workflow checks failed.' }
+    & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-conversion-direct (Join-Path $scratch 'conversion-direct-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
+    if ($LASTEXITCODE -ne 0) { throw 'Isolated direct audio conversion checks failed.' }
 }
 Write-Output "Evaluation-only worker payload and results: $scratch"

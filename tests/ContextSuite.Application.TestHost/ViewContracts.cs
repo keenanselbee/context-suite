@@ -22,7 +22,7 @@ internal static class ViewContracts
         // not be called. No production licensing state is touched.
         var licenseModel = new LicenseViewModel(new(new UnusedLicenseService(),
             new LicenseStore(Path.Combine(Path.GetTempPath(), "unused-license-view-contract.bin"), LicenseEnvironment.Sandbox)));
-        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new LicenseWindow(licenseModel)];
+        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new LicenseWindow(licenseModel), new AudioConversionWindow()];
         try
         {
             foreach (var window in windows)
@@ -39,9 +39,48 @@ internal static class ViewContracts
                     window.GetType().Name + ": minimum-size layout completes");
             }
             var main = windows[0]; var convert = windows[1]; var optimize = windows[2]; var settings = windows[3]; var license = windows[4];
+            var audio = windows[5];
+            Check(!Find<Expander>(audio, "AudioConversionFiles").IsExpanded && Find<Button>(audio, "CancelAudioConversion").IsCancel &&
+                !Find<Button>(audio, "ConfirmAudioConversion").IsDefault,
+                "audio decision: files start collapsed; Escape cancels and Enter does not implicitly confirm");
+            audio.DataContext = new { Heading = "Convert to Opus", FileSummary = "4096 audio files", QualityChanges = "Quality loss and resampling require a choice.",
+                FileNames = "One.mp3\nTwo.mp3", OutputSummary = "Originals are kept.", Message = "Activate your license to convert these files.", LicenseActionLabel = "_Activate license…" };
+            var audioContent = (FrameworkElement)audio.Content;
+            audioContent.Measure(new Size(audio.Width - 16, double.PositiveInfinity));
+            audioContent.Arrange(new Rect(0, 0, audio.Width - 16, audioContent.DesiredSize.Height));
+            audioContent.UpdateLayout();
+            Check(Find<TextBlock>(audio, "AudioQualityChanges").Text.Contains("resampling") &&
+                (string)Find<Button>(audio, "AudioConversionLicense").Content == "_Activate license…",
+                "audio decision: explicit quality text and activation action bind to the fixed plan");
+            var audioFiles = Find<Expander>(audio, "AudioConversionFiles");
+            var audioCollapsedHeight = audioContent.DesiredSize.Height;
+            audio.SizeToContent = SizeToContent.Manual;
+            audioFiles.IsExpanded = true;
+            audioContent.UpdateLayout();
+            audioContent.Measure(new Size(audio.Width - 16, double.PositiveInfinity));
+            Check(audio.SizeToContent == SizeToContent.Height && audioContent.DesiredSize.Height > audioCollapsedHeight,
+                $"audio decision: expanding files resumes height fitting after manual resizing ({audioCollapsedHeight} -> {audioContent.DesiredSize.Height})");
+            audioContent.Measure(new Size(audio.MinWidth - 16, audio.MinHeight - 40));
+            audioContent.Arrange(new Rect(0, 0, audio.MinWidth - 16, audio.MinHeight - 40));
+            audioContent.UpdateLayout();
+            var audioBody = Find<ScrollViewer>(audio, "AudioConversionBody");
+            var audioStatus = Find<StatusTextBlock>(audio, "AudioConversionStatus");
+            var audioConfirm = Find<Button>(audio, "ConfirmAudioConversion");
+            var audioBodyBounds = audioBody.TransformToAncestor(audioContent).TransformBounds(new Rect(audioBody.RenderSize));
+            var audioStatusBounds = audioStatus.TransformToAncestor(audioContent).TransformBounds(new Rect(audioStatus.RenderSize));
+            var audioConfirmBounds = audioConfirm.TransformToAncestor(audioContent).TransformBounds(new Rect(audioConfirm.RenderSize));
+            Check(audioBody.ScrollableHeight > 0 && audioStatusBounds.Top >= audioBodyBounds.Bottom &&
+                audioStatusBounds.Bottom <= audioConfirmBounds.Top && audioConfirmBounds.Bottom <= audioContent.RenderSize.Height,
+                "audio decision: status and confirmation remain reachable while expanded content scrolls at minimum size");
+            audio.SizeToContent = SizeToContent.Manual;
+            audioFiles.IsExpanded = false;
+            audioContent.UpdateLayout();
+            audioContent.Measure(new Size(audio.Width - 16, double.PositiveInfinity));
+            Check(audio.SizeToContent == SizeToContent.Height && Math.Abs(audioContent.DesiredSize.Height - audioCollapsedHeight) < 1,
+                "audio decision: closing files restores compact content height");
             foreach (var (window, id) in new[] { (main, "BatchSummary"), (main, "RecoveryNotice"), (main, "InputNotice"),
                 (convert, "ConversionPlanStatus"), (convert, "ConversionPreviewStatus"), (convert, "ConversionTrialStatus"),
-                (optimize, "OptimizationPlanStatus"), (optimize, "OptimizationTrialStatus"), (settings, "SettingsMessage"), (license, "LicenseStatus") })
+                (optimize, "OptimizationPlanStatus"), (optimize, "OptimizationTrialStatus"), (settings, "SettingsMessage"), (license, "LicenseStatus"), (audio, "AudioConversionStatus") })
             {
                 var control = Find<StatusTextBlock>(window, id);
                 control.Text = "A file needs attention.";

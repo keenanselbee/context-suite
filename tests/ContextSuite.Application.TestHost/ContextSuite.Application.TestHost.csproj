@@ -15,6 +15,7 @@
     <Page Include="..\..\src\ContextSuite.Application\LicenseWindow.xaml" Link="LicenseWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\SettingsWindow.xaml" Link="SettingsWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\ConversionWindow.xaml" Link="ConversionWindow.xaml" />
+    <Page Include="..\..\src\ContextSuite.Application\AudioConversionWindow.xaml" Link="AudioConversionWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\OptimizationWindow.xaml" Link="OptimizationWindow.xaml" />
   </ItemGroup>
 </Project>

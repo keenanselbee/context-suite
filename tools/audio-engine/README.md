@@ -97,10 +97,15 @@ conversion worker, confirmed batch, local trial and transactional publisher.
 It covers all 30 cross-format pairs and six no-op cases, collisions, expiry,
 changed sources, unsupported metadata, cancellation, alternate folders and
 refusal of nonempty/hard-linked reservations. It records
-`conversion-results/audio-conversion-workflow.json`. A refusing recycler excludes
-native recycling; the tests do not operate a customer audio Convert menu or its
-pending quality prompt. Use both switches to verify the existing audio workflows
-alongside conversion.
+`conversion-results/audio-conversion-workflow.json`. It then runs 20 additional
+checks through `MainViewModel` direct Convert dispatch and records
+`conversion-direct-results/audio-conversion-direct.json`. These cover all six menu
+targets, quiet routine work, one compact quality decision for mixed sources,
+activation/deactivation without losing the plan, final access rejection, retries,
+captured settings, cancellation, malformed input and missing engines. A refusing
+recycler excludes native recycling. The tests call the actual decision model;
+they do not operate Explorer or inspect visible windows. Use both switches to
+verify the existing audio workflows alongside conversion.
 
 The latest adapter run passes 269 combined checks. FLAC conversion cases include
 original-block inventory, literal Unicode/multiline tag transport, canonical

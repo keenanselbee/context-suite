@@ -164,9 +164,13 @@ Planned Audio Scope
 The [fixed audio policy and worker integration](audio-conversion-policy.md) now
 implement typed target/consent decisions and application-owned publication through
 the real worker. All 30 cross-format pairs pass generated-fixture copy workflows;
-six same-format cases remain unchanged without admission. Customer menu routing,
-the compact quality prompt, metadata completeness, independent fidelity/listening
-and production payload acceptance remain pending. The scope below is still the
+six same-format cases remain unchanged without admission. Direct WAV, FLAC, MP3,
+M4A (AAC), Ogg Vorbis and Opus menu actions now use fixed settings. Routine work
+stays quiet; required lossy-transcoding, resampling or precision changes open one
+compact decision for the batch. Closing License refreshes access without changing
+the target, files or captured settings. Metadata completeness, visible acceptance,
+independent fidelity/listening and production payload acceptance remain pending.
+The scope below is still the
 launch requirement.
 
 The first audio release should analyze and accept WAV, FLAC, MP3, M4A/AAC, and

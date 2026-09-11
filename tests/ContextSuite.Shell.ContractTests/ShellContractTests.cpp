@@ -102,9 +102,9 @@ bool TestSettingsChildren(IEnumExplorerCommand* enumerator, IExplorerCommand* ac
     {
         const bool optimize = std::string_view(expectation.operation) == "optimize";
         const std::vector<const wchar_t*> titles = optimize ? std::vector<const wchar_t*>{ L"Lossless", L"Balanced", L"Smallest" } :
-            std::vector<const wchar_t*>{ L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS..." };
+            std::vector<const wchar_t*>{ L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS...", L"WAV", L"FLAC", L"MP3", L"M4A (AAC)", L"Ogg Vorbis", L"Opus" };
         const std::vector<const char*> actions = optimize ? std::vector<const char*>{ "lossless", "balanced", "smallest" } :
-            std::vector<const char*>{ "jpeg", "webp", "bmp", "tga", "dds" };
+            std::vector<const char*>{ "jpeg", "webp", "bmp", "tga", "dds", "wav", "flac", "mp3", "m4a", "vorbis", "opus" };
         size_t index = 0;
         GUID previous{};
         action->GetCanonicalName(&previous);
@@ -153,7 +153,7 @@ bool TestSettingsChildren(IEnumExplorerCommand* enumerator, IExplorerCommand* ac
     if (extra != nullptr) extra->Release();
 
     IEnumExplorerCommand* clone = nullptr;
-    valid = valid && enumerator->Reset() == S_OK && enumerator->Skip(std::string_view(expectation.operation) == "optimize" ? 4 : 6) == S_OK &&
+    valid = valid && enumerator->Reset() == S_OK && enumerator->Skip(std::string_view(expectation.operation) == "optimize" ? 4 : 12) == S_OK &&
         SUCCEEDED(enumerator->Clone(&clone)) && clone != nullptr;
     if (clone != nullptr)
     {

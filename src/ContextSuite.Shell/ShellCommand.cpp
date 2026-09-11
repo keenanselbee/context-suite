@@ -539,7 +539,8 @@ public:
         if (role_ == CommandRole::Action && definition_.kind == CommandKind::Optimize)
             return DuplicateString(PresetTooltips[preset_], tooltip);
         if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert)
-            return DuplicateString(preset_ == 5 ? L"Choose format, quality and advanced settings" :
+            return DuplicateString(preset_ >= 6 ? L"Convert audio using fixed settings; ask before required quality changes" :
+                preset_ == 5 ? L"Choose format, quality and advanced settings" :
                 L"Create converted copies; ask only when transparency, metadata or quality needs a decision", tooltip);
         return DuplicateString(role_ == CommandRole::Root ? definition_.tooltip : definition_.actionTooltip, tooltip);
     }
@@ -555,7 +556,7 @@ public:
         if (role_ == CommandRole::Settings) canonicalName->Data1 ^= 0x40000000;
         if (role_ == CommandRole::Separator) canonicalName->Data1 ^= 0x80000000;
         if (role_ == CommandRole::Action && definition_.kind == CommandKind::Optimize) canonicalName->Data1 ^= preset_ + 1;
-        if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert && preset_ < 5) canonicalName->Data1 ^= preset_ + 1;
+        if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert && preset_ != 5) canonicalName->Data1 ^= preset_ + 1;
         return S_OK;
     }
 
@@ -624,8 +625,10 @@ private:
     const CommandDefinition& definition_;
     CommandRole role_;
     unsigned preset_;
-    static constexpr const wchar_t* ConvertTitles[] = { L"PNG", L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS..." };
-    static constexpr const wchar_t* ConvertActions[] = { L"png", L"jpeg", L"webp", L"bmp", L"tga", L"dds" };
+    static constexpr const wchar_t* ConvertTitles[] = { L"PNG", L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS...",
+        L"WAV", L"FLAC", L"MP3", L"M4A (AAC)", L"Ogg Vorbis", L"Opus" };
+    static constexpr const wchar_t* ConvertActions[] = { L"png", L"jpeg", L"webp", L"bmp", L"tga", L"dds",
+        L"wav", L"flac", L"mp3", L"m4a", L"vorbis", L"opus" };
     static constexpr const wchar_t* PresetTitles[] = { L"Auto", L"Lossless", L"Balanced", L"Smallest" };
     static constexpr const wchar_t* PresetActions[] = { L"auto", L"lossless", L"balanced", L"smallest" };
     static constexpr const wchar_t* PresetTooltips[] = {
@@ -639,14 +642,14 @@ class CommandEnumerator final : public IEnumExplorerCommand
 {
 public:
     explicit CommandEnumerator(CommandKind kind) :
-        kind_(kind), commandCount_(kind == CommandKind::Optimize ? 6 : 8)
+        kind_(kind), commandCount_(kind == CommandKind::Optimize ? 6 : 14)
     {
         ++objectCount;
         const unsigned count = commandCount_ - 2;
         for (unsigned preset = 0; preset < count; ++preset)
             commands_[preset] = new (std::nothrow) ExplorerCommand(kind, CommandRole::Action, preset);
-        commands_[count] = new (std::nothrow) ExplorerCommand(kind, CommandRole::Separator);
-        commands_[count + 1] = new (std::nothrow) ExplorerCommand(kind, CommandRole::Settings);
+        commands_[commandCount_ - 2] = new (std::nothrow) ExplorerCommand(kind, CommandRole::Separator);
+        commands_[commandCount_ - 1] = new (std::nothrow) ExplorerCommand(kind, CommandRole::Settings);
     }
 
     ~CommandEnumerator()
@@ -751,7 +754,7 @@ public:
 
 private:
     std::atomic_ulong referenceCount_{1};
-    std::array<ExplorerCommand*, 8> commands_{};
+    std::array<ExplorerCommand*, 14> commands_{};
     CommandKind kind_;
     ULONG commandCount_;
     ULONG position_ = 0;

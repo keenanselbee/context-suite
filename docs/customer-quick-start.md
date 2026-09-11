@@ -65,7 +65,13 @@ targets PNG, not every format that Convert supports. Analyze also gives basic
 identification and common-use descriptions for other readable regular files;
 recognition does not mean conversion is available.
 
-In isolated audio testing, **Auto** and **Lossless** also optimize supported FLAC
+In isolated audio testing, Convert also offers **WAV**, **FLAC**, **MP3**,
+**M4A (AAC)**, **Ogg Vorbis** and **Opus**. Routine conversions use fixed settings.
+A short prompt asks before another lossy conversion, required resampling or
+reduced precision. A lossless format cannot restore quality already lost.
+Converting a file to its existing format leaves it unchanged.
+
+In that same isolated testing, **Auto** and **Lossless** also optimize supported FLAC
 files while preserving decoded audio and admitted metadata. They share the same
 copy settings, batch progress and retry behavior. Balanced and Smallest are PNG
 presets. If the extension does not match the identified content, the app asks you

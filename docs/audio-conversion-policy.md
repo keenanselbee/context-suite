@@ -1,9 +1,9 @@
 Audio Conversion And FLAC Optimization Policy
 ============================================
 
-Status: typed audio conversion, worker/publication integration and direct FLAC
-Auto/Lossless dispatch. Audio Convert menu/quality UI and engine shipping adoption
-remain pending. Updated: 2026-09-10.
+Status: typed audio conversion, worker/publication integration, direct Convert
+actions with a compact quality prompt, and direct FLAC Auto/Lossless dispatch.
+Visible acceptance and engine shipping adoption remain pending. Updated: 2026-09-10.
 
 The public `AudioConversionPlan` separates recognized container/codec pairs from
 conversion admission. Policy `audio-fixed-1` is implemented for isolated testing;
@@ -387,7 +387,7 @@ without starting a worker or trial.
 
 See [dated engine evidence](audio-engine-evaluation.md) for generated fixtures and
 test counts. Normal packaging still excludes the evaluation audio engine.
-Broader metadata, audio Convert menu/quality UI, crash/recovery coverage,
+Broader metadata, crash/recovery coverage,
 listening, production payload and visible UI acceptance remain part of the
 [active goal](broad-file-support-goal.md).
 
@@ -429,6 +429,44 @@ The isolated workflow verifies all 30 cross-format pairs, six no-op cases,
 collisions, access expiry, source changes, unsupported metadata/references,
 cancellation, alternate folders and unsafe reservations. Tests inject a refusing
 recycler; no native overwrite/recycling acceptance is implied. Paid-access
-contracts also verify no trial fallback after paid expiry. Customer direct
-dispatch, the focused consent dialog, retries through that dispatch, listening,
-broader metadata, crash recovery and shipping-engine acceptance remain open.
+contracts also verify no trial fallback after paid expiry. Listening, broader
+metadata, crash recovery and shipping-engine acceptance remain open.
+
+Direct Convert and required quality decisions
+---------------------------------------------
+
+The Convert submenu adds WAV, FLAC, MP3, M4A (AAC), Ogg Vorbis and Opus after the
+existing image targets, followed by the shared separator and Settings command.
+Stable actions are `wav`, `flac`, `mp3`, `m4a`, `vorbis` and `opus`. There is only
+one submenu level. Native enumeration neither probes files nor checks licensing;
+the application checks the actual inputs and optional engine availability.
+
+`MainViewModel` probes each input for the fixed target and freezes the existing
+Convert settings. Already-target files are unchanged without admission or output.
+Unsupported files retain per-file results while eligible files continue. A
+missing engine returns an unavailable-build result without starting the trial or
+worker. Routine conversions automatically confirm their complete safe plan and
+use the quiet workflow; they never open the image planner.
+
+When required quality consent is nonzero, `AudioConversionWindow` explains only
+the applicable lossy-transcoding, 48 kHz resampling and precision consequences.
+One Convert action explicitly accepts them for the executable files. Enter is
+not a default confirmation; Escape cancels. Files start collapsed. Disclosure
+changes refit the window height; at the minimum height, details scroll while
+status, License, Convert and Cancel remain reachable. This uses the existing
+system theme, not a new workspace or preset editor.
+
+The prompt reads access without admitting work. Closing License refreshes that
+same plan; expiry disables Convert, activation enables it and deactivation
+disables it again. Closing the prompt cancels an outstanding access read.
+Final paid/trial admission rechecks access after confirmation. Cancelling or
+declining the prompt starts no admission or publication. Try again preserves the
+failed action/files, captures current saved settings and suppresses duplicate
+clicks, as in existing quick actions.
+
+Twenty isolated direct-conversion checks exercise the real application queue,
+worker and publisher with simulated access and disposable copies. Foundation
+contracts cover the fixed decision state; hidden view contracts cover bindings,
+disclosure sizing, minimum layout and automation peer text. They do not prove
+visible usability, actual keyboard focus, screen-reader delivery or other
+themes/DPI. Normal packaging still excludes the evaluation audio engine.

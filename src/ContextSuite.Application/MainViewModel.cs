@@ -13,7 +13,7 @@ using ContextSuite.Core.Audio;
 
 namespace ContextSuite.Application;
 
-internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings = null, OutputPublisher? publisher = null,
+internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? settings = null, OutputPublisher? publisher = null,
     IOperationAccess? trial = null) : INotifyPropertyChanged, IAsyncDisposable
 {
     private readonly Queue<(OperationRequest Request, FileRow[] Rows)> _pending = new();
@@ -48,6 +48,7 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
     public ICommand SettingsCommand => _settingsCommand ??= new OpenSettingsCommand(this);
     public event Action<string>? SettingsRequested;
     public event Func<ConversionViewModel, CancellationToken, Task<ConfirmedImageBatch?>>? ConversionRequested;
+    public event Func<AudioConversionViewModel, CancellationToken, Task<ConfirmedAudioConversion?>>? AudioConversionRequested;
     public event Action<OperationRequest, FileRow[]>? QuickBatchStarted;
     public event Action<OperationRequest, FileRow[]>? QuickBatchCompleted;
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -160,6 +161,11 @@ internal sealed class MainViewModel(WorkerClient worker, SuiteSettings? settings
 
     private async Task ConvertBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
     {
+        if (request.IsQuickAudioConversion)
+        {
+            await ConvertAudioBatchAsync(request, rows, cancellationToken);
+            return;
+        }
         ImageFormat? directTarget = request.IsQuickConversion ? request.Action switch
         {
             "png" => ImageFormat.Png, "jpeg" => ImageFormat.Jpeg, "webp" => ImageFormat.WebP,

@@ -28,10 +28,16 @@ and Convert and Optimize contain no more than one level of child commands.
 
 Convert and Optimize end with a separator and **Settings...**. These entries
 open the corresponding shared settings section, not a media batch. The current
-native Convert implementation offers PNG, JPEG, WebP (lossless), BMP, TGA,
-More options, separator and Settings. Actions are `png`, `jpeg`, `webp`, `bmp`,
-`tga` and `choose-format`. Analyze has no submenu. Enumeration is bounded and
+native Convert implementation offers PNG, JPEG, WebP (lossless), BMP, TGA, DDS...,
+WAV, FLAC, MP3, M4A (AAC), Ogg Vorbis, Opus, separator and Settings. Actions are
+`png`, `jpeg`, `webp`, `bmp`, `tga`, `dds`, `wav`, `flac`, `mp3`, `m4a`, `vorbis`
+and `opus`. The legacy `choose-format` request remains accepted by the app;
+it is not a menu child. Analyze has no submenu. Enumeration is bounded and
 does not decode media; the app checks actual capabilities and required decisions.
+Audio commands require the optional verified engine in isolated evaluation;
+normal packaging excludes it and reports that conversion is unavailable in this
+build. Direct activation is tested, but the expanded installed menu's visible
+layout still needs acceptance.
 
 [Decision 0015](decisions/0015-simple-context-menu-workflows.md) replaces the
 target Optimize experience with Auto, Lossless, Balanced, Smallest, separator,

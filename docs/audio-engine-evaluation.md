@@ -842,3 +842,63 @@ audio payload adoption, broader crash/recovery and required document actions
 remain open. No hidden/visible UI, image-engine, native-shell, installer, signing
 or live-commerce acceptance was rerun for this slice. The broad-file goal remains
 active.
+
+Direct audio Convert commands and quality prompt (2026-09-10)
+------------------------------------------------------------
+
+The six fixed audio targets now route from native Convert through the managed
+quick-work queue. Routine conversion needs no planner. Required lossy-to-lossy,
+resampling or precision changes use one compact decision, retaining target/files
+and captured settings across licensing changes. The shell keeps one submenu
+level, with the existing image targets first and Settings last.
+
+**1,422 foundation contracts** pass, including 14 new action/decision checks.
+**20 isolated direct audio conversion checks** pass through the actual application
+queue, worker and publisher. They cover all six actions, same-format no-op, quiet
+routine success, one decision/admission for a mixed-source batch, expired access,
+activation/deactivation while keeping the plan, final access rejection, retries
+with current settings, declined/cancelled decisions, malformed input and a missing
+engine. Original hashes and reservation cleanup pass; a refusing recycler prevents
+native recycling. Access is simulated and no live license requests occur.
+
+The existing **50 conversion, 11 Analyze, 14 FLAC workflow and 16 direct FLAC
+checks** also pass, bringing the real-worker audio total to **111**. Evidence:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  worker-43caac2844f549c7976a876370004bc6/
+    conversion-direct-results/audio-conversion-direct.json
+    conversion-results/audio-conversion-workflow.json
+    results/analysis-results.txt
+    flac-results/flac-workflow.json
+    direct-results/direct-audio.json
+```
+
+These workflows used isolated stage `a88b9d3ee55c45ef82dbfe138b6f6054`.
+Its native shell contracts also passed all menu actions, complete multi-file
+activation, IDs, separator/Settings order and enumerator cloning/reset without
+registering or operating Explorer. **13 image direct-command checks** passed at
+`.codex-temp/license-workflow/direct-b350f7b2c9c1441ead6f41b4f6ab0cea`.
+
+**86 hidden view contracts** pass against the final layout. They instantiate the
+audio decision, check bindings and accessible peer text, keep files collapsed,
+retain explicit confirmation/Escape semantics, refit height on disclosure and
+verify that status and actions stay outside scrolling content at minimum size.
+The initial binding/sizing checks needed an explicit measure/arrange/layout pass
+because these windows are never shown. The final production change keeps the
+status/buttons visible when a long file list scrolls.
+
+The final isolated Release build is
+`artifacts/production-staging/449797dd9d6447e5891f05b2a96da634`, including native
+shell and the adjusted audio window. Compilation, curated identities, payload
+allowlist, dependency and notice checks pass. The worker workflows were not
+repeated after the window-only change. Normal staging still excludes the
+evaluation audio/PDF engines; they are added only to an isolated test copy.
+
+The preceding 269 private encoder and 942 image-engine checks were not rerun;
+their implementations did not change. Hidden contracts do not establish visible
+usability, actual keyboard focus, screen-reader delivery, other themes/DPI or the
+expanded installed menu's layout. Metadata/artwork coverage, independent decoding
+and listening, production audio adoption, hostile-file/crash/recovery coverage and
+required PDF/Office actions remain open. No installer, signing, live commerce or
+release acceptance was performed. The broad-file goal remains active.

@@ -30,6 +30,8 @@
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PublicationSupport.cs" Link="Runtime\PublicationSupport.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\SettingsViewModel.cs" Link="Runtime\SettingsViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.cs" Link="Runtime\MainViewModel.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Audio.cs" Link="Runtime\MainViewModel.Audio.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\AudioConversionViewModel.cs" Link="Runtime\AudioConversionViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.cs" Link="Runtime\ConversionViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.Dds.cs" Link="Runtime\ConversionViewModel.Dds.cs" />
   </ItemGroup>
