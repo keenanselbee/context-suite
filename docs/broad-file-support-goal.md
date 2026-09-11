@@ -57,13 +57,23 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The independent image-PDF validation checkpoint (2026-09-10) adds an optional
+pinned native qpdf reader and managed reply verifier. It checks the fixed output
+schema, ordered page geometry and exact independently decoded color/alpha/ICC
+digests against original samples, with bounded streaming and no DPI resampling.
+Fresh evidence passes 45 native validation checks, 133 writer checks and 1,628
+foundation contracts. Isolated Release stage `7c787dc3faa24b4f813e0dd43951b67c`
+passes payload checks using `-SkipShell`; the optional native validator is not
+shipped in normal staging. Worker/access/publication, the order UI/direct command,
+wider acceptance and engine adoption remain open. See [evidence and limits](image-pdf-candidate.md).
+
 The 2026-09-10 [combined image-PDF checkpoint](image-pdf-candidate.md) implements
 an immutable ordered plan and private fixed raster PDF writer candidate. The
 owner selected one combined document; several images will require a focused
 page-order review. The candidate retains full samples, orientation, ICC and alpha
 and leases every original through serialization. It passes 133 independent
 qpdf/PDFium/sample/source-safety checks on 23 combined pages and 1,587 foundation
-contracts. Production output validation, all-source publication, worker/direct
+contracts. The subsequent checkpoint above adds output validation. All-source publication, worker/direct
 integration and the order dialog remain open. This is not an enabled menu action
 or completion of the required images-to-PDF scope.
 

@@ -101,3 +101,11 @@ decoded samples/profiles, rendered appearance and source leases on generated
 fixtures. Fresh `image-pdf-*` evidence stays under PDFium scratch. It does not
 enable a menu action, publish a customer output or add either evaluation engine
 to normal packaging. See [candidate scope and page order](../../docs/image-pdf-candidate.md).
+
+Build its optional independent validator with `Build-ImagePdfValidator.ps1
+-PreparedDirectory '<prepared qpdf directory>'`, then add `-Validate` to the
+candidate test command. The wrapper checks the prepared SDK, builds a native
+stream-hashing reader in isolated scratch and records host/source/compiler
+identities. Tests compare its reply with original-sample digests and exercise
+malformed/tampered fixed-schema PDFs, cancellation and snapshot cleanup. It
+does not validate arbitrary documents or enable PDF publication.
