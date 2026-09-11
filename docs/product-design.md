@@ -16,8 +16,9 @@ including a reviewed offline explanation of common types. Add common audio
 analysis/conversion and lossless FLAC optimization, plus PDF/Office/OpenDocument
 analysis. Selected launch actions include images-to-PDF, PDF pages-to-images,
 PDF optimization and Word/Excel/PowerPoint-to-PDF. Optional PDF optimization has
-direct worker/publication coverage; PDF-to-PNG has worker/page-publication coverage
-with direct UI pending. Other selected document conversions remain planned;
+direct worker/publication coverage; PDF-to-PNG has direct PNG-command coverage
+with per-document summaries and partial-page retries. Renderer packaging and
+visible acceptance remain pending. Other selected document conversions remain planned;
 retain the simple customer surfaces above. Shared Analyze/fallback,
 bounded JSON/XML structure analysis and a 237-entry catalog are implemented with automated
 evidence; see [current coverage](file-type-coverage.md). Signing is deferred.

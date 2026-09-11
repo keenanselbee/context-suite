@@ -57,6 +57,19 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The direct PDF-to-PNG checkpoint (2026-09-10) adds PDFs to the existing **Convert >
+PNG** command when the optional renderer is present. Mixed images/PDFs share one
+admission; each PDF has one result with numbered page details. Partial cancellation
+or failure stays visible, and in-session retry skips completed pages while using
+current settings for unfinished pages. Changed PDFs require a new command. Fresh
+evidence: 1,554 foundation, 25 page-publication, 18 direct PDF page, 86 hidden view,
+10 simulated licensing-harness and 13 direct image checks, plus native shell
+contracts. Full isolated Release stage `a768a20778d843ae90aa8090e5c4c8e7` includes
+fresh native shell/host output and passes payload checks without installation.
+Normal packaging still excludes the PDF renderer. Visible/accessibility acceptance,
+engine adoption, broader fidelity, images-to-PDF and required Office-to-PDF remain
+open. See [the document design](document-design.md) for evidence and limits.
+
 The subsequent 2026-09-10 page-publication checkpoint connects PDF inspection and
 per-page rendering to the optional worker. One conversion admission covers a
 bounded page batch. Numbered PNG copies use the existing publication journals;

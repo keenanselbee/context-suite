@@ -541,6 +541,7 @@ public:
         if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert)
             return DuplicateString(preset_ >= 6 ? L"Convert audio using fixed settings; ask before required quality changes" :
                 preset_ == 5 ? L"Choose format, quality and advanced settings" :
+                preset_ == 0 ? L"Convert images to PNG; PDF pages become numbered PNG copies and keep the PDF" :
                 L"Create converted copies; ask only when transparency, metadata or quality needs a decision", tooltip);
         return DuplicateString(role_ == CommandRole::Root ? definition_.tooltip : definition_.actionTooltip, tooltip);
     }

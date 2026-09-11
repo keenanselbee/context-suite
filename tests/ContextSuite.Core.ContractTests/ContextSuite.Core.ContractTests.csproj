@@ -33,6 +33,8 @@
     <Compile Include="..\..\src\ContextSuite.Application\SettingsViewModel.cs" Link="Runtime\SettingsViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.cs" Link="Runtime\MainViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Audio.cs" Link="Runtime\MainViewModel.Audio.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Pdf.cs" Link="Runtime\MainViewModel.Pdf.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\FileRow.Pdf.cs" Link="Runtime\FileRow.Pdf.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\AudioConversionViewModel.cs" Link="Runtime\AudioConversionViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.cs" Link="Runtime\ConversionViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.Dds.cs" Link="Runtime\ConversionViewModel.Dds.cs" />

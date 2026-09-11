@@ -13,6 +13,13 @@ internal sealed class ImageBatchExecutor(WorkerClient worker, OutputPublisher pu
         Action<ImageItemPlan, FileResult>? report, CancellationToken cancellationToken)
     {
         var admission = await trial.AdmitConversionAsync(confirmed, cancellationToken);
+        return await ExecuteAdmittedAsync(confirmed, admission, report, cancellationToken);
+    }
+
+    internal async Task<ImageBatchExecution> ExecuteAdmittedAsync(ConfirmedImageBatch confirmed, OperationAdmission admission,
+        Action<ImageItemPlan, FileResult>? report, CancellationToken cancellationToken)
+    {
+        if (admission.BatchId != confirmed.Plan.BatchId) throw new InvalidDataException("Image admission belongs to another batch.");
         var results = new List<FileResult>();
         foreach (var item in confirmed.Plan.Items)
         {

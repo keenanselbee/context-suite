@@ -79,6 +79,18 @@ to correct the name before optimizing. Normal packaging does not yet include the
 audio engine; audio conversion and video processing are not available in this
 packaged candidate.
 
+In isolated PDF testing, **Convert > PNG** saves each PDF page as a numbered image,
+such as `Document - Page 001.png`. It always keeps the PDF, even with Overwrite
+originals selected. Page images retain visible content; they do not carry editable
+forms, attachments or verifiable digital signatures. Protected or oversized PDFs
+can be declined. The normal packaged candidate does not yet include this renderer.
+
+The result shows how many page copies were saved. Expand file details to see their
+locations. If work stops partway through, completed copies stay in place. **Try
+again** converts only unfinished pages, using current settings for those new copies.
+If the source PDF changed, start a new Convert command. Page retry information is
+kept for the current results session; restarting the app does not resume that list.
+
 License and transfer
 --------------------
 

@@ -62,6 +62,20 @@ internal static class PdfRasterContracts
             "PDF raster: page numbers remain distinct from collision ordinals");
         Reject(() => ContextSuite.Core.Operations.OutputNames.Create(source.Path, "convert", "png", replaceSource: true, pageNumber: 1), "page naming cannot authorize replacement");
         Reject(() => ContextSuite.Core.Operations.OutputNames.Create(source.Path, "convert", "png", pageNumber: 0), "page numbers start at one");
+        var document = source with { Document = new([page, page with { Index = 1 }]) };
+        var row = new ContextSuite.Application.FileRow(1, "convert", source.Path, settings, "png");
+        row.BeginPdfPages(document);
+        var copy = new ContextSuite.Core.Operations.PublicationResult(source.Path, ContextSuite.Core.Operations.PublicationOutcome.CopyCreated, "Copy created.", source.Path + ".png");
+        row.ApplyPdfPage(0, copy.ToFileResult());
+        row.ApplyResult(new(source.Path, ContextSuite.Core.Operations.OperationState.Failed, "Later page failed.",
+            new(source.Path, ContextSuite.Core.Operations.PublicationOutcome.Failed, "Uncommitted failure.", CleanupWarning: true)));
+        check(row.SavedPdfPages == 1 && row.Result.Publication?.IsCommitted == true && row.Result.PartialOutput && row.HasOutput,
+            "PDF raster: uncommitted later failure cannot hide an earlier saved page");
+        var resumedRow = new ContextSuite.Application.FileRow(2, "convert", source.Path, settings, "png");
+        resumedRow.ResumePdfFrom(row); resumedRow.BeginPdfPages(document);
+        resumedRow.ApplyPdfPage(1, (copy with { OutputPath = source.Path + "-2.png" }).ToFileResult());
+        check(resumedRow.SavedPdfPages == 2 && !resumedRow.Result.PartialOutput && resumedRow.Result.State == ContextSuite.Core.Operations.OperationState.Succeeded,
+            "PDF raster: carried page receipt and newly completed page form a complete document result");
 
         void Reject(Action action, string message)
         {

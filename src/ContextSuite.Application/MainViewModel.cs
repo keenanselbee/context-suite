@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -38,11 +38,12 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     private IEnumerable<FileRow> RetryCandidates => Rows.Where(row => row.Operation is "convert" or "optimize")
         .GroupBy(row => row.Operation)
         .SelectMany(tool => tool.GroupBy(row => row.Path, StringComparer.OrdinalIgnoreCase).Select(file => file.Last()))
-        .Where(row => row.Result.State == OperationState.Failed && row.Result.Publication?.IsCommitted != true);
+        .Where(row => !row.PdfResumeBlocked && (row.Result.State == OperationState.Failed && row.Result.Publication?.IsCommitted != true ||
+            row.HasIncompletePdfPages && row.Result.State is OperationState.Failed or OperationState.Cancelled));
     public bool CanRetry => !IsBusy && RetryCandidates.Any();
-    public bool HasProblems => DisplayRows.Any(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.Publication?.HasWarning == true);
+    public bool HasProblems => DisplayRows.Any(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.PartialOutput || row.Result.Publication?.HasWarning == true);
     public bool ShowDetails => DisplayRows.Any(row => row.Operation == "analyze" ||
-        row.Result.State is OperationState.Failed or OperationState.Unsupported ||
+        row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.PartialOutput ||
         row.Result.Publication is { CleanupWarning: true } or { HasWarning: true, MetadataWarning: false });
     public string Summary { get => _summary; private set { _summary = value; Changed(); } }
     public ICommand CancelCommand => _cancelCommand ??= new CancelPendingCommand(this);
@@ -55,6 +56,9 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ActivationReply Admit(OperationRequest? request)
+        => AdmitCore(request, null);
+
+    private ActivationReply AdmitCore(OperationRequest? request, FileRow[]? retryRows)
     {
         if (request is null) return new(1, Guid.Empty, true, "Application opened.");
         request.Validate();
@@ -71,6 +75,10 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         var batchId = ++_batch;
         var snapshot = Settings.Capture(request.Operation);
         var rows = request.Paths.Select(path => new FileRow(batchId, request.Operation, path, snapshot, request.Action)).ToArray();
+        if (retryRows is not null)
+            foreach (var row in rows)
+                if (retryRows.FirstOrDefault(previous => string.Equals(previous.Path, row.Path, StringComparison.OrdinalIgnoreCase)) is { } previous)
+                    row.ResumePdfFrom(previous);
         foreach (var row in rows) Rows.Add(row);
         Changed(nameof(HasResults)); Changed(nameof(IsLanding)); Changed(nameof(DisplayRows));
         _pending.Enqueue((request, rows));
@@ -120,7 +128,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                 InvalidOperationException or System.Text.Json.JsonException)
             {
                 foreach (var row in batch.Rows)
-                    if (row.Result.Publication?.IsCommitted != true) row.ApplyResult(new(row.Path, OperationState.Failed, "Worker unavailable — retry selection"));
+                    if (row.Result.State is OperationState.Pending or OperationState.Running) row.ApplyResult(new(row.Path, OperationState.Failed, "Worker unavailable — retry selection"));
             }
             finally
             {
@@ -173,14 +181,51 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             "bmp" => ImageFormat.Bmp, "tga" => ImageFormat.Tga, "dds" => ImageFormat.Dds, _ => throw new InvalidDataException("Unknown conversion target.")
         } : null;
         var selection = new List<ConversionSelection>();
+        var documents = new List<PdfRasterSource>();
         for (var index = 0; index < rows.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var row = rows[index];
-            Summary = $"Reading image {index + 1} of {rows.Length}. No conversion has been confirmed.";
-            row.ApplyResult(new(row.Path, OperationState.Running, "Reading image properties"));
+            Summary = $"Checking file {index + 1} of {rows.Length}.";
+            row.ApplyResult(new(row.Path, OperationState.Running, "Checking conversion support"));
             try
             {
+                if (directTarget is not null)
+                {
+                    var header = await FileAnalysisReader.ReadAsync(row.Path, cancellationToken, headerOnly: true);
+                    if (header.Identity is { FormatId: "pdf", Basis: IdentificationBasis.Content })
+                    {
+                        if (directTarget != ImageFormat.Png)
+                        {
+                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "To convert PDF pages to images, choose Convert > PNG. The original PDF is kept."));
+                            continue;
+                        }
+                        if (!string.Equals(Path.GetExtension(row.Path), ".pdf", StringComparison.OrdinalIgnoreCase))
+                        {
+                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "This file contains PDF data. Rename it to .pdf before converting its pages."));
+                            continue;
+                        }
+                        if (!worker.HasPdfRenderer)
+                        {
+                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "PDF page conversion is unavailable in this build."));
+                            continue;
+                        }
+                        var document = await worker.ProbePdfPagesAsync(new(row.ItemId, row.Path), cancellationToken);
+                        if (row.PdfSourceHash is not null && row.PdfSourceHash != document.Sha256)
+                        {
+                            row.BlockPdfResume("The PDF changed since the previous attempt. Start a new Convert command for this version; completed copies were kept.");
+                            continue;
+                        }
+                        row.BeginPdfPages(document);
+                        documents.Add(document);
+                        continue;
+                    }
+                    if (row.PdfSourceHash is not null)
+                    {
+                        row.BlockPdfResume("The source no longer contains the same PDF. Start a new Convert command; completed copies were kept.");
+                        continue;
+                    }
+                }
                 var facts = await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken);
                 if (directTarget is not ImageFormat.Dds && directTarget == facts.Format && facts.UnsupportedReason is null)
                 {
@@ -188,18 +233,28 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                     continue;
                 }
                 selection.Add(new(row.ItemId, row.Path, facts, null));
-                row.ApplyResult(new(row.Path, OperationState.Pending, "Waiting for conversion choices"));
+                row.ApplyResult(new(row.Path, OperationState.Pending, "Preparing conversion"));
             }
             catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or
                 InvalidOperationException or System.ComponentModel.Win32Exception or System.Text.Json.JsonException)
             {
-                var message = error is MediaWorkerException ? error.Message : "Image could not be read. Check the file and retry.";
+                var message = directTarget == ImageFormat.Png && string.Equals(Path.GetExtension(row.Path), ".pdf", StringComparison.OrdinalIgnoreCase)
+                    ? "This PDF could not be converted. Check that it is available and unprotected; damaged or oversized PDFs may not be supported. The original was kept."
+                    : error is MediaWorkerException ? error.Message : "Image could not be read. Check the file and retry.";
                 selection.Add(new(row.ItemId, row.Path, null, message));
                 row.ApplyResult(new(row.Path, error is MediaWorkerException { Failure: ImageFailure.UnsupportedInput }
                     ? OperationState.Unsupported : OperationState.Failed, message));
             }
         }
-        if (!selection.Any(s => s.Facts is not null)) return;
+        var (confirmed, cancelled) = await ConfirmImageConversionAsync(request, rows, selection, directTarget, cancellationToken);
+        if (cancelled) return;
+        await ExecuteConversionPlansAsync(request, rows, confirmed, documents, cancellationToken);
+    }
+
+    private async Task<(ConfirmedImageBatch? Plan, bool Cancelled)> ConfirmImageConversionAsync(OperationRequest request,
+        FileRow[] rows, List<ConversionSelection> selection, ImageFormat? directTarget, CancellationToken cancellationToken)
+    {
+        if (!selection.Any(s => s.Facts is not null)) return (null, false);
         await using var planner = new ConversionViewModel(worker, trial!, request.RequestId, selection, rows[0].Settings, PublicationSupport.ReplacementAvailable);
         ConfirmedImageBatch? confirmed = null;
         if (directTarget is { } target)
@@ -219,30 +274,24 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                     foreach (var item in plan.Items)
                         rows.First(row => row.ItemId == item.Source.ItemId).ApplyResult(new(item.Source.Path,
                             OperationState.Unsupported, item.BlockReason ?? "This file cannot use the selected format."));
-                    return;
+                    return (null, false);
                 }
                 if (plan.CanConfirmQuickAction)
                     confirmed = plan.Confirm(true, plan.ReplaceOriginal, PublicationSupport.ReplacementAvailable);
             }
         }
-        Summary = $"Review conversion choices for batch {rows[0].Batch}. No files changed by this batch.";
         if (confirmed is null && ConversionRequested is not null)
+        {
+            Summary = $"Review conversion choices for batch {rows[0].Batch}. No files changed by this batch.";
             confirmed = await ConversionRequested(planner, cancellationToken);
+        }
         if (confirmed is null)
         {
             foreach (var row in rows.Where(r => r.Result.State == OperationState.Pending))
                 row.ApplyResult(new(row.Path, OperationState.Cancelled, "Conversion cancelled before confirmation"));
-            return;
+            return (null, true);
         }
-        cancellationToken.ThrowIfCancellationRequested();
-        var byId = rows.ToDictionary(row => row.ItemId);
-        var completed = rows.Count(r => r.Result.State is OperationState.Failed or OperationState.Unsupported or OperationState.Unchanged);
-        await new ImageBatchExecutor(worker, Publisher!, trial!).ExecuteAsync(confirmed, (item, result) =>
-        {
-            byId[item.Source.ItemId].ApplyResult(result);
-            if (result.State != OperationState.Running) completed++;
-            Summary = $"Converting: {completed} of {rows.Length} finished.";
-        }, cancellationToken);
+        return (confirmed, false);
     }
 
     private async Task OptimizeBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
@@ -361,7 +410,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         _active?.Cancel();
         while (_pending.TryDequeue(out var batch))
             foreach (var row in batch.Rows)
-                if (row.Result.Publication?.IsCommitted != true) row.ApplyResult(new(row.Path, OperationState.Cancelled, "Cancelled"));
+                if (row.Result.State is OperationState.Pending or OperationState.Running) row.ApplyResult(new(row.Path, OperationState.Cancelled, "Cancelled"));
         RefreshSummary();
     }
 
@@ -385,7 +434,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         {
             try
             {
-                var reply = Admit(new(Guid.NewGuid(), group.Key.Operation, group.Key.Action, chunk.Select(row => row.Path).ToImmutableArray()));
+                var reply = AdmitCore(new(Guid.NewGuid(), group.Key.Operation, group.Key.Action, chunk.Select(row => row.Path).ToImmutableArray()), chunk);
                 if (reply.Accepted)
                 {
                     received += chunk.Length;
@@ -475,7 +524,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     }
 }
 
-internal sealed class FileRow(int batch, string operation, string path, BatchSettings settings, string? action = null) : INotifyPropertyChanged
+internal sealed partial class FileRow(int batch, string operation, string path, BatchSettings settings, string? action = null) : INotifyPropertyChanged
 {
     public Guid ItemId { get; } = Guid.NewGuid();
     public int Batch { get; set; } = batch;
@@ -489,7 +538,7 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
     public FileAnalysis? Analysis { get; private set; }
     public bool HasAnalysis => Analysis is not null;
     public string Status => Result.Message;
-    public string Outcome => Result.Publication?.MetadataWarning == true ? "Completed with warning" :
+    public string Outcome => PdfPageCount > 0 ? $"{SavedPdfPages} of {PdfPageCount} pages saved" : Result.Publication?.MetadataWarning == true ? "Completed with warning" :
         Result.Publication?.HasWarning == true ? "Saved — needs attention" : Result.State switch
     {
         OperationState.Succeeded => Operation == "analyze" ? Analysis?.Identity.Name ?? "Analyzed" : "Completed", OperationState.Unchanged => Operation == "convert" ? "Already in target format" : "No smaller result",
@@ -497,7 +546,7 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
         _ => Result.State.ToString()
     };
     public bool HasOutput => OutputPath.Length > 0;
-    public string Savings => Result.Publication is { IsCommitted: true } p && p.SourceBytes > p.OutputBytes
+    public string Savings => PdfPageCount > 0 ? "—" : Result.Publication is { IsCommitted: true } p && p.SourceBytes > p.OutputBytes
         ? $"{100.0 * (p.SourceBytes - p.OutputBytes) / p.SourceBytes:F1}%" : "—";
     public string OutputPath => Result.Publication?.OutputPath ?? "";
     public string RetainedOriginalPath => Result.Publication?.RetainedOriginalPath ?? "";
@@ -506,7 +555,7 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
         (Result.EngineIdentity is null ? "" : $"\nEngine / policy: {Result.EngineIdentity}") +
         (OutputPath.Length == 0 ? "" : $"\nOutput: {OutputPath}") +
         (RetainedOriginalPath.Length == 0 ? "" : $"\nRetained original: {RetainedOriginalPath}") +
-        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}");
+        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}") + PdfPageDetails;
 
     public string AnalysisSummary => Analysis is not { } analysis ? "" :
         $"What it is: {analysis.Identity.Name} ({(analysis.Identity.Basis == IdentificationBasis.Filename ? "filename hint" : analysis.Identity.Confidence.ToString().ToLowerInvariant())})\n" +
@@ -543,6 +592,9 @@ internal sealed class FileRow(int batch, string operation, string path, BatchSet
     {
         if (!string.Equals(System.IO.Path.GetFullPath(result.Path), System.IO.Path.GetFullPath(Path), StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("The file result belongs to a different source.");
+        if (SavedPdfPages > 0)
+            result = result with { Publication = result.Publication?.IsCommitted == true ? result.Publication : _pdfPages.Values.First(page => page.Publication?.IsCommitted == true).Publication,
+                PartialOutput = SavedPdfPages < PdfPageCount };
         Result = result;
         foreach (var property in new[] { nameof(Result), nameof(Status), nameof(OutputPath), nameof(RetainedOriginalPath), nameof(RecoveryRecordPath), nameof(ResultDetails), nameof(Outcome), nameof(HasOutput), nameof(Savings), nameof(HasAnalysis), nameof(AnalysisSummary), nameof(AnalysisDetails), nameof(OperationDetails) })
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));

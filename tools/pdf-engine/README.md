@@ -87,6 +87,8 @@ command. `Test-PdfPageWorker.ps1 -ProductionStage '<isolated production stage>'
 -PreparedDirectory '<prepared PDFium directory>' -FixtureDirectory '<generated
 qpdf matrix>'` copies the stage into new repository scratch and adds the verified
 renderer there. It exercises batch access, numbered PNG copies, collisions,
-partial cancellation/failure and retained recovery evidence. No installed payload
-is changed. The direct PDF-to-PNG command remains pending; see
+partial cancellation/failure and retained recovery evidence. It then runs direct
+PNG-command tests for mixed selections, partial-page retry, changed sources,
+access denial and missing engines, recording `direct-results/pdf-page-direct.json`.
+No installed payload is changed; see
 [the document design](../../docs/document-design.md).

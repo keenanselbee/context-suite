@@ -16,7 +16,7 @@ internal sealed class QuietWorkflow
         WarningSoundRequested = false;
         if (!_batches.Remove(id, out var batch)) return false;
         WarningSoundRequested = batch.Sound && results.Any(result => result.Publication?.MetadataWarning == true);
-        var problem = results.Any(result => result.State is OperationState.Failed or OperationState.Unsupported || result.Publication?.HasWarning == true);
+        var problem = results.Any(result => result.State is OperationState.Failed or OperationState.Unsupported || result.PartialOutput || result.Publication?.HasWarning == true);
         NeedsAttention |= problem;
         return batch.Sound && results.Count > 0 && !problem && results.All(result => result.State is OperationState.Succeeded or OperationState.Unchanged);
     }

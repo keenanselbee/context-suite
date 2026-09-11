@@ -19,10 +19,17 @@ internal sealed class PdfPageConversionExecutor(WorkerClient worker, OutputPubli
     }
 
     internal async Task<PdfPageBatchExecution> ExecuteAdmittedAsync(ConfirmedPdfPageConversion confirmed, OperationAdmission admission,
-        Action<PdfRasterSource, int, FileResult>? report, CancellationToken token)
+        Action<PdfRasterSource, int, FileResult>? report, CancellationToken token,
+        IReadOnlySet<(Guid SourceId, int PageIndex)>? completedPages = null)
     {
         _ = confirmed.Plan.Confirm();
         if (admission.BatchId != confirmed.Plan.BatchId) throw new InvalidDataException("PDF page admission belongs to another batch.");
+        if (completedPages is not null)
+        {
+            var sources = confirmed.Plan.Sources.ToDictionary(source => source.ItemId);
+            if (completedPages.Any(page => !sources.TryGetValue(page.SourceId, out var source) || page.PageIndex < 0 || page.PageIndex >= source.Document.Pages.Length))
+                throw new InvalidDataException("Completed pages do not belong to this PDF selection.");
+        }
         var results = new List<PdfPageExecution>();
         long outputBytes = 0;
         foreach (var source in confirmed.Plan.Sources)
@@ -30,6 +37,7 @@ internal sealed class PdfPageConversionExecutor(WorkerClient worker, OutputPubli
             var failedSource = false;
             foreach (var page in source.Document.Pages)
             {
+                if (completedPages?.Contains((source.ItemId, page.Index)) == true) continue;
                 FileResult result;
                 if (!admission.IsAllowed) result = new(source.Path, OperationState.Failed, admission.Status.Message);
                 else if (token.IsCancellationRequested) result = new(source.Path, OperationState.Cancelled, "Page not converted after cancellation.");

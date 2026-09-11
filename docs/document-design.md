@@ -1,7 +1,7 @@
 Document Support Design
 =======================
 
-Status: bounded package analysis, optional structural PDF optimization and PDF page conversion worker/publication implemented; direct PDF conversion UI, remaining transformations and launch acceptance pending
+Status: bounded package analysis, optional direct structural PDF optimization and PDF-to-PNG implemented with automated evidence; engine adoption, remaining transformations and launch acceptance pending
 
 Boundary
 --------
@@ -265,8 +265,8 @@ fails or cancellation arrives. Failure stops remaining pages of that document;
 later selected documents continue. Results retain document identity, page index,
 individual outcome and each committed output path. No automatic rollback removes
 completed copies, and the source PDF is never overwritten or recycled. The direct
-UI must aggregate these results clearly and expose partial completion before this
-workflow becomes a customer command. Retained journal evidence is not automatic
+checkpoint below aggregates these results and exposes partial completion.
+Retained journal evidence is not automatic
 recovery or visible recovery acceptance.
 
 Regression testing exposed a scratch-cleanup race: a qpdf child could still hold
@@ -298,7 +298,67 @@ has zero build warnings/errors and passes normal payload checks with `-SkipShell
 Evaluation wrappers add engines only to copies in scratch; normal packaging still
 excludes them. No installation, Explorer registration, recycling or live Polar ran.
 
-Next is direct PDF-to-PNG integration with per-document summaries, partial-output
-reporting and retry behavior. In-flight renderer-specific interruption, broader
+The subsequent direct checkpoint below implements per-document summaries,
+partial-output reporting and retry behavior. In-flight renderer-specific interruption, broader
 PDF fidelity, all other required document actions, production engine adoption,
 visible/accessibility acceptance and independent release gates remain open.
+
+Direct PDF-to-PNG and partial retry (2026-09-10)
+----------------------------------------------
+
+The existing Convert > PNG action now handles PDF pages alongside supported image
+inputs. Content identification runs before dispatch; renamed PDFs require .pdf,
+other PDF targets explain PNG, and a missing renderer declines before worker or
+trial startup. Routine PDF-only conversion opens no image planner. Mixed valid
+image/PDF plans use one immutable settings snapshot and one trial/paid admission;
+images execute first, then PDF pages, while displayed rows retain selection order.
+Necessary image/DDS prompts remain available, and cancellation before confirmation
+cancels the coordinated selection.
+
+Each PDF uses one result row showing saved/total pages, with every output and
+recovery location in secondary details. Partial cancellation/failure suppresses
+success sound, opens problem details and never says no files changed when pages
+were saved. A retry carries forward committed page receipts, rechecks the PDF's
+source hash, skips completed pages and applies current settings only to unfinished
+pages. If the source changed, the app keeps earlier copies and explains that a new
+Convert command is required. It blocks repeated stale-page resume. Earlier recovery
+record locations survive retry in details; records are retained, not automatically
+cleaned or restored. Retry state lasts only for the current results session.
+
+The native menu keeps the PNG action identity and adds a tooltip explaining PDF
+page copies. There is no new planner, menu branch, registration or installation.
+The normal payload still has no PDFium renderer; the direct path is exercised only
+with the verified optional engine added to isolated worker copies.
+
+Verification passes 1,554 foundation, 25 existing page-publication and 18 new direct
+PDF-page checks. Direct checks cover mixed order/admission across trial expiry,
+quiet success, per-document output details, partial cancellation, retry double-click,
+changed output folder, unchanged completed output hashes, source-change refusal,
+activation-equivalent access recovery, before-move failure/recovery-location retry,
+missing engines, other targets, renamed/protected PDFs and original preservation.
+Existing 86 hidden view, 10 simulated license-harness and 13 direct image workflow
+checks pass, including retained DDS decisions. Native shell contracts pass with a
+separate isolated build; no package was registered. The preceding 200 image-worker,
+98 PDF regression and private engine suites were not rerun for this direct-UI slice.
+
+Final worker/direct evidence is under
+`.codex-temp/pdfium-engine/cee300f69505476e87893226200b171e/`
+`page-worker-883a259d8bf445009a3ed8e395330a92`. Logs are
+`.codex-temp/pdf-page-direct-final.log`, `pdf-page-direct-foundation.log`,
+`pdf-page-direct-views.log`, `pdf-page-image-direct.log` and `pdf-page-direct-native.log`.
+The generated initial direct test run is retained; its changed-source test handler
+was corrected to cancel once rather than cancelling the retry before inspection.
+Full isolated Release stage
+`artifacts/production-staging/a768a20778d843ae90aa8090e5c4c8e7` builds successfully
+and passes curated engine, dependency/notice and file allowlist checks, including
+fresh native shell/host output. Final worker/direct workflows use that same stage.
+Two additional foundation contracts verify that a later uncommitted failure cannot
+hide an earlier saved page and that carried receipts combine with a completed retry.
+No live Polar,
+reference executable, signing purchase, native recycling or installed change ran.
+
+Actual visible layout/keyboard review of the new document results is still needed;
+hidden view checks do not prove desktop or screen-reader delivery, themes or DPI.
+Next implementation work includes images-to-PDF and required Word/Excel/PowerPoint-
+to-PDF, followed by wider PDF fidelity and renderer interruption coverage, production
+engine adoption and the broad-file goal's remaining catalog/analysis/release gates.
