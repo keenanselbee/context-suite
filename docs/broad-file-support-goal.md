@@ -57,6 +57,17 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-10 PDF page-rendering checkpoint adds an optional isolated native
+PDFium host, bounded public page protocol and private PNG validation adapter.
+Fresh checks pass: 1,535 foundation, 24 raster adapter, 12 separate PDFium
+evaluation, 292 audio and 27 structural PDF adapter. The isolated Release stage
+`a2469abd2ce342c6aae6135f0983c8b7` passes normal payload checks with zero warnings
+or errors. This is an adapter milestone: PDF-to-PNG worker dispatch, all-page
+publication, context-menu integration and production engine adoption remain open.
+See [the document design](document-design.md) for policy, evidence and limitations.
+The broad-file goal remains active; this does not satisfy the required Office
+conversions, complete document fidelity or independent release gates.
+
 The first Analyze slice now supplies typed shared results, an unknown/empty-file
 fallback, qualified content/filename evidence and an embedded 237-entry catalog.
 DDS details are retained; initial image/document/container/text signatures share

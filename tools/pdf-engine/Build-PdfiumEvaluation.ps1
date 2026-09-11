@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $PreparedDirectory)
+param([Parameter(Mandatory)][string] $PreparedDirectory, [switch] $Renderer)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $prepared = (Resolve-Path -LiteralPath $PreparedDirectory).Path
@@ -22,16 +22,23 @@ $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer
 $visualStudio = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 if (-not $visualStudio) { throw 'Visual Studio x64 C++ tools are required.' }
 $cmake = Join-Path $visualStudio 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe'
-$build = Join-Path $prepared 'probe-build'
-& $cmake -S (Join-Path $PSScriptRoot 'PdfiumProbe') -B $build -G 'Visual Studio 18 2026' -A x64 "-DPDFIUM_PAYLOAD=$payload" '-DCMAKE_SYSTEM_VERSION=10.0.26100.0'
+$source = if ($Renderer) { Join-Path $repository 'proprietary\src\ContextSuite.PdfRenderer.Native' } else { Join-Path $PSScriptRoot 'PdfiumProbe' }
+$name = if ($Renderer) { 'renderer-build' } else { 'probe-build' }
+$target = if ($Renderer) { 'ContextSuite.PdfRenderer' } else { 'ContextSuite.Pdfium.Probe' }
+$sourceName = if ($Renderer) { 'Renderer.cpp' } else { 'Probe.cpp' }
+$build = Join-Path $prepared $name
+& $cmake -S $source -B $build -G 'Visual Studio 18 2026' -A x64 "-DPDFIUM_PAYLOAD=$payload" '-DCMAKE_SYSTEM_VERSION=10.0.26100.0'
 if ($LASTEXITCODE) { throw 'PDFium evaluation configuration failed.' }
-& $cmake --build $build --config Release --target ContextSuite.Pdfium.Probe -- /m /p:ImportDirectoryBuildProps=false /p:ImportDirectoryBuildTargets=false /verbosity:minimal
+& $cmake --build $build --config Release --target $target -- /m /p:ImportDirectoryBuildProps=false /p:ImportDirectoryBuildTargets=false /verbosity:minimal
 if ($LASTEXITCODE) { throw 'PDFium evaluation probe build failed.' }
-$executable = Join-Path $build 'bin\Release\ContextSuite.Pdfium.Probe.exe'
+$executable = Join-Path $build ('bin\Release\' + $target + '.exe')
+$instanceLine = Get-Content -LiteralPath (Join-Path $build 'CMakeCache.txt') | Where-Object { $_ -like 'CMAKE_GENERATOR_INSTANCE:INTERNAL=*' } | Select-Object -First 1
+if (-not $instanceLine) { throw 'CMake did not record the actual Visual Studio instance.' }
+$actualInstance = $instanceLine.Substring($instanceLine.IndexOf('=') + 1)
 [ordered]@{ executable = $executable; sha256 = (Get-FileHash -LiteralPath $executable).Hash;
-    bridgeSourceSha256 = (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'PdfiumProbe\Probe.cpp')).Hash;
-    buildSourceSha256 = (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'PdfiumProbe\CMakeLists.txt')).Hash;
+    bridgeSourceSha256 = (Get-FileHash -LiteralPath (Join-Path $source $sourceName)).Hash;
+    buildSourceSha256 = (Get-FileHash -LiteralPath (Join-Path $source 'CMakeLists.txt')).Hash;
     pdfiumSha256 = (Get-FileHash -LiteralPath (Join-Path $payload 'bin\pdfium.dll')).Hash;
-    visualStudio = $visualStudio; windowsSdk = '10.0.26100.0' } |
-    ConvertTo-Json | Set-Content -LiteralPath (Join-Path $prepared 'probe-build.json') -Encoding UTF8
-Write-Output "Isolated PDFium probe: $executable"
+    visualStudio = $actualInstance; cmake = $cmake; windowsSdk = '10.0.26100.0' } |
+    ConvertTo-Json | Set-Content -LiteralPath (Join-Path $prepared ($name + '.json')) -Encoding UTF8
+Write-Output "Isolated PDFium host: $executable"

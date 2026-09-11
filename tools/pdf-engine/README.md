@@ -73,3 +73,14 @@ to `Test-PdfiumEvaluation.ps1`, using the same source fixture directory. It must
 inside repository PDF scratch. Three additional checks compare source/candidate
 page geometry and both authored pages' rendered pixels. This does not establish
 broad document fidelity or native failure/sandbox acceptance.
+
+For the optional PDF-to-PNG adapter candidate, build the private native host with
+`Build-PdfiumEvaluation.ps1 -PreparedDirectory '<prepared PDFium directory>' -Renderer`,
+then run `Test-PdfRasterAdapter.ps1 -PreparedDirectory '<prepared PDFium directory>'
+-FixtureDirectory '<generated qpdf matrix>'`. The existing evaluation probe must
+also be built. The wrapper verifies host/source/runtime identities, generates
+fresh comparison pixels through the separate evaluation bridge and runs the
+private adapter contracts. It records separate `raster-reference-*` and
+`raster-adapter-*` directories. No renderer is added to normal production staging.
+The candidate returns validated PNG bytes; application publication and the direct
+PDF-to-PNG command remain pending. See [the document design](../../docs/document-design.md).

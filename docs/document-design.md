@@ -1,7 +1,7 @@
 Document Support Design
 =======================
 
-Status: bounded package analysis and a structural PDF optimization candidate implemented; transformation worker/publication, renderers and launch acceptance pending
+Status: bounded package analysis and optional structural PDF optimization worker/publication implemented; PDF page renderer candidate verified separately; remaining transformations and launch acceptance pending
 
 Boundary
 --------
@@ -177,3 +177,64 @@ macros/external links and cancellation. Compare rendered appearance for renderin
 actions and preserved structure for structural operations. Detail current evidence
 in the [broad file support goal](broad-file-support-goal.md); do not inherit image
 or reference-program acceptance results.
+
+PDF page renderer candidate (2026-09-10)
+--------------------------------------
+
+The optional private renderer returns page geometry and one PNG page at a time.
+It is not yet connected to worker dispatch, application publication or Explorer.
+Policy `pdf-pages-png-150-1` selects 150 DPI, straight BGRA8 rendering on transparent
+backing, visible annotations and stored form appearances. PNG encoding retains
+exact rendered pixels and an explicit sRGB profile, and records physical density
+within one pixel per metre of 150 DPI. It excludes generated date/time metadata.
+This raster copy cannot carry document interactivity, attachments or verifiable
+signatures. Originals must remain intact. Signed documents may supply visual
+copies; the candidate neither validates nor preserves their signatures. Protected
+PDFs, including empty-user-password protection, and XFA forms are refused.
+
+The native host uses independently acquired, pinned PDFium 8044 with V8/XFA
+absent. It receives a read-only seekable source handle, fixed operation arguments
+and a bounded binary stdout protocol. No customer paths or output paths are sent
+to the native host. No document actions, JavaScript platform, navigation, file or
+network callbacks are invoked. The shared media launcher creates the process
+suspended, restricts inherited handles and assigns the existing 1 GiB kill-on-close
+job before resuming. This is process containment, not a claim that native parsing
+is a security sandbox. Each native call has a 60-second deadline.
+
+Input is limited to 128 MiB, 4,096 pages, 16 million pixels per page and 16,384
+pixels per dimension. All page geometry is inspected before rendering: positive
+finite dimensions at most 14,400 points, rotation 0–3 and exact rounded-up 150-DPI
+pixel geometry. The managed protocol rejects malformed, truncated, reordered,
+over-budget or inconsistent replies. The adapter checks source length/hash before
+work and after rendering, then independently decodes each encoded PNG to verify
+pixels and color profile. The qpdf optimizer retains its separate 16 MiB limit.
+
+The native host builds with zero warnings/errors. Verification passes 1,535 public
+foundation contracts (28 new protocol checks), 24 private raster checks, 12 fresh
+separate PDFium evaluation checks, 292 audio checks after sharing the launcher,
+and 27 existing structural PDF adapter checks. Raster checks include both authored
+pages, alpha, form appearances through reference pixels, physical density,
+protected/malformed/oversized source refusal, changed-source refusal, pinned-engine
+leases/tampering, pre-cancellation and local Unicode source/scratch paths beyond
+MAX_PATH. Signature-field and JavaScript canaries render visual copies; these are
+not proof of signature validity or a complete active-content/security audit.
+
+Evidence under `.codex-temp/pdfium-engine/cee300f69505476e87893226200b171e/`:
+`renderer-build.json`, `raster-reference-af4378ca418c48a8aedde8589da1c2e1`, and
+`raster-adapter-1da5cde93c7a43da9c92f27e5074225a`. Audio evidence ends in
+`adapter-dd48691434034805b2a28f59b5eb0ea7`; structural PDF evidence ends in
+`adapter-fb836ad39684450e859a0ebba3e4bd59` under their existing prepared engines.
+Early failed raster runs are retained: explicit ICC retention was fixed; the
+physical-density test now accepts the integer PNG unit conversion. Normal Release
+stage `artifacts/production-staging/a2469abd2ce342c6aae6135f0983c8b7` builds without
+warnings/errors and passes payload checks using `-SkipShell`. It excludes PDFium.
+
+Next: review all-page output budgets, numbered names, collision reservation,
+partial failure/cancellation and recovery before worker/direct-command integration.
+Inspect the entire source once, use one access admission per selected-file batch,
+and publish only validated page copies. Images-to-PDF and required Office-to-PDF
+remain separate implementation work. Wider fonts/ICC/CMYK/rotation/scan/form/XFA
+and damaged-document fidelity, in-flight renderer interruption, UNC paths,
+dependency redistribution/runtime inventory and production engine adoption remain
+open. Existing image/worker/UI suites were not rerun for this adapter-only slice;
+manual, screen-reader, theme, DPI and installer acceptance are not implied.
