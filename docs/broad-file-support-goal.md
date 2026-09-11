@@ -57,6 +57,18 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+On 2026-09-11 bounded [legacy DOC/XLS/PPT analysis](legacy-document-analysis.md)
+adds likely content identity from root stream names and supported binary headers,
+with useful compound facts and explicit unsupported/malformed fallback. It passes
+1,768 foundation contracts, including 99 new legacy checks and 1,000 deterministic
+mutations. Disposable LibreOffice-generated DOC/XLS/PPT copies also pass content
+identity and original/copy preservation checks. Full isolated Release staging
+`3880ef9136b34a9e810f13a322a416c7` passes payload checks with zero warnings/errors.
+This adds no Office conversion command or engine dependency. Broader legacy
+variants, required Office rendering/isolation, engine adoption and manual/release
+gates remain open. The per-user AppContainer experiment still awaits its specific
+authorization; this analysis work did not create a profile.
+
 The Office follow-up isolates a profile/temp-root length dependency: fixed-parent
 ASCII profiles of 90/110/130 characters produce validated PowerPoint PDFs, while
 150/170-character profiles return zero without output. Short Unicode profiles

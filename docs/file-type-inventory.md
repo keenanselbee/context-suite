@@ -68,7 +68,7 @@ for actual parsed facts and current resource limits.
 | djvu | DjVu document | `.djvu`, `.djv` | Filename hint only |
 | dmg | Apple disk image | `.dmg` | Filename hint only |
 | dng | Digital Negative image | `.dng` | Filename hint only |
-| doc | Legacy Word document | `.doc`, `.dot` | Filename hint only |
+| doc | Legacy Word document | `.doc`, `.dot` | Bounded root streams and supported Word base header; likely |
 | dockerfile | Docker build instructions | `Dockerfile`, `Containerfile` | Filename hint; text sampling |
 | docx | Word document | `.docx`, `.docm`, `.dotx`, `.dotm` | Bounded package declarations and main XML; likely family |
 | dwg | AutoCAD drawing | `.dwg` | Filename hint only |
@@ -160,7 +160,7 @@ for actual parsed facts and current resource limits.
 | ods | OpenDocument spreadsheet | `.ods`, `.ots` | Bounded MIME/manifest and unencrypted content family |
 | odt | OpenDocument text | `.odt`, `.ott` | Bounded MIME/manifest and unencrypted content family |
 | ogg | Ogg container | `.ogg`, `.oga`, `.ogv`, `.opus`, `.ogx` | Existing bounded content detector |
-| ole | Compound file container | Signature only | Existing bounded content detector |
+| ole | Compound file container | Signature only | Bounded CFB directory/allocation facts; family needs agreeing binary headers |
 | openraster | OpenRaster image | `.ora` | Filename hint only |
 | opentype | OpenType font | `.otf` | Filename hint only |
 | orc | Apache ORC data | `.orc` | Filename hint only |
@@ -182,7 +182,7 @@ for actual parsed facts and current resource limits.
 | pnm | Portable anymap image | `.pbm`, `.pgm`, `.ppm`, `.pnm`, `.pam` | Filename hint only |
 | postscript | PostScript document | `.ps` | Filename hint; text sampling |
 | powershell | PowerShell script | `.ps1`, `.psm1`, `.psd1` | Filename hint; text sampling |
-| ppt | Legacy PowerPoint presentation | `.ppt`, `.pot`, `.pps` | Filename hint only |
+| ppt | Legacy PowerPoint presentation | `.ppt`, `.pot`, `.pps` | Bounded root streams and supported PowerPoint headers; likely |
 | pptx | PowerPoint presentation | `.pptx`, `.pptm`, `.potx`, `.potm`, `.ppsx`, `.ppsm` | Bounded package declarations and main XML; likely family |
 | properties | Java properties | `.properties` | Filename hint; text sampling |
 | psd | Photoshop document | `.psd`, `.psb` | Filename hint only |
@@ -247,7 +247,7 @@ for actual parsed facts and current resource limits.
 | woff | WOFF web font | `.woff` | Filename hint only |
 | woff2 | WOFF2 web font | `.woff2` | Filename hint only |
 | xcf | GIMP image | `.xcf` | Filename hint only |
-| xls | Legacy Excel workbook | `.xls`, `.xlt` | Filename hint only |
+| xls | Legacy Excel workbook | `.xls`, `.xlt` | Bounded root stream and BIFF8 workbook BOF; likely |
 | xlsb | Excel binary workbook | `.xlsb` | Filename hint only |
 | xlsx | Excel workbook | `.xlsx`, `.xlsm`, `.xltx`, `.xltm` | Bounded package declarations and main XML; likely family |
 | xml | XML document | `.xml` | Bounded whole-file structure parser; filename hint otherwise |

@@ -2,9 +2,10 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths")) return 2;
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "LegacyAnalysis")) return 2;
 var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths";
 var profileStyles = !profileMatrix ? new[] { "default" } : args[3] == "ProfileLengths"
     ? new[] { "length-90", "length-110", "length-130", "length-150", "length-170" }
@@ -19,6 +20,40 @@ var fixtures = Path.Combine(root, "fixtures"); Directory.CreateDirectory(fixture
 var results = new List<object>();
 Console.WriteLine("Office evaluation evidence: " + root);
 var version = await RunOffice("version", ["--version"]); Console.WriteLine(version.Output.Trim());
+if (args.Length == 4 && args[3] == "LegacyAnalysis")
+{
+    foreach (var (name, extension, filter) in new[] { ("Word ü.docx", "doc", "MS Word 97"),
+        ("Excel ü.xlsx", "xls", "MS Excel 97"), ("PowerPoint ü.pptx", "ppt", "MS PowerPoint 97") })
+    {
+        var source = Path.Combine(fixtures, name); var before = Hash(source);
+        var folder = Path.Combine(root, "legacy-" + extension); Directory.CreateDirectory(folder);
+        var conversion = await RunOffice("legacy-" + extension, ["--convert-to", extension + ":" + filter, "--outdir", folder, source]);
+        File.WriteAllText(Path.Combine(folder, "conversion.json"), JsonSerializer.Serialize(conversion, new JsonSerializerOptions { WriteIndented = true }));
+        var legacy = Path.Combine(folder, Path.GetFileNameWithoutExtension(name) + "." + extension);
+        if (!File.Exists(legacy) || new FileInfo(legacy).Length is <= 0 or > 16 * 1024 * 1024 || Hash(source) != before)
+            throw new InvalidDataException("Expected generated legacy copy with unchanged authored original.");
+        var legacyHash = Hash(legacy);
+        using var input = new FileStream(legacy, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var bytes = new byte[(int)Math.Min(input.Length, HeaderAnalyzer.MaximumBytes)]; await input.ReadExactlyAsync(bytes);
+        var header = HeaderAnalyzer.Analyze(legacy, bytes, input.Length);
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var analysis = await LegacyDocumentAnalysis.AddCompoundAsync(header, input, deadline.Token);
+        File.WriteAllText(Path.Combine(folder, "analysis.json"), JsonSerializer.Serialize(new
+        {
+            analysis.Path, analysis.FileBytes, analysis.Identity, analysis.Facts, analysis.Warnings, analysis.InspectedBytes,
+            FilenameHints = analysis.FilenameHints.Select(hint => new { hint.Id, hint.Name })
+        }, new JsonSerializerOptions { WriteIndented = true }));
+        if (analysis.Identity.FormatId != extension || analysis.Identity.Basis != IdentificationBasis.Content ||
+            analysis.Identity.Confidence != IdentificationConfidence.Likely || Hash(legacy) != legacyHash)
+            throw new InvalidDataException("Generated legacy Office analysis failed: " + extension);
+        results.Add(new { Source = name, SourceSha256 = before, LegacySha256 = legacyHash, analysis.FileBytes, analysis.InspectedBytes,
+            Format = extension, conversion.Milliseconds });
+        File.WriteAllText(Path.Combine(root, "legacy-analysis.json"), JsonSerializer.Serialize(new { Version = version.Output.Trim(), Results = results,
+            Scope = "LibreOffice-produced copies of authored passive fixtures; legacy parser interoperability, not Microsoft Office layout fidelity or customer legacy export." }, new JsonSerializerOptions { WriteIndented = true }));
+        Console.WriteLine($"PASS: generated {extension}: likely content identity, {analysis.FileBytes} bytes, bounded analysis and unchanged originals/copy, {conversion.Milliseconds} ms.");
+    }
+    return 0;
+}
 foreach (var (name, filter, expectedPages) in new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) })
 {
     if (args.Length == 4 && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;

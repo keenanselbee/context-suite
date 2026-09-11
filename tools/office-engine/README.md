@@ -50,6 +50,14 @@ profile also determines temporary/data directories, so the responsible internal
 path and exact cutoff are still unknown. Select only one experiment switch at a
 time; see the evidence record.
 
+Add `-LegacyAnalysis` to generate disposable DOC/XLS/PPT copies with the fixed
+Word 97, Excel 97 and PowerPoint 97 export filters, then inspect their headers
+using the production Core legacy analyzer. It requires likely content identities,
+unchanged source/copy hashes and bounded copies, retaining conversion/analysis
+JSON. This tests parser interoperability with LibreOffice-produced files, not
+Microsoft Office fidelity or a customer legacy conversion command. Only one
+experiment switch may be selected. See [analysis scope](../../docs/legacy-document-analysis.md).
+
 The child wrapper provides a 60-second deadline, bounded diagnostics and an owned
 process-tree kill attempt. Its profile disables macros, active content, Python
 runtime and automatic update checks. **It is not a filesystem/network sandbox**,

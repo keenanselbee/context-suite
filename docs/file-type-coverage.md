@@ -29,7 +29,8 @@ Current implementation and remaining work are separate:
 | PNG | Signature, optional first IHDR | Declared dimensions, sample depth and raw color type; transparency/animation explicitly unavailable | Existing bounded image conversion and PNG presets |
 | PDF | Initial PDF signature; optional bounded complete-snapshot worker probe | Header version; with the evaluation engine, reported pages/encryption/forms/attachments/bookmarks; locked content remains unavailable | PDF tools selected; implementation pending |
 | ZIP | Initial record signature plus bounded ZIP32 directory when available | Directory count; selected document declarations only; no extraction | None |
-| Compound file | Compound-file signature | Container only; does not identify a particular Office application | None |
+| Compound file | Signature and bounded CFB directory/allocation inspection | Container version, sector size and reachable/root stream counts; container alone does not identify an Office family | None |
+| DOC / XLS / PPT | Root-level stream names agreeing with supported binary headers | Bounded legacy version/size/encryption declarations; rendered pages and active content unavailable; identity likely | PDF conversion selected; implementation pending |
 | DOS/Windows executables | MZ; PE signature/COFF header at a bounded declared offset | Raw PE machine and section count where present; no execution | None |
 | Text | Strict UTF-8/UTF-16/UTF-32 sampling with recognized BOMs where present | Possible encoding, explicitly derived; no application-purpose inference | None |
 | JSON | Whole-file object/array parsing within 64 KiB and depth 32 | Root kind and top-level count; no application semantics | None |
@@ -61,7 +62,9 @@ states remain part of the result model; no confidence percentages are invented.
 The basic application reader inspects at most 65,536 bytes, with no decompression,
 recursion, full-file hash, worker requirement or paid admission. ZIP inputs can
 add bounded directory/document-part reads and decompression under the same lease;
-see [document budgets and evidence](document-design.md). When the optional
+see [document budgets and evidence](document-design.md). Compound inputs can add
+at most 2 MiB of managed reads under that lease for the
+[legacy Office reader](legacy-document-analysis.md). When the optional
 audio payload is present, eligible media can additionally supply at most 1 MiB
 to its worker probe under the same read lease. Optional PDF probing uses a complete
 snapshot up to 16 MiB because its engine needs seekable input; larger files retain

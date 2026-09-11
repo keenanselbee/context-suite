@@ -35,7 +35,8 @@ useful Analyze results for every readable regular file, an offline common-type
 catalog, common audio, and PDF/document support. The first Analyze source slice
 now handles unknown/empty files, initial header identification and existing DDS
 details, bounded JSON/XML structure analysis, WAVE/FLAC header facts,
-bounded OOXML/OpenDocument package analysis and a 237-entry offline catalog.
+bounded OOXML/OpenDocument package and legacy DOC/XLS/PPT analysis, and a
+237-entry offline catalog.
 See [exact coverage](docs/file-type-coverage.md), including remaining source review.
 Audio conversion now has isolated worker/publication coverage for all 30
 cross-format pairs, direct Convert commands and a compact prompt for required

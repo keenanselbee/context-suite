@@ -2,7 +2,8 @@ Context Analyzer Design
 =======================
 
 Status: generic Analyze fallback, initial header identification, DDS details,
-bounded JSON/XML structure analysis, WAVE/FLAC header facts, document package analysis and a 237-entry descriptive catalog are
+bounded JSON/XML structure analysis, WAVE/FLAC header facts, document package and
+legacy compound analysis, and a 237-entry descriptive catalog are
 implemented. The [coverage inventory](file-type-coverage.md) records exact
 facts, limits and tests; broader catalog/family analysis remains in progress.
 
@@ -21,7 +22,9 @@ unimplemented.
 Bounded [OOXML/OpenDocument package inspection](document-design.md) identifies
 supported document families and reports declared sheet/slide counts. Encrypted,
 unsupported and over-budget parts retain basic facts. This does not enable
-document transformation or validate rendered layout.
+document transformation or validate rendered layout. Bounded
+[legacy DOC/XLS/PPT inspection](legacy-document-analysis.md) adds supported binary
+header facts and likely content identity, retaining fallback for unsupported variants.
 
 Implementation follows the [broad file support goal](broad-file-support-goal.md)
 and [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md).

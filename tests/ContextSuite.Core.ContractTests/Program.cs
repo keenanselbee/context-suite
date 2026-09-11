@@ -134,6 +134,7 @@ try
     await DdsContracts.RunAsync(args[0], Check);
     await AnalysisContracts.RunAsync(args[0], Check);
     await DocumentAnalysisContracts.RunAsync(args[0], Check);
+    await LegacyDocumentAnalysisContracts.RunAsync(args[0], Check);
     PdfProbeContracts.Run(Check);
     await PdfAnalysisContracts.RunAsync(args[0], Check);
     FlacMetadataContracts.Run(Check);

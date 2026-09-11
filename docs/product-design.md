@@ -20,6 +20,8 @@ direct worker/publication coverage; PDF-to-PNG has direct PNG-command coverage
 with per-document summaries and partial-page retries. Renderer packaging and
 visible acceptance remain pending. Optional Convert > PDF now combines images
 through a focused order review, one validated copy and whole-document retry.
+Bounded legacy DOC/XLS/PPT analysis now supplements package analysis; its
+[supported headers and limits](legacy-document-analysis.md) are explicit.
 Office-to-PDF remains planned;
 retain the simple customer surfaces above. Shared Analyze/fallback,
 bounded JSON/XML structure analysis and a 237-entry catalog are implemented with automated

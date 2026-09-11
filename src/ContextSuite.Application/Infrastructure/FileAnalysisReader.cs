@@ -74,6 +74,15 @@ internal static class FileAnalysisReader
             if (stream.Length != length || File.GetLastWriteTimeUtc(handle) != modified)
                 throw new IOException("The file changed during analysis. Try again after it finishes saving.");
         }
+        if (analysis.Identity.FormatId == "ole")
+        {
+            try { analysis = await LegacyDocumentAnalysis.AddCompoundAsync(analysis, stream, deadline.Token); }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            { analysis = analysis with { Warnings = analysis.Warnings.Add("Legacy document details were unavailable within the read limit. Basic file information is shown.") }; }
+            cancellationToken.ThrowIfCancellationRequested();
+            if (stream.Length != length || File.GetLastWriteTimeUtc(handle) != modified)
+                throw new IOException("The file changed during analysis. Try again after it finishes saving.");
+        }
         if (audioProbe is not null && AudioAnalysis.CanProbe(analysis, bytes))
         {
             var audioBytes = new byte[(int)Math.Min(length, WorkerCommand.MaximumAudioProbeBytes)];

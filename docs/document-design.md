@@ -47,7 +47,8 @@ extraction, renderer, engine dependency, reference resolution or paid admission.
   agreeing package declarations and leave content facts unavailable.
 - Identity stays **likely**. Unsupported, conflicting, malformed and over-budget
   packages retain useful ZIP/basic facts. ZIP or OLE alone never establishes an
-  Office family. Legacy Office analysis remains pending. Optional PDF probing
+  Office family. Bounded [legacy Office analysis](legacy-document-analysis.md)
+  now checks root stream names and binary declarations separately. Optional PDF probing
   now supplies structural facts under the separate integration described below.
 
 Limits: ZIP32, one disk, at most 4,096 entries and a 1 MiB directory; stored or
