@@ -57,6 +57,13 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [Office owner-crash preflight](office-isolation-evaluation.md)
+verifies that an abruptly terminated launcher closes its job and stops two
+identity-checked, previously live application descendants. The same fresh native
+run passes the earlier resource/lifetime controls. It does not create an
+AppContainer profile or execute Office; renderer isolation and required customer
+conversion remain open.
+
 The 2026-09-11 [Office resource preflight](office-isolation-evaluation.md) verifies
 per-process/aggregate commit and helper-process limits with successful controls,
 actual private-commit/handle measurements and complete owned-job cleanup. It

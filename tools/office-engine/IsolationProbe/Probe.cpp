@@ -325,11 +325,87 @@ void ResourceContracts(const fs::path& child, const fs::path& root) {
         !spawnLimited.timedOut && !spawnLimited.outputLimit, "Active process limit must refuse excess descendants");
     std::cout << "PASS: process memory, aggregate memory and active process limits; positive controls and zero-process cleanup passed.\n";
 }
+ULONGLONG CreationTime(HANDLE process) {
+    FILETIME created{}, exited{}, kernel{}, user{};
+    Require(GetProcessTimes(process, &created, &exited, &kernel, &user) != FALSE, "Read owned process creation time");
+    return (static_cast<ULONGLONG>(created.dwHighDateTime) << 32) | created.dwLowDateTime;
+}
+HANDLE OpenVerifiedProcess(DWORD id, ULONGLONG created, const fs::path& executable) {
+    Handle process(OpenProcess(SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_TERMINATE, FALSE, id));
+    Require(process.value != nullptr && CreationTime(process.value) == created, "Verify owned process identity before observation");
+    wchar_t image[32768]{}; DWORD size = static_cast<DWORD>(std::size(image));
+    Require(QueryFullProcessImageNameW(process.value, 0, image, &size) != FALSE && fs::equivalent(fs::path(image), executable),
+        "Observed process must run this case's private probe copy");
+    const auto result = process.value; process.value = nullptr; return result;
+}
+void HoldTree(const fs::path& executable, const fs::path& marker) {
+    STARTUPINFOW startup{}; startup.cb = sizeof(startup);
+    PROCESS_INFORMATION info{};
+    auto command = Quote(executable.native()) + L" --sleep";
+    Require(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW,
+        nullptr, nullptr, &startup, &info) != FALSE, "Start owned grandchild before crash");
+    Handle process(info.hProcess), thread(info.hThread);
+    const auto pending = fs::path(marker.native() + L".pending");
+    Require(!fs::exists(marker) && !fs::exists(pending), "Crash readiness must be new");
+    {
+        std::ofstream ready(pending);
+        ready << GetCurrentProcessId() << ' ' << CreationTime(GetCurrentProcess()) << ' '
+            << info.dwProcessId << ' ' << CreationTime(process.value) << '\n';
+        ready.flush(); Require(ready.good(), "Write crash readiness identities");
+    }
+    fs::rename(pending, marker);
+    Sleep(60000);
+}
+void OwnerCrashContract(const fs::path& executable, const fs::path& root) {
+    const auto marker = root / L"writable" / L"owner-crash-ready.txt";
+    STARTUPINFOW startup{}; startup.cb = sizeof(startup);
+    PROCESS_INFORMATION info{};
+    auto command = Quote(executable.native()) + L" --crash-owner " + Quote(executable.native()) + L" " + Quote(marker.native());
+    Require(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW,
+        nullptr, root.c_str(), &startup, &info) != FALSE, "Start disposable job owner");
+    Handle owner(info.hProcess), thread(info.hThread);
+    struct StopOwned { HANDLE value; ~StopOwned() { if (value) TerminateProcess(value, 72); } } stopOwner{ owner.value };
+    const auto started = GetTickCount64();
+    while (!fs::exists(marker)) {
+        Require(WaitForSingleObject(owner.value, 10) == WAIT_TIMEOUT, "Job owner must remain live before crash");
+        Require(GetTickCount64() - started < 10000, "Owned tree readiness deadline");
+    }
+    Require(fs::file_size(marker) < 256, "Bound crash readiness record");
+    DWORD childId = 0, grandchildId = 0; ULONGLONG childCreated = 0, grandchildCreated = 0;
+    std::ifstream ready(marker); ready >> childId >> childCreated >> grandchildId >> grandchildCreated;
+    Require(!ready.fail() && childId != grandchildId && childId != info.dwProcessId && grandchildId != info.dwProcessId,
+        "Distinct owned tree identities");
+    Handle child(OpenVerifiedProcess(childId, childCreated, executable)); StopOwned stopChild{ child.value };
+    Handle grandchild(OpenVerifiedProcess(grandchildId, grandchildCreated, executable)); StopOwned stopGrandchild{ grandchild.value };
+    // Holding process handles does not keep the owner's job handle alive.
+    Sleep(300);
+    Require(WaitForSingleObject(owner.value, 0) == WAIT_TIMEOUT && WaitForSingleObject(child.value, 0) == WAIT_TIMEOUT &&
+        WaitForSingleObject(grandchild.value, 0) == WAIT_TIMEOUT, "Owner, child and grandchild must all be live before forced termination");
+    const auto killed = GetTickCount64();
+    Require(TerminateProcess(owner.value, 71) != FALSE && WaitForSingleObject(owner.value, 5000) == WAIT_OBJECT_0,
+        "Forcibly terminate only the owned launcher");
+    HANDLE descendants[] = { child.value, grandchild.value };
+    Require(WaitForMultipleObjects(2, descendants, TRUE, 5000) == WAIT_OBJECT_0,
+        "Closing the crashed owner's job must terminate child and grandchild");
+    DWORD ownerExit = 0, childExit = 0, grandchildExit = 0;
+    Require(GetExitCodeProcess(owner.value, &ownerExit) && GetExitCodeProcess(child.value, &childExit) &&
+        GetExitCodeProcess(grandchild.value, &grandchildExit) && ownerExit == 71, "Read forced-owner and descendant results");
+    std::ofstream(root / L"owner-crash.json") << "{\"ownerPid\":" << info.dwProcessId << ",\"ownerExit\":" << ownerExit
+        << ",\"childPid\":" << childId << ",\"childCreationTime\":" << childCreated << ",\"childExit\":" << childExit
+        << ",\"grandchildPid\":" << grandchildId << ",\"grandchildCreationTime\":" << grandchildCreated << ",\"grandchildExit\":" << grandchildExit
+        << ",\"allLiveBeforeCrash\":true,\"bothDescendantsStopped\":true,\"cleanupMilliseconds\":" << GetTickCount64() - killed << "}\n";
+    std::cout << "PASS: forcibly terminated job owner; verified child and grandchild exit without graceful launcher cleanup.\n";
+}
 int wmain(int argc, wchar_t** argv) {
     try {
         WSADATA winsock{};
         Require(WSAStartup(MAKEWORD(2, 2), &winsock) == 0, "Initialize local network fixture");
         struct WinsockGuard { ~WinsockGuard() { WSACleanup(); } } winsockGuard;
+        if (argc == 4 && std::wstring(argv[1]) == L"--hold-tree") { HoldTree(argv[2], argv[3]); return 0; }
+        if (argc == 4 && std::wstring(argv[1]) == L"--crash-owner") {
+            const auto result = Run(argv[2], { L"--hold-tree", argv[2], argv[3] }, fs::path(argv[3]).parent_path(), nullptr);
+            return static_cast<int>(result.exitCode);
+        }
         if (argc == 2 && std::wstring(argv[1]) == L"--sleep") { Sleep(60000); return 0; }
         if (argc == 2 && std::wstring(argv[1]) == L"--flood") { std::cout << std::string(100000, 'x') << std::flush; return 0; }
         if (argc == 2 && std::wstring(argv[1]) == L"--memory") return MemoryAttempt(64 * MiB);
@@ -407,6 +483,7 @@ int wmain(int argc, wchar_t** argv) {
         std::ofstream(root / L"lifetime.json") << "{\"launcherExitCleanup\":true,\"timeoutCleanup\":true,\"diagnosticLimitCleanup\":true,\"activeProcessesAfterEach\":0}\n";
         std::cout << "PASS: launcher-exit descendant cleanup, timeout and diagnostic budget; every owned job reports zero remaining processes.\n";
         ResourceContracts(child, root);
+        OwnerCrashContract(child, root);
         if (!createProfile) {
             std::cout << "NOT RUN: AppContainer access matrix requires explicit disposable-profile opt-in. Unregistered launch previously failed with Windows error 2.\n";
             return 0;

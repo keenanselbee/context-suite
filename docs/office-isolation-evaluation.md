@@ -123,6 +123,42 @@ also includes atomic readiness publication. No failed attempt is counted as a
 passed preflight. No AppContainer profile or Office document was executed.
 
 
+Forced owner termination (2026-09-11)
+------------------------------------
+
+The default preflight now additionally starts a disposable job owner outside the
+test's observed job. That owner uses the actual `Run` launcher to start a child,
+which starts a sleeping grandchild. An atomically published readiness record
+identifies both descendants by PID and creation time. The observer opens handles,
+checks those times and verifies that each process runs this case's unique probe
+copy before observing or performing fallback cleanup.
+
+All three application processes must remain live through a 300 ms control
+interval. The observer then calls `TerminateProcess` only on the owned launcher
+and requires exit code 71. Its child and grandchild must both signal exit within
+five seconds. The observer holds process handles, not a job handle; it cannot
+keep the owner's job alive. This tests closure of the abruptly terminated owner's
+job handle, rather than graceful `TerminateJobObject` cleanup. Failure guards can
+terminate the verified owned processes, but only after the assertions; they
+cannot make the test report success.
+
+The run at `.codex-temp/office-isolation/9bc758adcaa041b4818ff33910e629c3` passes,
+including all earlier control/lifetime/resource tests. `case/owner-crash.json`
+records all three PIDs, descendant creation times, owner exit 71, descendant
+exits 0 and both descendant handles signaled. The recorded cleanup interval is
+0 ms at the clock's resolution, not proof of zero latency. Both helpers were
+programmed to sleep for sixty seconds; their observed early exits are not normal
+completion. No unrelated process was selected or terminated.
+
+The full log is `.codex-temp/office-owner-crash.log`; `build.json` retains source,
+recipe and executable hashes. The x64 warnings-as-errors build and repository
+boundary/theme/73-document/whitespace checks pass. This proves the two explicit
+application descendants stop after this owner crash. It does not inventory every
+Windows helper process after a crash, exercise AppContainer tokens or establish
+Office engine behavior. Repeat the relevant lifetime tests inside the eventual
+renderer boundary before production adoption.
+
+
 Prepared access matrix and authorization
 ----------------------------------------
 
@@ -161,7 +197,7 @@ Run and verify that access matrix after authorization, including profile cleanup
 and retained scratch ACL scope. Then evaluate Office engine startup, font/runtime
 access, profile paths, explicit environment, output validation, and independent
 rendering inside the same boundary. Carry the verified resource tests into that
-boundary and test owner-crash cleanup, IPv6/network cases, active-content/external-reference denial, hostile
+boundary, including owner-crash cleanup. Test IPv6/network cases, active-content/external-reference denial, hostile
 documents, resource budgets and mixed-batch recovery before production adoption.
 The full broad-file goal remains active; this preflight is not a substitute for
 the selected Office conversions or other launch requirements.

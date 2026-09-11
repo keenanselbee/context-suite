@@ -106,6 +106,10 @@ It also tests per-process commit, aggregate commit and process-creation limits
 against matching positive controls, recording actual private-commit deltas, helper
 handles and full job accounting. Every job must reach zero active processes after
 cleanup. Test memory budgets are 32-256 MiB; no machine-wide exhaustion is needed.
+An additional crash case verifies the unique executable path and creation time
+of a live child/grandchild, forcibly terminates only their job owner, and requires
+both descendants to exit without graceful launcher cleanup. Process handles stay
+open for observation; no observer job handle keeps the crashed owner's job alive.
 The default runs only preflight. It does not create an AppContainer profile or
 claim that access restrictions passed. No Office engine or customer document runs.
 
