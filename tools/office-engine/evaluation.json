@@ -1,0 +1,9 @@
+{
+  "name": "LibreOffice",
+  "version": "26.2.6",
+  "architecture": "windows-x86_64",
+  "url": "https://download.documentfoundation.org/libreoffice/stable/26.2.6/win/x86_64/LibreOffice_26.2.6_Win_x86-64.msi",
+  "sha256Url": "https://download.documentfoundation.org/libreoffice/stable/26.2.6/win/x86_64/LibreOffice_26.2.6_Win_x86-64.msi.sha256",
+  "archiveSha256": "F9877032FD908BEB9C0DDF06DF4AF5C2E85F419C42E14876C4CCE5AAE5FB2660",
+  "purpose": "Isolated Office-to-PDF evaluation only; no installer execution or production dependency adoption"
+}

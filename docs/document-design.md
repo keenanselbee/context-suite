@@ -364,6 +364,9 @@ reference executable, signing purchase, native recycling or installed change ran
 Actual visible layout/keyboard review of the new document results is still needed;
 hidden view checks do not prove desktop or screen-reader delivery, themes or DPI.
 The later [combined image-PDF checkpoint](image-pdf-candidate.md) adds its direct
-command. Next implementation work includes required Word/Excel/PowerPoint-to-PDF,
+command. The [initial Office engine evaluation](office-engine-evaluation.md) passes
+three passive modern-format fixtures without installation; it does not enable
+Office conversion or settle isolation, wider fidelity and runtime packaging.
+Next implementation work includes required Word/Excel/PowerPoint-to-PDF,
 wider PDF fidelity and renderer interruption coverage, production
 engine adoption and the broad-file goal's remaining catalog/analysis/release gates.

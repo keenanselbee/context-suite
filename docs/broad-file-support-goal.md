@@ -57,6 +57,15 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-10 [Office engine evaluation](office-engine-evaluation.md) pins and
+unpacks LibreOffice without installation. Three generated passive DOCX/XLSX/PPTX
+fixtures pass independent PDF parsing, rendering, text/page geometry and original
+hash checks. It records a silent PowerPoint failure with a deeper Unicode profile
+and success with a shorter ASCII profile; the cause remains unresolved. This is
+an evaluation checkpoint, not customer Office conversion. Isolation, broader and
+legacy fidelity, runtime/font inventory, redistribution and implementation remain
+required. No production build or installed change ran for this checkpoint.
+
 The 2026-09-10 direct **Convert > PDF** checkpoint connects supported images to
 one reviewed document, validated copy publication and whole-document retry.
 Multiple images invoke the focused order dialog; retry retains that order and

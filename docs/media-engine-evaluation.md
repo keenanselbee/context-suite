@@ -83,6 +83,11 @@ check is not proof that an entire document remains visually/semantically equal.
 The tool documents content-preserving structural options separately from lossy
 image recompression. [qpdf options](https://qpdf.readthedocs.io/en/stable/cli.html).
 
+The [initial LibreOffice evaluation](office-engine-evaluation.md) records the
+26.2.6 pin, read-only MSI extraction, payload footprint, three passive modern
+Office fixture results and an unresolved profile-path failure. It does not adopt
+the engine or establish arbitrary-document isolation and broad layout fidelity.
+
 For LibreOffice, explicitly set image compression, resolution, tagging, form,
 notes/hidden-slide and sheet export options. Do not inherit defaults silently.
 In particular, the documented single-page-sheets option ignores print ranges and
