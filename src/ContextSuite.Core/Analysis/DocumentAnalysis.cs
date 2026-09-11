@@ -30,11 +30,27 @@ public static class DocumentAnalysis
             string? id = null;
             if (hasOpenXml) id = await ReadOpenXmlAsync(package, facts, cancellationToken);
             else if (hasOpenDocument) id = await ReadOpenDocumentAsync(package, facts, cancellationToken);
+            var warnings = header.Warnings;
+            if (hasOpenXml && id is not null)
+            {
+                try
+                {
+                    var links = await ReadRelationshipsAsync(package, cancellationToken);
+                    facts.Add(new("document.relationship-parts", "Document", "Relationship files inspected", Integer: links.Parts));
+                    facts.Add(new("document.external-relationships", "Document", "Declared external links (relationship files)", Integer: links.External));
+                }
+                catch (Exception error) when (error is IOException or InvalidDataException or XmlException or DecoderFallbackException)
+                {
+                    facts.Add(new("document.external-relationships", "Document", "Declared external links (relationship files)", Availability: FactAvailability.Unavailable));
+                    warnings = warnings.Add("External-link details are unavailable: relationship files are inconsistent, unsupported or exceed the analysis limits.");
+                }
+                facts.Add(new("document.relationship-scope", "Document", "Link inspection scope",
+                    Text: "Relationship declarations only; targets were not opened. Document fields and embedded content were not scanned."));
+            }
             facts.Add(new("package.entries", "Package", "Directory entries", Integer: package.Count));
             facts.Add(new("package.bytes-read", "Package", "Additional bytes read (including repeat reads)", Integer: package.BytesRead));
             var evidence = ImmutableArray.Create("ZIP directory inspected with fixed limits; unrelated entry contents were not read or validated.");
             var identity = header.Identity with { Evidence = evidence };
-            var warnings = header.Warnings;
             if (id is not null)
             {
                 var type = FileTypeCatalog.Default.Get(id);
@@ -56,6 +72,41 @@ public static class DocumentAnalysis
                 InspectedBytes = package.InspectedBytes
             };
         }
+    }
+
+    private static async Task<(int Parts, int External)> ReadRelationshipsAsync(DocumentPackageReader package, CancellationToken cancellationToken)
+    {
+        var names = package.Names.Where(name => name.Equals("_rels/.rels", StringComparison.OrdinalIgnoreCase) ||
+            name.EndsWith(".rels", StringComparison.OrdinalIgnoreCase) &&
+            (name.StartsWith("_rels/", StringComparison.OrdinalIgnoreCase) || name.Contains("/_rels/", StringComparison.OrdinalIgnoreCase))).ToArray();
+        var external = 0;
+        foreach (var name in names)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var segments = name.Split('/');
+            if (segments.Length < 2 || segments[^2] != "_rels" || !name.EndsWith(".rels", StringComparison.Ordinal) ||
+                segments.Any(segment => segment is "" or "." or "..") || name.Contains('\\'))
+                throw new InvalidDataException("Noncanonical relationship part name.");
+            var relationships = ParseXml(await package.ReadPartAsync(name), cancellationToken);
+            RequireRoot(relationships, Relationships, "Relationships");
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var relation in relationships.Elements())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var id = (string?)relation.Attribute("Id");
+                var type = (string?)relation.Attribute("Type");
+                var target = (string?)relation.Attribute("Target");
+                var mode = (string?)relation.Attribute("TargetMode");
+                if (relation.Name != XName.Get("Relationship", Relationships) || relation.HasElements ||
+                    string.IsNullOrWhiteSpace(id) || !ids.Add(id) || string.IsNullOrWhiteSpace(type) ||
+                    string.IsNullOrWhiteSpace(target) || mode is not (null or "Internal" or "External"))
+                    throw new InvalidDataException("Incomplete or ambiguous relationship declaration.");
+                // External targets may be relative. Never resolve, open or fetch
+                // a target, including an ordinary hyperlink or an unknown type.
+                if (mode == "External") external++;
+            }
+        }
+        return (names.Length, external);
     }
 
     private static async Task<string?> ReadOpenXmlAsync(DocumentPackageReader package,

@@ -19,6 +19,7 @@ internal sealed class DocumentPackageReader(Stream stream, int headerBytes, Canc
     public int BytesRead { get; private set; }
     public int Count => _entries.Count;
     public bool Contains(string name) => _entries.ContainsKey(name);
+    public IEnumerable<string> Names => _entries.Keys;
 
     public int InspectedBytes
     {

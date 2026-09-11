@@ -20,7 +20,10 @@ evaluation engine is absent from normal packaging; PDF transformations remain
 unimplemented.
 
 Bounded [OOXML/OpenDocument package inspection](document-design.md) identifies
-supported document families and reports declared sheet/slide counts. Encrypted,
+supported document families and reports declared sheet/slide counts. OOXML also
+reports external-link declarations from bounded relationship-file inspection,
+with an explicit scope and unavailable counts after partial/unsupported scans.
+It never opens those targets or treats a zero count as safety approval. Encrypted,
 unsupported and over-budget parts retain basic facts. This does not enable
 document transformation or validate rendered layout. Bounded
 [legacy DOC/XLS/PPT inspection](legacy-document-analysis.md) adds supported binary

@@ -26,6 +26,55 @@ Do not guess page counts for reflowable documents, confuse sheet/slide counts wi
 pages, bypass encryption, execute active content, resolve external references or
 require installed Office simply to explain a file.
 
+
+External relationship analysis (2026-09-11)
+------------------------------------------
+
+Analyzer `relationships-1` now counts declared external links in recognized
+OOXML Word/Excel/PowerPoint packages. It reads package-root and part-level
+relationship files, including unreferenced relationship files, under the existing
+ZIP/XML/read/deadline limits. Both Strict and Transitional document families use
+this inspection. An external target may be absolute or relative; the declared
+`TargetMode` determines the count, not whether a URL looks remote. Microsoft's
+[package relationship documentation](https://learn.microsoft.com/en-us/dotnet/api/system.io.packaging.package.createrelationship?view=net-10.0)
+describes this distinction.
+
+Analyze reports the count and the number of relationship files inspected. It
+does not open targets, resolve URLs, extract payloads or run an engine. The shown
+scope explicitly excludes document fields and embedded-content scanning. A zero
+count therefore means zero external declarations in the inspected relationship
+files, not zero possible external activity or proof that a document is safe.
+No target address is copied into the displayed facts. ODF and legacy documents
+do not receive a zero count for a scan that was not performed.
+
+Malformed, duplicate-ID, unsupported or over-budget relationship files leave the
+link count unavailable and retain the already identified document family and
+basic facts. Partial counts are not presented as complete. Cancellation still
+propagates, including after family identification during an optional-part read.
+This inspection is not complete relationship/schema validation or authority to
+admit an Office conversion. Required rendering isolation remains separate.
+
+Twenty-two added contracts cover six family/namespace combinations, relative and
+absolute external declarations, root/orphan relationship files, zero-count scope,
+partial failures, DTD refusal, part/aggregate budgets, ambiguous case, ODF scope
+and mid-scan cancellation. The real application file-reader check now reports a
+generated external file reference while preserving the source bytes/timestamp.
+All 1,790 foundation contracts pass; the final log is
+`.codex-temp/document-relationship-foundation-cancel.log`.
+
+Fresh Release staging is
+`artifacts/production-staging/8b3f443a25974f8aba523bea131182dc`. It builds with zero
+warnings/errors and passes engine/notice/dependency/file-allowlist checks. This
+run used `-SkipShell`; it does not establish new native shell, installation,
+visible/keyboard, theme/DPI or screen-reader acceptance. No Office engine was
+added. The build log is
+`.codex-temp/document-relationship-production-8b3f443a25974f8aba523bea131182dc.log`.
+
+The first attempted redirected foundation command stopped when PowerShell
+treated an expected malformed-client stderr diagnostic as an error. It was not
+counted as a pass. Subsequent runs used process-level log capture; the complete
+final suite passes without suppressing the diagnostic or changing the tests.
+
 Implemented package analysis (2026-09-09)
 -----------------------------------------
 

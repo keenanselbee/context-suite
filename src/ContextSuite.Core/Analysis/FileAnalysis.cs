@@ -20,5 +20,5 @@ public sealed record FileAnalysis(string Path, long FileBytes, FormatIdentity Id
     DdsInfo? Texture = null, ImmutableArray<FileTypeDescription> FilenameHints = default)
 {
     public const int SchemaVersion = 1;
-    public const string AnalyzerVersion = "compound-1";
+    public const string AnalyzerVersion = "relationships-1";
 }

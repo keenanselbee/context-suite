@@ -52,6 +52,7 @@ internal static class DocumentAnalysisContracts
         var macroResult = await AnalyzeAsync(macro, "fixture.docm");
         check(macroResult.Identity.FormatId == "docx" && macroResult.Facts.Single(fact => fact.Id == "document.macro-type").Boolean == true,
             "documents: macro-enabled type is a declaration, not proof that a VBA project is present");
+        await RelationshipContractsAsync(check);
         var unsupported = new List<(string Name, byte[] Bytes)>
         {
             ("missing main relationship", Zip(word.Where(part => part.Name != "_rels/.rels").ToArray())),
@@ -126,12 +127,15 @@ internal static class DocumentAnalysisContracts
         var root = Path.Combine(scratch, "documents-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         var path = Path.Combine(root, "authored.docx");
-        await File.WriteAllBytesAsync(path, original);
-        var hash = SHA256.HashData(original);
+        var linkedDocument = Zip([.. word, ("content/_rels/main.xml.rels",
+            "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"link\" Type=\"urn:fixture\" Target=\"file:///must-not-be-opened\" TargetMode=\"External\"/></Relationships>")]);
+        await File.WriteAllBytesAsync(path, linkedDocument);
+        var hash = SHA256.HashData(linkedDocument);
         var timestamp = File.GetLastWriteTimeUtc(path);
         var read = await FileAnalysisReader.ReadAsync(path, CancellationToken.None);
-        check(read.Identity.FormatId == "docx" && read.Facts.Any(fact => fact.Id == "document.pages"),
-            "documents: real application reader enriches a generated document under its existing read lease");
+        check(read.Identity.FormatId == "docx" && read.Facts.Any(fact => fact.Id == "document.pages") &&
+            read.Facts.Single(fact => fact.Id == "document.external-relationships").Integer == 1,
+            "documents: real application reader reports external declarations under its existing read lease");
         var after = SHA256.HashData(await File.ReadAllBytesAsync(path));
         check(hash.SequenceEqual(after) && timestamp == File.GetLastWriteTimeUtc(path),
             "documents: original bytes and write timestamp remain unchanged");
@@ -142,6 +146,88 @@ internal static class DocumentAnalysisContracts
         var header = HeaderAnalyzer.Analyze(name, bytes.AsSpan(0, Math.Min(bytes.Length, HeaderAnalyzer.MaximumBytes)), bytes.Length);
         using var stream = new MemoryStream(bytes, writable: false);
         return await DocumentAnalysis.AddPackageAsync(header, stream, cancellationToken);
+    }
+
+    private static async Task RelationshipContractsAsync(Action<bool, string> check)
+    {
+        const string ns = "http://schemas.openxmlformats.org/package/2006/relationships";
+        string Relations(string content) => $"<Relationships xmlns=\"{ns}\">{content}</Relationships>";
+        const string internalLink = "<Relationship Id=\"internal\" Type=\"urn:fixture:image\" Target=\"media/absent.png\"/>";
+        const string externalLink = "<Relationship Id=\"remote\" Type=\"urn:fixture:unknown\" Target=\"https://example.invalid/not-opened\" TargetMode=\"External\"/>";
+        const string relativeLink = "<Relationship Id=\"relative\" Type=\"urn:fixture:link\" Target=\"../not-opened.txt\" TargetMode=\"External\"/>";
+        foreach (var family in new[] { "docx", "xlsx", "pptx" })
+        foreach (var strict in new[] { false, true })
+        {
+            var bytes = Zip([.. OpenXmlParts(family, strict), ("content/_rels/main.xml.rels", Relations(internalLink + externalLink + relativeLink))]);
+            var result = await AnalyzeAsync(bytes, "misleading.bin");
+            check(result.Identity.FormatId == family && result.Facts.Single(fact => fact.Id == "document.external-relationships").Integer == 2 &&
+                result.Facts.Single(fact => fact.Id == "document.relationship-parts").Integer == 2 &&
+                result.Facts.Single(fact => fact.Id == "document.relationship-scope").Text!.Contains("not opened"),
+                $"documents: {family} {(strict ? "strict" : "transitional")} counts absolute/relative external declarations without opening targets");
+        }
+        var parts = OpenXmlParts("docx");
+        var noLinks = await AnalyzeAsync(Zip(parts));
+        check(noLinks.Facts.Single(fact => fact.Id == "document.external-relationships").Integer == 0 &&
+            noLinks.Facts.Any(fact => fact.Id == "document.relationship-scope"), "documents: zero relationship links retains its limited scan scope");
+        var rootLink = await AnalyzeAsync(Zip(parts.Select(part => part.Name == "_rels/.rels" ?
+            (part.Name, part.Text.Replace("</Relationships>", externalLink + "</Relationships>")) : part).ToArray()));
+        check(rootLink.Facts.Single(fact => fact.Id == "document.external-relationships").Integer == 1,
+            "documents: package-root external declarations are included");
+        var orphan = await AnalyzeAsync(Zip([.. parts, ("unused/_rels/other.xml.rels", Relations(externalLink))]));
+        check(orphan.Facts.Single(fact => fact.Id == "document.external-relationships").Integer == 1,
+            "documents: unreferenced relationship files remain in declaration inventory");
+        var malformed = new[]
+        {
+            ("wrong namespace", "<Relationships/>"),
+            ("duplicate IDs", Relations(externalLink + externalLink)),
+            ("unknown target mode", Relations(externalLink.Replace("External", "external"))),
+            ("missing target", Relations("<Relationship Id=\"x\" Type=\"urn:fixture\"/>")),
+            ("missing type", Relations("<Relationship Id=\"x\" Target=\"no-file\"/>")),
+            ("unknown child", Relations("<Unknown/>")),
+            ("nested relationship", Relations(externalLink.Replace("/>", "><Unknown/></Relationship>"))),
+            ("external DTD", "<!DOCTYPE Relationships SYSTEM 'file:///must-not-be-opened'><Relationships/>"),
+            ("expanded part budget", Relations(new string(' ', 300 * 1024)))
+        };
+        foreach (var (name, text) in malformed)
+        {
+            var result = await AnalyzeAsync(Zip([.. parts, ("content/_rels/main.xml.rels", Relations(externalLink)),
+                ("later/_rels/bad.xml.rels", text)]));
+            var fact = result.Facts.Single(fact => fact.Id == "document.external-relationships");
+            check(result.Identity.FormatId == "docx" && fact.Integer is null && fact.Availability == FactAvailability.Unavailable &&
+                result.Facts.Any(value => value.Id == "document.pages") && result.Warnings.Any(warning => warning.Contains("External-link details")),
+                "documents: optional relationship failure preserves identity without a partial/zero link count: " + name);
+        }
+        var noncanonical = await AnalyzeAsync(Zip([.. parts, ("content/_RELS/main.xml.RELS", Relations(externalLink))]));
+        check(noncanonical.Identity.FormatId == "docx" && noncanonical.Facts.Single(fact => fact.Id == "document.external-relationships").Availability == FactAvailability.Unavailable,
+            "documents: case-ambiguous relationship location is unavailable rather than a false zero");
+        var huge = await AnalyzeAsync(Zip([.. parts, .. Enumerable.Range(0, 5).Select(index =>
+            ($"parts/_rels/item{index}.xml.rels", Relations(new string(' ', 240 * 1024) + externalLink)))]));
+        check(huge.Identity.FormatId == "docx" && huge.Facts.Single(fact => fact.Id == "document.external-relationships").Availability == FactAvailability.Unavailable &&
+            huge.Facts.Single(fact => fact.Id == "package.bytes-read").Integer < 4 * 1024 * 1024,
+            "documents: aggregate relationship expansion budget retains basic document facts");
+        var odf = await AnalyzeAsync(OpenDocument("odt"));
+        check(odf.Identity.FormatId == "odt" && odf.Facts.All(fact => fact.Id != "document.external-relationships"),
+            "documents: unscanned ODF links are not reported as zero");
+        var cancelBytes = Zip([.. parts, ("content/_rels/main.xml.rels", Relations(externalLink))]);
+        using var cancellation = new CancellationTokenSource();
+        using var cancellingInput = new CancelOnRead(cancelBytes, Find(cancelBytes, "content/_rels/main.xml.rels"u8) - 30, cancellation);
+        var header = HeaderAnalyzer.Analyze("fixture.docx", cancelBytes.AsSpan(0, Math.Min(cancelBytes.Length, HeaderAnalyzer.MaximumBytes)), cancelBytes.Length);
+        try
+        {
+            await DocumentAnalysis.AddPackageAsync(header, cancellingInput, cancellation.Token);
+            check(false, "documents: cancellation during optional relationship reads propagates");
+        }
+        catch (OperationCanceledException)
+        { check(true, "documents: cancellation during optional relationship reads propagates"); }
+    }
+
+    private sealed class CancelOnRead(byte[] bytes, int position, CancellationTokenSource cancellation) : MemoryStream(bytes, writable: false)
+    {
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token = default)
+        {
+            if (Position == position && buffer.Length == 30) cancellation.Cancel();
+            return base.ReadAsync(buffer, token);
+        }
     }
 
     private static byte[] OpenXml(string id, bool strict = false) => Zip(OpenXmlParts(id, strict));

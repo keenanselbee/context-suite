@@ -57,6 +57,15 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [external relationship slice](document-design.md) adds read-only
+OOXML link-declaration counts with explicit scope, no target resolution and
+preserved document identity after optional scan failures. Twenty-two new contracts
+include malformed/over-budget parts, root/orphan/relative links and cancellation;
+all 1,790 foundation contracts pass. Fresh isolated staging
+`8b3f443a25974f8aba523bea131182dc` passes build/payload checks with zero warnings
+or errors (`-SkipShell`). This improves required document analysis; it does not
+enable Office rendering or replace its isolation/fidelity requirements.
+
 The 2026-09-11 [Office path comparison](office-engine-evaluation.md) separates the
 profile from TEMP/TMP/APPDATA/LOCALAPPDATA. A long profile alone reproduces the
 zero-exit/no-PDF failure; each individually long environment path works with a
