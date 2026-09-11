@@ -57,6 +57,15 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [audio curation checkpoint](audio-engine-curation.md) retains exact
+FFmpeg, supplier recipe, Ogg, Vorbis and Opus source archives. The preparation
+script passes a fresh download, five archive checks and four refusal cases.
+It records unresolved LAME SVN source, Opus bootstrap input and toolchain/link
+inventory before a bounded audio-only build. The evaluation bundle's compiled
+video/network dependencies are not silently promoted into production. Existing
+audio behavior, private code and production staging remain unchanged; actual
+candidate build, matrix replay, adoption and broader acceptance remain required.
+
 The expanded 2026-09-11 Word fixture verifies first/default headers and local
 PAGE/NUMPAGES fields with deliberately stale caches. Both DOCX and generated DOC
 exports pass the authored assertions and have identical page pixels. Their raw

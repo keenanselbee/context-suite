@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "status": "retained source inputs for audio curation; not a complete corresponding-source bundle or production adoption",
+  "evaluationArchiveSha256": "575642722B7C7079C6855C166ED1EA9D5B7451CDF70919871229E4E1EBE24A34",
+  "archives": [
+    {
+      "id": "ffmpeg",
+      "revision": "9b0578816c6f94514d330d4f2ae7e44a9fb42692",
+      "revisionEvidence": "https://api.github.com/repos/FFmpeg/FFmpeg/commits/9b0578816c",
+      "url": "https://github.com/FFmpeg/FFmpeg/archive/9b0578816c6f94514d330d4f2ae7e44a9fb42692.zip",
+      "file": "ffmpeg.zip",
+      "bytes": 23723510,
+      "sha256": "BD90C8EBEF208C25346C1C56B5BCCBEAB36C3F0EAEDF0A68092605969BACD1AB",
+      "prefix": "FFmpeg-9b0578816c6f94514d330d4f2ae7e44a9fb42692/",
+      "requiredEntries": ["configure", "LICENSE.md", "COPYING.LGPLv2.1", "COPYING.LGPLv3"]
+    },
+    {
+      "id": "supplier-recipe",
+      "revision": "847e5e1cacc2945ac46528d34d754bd36051680c",
+      "revisionEvidence": "https://api.github.com/repos/BtbN/FFmpeg-Builds/git/ref/tags/autobuild-2026-09-09-14-51",
+      "url": "https://github.com/BtbN/FFmpeg-Builds/archive/847e5e1cacc2945ac46528d34d754bd36051680c.zip",
+      "file": "supplier-recipe.zip",
+      "bytes": 239562,
+      "sha256": "A5901B131643D4596EF9F2535D7F4973AE49B1BBC7047512E60B653CFE859AD6",
+      "prefix": "FFmpeg-Builds-847e5e1cacc2945ac46528d34d754bd36051680c/",
+      "requiredEntries": ["build.sh", "LICENSE", "scripts.d/25-libogg.sh", "scripts.d/45-libvorbis.sh", "scripts.d/50-libmp3lame.sh", "scripts.d/50-libopus.sh"]
+    },
+    {
+      "id": "ogg",
+      "revision": "06a5e0262cdc28aa4ae6797627a783b5010440f0",
+      "url": "https://github.com/xiph/ogg/archive/06a5e0262cdc28aa4ae6797627a783b5010440f0.zip",
+      "file": "ogg.zip",
+      "bytes": 322967,
+      "sha256": "985B8EC736D249EFA1A3AFB80C0BB62DC3777D516B29D1C061D10A791450C771",
+      "prefix": "ogg-06a5e0262cdc28aa4ae6797627a783b5010440f0/",
+      "requiredEntries": ["COPYING", "CMakeLists.txt", "configure.ac"]
+    },
+    {
+      "id": "vorbis",
+      "revision": "1b75110b5a2754ba1931d82dd83cb822b266a21d",
+      "url": "https://github.com/xiph/vorbis/archive/1b75110b5a2754ba1931d82dd83cb822b266a21d.zip",
+      "file": "vorbis.zip",
+      "bytes": 1535471,
+      "sha256": "CC2B170EFF8BC1A389930292F5869B97C53314FDD6C80D9B95827FC26EF17EEE",
+      "prefix": "vorbis-1b75110b5a2754ba1931d82dd83cb822b266a21d/",
+      "requiredEntries": ["COPYING", "CMakeLists.txt", "configure.ac"]
+    },
+    {
+      "id": "opus",
+      "revision": "3da9f7a6db1c05c3996cb363a9d1931a978bf1be",
+      "url": "https://github.com/xiph/opus/archive/3da9f7a6db1c05c3996cb363a9d1931a978bf1be.zip",
+      "file": "opus.zip",
+      "bytes": 5596912,
+      "sha256": "4EE94922A417BC959F73DF744285CC94E6D949DD9E5F86D78C8CB1848EDDAC9F",
+      "prefix": "opus-3da9f7a6db1c05c3996cb363a9d1931a978bf1be/",
+      "requiredEntries": ["COPYING", "CMakeLists.txt", "configure.ac", "autogen.sh", "dnn/download_model.sh"]
+    }
+  ],
+  "unresolvedInputs": [
+    "LAME supplier recipe uses https://svn.code.sf.net/p/lame/svn/trunk/lame at revision 6761; exact source not yet retained.",
+    "Opus autogen.sh fetches model archive SHA256 a5177ec6fb7d15058e99e57029746100121f68e4890b1467d4094aa336b6013e; archive and build necessity not yet reviewed.",
+    "Supplier LAME build declares libiconv; compiler/runtime and all transitive build inputs need a separate complete inventory.",
+    "This subset does not cover the supplier package's video/network/other libraries or establish a reproducible binary build."
+  ]
+}

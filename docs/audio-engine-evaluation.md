@@ -1,8 +1,13 @@
 Audio Engine Evaluation Results
 ===============================
 
-Date: 2026-09-09. Status: generated-fixture evaluation and private integration
-candidates; no audio transformation menu commands or shipping dependency added.
+Date: 2026-09-09 onward. Status: generated-fixture evaluation, private integration
+and direct audio commands implemented; production audio payload adoption pending.
+
+The 2026-09-11 [curation record](audio-engine-curation.md) now retains five exact
+source/build-input archives and defines the next bounded build. LAME, Opus
+bootstrap, toolchain and transitive inputs remain unresolved; this is not
+production adoption or a complete source-distribution bundle.
 
 Provenance and reproduction
 ---------------------------

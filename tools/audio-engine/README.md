@@ -144,3 +144,12 @@ See [recorded results](../../docs/audio-engine-evaluation.md) and the
 retention is limited; this evaluation pin must never fall back silently to latest.
 Actual production adoption needs retained reproducible source/dependency inputs,
 license/notice review and an intentionally bounded capability build.
+
+Use `Prepare-AudioSources.ps1` to retain the currently pinned FFmpeg, supplier
+recipe, Ogg, Vorbis and Opus source archives in a new repository scratch directory.
+Use `-SourceDirectory '<existing repository scratch directory>' -VerifyOnly` to
+verify them without downloads or writes. Hash/size mismatches are refused; no
+upstream scripts execute and no source is extracted by this tool. The
+[curation record](../../docs/audio-engine-curation.md) lists unresolved LAME,
+Opus bootstrap, toolchain and transitive inputs. These archives do not constitute
+a complete source-distribution bundle or authorize production adoption.
