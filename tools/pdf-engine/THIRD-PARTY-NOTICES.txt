@@ -1,0 +1,20 @@
+Context Suite PDF candidate - local integration review
+
+qpdf 12.4.1: upstream Windows x64 runtime. Original LICENSE.txt and NOTICE.md
+are retained from the pinned source release beside each qpdf runtime copy.
+
+PDFium chromium/8044: non-V8, non-XFA Windows x64 binary supplied by
+bblanchon/pdfium-binaries. Its root LICENSE and complete licenses directory
+are retained in pdf-renderer, without modifying their text.
+
+Microsoft Visual C++ runtime libraries: exact files from the pinned qpdf
+Windows archive accompany the native hosts. Redistribution eligibility and
+applicable Microsoft terms remain a separate release review.
+
+ContextSuite.PdfRenderer and ContextSuite.ImagePdfValidator are authored
+Context Suite hosts. Their source stays in the separate private repository.
+
+This notice records local candidate inputs. It does not establish complete
+linked-component/source review or authorize public distribution. qpdf's
+additional linked dependencies, PDFium source/build provenance, native host
+hardening, product terms and final redistribution review remain open.

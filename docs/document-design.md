@@ -138,6 +138,11 @@ document contents are copied.
 Selected launch transformations
 -------------------------------
 
+An explicit [isolated production packaging option](pdf-production-payload.md)
+now assembles the pinned qpdf/PDFium runtimes, authored hosts and notices for the
+three implemented PDF actions below. Default release adoption, broader fidelity
+and required Office transformations remain pending.
+
 - Images to one combined PDF, with a focused page-order review for multiple
   images. The [ordered writer and worker](image-pdf-candidate.md) now have isolated
   validated publication and all-source recovery evidence. The direct command

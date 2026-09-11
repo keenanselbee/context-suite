@@ -40,6 +40,15 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [PDF packaging checkpoint](pdf-production-payload.md) connects
+qpdf/PDFium and the authored renderer/validator to one isolated production build
+with images/audio. The 45 pinned PDF files include full retained notices and
+adjacent Microsoft runtime dependencies; the renderer previously relied on
+runtime DLLs outside its evaluation payload. The full managed/native build,
+19 packaging checks, 217 actual packaged PDF workflow checks and 116 audio
+workflow checks on the same stage pass. Default release adoption and required
+Office conversion remain open.
+
 The 2026-09-11 [audio packaging checkpoint](audio-distribution.md) connects the
 verified audio review bundle to a fresh production build through an explicit
 option. All 18 runtime/notice files are pinned, allowlisted and included in the

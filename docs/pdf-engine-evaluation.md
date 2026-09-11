@@ -2,7 +2,10 @@ PDF Engine Evaluation
 =====================
 
 Date: 2026-09-09. Status: qpdf experiment and optional worker/Analyze integration;
-normal packaging contains no PDF engine. No PDF transformation command is enabled.
+default packaging contains no PDF engine. Subsequent checkpoints below implement
+optional PDF transformations; the [isolated production candidate](pdf-production-payload.md)
+now packages their engines and notices together with images/audio. Default release
+adoption remains pending.
 
 Candidate and provenance
 ------------------------
@@ -17,7 +20,9 @@ The [pinned manifest](../tools/pdf-engine/evaluation.json) selects the upstream
 MSVC x64 ZIP, independently downloaded from the release on 2026-09-09. Archive
 SHA256 is `3CD016CD433EF7232E42F4C13348A49CC14907A3C7278EF4F99120593126F7A6`,
 checked against the GitHub release asset digest. The pinned source archive URL
-and digest are recorded; the source archive has not yet been downloaded/reviewed.
+and digest are recorded; the later packaging checkpoint downloaded and verified
+that exact source archive for its original license and notice material. Broader
+source and linked-component review remains open.
 No reference executable, installer, PATH edit or production payload is used.
 
 The archive is 28,165,367 bytes. Its complete unpacked inventory contains 291

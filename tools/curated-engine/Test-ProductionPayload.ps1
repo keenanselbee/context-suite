@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $Payload, [switch] $AllowAudioCandidate)
+param([Parameter(Mandatory)][string] $Payload, [switch] $AllowAudioCandidate, [switch] $AllowPdfCandidate)
 $ErrorActionPreference = 'Stop'
 & (Join-Path $PSScriptRoot 'Test-ProductionEngine.ps1') -Payload $Payload
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'dds-engine\Test-DdsEngine.ps1') -Payload $Payload
@@ -24,6 +24,13 @@ if ($AllowAudioCandidate) {
     if ($LASTEXITCODE -ne 0) { throw 'Audio candidate payload verification failed.' }
     $audioSelection = Get-Content -LiteralPath (Join-Path $audioTools 'payload-candidate.json') -Raw | ConvertFrom-Json
     $allowed += @($audioSelection.files | ForEach-Object { 'audio-engine\' + $_.path.Replace('/', '\') })
+}
+if ($AllowPdfCandidate) {
+    $pdfTools = Join-Path (Split-Path $PSScriptRoot -Parent) 'pdf-engine'
+    & python -B (Join-Path $pdfTools 'Stage-PdfPayload.py') --payload $root
+    if ($LASTEXITCODE -ne 0) { throw 'PDF candidate payload verification failed.' }
+    $pdfSelection = Get-Content -LiteralPath (Join-Path $pdfTools 'payload-candidate.json') -Raw | ConvertFrom-Json
+    $allowed += @($pdfSelection.files | ForEach-Object { $_.path.Replace('/', '\') })
 }
 foreach ($file in Get-ChildItem -LiteralPath $root -Recurse -File) {
     if ($file.FullName.Substring($root.Length + 1) -notin $allowed) { throw "Unreviewed production file: $($file.FullName)" }

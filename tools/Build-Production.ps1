@@ -1,11 +1,17 @@
 [CmdletBinding()]
 param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Debug', [switch] $SkipShell,
-    [guid] $StagingId = [guid]::Empty, [string] $AudioDistributionDirectory)
+    [guid] $StagingId = [guid]::Empty, [string] $AudioDistributionDirectory,
+    [string] $QpdfPreparedDirectory, [string] $PdfiumPreparedDirectory, [string] $QpdfSourceArchive)
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
 if ($AudioDistributionDirectory -and $StagingId -eq [guid]::Empty) {
     throw 'The audio candidate requires a new StagingId; development and installed payloads must not be changed.'
+}
+$includePdf = [bool]$QpdfPreparedDirectory -or [bool]$PdfiumPreparedDirectory -or [bool]$QpdfSourceArchive
+if ($includePdf -and ($StagingId -eq [guid]::Empty -or -not $QpdfPreparedDirectory -or
+    -not $PdfiumPreparedDirectory -or -not $QpdfSourceArchive)) {
+    throw 'The PDF candidate requires a new StagingId, both prepared engines and the pinned qpdf source archive.'
 }
 # Candidate builds get a new, non-reusable staging directory. They must never
 # refresh the development payload that Explorer may currently have registered.
@@ -22,6 +28,11 @@ if ($StagingId -ne [guid]::Empty) {
 if ($AudioDistributionDirectory) {
     & python -B (Join-Path $PSScriptRoot 'audio-engine\Stage-AudioPayload.py') --distribution $AudioDistributionDirectory --payload $output
     if ($LASTEXITCODE -ne 0) { throw 'Audio candidate staging failed.' }
+}
+if ($includePdf) {
+    & python -B (Join-Path $PSScriptRoot 'pdf-engine\Stage-PdfPayload.py') --payload $output `
+        --qpdf-directory $QpdfPreparedDirectory --pdfium-directory $PdfiumPreparedDirectory --qpdf-source $QpdfSourceArchive
+    if ($LASTEXITCODE -ne 0) { throw 'PDF candidate staging failed.' }
 }
 $privateProject = Join-Path $repositoryRoot 'proprietary\src\ContextSuite.Private\ContextSuite.Private.csproj'
 if (-not (Test-Path -LiteralPath $privateProject)) {
@@ -70,7 +81,8 @@ if (-not $SkipShell) {
     Copy-Item -LiteralPath (Join-Path $native 'ContextSuite.Shell.dll') -Destination $output -Force
     & (Join-Path $PSScriptRoot 'New-PrototypeAssets.ps1') -OutputDirectory $output
 }
-& (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload $output -AllowAudioCandidate:([bool]$AudioDistributionDirectory)
+& (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload $output `
+    -AllowAudioCandidate:([bool]$AudioDistributionDirectory) -AllowPdfCandidate:$includePdf
 $inventory = @(Get-ChildItem -LiteralPath $output -Recurse -File | Where-Object Name -ne 'payload-inventory.json' | ForEach-Object {
     @{ path = $_.FullName.Substring($output.Length + 1); bytes = $_.Length; sha256 = (Get-FileHash -LiteralPath $_.FullName).Hash }
 })

@@ -36,7 +36,8 @@ if ($isCurated) {
 }
 $scratch = Join-Path $(if ($Packaged) { $audioRoot } else { $prepared }) ('worker-' + [guid]::NewGuid().ToString('N'))
 if ($Packaged) {
-    & (Join-Path (Split-Path $PSScriptRoot -Parent) 'curated-engine\Test-ProductionPayload.ps1') -Payload $stage -AllowAudioCandidate
+    & (Join-Path (Split-Path $PSScriptRoot -Parent) 'curated-engine\Test-ProductionPayload.ps1') -Payload $stage `
+        -AllowAudioCandidate -AllowPdfCandidate:(Test-Path -LiteralPath (Join-Path $stage 'pdf-engine'))
     & python -B (Join-Path $PSScriptRoot 'Stage-AudioPayload.py') --payload $stage --inventory
     if ($LASTEXITCODE -ne 0) { throw 'Packaged audio inventory verification failed.' }
     $payload = $stage

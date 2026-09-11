@@ -6,6 +6,16 @@ disposable files. They do not install anything or change production staging,
 Explorer registrations, PATH, licensing or customer files. The tools are not a
 second application edition or an approved production adapter.
 
+Explicit isolated production packaging is now available through
+`Build-Production.ps1 -StagingId` with `-QpdfPreparedDirectory`,
+`-PdfiumPreparedDirectory` and `-QpdfSourceArchive`. This opt-in stages exact
+reviewed runtime/notice files and pinned authored hosts; the original evaluation
+commands below keep their scratch-only behavior. `Test-PdfProduction.ps1` runs
+all three PDF workflows directly against a combined image/audio/PDF stage.
+`Test-PdfPayload.py` checks missing/changed payloads, entry-point refusals and
+native dependency closure. See [commands and evidence](../../docs/pdf-production-payload.md).
+Default release packaging still rejects these candidates.
+
 From the repository root:
 
 ```powershell

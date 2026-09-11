@@ -9,8 +9,15 @@ verified runtime/source review archives, retained root and compiler-input notice
 and a successful rebuild from the extracted eight-archive source kit. It includes
 LGPL components and is outside the earlier image-only link map. Corresponding
 source delivery, modified-library use, product/source terms and notice review
-remain release gates. Normal production staging still excludes audio. See
+remain release gates. Explicit isolated production staging now includes audio;
+default release packaging still excludes it. See
 [the archive and rebuild evidence](audio-distribution.md).
+
+PDF addition, 2026-09-11: an explicit isolated production option assembles qpdf,
+PDFium and authored native hosts with pinned adjacent runtimes and full retained
+qpdf/PDFium license and notice files. Default release packaging rejects this
+candidate. Complete linked-component/source review, host hardening and Microsoft
+runtime eligibility remain open; see [the packaging evidence](pdf-production-payload.md).
 
 Palette addition, 2026-09-08: development packaging includes the source-built,
 pinned ExoQuant helper, its MIT notice and Rust 1.90.0 library third-party notices.

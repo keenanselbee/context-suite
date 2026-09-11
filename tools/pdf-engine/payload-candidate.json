@@ -1,0 +1,371 @@
+{
+  "schema": 1,
+  "status": "Isolated PDF production candidate; default release adoption remains separate",
+  "archives": {
+    "qpdf": {
+      "bytes": 28165367,
+      "sha256": "3CD016CD433EF7232E42F4C13348A49CC14907A3C7278EF4F99120593126F7A6"
+    },
+    "pdfium": {
+      "bytes": 3818370,
+      "sha256": "78A17D9A5F14467631C26A3AC8741B27A0471ECC05BD6A119B523598160A0537"
+    },
+    "qpdf-source": {
+      "bytes": 19713921,
+      "sha256": "F045AA277BE2356FF53A89A8622945958291177D2483AFC20EDE7C8A8CD3873C"
+    }
+  },
+  "hosts": [
+    {
+      "name": "ContextSuite.PdfRenderer",
+      "input": "pdfium",
+      "path": "renderer-build/bin/Release/ContextSuite.PdfRenderer.exe",
+      "bytes": 20992,
+      "sha256": "61A25837F1BD9FA5B6DCCB903AA3478F31EEF50FA394CA0ED95E1E57EAE5C6E2",
+      "sources": [
+        {
+          "path": "proprietary/src/ContextSuite.PdfRenderer.Native/Renderer.cpp",
+          "sha256": "8C5D075D14AC2081048038D3FACA7835570A2D5EF252A3990A4B8F7B74F2F53F"
+        },
+        {
+          "path": "proprietary/src/ContextSuite.PdfRenderer.Native/CMakeLists.txt",
+          "sha256": "585E4F7D8250576272BFE25F535552B74BB64FF65D7E3701DE3B770EF2146FCD"
+        }
+      ]
+    },
+    {
+      "name": "ContextSuite.ImagePdfValidator",
+      "input": "qpdf",
+      "path": "image-validator-build/bin/Release/ContextSuite.ImagePdfValidator.exe",
+      "bytes": 79872,
+      "sha256": "4BD57D54B4B6BD7C0A56170EEA26CA8DFB7080B429821D513E69829DCD91E073",
+      "sources": [
+        {
+          "path": "proprietary/src/ContextSuite.ImagePdfValidator.Native/Validator.cpp",
+          "sha256": "1C41E019D5DE891BBA472A1B68416FFDD8B16225643B42F59F9A1DEB974FA66C"
+        },
+        {
+          "path": "proprietary/src/ContextSuite.ImagePdfValidator.Native/CMakeLists.txt",
+          "sha256": "600C493941E72909378993B09BCCFD966817D2D0AC16BF72B10713DBB8B9B707"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "pdf-engine/qpdf.exe",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/qpdf.exe",
+      "bytes": 19456,
+      "sha256": "57C003E868FB66CD343FD5AFB91BE8C2277F56434EEA8635762499731BF9F60D"
+    },
+    {
+      "path": "pdf-engine/qpdf30.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/qpdf30.dll",
+      "bytes": 7438848,
+      "sha256": "36FE5B2023F244E5785D96B8372DBA26B75EA51B63ADF4D4F1E66AD0AA1C8A61"
+    },
+    {
+      "path": "pdf-engine/concrt140.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/concrt140.dll",
+      "bytes": 374200,
+      "sha256": "54716F0738AF891F283D213B5C8D11B25896BB8EE3097D301EAE718560CF974E"
+    },
+    {
+      "path": "pdf-engine/msvcp140.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140.dll",
+      "bytes": 643512,
+      "sha256": "7C26614E1D733892C2DEAC7E245CE115504B1D80592DD0A01B08E3E5A55F89CA"
+    },
+    {
+      "path": "pdf-engine/msvcp140_1.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140_1.dll",
+      "bytes": 35768,
+      "sha256": "206C931BF90FDAD8816DE3B5E2EF80B2BCAA9406C89ECC05FE6FDDFFE251E982"
+    },
+    {
+      "path": "pdf-engine/msvcp140_2.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140_2.dll",
+      "bytes": 274872,
+      "sha256": "D50D7883F20D1DC6191768D3746F52DD9CAC89C346FFAED5BE1F110C2F34A838"
+    },
+    {
+      "path": "pdf-engine/msvcp140_atomic_wait.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140_atomic_wait.dll",
+      "bytes": 57792,
+      "sha256": "3D0CBFAA1BF3EECF5A3F4491D2960EE803CB994F30292C6ADC4A07C498F60E2B"
+    },
+    {
+      "path": "pdf-engine/msvcp140_codecvt_ids.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140_codecvt_ids.dll",
+      "bytes": 31160,
+      "sha256": "8A65C7596EF2E6938731F5A1058E7E40145B6D97967CC649231A076B9A608D78"
+    },
+    {
+      "path": "pdf-engine/vcruntime140.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/vcruntime140.dll",
+      "bytes": 178616,
+      "sha256": "D1F4225DF2CD877DBF130D5668A021DCE3F94118455FF5EC952061C30AFC9CE7"
+    },
+    {
+      "path": "pdf-engine/vcruntime140_1.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/vcruntime140_1.dll",
+      "bytes": 50112,
+      "sha256": "A7146C08F89FE5B04541AB507CDB59FF7B44534D4BA3C668A426C6450A03434E"
+    },
+    {
+      "path": "pdf-validator/qpdf30.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/qpdf30.dll",
+      "bytes": 7438848,
+      "sha256": "36FE5B2023F244E5785D96B8372DBA26B75EA51B63ADF4D4F1E66AD0AA1C8A61"
+    },
+    {
+      "path": "pdf-validator/concrt140.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/concrt140.dll",
+      "bytes": 374200,
+      "sha256": "54716F0738AF891F283D213B5C8D11B25896BB8EE3097D301EAE718560CF974E"
+    },
+    {
+      "path": "pdf-validator/msvcp140.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140.dll",
+      "bytes": 643512,
+      "sha256": "7C26614E1D733892C2DEAC7E245CE115504B1D80592DD0A01B08E3E5A55F89CA"
+    },
+    {
+      "path": "pdf-validator/msvcp140_1.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140_1.dll",
+      "bytes": 35768,
+      "sha256": "206C931BF90FDAD8816DE3B5E2EF80B2BCAA9406C89ECC05FE6FDDFFE251E982"
+    },
+    {
+      "path": "pdf-validator/msvcp140_2.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140_2.dll",
+      "bytes": 274872,
+      "sha256": "D50D7883F20D1DC6191768D3746F52DD9CAC89C346FFAED5BE1F110C2F34A838"
+    },
+    {
+      "path": "pdf-validator/msvcp140_atomic_wait.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140_atomic_wait.dll",
+      "bytes": 57792,
+      "sha256": "3D0CBFAA1BF3EECF5A3F4491D2960EE803CB994F30292C6ADC4A07C498F60E2B"
+    },
+    {
+      "path": "pdf-validator/msvcp140_codecvt_ids.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140_codecvt_ids.dll",
+      "bytes": 31160,
+      "sha256": "8A65C7596EF2E6938731F5A1058E7E40145B6D97967CC649231A076B9A608D78"
+    },
+    {
+      "path": "pdf-validator/vcruntime140.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/vcruntime140.dll",
+      "bytes": 178616,
+      "sha256": "D1F4225DF2CD877DBF130D5668A021DCE3F94118455FF5EC952061C30AFC9CE7"
+    },
+    {
+      "path": "pdf-validator/vcruntime140_1.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/vcruntime140_1.dll",
+      "bytes": 50112,
+      "sha256": "A7146C08F89FE5B04541AB507CDB59FF7B44534D4BA3C668A426C6450A03434E"
+    },
+    {
+      "path": "pdf-renderer/msvcp140.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/msvcp140.dll",
+      "bytes": 643512,
+      "sha256": "7C26614E1D733892C2DEAC7E245CE115504B1D80592DD0A01B08E3E5A55F89CA"
+    },
+    {
+      "path": "pdf-renderer/vcruntime140.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/vcruntime140.dll",
+      "bytes": 178616,
+      "sha256": "D1F4225DF2CD877DBF130D5668A021DCE3F94118455FF5EC952061C30AFC9CE7"
+    },
+    {
+      "path": "pdf-renderer/vcruntime140_1.dll",
+      "input": "qpdf",
+      "member": "qpdf-12.4.1-msvc64/bin/vcruntime140_1.dll",
+      "bytes": 50112,
+      "sha256": "A7146C08F89FE5B04541AB507CDB59FF7B44534D4BA3C668A426C6450A03434E"
+    },
+    {
+      "path": "pdf-engine/LICENSE.txt",
+      "input": "qpdf-source",
+      "member": "qpdf-12.4.1/LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30"
+    },
+    {
+      "path": "pdf-engine/NOTICE.md",
+      "input": "qpdf-source",
+      "member": "qpdf-12.4.1/NOTICE.md",
+      "bytes": 2729,
+      "sha256": "B207F65A9E5491195DED63B2941199B19A4D30148871F2742C88EAE7BFC513A6"
+    },
+    {
+      "path": "pdf-validator/LICENSE.txt",
+      "input": "qpdf-source",
+      "member": "qpdf-12.4.1/LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30"
+    },
+    {
+      "path": "pdf-validator/NOTICE.md",
+      "input": "qpdf-source",
+      "member": "qpdf-12.4.1/NOTICE.md",
+      "bytes": 2729,
+      "sha256": "B207F65A9E5491195DED63B2941199B19A4D30148871F2742C88EAE7BFC513A6"
+    },
+    {
+      "path": "pdf-renderer/LICENSE",
+      "input": "pdfium",
+      "member": "LICENSE",
+      "bytes": 1184,
+      "sha256": "8854F4388F1CA13B3AD9BAA42E95F5546B4C0B17109C159256D3ECA7BE39B09B"
+    },
+    {
+      "path": "pdf-renderer/pdfium.dll",
+      "input": "pdfium",
+      "member": "bin/pdfium.dll",
+      "bytes": 7370752,
+      "sha256": "04100C03E41CAC1F979E36E5E26FB860BCB5A7461F53830D3C098716624A27A9"
+    },
+    {
+      "path": "pdf-renderer/licenses/pdfium.txt",
+      "input": "pdfium",
+      "member": "licenses/pdfium.txt",
+      "bytes": 12818,
+      "sha256": "961EACD9633FFF6D051DB7208B755E9210E30EFAC7ADEC3E6A6D52798F0CCF0E"
+    },
+    {
+      "path": "pdf-renderer/licenses/libopenjpeg.txt",
+      "input": "pdfium",
+      "member": "licenses/libopenjpeg.txt",
+      "bytes": 1794,
+      "sha256": "C5AB0890A737C2DFA7BA675036554F6D17741D98629B0C2A145354D00617E6B2"
+    },
+    {
+      "path": "pdf-renderer/licenses/abseil.txt",
+      "input": "pdfium",
+      "member": "licenses/abseil.txt",
+      "bytes": 11564,
+      "sha256": "F54FFF0B905DF5B3464527C652A30E903B172D6DCAB4D89B5E6F105D5E4A4603"
+    },
+    {
+      "path": "pdf-renderer/licenses/lcms.txt",
+      "input": "pdfium",
+      "member": "licenses/lcms.txt",
+      "bytes": 1353,
+      "sha256": "7312B68C5B25E9BF2B828706FB4E29588F22705112F411FD42E1F7D84C3D139A"
+    },
+    {
+      "path": "pdf-renderer/licenses/agg23.txt",
+      "input": "pdfium",
+      "member": "licenses/agg23.txt",
+      "bytes": 725,
+      "sha256": "C110D3EA2AD77467CE0DCFF7D3337E6C8BE8049A5103F4B9BD5FD911A77972E5"
+    },
+    {
+      "path": "pdf-renderer/licenses/libjpeg_turbo.md",
+      "input": "pdfium",
+      "member": "licenses/libjpeg_turbo.md",
+      "bytes": 5755,
+      "sha256": "BE2B2B5AB168BCE87BC3E31F2A5C5ADBA4B7F6E9E51D618E958D1D46972EBD95"
+    },
+    {
+      "path": "pdf-renderer/licenses/llvm-libc.txt",
+      "input": "pdfium",
+      "member": "licenses/llvm-libc.txt",
+      "bytes": 15418,
+      "sha256": "3B6226C32E168C83B891D8D6F0D3C29C2116DC3EF93DC93C307B54F279ECF383"
+    },
+    {
+      "path": "pdf-renderer/licenses/zlib.txt",
+      "input": "pdfium",
+      "member": "licenses/zlib.txt",
+      "bytes": 1332,
+      "sha256": "33FD641C9F3B0E0BE64BC78FEA9E94807674CDD70C48477599226CB8956565FE"
+    },
+    {
+      "path": "pdf-renderer/licenses/freetype.txt",
+      "input": "pdfium",
+      "member": "licenses/freetype.txt",
+      "bytes": 6741,
+      "sha256": "F4B133E25DF1F86AD3FFEA453AA0E613F0474F34778DBBB3E437E7B2724937D8"
+    },
+    {
+      "path": "pdf-renderer/licenses/libjpeg_turbo.ijg",
+      "input": "pdfium",
+      "member": "licenses/libjpeg_turbo.ijg",
+      "bytes": 13059,
+      "sha256": "DB16A04128171879C60708D171B88D97345A2DD20F9BFC173680A4497C73F704"
+    },
+    {
+      "path": "pdf-renderer/licenses/icu.txt",
+      "input": "pdfium",
+      "member": "licenses/icu.txt",
+      "bytes": 28286,
+      "sha256": "93679F4389D53B6835D89843F251844FB9BC455B35BAB036D3C8E7ABE497A47A"
+    },
+    {
+      "path": "pdf-renderer/licenses/simdutf.txt",
+      "input": "pdfium",
+      "member": "licenses/simdutf.txt",
+      "bytes": 1077,
+      "sha256": "C172A0BA936FF31230FEBB5DAD869E25CB7C1A07480C7A381BE8CF011BB52719"
+    },
+    {
+      "path": "pdf-renderer/licenses/fast_float.txt",
+      "input": "pdfium",
+      "member": "licenses/fast_float.txt",
+      "bytes": 1106,
+      "sha256": "BF1B57355FECA8FCE77EE95F48002F8D4789FB71B30EC7599C06CDA4901FBB2B"
+    },
+    {
+      "path": "pdf-renderer/licenses/libpng.txt",
+      "input": "pdfium",
+      "member": "licenses/libpng.txt",
+      "bytes": 5479,
+      "sha256": "452390433BA0F88AA3E2B122C647741B72A0C117CD6ED7A329B49785AECB5511"
+    },
+    {
+      "path": "pdf-renderer/ContextSuite.PdfRenderer.exe",
+      "input": "host",
+      "member": "ContextSuite.PdfRenderer",
+      "bytes": 20992,
+      "sha256": "61A25837F1BD9FA5B6DCCB903AA3478F31EEF50FA394CA0ED95E1E57EAE5C6E2"
+    },
+    {
+      "path": "pdf-validator/ContextSuite.ImagePdfValidator.exe",
+      "input": "host",
+      "member": "ContextSuite.ImagePdfValidator",
+      "bytes": 79872,
+      "sha256": "4BD57D54B4B6BD7C0A56170EEA26CA8DFB7080B429821D513E69829DCD91E073"
+    },
+    {
+      "path": "pdf-engine/ContextSuite.Notice.txt",
+      "input": "authored",
+      "member": "THIRD-PARTY-NOTICES.txt",
+      "bytes": 1089,
+      "sha256": "B45E53A644F781392F21AB3C24CE99C677EB923FABC80F60DFE66856C3263FE9"
+    }
+  ]
+}
