@@ -9,7 +9,7 @@ public static class AudioCommentConversion
     public static bool IsTechnicalTag(string name) => name.ToLowerInvariant() is
         "encoder" or "major_brand" or "minor_version" or "compatible_brands" or "handler_name" or "vendor_id";
 
-    public static ImmutableDictionary<string, string> Read(IEnumerable<AudioComment> comments)
+    public static ImmutableDictionary<string, string> Read(IEnumerable<AudioComment> comments, bool mapVorbisAliases = true)
     {
         var tags = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var comment in comments)
@@ -20,7 +20,7 @@ public static class AudioCommentConversion
                 key.StartsWith("chapter", StringComparison.Ordinal) || key.StartsWith("loop", StringComparison.Ordinal) ||
                 key.StartsWith("replaygain_", StringComparison.Ordinal) || key.StartsWith("r128_", StringComparison.Ordinal))
                 throw new NotSupportedException("Audio chapter, loop, artwork or playback-gain comments need a conversion policy.");
-            key = key switch
+            key = !mapVorbisAliases ? key : key switch
             {
                 "albumartist" => "album_artist", "tracknumber" => "track", "discnumber" => "disc",
                 "discsubtitle" => "disc_subtitle", "description" => "comment", _ => key

@@ -136,7 +136,7 @@ are padding. Inventory covers metadata after the sample chunk too; appended data
 outside the RIFF extent is rejected. Same-format byte retention remains a no-op.
 
 Private candidate results now distinguish `SourceMetadataVerified` from sample
-validation. It is true for admitted WAV/FLAC/Vorbis/Opus/MP3 conversion, byte-identical same-format
+validation. It is true for admitted WAV/FLAC/Vorbis/Opus/MP3/M4A conversion, byte-identical same-format
 retention and the separately validated FLAC optimization path. Other cross-format
 source containers remain unverified candidates even when flattened probe tags
 match. Their metadata handlers, artwork transport, application conversion admission
@@ -201,7 +201,8 @@ trailing data is discardable only when its first low bit permits this. Preserved
 binary extensions, duplicate comments, artwork, chapter/loop/gain semantics and
 unmapped output values prevent conversion. All admitted descriptive values must
 match source and output probes. Unicode-to-WAV still requires an explicit text
-encoding policy. MP3/ID3 and M4A source metadata handlers remain pending.
+encoding policy. MP3 and M4A have the narrower inventories described below;
+their remaining metadata variants still need handlers.
 Raw comment admission and native probe filtering share the same technical-tag
 exclusions: encoder, major_brand, minor_version, compatible_brands, handler_name
 and vendor_id. This avoids treating copied M4A container labels as missing
@@ -246,6 +247,50 @@ stream tags. Actual output tags and decoded audio must still validate. This
 does not correct the separate read-only native Analyze probe's tag reporting;
 shared analysis integration remains open. Unicode-to-WAV stays unadmitted until
 its text-encoding policy is settled.
+
+M4A conversion metadata admission
+---------------------------------
+
+`M4aMetadata` inventories one self-contained AAC-LC track before native probing
+when a cross-format input starts with `ftyp`. Other MOV-family layouts cannot
+become verified conversion candidates. The parser follows the container's
+[data references](https://developer.apple.com/documentation/quicktime-file-format/media_data_reference_atom)
+and [sample-to-chunk tables](https://developer.apple.com/documentation/quicktime-file-format/sample-to-chunk_atom/sample-to-chunk_table)
+without resolving a resource or reading compressed samples. It checks atom
+extents, sample descriptions, MPEG-4 descriptors, sample sizes/timing, 32/64-bit
+chunk offsets and complete nonoverlapping local `mdat` coverage. Native codec,
+rate and channels must agree with the AAC configuration; decoding and existing
+sample comparisons still own actual audio validity.
+
+The initial profile permits reviewed M4A/ISO brands, version-zero movie/track/media
+headers, normal playback rate/volume/balance, identity matrices, no edit or one
+normal-rate trim, and paired roll-recovery sample groups. A sole track's alternate
+group number has no selection effect. AAC priming and trimming remain decoder
+responsibilities; the inventory's packet count is not a decoded sample count.
+Container sample-entry rate/channel hints are advisory; the AAC configuration
+and native interpretation must agree. The caller's stream position is restored
+on success, refusal and cancellation.
+
+Bounds are 512 MiB per file, 16 MiB for the movie buffer, 16 media-data regions,
+16,384 root atoms and 16,384 movie/child atoms, one million samples/table entries,
+256 KiB of tag text, 128 fields and 4,096 characters per value. Child atoms retain
+slices of the movie buffer. The operation's existing deadline applies.
+
+Admitted iTunes-style tags include title, artist/album artist, album, comment,
+date, textual genre, copyright, composer, grouping, description and track/disc
+numbers with optional totals. UTF-8 and UTF-16BE text are supported; the media's
+packed language is retained. Comment and description remain distinct instead
+of applying Vorbis aliases to M4A. Encoder identity is technical provenance.
+Source and actual output probes must retain every admitted descriptive value.
+Unsupported destination tags fail validation; the original remains intact.
+
+Artwork, freeform metadata (including iTunes gapless/gain fields), numeric genre
+codes, localized or repeated values, creation/modification timestamps, version-one
+headers, ALAC/HE-AAC, external references, extra tracks, complex edits, fragmented
+files and unknown atoms still need handlers. These are explicit coverage gaps,
+not permission to omit information. The tests cover generated AAC files only;
+this is not full M4A conformance or independent decoder/listening acceptance.
+Same-format byte retention keeps its existing separate policy.
 
 FLAC optimization candidate
 ----------------------------

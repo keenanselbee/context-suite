@@ -67,6 +67,7 @@ try
     FlacConversionMetadataContracts.Run(Check);
     await OggMetadataContracts.RunAsync(Check);
     await Mp3MetadataContracts.RunAsync(Check);
+    await M4aMetadataContracts.RunAsync(Check);
     FlacSeekContracts.Run(Check);
     await FlacBatchContracts.RunAsync(args[0], Check);
     AudioProbeContracts.Run(Check);

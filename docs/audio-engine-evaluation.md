@@ -737,3 +737,56 @@ direct-audio checks. Its evidence is under
 in `results/analysis-results.txt`, `flac-results/flac-workflow.json` and
 `direct-results/direct-audio.json`. Audio conversion remains a private candidate;
 these existing worker checks do not establish a shipping conversion command.
+
+M4A local container and metadata inventory (2026-09-10)
+------------------------------------------------------
+
+**1,371 foundation contracts** pass, including **53 new M4A checks**. The managed
+inventory checks one local AAC-LC track, atom/descriptors, sample sizes/timing,
+32/64-bit chunk tables, complete nonoverlapping media coverage, ordinary text
+tags, distinct comment/description values, track/disc totals and language.
+Authored fixtures exercise physical chunks out of time order, variable sample
+sizes, paired roll groups, simple priming edits, unsupported structures/text,
+external references, cancellation and restored stream positions. A counting
+stream verifies that over 1 MiB of encoded samples is skipped during inventory.
+
+**269 combined private audio checks** pass, including **31 M4A checks**: all six
+targets, Unicode/multiline values, unsupported metadata and references, malformed
+tables, unchanged original hashes and owned-scratch cleanup. Source metadata
+coverage is now verified for this admitted M4A profile. The ordinary two-second
+fixture retains 96,000 decoded frames. Fresh faststart mono AAC conversions at
+16,000, 44,100 and 48,000 Hz each decode to the expected one-fifth second length.
+This confirms those generated priming cases with the pinned native engine;
+independent decoding, listening and broader recording-device files remain open.
+
+The first synthetic run exposed an optional-memory null-conversion issue; explicit
+absence handling corrected it. The first native run found alternate-group 1 on
+the only audio track; that number has no alternate-track selection effect and is
+now accepted without relaxing the exactly-one-track requirement. The final runs
+above include both corrections.
+
+Evidence beneath the existing prepared engine directory
+`.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/`:
+
+```text
+adapter-df73259913744e87976c152344838c38/encoding-adapter.json
+```
+
+Focused evidence is also at
+`.codex-temp/m4a-preservation-8d44fe0fdec54c53a4c9136902a23ef4/m4a-preservation.json`.
+The fresh evaluation-only worker copy passed 11 Analyze, 14 FLAC workflow and
+16 direct-audio checks. Evidence is beneath the prepared directory at
+`worker-e8837ca44acb41269d87deb646bc1403/`, in `results/analysis-results.txt`,
+`flac-results/flac-workflow.json` and `direct-results/direct-audio.json`.
+Fresh isolated Release stage
+`artifacts/production-staging/8f66c6e26f61480ea13d31452c0bfc09` passes with zero
+warnings/errors and curated identities, payload allowlist, dependencies and
+notices. It uses `-SkipShell`; evaluation audio/PDF engines remain excluded.
+
+See the [exact M4A policy](audio-conversion-policy.md). Artwork/freeform fields,
+timestamps, version-one headers, ALAC/HE-AAC, fragments, complex edits and other
+variants remain refused pending handlers. This does not finish audio conversion
+worker/menu admission, production engine adoption, document transformations or
+the active broad-file goal. No image-engine, native-shell or visible UI acceptance
+was rerun for this metadata slice; installation, live commerce and signing were
+not performed.

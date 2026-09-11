@@ -92,7 +92,7 @@ captured settings, quiet completion, cancellation, malformed files, misleading
 extensions and missing-engine fallback. These component checks do not operate
 Explorer or inspect visible windows, keyboard focus or assistive technology.
 
-The latest adapter run passes 238 combined checks. FLAC conversion cases include
+The latest adapter run passes 269 combined checks. FLAC conversion cases include
 original-block inventory, literal Unicode/multiline tag transport, canonical
 comment aliases, refusal of unsupported metadata, stale seek tables and corrupt
 frames. WAV allows ordinary ASCII line breaks and tabs; Unicode WAV text remains
@@ -109,8 +109,15 @@ MP3 adds 38 cases for ID3 versions/encodings, exact unsynchronised values across
 outputs, unsupported metadata, complete frame boundaries and low-rate gapless
 decoding. `--mp3-preservation` accepts the same three arguments for a focused run.
 These cases do not finish ID3v1/APE, genre codes, language-specific comments,
-artwork or M4A inventory. The native Analyze probe retains its separately
+artwork or the remaining M4A metadata variants. The native Analyze probe retains its separately
 documented unsynchronised-tag reporting limitation.
+
+M4A adds 31 cases for local AAC-LC inventory, ordinary and Unicode/multiline tags,
+external-reference and unsupported-metadata refusal, priming at three rates,
+source digests and cleanup. `--m4a-preservation` accepts the same focus arguments.
+The public parser also checks sample/chunk extents, timing, roll groups and bounded
+reads. Timestamps, artwork/freeform tags, extended/fragmented structures and other
+variants remain outside admission; see the exact policy and evidence below.
 
 See [recorded results](../../docs/audio-engine-evaluation.md) and the
 [engine comparison](../../docs/media-engine-evaluation.md). Supplier archive
