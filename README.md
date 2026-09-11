@@ -44,7 +44,8 @@ pending. Broader analysis remains in progress. Selected document launch actions 
 images-to-PDF, PDF pages-to-images, PDF optimization and Word/Excel/PowerPoint-to-PDF.
 A structural PDF optimization candidate now passes isolated worker, paid-access
 and copy-publication checks, plus independent two-page rendering comparison.
-Direct PDF dispatch, broader fidelity, engine adoption and the other document
+Auto/Lossless dispatch now includes PDFs in the same batch as PNG and FLAC, with
+mandatory PDF copies. Broader fidelity, engine adoption and the other document
 actions remain pending. The [goal record](docs/broad-file-support-goal.md)
 identifies the latest isolated staging and its limited acceptance scope.
 The owner accepted the image utility's simplified UI; screen-reader, additional

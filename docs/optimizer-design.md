@@ -6,8 +6,13 @@ and the [broad file support goal](broad-file-support-goal.md). Preserve the veri
 PNG recipes and add bounded lossless FLAC recompression with decoded-sample and
 metadata validation. PDF optimization is selected for launch; engine choice and
 preservation policies remain pending under the [document design](document-design.md).
-FLAC direct dispatch is implemented for the optional verified audio engine; PDF
-actions remain planned. Format recognition alone does not enable Optimize.
+FLAC and structural PDF direct dispatch are implemented for their optional
+verified candidate engines. Auto and Lossless include PDF in the same admitted
+batch as PNG and FLAC; PDF always produces a copy, even with overwrite selected.
+Balanced and Smallest remain PNG-only. Missing engines produce an unavailable
+result before admission; normal packaging still excludes these evaluation engines.
+Format recognition alone does not enable Optimize. Broader PDF preservation and
+production engine adoption remain pending under the document design.
 
 The first FLAC core step now inventories bounded metadata and reconciles original
 descriptive blocks with the newly encoded STREAMINFO. Independent byte comparison

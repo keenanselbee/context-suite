@@ -132,9 +132,18 @@ The publisher discards unchanged results without creating duplicates. Summary
 facts can exclude known protected files, but cannot approve preservation; the
 complete inventory remains the execution admission authority.
 
-This is not a registered direct Optimize action. The [dated evidence](pdf-engine-evaluation.md)
+Direct Auto/Lossless dispatch now includes PDFs alongside PNG/FLAC in one
+admitted batch with combined progress, cancellation and quiet completion. The
+PDF result remains copy-only. Balanced/Smallest requests explain the PNG-only
+policy before admission; missing PDF engines report unavailable before launch.
+Known encryption is excluded during planning, while complete-object signature
+checks remain authoritative during execution. Activation retries keep the menu
+action/files and capture current Settings. Normal staging still excludes qpdf;
+this dispatch is verified with the isolated evaluation payload.
+
+The [dated evidence](pdf-engine-evaluation.md)
 includes 32 rewrite contracts, 19 new plan/access contracts, 27 private adapter
-checks, 17 real optimization workflow checks and independent PDFium comparison
+checks, 17 real optimization workflow checks, 19 direct mixed-family checks and independent PDFium comparison
 of two generated published pages. Native-phase crash/recovery tests, larger
 document/feature coverage and production engine adoption remain required.
 Incremental/linearized inputs with revision links need a history

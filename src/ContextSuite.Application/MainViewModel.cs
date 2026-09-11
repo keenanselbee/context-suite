@@ -10,6 +10,7 @@ using ContextSuite.Core.Settings;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Analysis;
 using ContextSuite.Core.Audio;
+using ContextSuite.Core.Pdf;
 
 namespace ContextSuite.Application;
 
@@ -248,6 +249,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     {
         var images = new List<ImageSourceFacts>();
         var audio = new List<AudioFileSource>();
+        var documents = new List<PdfFileSource>();
         for (var index = 0; index < rows.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -257,7 +259,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             try
             {
                 var header = await FileAnalysisReader.ReadAsync(row.Path, cancellationToken, headerOnly: true);
-                if (header.Identity is { FormatId: "flac" or "png", Basis: IdentificationBasis.Content } identity &&
+                if (header.Identity is { FormatId: "flac" or "png" or "pdf", Basis: IdentificationBasis.Content } identity &&
                     !string.Equals(Path.GetExtension(row.Path), "." + identity.FormatId, StringComparison.OrdinalIgnoreCase))
                 {
                     row.ApplyResult(new(row.Path, OperationState.Unsupported,
@@ -280,9 +282,23 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                 }
                 else if (header.Identity is { FormatId: "png", Basis: IdentificationBasis.Content })
                     images.Add(await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken, forOptimization: true));
+                else if (header.Identity is { FormatId: "pdf", Basis: IdentificationBasis.Content })
+                {
+                    if (request.Action is "balanced" or "smallest")
+                    {
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For PDF, choose Auto or Lossless. Balanced and Smallest apply to PNG images."));
+                        continue;
+                    }
+                    if (!worker.HasPdfOptimizer)
+                    {
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "PDF optimization is unavailable in this build."));
+                        continue;
+                    }
+                    documents.Add(await worker.ProbePdfFileAsync(new(row.ItemId, row.Path), cancellationToken));
+                }
                 else
                 {
-                    row.ApplyResult(new(row.Path, OperationState.Unsupported, "Optimization supports PNG images and FLAC audio. Other files are kept unchanged."));
+                    row.ApplyResult(new(row.Path, OperationState.Unsupported, "Optimization supports PNG images, FLAC audio and PDF documents. Other files are kept unchanged."));
                     continue;
                 }
                 row.ApplyResult(new(row.Path, OperationState.Pending, "Preparing optimization"));
@@ -304,24 +320,32 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         };
         var pngPlan = images.Count == 0 ? null : PngOptimizationPlan.Create(request.RequestId, images, snapshot, replace, preset);
         var flacPlan = audio.Count == 0 ? null : FlacOptimizationPlan.Create(request.RequestId, audio, snapshot, replace);
+        var pdfPlan = documents.Count == 0 ? null : PdfOptimizationPlan.Create(request.RequestId, documents, snapshot);
         var byId = rows.ToDictionary(row => row.ItemId);
         foreach (var item in pngPlan?.Items ?? [])
             if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));
         foreach (var item in flacPlan?.Items ?? [])
             if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));
+        foreach (var item in pdfPlan?.Items ?? [])
+            if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));
         var png = pngPlan?.HasExecutableItems == true ? pngPlan.Confirm(replace, PublicationSupport.ReplacementAvailable) : null;
         var flac = flacPlan?.HasExecutableItems == true ? flacPlan.Confirm(replace, PublicationSupport.ReplacementAvailable) : null;
-        if (png is null && flac is null) return;
+        var pdf = pdfPlan?.HasExecutableItems == true ? pdfPlan.Confirm() : null;
+        if (png is null && flac is null && pdf is null) return;
         cancellationToken.ThrowIfCancellationRequested();
         // One Explorer invocation is one admitted batch, including mixed families.
-        // Both confirmed plans carry the same request ID and settings snapshot.
+        // All confirmed plans carry the same request ID and settings snapshot.
         var admission = png is not null ? await trial!.AdmitOptimizationAsync(png, cancellationToken)
-            : await trial!.AdmitOptimizationAsync(flac!, cancellationToken);
+            : flac is not null ? await trial!.AdmitOptimizationAsync(flac, cancellationToken)
+            : await trial!.AdmitOptimizationAsync(pdf!, cancellationToken);
         if (png is not null)
             await new PngOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(png, admission,
                 (item, result) => Report(item.Source.ItemId, result), cancellationToken);
         if (flac is not null)
             await new FlacOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(flac, admission,
+                (item, result) => Report(item.Source.ItemId, result), cancellationToken);
+        if (pdf is not null)
+            await new PdfOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(pdf, admission,
                 (item, result) => Report(item.Source.ItemId, result), cancellationToken);
 
         void Report(Guid itemId, FileResult result)

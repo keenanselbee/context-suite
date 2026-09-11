@@ -197,23 +197,24 @@ paid-audio-admission checks, 14 direct-action/quality-decision checks and 32 PDF
 rewrite checks and 19 PDF batch/access checks. The preceding 292 combined private audio checks and 113 real-worker
 audio checks were not rerun for the PDF-only change. This slice passes 27 private
 PDF adapter checks (preceding candidate milestone), 11 PDF Analyze worker checks,
-17 new PDF optimization worker/publication checks and 15 independent PDFium checks.
+17 PDF optimization worker/publication checks and 19 new direct PDF/mixed-family
+checks. The preceding 15 independent PDFium checks were not rerun for dispatch-only changes.
 The earlier shared
 reservation-handle refactor passed all 942 image-engine checks; those were not
-rerun. The preceding 86 hidden view contracts, 13 image direct-command checks and
-native shell contracts were not repeated for this PDF integration change. They passed the expanded Convert menu's complete
+rerun. The 86 hidden view contracts, 13 image direct-command checks and
+native shell contracts pass after PDF dispatch integration. They cover the expanded Convert menu's complete
 multi-file activation without registration or installation. The
 [catalog inventory](file-type-inventory.md) separates descriptions from detectors.
 The [source audit](catalog-source-review.json) records 223 references: 186 retrieved,
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/5af83dd3c17a41a9b5d613a59cb95a58` includes the private
+`artifacts/production-staging/ecdfc84ac0a04b03a9ee2df7b3b7a639` includes the private
 audio candidates, direct quality window and existing optional PDF worker
-integration and structural PDF optimization worker/executor. Release compilation, curated engine identities, file allowlist,
+integration and direct structural PDF optimization. Release compilation, curated engine identities, file allowlist,
 package dependencies and notice checks pass, with zero compiler warnings/errors.
-This PDF integration stage used `-SkipShell`; an earlier stage built native shell
-into isolated scratch. See [dated audio evidence](audio-engine-evaluation.md).
+This PDF dispatch stage also built native shell into isolated scratch, including
+updated preset descriptions. See [dated audio evidence](audio-engine-evaluation.md).
 Installed lifecycle and visible acceptance were not performed. The
 evaluation audio and PDF engines are not part of this normal payload. Manual review remains
 pending; earlier image acceptance does not prove the expanded report UI.
@@ -224,8 +225,11 @@ copies are mandatory even with overwrite selected; unchanged results publish no
 duplicate. Generated checks cover collision naming, expiry during/after a batch,
 changed sources, signature/encryption refusal, cancellation around reservation
 and between files, nonempty/hard-linked outputs and cleanup. Independent PDFium
-rendering matches the source for both published generated pages. Direct PDF
-Optimize dispatch and mixed image/audio/PDF admission, native-phase termination
+rendering matches the source for both published generated pages. Auto/Lossless
+now dispatch PDF alongside PNG/FLAC under one admission and one quiet completion.
+Generated direct checks cover trial expiry across families, activation retry,
+mandatory PDF copies, unchanged results, missing engines, misleading extensions,
+protection refusal and cancellation between families. Native-phase termination
 and recovery, broader fidelity and all other document actions remain open.
 
 Product boundaries

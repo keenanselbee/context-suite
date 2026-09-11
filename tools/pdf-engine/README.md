@@ -51,7 +51,11 @@ cleanup. `probe-adapter.json` now records both probe and optimization checks, an
 also runs the file-based optimization worker through real trial admission and
 application-owned copy publication. Its separate `optimization-results` directory
 records collisions, source changes, protection refusal, cancellation and no-change
-outcomes. It does not enable direct PDF commands or add engines to normal staging.
+outcomes. Add both `-AudioPreparedDirectory '<prepared audio directory>'` and
+`-AudioFixtureDirectory '<generated audio matrix>'` to also test direct Auto/
+Lossless on PDF-only and mixed PNG/FLAC/PDF batches. Those extra tests create an
+isolated combined engine payload and record `direct-results/pdf-direct.json`.
+They do not add engines to normal staging or change Explorer registration.
 
 To compare that candidate independently, add
 `-OptimizedCandidate '<generated adapter directory>\optimized-candidate.pdf'`

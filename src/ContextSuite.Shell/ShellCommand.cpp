@@ -632,10 +632,10 @@ private:
     static constexpr const wchar_t* PresetTitles[] = { L"Auto", L"Lossless", L"Balanced", L"Smallest" };
     static constexpr const wchar_t* PresetActions[] = { L"auto", L"lossless", L"balanced", L"smallest" };
     static constexpr const wchar_t* PresetTooltips[] = {
-        L"Balance PNG size and quality; preserve FLAC audio exactly; output follows Settings",
-        L"Reduce size without changing pixels or audio samples; output follows Settings",
-        L"Allow slight RGB precision loss for smaller files; output follows Settings",
-        L"Allow stronger RGB precision loss; banding may be visible; output follows Settings" };
+        L"Balance PNG size and quality; preserve FLAC samples and PDF content; PDF results always keep originals",
+        L"Reduce size without changing pixels, audio samples or PDF content; PDF results always keep originals",
+        L"PNG only: allow slight RGB precision loss for smaller files; output follows Settings",
+        L"PNG only: allow stronger RGB precision loss; banding may be visible; output follows Settings" };
 };
 
 class CommandEnumerator final : public IEnumExplorerCommand

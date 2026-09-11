@@ -342,3 +342,55 @@ acceptance is claimed. Previous private PDF/audio and image/native/hidden suites
 were not rerun; their dated evidence remains separate. Direct mixed-family
 dispatch, broader document fidelity, native failure/recovery and engine adoption
 remain open, as do images/PDF and Office-to-PDF conversion.
+
+Direct PDF optimization (2026-09-10)
+------------------------------------
+
+Auto and Lossless now select structural PDF optimization directly in the existing
+Optimize dispatcher. Content/extension mismatches, missing engines, known
+encryption and inappropriate Balanced/Smallest requests receive per-file results
+before paid admission. PDF copies remain mandatory regardless of saved overwrite
+preferences. All executable family plans share one request ID/settings snapshot
+and one admission; the existing sequential worker processes PNG, then FLAC, then
+PDF while result rows retain selection order. Cancellation preserves committed
+outputs and marks remaining work cancelled. A mixed invocation has one aggregate
+completion and no routine planner.
+
+**19 direct PDF checks**, **17 optimization workflow checks** and **11 PDF Analyze
+checks** pass against fresh isolated Release stage
+`artifacts/production-staging/028f1b935325415caa7d5343b4d101f2`. The added direct
+suite uses generated PNG/FLAC/PDF inputs and optional pinned audio/PDF engines:
+
+```text
+.codex-temp/pdf-engine/3edb2e8361e04782a91ef8364bd3a537/
+  worker-6b3cead527234e5092acb6f1857c9898/direct-results/pdf-direct.json
+  worker-6b3cead527234e5092acb6f1857c9898/optimization-results/pdf-optimization-workflow.json
+```
+
+It verifies all three families completing after trial expiry under one admission,
+one quiet completion, format/order retention, PDF-only expired denial, simulated
+activation/deactivation retries, captured Settings, duplicate-retry suppression,
+mandatory source-folder copies, no-smaller success, mismatched extension guidance,
+PNG-only preset guidance, known encryption without admission, signature refusal
+with later valid files, cancellation between families, absent engines without
+worker launch, original hashes and publication cleanup. The initial test build
+had an array/immutable-array type mismatch; correcting the authored test resolved
+it without changing production behavior.
+
+**1,507 foundation**, **86 hidden view**, **13 existing image direct-command** and
+native shell contracts pass. The native build uses isolated scratch and verifies
+all menu commands activating complete selections without installation. Normal
+payload identity/allowlist/dependency/notice checks pass and still exclude qpdf
+and FFmpeg. This is automated dispatch/binding evidence, not visible usability,
+screen-reader/theme/DPI delivery or installed Explorer acceptance. The previous
+PDFium rendering and private PDF/audio/image engine results remain separately
+dated; they were not rerun for this dispatcher change. Native-phase termination/
+recovery, broader document coverage, production engine adoption and remaining
+required document conversions remain open.
+
+Final isolated staging is
+`artifacts/production-staging/ecdfc84ac0a04b03a9ee2df7b3b7a639`, rebuilt after retaining
+Auto's existing PNG quality wording in the extended PDF tooltip. Its native shell
+contracts and normal payload checks pass. The managed implementation is unchanged
+from the tested `028f1b...` stage; UI and media suites were not repeated for that
+tooltip-only adjustment.
