@@ -42,6 +42,10 @@ internal static class LicenseStorageContracts
             [new(Guid.NewGuid(), Path.Combine(root, "pages.pdf"), new('D', 64), 100, new([new(0, 0, 150, 150, 72, 72)]))],
             new("convert", new())).Confirm();
         var pageAdmission = await access.AdmitConversionAsync(pdfPages, default);
+        var imagePdf = ContextSuite.Core.Pdf.ImagePdfPlan.Create(Guid.NewGuid(), [facts], new("convert", new())).Confirm(false);
+        var imagePdfAdmission = await access.AdmitConversionAsync(imagePdf, default);
+        check(imagePdfAdmission.IsAllowed && imagePdfAdmission.BatchId == imagePdf.Plan.BatchId && !File.Exists(trialPath),
+            "license: paid combined PDF admission does not start trial");
         check(pageAdmission.IsAllowed && pageAdmission.BatchId == pdfPages.Plan.BatchId && !File.Exists(trialPath),
             "license: paid PDF page conversion does not start trial");
         check(pdfAdmission.IsAllowed && pdfAdmission.BatchId == pdf.Plan.BatchId && !File.Exists(trialPath),
@@ -81,6 +85,8 @@ internal static class LicenseStorageContracts
             "license: paid PDF expiry preserves admission and cannot fall back to trial");
         check(pageAdmission.IsAllowed && !(await access.AdmitConversionAsync(pdfPages, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid PDF page expiry preserves admission and cannot fall back to trial");
+        check(imagePdfAdmission.IsAllowed && !(await access.AdmitConversionAsync(imagePdf, default)).IsAllowed && !File.Exists(trialPath),
+            "license: paid combined PDF expiry preserves admission and cannot fall back to trial");
         check(audioAdmission.IsAllowed && !(await access.AdmitConversionAsync(audioConversion, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid audio conversion expiry preserves admission and cannot fall back to trial");
         clock.Now = clock.Now.AddDays(-2);

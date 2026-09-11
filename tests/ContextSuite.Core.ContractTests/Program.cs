@@ -13,6 +13,15 @@ using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
 if (args.Length == 2 && args[0] == "--recycle") return await WindowsRecycleContracts.RunAsync(args[1]);
+if (args.Length == 5 && args[0] == "--image-pdf-publication-crash") return await ImagePdfPublicationCrashContracts.RunChildAsync(args[1], args[2], args[3], args[4]);
+if (args.Length == 4 && args[0] == "--image-pdf-worker")
+{
+    var checks = 0;
+    await ImagePdfWorkerContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated combined PDF workflow checks.");
+    return 0;
+}
 if (args.Length == 5 && args[0] == "--pdf-publication-crash") return await PdfPublicationCrashContracts.RunChildAsync(args[1], args[2], args[3], args[4]);
 if (args.Length == 4 && args[0] == "--audio-conversion-direct")
 {
@@ -131,6 +140,7 @@ try
     PdfRasterContracts.Run(Check);
     ImagePdfContracts.Run(args[0], Check);
     ImagePdfValidationContracts.Run(args[0], Check);
+    await ImagePdfBatchContracts.RunAsync(args[0], Check);
     await PdfBatchContracts.RunAsync(args[0], Check);
     FlacSeekContracts.Run(Check);
     await FlacBatchContracts.RunAsync(args[0], Check);

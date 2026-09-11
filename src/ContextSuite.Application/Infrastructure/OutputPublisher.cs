@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Text.Json;
+using System.Collections.Immutable;
 using ContextSuite.Core.Operations;
+using ContextSuite.Core.Pdf;
 
 namespace ContextSuite.Application.Infrastructure;
 
@@ -12,9 +14,11 @@ internal interface IFileRecycler
 
 internal enum PublicationStage { Prepared, Validated, Publishing, Committed, Recycled }
 internal sealed record PublicationRecord(Guid ItemId, string SourcePath, string OutputPath, string TemporaryPath,
-    string? BackupPath, FileFingerprint Source, FileFingerprint? Candidate, PublicationStage Stage);
+    string? BackupPath, FileFingerprint Source, FileFingerprint? Candidate, PublicationStage Stage,
+    ImmutableArray<PublicationSource>? Sources = null);
 
-internal sealed class OutputReservation(OutputIntent intent, OutputPolicy policy, PublicationRecord record, string recordPath)
+internal sealed class OutputReservation(OutputIntent intent, OutputPolicy policy, PublicationRecord record, string recordPath,
+    ImagePdfSourceLease? group = null)
 {
     public OutputIntent Intent { get; } = intent;
     public OutputPolicy Policy { get; } = policy;
@@ -22,6 +26,7 @@ internal sealed class OutputReservation(OutputIntent intent, OutputPolicy policy
     public string RecordPath { get; } = recordPath;
     public string TemporaryPath => Record.TemporaryPath;
     internal bool Finished { get; set; }
+    internal ImagePdfSourceLease? Group { get; } = group;
 }
 
 // Application-owned IO boundary. Tests inject failures here, never a fake media engine in production.
@@ -47,18 +52,29 @@ internal sealed class OutputPublisher(string recordDirectory, IFileRecycler recy
     public static string DefaultRecordDirectory { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ContextSuite", "Publications");
 
-    public async Task<OutputReservation> ReserveAsync(OutputIntent intent, CancellationToken cancellationToken = default)
+    public Task<OutputReservation> ReserveAsync(OutputIntent intent, CancellationToken cancellationToken = default) =>
+        ReserveCoreAsync(intent, cancellationToken);
+
+    public Task<OutputReservation> ReserveImagePdfAsync(Guid outputId, ConfirmedImagePdf confirmed, CancellationToken token) =>
+        ReserveCoreAsync(new(outputId, confirmed.Plan.Pages[0].Source.Path, "pdf", confirmed.Plan.Settings,
+            CombinedPdf: confirmed.Plan.Pages.Length > 1), token, confirmed);
+
+    private async Task<OutputReservation> ReserveCoreAsync(OutputIntent intent, CancellationToken cancellationToken,
+        ConfirmedImagePdf? combined = null)
     {
         await _gate.WaitAsync(cancellationToken);
         string? temporary = null;
         var temporaryOwned = false;
+        ImagePdfSourceLease? group = null;
         try
         {
+            if (combined is not null) group = await ImagePdfSourceLease.OpenAsync(combined, cancellationToken);
+            if (intent.CombinedPdf && group is null) throw new InvalidDataException("Combined PDF publication requires all original source leases.");
             if (intent.ItemId == Guid.Empty || _reservations.ContainsKey(intent.ItemId))
                 throw new InvalidDataException("Output item IDs must be unique.");
             var source = PublicationFiles.Normalize(intent.SourcePath);
             _ = OutputNames.Create(source, intent.Settings.Operation, intent.TargetExtension, representation: intent.Dds,
-                replaceSource: intent.ReplaceOriginal, pageNumber: intent.PageNumber);
+                replaceSource: intent.ReplaceOriginal, pageNumber: intent.PageNumber, combinedPdf: intent.CombinedPdf);
             if (intent.Settings.Operation == "optimize" && !string.Equals(Path.GetExtension(source).TrimStart('.'),
                 intent.TargetExtension.TrimStart('.'), StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException("Optimize must retain the source format.");
@@ -86,18 +102,20 @@ internal sealed class OutputPublisher(string recordDirectory, IFileRecycler recy
                 throw new InvalidDataException("The source name is too long for a recoverable replacement. Rename it first.");
             Directory.CreateDirectory(_recordDirectory);
             PublicationFiles.RejectLinks(_recordDirectory);
-            var record = new PublicationRecord(intent.ItemId, source, output, temporary, backup, fingerprint, null, PublicationStage.Prepared);
-            var reservation = new OutputReservation(intent, policy, record, Path.Combine(_recordDirectory, $"{intent.ItemId:N}.json"));
+            var record = new PublicationRecord(intent.ItemId, source, output, temporary, backup, fingerprint, null, PublicationStage.Prepared, group?.Sources);
+            var reservation = new OutputReservation(intent, policy, record, Path.Combine(_recordDirectory, $"{intent.ItemId:N}.json"), group);
             await WriteRecordAsync(reservation, createNew: true);
             _io.Checkpoint(PublicationStage.Prepared);
             _reservations.Add(intent.ItemId, reservation);
             _destinations.Add(output);
             temporary = null;
+            group = null; // Reservation owns the source leases until publication/abandonment.
             return reservation;
         }
         finally
         {
             if (temporaryOwned && temporary is not null) DeleteTemporary(temporary);
+            group?.Dispose();
             _gate.Release();
         }
     }
@@ -145,6 +163,7 @@ internal sealed class OutputPublisher(string recordDirectory, IFileRecycler recy
                 if (await PublicationFiles.FingerprintAsync(finalCandidate, cancellationToken) != candidate ||
                     !await PublicationFiles.MatchesAsync(record.SourcePath, record.Source))
                     throw new InvalidDataException("An input or output changed before commit.");
+                if (reservation.Group is not null) await reservation.Group.VerifyAsync(cancellationToken);
                 if (record.BackupPath is not null)
                 {
                     // ReplaceFile requires exclusive access to the candidate while merging metadata.
@@ -210,6 +229,7 @@ internal sealed class OutputPublisher(string recordDirectory, IFileRecycler recy
             }
             finally
             {
+                reservation.Group?.Dispose();
                 reservation.Finished = true;
                 _reservations.Remove(record.ItemId);
                 _destinations.Remove(record.OutputPath);
@@ -245,7 +265,7 @@ internal sealed class OutputPublisher(string recordDirectory, IFileRecycler recy
         for (var ordinal = 1; ordinal <= 10000; ordinal++)
         {
             var name = OutputNames.Create(intent.SourcePath, intent.Settings.Operation, intent.TargetExtension, ordinal,
-                intent.Dds, intent.ReplaceOriginal, intent.PageNumber);
+                intent.Dds, intent.ReplaceOriginal, intent.PageNumber, intent.CombinedPdf);
             var path = PublicationFiles.Normalize(Path.Combine(directory, name));
             if (!_destinations.Contains(path) && !File.Exists(path) && !Directory.Exists(path)) return path;
         }
@@ -271,7 +291,7 @@ internal sealed class OutputPublisher(string recordDirectory, IFileRecycler recy
         return new(record.SourcePath, outcome, message, output,
             outcome is PublicationOutcome.SourceReplaced ? null : record.BackupPath ?? record.SourcePath,
             record.Stage >= PublicationStage.Publishing && outcome is not (PublicationOutcome.SourceReplaced or PublicationOutcome.CopyCreated) ? reservation.RecordPath : null,
-            record.Source.Length, record.Candidate?.Length ?? 0);
+            record.Sources?.Sum(source => source.Fingerprint.Length) ?? record.Source.Length, record.Candidate?.Length ?? 0);
     }
 
     private static async Task WriteRecordAsync(OutputReservation reservation, bool createNew = false)

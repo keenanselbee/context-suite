@@ -1,8 +1,8 @@
 Combined Image PDF Candidate
 ============================
 
-Status: ordered plan, private writer and independent validator evaluated;
-worker/customer command and publication are not implemented for this action.
+Status: ordered plan, writer, independent validator and isolated worker/publication
+implemented with automated evidence; order UI and customer command remain pending.
 
 Owner decision and page-order policy
 -----------------------------------
@@ -23,15 +23,15 @@ one-PDF-per-image proposal. The intended Convert > PDF behavior is:
 - One failed/unsupported image prevents publication of the combined document;
   never silently omit pages. A failed attempt can be retried as a whole. There
   are no partial page publications for this many-to-one action.
-- Always create a PDF copy. The proposed name is the first reviewed image's
+- Always create a PDF copy. The implemented name is the first reviewed image's
   stem plus ` - Combined.pdf` for multiple images, or ` - Converted.pdf` for one.
   Use the saved Convert output folder or that first image's folder and show the
   destination in the order review. Existing-name collisions use `(2)`, `(3)`, etc.
   Overwrite originals cannot recycle any member of a combined selection.
 
-Immutable plan/order enforcement, writing and independent validation are
-implemented. The focused UI, command, names and publication above are the next
-integration work, not existing customer behavior or visual acceptance.
+Immutable plan/order enforcement, writing, independent validation and transactional
+copy publication are implemented. The focused UI and menu command are next;
+isolated execution tests do not establish existing customer UI or visual acceptance.
 
 Fixed image representation
 --------------------------
@@ -75,15 +75,14 @@ The writer takes checked read-only, single-link source leases for **all** inputs
 before decoding the first image. It rechecks exact source facts while decoding,
 then every handle identity and source hash before returning bytes. Leases deny
 write/delete sharing and are released on success, refusal or cancellation.
-It returns candidate bytes and digests computed from the original decoded samples
-before PDF encoding. There is no final naming, output reservation, published
-result, trial admission or claim of validated publication yet.
+The writer itself returns candidate bytes and digests computed from original
+decoded samples before PDF encoding. The worker/publication checkpoint below
+connects this to access admission, a checked output reservation and final naming.
 
-Production integration must use the independent validator described below and
-retain/recheck every original through final publication.
-The current publisher's first-source fingerprint alone cannot approve an entire
-combined selection. Use existing transactional copy/journal behavior for the
-single output after this group-specific safety work. A 150-DPI renderer limit
+The application now uses the independent validator below and records/checks every
+original through final publication. A first-source fingerprint alone cannot
+approve an entire combined selection. The group-specific source leases extend
+the existing transactional copy/journal workflow. A 150-DPI renderer limit
 must not cause low-density, large physical pages to be silently shrunk; validate
 under bounds suitable for their actual image dimensions.
 
@@ -129,8 +128,8 @@ was tested. Existing image-worker, raster/optimization, audio and hidden UI suit
 were not rerun for this unconnected writer slice; their earlier evidence retains
 its original scope. No desktop or assistive-technology test ran.
 
-Still required: worker protocol/access/deadlines,
-all-source publication/recovery, order dialog and direct command, wider fidelity,
+The subsequent checkpoints add worker/access/validation/publication below.
+Still required: order dialog and direct command, wider fidelity,
 resource-limit benchmarking, crash/timeout/failed-publication tests, reader
 compatibility, actual visual/keyboard/screen-reader/theme/DPI review, and the
 remaining [broad-file goal](broad-file-support-goal.md). This checkpoint does not
@@ -200,7 +199,81 @@ passes payload, dependency and notice checks with zero warnings/errors using
 `-SkipShell`. No unrelated engine/UI suite, desktop acceptance, installation,
 Explorer registration, native recycling or live commerce was run for this slice.
 
-Next: typed worker execution/validation, one all-source-safe publication and
-recovery path, then the focused order dialog and direct command. Production
-engine adoption, wider fidelity/resource/viewer acceptance, required Office-to-PDF
-and the complete broad-file goal remain open.
+The next checkpoint below adds typed worker execution and all-source publication.
+The focused order dialog/direct command, production engine adoption, wider
+fidelity/resource/viewer acceptance, required Office-to-PDF and the complete
+broad-file goal remain open.
+
+Worker and all-source publication checkpoint (2026-09-10)
+-------------------------------------------------------
+
+Typed `images-to-pdf` requests carry the confirmed ordered plan, explicit order
+review state, policy and one app-created output reservation. The worker returns
+only bounded validation, ordered source hashes and output facts. Protocol checks
+reject unrelated payloads, missing review, foreign output identities and source
+paths used as output. Plans cap source-description text at one million characters
+and validate output-folder paths so JSON stays under the existing bounded IPC
+frame. The client uses a 180-second conversion deadline around the validator's
+60-second native deadline. Normal staging still excludes the optional validator;
+the executor declines missing-engine work before starting trial or reservation.
+
+One normal trial/paid admission covers the combined document. Expiry does not
+interrupt admitted work, and expired paid access cannot fall back to a new trial.
+Every image must succeed; the action does not silently omit failed pages. A retry
+recreates the whole combined document. The order dialog and direct queue retry
+surface are not connected yet; the executor's retry behavior is independently
+tested rather than presented as existing UI.
+
+Before reservation, the app opens a checked read-only lease for every original
+and compares its length/hash with the reviewed source facts. Those leases deny
+write and rename sharing until publication or abandonment. Ordered item IDs,
+paths and volume/file-ID/hash fingerprints are stored in the publication record.
+The worker independently holds its own source leases through encoding, semantic
+validation and writing the checked empty single-link reservation; it rechecks
+every source and the written candidate digest before replying. The app verifies
+all held source fingerprints and current paths again at the final publication
+boundary, after the Publishing checkpoint and before the rename.
+
+The existing atomic copy/journal path publishes one ` - Combined.pdf`, or
+` - Converted.pdf` for a single image, with normal `(2)` collision numbering.
+Source-byte totals include every input. No image is overwritten, renamed or
+recycled, including with Overwrite originals selected. Successful publication
+cleans its journal. Failure before the final rename saves no PDF; a failure
+after the rename retains the completed copy and its recovery warning/record.
+Abrupt exit preserves the recorded state and originals; discovery of records
+does not implement automatic restoration or establish visible recovery usability.
+
+Verification passes **56 isolated combined-PDF workflow checks**. The real worker
+combines PNG/JPEG/WebP/BMP/TGA, 16-bit RGB/gray, ICC and alpha under one admission.
+Checks cover collisions, trial expiry, cancellation after reservation, secondary
+source changes, native refusal of nonempty/hard-linked reservations, worker death
+and whole-document retry. Every original denies write/rename at the final move
+boundary. Before/after-move failures retain the full ordered journal. Five actual
+test-app exits at Prepared, Validated, Publishing, immediately after the move and
+Committed verify original/candidate fingerprints, record rediscovery and worker
+exit with its parent. They leave disposable crash evidence intentionally retained.
+
+The full regression passes **1,851 checks**: 1,651 foundation (23 new protocol,
+naming and paid-access checks) plus 200 existing real image-worker checks. Existing
+PDF page publication/direct workflows pass **25 + 18** checks. The private 133
+writer/45 native-validator suites from the preceding checkpoint were not rerun;
+the new file adapter is exercised through the real worker. No native algorithm
+changed. Audio/structural-PDF engine suites and hidden/visible UI were not rerun.
+
+Combined workflow evidence: `.codex-temp/pdf-engine/3edb2e8361e04782a91ef8364bd3a537/`
+`image-pdf-worker-caa52727b907406ba736e66c45903ceb/results/image-pdf-worker.json`,
+including its `app-crashes` directories. PDF-page regression evidence ends in
+`page-worker-f33d8026c33c4c818801c2deeba7db41` under the prepared PDFium directory.
+Logs: `.codex-temp/image-pdf-worker.log`, `image-pdf-worker-foundation.log`,
+`image-pdf-worker-regression.log`, `image-pdf-page-regression.log` and
+`image-pdf-worker-final-build.log`. Fresh isolated Release stage
+`artifacts/production-staging/2cdfc9bd64a242f4ae0cd4321797a4c3` builds with zero
+warnings/errors and passes payload/dependency/notice checks with `-SkipShell`.
+Its staged files match the tested `34a2404c14e047e4a0347141f44d37f5` payload
+byte-for-byte, excluding the stage-specific inventory. No installed change,
+recycling, live Polar, signing purchase or publishing ran.
+
+Next: focused page-order review and direct Convert > PDF, integrated quiet results
+and retry, then broader native interruption/resource/fidelity/reader acceptance
+and engine adoption. All required Office conversions and remaining broad-file
+and commercial-release gates stay open.

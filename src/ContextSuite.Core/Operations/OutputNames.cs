@@ -30,7 +30,7 @@ public sealed record DdsRepresentation(DdsCompression Compression, TextureTransf
 public static class OutputNames
 {
     public static string Create(string sourcePath, string operation, string targetExtension,
-        int ordinal = 1, DdsRepresentation? representation = null, bool replaceSource = false, int? pageNumber = null)
+        int ordinal = 1, DdsRepresentation? representation = null, bool replaceSource = false, int? pageNumber = null, bool combinedPdf = false)
     {
         if (operation is not ("convert" or "optimize") || ordinal < 1)
             throw new InvalidDataException("The output operation or collision number is invalid.");
@@ -43,9 +43,12 @@ public static class OutputNames
             !string.Equals(Path.GetExtension(sourcePath), ".pdf", StringComparison.OrdinalIgnoreCase) || representation is not null || replaceSource))
             throw new InvalidDataException("Numbered page outputs require PDF-to-PNG copies.");
         var basename = Path.GetFileNameWithoutExtension(sourcePath);
+        if (combinedPdf && (operation != "convert" || extension != "pdf" || replaceSource || pageNumber is not null || representation is not null))
+            throw new InvalidDataException("Combined PDF names require a PDF copy conversion.");
         if (string.IsNullOrWhiteSpace(basename)) throw new InvalidDataException("The source basename is empty.");
         var suffix = representation?.Suffix ?? (operation == "convert" ? "Converted" : "Optimized");
         if (pageNumber is { } page) suffix = "Page " + page.ToString("D3", CultureInfo.InvariantCulture);
+        if (combinedPdf) suffix = "Combined";
         var number = ordinal == 1 ? "" : $" ({ordinal.ToString(CultureInfo.InvariantCulture)})";
         var name = $"{basename}{(replaceSource ? "" : " - " + suffix)}{number}.{extension}";
         if (name.Length > 255 || name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)

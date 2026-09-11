@@ -61,6 +61,10 @@ public sealed record ImagePdfPlan(Guid BatchId, BatchSettings Settings, Immutabl
             sources.Select(source => source.ItemId).Distinct().Count() != sources.Length)
             throw new InvalidDataException("Invalid combined PDF selection.");
         var pages = sources.Select(ImagePdfPage.Create).ToImmutableArray();
+        if (settings.Preferences.OutputDirectory is { } folder && !PdfFileProbe.ValidPath(folder) ||
+            sources.Sum(source => (long)source.Path.Length + source.ColorDescription.Length +
+                (source.UnsupportedReason?.Length ?? 0) + source.ProfileNames.Sum(name => name.Length)) > 1_000_000)
+            throw new InvalidDataException("Combined PDF settings or source descriptions exceed the request budget.");
         if (sources.Select(source => System.IO.Path.GetFullPath(source.Path)).Distinct(StringComparer.OrdinalIgnoreCase).Count() != sources.Length)
             throw new InvalidDataException("An image can appear only once in this combined PDF selection.");
         if (sources.Sum(source => source.FileBytes) > MaximumSourceBytes || pages.Sum(page => (long)page.Width * page.Height) > MaximumPixels)

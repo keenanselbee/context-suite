@@ -4,7 +4,7 @@ namespace ContextSuite.Core.Operations;
 
 public sealed record OutputIntent(Guid ItemId, string SourcePath, string TargetExtension,
     BatchSettings Settings, bool ReplaceOriginal = false, bool ReplacementConfirmed = false,
-    bool QuickAction = false, DdsRepresentation? Dds = null, int? PageNumber = null);
+    bool QuickAction = false, DdsRepresentation? Dds = null, int? PageNumber = null, bool CombinedPdf = false);
 
 // Produced by the adapter's semantic validator for the matching reserved output.
 // The publisher independently checks the digest; an exit code is never sufficient.

@@ -57,6 +57,17 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-10 combined-PDF worker/publication checkpoint connects ordered images
+to the optional validator and one transactional PDF copy under normal paid/trial
+admission. The app locks and journals every original through final publication;
+the worker independently verifies sources and candidate bytes. The new workflow
+passes 56 checks, including five actual app-crash checkpoints, and the regression
+passes 1,851 foundation/image-worker checks plus 25 PDF-page and 18 direct-page
+checks. Fresh isolated Release stage `2cdfc9bd64a242f4ae0cd4321797a4c3` passes
+payload checks using `-SkipShell` and matches the tested payload bytes. The order
+dialog and direct Convert > PDF action are still pending, as are native engine
+adoption and broader acceptance. See [the detailed evidence](image-pdf-candidate.md).
+
 The independent image-PDF validation checkpoint (2026-09-10) adds an optional
 pinned native qpdf reader and managed reply verifier. It checks the fixed output
 schema, ordered page geometry and exact independently decoded color/alpha/ICC
@@ -64,8 +75,9 @@ digests against original samples, with bounded streaming and no DPI resampling.
 Fresh evidence passes 45 native validation checks, 133 writer checks and 1,628
 foundation contracts. Isolated Release stage `7c787dc3faa24b4f813e0dd43951b67c`
 passes payload checks using `-SkipShell`; the optional native validator is not
-shipped in normal staging. Worker/access/publication, the order UI/direct command,
-wider acceptance and engine adoption remain open. See [evidence and limits](image-pdf-candidate.md).
+shipped in normal staging. The later checkpoint above adds worker/access/publication;
+the order UI/direct command, wider acceptance and engine adoption remain open.
+See [evidence and limits](image-pdf-candidate.md).
 
 The 2026-09-10 [combined image-PDF checkpoint](image-pdf-candidate.md) implements
 an immutable ordered plan and private fixed raster PDF writer candidate. The
@@ -73,8 +85,9 @@ owner selected one combined document; several images will require a focused
 page-order review. The candidate retains full samples, orientation, ICC and alpha
 and leases every original through serialization. It passes 133 independent
 qpdf/PDFium/sample/source-safety checks on 23 combined pages and 1,587 foundation
-contracts. The subsequent checkpoint above adds output validation. All-source publication, worker/direct
-integration and the order dialog remain open. This is not an enabled menu action
+contracts. Subsequent checkpoints above add output validation, worker execution
+and all-source publication. Direct integration and the order dialog remain open.
+This is not an enabled menu action
 or completion of the required images-to-PDF scope.
 
 The direct PDF-to-PNG checkpoint (2026-09-10) adds PDFs to the existing **Convert >

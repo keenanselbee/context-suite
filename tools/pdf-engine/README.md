@@ -109,3 +109,13 @@ stream-hashing reader in isolated scratch and records host/source/compiler
 identities. Tests compare its reply with original-sample digests and exercise
 malformed/tampered fixed-schema PDFs, cancellation and snapshot cleanup. It
 does not validate arbitrary documents or enable PDF publication.
+
+Exercise combined-image publication with `Test-ImagePdfWorker.ps1 -ProductionStage
+'<isolated production stage>' -PreparedDirectory '<prepared qpdf directory>'
+-FixtureDirectory '<generated image-pdf directory from Test-ImagePdfCandidate>'`.
+It copies the stage into new scratch, adds only the checked validator runtime
+there and runs real worker/access/publication contracts. It intentionally kills
+owned test workers and test applications to verify retained originals, candidate
+state and recovery journals; no unrelated process or installed app is changed.
+Generated `image-pdf-worker-*/results/app-crashes` evidence is retained. This does
+not enable the customer command or imply visible recovery acceptance.

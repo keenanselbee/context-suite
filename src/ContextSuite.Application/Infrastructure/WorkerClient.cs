@@ -23,6 +23,20 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     public bool HasPdfProbe => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-engine", "qpdf.exe"));
     public bool HasPdfOptimizer => HasPdfProbe;
     public bool HasPdfRenderer => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-renderer", "ContextSuite.PdfRenderer.exe"));
+    public bool HasImagePdfConverter => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-validator", "ContextSuite.ImagePdfValidator.exe"));
+
+    public async Task<ImagePdfResult> ConvertImagesToPdfAsync(ImagePdfWork work, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "images-to-pdf", ImagePdf: work), token);
+        if (reply.ImagePdfResult is not { } result || result.Validation is null || result.Validation.ItemId != work.OutputId ||
+            !result.Validation.MatchesPlan || result.Validation.Sha256 is not { Length: 64 } || !result.Validation.Sha256.All(char.IsAsciiHexDigit) ||
+            result.BatchId != work.Plan.BatchId || result.PageCount != work.Plan.Pages.Length || result.SourceHashes.IsDefault ||
+            !result.SourceHashes.SequenceEqual(work.Plan.Pages.Select(page => page.Source.Sha256)) ||
+            result.OutputBytes is <= 0 or > ImagePdfPlan.MaximumOutputBytes || result.Policy != work.Policy ||
+            string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 256)
+            throw new InvalidDataException("Invalid combined PDF validation response.");
+        return result;
+    }
 
     public async Task<PdfRasterSource> ProbePdfPagesAsync(PdfFileProbe request, CancellationToken token)
     {
@@ -196,7 +210,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     {
         command.Validate();
         await _gate.WaitAsync(cancellationToken);
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" ? 120 : 30),
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command == "images-to-pdf" ? 180 : command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" ? 120 : 30),
             timeProvider ?? TimeProvider.System);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
         try
@@ -225,6 +239,9 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
                 throw new InvalidDataException("The media worker returned an invalid response.");
             if (command.Command != "audio-probe" && reply.Audio is not null)
                 throw new InvalidDataException("The media worker returned unexpected audio data.");
+            if (command.Command != "images-to-pdf" && reply.ImagePdfResult is not null || command.Command == "images-to-pdf" &&
+                (reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0))
+                throw new InvalidDataException("The media worker returned contradictory combined PDF data.");
             if (command.Command != "pdf-probe" && reply.Pdf is not null)
                 throw new InvalidDataException("The media worker returned unexpected PDF data.");
             if (command.Command != "pdf-raster-probe" && reply.PdfRaster is not null ||
@@ -240,7 +257,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
                 throw new InvalidDataException("The media worker returned unexpected file-audio data.");
             if (reply.Failure is { } failure)
             {
-                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null || reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null || reply.Capabilities.Length != 0)
+                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null || reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null || reply.ImagePdfResult is not null || reply.Capabilities.Length != 0)
                     throw new InvalidDataException("Worker failure response contains invalid or contradictory data.");
                 throw new MediaWorkerException(failure);
             }

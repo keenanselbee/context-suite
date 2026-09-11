@@ -28,6 +28,8 @@
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ImageBatchExecutor.cs" Link="Runtime\ImageBatchExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PublicationFiles.cs" Link="Runtime\PublicationFiles.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OutputPublisher.cs" Link="Runtime\OutputPublisher.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ImagePdfSourceLease.cs" Link="Runtime\ImagePdfSourceLease.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ImagePdfExecutor.cs" Link="Runtime\ImagePdfExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\WindowsFileRecycler.cs" Link="Runtime\WindowsFileRecycler.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PublicationSupport.cs" Link="Runtime\PublicationSupport.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\SettingsViewModel.cs" Link="Runtime\SettingsViewModel.cs" />

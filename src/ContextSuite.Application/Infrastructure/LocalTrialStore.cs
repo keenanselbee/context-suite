@@ -17,6 +17,14 @@ internal sealed record TrialAdmission(LocalTrialStatus Status, Guid BatchId, Dat
 // Local trial bookkeeping only. No key validation, hidden copies, reset switch or permissive fallback.
 internal sealed class LocalTrialStore : IOperationAccess
 {
+    async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedImagePdf confirmed, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm(true);
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
     async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedPdfPageConversion confirmed, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(confirmed);

@@ -35,6 +35,7 @@ try
     AudioFileAdapter? audioFiles = null;
     PdfProbeAdapter? pdf = null;
     PdfRasterAdapter? pdfRaster = null;
+    ImagePdfValidator? imagePdfValidator = null;
     try
     {
     while (!lifetime.IsCancellationRequested)
@@ -52,6 +53,12 @@ try
         try
         {
             if (command.Command == "capabilities") reply = new(1, command.RequestId, catalog.Capabilities.ToArray());
+            else if (command.Command == "images-to-pdf")
+            {
+                adapter ??= new ImageAdapter(args[5]);
+                imagePdfValidator ??= new ImagePdfValidator(Path.Combine(AppContext.BaseDirectory, "pdf-validator"), args[5]);
+                reply = new(1, command.RequestId, [], ImagePdfResult: await new ImagePdfFileAdapter(adapter, imagePdfValidator).ConvertAsync(command.ImagePdf!, lifetime.Token));
+            }
             else if (command.Command is "flac-probe" or "flac-optimize" or "audio-file-probe" or "audio-convert")
             {
                 audioFiles ??= new AudioFileAdapter(Path.Combine(AppContext.BaseDirectory, "audio-engine"), args[5]);
@@ -121,7 +128,7 @@ try
         await JsonFrames.WriteAsync(pipe, reply, lifetime.Token);
     }
     }
-    finally { audioFiles?.Dispose(); audio?.Dispose(); pdf?.Dispose(); pdfRaster?.Dispose(); }
+    finally { audioFiles?.Dispose(); audio?.Dispose(); pdf?.Dispose(); pdfRaster?.Dispose(); imagePdfValidator?.Dispose(); }
     return 0;
 }
 catch (Exception error) when (error is IOException or InvalidDataException or OperationCanceledException or ArgumentException or
