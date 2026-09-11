@@ -136,7 +136,7 @@ are padding. Inventory covers metadata after the sample chunk too; appended data
 outside the RIFF extent is rejected. Same-format byte retention remains a no-op.
 
 Private candidate results now distinguish `SourceMetadataVerified` from sample
-validation. It is true for admitted WAV/FLAC/Vorbis/Opus conversion, byte-identical same-format
+validation. It is true for admitted WAV/FLAC/Vorbis/Opus/MP3 conversion, byte-identical same-format
 retention and the separately validated FLAC optimization path. Other cross-format
 source containers remain unverified candidates even when flattened probe tags
 match. Their metadata handlers, artwork transport, application conversion admission
@@ -206,6 +206,46 @@ Raw comment admission and native probe filtering share the same technical-tag
 exclusions: encoder, major_brand, minor_version, compatible_brands, handler_name
 and vendor_id. This avoids treating copied M4A container labels as missing
 descriptive comments when validating an Ogg output.
+
+MP3 conversion metadata admission
+----------------------------------
+
+`Mp3Metadata` reads an initial ID3v2.3.0 or ID3v2.4.0 tag, then walks every MPEG
+Layer III frame boundary while seeking past compressed samples. MPEG 1, 2 and
+2.5 rate/bitrate forms are supported; rate and channel count must remain stable
+and agree with the native probe. The frame count includes encoder-information
+frames and is not a decoded duration. Native decoding owns bit-reservoir/audio
+validity and gapless trim; this inventory does not validate MPEG audio CRCs or
+arbitrary ancillary payloads. Free-format audio, emphasis/copyright flags,
+trailing tags/data and truncated frames require further handling or are refused.
+
+Limits are 2 MiB of ID3 data, 4,096 tag frames, the shared 256 KiB text budget,
+one million MPEG frames and the existing 512 MiB file/deadline bounds. The caller's
+position is restored on all outcomes. Version-specific sizes, padding, v2.4
+footer and data-length indicator are checked. Unsynchronisation is reversed
+before v2.3 frame traversal or for each affected v2.4 frame. The implementation
+follows the [ID3v2.3 standard copy](https://id3lib.sourceforge.net/id3/id3v2.3.0.html)
+and [ID3v2.4 structure](https://github.com/id3/ID3v2.4/blob/master/id3v2.40-structure.txt).
+
+Admitted text frames cover title, artist/album artist, album, track/disc, composer,
+copyright, encoded-by, publisher, language, performer, date, disc subtitle,
+grouping and textual genre; encoder identity is technical provenance. Custom
+text fields use the shared alias/semantic rules. Latin-1 and BOM-qualified UTF-16
+are accepted in both versions; v2.4 also supports UTF-16BE and UTF-8. Single
+undefined-language comments with an empty description are supported. Duplicate
+or multiple values, numeric genre codes, named/language-specific comments,
+artwork, lyrics, chapters, ratings, objects/private frames, extended headers,
+compression/encryption/status flags, ID3v1/APE and older ID3 versions need handlers.
+Refusal retains originals; these gaps remain part of completing common MP3 support.
+
+The pinned native probe truncates an authored v2.3 unsynchronised title from
+`AÿàB` to `Aÿà`. MP3 conversion therefore uses the complete managed inventory as
+the descriptive source of truth, disables inherited global/stream metadata,
+and writes each admitted value explicitly. Ogg targets also receive explicit
+stream tags. Actual output tags and decoded audio must still validate. This
+does not correct the separate read-only native Analyze probe's tag reporting;
+shared analysis integration remains open. Unicode-to-WAV stays unadmitted until
+its text-encoding policy is settled.
 
 FLAC optimization candidate
 ----------------------------

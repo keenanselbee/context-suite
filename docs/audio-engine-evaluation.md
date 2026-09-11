@@ -681,3 +681,59 @@ in `results/analysis-results.txt`, `flac-results/flac-workflow.json` and
 they do not implement an audio conversion menu.
 MP3/ID3 and M4A source metadata, audio conversion worker/menu admission,
 independent fidelity/listening, engine adoption and document actions remain open.
+
+MP3 ID3 inventory and native truncation workaround (2026-09-10)
+--------------------------------------------------------------
+
+**1,318 foundation contracts** pass, including 52 new MP3 cases. The bounded
+inventory checks ID3v2.3/v2.4 framing, version-specific text encodings, padding,
+unsynchronisation, footer/data-length declarations and duplicate/unsupported
+information. Complete MPEG Layer III frame boundaries, stable rate/channels,
+truncation, trailing tags/data, resource limits and cancellation are covered.
+A generated file with over 1 MiB of compressed-frame space requires only 12,003
+bytes of reads for 3,000 frame headers; sample payloads are seeked over.
+This is not MPEG CRC, bit-reservoir or full ancillary-data validation.
+
+**238 combined private audio checks** pass, including **38 new MP3 checks**.
+These cover six baseline targets; ID3v2.3 Latin-1/UTF-16 and v2.4 UTF-16BE/UTF-8;
+Unicode/multiline values; unsynchronisation to FLAC/M4A/Vorbis/Opus; explicit
+unsupported-metadata refusal; unchanged originals/cleanup; and 8/16/24 kHz mono
+MP3-to-WAV gapless decoding. Ordinary 48 kHz stereo conversions retain 96,000
+decoded frames; the low-rate cases retain exactly one fifth of their rate.
+
+The authored v2.3 unsynchronised title `AÿàB` exposed native truncation to `Aÿà`.
+The managed parser reverses the tag-level escape before traversing frames and
+retains the full value. Conversion now disables inherited MP3 metadata, supplies
+every admitted inventoried field explicitly, and requires actual output equality.
+The native source probe still provides audio facts; it is no longer authoritative
+for these MP3 descriptive tags. The tests assert the complete title in all four
+converted output types. The standalone Analyze probe still has this reporting
+limitation until it integrates the inventory.
+
+Combined evidence:
+
+```text
+.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/
+  adapter-49a326e6f2db44beb7c4ee52f6a57493/
+    encoding-adapter.json
+    mp3-unsync-v3.mp3
+    mp3-unsync-v3.mp3.json
+    mp3-unsync-v4.mp3
+    mp3-unsync-v4.mp3.json
+```
+
+Fresh isolated Release stage
+`artifacts/production-staging/4f82e588ada84ed68865e2263ad6834f` passes with zero
+warnings/errors, normal curated identities, payload inventory and notices.
+It uses `-SkipShell` and does not ship evaluation audio/PDF engines. ID3v1/APE,
+older/extended ID3 variants, genre codes, language-specific/named comments,
+artwork/lyrics/chapters and other frame handlers remain open, as do M4A inventory,
+audio conversion app/menu integration, independent fidelity/listening, engine
+adoption and document transformations. No installation, Explorer change, native
+recycling, visible acceptance or live commerce was performed.
+The evaluation-only worker copy passed 11 Analyze, 14 FLAC workflow and 16
+direct-audio checks. Its evidence is under
+`.codex-temp/audio-engine/81751fade35f4af787aa653bd8a5c1a4/worker-07af9f2621e24c4195a0d4277530abb7/`
+in `results/analysis-results.txt`, `flac-results/flac-workflow.json` and
+`direct-results/direct-audio.json`. Audio conversion remains a private candidate;
+these existing worker checks do not establish a shipping conversion command.

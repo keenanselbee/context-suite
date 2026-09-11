@@ -104,7 +104,7 @@ preservation; see [document implementation and limits](document-design.md).
 This adds no renderer or document transformation.
 
 The [typed audio policy and private encoding candidate](audio-conversion-policy.md)
-now exercise six-format conversion and lossless FLAC recompression with 200 passing
+now exercise six-format conversion and lossless FLAC recompression with 238 passing
 combined checks. Seekable inherited input preserves MP3 gapless sample counts;
 the native process joins its Windows job before parsing. Tests cover wider
 precision, surround, explicit Opus resampling, metadata reconciliation and running
@@ -128,7 +128,10 @@ Vorbis/Opus conversion now inventories complete Ogg page framing and original
 comments with bounded storage. Native facts must agree, and every admitted
 descriptive value must survive output probing. Chained/multiplexed streams,
 corruption, semantic tags and nonzero Opus playback gain prevent conversion;
-MP3/ID3 and M4A source-container handlers remain required.
+MP3 now inventories supported ID3v2.3/v2.4 text and complete MPEG frame boundaries;
+explicit admitted tags compensate for a pinned native unsynchronisation parsing
+defect. ID3v1/APE, numeric genres, language-specific/named comments, artwork and
+other frame handlers remain pending, alongside M4A source-container inventory.
 Vorbis output now flushes packet pages after generated short clips exposed
 incorrect decoded lengths with the pinned default packing. Strict sample counts
 and signal-error checks remain; generated extreme impulse/out-of-band LFE
@@ -167,10 +170,10 @@ including exact source/optimized rendered pixels and image alpha round trips.
 Broader rendering/native failure coverage and all PDF transformations remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,266 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
+1,318 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
 29 FLAC description/artwork, 22 seek-table, 24 batch/IPC/access, 34 WAV inventory,
-26 FLAC/shared conversion metadata and 47 Ogg inventory checks.
-200 private audio checks pass. The earlier shared reservation-handle refactor
+26 FLAC/shared conversion metadata, 47 Ogg inventory and 52 MP3 inventory checks.
+238 private audio checks pass. The earlier shared reservation-handle refactor
 passed all 942 image-engine checks; those and the 76 hidden view contracts were
 not rerun for this metadata slice. Thirteen existing image direct-command checks
 and native shell contracts passed the preceding dispatch stage without
@@ -180,7 +183,7 @@ The [source audit](catalog-source-review.json) records 223 references: 186 retri
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/27fb9e8c75d54f6ab82aa29aca79d4c4` includes the private
+`artifacts/production-staging/4f82e588ada84ed68865e2263ad6834f` includes the private
 audio candidates and existing optional PDF worker integration: zero warnings/errors, curated engine identities, file allowlist,
 package dependencies and notice checks pass. This internal metadata build used
 `-SkipShell`; the preceding dispatch slice rebuilt and tested native shell in
