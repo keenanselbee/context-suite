@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $Payload)
+param([Parameter(Mandatory)][string] $Payload, [switch] $AllowAudioCandidate)
 $ErrorActionPreference = 'Stop'
 & (Join-Path $PSScriptRoot 'Test-ProductionEngine.ps1') -Payload $Payload
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'dds-engine\Test-DdsEngine.ps1') -Payload $Payload
@@ -18,6 +18,13 @@ foreach ($name in 'Core', 'Private', 'Commercial') { $allowed += "ContextSuite.$
 foreach ($name in 'Analyze', 'Convert', 'Optimize') { $allowed += "Assets\$name.ico", "Assets\$($name)Square44x44Logo.png", "Assets\$($name)Square150x150Logo.png" }
 $allowed += 'Assets\StoreLogo.png'
 $root = [IO.Path]::GetFullPath($Payload).TrimEnd('\')
+if ($AllowAudioCandidate) {
+    $audioTools = Join-Path (Split-Path $PSScriptRoot -Parent) 'audio-engine'
+    & python -B (Join-Path $audioTools 'Stage-AudioPayload.py') --payload $root
+    if ($LASTEXITCODE -ne 0) { throw 'Audio candidate payload verification failed.' }
+    $audioSelection = Get-Content -LiteralPath (Join-Path $audioTools 'payload-candidate.json') -Raw | ConvertFrom-Json
+    $allowed += @($audioSelection.files | ForEach-Object { 'audio-engine\' + $_.path.Replace('/', '\') })
+}
 foreach ($file in Get-ChildItem -LiteralPath $root -Recurse -File) {
     if ($file.FullName.Substring($root.Length + 1) -notin $allowed) { throw "Unreviewed production file: $($file.FullName)" }
 }

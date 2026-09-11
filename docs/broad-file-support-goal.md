@@ -40,6 +40,16 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [audio packaging checkpoint](audio-distribution.md) connects the
+verified audio review bundle to a fresh production build through an explicit
+option. All 18 runtime/notice files are pinned, allowlisted and included in the
+recursive production inventory. The packaged worker harness now uses that stage
+directly, without engine injection. The full managed/native build, 18 packaging
+acceptance/refusal checks and 116 actual packaged-worker checks pass. Default
+release packaging continues to reject the audio candidate; redistribution
+decisions, visible acceptance and the broader
+goal remain open.
+
 - Image conversion, fixed PNG optimization, safe output settings, licensing and
   the focused UI are implemented. The owner accepted the final simplification.
 - Latest public implementation commits are `3d17298`, `f3d00b8` and `9b9174d`.

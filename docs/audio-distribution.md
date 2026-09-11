@@ -3,8 +3,68 @@ Audio Source and Runtime Review
 
 Reviewed locally: 2026-09-11. The restricted audio candidate now has verified
 source/runtime review archives and a successful rebuild from the extracted source
-kit. Production adoption and redistribution approval remain open. This work does
+kit. Explicit isolated production staging is now available; default engine
+adoption and redistribution approval remain open. This work does
 not install tools, change Explorer, publish artifacts or select product terms.
+
+
+Isolated production packaging
+-----------------------------
+
+`Build-Production.ps1` accepts `-AudioDistributionDirectory` only with a fresh
+`-StagingId`. It validates the retained source/runtime review bundle before
+building, then reads the exact pinned runtime ZIP into memory and extracts only
+the 18 reviewed files. The seven native files sit directly in `audio-engine/`
+where the worker expects them; the original licenses, IJG notice, collected
+source notices, product notice and runtime inventory accompany them. It never
+copies the broad supplier evaluation runtime or the expanded bundle directory.
+
+The reviewed deployment identities are in
+[payload-candidate.json](../tools/audio-engine/payload-candidate.json).
+[Stage-AudioPayload.py](../tools/audio-engine/Stage-AudioPayload.py) checks these
+against the curated binary selection, exact file membership, sizes and hashes.
+It rejects linked paths, development payload paths and existing audio deployments.
+The normal recursive production inventory includes every staged audio file.
+
+The production allowlist requires explicit `-AllowAudioCandidate` verification.
+Its default, used by release packaging, still refuses audio files. This is a
+local integration candidate, not an implicit decision that the source delivery,
+modified-library use or product terms have been cleared for distribution.
+
+```powershell
+.\tools\Build-Production.ps1 -Configuration Release -StagingId ([guid]::NewGuid()) `
+  -AudioDistributionDirectory '<verified review bundle directory>'
+.\tools\audio-engine\Test-AudioWorker.ps1 -Packaged `
+  -ProductionStage '<printed fresh production stage>' `
+  -FixtureDirectory '<generated evaluation matrix>' `
+  -ArtworkFixture '<generated authored artwork fixture>' `
+  -IncludeOptimization -IncludeConversion
+python -B tools/audio-engine/Test-AudioPayload.py '<same production stage>'
+```
+
+`-Packaged` executes the actual staged worker without injecting or replacing
+runtime files. It verifies the complete production inventory before and after
+the workflows. Generated inputs, simulated access, refusing recyclers and result
+files remain in repository scratch; it does not launch the customer UI.
+
+The 2026-09-11 full managed/native build at
+`artifacts/production-staging/10ef36f17892498ca6141dd64efd7257` passed with zero
+managed warnings/errors, all image/audio payload checks and the recursive file
+inventory. Build log: `.codex-temp/audio-production-build-10ef36f17892498ca6141dd64efd7257.log`.
+The 18 packaging checks passed at
+`.codex-temp/audio-payload-tests-9c10031bf940476aa02b6498ff670121`. They cover changed
+encoder/library/notice/inventory bytes, missing probe/license, extra files,
+inventory membership, existing-stage refusal, development-stage refusal and
+default release-allowlist rejection. This evidence does not establish visible
+acceptance, listening/player compatibility or installed lifecycle behavior.
+
+The same packaged worker passed **116 isolated workflow checks**: 14 audio
+analysis/artwork, 14 FLAC optimization, 16 direct mixed optimization, 52 audio
+conversion/publication and 20 direct conversion/access checks. Results:
+`.codex-temp/audio-engine/worker-f9c78605536249039b831c59e7df0062`; log:
+`.codex-temp/audio-production-worker-10ef36f1.log`. The complete staged inventory
+still matched after execution. The earlier 298 private adapter checks and full
+image regression suites were not rerun for these packaging-only changes.
 
 
 Reproduce the review

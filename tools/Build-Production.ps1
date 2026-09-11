@@ -1,9 +1,12 @@
 [CmdletBinding()]
 param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Debug', [switch] $SkipShell,
-    [guid] $StagingId = [guid]::Empty)
+    [guid] $StagingId = [guid]::Empty, [string] $AudioDistributionDirectory)
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
+if ($AudioDistributionDirectory -and $StagingId -eq [guid]::Empty) {
+    throw 'The audio candidate requires a new StagingId; development and installed payloads must not be changed.'
+}
 # Candidate builds get a new, non-reusable staging directory. They must never
 # refresh the development payload that Explorer may currently have registered.
 $output = if ($StagingId -eq [guid]::Empty) { Join-Path $repositoryRoot "artifacts\production\$Configuration" }
@@ -15,6 +18,10 @@ if ($StagingId -ne [guid]::Empty) {
     # Reserve before the build; concurrent requests for the same ID cannot both
     # pass the earlier existence check and then overwrite one another's output.
     New-Item -ItemType Directory -Path $output -ErrorAction Stop | Out-Null
+}
+if ($AudioDistributionDirectory) {
+    & python -B (Join-Path $PSScriptRoot 'audio-engine\Stage-AudioPayload.py') --distribution $AudioDistributionDirectory --payload $output
+    if ($LASTEXITCODE -ne 0) { throw 'Audio candidate staging failed.' }
 }
 $privateProject = Join-Path $repositoryRoot 'proprietary\src\ContextSuite.Private\ContextSuite.Private.csproj'
 if (-not (Test-Path -LiteralPath $privateProject)) {
@@ -63,7 +70,7 @@ if (-not $SkipShell) {
     Copy-Item -LiteralPath (Join-Path $native 'ContextSuite.Shell.dll') -Destination $output -Force
     & (Join-Path $PSScriptRoot 'New-PrototypeAssets.ps1') -OutputDirectory $output
 }
-& (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload $output
+& (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload $output -AllowAudioCandidate:([bool]$AudioDistributionDirectory)
 $inventory = @(Get-ChildItem -LiteralPath $output -Recurse -File | Where-Object Name -ne 'payload-inventory.json' | ForEach-Object {
     @{ path = $_.FullName.Substring($output.Length + 1); bytes = $_.Length; sha256 = (Get-FileHash -LiteralPath $_.FullName).Hash }
 })

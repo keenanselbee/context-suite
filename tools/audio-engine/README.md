@@ -241,3 +241,14 @@ and `Test-AudioDistribution.py '<review directory>'` for disposable tampering
 cases. The extracted source kit provides `Rebuild-AudioSource.ps1`; its completed
 build passes dependency tests and native review. See [archive hashes, rebuild
 evidence and remaining distribution decisions](../../docs/audio-distribution.md).
+
+For an actual isolated production payload, use `tools/Build-Production.ps1`
+with a fresh `-StagingId` and `-AudioDistributionDirectory '<verified review
+directory>'`. The build stages only the exact reviewed archive and all notices;
+it cannot refresh the development payload with this option. Use
+`Test-AudioWorker.ps1 -Packaged -ProductionStage '<fresh stage>'` with the same
+generated fixture/artwork and optimization/conversion flags to exercise that
+worker directly, without injecting a runtime. Run `Test-AudioPayload.py '<stage>'`
+for deployment/inventory and build/release refusal checks. See
+[commands and evidence](../../docs/audio-distribution.md). Default release
+packaging still rejects the audio candidate pending redistribution review.
