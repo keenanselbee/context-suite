@@ -17,7 +17,7 @@ for ($ancestor = $directory; $ancestor -and $ancestor -ne $repository; $ancestor
     }
 }
 $pin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'source-inputs.json') -Raw | ConvertFrom-Json
-if ($pin.schema -ne 1 -or $pin.archives.Count -ne 5) { throw 'Unsupported source inventory.' }
+if ($pin.schema -ne 2 -or $pin.archives.Count -ne 6) { throw 'Unsupported source inventory.' }
 if (-not (Test-Path -LiteralPath $directory)) {
     if ($VerifyOnly) { throw 'Source directory does not exist.' }
     New-Item -ItemType Directory -Path $directory | Out-Null
@@ -26,14 +26,35 @@ Add-Type -AssemblyName System.IO.Compression
 $ProgressPreference = 'SilentlyContinue'
 foreach ($archive in $pin.archives) {
     if ($archive.file -notmatch '^[a-z-]+\.zip$' -or $archive.sha256 -notmatch '^[A-F0-9]{64}$' -or
-        $archive.revision -notmatch '^[a-f0-9]{40}$' -or $archive.bytes -le 0 -or $archive.bytes -gt 128MB -or
-        $archive.url -notmatch '^https://github\.com/[^/]+/[^/]+/archive/[a-f0-9]{40}\.zip$') {
+        $archive.bytes -le 0 -or $archive.bytes -gt 128MB) {
         throw 'Invalid pinned source input.'
+    }
+    switch ($archive.downloadKind) {
+        'github-zip' {
+            if ($archive.revision -notmatch '^[a-f0-9]{40}$' -or
+                $archive.url -notmatch ('^https://github\.com/[^/]+/[^/]+/archive/' + $archive.revision + '\.zip$')) {
+                throw 'Invalid pinned GitHub source input.'
+            }
+        }
+        'svn-http-export' {
+            if ($archive.id -ne 'lame' -or $archive.file -ne 'lame.zip' -or $archive.revision -ne '6761' -or
+                $archive.url -ne 'https://svn.code.sf.net/p/lame/svn/!svn/bc/6761/trunk/lame/' -or
+                $archive.prefix -ne 'lame-r6761/') {
+                throw 'Unsupported SVN source export.'
+            }
+        }
+        default { throw 'Unsupported source download kind.' }
     }
     $path = Join-Path $directory $archive.file
     if (-not (Test-Path -LiteralPath $path)) {
         if ($VerifyOnly) { throw "Missing source archive: $($archive.file)" }
-        Invoke-WebRequest -Uri $archive.url -OutFile $path -UseBasicParsing
+        if ($archive.downloadKind -eq 'svn-http-export') {
+            & python (Join-Path $PSScriptRoot 'Download-LameSource.py') $path
+            if ($LASTEXITCODE -ne 0) { throw 'Pinned LAME source export failed; partial evidence retained.' }
+        }
+        else {
+            Invoke-WebRequest -Uri $archive.url -OutFile $path -UseBasicParsing
+        }
     }
     if ((Get-Item -LiteralPath $path).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Linked source archive is not allowed.' }
     $stream = [IO.File]::Open($path, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::Read)
@@ -55,4 +76,4 @@ foreach ($archive in $pin.archives) {
     finally { $stream.Dispose() }
     Write-Output "Verified source input: $($archive.id) $($archive.revision)"
 }
-Write-Output "Source archives retained at $directory. Unresolved inputs remain; no scripts executed, binaries adopted or release clearance implied."
+Write-Output "Source archives retained at $directory. Unresolved inputs remain; no upstream scripts executed, binaries adopted or release clearance implied."

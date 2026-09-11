@@ -146,10 +146,14 @@ Actual production adoption needs retained reproducible source/dependency inputs,
 license/notice review and an intentionally bounded capability build.
 
 Use `Prepare-AudioSources.ps1` to retain the currently pinned FFmpeg, supplier
-recipe, Ogg, Vorbis and Opus source archives in a new repository scratch directory.
+recipe, Ogg, Vorbis, Opus and LAME source archives in a new repository scratch directory.
 Use `-SourceDirectory '<existing repository scratch directory>' -VerifyOnly` to
 verify them without downloads or writes. Hash/size mismatches are refused; no
-upstream scripts execute and no source is extracted by this tool. The
-[curation record](../../docs/audio-engine-curation.md) lists unresolved LAME,
-Opus bootstrap, toolchain and transitive inputs. These archives do not constitute
+upstream scripts execute. The five GitHub archives are retained without extraction;
+LAME's fixed SVN revision is exported over HTTP using Python 3.14 or later, with
+bounded reads, a per-file inventory and a deterministic pinned ZIP. SVN properties
+and history are not exported. The
+[curation record](../../docs/audio-engine-curation.md) lists unresolved SVN-property,
+Opus bootstrap, toolchain and transitive inputs, plus preliminary native Opus
+build/test evidence and its remaining warnings. These archives do not constitute
 a complete source-distribution bundle or authorize production adoption.

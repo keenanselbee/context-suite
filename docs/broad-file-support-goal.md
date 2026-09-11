@@ -57,6 +57,16 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The next 2026-09-11 [audio source checkpoint](audio-engine-curation.md) adds LAME
+SVN r6761: 418 file contents, a deterministic pinned ZIP and bounded HTTP export.
+All six retained archives verify; a fresh LAME download reproduces its pinned ZIP,
+and five invalid-path/existing-output cases are refused without writing.
+A preliminary x64 static Opus source build
+passes all five upstream tests without model downloads or source-tree changes.
+Its version fallback and ignored compiler option still need correction; this is
+not a production codec adoption or a replay of the Context Suite audio matrix.
+The full curated build, toolchain/dependency inventory and adoption remain open.
+
 The 2026-09-11 [audio curation checkpoint](audio-engine-curation.md) retains exact
 FFmpeg, supplier recipe, Ogg, Vorbis and Opus source archives. The preparation
 script passes a fresh download, five archive checks and four refusal cases.
