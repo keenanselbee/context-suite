@@ -108,6 +108,11 @@ foreach (var (name, filter, expectedPages) in new[] { ("Word ü.docx", "writer_p
             _ => text.Length == 2 && text[0].Contains("slide 1 café") && text[1].Contains("slide 3 café") && text.All(page => !page.Contains("HIDDEN"))
         };
         if (!textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
+        if (filter == "writer_pdf_Export" &&
+            (!text[0].Contains("FIRST PAGE HEADER") || text[0].Contains("RUNNING HEADER") ||
+             !text[1].Contains("RUNNING HEADER") || text[1].Contains("FIRST PAGE HEADER") ||
+             !text[0].Contains("Page 1 of 2") || !text[1].Contains("Page 2 of 2") || text.Any(page => page.Contains("99"))))
+            throw new InvalidDataException("Word first/default headers or PAGE/NUMPAGES field rendering did not match authored expectations.");
         if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
         results.Add(new { Source = Path.GetFileName(source), SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile,
             PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds,

@@ -252,3 +252,72 @@ of Excel/PowerPoint differences remain unresolved; separate engine nondeterminis
 legacy storage/import/export changes and actual rendering before setting a
 customer fidelity policy. Independent baseline documents, broader features,
 isolation, runtime/font inventory and production integration remain required.
+
+Retained modern-run control (2026-09-11)
+--------------------------------------
+
+The earlier `evaluation-ffd14d61fd9048b58946333d1443d485` and the comparison run
+`evaluation-6bbf7608805549b28281f56ffa9620f7` contain byte-identical uncompressed
+fixture package parts. Their modern exports have identical extracted text, page
+geometry and all five complete BGRA render buffers. ZIP container hashes can
+differ because fixture entry timestamps differ. The read-only comparison records
+per-page hashes in `.codex-temp/legacy-pdf-modern-control.json`; it executed no
+engine or customer document and changed no fixture.
+
+This control finds no modern-render variability between those two retained runs.
+It points to the combined legacy roundtrip as the source of the earlier observed
+differences for these fixtures. It does not prove universal determinism or locate
+the change within legacy export, storage precision, import or PDF rendering.
+The later expanded Word fixture below is intentionally different and is not part
+of this identical-input control.
+
+Expanded Word header/footer fixture
+----------------------------------
+
+The current authored Word fixture adds separate first-page/default headers and a
+shared first/default footer with local PAGE and NUMPAGES fields. Both field caches
+contain `99`, so the PDF assertions require actual pagination results `Page 1 of 2`
+and `Page 2 of 2`, as well as the correct header on each page and absence of stale
+`99`. Existing body, Unicode text, table, page-break, geometry and source-hash
+assertions remain. No external fields, macro code or embedded objects are added.
+
+Fixture structure follows the documented
+[header relationships](https://learn.microsoft.com/en-us/office/open-xml/word/how-to-replace-the-header-in-a-word-processing-document),
+[footer references](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.footerreference?view=openxml-3.0.1)
+and [simple fields](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.simplefield?view=openxml-3.0.1).
+This is independently authored package XML, not copied sample source or an Office
+automation dependency. Broader fields, external updates and tracked changes still
+need explicit policy and isolated testing.
+
+The expanded fixture passes both DOCX-to-PDF (10,051 ms) and generated DOC-to-PDF
+(10,711 ms), including header selection, rendered page-number fields, two Letter
+pages, original preservation and exact equality of both 96-DPI page renders.
+Both legacy page PNGs were visually inspected: header/body/footer placement was
+readable with no observed overlap or clipping. The full six-export run also
+repeats the earlier Excel and PowerPoint pixel-difference counts exactly.
+
+However, Word's normalized extracted text now differs: PDFium returns header,
+footer, then body for DOCX; header, body, then footer for DOC. Keep this difference
+in `legacy-pdf-comparison.json`; do not sort text or discard it to obtain a pass.
+Read-only qpdf inspection finds `/Marked: true` and identical 11 raw
+structure-element/root dictionaries plus their parent tree. The decoded page
+streams place header/footer content inside `/Artifact` blocks; the legacy form
+also supplies pagination subtypes. These observations do not prove semantic
+tagging, reading order in a particular viewer, or screen-reader delivery. Visual
+identity and generic text-extraction order are distinct acceptance questions.
+
+Evidence is retained in
+`.codex-temp/office-engine/a56167ab9fb54686971491918ccd26f8/evaluation-5b5f47a7412e4dd692ad4dfd8b4a6d95`,
+including original/legacy documents, six PDFs, reports, raw renders and ten PNGs.
+The Word folders also retain `structure-review.json` and decoded page streams;
+`word-structure-control.json` records the narrow dictionary comparison. Logs:
+`.codex-temp/office-word-layout.log` and `.codex-temp/office-word-layout-pixels.log`.
+The independent scratch metric/PNG helper is `.codex-temp/Verify-WordLayoutPixels.py`.
+The earlier modern-render control refers to the original fixture, not this
+expanded header/footer version.
+
+The current evaluation tool builds in Release with zero warnings/errors;
+repository source-boundary/theme/documentation/whitespace checks pass. No customer
+code, production staging, installed state, native AppContainer profile or
+worker/UI acceptance changed for this checkpoint. Required Office conversion,
+isolation, broader fidelity and external release gates remain open.

@@ -57,6 +57,16 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The expanded 2026-09-11 Word fixture verifies first/default headers and local
+PAGE/NUMPAGES fields with deliberately stale caches. Both DOCX and generated DOC
+exports pass the authored assertions and have identical page pixels. Their raw
+text-extraction order differs, while the inspected structure dictionaries match;
+[the evidence](office-engine-evaluation.md) keeps those observations separate
+from untested screen-reader behavior. Two earlier modern runs have identical
+uncompressed fixture parts and all five rendered pages, so no modern variability
+was found in that control. Customer Office conversion and isolation are still
+pending; no installed or production payload changed in this test-only slice.
+
 The 2026-09-11 [legacy Office PDF experiment](office-engine-evaluation.md)
 exports both authored modern fixtures and generated DOC/XLS/PPT copies. All six
 pass independent page/text/geometry/preservation checks; Word's rendered pages

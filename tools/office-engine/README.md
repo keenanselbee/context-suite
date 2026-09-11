@@ -31,6 +31,12 @@ source hashes. An exit code of zero alone is insufficient. A fourth positional
 argument to the underlying managed probe selects `Word`, `Excel` or `PowerPoint`
 for targeted fixture diagnosis; it does not accept arbitrary input documents.
 
+The Word fixture now includes separate first-page/default headers and a shared
+footer with PAGE/NUMPAGES fields deliberately cached as `99`. Its PDF checks
+require the correct header on each page, `Page 1 of 2` / `Page 2 of 2`, no stale
+`99`, and the existing two-page text/table content. This tests only local pagination
+fields; it does not authorize external field updates or establish all field behavior.
+
 Retained evidence includes the MSI, extracted cabinet and raw members, mapped
 inventory, generated originals/PDFs, BGRA renders, text and execution JSON. Each
 evaluation's `profiles.txt` lists its disposable profiles under

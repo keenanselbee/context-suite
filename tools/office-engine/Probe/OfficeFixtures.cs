@@ -14,14 +14,28 @@ internal static class OfficeFixtures
         Package("Word ü.docx", new()
         {
             ["_rels/.rels"] = Root("word/document.xml"),
-            ["[Content_Types].xml"] = Types(Type("word/document.xml", "wordprocessingml.document.main")),
+            ["[Content_Types].xml"] = Types(Type("word/document.xml", "wordprocessingml.document.main") +
+                Type("word/header1.xml", "wordprocessingml.header") + Type("word/header2.xml", "wordprocessingml.header") +
+                Type("word/footer1.xml", "wordprocessingml.footer")),
+            ["word/_rels/document.xml.rels"] = $"""
+                <Relationships xmlns="{rels}"><Relationship Id="headerFirst" Type="{office}/header" Target="header1.xml"/><Relationship Id="headerDefault" Type="{office}/header" Target="header2.xml"/><Relationship Id="footer" Type="{office}/footer" Target="footer1.xml"/></Relationships>
+                """,
+            ["word/header1.xml"] = """
+                <w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:r><w:t>FIRST PAGE HEADER</w:t></w:r></w:p></w:hdr>
+                """,
+            ["word/header2.xml"] = """
+                <w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:r><w:t>RUNNING HEADER</w:t></w:r></w:p></w:hdr>
+                """,
+            ["word/footer1.xml"] = """
+                <w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:t xml:space="preserve">Page </w:t></w:r><w:fldSimple w:instr="PAGE" w:dirty="true"><w:r><w:t>99</w:t></w:r></w:fldSimple><w:r><w:t xml:space="preserve"> of </w:t></w:r><w:fldSimple w:instr="NUMPAGES" w:dirty="true"><w:r><w:t>99</w:t></w:r></w:fldSimple></w:p></w:ftr>
+                """,
             ["word/document.xml"] = """
-                <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
+                <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>
                 <w:p><w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:b/><w:sz w:val="32"/></w:rPr><w:t>Context Suite Word — page one</w:t></w:r></w:p>
                 <w:p><w:r><w:t>Generated Unicode: café ü. This document has two authored pages.</w:t></w:r></w:p>
                 <w:tbl><w:tblPr><w:tblW w:w="6000" w:type="dxa"/><w:tblBorders><w:top w:val="single" w:sz="8"/><w:bottom w:val="single" w:sz="8"/></w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="3000"/><w:gridCol w:w="3000"/></w:tblGrid><w:tr><w:tc><w:p><w:r><w:t>Item</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>Value 42</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
                 <w:p><w:r><w:br w:type="page"/><w:t>Context Suite Word — page two</w:t></w:r></w:p>
-                <w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>
+                <w:sectPr><w:headerReference w:type="first" r:id="headerFirst"/><w:headerReference w:type="default" r:id="headerDefault"/><w:footerReference w:type="first" r:id="footer"/><w:footerReference w:type="default" r:id="footer"/><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/><w:titlePg/></w:sectPr>
                 </w:body></w:document>
                 """
         });
