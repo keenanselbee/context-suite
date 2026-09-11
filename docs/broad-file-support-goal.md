@@ -57,6 +57,15 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [audio distribution checkpoint](audio-distribution.md) adds verified
+source/runtime review ZIPs, eight original build inputs, 1,014 collected notices
+from 1,029 compiler inputs and ten archive integrity/tampering checks. A fresh
+build from the extracted kit passes all dependency tests and FFmpeg native review;
+all kit inputs remain unchanged. This establishes local rebuild evidence, not
+identical binary reproduction or release clearance. Production adoption, source
+delivery, modified-library use, product terms and remaining fidelity/UI acceptance
+are still open.
+
 The 2026-09-11 [restricted FFmpeg work](audio-ffmpeg-build.md) now passes the real
 generated-component gate with the complete audio/artwork selection. It adds
 publisher-checksummed zlib 1.3.2 and a passing native codec example; ten source

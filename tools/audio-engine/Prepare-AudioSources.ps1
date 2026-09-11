@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string] $SourceDirectory, [switch] $VerifyOnly)
+param([string] $SourceDirectory, [switch] $VerifyOnly, [switch] $BuildInputsOnly)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $temporary = [IO.Path]::GetFullPath((Join-Path $repository '.codex-temp'))
@@ -18,13 +18,15 @@ for ($ancestor = $directory; $ancestor -and $ancestor -ne $repository; $ancestor
 }
 $pin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'source-inputs.json') -Raw | ConvertFrom-Json
 if ($pin.schema -ne 4 -or $pin.archives.Count -ne 10) { throw 'Unsupported source inventory.' }
+$archives = if ($BuildInputsOnly) { @($pin.archives | Where-Object { $_.id -notin @('supplier-recipe', 'lame') }) } else { $pin.archives }
+if ($BuildInputsOnly -and $archives.Count -ne 8) { throw 'Unsupported curated build input inventory.' }
 if (-not (Test-Path -LiteralPath $directory)) {
     if ($VerifyOnly) { throw 'Source directory does not exist.' }
     New-Item -ItemType Directory -Path $directory | Out-Null
 }
 Add-Type -AssemblyName System.IO.Compression
 $ProgressPreference = 'SilentlyContinue'
-foreach ($archive in $pin.archives) {
+foreach ($archive in $archives) {
     if ($archive.file -notmatch '^[a-z-]+\.(zip|tar\.gz)$' -or $archive.sha256 -notmatch '^[A-F0-9]{64}$' -or
         $archive.bytes -le 0 -or $archive.bytes -gt 128MB) {
         throw 'Invalid pinned source input.'

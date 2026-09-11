@@ -156,8 +156,10 @@ bounded reads, a per-file inventory and a deterministic pinned ZIP. SVN properti
 and history are not exported. Stable LAME and GNU make retain their original
 release tarballs; NASM retains its original source ZIP. The checked tar reader
 rejects unsafe paths, links and oversized entries before extraction. Python 3.14
-is required for tar verification too. Source schema 4 requires all ten archives,
-including when verifying an older cache. The
+is required for tar verification too. Source schema 4 defaults to all ten archives,
+including when verifying an older cache. `-BuildInputsOnly` selects the eight
+inputs for the current build, excluding the supplier recipe and alpha LAME.
+The
 [curation record](../../docs/audio-engine-curation.md) lists unresolved SVN-property,
 Opus bootstrap, toolchain and transitive inputs, plus the preliminary Opus findings
 and subsequent verified dependency recipe. These archives do not constitute
@@ -229,4 +231,13 @@ the candidate performs every production media operation. The latest run passes
 staging, the generated fixtures, `-ArtworkFixture`, `-IncludeOptimization` and
 `-IncludeConversion` for all 116 workflow checks. The harness copies only the
 exact files in `curated-candidate.json` to its disposable payload. This is not
-production engine staging or a complete redistribution bundle.
+production engine staging or redistribution approval.
+
+`Prepare-AudioDistribution.py --candidate '<completed workspace>' --sources
+'<retained source cache>'` creates local runtime/source review ZIPs, with explicit
+file membership and original source/license identities. Run
+`Verify-AudioDistribution.py '<review directory>'` for read-only integrity checks
+and `Test-AudioDistribution.py '<review directory>'` for disposable tampering
+cases. The extracted source kit provides `Rebuild-AudioSource.ps1`; its completed
+build passes dependency tests and native review. See [archive hashes, rebuild
+evidence and remaining distribution decisions](../../docs/audio-distribution.md).

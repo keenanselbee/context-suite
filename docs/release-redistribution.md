@@ -1,7 +1,16 @@
 Release Redistribution Checklist
 ================================
 
-Reviewed: 2026-09-07. Engineering review, not a legal opinion or release approval.
+Reviewed: 2026-09-07, with dated additions below. Engineering review, not a legal
+opinion or release approval.
+
+Audio addition, 2026-09-11: the optional restricted FFmpeg candidate now has
+verified runtime/source review archives, retained root and compiler-input notices,
+and a successful rebuild from the extracted eight-archive source kit. It includes
+LGPL components and is outside the earlier image-only link map. Corresponding
+source delivery, modified-library use, product/source terms and notice review
+remain release gates. Normal production staging still excludes audio. See
+[the archive and rebuild evidence](audio-distribution.md).
 
 Palette addition, 2026-09-08: development packaging includes the source-built,
 pinned ExoQuant helper, its MIT notice and Rust 1.90.0 library third-party notices.
@@ -56,8 +65,9 @@ Completed engineering work
 Component obligations
 ---------------------
 
-The retained inventory uses attribution/permissive-style licenses; no GPL/LGPL
-library appears in the accepted map. That observation is not a blanket legal
+The earlier curated image inventory uses attribution/permissive-style licenses;
+no GPL/LGPL library appears in that accepted image map. This does not cover the
+optional audio candidate or document engines. That observation is not a blanket legal
 clearance. Retain copyright/license/disclaimer text, mark custom build changes,
 and avoid implying upstream endorsement. This native inventory does not by
 itself require publishing the proprietary application or building an LGPL
@@ -97,7 +107,8 @@ Remaining release gates and owners
    prerequisites, update policy, release-only file inventory, omission of
    development PDBs/test material and a notice viewer/link remain release work.
    Re-run final package media/UI checks and scan dependencies for advisories.
-   Paid Polar activation is also still unimplemented.
+   Synthetic licensing is implemented and tested; live commerce acceptance remains
+   separate under [licensing verification](licensing-verification.md).
 
 The in-progress [packaging goal](release-packaging-goal.md) now creates an
 unsigned internal candidate without PDBs/test material, records source and engine

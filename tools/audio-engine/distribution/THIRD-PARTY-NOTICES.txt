@@ -1,0 +1,29 @@
+Context Suite restricted audio candidate
+=======================================
+
+This software uses FFmpeg, licensed under the GNU Lesser General Public License
+version 2.1 or later. Its original source archive and the exact authored build
+recipes are retained in the accompanying local source-review kit. The selected
+FFmpeg build does not enable GPL, nonfree or version3 components. Complete
+FFmpeg license text and licensing notes are in the licenses directory.
+
+This software is based in part on the work of the Independent JPEG Group.
+The selected FFmpeg upstream source files, including IJG-derived files, are
+unchanged. Their original notice is retained as FFmpeg.IJG.txt.
+
+The audio DLLs also contain Opus, Ogg and Vorbis (Xiph permissive notices),
+stable LAME (GNU Library General Public License version 2 or later) and zlib
+(zlib license). Full upstream license/copyright texts accompany this notice.
+SourceCopyrightNotices.txt retains comment notices from inventoried source
+inputs to supplement those root notices. Source archives retain full terms.
+Upstream projects and contributors do not endorse Context Suite.
+
+Microsoft C++ runtime and Windows system components are external prerequisites
+subject to their own terms. This local bundle does not redistribute them.
+GNU make and NASM are retained as source-only build inputs, not runtime files.
+
+This bundle is for local review. No public download/source URL or approved
+release has been established. It does not license Context Suite source or
+private application code, resolve modified-library use with runtime identity
+checks, or certify redistribution/patent clearance. Keep source, license and
+runtime identity records together when preparing the final release.

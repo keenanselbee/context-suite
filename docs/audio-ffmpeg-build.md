@@ -289,3 +289,9 @@ visible/assistive UI and installed lifecycle acceptance remain open. Existing
 image contracts were not rerun; the mixed PNG/audio workflows above did run.
 No installation, Explorer registration, native recycling, live licensing,
 signing or publishing took place.
+
+The subsequent [distribution checkpoint](audio-distribution.md) now supplies
+verified local source/runtime review ZIPs and a successful fresh build from the
+extracted source kit. It advances source retention and notice inventory; release
+delivery and terms, production adoption and the remaining acceptance above stay
+open. The runtime pin and media results in this document are unchanged.

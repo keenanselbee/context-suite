@@ -3,7 +3,7 @@ param([Parameter(Mandatory)][string] $SourceDirectory,
       [Parameter(Mandatory)][ValidateSet('Opus', 'OggVorbis', 'Lame', 'LameStable', 'Make', 'Nasm', 'Zlib')][string] $Dependency)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-& (Join-Path $PSScriptRoot 'Prepare-AudioSources.ps1') -SourceDirectory $SourceDirectory -VerifyOnly
+& (Join-Path $PSScriptRoot 'Prepare-AudioSources.ps1') -SourceDirectory $SourceDirectory -VerifyOnly -BuildInputsOnly:($Dependency -ne 'Lame')
 $pins = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'source-inputs.json') -Raw | ConvertFrom-Json).archives
 switch ($Dependency) {
     'Zlib' {
