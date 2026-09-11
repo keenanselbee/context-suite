@@ -57,6 +57,14 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [Office resource preflight](office-isolation-evaluation.md) verifies
+per-process/aggregate commit and helper-process limits with successful controls,
+actual private-commit/handle measurements and complete owned-job cleanup. It
+retains unexpected Windows high-water/process-accounting values instead of
+mistaking them for strict ceilings. The native build and repository checks pass.
+The AppContainer profile/access matrix remains pending; no Office document ran
+under this launcher and no production isolation or conversion is claimed.
+
 The 2026-09-11 [external relationship slice](document-design.md) adds read-only
 OOXML link-declaration counts with explicit scope, no target resolution and
 preserved document identity after optional scan failures. Twenty-two new contracts

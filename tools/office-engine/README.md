@@ -102,6 +102,10 @@ The separate native isolation experiment is:
 
 It builds an independently authored Windows x64 probe, generates scratch file and
 loopback-listener controls, and tests job ownership, timeout and diagnostic limits.
+It also tests per-process commit, aggregate commit and process-creation limits
+against matching positive controls, recording actual private-commit deltas, helper
+handles and full job accounting. Every job must reach zero active processes after
+cleanup. Test memory budgets are 32-256 MiB; no machine-wide exhaustion is needed.
 The default runs only preflight. It does not create an AppContainer profile or
 claim that access restrictions passed. No Office engine or customer document runs.
 

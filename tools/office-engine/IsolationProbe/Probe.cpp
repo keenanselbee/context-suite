@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <aclapi.h>
 #include <userenv.h>
+#include <psapi.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -123,17 +124,20 @@ int Child(const fs::path& root, unsigned short port, bool isolated) {
     return appContainer == 0 && allowedRead == 0 && deniedRead == 0 && allowedWrite == 0 &&
         deniedWrite == 0 && readOnlyWrite == 0 && network == 0 ? 0 : 4;
 }
-struct ChildResult { DWORD exitCode; std::string output; bool timedOut; bool outputLimit; DWORD totalProcesses; DWORD activeBeforeStop; };
+constexpr SIZE_T MiB = 1024ULL * 1024;
+struct JobBudget { DWORD processes = 8; SIZE_T processBytes = 512 * MiB; SIZE_T jobBytes = 1024 * MiB; };
+struct ChildResult { DWORD exitCode; std::string output; bool timedOut; bool outputLimit; DWORD totalProcesses; DWORD activeBeforeStop;
+    SIZE_T peakProcessBytes; SIZE_T peakJobBytes; };
 ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arguments,
-    const fs::path& directory, PSID sid, ULONGLONG timeoutMilliseconds = 30000) {
+    const fs::path& directory, PSID sid, ULONGLONG timeoutMilliseconds = 30000, JobBudget budget = {}) {
     Handle job(CreateJobObjectW(nullptr, nullptr));
     Require(job.value != nullptr, "Create owned job");
     JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};
     limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE |
         JOB_OBJECT_LIMIT_ACTIVE_PROCESS | JOB_OBJECT_LIMIT_JOB_MEMORY | JOB_OBJECT_LIMIT_PROCESS_MEMORY;
-    limits.BasicLimitInformation.ActiveProcessLimit = 8;
-    limits.ProcessMemoryLimit = 512ULL * 1024 * 1024;
-    limits.JobMemoryLimit = 1024ULL * 1024 * 1024;
+    limits.BasicLimitInformation.ActiveProcessLimit = budget.processes;
+    limits.ProcessMemoryLimit = budget.processBytes;
+    limits.JobMemoryLimit = budget.jobBytes;
     Require(SetInformationJobObject(job.value, JobObjectExtendedLimitInformation, &limits, sizeof(limits)) != FALSE, "Set job limits");
     SECURITY_ATTRIBUTES security{ sizeof(security), nullptr, TRUE };
     HANDLE readValue = nullptr, writeValue = nullptr;
@@ -199,6 +203,11 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
     Require(QueryInformationJobObject(job.value, JobObjectBasicAccountingInformation, &accounting, sizeof(accounting), nullptr) != FALSE, "Inspect owned descendants");
     const auto active = accounting.ActiveProcesses;
     const auto total = accounting.TotalProcesses;
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION observed{};
+    Require(QueryInformationJobObject(job.value, JobObjectExtendedLimitInformation, &observed, sizeof(observed), nullptr) != FALSE, "Read actual job resource limits");
+    Require(observed.BasicLimitInformation.LimitFlags == limits.BasicLimitInformation.LimitFlags &&
+        observed.BasicLimitInformation.ActiveProcessLimit == budget.processes && observed.ProcessMemoryLimit == budget.processBytes &&
+        observed.JobMemoryLimit == budget.jobBytes, "Job limits must retain the requested values");
     Require(TerminateJobObject(job.value, 1) != FALSE, "Terminate remaining owned descendants");
     const auto stopTime = GetTickCount64();
     do {
@@ -209,7 +218,112 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
     } while (true);
     DWORD exit = 0;
     Require(WaitForSingleObject(process.value, 1000) == WAIT_OBJECT_0 && GetExitCodeProcess(process.value, &exit) != FALSE, "Read stopped child result");
-    return { exit, output, timedOut, outputLimit, total, active };
+    return { exit, output, timedOut, outputLimit, total, active, observed.PeakProcessMemoryUsed, observed.PeakJobMemoryUsed };
+}
+
+struct CommittedMemory {
+    void* value;
+    explicit CommittedMemory(SIZE_T bytes) : value(VirtualAlloc(nullptr, bytes, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE)) {}
+    ~CommittedMemory() { if (value) VirtualFree(value, 0, MEM_RELEASE); }
+};
+SIZE_T PrivateCommit() {
+    PROCESS_MEMORY_COUNTERS_EX counters{};
+    Require(GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&counters), sizeof(counters)) != FALSE,
+        "Read actual process private commit");
+    return counters.PrivateUsage;
+}
+int MemoryAttempt(SIZE_T bytes) {
+    const auto before = PrivateCommit();
+    CommittedMemory memory(bytes);
+    const auto error = memory.value ? ERROR_SUCCESS : GetLastError();
+    const auto after = PrivateCommit();
+    Require(memory.value ? after >= before + bytes : after < before + bytes, "Private commit must agree with the allocation result");
+    std::cout << "{\"requestedBytes\":" << bytes << ",\"allocated\":" << (memory.value ? "true" : "false") << ",\"error\":" << error
+        << ",\"privateCommitBefore\":" << before << ",\"privateCommitAfter\":" << after << "}\n";
+    return memory.value ? 0 : 20;
+}
+int SpawnPressure(const fs::path& executable, DWORD expectedLimit) {
+    DWORD created = 0, error = ERROR_SUCCESS;
+    std::vector<HANDLE> processes;
+    struct ProcessHandles { std::vector<HANDLE>& values; ~ProcessHandles() { for (const auto value : values) CloseHandle(value); } } cleanup{ processes };
+    for (; created < 12; ++created) {
+        STARTUPINFOW startup{}; startup.cb = sizeof(startup);
+        PROCESS_INFORMATION info{};
+        auto command = Quote(executable.native()) + L" --sleep";
+        if (!CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW,
+            nullptr, nullptr, &startup, &info)) { error = GetLastError(); break; }
+        processes.push_back(info.hProcess); Handle thread(info.hThread);
+    }
+    DWORD live = 0;
+    for (const auto process : processes) if (WaitForSingleObject(process, 0) == WAIT_TIMEOUT) ++live;
+    Require(live == created, "Every created pressure helper must remain live");
+    if (created != 12) Require(created > 0 && created + 1 == expectedLimit && error == ERROR_NOT_ENOUGH_QUOTA,
+        "Quota refusal must occur at the expected application-process count");
+    std::cout << "{\"requested\":12,\"created\":" << created << ",\"liveHelpers\":" << live << ",\"error\":" << error << "}\n";
+    return created == 12 ? 0 : 21;
+}
+int AggregateMemory(const fs::path& executable, const fs::path& marker) {
+    Require(!fs::exists(marker), "Aggregate marker must be new");
+    STARTUPINFOW startup{}; startup.cb = sizeof(startup);
+    PROCESS_INFORMATION info{};
+    auto command = Quote(executable.native()) + L" --hold-memory " + Quote(marker.native());
+    Require(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW,
+        nullptr, nullptr, &startup, &info) != FALSE, "Start first aggregate allocation");
+    Handle process(info.hProcess), thread(info.hThread);
+    const auto started = GetTickCount64();
+    while (!fs::exists(marker)) {
+        Require(WaitForSingleObject(process.value, 10) == WAIT_TIMEOUT, "First aggregate allocation must stay live");
+        Require(GetTickCount64() - started < 5000, "First allocation readiness deadline");
+    }
+    std::ifstream ready(marker); std::string value; std::getline(ready, value);
+    Require(value == "committed-40-MiB", "Validate first allocation readiness");
+    const auto result = MemoryAttempt(40 * MiB);
+    Require(WaitForSingleObject(process.value, 0) == WAIT_TIMEOUT, "First aggregate allocation must remain live during the second attempt");
+    return result;
+}
+void SaveResource(const fs::path& root, const char* name, const ChildResult& result, JobBudget budget) {
+    std::ofstream(root / (std::string(name) + "-child.log")) << result.output;
+    std::ofstream(root / (std::string(name) + ".json")) << "{\"exitCode\":" << result.exitCode
+        << ",\"processLimit\":" << budget.processes << ",\"processMemoryLimit\":" << budget.processBytes
+        << ",\"jobMemoryLimit\":" << budget.jobBytes << ",\"peakProcessBytes\":" << result.peakProcessBytes
+        << ",\"peakJobBytes\":" << result.peakJobBytes << ",\"totalProcesses\":" << result.totalProcesses
+        << ",\"activeBeforeStop\":" << result.activeBeforeStop << ",\"activeAfterStop\":0,\"timedOut\":"
+        << (result.timedOut ? "true" : "false") << ",\"outputLimit\":" << (result.outputLimit ? "true" : "false") << "}\n";
+}
+void ResourceContracts(const fs::path& child, const fs::path& root) {
+    const JobBudget memoryControl{ 8, 128 * MiB, 256 * MiB }, processMemoryLimit{ 8, 32 * MiB, 256 * MiB };
+    const auto memory = Run(child, { L"--memory" }, root, nullptr, 30000, memoryControl);
+    SaveResource(root, "memory-control", memory, memoryControl);
+    Require(memory.exitCode == 0 && memory.peakProcessBytes >= 64 * MiB && !memory.timedOut && !memory.outputLimit,
+        "Control must commit the requested memory");
+    const auto limited = Run(child, { L"--memory" }, root, nullptr, 30000, processMemoryLimit);
+    SaveResource(root, "memory-limited", limited, processMemoryLimit);
+    Require(limited.exitCode == 20 && limited.peakProcessBytes <= processMemoryLimit.processBytes && !limited.timedOut && !limited.outputLimit,
+        "Per-process memory limit must refuse the same allocation");
+    const JobBudget aggregateLimit{ 8, 128 * MiB, 64 * MiB };
+    const auto aggregate = Run(child, { L"--aggregate", child.native(), (root / L"writable" / L"aggregate-control.txt").native() }, root, nullptr, 30000, memoryControl);
+    SaveResource(root, "aggregate-control", aggregate, memoryControl);
+    Require(aggregate.exitCode == 0 && aggregate.peakJobBytes >= 80 * MiB && aggregate.activeBeforeStop >= 1 && !aggregate.timedOut && !aggregate.outputLimit,
+        "Control must retain the first allocation while committing the second");
+    const auto aggregateLimited = Run(child, { L"--aggregate", child.native(), (root / L"writable" / L"aggregate-limited.txt").native() }, root, nullptr, 30000, aggregateLimit);
+    SaveResource(root, "aggregate-limited", aggregateLimited, aggregateLimit);
+    // Windows can report a job peak above the limit after a refused commit.
+    // The allocation result and actual private-commit delta are authoritative.
+    Require(aggregateLimited.exitCode == 20 &&
+        aggregateLimited.activeBeforeStop >= 1 && !aggregateLimited.timedOut && !aggregateLimited.outputLimit,
+        "Aggregate limit must refuse the second allocation and clean the retained descendant");
+    const JobBudget spawnControl{ 32, 128 * MiB, 256 * MiB }, spawnLimit{ 8, 128 * MiB, 256 * MiB };
+    const auto spawned = Run(child, { L"--spawn-pressure", child.native(), L"32" }, root, nullptr, 30000, spawnControl);
+    SaveResource(root, "process-control", spawned, spawnControl);
+    Require(spawned.exitCode == 0 && spawned.totalProcesses >= 13 && spawned.activeBeforeStop >= 12 && !spawned.timedOut && !spawned.outputLimit,
+        "Control must create all twelve descendants");
+    const auto spawnLimited = Run(child, { L"--spawn-pressure", child.native(), L"8" }, root, nullptr, 30000, spawnLimit);
+    SaveResource(root, "process-limited", spawnLimited, spawnLimit);
+    // Job accounting can additionally include Windows console-host processes.
+    // The child verifies live helper handles and ERROR_NOT_ENOUGH_QUOTA at 8.
+    Require(spawnLimited.exitCode == 21 && spawnLimited.activeBeforeStop >= 7 &&
+        !spawnLimited.timedOut && !spawnLimited.outputLimit, "Active process limit must refuse excess descendants");
+    std::cout << "PASS: process memory, aggregate memory and active process limits; positive controls and zero-process cleanup passed.\n";
 }
 int wmain(int argc, wchar_t** argv) {
     try {
@@ -218,6 +332,19 @@ int wmain(int argc, wchar_t** argv) {
         struct WinsockGuard { ~WinsockGuard() { WSACleanup(); } } winsockGuard;
         if (argc == 2 && std::wstring(argv[1]) == L"--sleep") { Sleep(60000); return 0; }
         if (argc == 2 && std::wstring(argv[1]) == L"--flood") { std::cout << std::string(100000, 'x') << std::flush; return 0; }
+        if (argc == 2 && std::wstring(argv[1]) == L"--memory") return MemoryAttempt(64 * MiB);
+        if (argc == 4 && std::wstring(argv[1]) == L"--spawn-pressure") return SpawnPressure(argv[2], std::stoul(argv[3]));
+        if (argc == 4 && std::wstring(argv[1]) == L"--aggregate") return AggregateMemory(argv[2], argv[3]);
+        if (argc == 3 && std::wstring(argv[1]) == L"--hold-memory") {
+            CommittedMemory memory(40 * MiB);
+            Require(memory.value != nullptr, "Hold first aggregate allocation");
+            const fs::path markerPath(argv[2]);
+            const auto pending = fs::path(markerPath.native() + L".pending");
+            Require(!fs::exists(markerPath) && !fs::exists(pending), "Readiness paths must be new");
+            { std::ofstream marker(pending); marker << "committed-40-MiB\n"; marker.flush(); Require(marker.good(), "Write allocation readiness"); }
+            fs::rename(pending, markerPath); // Publish only the complete readiness record.
+            Sleep(60000); return 0;
+        }
         if (argc == 3 && std::wstring(argv[1]) == L"--orphan") {
             STARTUPINFOW startup{}; startup.cb = sizeof(startup);
             PROCESS_INFORMATION info{};
@@ -279,6 +406,7 @@ int wmain(int argc, wchar_t** argv) {
         Require(flood.outputLimit && !flood.timedOut && flood.output.size() <= 65536, "Job must bound diagnostics and clean up");
         std::ofstream(root / L"lifetime.json") << "{\"launcherExitCleanup\":true,\"timeoutCleanup\":true,\"diagnosticLimitCleanup\":true,\"activeProcessesAfterEach\":0}\n";
         std::cout << "PASS: launcher-exit descendant cleanup, timeout and diagnostic budget; every owned job reports zero remaining processes.\n";
+        ResourceContracts(child, root);
         if (!createProfile) {
             std::cout << "NOT RUN: AppContainer access matrix requires explicit disposable-profile opt-in. Unregistered launch previously failed with Windows error 2.\n";
             return 0;
