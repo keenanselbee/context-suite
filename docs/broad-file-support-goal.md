@@ -57,6 +57,14 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The next 2026-09-11 [audio build-tool checkpoint](audio-build-tools.md) builds GNU
+make 4.4.1 and NASM 3.02 in repository scratch. Both pass their two native/workflow
+tests, with 395/1,375 unchanged source files. Make has no compiler diagnostics;
+NASM retains one reviewed Mach-O warning and has no errors. Wrapper fixes address
+recursive make paths and NASM's SDK/inline-linkage compatibility; eight diagnostic
+gate checks pass. No tools were installed. Complete FFmpeg composition and the
+existing full audio matrix remain the next required work.
+
 The subsequent 2026-09-11 [stable MP3 checkpoint](audio-dependency-builds.md)
 builds LAME 4.0 from its original pinned release archive, with exact runtime
 version, no compiler warnings/errors and 316 unchanged source files. Independent

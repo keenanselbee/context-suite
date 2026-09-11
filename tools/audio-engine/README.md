@@ -187,7 +187,13 @@ authored VBR2 probe. Run `python tools/audio-engine/Test-LameDependency.py
 '<completed Lame build>' '<evaluation engine bin>'` for independent stream,
 gapless sample-count and generated-tone checks after verifying the complete
 pinned decoder runtime. See [exact evidence and remaining work](../../docs/audio-dependency-builds.md),
-including the passing stable LAME candidate and remaining FFmpeg/build-tool work.
-`LameStable` checks its runtime version as well as encoding. GNU make and NASM
-source retention does not yet provide tested build executables. Use
+including the passing stable LAME candidate and remaining FFmpeg composition.
+`LameStable` checks its runtime version as well as encoding. Use
 `python -B tools/audio-engine/Test-SourceTar.py` for authored tar-reader checks.
+
+The same shared runner now accepts `-Dependency Make` and `-Dependency Nasm` to
+build the pinned GNU make 4.4.1 and NASM 3.02 tools in fresh scratch. Make runs
+version and Git Bash/recursive/incremental/failure checks. NASM runs version and
+Win64 COFF assembly/link/execution checks. Neither tool is installed or staged
+with the customer app. See [audio build tools](../../docs/audio-build-tools.md)
+for compiler compatibility fixes, the retained NASM warning and exact evidence.

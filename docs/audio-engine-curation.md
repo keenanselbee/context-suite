@@ -85,8 +85,10 @@ Four CLI refusal checks also pass: outside scratch, parent traversal, changed
 archive bytes and existing destination. They preserve the original archive and
 destination sentinel; evidence is at
 `.codex-temp/source-tar-guards-9183fecb17dd413dacd4b5005d0f69a4`.
-GNU make and NASM have not been built or installed. Their source pins are inputs
-for the next build-tool recipes, not tested executables or shipping dependencies.
+GNU make and NASM subsequently pass [repository-local builds and checks](audio-build-tools.md).
+These are build tools, not installed software or shipping dependencies. That
+record includes MSVC compatibility fixes, short-path requirements, one reviewed
+NASM compiler warning and the remaining full FFmpeg composition work.
 
 Outstanding source and build inputs
 ----------------------------------

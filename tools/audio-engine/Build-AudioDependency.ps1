@@ -1,11 +1,23 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $SourceDirectory,
-      [Parameter(Mandatory)][ValidateSet('Opus', 'OggVorbis', 'Lame', 'LameStable')][string] $Dependency)
+      [Parameter(Mandatory)][ValidateSet('Opus', 'OggVorbis', 'Lame', 'LameStable', 'Make', 'Nasm')][string] $Dependency)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 & (Join-Path $PSScriptRoot 'Prepare-AudioSources.ps1') -SourceDirectory $SourceDirectory -VerifyOnly
 $pins = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'source-inputs.json') -Raw | ConvertFrom-Json).archives
 switch ($Dependency) {
+    'Nasm' {
+        $sourceIds = @('nasm')
+        $recipeName = 'nasm'
+        $testCount = 2
+        $artifacts = @('Release/nasm.exe', 'Release/ContextSuite.Nasm.Probe.exe', 'probe.obj')
+    }
+    'Make' {
+        $sourceIds = @('make')
+        $recipeName = 'make'
+        $testCount = 2
+        $artifacts = @('Release/gnumake.exe')
+    }
     'Opus' {
         $sourceIds = @('opus')
         $recipeName = 'opus'
@@ -113,8 +125,16 @@ function Invoke-BuildStep([string] $Executable, [string[]] $Arguments, [string] 
 Invoke-BuildStep $cmake $configure 'configure.log'
 Invoke-BuildStep $cmake @('--build', $build, '--config', 'Release', '--', '/m:2',
     '/p:ImportDirectoryBuildProps=false', '/p:ImportDirectoryBuildTargets=false', '/verbosity:minimal') 'build.log'
-if (Select-String -LiteralPath (Join-Path $workspace 'build.log') -Pattern '\bwarning [A-Z]+\d+:|\berror [A-Z]+\d+:') {
-    throw 'Compiler diagnostics require review before accepting this dependency build.'
+$reviewedDiagnostics = @()
+foreach ($diagnostic in @(Select-String -LiteralPath (Join-Path $workspace 'build.log') -Pattern '\bwarning [A-Z]+\d+:|\berror [A-Z]+\d+:')) {
+    $knownNasmWarning = if ($Dependency -eq 'Nasm') {
+        '^' + [regex]::Escape((Join-Path $sources['nasm'] 'output\outmacho.c')) + '\(1295,25\): warning C4319:'
+    } else { $null }
+    if ($knownNasmWarning -and $diagnostic.Line -match $knownNasmWarning -and $reviewedDiagnostics.Count -eq 0) {
+        $reviewedDiagnostics += [ordered]@{ diagnostic=$diagnostic.Line;
+            review='NASM 3.02 Mach-O relocation-offset alignment widens a 32-bit mask. Retained upstream warning; this build tool is tested for Win64 COFF, not Mach-O or offsets above 4 GiB.' }
+    }
+    else { throw 'Compiler diagnostics require review before accepting this dependency build.' }
 }
 Invoke-BuildStep $ctest @('--test-dir', $build, '-C', 'Release', '--timeout', '120', '--output-on-failure', '-j', '1') 'tests.log'
 if (-not (Select-String -LiteralPath (Join-Path $workspace 'tests.log') -SimpleMatch "100% tests passed, 0 tests failed out of $testCount")) {
@@ -143,7 +163,7 @@ $inventory = @($artifacts | ForEach-Object {
     testLogSha256=(Get-FileHash -LiteralPath (Join-Path $workspace 'tests.log')).Hash;
     recipeSha256=(Get-FileHash -LiteralPath (Join-Path $recipe 'CMakeLists.txt')).Hash;
     recipeFiles=@(Get-ChildItem -LiteralPath $recipe -Recurse -File | ForEach-Object { [ordered]@{ path=$_.FullName.Substring($recipe.Length + 1); sha256=(Get-FileHash -LiteralPath $_.FullName).Hash } });
-    scriptSha256=(Get-FileHash -LiteralPath $PSCommandPath).Hash;
+    scriptSha256=(Get-FileHash -LiteralPath $PSCommandPath).Hash; reviewedDiagnostics=$reviewedDiagnostics;
     sourceReaderSha256=(Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'Read-SourceTar.py')).Hash; artifacts=$inventory } |
     ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $workspace 'dependency-build.json') -Encoding UTF8
 Write-Output "Verified $Dependency dependency build: $workspace"

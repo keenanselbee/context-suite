@@ -21,8 +21,11 @@ Prepare the [pinned source cache](audio-engine-curation.md), then run:
 The existing `Build-OpusDependency.ps1` command forwards to the shared runner.
 Each run creates fresh repository scratch, verifies archive identity again under
 a read lease, and extracts into a separate source directory per input. It uses
-existing Visual Studio 2026 x64 tools and Windows SDK 10.0.26100.0, rejects compiler
-diagnostics, requires the expected CTest count and rechecks all source files.
+existing Visual Studio 2026 x64 tools and Windows SDK 10.0.26100.0, rejects
+unreviewed compiler diagnostics, requires the expected CTest count and rechecks
+all source files. The codec builds below have no compiler warnings/errors; the
+separate [build-tool record](audio-build-tools.md) documents NASM's one reviewed
+warning.
 Source files, generated headers, objects and evidence stay separate. No
 installation, source downloads or production staging run.
 
@@ -125,9 +128,10 @@ CRT, linked-component, source and notice inventory before production adoption.
 
 [FFmpeg's Windows instructions](https://ffmpeg.org/platform.html#Microsoft-Visual-C_002b_002b-or-Intel-C_002b_002b-Compiler-for-Windows)
 support MSVC with a Unix-like build environment and assembler. GNU make and NASM
-now have pinned original release source archives in the cache: GNU make 4.4.1 and
-NASM 3.02. Their repository-local build recipes and native checks remain pending;
-the existing Git Bash installation alone has no make executable. Do not install a toolchain
+now have pinned original release source archives and tested repository-local
+executables: GNU make 4.4.1 and NASM 3.02. See the [build-tool commands and checks](audio-build-tools.md),
+including recursive make's short-path requirement and NASM's reviewed diagnostic.
+The existing Git Bash installation alone has no make executable. Do not install a toolchain
 or remove required codec behavior just to get a build to pass.
 
 The pinned FFmpeg configure script rejects whitespace in an out-of-tree source
