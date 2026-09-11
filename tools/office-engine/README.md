@@ -56,6 +56,16 @@ profile also determines temporary/data directories, so the responsible internal
 path and exact cutoff are still unknown. Select only one experiment switch at a
 time; see the evidence record.
 
+`-EnvironmentPaths` separates the profile from the four environment variables.
+It runs the same generated PowerPoint input with a short control, all paths long,
+then only UserInstallation, TEMP, TMP, APPDATA or LOCALAPPDATA long. The profile
+roots are 90 or 170 characters; environment directories append their variable
+name. Source/output paths and PDF options stay fixed, and each completed PDF
+passes the same independent checks. `conversion.json` records the exact profile
+and environment paths. A missing PDF is recorded as a failed conversion, even
+when the process exits zero. This diagnostic mode does not establish a customer
+path policy or arbitrary-document isolation.
+
 Add `-LegacyAnalysis` to generate disposable DOC/XLS/PPT copies with the fixed
 Word 97, Excel 97 and PowerPoint 97 export filters, then inspect their headers
 using the production Core legacy analyzer. It requires likely content identities,

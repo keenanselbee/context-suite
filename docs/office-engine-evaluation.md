@@ -321,3 +321,58 @@ repository source-boundary/theme/documentation/whitespace checks pass. No custom
 code, production staging, installed state, native AppContainer profile or
 worker/UI acceptance changed for this checkpoint. Required Office conversion,
 isolation, broader fidelity and external release gates remain open.
+
+
+Separate profile and environment paths (2026-09-11)
+--------------------------------------------------
+
+`Test-OfficeEvaluation.ps1 -EnvironmentPaths` now separates UserInstallation from
+TEMP, TMP, APPDATA and LOCALAPPDATA. It keeps the same generated passive PowerPoint
+input, output directory and PDF options throughout. Each process gets new owned
+profile/data directories. The control root is 90 characters; the long root is
+170. Environment paths append their variable name, so their actual lengths are
+94-103 or 174-183 characters. Exact paths are retained in each `conversion.json`.
+
+| Long path selection | Result | Export time |
+| --- | --- | ---: |
+| None (short control) | Valid two-page PDF | 9,009 ms |
+| Profile and all four environment paths | Exit zero, no PDF | 4,388 ms |
+| Profile only | Exit zero, no PDF | 4,272 ms |
+| TEMP only | Valid two-page PDF | 8,353 ms |
+| TMP only | Valid two-page PDF | 8,203 ms |
+| APPDATA only | Valid two-page PDF | 8,224 ms |
+| LOCALAPPDATA only | Valid two-page PDF | 8,319 ms |
+
+All five completed PDFs pass qpdf/PDFium parsing, authored page/text/hidden-slide
+checks and original preservation. A separate Python read-only comparison verifies
+the recorded path lengths, unchanged original hashes, exact extracted text and
+identical complete page BGRA buffers against the control for all successful
+variants. It does not rescale or apply a visual tolerance. The two missing PDFs
+remain recorded failures, not successful conversions because the matrix finished.
+
+For this fixture and engine, making UserInstallation long is sufficient to
+reproduce the failure with short environment paths. Each individually lengthened
+environment variable works with a short profile. This narrows the earlier combined
+profile/temp observation to the profile path; it does not locate the internal
+failing filename or establish a universal cutoff. It also does not prove every
+combination of long environment paths or every document type works.
+
+Keep the per-job Office profile independently short in the eventual worker and
+validate actual outputs. Do not infer a limit on user source/output filenames
+from this profile experiment or silently relocate customer files. The normal
+evaluation profile already uses the measured short sibling location; this
+checkpoint does not introduce a customer converter or a production workaround.
+
+Evidence is under
+`.codex-temp/office-engine/a56167ab9fb54686971491918ccd26f8/evaluation-d39ba676f72048b286c3153fadc83f82`:
+`office-evaluation.json`, per-case diagnostics and exact environment paths,
+five PDFs, source fixture, text/renders and `environment-path-control.json`.
+The command log is `.codex-temp/office-environment-paths.log`; the independent
+comparison is `.codex-temp/Verify-OfficeEnvironmentPaths.py`. The wrapper verifies
+the retained Office/qpdf inventories and PDFium bridge/library before launch.
+
+The probe builds in Release with zero warnings/errors. PowerShell syntax,
+whitespace and repository source-boundary/theme/73-document checks pass. No
+customer implementation, production staging, native AppContainer profile,
+installed state, visible UI or assistive-technology acceptance changed. Required
+Office isolation, broader fidelity and integration remain open.

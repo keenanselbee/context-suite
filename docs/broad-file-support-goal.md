@@ -57,6 +57,14 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [Office path comparison](office-engine-evaluation.md) separates the
+profile from TEMP/TMP/APPDATA/LOCALAPPDATA. A long profile alone reproduces the
+zero-exit/no-PDF failure; each individually long environment path works with a
+short profile. Five PDFs pass independent checks and exact render/text control
+comparison; two failed conversions remain recorded. This establishes a more
+precise worker-profile requirement, not a universal path cutoff or completed
+Office integration. Isolation and broader fidelity remain required.
+
 The 2026-09-11 [audio distribution checkpoint](audio-distribution.md) adds verified
 source/runtime review ZIPs, eight original build inputs, 1,014 collected notices
 from 1,029 compiler inputs and ten archive integrity/tampering checks. A fresh

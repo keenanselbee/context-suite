@@ -5,10 +5,11 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "LegacyAnalysis" or "LegacyPdf")) return 2;
-var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths";
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf")) return 2;
+var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths";
 var legacyPdf = args.Length == 4 && args[3] == "LegacyPdf";
-var profileStyles = legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "ProfileLengths"
+var profileStyles = legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "EnvironmentPaths"
+    ? new[] { "env-control", "env-all", "env-profile", "env-TEMP", "env-TMP", "env-APPDATA", "env-LOCALAPPDATA" } : args[3] == "ProfileLengths"
     ? new[] { "length-90", "length-110", "length-130", "length-150", "length-170" }
     : new[] { "short-ascii", "short-unicode", "long-ascii", "long-unicode" };
 var prepared = Path.GetFullPath(args[0]); var qpdf = Path.GetFullPath(args[1]); var pdfium = Path.GetFullPath(args[2]);
@@ -114,7 +115,7 @@ foreach (var (name, filter, expectedPages) in new[] { ("Word ü.docx", "writer_p
              !text[0].Contains("Page 1 of 2") || !text[1].Contains("Page 2 of 2") || text.Any(page => page.Contains("99"))))
             throw new InvalidDataException("Word first/default headers or PAGE/NUMPAGES field rendering did not match authored expectations.");
         if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
-        results.Add(new { Source = Path.GetFileName(source), SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile,
+        results.Add(new { Source = Path.GetFileName(source), SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile, conversion.EnvironmentPaths,
             PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds,
             ConversionOutput = conversion.Output, Diagnostics = conversion.Error, Text = text, Render = rendered.RootElement.Clone() });
         if (profileMatrix) File.Move(pdf, Path.Combine(folder, Path.GetFileName(pdf)));
@@ -160,6 +161,18 @@ async Task<RunResult> RunOffice(string name, string[] arguments, string profileS
         if (length < profile.Length || length > 170) throw new InvalidDataException("Profile length experiment cannot fit this repository location.");
         profile = profile.PadRight(length, 'p'); // Same ASCII parent and depth; change only leaf length.
     }
+    var environment = new Dictionary<string, string>(StringComparer.Ordinal);
+    foreach (var variable in new[] { "TEMP", "TMP", "APPDATA", "LOCALAPPDATA" })
+        environment[variable] = Path.Combine(profile, variable);
+    if (profileStyle.StartsWith("env-", StringComparison.Ordinal))
+    {
+        if (profile.Length > 90) throw new InvalidDataException("Environment path experiment cannot fit this repository location.");
+        var shortRoot = profile.PadRight(90, 'p');
+        var longRoot = shortRoot.PadRight(170, 'p');
+        profile = profileStyle is "env-all" or "env-profile" ? longRoot : shortRoot;
+        foreach (var variable in environment.Keys.ToArray())
+            environment[variable] = Path.Combine(profileStyle == "env-all" || profileStyle == "env-" + variable ? longRoot : shortRoot, variable);
+    }
     var user = Path.Combine(profile, "user"); Directory.CreateDirectory(user);
     File.AppendAllText(Path.Combine(root, "profiles.txt"), name + "=" + profile + Environment.NewLine);
     File.WriteAllText(Path.Combine(user, "registrymodifications.xcu"), """
@@ -172,18 +185,19 @@ async Task<RunResult> RunOffice(string name, string[] arguments, string profileS
         """, new UTF8Encoding(false));
     return await Run(Path.Combine(payload, "program", "soffice.com"),
         new[] { "-env:UserInstallation=" + new Uri(profile + Path.DirectorySeparatorChar).AbsoluteUri,
-            "--headless", "--nologo", "--nodefault", "--norestore", "--unaccept=all" }.Concat(arguments), root, profile);
+            "--headless", "--nologo", "--nodefault", "--norestore", "--unaccept=all" }.Concat(arguments), root, profile, environment);
 }
 
-static async Task<RunResult> Run(string executable, IEnumerable<string> arguments, string directory, string? profile = null)
+static async Task<RunResult> Run(string executable, IEnumerable<string> arguments, string directory, string? profile = null,
+    IReadOnlyDictionary<string, string>? environment = null)
 {
     var start = new ProcessStartInfo(executable) { UseShellExecute = false, CreateNoWindow = true,
         RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = directory };
     foreach (var arg in arguments) start.ArgumentList.Add(arg);
     if (profile is not null)
     {
-        foreach (var variable in new[] { "TEMP", "TMP", "APPDATA", "LOCALAPPDATA" })
-        { var path = Path.Combine(profile, variable); Directory.CreateDirectory(path); start.Environment[variable] = path; }
+        foreach (var (variable, path) in environment ?? throw new InvalidDataException("An Office profile requires explicit local environment paths."))
+        { Directory.CreateDirectory(path); start.Environment[variable] = path; }
         start.Environment["SAL_DISABLE_OPENCL"] = "1";
         start.Environment["SAL_LOG"] = "+WARN";
     }
@@ -197,7 +211,7 @@ static async Task<RunResult> Run(string executable, IEnumerable<string> argument
         var stdout = Read(process.StandardOutput, deadline.Token); var stderr = Read(process.StandardError, deadline.Token);
         await Task.WhenAll(stdout, stderr, process.WaitForExitAsync(deadline.Token));
         if (process.ExitCode != 0) throw new IOException($"Evaluation child exited {process.ExitCode}: {await stderr}");
-        return new(await stdout, await stderr, timer.ElapsedMilliseconds, profile);
+        return new(await stdout, await stderr, timer.ElapsedMilliseconds, profile, environment);
     }
     catch { Stop(); throw; }
 }
@@ -212,4 +226,4 @@ static async Task<string> Read(StreamReader reader, CancellationToken token)
     }
 }
 static string Hash(string path) { using var input = File.OpenRead(path); return Convert.ToHexString(SHA256.HashData(input)); }
-internal sealed record RunResult(string Output, string Error, long Milliseconds, string? Profile);
+internal sealed record RunResult(string Output, string Error, long Milliseconds, string? Profile, IReadOnlyDictionary<string, string>? EnvironmentPaths);
