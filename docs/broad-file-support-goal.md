@@ -57,6 +57,15 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [shared audio dependency builds](audio-dependency-builds.md) add
+Ogg/Vorbis and the LAME core encoder while retaining the existing Opus command.
+Fresh builds pass four Ogg/Vorbis tests, six Opus regression tests and authored
+LAME encoding with no compiler warnings/errors or source changes. Independently
+pinned FFmpeg decoding returns the exact generated stereo sample count and low
+signal error. Two changed-fixture/engine refusal cases pass. The supplier LAME
+source reports 4.1 alpha; evaluate the official stable 4.0 baseline before shipping.
+This does not complete FFmpeg composition, adapter/worker replay or adoption.
+
 The 2026-09-11 [Opus dependency recipe](audio-engine-curation.md) supplies explicit
 source-version reporting and corrects the preliminary MSVC compiler flag issue
 without changing upstream files. Its repository command builds in fresh scratch,

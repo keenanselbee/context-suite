@@ -1,10 +1,15 @@
 Audio Engine Curation
 =====================
 
-Status: six source inputs retained and an isolated Opus dependency recipe added,
+Status: six source inputs retained and isolated audio dependency recipes tested,
 2026-09-11. The tested audio adapter and direct commands remain optional because
 normal production staging has no adopted audio payload. This work does not enable
 an unreviewed supplier bundle.
+
+The [current dependency build record](audio-dependency-builds.md) covers Opus,
+Ogg/Vorbis and LAME, including independent generated-MP3 decoding. The supplier's
+LAME snapshot is an alpha; stable MP3 baseline selection and complete FFmpeg
+composition remain open. The sections below retain earlier source/Opus evidence.
 
 Why staging still excludes the evaluation engine
 ------------------------------------------------

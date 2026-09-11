@@ -171,3 +171,14 @@ identity in `dependency-build.json`. No downloads, installation or production
 staging run. The repository wrapper supplies a truthful source version and fixes
 the pinned CMake/MSVC flag mismatch without editing upstream files. This Opus
 dependency does not yet provide the complete curated FFmpeg audio payload.
+
+`Build-AudioDependency.ps1` accepts `-Dependency Opus`, `OggVorbis` or `Lame`, plus
+`-SourceDirectory '<verified source cache>'`. It shares the source, build, test
+and inventory checks across all three selections; the older Opus command forwards
+to it.
+Ogg/Vorbis runs four upstream tests. LAME builds only the core encoder and an
+authored VBR2 probe. Run `python tools/audio-engine/Test-LameDependency.py
+'<completed Lame build>' '<evaluation engine bin>'` for independent stream,
+gapless sample-count and generated-tone checks after verifying the complete
+pinned decoder runtime. See [exact evidence and remaining work](../../docs/audio-dependency-builds.md),
+including the LAME alpha/stable selection and missing FFmpeg build inputs.
