@@ -394,3 +394,70 @@ Auto's existing PNG quality wording in the extended PDF tooltip. Its native shel
 contracts and normal payload checks pass. The managed implementation is unchanged
 from the tested `028f1b...` stage; UI and media suites were not repeated for that
 tooltip-only adjustment.
+
+Native failures, publication exits and local long paths (2026-09-10)
+------------------------------------------------------------------
+
+**51 new checks** exercise the real worker/native engine and application-owned
+publisher. A generated 8 MiB content-stream PDF first completes optimization.
+The harness then observes a live qpdf process with the owned worker as its parent,
+the exact evaluation executable path and an active output reservation lock before
+injecting cancellation, controlled client deadline expiry or worker-only death.
+It verifies typed outcomes, native/worker exit, source hashes, abandoned-output
+and owned-scratch cleanup, and successful publication through a fresh worker.
+The test uses [Windows process snapshots](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/ns-tlhelp32-processentry32w)
+to identify parentage; it never terminates processes merely by their name.
+
+Injected errors immediately before and after the final move distinguish an
+unpublished candidate from a committed copy. Restart discovers retained originals,
+validated candidate/output and journal evidence; a later copy can complete without
+removing it. Separate test applications terminate abruptly at Prepared, Validated,
+Publishing, PublishedBeforeRecord and Committed. All five retain the exact original
+in place, the expected temporary/published state and discoverable journal, and
+their worker exits after application death. These are controlled local failure
+checks, not power-loss durability, automatic recovery or visible recovery acceptance.
+
+The expanded run exposed three Windows path boundaries. Ordinary qpdf operands
+failed at a generated 273-character path, while extended syntax through `@-`
+worked. CreateProcess rejected a working directory beyond MAX_PATH even with
+extended syntax. Finally, an isolated snapshot probe worked while the shared
+Win32 source read still rejected a long path. The fixes are narrow:
+
+- qpdf receives extended syntax only for normalized, owned snapshots through its
+  literal stdin argument list; no customer path enters its command arguments.
+- An overlong native working directory falls back to a checked scratch ancestor
+  of at most 240 characters. Snapshots stay in the unique owned directory, all
+  file operands remain absolute, and output still goes to the bounded pipe.
+- The shared native media reader adds extended syntax for long paths after
+  ordinary-path and link validation; final handle/path checks remain unchanged.
+
+Generated Unicode source, native scratch and published output paths beyond 260
+characters now pass, with exact originals preserved. Deep snapshot-only probing
+is checked independently. UNC and overlong engine-installation paths remain
+unverified. Failed runs are retained; no protection guard or expected outcome was
+relaxed to pass these cases. One authored-test span/await compile error was fixed
+before the final successful run.
+
+Final evidence against isolated Release stage
+`artifacts/production-staging/8243dabf3d574224b31dd0d0aa0b12d7`:
+
+```text
+.codex-temp/pdf-engine/3edb2e8361e04782a91ef8364bd3a537/
+  worker-6f138111f75d4eec8069b211335e6f78/failure-results/pdf-failures.json
+  worker-6f138111f75d4eec8069b211335e6f78/failure-results/app-crashes/
+  worker-6f138111f75d4eec8069b211335e6f78/optimization-results/pdf-optimization-workflow.json
+  worker-6f138111f75d4eec8069b211335e6f78/direct-results/pdf-direct.json
+  adapter-e44680e5df354deeaa480d34b7f85047/probe-adapter.json
+```
+
+The complete run passes **11 Analyze + 17 optimization + 51 failure + 19 direct
+checks (98 total)**. **27 private PDF**, **942 image engine/adapter** and **1,507
+foundation contracts** pass. Image evidence is
+`.codex-temp/image-tests/engine-dbdfb6a8394d46aebd883e4c1bf4207c` because the shared
+native read helper changed. Release compilation has zero warnings/errors and
+normal curated identity, payload allowlist, dependency and notice checks pass.
+This stage uses `-SkipShell` and keeps evaluation engines outside normal packaging.
+PDFium, private audio, hidden UI, native shell and image direct-command suites were
+not rerun; their earlier evidence remains separate. Broader PDF fidelity and
+document actions, engine adoption, visible/assistive/installed acceptance and
+commercial release gates remain open; signing stays deferred.

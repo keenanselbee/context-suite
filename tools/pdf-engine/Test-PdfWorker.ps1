@@ -32,6 +32,8 @@ Copy-Item -LiteralPath (Join-Path $prepared 'evaluation.json') -Destination $pdf
 if ($LASTEXITCODE -ne 0) { throw 'Isolated PDF worker checks failed.' }
 & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --pdf-optimization-worker (Join-Path $scratch 'optimization-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
 if ($LASTEXITCODE -ne 0) { throw 'Isolated PDF optimization workflow checks failed.' }
+& dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --pdf-failures (Join-Path $scratch 'failure-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
+if ($LASTEXITCODE -ne 0) { throw 'Isolated PDF failure checks failed.' }
 if ($AudioPreparedDirectory) {
     $pin = Get-Content -LiteralPath (Join-Path $repository 'tools\audio-engine\evaluation.json') -Raw | ConvertFrom-Json
     $audio = Join-Path $payload 'audio-engine'

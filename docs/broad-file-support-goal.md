@@ -198,10 +198,11 @@ rewrite checks and 19 PDF batch/access checks. The preceding 292 combined privat
 audio checks were not rerun for the PDF-only change. This slice passes 27 private
 PDF adapter checks (preceding candidate milestone), 11 PDF Analyze worker checks,
 17 PDF optimization worker/publication checks and 19 new direct PDF/mixed-family
-checks. The preceding 15 independent PDFium checks were not rerun for dispatch-only changes.
+checks, plus 51 new native failure/recovery/long-path checks. The preceding 15
+independent PDFium checks were not rerun for path and failure-test changes.
 The earlier shared
-reservation-handle refactor passed all 942 image-engine checks; those were not
-rerun. The 86 hidden view contracts, 13 image direct-command checks and
+reservation-handle refactor's 942 image-engine checks pass again after correcting
+long-path native reads. The 86 hidden view contracts, 13 image direct-command checks and
 native shell contracts pass after PDF dispatch integration. They cover the expanded Convert menu's complete
 multi-file activation without registration or installation. The
 [catalog inventory](file-type-inventory.md) separates descriptions from detectors.
@@ -209,12 +210,14 @@ The [source audit](catalog-source-review.json) records 223 references: 186 retri
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/ecdfc84ac0a04b03a9ee2df7b3b7a639` includes the private
+`artifacts/production-staging/8243dabf3d574224b31dd0d0aa0b12d7` includes the private
 audio candidates, direct quality window and existing optional PDF worker
 integration and direct structural PDF optimization. Release compilation, curated engine identities, file allowlist,
 package dependencies and notice checks pass, with zero compiler warnings/errors.
-This PDF dispatch stage also built native shell into isolated scratch, including
-updated preset descriptions. See [dated audio evidence](audio-engine-evaluation.md).
+This path/failure stage used `-SkipShell`; the preceding dispatch stage built
+native shell into isolated scratch with updated preset descriptions. Hidden UI,
+native shell and image direct-command suites were not repeated for this private
+path change. See [dated audio evidence](audio-engine-evaluation.md).
 Installed lifecycle and visible acceptance were not performed. The
 evaluation audio and PDF engines are not part of this normal payload. Manual review remains
 pending; earlier image acceptance does not prove the expanded report UI.
@@ -229,8 +232,15 @@ rendering matches the source for both published generated pages. Auto/Lossless
 now dispatch PDF alongside PNG/FLAC under one admission and one quiet completion.
 Generated direct checks cover trial expiry across families, activation retry,
 mandatory PDF copies, unchanged results, missing engines, misleading extensions,
-protection refusal and cancellation between families. Native-phase termination
-and recovery, broader fidelity and all other document actions remain open.
+protection refusal and cancellation between families. New failure checks observe
+a live owned qpdf process before cancellation, deadline expiry and worker-only
+termination, then verify cleanup and successful work through a fresh worker.
+Publication move errors and application exits preserve exact originals and
+appropriate candidate/journal evidence. Restart discovers retained records; it
+does not silently restore or delete files. The tests exposed and corrected native
+long-file-path and process-working-directory limits, with successful local source,
+snapshot and output paths beyond MAX_PATH. Broader fidelity, UNC/long engine-install
+paths, visible recovery acceptance and all other document actions remain open.
 
 Product boundaries
 ------------------

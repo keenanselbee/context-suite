@@ -144,8 +144,12 @@ this dispatch is verified with the isolated evaluation payload.
 The [dated evidence](pdf-engine-evaluation.md)
 includes 32 rewrite contracts, 19 new plan/access contracts, 27 private adapter
 checks, 17 real optimization workflow checks, 19 direct mixed-family checks and independent PDFium comparison
-of two generated published pages. Native-phase crash/recovery tests, larger
-document/feature coverage and production engine adoption remain required.
+of two generated published pages. Another 51 generated checks now cover native
+cancellation/client timeout/worker death, publication move errors, application
+exit at five publication checkpoints and long local paths. Restart discovers and
+preserves recovery records; these checks do not implement automatic restoration
+or establish visible recovery usability. Larger document/feature coverage,
+UNC/long engine-install paths and production engine adoption remain required.
 Incremental/linearized inputs with revision links need a history
 handler; declining them is a current limitation, not the final launch scope.
 Images-to-PDF, PDF pages-to-images and Word/Excel/PowerPoint-to-PDF remain required

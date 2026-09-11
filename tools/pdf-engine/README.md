@@ -57,6 +57,16 @@ Lossless on PDF-only and mixed PNG/FLAC/PDF batches. Those extra tests create an
 isolated combined engine payload and record `direct-results/pdf-direct.json`.
 They do not add engines to normal staging or change Explorer registration.
 
+The worker script also runs `--pdf-failures`: a generated large PDF must first
+optimize successfully, then the harness observes its owned native child before
+cancellation, controlled deadline expiry and worker-only termination. It tests
+publication move failures and abrupt test-application exits at five publication
+checkpoints. Only owned test processes are terminated; no native recycling runs.
+Long local source/snapshot/output paths are included. `failure-results/pdf-failures.json`
+records the interruption/move results; `failure-results/app-crashes` deliberately
+retains journals, originals and candidate evidence for restart-discovery checks.
+This verifies retained evidence, not automatic restoration or visible recovery UX.
+
 To compare that candidate independently, add
 `-OptimizedCandidate '<generated adapter directory>\optimized-candidate.pdf'`
 to `Test-PdfiumEvaluation.ps1`, using the same source fixture directory. It must be
