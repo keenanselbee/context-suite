@@ -47,6 +47,19 @@ enabled. Generated test audio stays in the build directory. The complete FFmpeg
 link must select only the libraries it needs; building `vorbisfile.lib` does not
 authorize including unused code in the shipping payload.
 
+The Windows-hardening follow-up adds explicit `/GS`, `/guard:cf` and
+`/guard:ehcont` to the Opus, Ogg and Vorbis library targets. Their earlier upstream
+defaults did not provide exception-continuation metadata, causing 75 `LNK4291`
+warnings when FFmpeg first enabled its corresponding linker check. Those warnings
+are rejected rather than added to the diagnostic allowlist. Fresh Opus and
+Ogg/Vorbis builds pass all six/four tests with zero compiler diagnostics and
+unchanged source at `audio-opus-1710946271d1477ebac190cc945ae4d1` and
+`audio-ogg-vorbis-42c6c8b3ffdc4187bdde3fbb6f8b0dd2` under `.codex-temp`.
+Test times are 67.68 and 6.16 seconds. The FFmpeg launcher now checks current
+dependency recipe-file and retained test-log identities before composition;
+the previous two recipes are refused before native execution. See the
+[full build follow-up](audio-ffmpeg-build.md) for emitted binary checks.
+
 The LAME wrapper selects 27 core/vector translation units for the supplier alpha,
 or 21 for stable 4.0, and copies `configMS.h` into the binary directory. It
 excludes frontends, MP3 decoders, drivers and network clients. Dynamic CRT, stack

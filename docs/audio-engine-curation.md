@@ -14,8 +14,10 @@ below retain earlier source/Opus evidence.
 The [restricted FFmpeg build work](audio-ffmpeg-build.md) adds verified zlib source
 and a codec check for PNG artwork, plus an exact generated-component gate. The
 fresh native build now passes version/loading and six-format independent-decoder
-smoke checks, including actual PNG artwork decoding. Compiler/hardening review,
-the complete adapter/worker matrix and production adoption remain pending.
+smoke checks, including actual PNG artwork decoding. The hardened follow-up passes
+the exact compiler/PE checks, 298 private adapter checks and 116 isolated worker
+checks. Complete distribution inventory, remaining fidelity/compatibility review
+and production adoption remain pending.
 
 Why staging still excludes the evaluation engine
 ------------------------------------------------

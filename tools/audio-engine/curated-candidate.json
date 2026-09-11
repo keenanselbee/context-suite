@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "status": "Restricted locally built audio candidate; native review, 298 adapter and 116 worker checks passed; production adoption remains separate",
+  "version": "9.0.1-contextsuite-g9b0578816c6f",
+  "sourceRevision": "9b0578816c6f94514d330d4f2ae7e44a9fb42692",
+  "buildEvidence": ".codex-temp/audio-ffmpeg-8982dc9e3a0646f0bc201d7c61784128",
+  "files": [
+    {
+      "path": "ffmpeg.exe",
+      "bytes": 393728,
+      "sha256": "1DFC346B347503923CE686630D6DC479D3FE62EA40B4D7C98DE4BD899B46F9BC"
+    },
+    {
+      "path": "ffprobe.exe",
+      "bytes": 164864,
+      "sha256": "0C3B03CCBB315DD2D1CAE50702441A59ABA35677E6F4D1DEFEC8FC603944ADF0"
+    },
+    {
+      "path": "avcodec-63.dll",
+      "bytes": 2370048,
+      "sha256": "AC10FEAE49D73E67212FF6F52537371C004DA224340139CF8103694EC97CADC5"
+    },
+    {
+      "path": "avfilter-12.dll",
+      "bytes": 156160,
+      "sha256": "0F6ED76C7A30C6958A3013EA2BE80226949E6C007A9444F2376C7C97920FCB75"
+    },
+    {
+      "path": "avformat-63.dll",
+      "bytes": 764416,
+      "sha256": "72B3CC8577E9E7CB1A320820A7DD31EEEBD6397BEE1BB464BBF54BF4DA28844C"
+    },
+    {
+      "path": "avutil-61.dll",
+      "bytes": 865792,
+      "sha256": "0B0611B85A5C029459B76E3F26C3513BC895DE2AD7FFC9053ADF4B44E465DA9F"
+    },
+    {
+      "path": "swresample-7.dll",
+      "bytes": 129536,
+      "sha256": "1FFBF164911A2F1C56B69005915DC1DEA9330F8F94809577D1151FBC85DD69F6"
+    }
+  ]
+}

@@ -207,3 +207,26 @@ before using this unaccepted candidate path. `Test-AudioCandidate.py` verifies
 candidate and independent runtime identities, tests six generated audio targets
 with both decoders and exercises embedded PNG decoding. Its smoke evidence does
 not replace the full adapter/worker, metadata, compiler or listening review.
+
+Run `python -B tools/audio-engine/Check-AudioBuild.py '<completed FFmpeg workspace>'`
+to verify current recipe identity, generated hardening flags, exact reviewed
+diagnostics and emitted PE security/import metadata. The separate native review
+retains its report beside the candidate and does not authorize production staging.
+
+For the complete curated adapter suite:
+
+```powershell
+.\tools\audio-engine\Test-CuratedAudioAdapter.ps1 `
+  -CandidateDirectory '<completed FFmpeg workspace>' `
+  -FixtureDirectory '<completed evaluation matrix>' `
+  -IndependentDecoderDirectory '<pinned evaluation bin>'
+```
+
+The independent decoder supplies artwork pixel comparisons;
+the candidate performs every production media operation. The latest run passes
+298 checks. `Test-AudioWorker.ps1` accepts `-CandidateDirectory` instead of
+`-PreparedDirectory` for the same curated candidate. Use fresh isolated production
+staging, the generated fixtures, `-ArtworkFixture`, `-IncludeOptimization` and
+`-IncludeConversion` for all 116 workflow checks. The harness copies only the
+exact files in `curated-candidate.json` to its disposable payload. This is not
+production engine staging or a complete redistribution bundle.

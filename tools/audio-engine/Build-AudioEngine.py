@@ -55,6 +55,16 @@ def verify_build(value, dependency, pins):
     record = json.loads((directory / "dependency-build.json").read_text(encoding="utf-8-sig"))
     if record["dependency"] != dependency:
         raise ValueError("Wrong dependency build: " + dependency)
+    recipes = {"Opus": "opus", "OggVorbis": "ogg-vorbis", "LameStable": "lame",
+               "Make": "make", "Nasm": "nasm", "Zlib": "zlib"}
+    recipe = pathlib.Path(__file__).parent / recipes[dependency]
+    if record["recipeSha256"] != digest(recipe / "CMakeLists.txt"):
+        raise ValueError("Rebuild dependency with the current recipe: " + dependency)
+    recipe_files = {path.relative_to(recipe).as_posix(): digest(path) for path in recipe.rglob("*") if path.is_file()}
+    if {item["path"].replace("\\", "/"): item["sha256"] for item in record["recipeFiles"]} != recipe_files:
+        raise ValueError("Dependency recipe files changed: " + dependency)
+    if record["testLogSha256"] != digest(directory / "tests.log"):
+        raise ValueError("Dependency test evidence changed: " + dependency)
     expected_inputs = {"Opus": {"opus"}, "OggVorbis": {"ogg", "vorbis"},
                        "LameStable": {"lame-stable"}, "Make": {"make"}, "Nasm": {"nasm"}, "Zlib": {"zlib"}}
     if {item["id"] for item in record["inputs"]} != expected_inputs[dependency]:
@@ -207,7 +217,8 @@ def main():
         "--enable-demuxer=wav,flac,mp3,mov,ogg", "--enable-muxer=wav,flac,mp3,ipod,ogg,opus,pcm_f64le",
         "--enable-parser=aac,flac,mpegaudio,vorbis,opus,png,mjpeg", "--enable-protocol=file,pipe,fd",
         "--enable-filter=aresample", "--x86asmexe=" + nasm, "--pkg-config=sh " + short_path(resolver),
-        "--extra-cflags=-MD -I" + sdk_path + "/include", "--extra-ldflags=-libpath:" + sdk_path + "/lib"]
+        "--extra-cflags=-MD -GS -guard:cf -guard:ehcont -I" + sdk_path + "/include",
+        "--extra-ldflags=-guard:cf -guard:ehcont -CETCOMPAT -DYNAMICBASE -HIGHENTROPYVA -NXCOMPAT -libpath:" + sdk_path + "/lib"]
     shell_script = workspace / "build.sh"
     checker = pathlib.Path(__file__).with_name("Check-AudioConfiguration.py")
     if (source / "RELEASE").read_text().strip() != "9.0.1" or (source / "VERSION").exists():

@@ -2,8 +2,9 @@ Restricted FFmpeg Audio Build
 ============================
 
 Status: a fresh native candidate builds and passes generated-media smoke checks,
-2026-09-11. No audio payload has been adopted. Compiler/hardening review and the
-full adapter/worker matrix remain required.
+2026-09-11. The hardened candidate now passes the full private adapter and isolated
+worker matrix. Production payload adoption and broader release acceptance remain
+separate.
 
 Build path
 ----------
@@ -132,9 +133,9 @@ SDK `dumpbin` inspection is retained under `pe-inspection`. All seven files are
 x64, with high-entropy ASLR, dynamic base and NX flags. External imports are
 Windows system libraries and the dynamic Microsoft C runtime, including
 `VCRUNTIME140.dll`. No additional codec DLL or network-library import appears.
-This is not proof of sandbox isolation or redistribution readiness. The current
-FFmpeg recipe does not request control-flow guard or CET compatibility; review
-and verify the final hardening flags before adoption.
+This is not proof of sandbox isolation or redistribution readiness. That initial
+FFmpeg recipe did not request control-flow guard or CET compatibility; the
+follow-up below adds explicit compiler/linker flags and binary checks.
 
 [Test-AudioCandidate.py](../tools/audio-engine/Test-AudioCandidate.py) checks a
 completed candidate's recipe/output identities and verifies every independent
@@ -181,16 +182,110 @@ The full native build has zero errors and eleven visible diagnostics:
 - Four `C4101` warnings at `libavutil/ripemd.c:139,196,321,393`: unused local `t`
   variables already annotated `av_unused` in upstream source.
 - Three `C4334` warnings at `libavcodec/vlc.c:75,340,555`: 32-bit shifts promoted
-  to 64-bit pointer/arithmetic results. Review the bounded table/code lengths
-  before accepting these for malformed-input handling.
+  to 64-bit pointer/arithmetic results. Table bits are bounded to 30 before
+  allocation, making the signed shift representable. Code lengths are nonzero
+  and checked against at most 32 before the unsigned shift by 0 through 31;
+  the shifted value then widens into the 64-bit code accumulator. This review
+  does not replace malformed-media tests at the public adapter boundary.
 - One host-link `D9024` warning: MSVC treats `ffbuild/bin2c_host.o` as an object
   despite its Unix suffix. The host utility and final resource compilation finish.
 
 The existing upstream MSVC recipe also supplies its usual warning exclusions;
 this wrapper adds none. The launcher retains an explicitly unaccepted build
-receipt, not an automatic diagnostic approval. Finish compiler/hardening review
-and implement a precise diagnostic gate before promoting the candidate. Then
-rerun the existing private adapter and real-worker matrix with explicit candidate
+receipt, not an automatic diagnostic approval. The hardening follow-up adds a
+separate exact diagnostic gate. Then rerun the existing private adapter and
+real-worker matrix with explicit candidate
 identity handling, preserving the independent decoder. Retain the complete
 source/notice/runtime inventory before production staging. No application,
 Explorer, installed lifecycle or listening acceptance ran in this checkpoint.
+
+
+Explicit Windows hardening follow-up
+------------------------------------
+
+The next fresh recipe requests `/GS`, `/guard:cf` and `/guard:ehcont` for C
+compilation, and `/guard:cf`, `/guard:ehcont`, `/CETCOMPAT`, `/DYNAMICBASE`,
+`/HIGHENTROPYVA` and `/NXCOMPAT` at link time. Both compiler and linker settings
+matter for [control-flow guard](https://learn.microsoft.com/en-us/windows/win32/secbp/control-flow-guard)
+and [exception-continuation metadata](https://learn.microsoft.com/en-us/cpp/build/reference/guard-enable-eh-continuation-metadata).
+These flags supplement the existing codec dependency flags without changing
+upstream sources or removing assembly. They do not create a process sandbox.
+
+[Check-AudioBuild.py](../tools/audio-engine/Check-AudioBuild.py) checks a completed
+current-recipe build. It requires the requested flags to survive in generated
+`config.mak`, then checks each runtime file with SDK `dumpbin`: x64, ASLR, NX,
+CFG instrumentation and function table, CET compatibility, a nonzero security
+cookie and the reviewed local/system/CRT import set. It verifies each inspected
+binary against its build inventory and records tool/checker/binary hashes.
+
+The diagnostic gate accepts at most one of each reviewed exact source path,
+line, warning code and message, plus the exact host-object warning. Unexpected,
+duplicate and misleading-prefix diagnostics fail. It preserves accepted warnings
+and their explanations; it does not add warning suppression. Fourteen guard
+checks pass at `.codex-temp/audio-build-guards-75250275a6384271b729da9740db03c5`.
+These include the actual earlier native log and an existing hardened dependency
+executable, plus altered diagnostics/PE reports. They do not substitute for
+checking the new FFmpeg binaries.
+
+Run `python -B tools/audio-engine/Check-AudioBuild.py '<completed workspace>'`
+before full runtime acceptance. The first hardened run at
+`.codex-temp/audio-ffmpeg-a7f2bd726e5f4a99917e0b892dfabf9a` links but is rejected by
+that gate: 59 Opus, 15 Vorbis and one Ogg object produce `LNK4291`, reporting
+missing exception-continuation metadata. It is not an accepted hardened build.
+The [dependency follow-up](audio-dependency-builds.md) adds the required compiler
+flags and passes fresh tests. The complete subsequent build is
+`.codex-temp/audio-ffmpeg-8982dc9e3a0646f0bc201d7c61784128`. All 10,422 source files
+remain unchanged. Native review `build-review-da841646588b43979188b0d6f2f1a20a`
+passes all seven PE files and the eleven reviewed diagnostics, with zero linker
+continuation warnings and zero errors. The runtime totals 4,844,544 bytes.
+Both executable version/loading checks pass. Independent-decoder smoke also
+passes at `smoke-91ad240d9c6745daa363fdf7033c7e08`.
+
+Configure emitted one transient `Device or resource busy` message while replacing
+its probe source. The retained `configuration-comparison.json` shows no changed
+platform/component macros versus the prior hardened configuration; only scratch
+paths in its descriptive command string differ. The exact component gate and
+all subsequent runtime checks pass. No tool or security configuration was changed
+to bypass that transient condition.
+
+
+Curated adapter and real-worker acceptance
+-----------------------------------------
+
+[curated-candidate.json](../tools/audio-engine/curated-candidate.json) identifies
+this exact seven-file runtime. The private adapters select either this candidate
+or the retained evaluation runtime by the leased probe hash, then require its
+complete DLL membership/hashes and matching encoder hash. Arbitrary manifests
+cannot add an engine identity. All verified files remain held against writes.
+
+[Test-CuratedAudioAdapter.ps1](../tools/audio-engine/Test-CuratedAudioAdapter.ps1)
+runs native review before the complete private suite. Its mandatory independent
+decoder is hash-verified and held by the existing adapter. That decoder supplies
+test-only artwork pixel comparisons, which require raw-video output unavailable
+in the restricted audio build. The candidate performs every production probe,
+audio encode/decode and optimization; no preservation case is skipped.
+
+The run at `adapter-9488c92ca80c4436910f1aef653fec39` passes 298 checks: the existing
+292 plus six runtime-identity checks. New cases refuse changed probe/library
+bytes, missing/extra libraries and a mixed encoder; failed constructors release
+their leases, and verified library leases exclude writers. Existing media cases
+cover conversion pairs, precision, metadata, artwork, malformed inputs, bounded
+processes, cancellation, frame counts and cleanup.
+
+Fresh full application staging is
+`artifacts/production-staging/5165575d4c9844bfbef0927dc20f88e0`, with zero managed
+warnings/errors and passed curated-image/native-shell/payload checks. It still
+excludes the optional audio payload. `Test-AudioWorker.ps1 -CandidateDirectory`
+copies the seven pinned files into its own disposable worker payload and retains
+results at `worker-0530f7fc740d4d7293cd668529eb1b9d` inside the FFmpeg workspace.
+All 116 workflow checks pass: 14 Analyze, 14 FLAC, 16 mixed direct-audio, 52 audio
+conversion/publication and 20 direct conversion checks. This includes all 30
+cross-format pairs, access changes, preserved originals, output collisions,
+cancellation, recovery cleanup and missing-engine behavior.
+
+These results advance local audio acceptance. Complete source/notice/runtime
+distribution, player/listening compatibility, remaining metadata variants,
+visible/assistive UI and installed lifecycle acceptance remain open. Existing
+image contracts were not rerun; the mixed PNG/audio workflows above did run.
+No installation, Explorer registration, native recycling, live licensing,
+signing or publishing took place.

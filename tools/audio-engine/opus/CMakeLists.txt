@@ -25,6 +25,7 @@ set(OPUS_INSTALL_PKG_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
 set(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
 enable_testing()
 add_subdirectory("${OPUS_SOURCE}" opus)
+target_compile_options(opus PRIVATE /GS /guard:cf /guard:ehcont)
 
 # The pinned upstream revision sets MSVC_CLANG_CL to the list "false;BOOL".
 # Correct the resulting per-source GCC flag for MSVC without editing its source.

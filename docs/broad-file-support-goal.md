@@ -65,9 +65,13 @@ native make path/quoting differences; the source overrides and tested script-fil
 mode address them. A fresh full build now succeeds with correct version identity,
 unchanged upstream sources and a seven-file runtime. Six generated audio targets
 pass candidate/independent decoding with exact frame counts; PNG artwork decodes.
-Eleven native diagnostics remain recorded for review, and final hardening,
-adapter/worker replay and source/notice/runtime adoption remain open. This is
-bounded native smoke evidence, not full audio or release acceptance.
+The hardened follow-up now passes exact diagnostic and emitted PE checks, 298
+private adapter checks and 116 isolated worker checks with the curated candidate.
+Fresh isolated staging `5165575d4c9844bfbef0927dc20f88e0` builds with zero managed
+warnings/errors and passed payload/native checks. Audio remains isolated in the
+worker harness; normal staging still excludes it. Complete source/notice/runtime
+distribution, remaining fidelity/compatibility cases and visible acceptance remain
+open. This is local candidate evidence, not release clearance.
 
 The next 2026-09-11 [audio build-tool checkpoint](audio-build-tools.md) builds GNU
 make 4.4.1 and NASM 3.02 in repository scratch. Both pass their two native/workflow
