@@ -85,6 +85,22 @@ Differences are observations requiring review; no visual-loss tolerance is
 silently accepted. These same-engine roundtrips are not Microsoft Office reference
 baselines, customer legacy-file coverage or general fidelity acceptance.
 
+After a retained `-LegacyPdf` run, use:
+
+```powershell
+python -B tools/office-engine/Inspect-OfficePdfComparison.py `
+  '<completed authored legacy evaluation directory>' '<retained qpdf directory>'
+```
+
+This reads the four generated Excel/PowerPoint PDFs through the pinned qpdf
+runtime, retaining decoded page-stream diffs, page boxes, font dictionaries,
+embedded TrueType hashes and structure-role counts in fresh scratch. It verifies
+the complete qpdf archive/payload membership and source PDF hashes, and refuses
+incomplete or mismatched comparison records. It does not run Office or alter PDFs.
+It is a diagnostic for these authored fixtures: its subprocess has a 20-second
+deadline and post-run output-size checks, not a production hostile-PDF sandbox.
+Neither matching fonts nor matching text proves visual or accessibility fidelity.
+
 The child wrapper provides a 60-second deadline, bounded diagnostics and an owned
 process-tree kill attempt. Its profile disables macros, active content, Python
 runtime and automatic update checks. **It is not a filesystem/network sandbox**,

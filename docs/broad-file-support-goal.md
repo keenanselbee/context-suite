@@ -57,6 +57,14 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-11 [Office PDF geometry inspection](office-engine-evaluation.md)
+locates retained Excel/PowerPoint differences in page/text/shape coordinates and
+PowerPoint structure roles, despite identical embedded TrueType bytes within
+each pair. A repeatable read-only diagnostic verifies the pinned qpdf payload and
+authored PDF identities; four invalid-input cases are refused. These findings
+narrow the fidelity investigation without accepting a tolerance or completing
+required Office conversion/isolation.
+
 The 2026-09-11 [Office owner-crash preflight](office-isolation-evaluation.md)
 verifies that an abruptly terminated launcher closes its job and stops two
 identity-checked, previously live application descendants. The same fresh native

@@ -376,3 +376,59 @@ whitespace and repository source-boundary/theme/73-document checks pass. No
 customer implementation, production staging, native AppContainer profile,
 installed state, visible UI or assistive-technology acceptance changed. Required
 Office isolation, broader fidelity and integration remain open.
+
+
+Excel and PowerPoint geometry/structure inspection (2026-09-11)
+--------------------------------------------------------------
+
+[Inspect-OfficePdfComparison.py](../tools/office-engine/Inspect-OfficePdfComparison.py)
+now provides a repeatable read-only inspection of the four retained authored
+Excel/PowerPoint PDFs from a completed `-LegacyPdf` run. It verifies the pinned
+qpdf archive, complete 291-file unpacked membership and contents, and the exact
+PDF hashes from the evaluation record before inspection. It retains full qpdf
+JSON, decoded page streams/diffs, page boxes, font dictionaries/program hashes and
+structure-role counts. No Office process or new rendering runs.
+
+The final inspection uses the earlier expanded-Word fixture run
+`evaluation-5b5f47a7412e4dd692ad4dfd8b4a6d95`; those Excel/PowerPoint fixtures are
+unchanged. Evidence is `.codex-temp/office-pdf-inspection-b690e91d90c14586b97145a389b2ef78`.
+The earlier independent scratch inspection is
+`.codex-temp/office-geometry-2471f82bed0841f1b8f30f68b1704251`.
+
+For Excel, the modern and legacy PDFs keep a 612 by 792 pt page and an identical
+34,060-byte embedded TrueType program (SHA-256
+`9537DC5F1CB5335512B3BEDF0D59E30664B9613F7EF305A1473DFE99F25C9B81`).
+Decoded page operators show concrete placement changes: the first text origin
+moves from `(36.992, 746.306)` to `(37.984, 747.298)` pt; the last right-aligned
+value moves from x `392.202` to `391.096` pt. Grid positions and the outer rectangle
+width differ slightly. Both PDFs contain the same counts of Workbook, Worksheet,
+Table, TR, TD and P structure roles. Equal role counts are not proof of equivalent
+structure trees or reading order.
+
+For PowerPoint, the embedded 34,188-byte TrueType program is also identical within
+the pair (SHA-256
+`8261B31846B92CA39984DA974875415DA8A595D5BA0C5FDF0C00255FD28E8F5E`).
+Page height changes from `405.014173228346` to `405.070866141732` pt. The first text
+origin changes from `(43.058, 337.493)` to `(43.087, 337.52)` pt, and the shape and
+background path operators change. Both pages exhibit the same pattern. Structure
+also changes: modern output has two Div and two P elements; legacy output has two
+Div, two L and two LI elements. The page marked-content operators agree with that
+role change. Do not discard these differences because the extracted visible text
+matches or because the coordinate differences are small.
+
+These observations rule out differing embedded TrueType program bytes as the
+explanation for these paired results. They locate differences in generated PDF
+geometry and structure, but do not isolate the underlying legacy export/import
+or layout step. The same-engine legacy roundtrip still is not an independent
+Microsoft Office baseline. Broader layout, print settings, semantic tagging and
+actual screen-reader acceptance remain required; no new fidelity tolerance is
+accepted here.
+
+The inspection command passes on the retained inputs without changing PDF bytes.
+Four negative cases refuse outside-scratch input, the wrong evaluation mode,
+swapped modern/legacy labels and a changed PDF. Their evidence is
+`.codex-temp/office-engine/inspection-guards-69d48e1fd498490fbb437ff6ea85a9de`.
+Python syntax and repository boundary/theme/73-document/whitespace checks pass.
+No production, media-worker, application UI, AppContainer or installed acceptance
+was rerun. Output limits in this diagnostic are checked after subprocess capture;
+it is not a production parser or a hostile-document execution boundary.
