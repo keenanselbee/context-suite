@@ -73,8 +73,9 @@ With an earlier deep Unicode disposable profile, the completed PowerPoint fixtur
 returned exit code zero, empty stdout/stderr and no PDF. Adding a complete master,
 layout and theme did not resolve that failure. A diagnostic load-to-FODP also
 returned no output. The same completed fixture succeeded with a shorter ASCII
-profile. Length and Unicode changed together, so neither is established as the
-cause. Keep that failure open for a controlled profile-path matrix. The temporary
+profile. Length and Unicode changed together in that initial experiment. The
+controlled follow-up below now isolates a profile/temp-root length dependency.
+The temporary
 FODP diagnostic is removed from the committed runner; OpenDocument conversion is
 not part of the selected product scope.
 
@@ -133,7 +134,8 @@ Remaining implementation and acceptance
    headers/footers, fields, tracked changes, charts, images, bidirectional text,
    font substitution/embedding and authored print areas/page breaks. Resolve
    formula recalculation, markup, notes and static animation/media policies.
-3. Resolve profile-path behavior, font/runtime dependencies, payload size,
+3. Carry the measured short-profile policy into the eventual isolated worker,
+   investigate the exact engine failure, and resolve font/runtime dependencies, payload size,
    dependency/license/source-delivery inventory and maintenance. Do not infer
    redistribution readiness or a portable runtime from this unpacked smoke test.
 4. Implement the accepted family adapters, bounded worker protocol, independent
@@ -145,3 +147,49 @@ Remaining implementation and acceptance
 Signing, native installer lifecycle, live commerce and the remaining commercial
 release gates stay separate. No Office family is removed from the required launch
 scope merely because the first candidate needs more work.
+
+Controlled profile-path experiments (2026-09-10)
+------------------------------------------------
+
+The runner now has two diagnostic modes. Each reuses one generated PowerPoint
+input, the same output path and the same fixed export options. Successful outputs
+are independently parsed, rendered and checked for expected text/page geometry;
+every attempt checks the source hash. Missing output with exit zero is recorded
+as a failed conversion, not counted as a pass. Matrix completion itself is not
+conversion acceptance.
+
+`-ProfileMatrix` compares a 90-character sibling profile with a 154-character
+deeper profile, each in ASCII and Unicode. Both short profiles pass (8,433 and
+8,387 ms); both deeper profiles return zero with empty diagnostics and no PDF.
+The result is under prepared Office evaluation
+`evaluation-1ff6f94d7c064de3a96375bbd37c2205`, with log
+`.codex-temp/office-profile-matrix.log`.
+
+`-ProfileLengths` holds the parent directory, path depth and ASCII encoding fixed
+while padding only the final profile directory name. This removes the depth and
+Unicode differences from the first matrix:
+
+| Profile path characters | Result | Conversion time |
+| --- | --- | --- |
+| 90 | Two independently validated visible slides | 9,291 ms |
+| 110 | Two independently validated visible slides | 8,928 ms |
+| 130 | Two independently validated visible slides | 8,629 ms |
+| 150 | Exit zero, no PDF | Recorded failed conversion |
+| 170 | Exit zero, no PDF | Recorded failed conversion |
+
+Evidence: `evaluation-91e84705a5b645bf8c355031593fe555/office-evaluation.json`
+beneath the pinned Office directory, and `.codex-temp/office-profile-lengths.log`.
+UserInstallation and TEMP/TMP/APPDATA/LOCALAPPDATA all derive from that profile,
+so this establishes a length dependency in that combined profile/temp policy;
+it does not identify a failing internal filename, exact cutoff, or which variable
+is responsible. It does not establish a general LibreOffice path limit. Keep
+ordinary evaluation profiles short (90 characters in this repository), and
+validate outputs regardless of process exit code. Other repository locations
+may not fit the fixed diagnostic lengths and are explicitly refused.
+
+The ordinary short-profile regression passes Word, Excel and PowerPoint again
+(8,680 / 8,215 / 8,329 ms), with unchanged originals and the same independent
+page/text/geometry checks. Evidence is under
+`evaluation-ffd14d61fd9048b58946333d1443d485`, with log
+`.codex-temp/office-profile-regression.log`. Native isolation, broader fidelity,
+production integration and the remaining Office acceptance gates remain open.

@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $PreparedDirectory, [Parameter(Mandatory)][string] $PdfPreparedDirectory,
-    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory)
+    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths)
 $ErrorActionPreference = 'Stop'
+if ($ProfileMatrix -and $ProfileLengths) { throw 'Choose one profile experiment at a time.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $office = (Resolve-Path -LiteralPath $PreparedDirectory).Path
 $pdf = (Resolve-Path -LiteralPath $PdfPreparedDirectory).Path
@@ -31,6 +32,10 @@ if ((Get-FileHash -LiteralPath $probe).Hash -ne $build.sha256 -or
     throw 'PDFium probe identity changed.'
 }
 $qpdf = Join-Path $pdf 'unpacked\qpdf-12.4.1-msvc64\bin\qpdf.exe'
-& dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- $office $qpdf $probe
+$probeArguments = @($office, $qpdf, $probe)
+if ($ProfileMatrix) { $probeArguments += 'ProfileMatrix' }
+if ($ProfileLengths) { $probeArguments += 'ProfileLengths' }
+& dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- @probeArguments
 if ($LASTEXITCODE) { throw 'Office evaluation failed; inspect retained scratch evidence.' }
 Write-Output 'Generated passive modern Office documents only. No arbitrary-document isolation, installer or production acceptance implied.'
+if ($ProfileMatrix -or $ProfileLengths) { Write-Output 'Profile-matrix completion records observations, including any failed conversions; inspect each result.' }

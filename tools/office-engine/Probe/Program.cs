@@ -4,7 +4,11 @@ using System.Text;
 using System.Text.Json;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint")) return 2;
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths")) return 2;
+var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths";
+var profileStyles = !profileMatrix ? new[] { "default" } : args[3] == "ProfileLengths"
+    ? new[] { "length-90", "length-110", "length-130", "length-150", "length-170" }
+    : new[] { "short-ascii", "short-unicode", "long-ascii", "long-unicode" };
 var prepared = Path.GetFullPath(args[0]); var qpdf = Path.GetFullPath(args[1]); var pdfium = Path.GetFullPath(args[2]);
 if (!prepared.Contains(Path.DirectorySeparatorChar + ".codex-temp" + Path.DirectorySeparatorChar + "office-engine" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
     throw new InvalidDataException("Use prepared office-engine scratch.");
@@ -17,52 +21,82 @@ Console.WriteLine("Office evaluation evidence: " + root);
 var version = await RunOffice("version", ["--version"]); Console.WriteLine(version.Output.Trim());
 foreach (var (name, filter, expectedPages) in new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) })
 {
-    if (args.Length == 4 && !name.StartsWith(args[3], StringComparison.Ordinal)) continue;
-    var source = Path.Combine(fixtures, name); var hash = Hash(source);
-    var folder = Path.Combine(root, Path.GetFileNameWithoutExtension(name)); Directory.CreateDirectory(folder);
-    var options = new Dictionary<string, object>();
-    foreach (var (key, value) in new[] { ("UseLosslessCompression", true), ("ReduceImageResolution", false), ("UseTaggedPDF", true),
-        ("ExportBookmarks", true), ("ExportNotes", false), ("ExportNotesPages", false), ("ExportOnlyNotesPages", false),
-        ("ExportHiddenSlides", false), ("SinglePageSheets", false), ("ExportFormFields", false), ("IsAddStream", false), ("EncryptFile", false) })
-        options[key] = new { type = "boolean", value = value ? "true" : "false" };
-    options["SelectPdfVersion"] = new { type = "long", value = "17" };
-    var conversion = await RunOffice(Path.GetFileNameWithoutExtension(name), ["--convert-to", "pdf:" + filter + ":" + JsonSerializer.Serialize(options), "--outdir", folder, source]);
-    File.WriteAllText(Path.Combine(folder, "conversion.json"), JsonSerializer.Serialize(conversion, new JsonSerializerOptions { WriteIndented = true }));
-    var pdf = Path.Combine(folder, Path.GetFileNameWithoutExtension(name) + ".pdf");
-    if (!File.Exists(pdf) || new FileInfo(pdf).Length is <= 0 or > 16 * 1024 * 1024) throw new InvalidDataException("Expected one bounded PDF: " + name);
-    await Run(qpdf, ["--check", pdf], root);
-    var inspect = await Run(pdfium, ["inspect", pdf], root);
-    using var facts = JsonDocument.Parse(inspect.Output);
-    var pages = facts.RootElement.GetProperty("pages").GetInt32();
-    if (pages != expectedPages) throw new InvalidDataException($"{name}: expected {expectedPages} pages, got {pages}.");
-    var render = await Run(pdfium, ["render", pdf, Path.Combine(folder, "page"), "96", "opaque", "no-widgets"], root);
-    using var rendered = JsonDocument.Parse(render.Output);
-    var text = PdfTextReader.Read(pdf);
-    File.WriteAllText(Path.Combine(folder, "extracted-text.json"), JsonSerializer.Serialize(text, new JsonSerializerOptions { WriteIndented = true }));
-    var expectedWidth = filter == "impress_pdf_Export" ? 720 : 612;
-    var expectedHeight = filter == "impress_pdf_Export" ? 405 : 792;
-    if (rendered.RootElement.GetProperty("pages").EnumerateArray().Any(page => Math.Abs(page.GetProperty("widthPoints").GetDouble() - expectedWidth) > 0.1 ||
-        Math.Abs(page.GetProperty("heightPoints").GetDouble() - expectedHeight) > 0.1)) throw new InvalidDataException("Authored page geometry changed.");
-    var textMatches = filter switch
+    if (args.Length == 4 && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
+    foreach (var profileStyle in profileStyles)
     {
-        "writer_pdf_Export" => text.Length == 2 && text[0].Contains("page one") && text[0].Contains("café ü") && text[0].Contains("Value 42") && text[1].Contains("page two"),
-        "calc_pdf_Export" => text.Length == 1 && text[0].Contains("Excel café") && text[0].Contains("Formula result") && text[0].Contains('5') && !text[0].Contains("HIDDEN") && !text[0].Contains("OUTSIDE"),
-        _ => text.Length == 2 && text[0].Contains("slide 1 café") && text[1].Contains("slide 3 café") && text.All(page => !page.Contains("HIDDEN"))
-    };
-    if (!textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
-    if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
-    results.Add(new { Source = name, SourceSha256 = hash, PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds,
-        ConversionOutput = conversion.Output, Diagnostics = conversion.Error, Text = text, Render = rendered.RootElement.Clone() });
-    File.WriteAllText(Path.Combine(root, "office-evaluation.json"), JsonSerializer.Serialize(new { Version = version.Output.Trim(), Results = results,
-        Scope = "Generated passive modern Office fixtures only; bounded text/geometry checks, not broad font/layout fidelity, arbitrary-document isolation or launch acceptance." }, new JsonSerializerOptions { WriteIndented = true }));
-    Console.WriteLine($"PASS: {name}: {pages} independently parsed/rendered pages, expected text/geometry, original unchanged, {conversion.Milliseconds} ms.");
+        var source = Path.Combine(fixtures, name); var hash = Hash(source);
+        var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name)); Directory.CreateDirectory(folder);
+        // Keep input and output paths identical across profile variants, then retain each result separately.
+        var outputFolder = profileMatrix ? Path.Combine(root, "conversion") : folder; Directory.CreateDirectory(outputFolder);
+        var options = new Dictionary<string, object>();
+        foreach (var (key, value) in new[] { ("UseLosslessCompression", true), ("ReduceImageResolution", false), ("UseTaggedPDF", true),
+            ("ExportBookmarks", true), ("ExportNotes", false), ("ExportNotesPages", false), ("ExportOnlyNotesPages", false),
+            ("ExportHiddenSlides", false), ("SinglePageSheets", false), ("ExportFormFields", false), ("IsAddStream", false), ("EncryptFile", false) })
+            options[key] = new { type = "boolean", value = value ? "true" : "false" };
+        options["SelectPdfVersion"] = new { type = "long", value = "17" };
+        var conversion = await RunOffice(Path.GetFileNameWithoutExtension(name), ["--convert-to", "pdf:" + filter + ":" + JsonSerializer.Serialize(options), "--outdir", outputFolder, source], profileStyle);
+        File.WriteAllText(Path.Combine(folder, "conversion.json"), JsonSerializer.Serialize(conversion, new JsonSerializerOptions { WriteIndented = true }));
+        var pdf = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(name) + ".pdf");
+        if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
+        if (!File.Exists(pdf) && profileMatrix)
+        {
+            results.Add(new { Source = name, SourceSha256 = hash, ProfileStyle = profileStyle, Completed = false, Reason = "Exit zero but no PDF", conversion });
+            SaveResults();
+            Console.WriteLine($"OBSERVED: {profileStyle}, {conversion.Profile!.Length} profile characters: exit zero without PDF.");
+            continue;
+        }
+        if (!File.Exists(pdf) || new FileInfo(pdf).Length is <= 0 or > 16 * 1024 * 1024) throw new InvalidDataException("Expected one bounded PDF: " + name);
+        await Run(qpdf, ["--check", pdf], root);
+        var inspect = await Run(pdfium, ["inspect", pdf], root);
+        using var facts = JsonDocument.Parse(inspect.Output);
+        var pages = facts.RootElement.GetProperty("pages").GetInt32();
+        if (pages != expectedPages) throw new InvalidDataException($"{name}: expected {expectedPages} pages, got {pages}.");
+        var render = await Run(pdfium, ["render", pdf, Path.Combine(folder, "page"), "96", "opaque", "no-widgets"], root);
+        using var rendered = JsonDocument.Parse(render.Output);
+        var text = PdfTextReader.Read(pdf);
+        File.WriteAllText(Path.Combine(folder, "extracted-text.json"), JsonSerializer.Serialize(text, new JsonSerializerOptions { WriteIndented = true }));
+        var expectedWidth = filter == "impress_pdf_Export" ? 720 : 612;
+        var expectedHeight = filter == "impress_pdf_Export" ? 405 : 792;
+        if (rendered.RootElement.GetProperty("pages").EnumerateArray().Any(page => Math.Abs(page.GetProperty("widthPoints").GetDouble() - expectedWidth) > 0.1 ||
+            Math.Abs(page.GetProperty("heightPoints").GetDouble() - expectedHeight) > 0.1)) throw new InvalidDataException("Authored page geometry changed.");
+        var textMatches = filter switch
+        {
+            "writer_pdf_Export" => text.Length == 2 && text[0].Contains("page one") && text[0].Contains("café ü") && text[0].Contains("Value 42") && text[1].Contains("page two"),
+            "calc_pdf_Export" => text.Length == 1 && text[0].Contains("Excel café") && text[0].Contains("Formula result") && text[0].Contains('5') && !text[0].Contains("HIDDEN") && !text[0].Contains("OUTSIDE"),
+            _ => text.Length == 2 && text[0].Contains("slide 1 café") && text[1].Contains("slide 3 café") && text.All(page => !page.Contains("HIDDEN"))
+        };
+        if (!textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
+        if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
+        results.Add(new { Source = name, SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile,
+            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds,
+            ConversionOutput = conversion.Output, Diagnostics = conversion.Error, Text = text, Render = rendered.RootElement.Clone() });
+        if (profileMatrix) File.Move(pdf, Path.Combine(folder, Path.GetFileName(pdf)));
+        SaveResults();
+        Console.WriteLine($"PASS: {name} ({profileStyle}, {conversion.Profile!.Length} profile characters): {pages} independently parsed/rendered pages, expected text/geometry, original unchanged, {conversion.Milliseconds} ms.");
+    }
 }
 return 0;
 
-async Task<RunResult> RunOffice(string name, string[] arguments)
+void SaveResults()
+{
+    File.WriteAllText(Path.Combine(root, "office-evaluation.json"), JsonSerializer.Serialize(new { Version = version.Output.Trim(), ProfileMatrix = profileMatrix,
+        Mode = profileMatrix ? args[3] : "Conversion", Results = results,
+        Scope = "Generated passive modern Office fixtures only; bounded text/geometry checks, not broad font/layout fidelity, arbitrary-document isolation or launch acceptance. Profile-matrix observations include failed conversions." }, new JsonSerializerOptions { WriteIndented = true }));
+}
+
+async Task<RunResult> RunOffice(string name, string[] arguments, string profileStyle = "default")
 {
     // Keep the disposable profile short while inputs/outputs still exercise Unicode paths.
-    var profile = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(prepared)!)!, "office-profile-" + Guid.NewGuid().ToString("N"));
+    var suffix = profileStyle.EndsWith("-unicode", StringComparison.Ordinal) ? "ü" : "u";
+    var profile = profileStyle.StartsWith("long-", StringComparison.Ordinal)
+        ? Path.Combine(root, "profiles", "PowerPoint " + suffix)
+        : Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(prepared)!)!, "office-profile-" + Guid.NewGuid().ToString("N") + suffix);
+    if (profileStyle.StartsWith("length-", StringComparison.Ordinal))
+    {
+        var length = int.Parse(profileStyle[7..], System.Globalization.CultureInfo.InvariantCulture);
+        if (length < profile.Length || length > 170) throw new InvalidDataException("Profile length experiment cannot fit this repository location.");
+        profile = profile.PadRight(length, 'p'); // Same ASCII parent and depth; change only leaf length.
+    }
     var user = Path.Combine(profile, "user"); Directory.CreateDirectory(user);
     File.AppendAllText(Path.Combine(root, "profiles.txt"), name + "=" + profile + Environment.NewLine);
     File.WriteAllText(Path.Combine(user, "registrymodifications.xcu"), """
