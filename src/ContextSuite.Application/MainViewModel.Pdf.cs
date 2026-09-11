@@ -7,6 +7,18 @@ namespace ContextSuite.Application;
 
 internal sealed partial class MainViewModel
 {
+    internal async Task<ConfirmedImagePdf?> ConfirmImagePdfOrderAsync(ImagePdfPlan plan, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        if (!plan.NeedsOrderReview) return plan.Confirm(false);
+        if (ImagePdfOrderRequested is null) return null;
+        using var decision = new ImagePdfOrderViewModel(plan, trial ?? throw new InvalidOperationException("Missing conversion access."));
+        Summary = "Review the PDF page order. No files changed by this batch.";
+        var confirmed = await ImagePdfOrderRequested(decision, token);
+        token.ThrowIfCancellationRequested();
+        return confirmed;
+    }
+
     private async Task ExecuteConversionPlansAsync(OperationRequest request, FileRow[] rows, ConfirmedImageBatch? images,
         List<PdfRasterSource> documents, CancellationToken token)
     {

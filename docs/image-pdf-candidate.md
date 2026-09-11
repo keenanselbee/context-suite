@@ -1,8 +1,9 @@
 Combined Image PDF Candidate
 ============================
 
-Status: ordered plan, writer, independent validator and isolated worker/publication
-implemented with automated evidence; order UI and customer command remain pending.
+Status: ordered plan, writer, independent validator, isolated worker/publication
+and focused order dialog implemented with automated evidence; direct command
+integration and visible acceptance remain pending.
 
 Owner decision and page-order policy
 -----------------------------------
@@ -30,8 +31,9 @@ one-PDF-per-image proposal. The intended Convert > PDF behavior is:
   Overwrite originals cannot recycle any member of a combined selection.
 
 Immutable plan/order enforcement, writing, independent validation and transactional
-copy publication are implemented. The focused UI and menu command are next;
-isolated execution tests do not establish existing customer UI or visual acceptance.
+copy publication and the focused order dialog are implemented. The menu command
+integration is next; isolated execution and hidden-view tests do not establish
+visible acceptance or an enabled customer action.
 
 Fixed image representation
 --------------------------
@@ -273,7 +275,60 @@ Its staged files match the tested `34a2404c14e047e4a0347141f44d37f5` payload
 byte-for-byte, excluding the stage-specific inventory. No installed change,
 recycling, live Polar, signing purchase or publishing ran.
 
-Next: focused page-order review and direct Convert > PDF, integrated quiet results
-and retry, then broader native interruption/resource/fidelity/reader acceptance
-and engine adoption. All required Office conversions and remaining broad-file
-and commercial-release gates stay open.
+The following checkpoint adds the focused page-order review. Direct Convert > PDF,
+integrated quiet results and retry, broader native interruption/resource/fidelity/
+reader acceptance and engine adoption remain open. All required Office conversions
+and remaining broad-file and commercial-release gates stay open.
+
+Focused page-order review checkpoint (2026-09-10)
+------------------------------------------------
+
+`ImagePdfOrderWindow` and its view model implement a numbered, single-selection
+list with filenames and full parent folders, Move up/down buttons, Alt+Up/Down
+bindings and Cancel/Escape. The first image determines the proposed name and
+default folder; a saved output folder still takes precedence. Existing-name
+collision numbering is explained. Overlong output names block Convert with a
+remedy: move another image to page 1 or cancel and shorten the filename.
+
+The model preserves exact source facts and the captured settings, starts in
+request order, and moves the selected image without losing selection. It returns
+one immutable ordered confirmation, prevents double submission and further moves,
+and never admits work. Access refresh preserves the order, updates the actual
+Convert button and provides an activation action when blocked. Older concurrent
+access replies cannot override a newer status; closing cancels access checks.
+The application presenter makes License a child of the order review, refreshes
+access on closing License and suppresses delayed progress while reviewing.
+The orchestration helper bypasses review for one image and disposes cancelled
+multi-image reviews. The direct dispatch/combined-result retry path does not call
+this helper yet; no new customer menu command is enabled by this checkpoint.
+
+The list virtualizes up to 4,096 rows and has a bounded height. The remaining
+content scrolls at the minimum window size while status and action buttons stay
+outside the scroll area. Initial keyboard focus targets the first page. Hidden
+tests verify selection movement, accessible row names, keyboard bindings, actual
+button enablement, long filenames, last-page selection and minimum-size bounds.
+They caught and fixed a missing command notification that left Move down visibly
+enabled at the last page. These are automated WPF properties/layout checks, not
+proof of actual focus, key delivery, screen-reader announcements, theme contrast,
+other DPI levels or visual usability.
+
+Fresh evidence: **1,669 foundation checks** (18 new order/model/orchestration
+checks), **102 hidden-view checks** (16 new including window instantiation/live
+text), and **10 isolated licensing-harness checks**. Release staging
+`artifacts/production-staging/04a6c35e61904d87b21b19f93eb4003d` builds with zero
+warnings/errors and passes curated-engine, dependency, notice and allowlist
+verification using `-SkipShell`. Logs are `.codex-temp/image-pdf-order-foundation.log`,
+`image-pdf-order-views.log`, `image-pdf-order-license.log` and
+`image-pdf-order-staging-build.log`. The earlier worker/native suites were not
+rerun for this UI-only slice. Optional native engines remain excluded from normal
+staging. No app window, installer, registration, recycling or live provider ran.
+
+Build deviation: the initial build omitted `-StagingId` and refreshed the ignored
+development payload at `artifacts/production/Release`; this was reported to the
+owner. It did not run installation or registration commands. The subsequent build
+used the fresh isolated staging path above. Do not treat the initial build as an
+isolated payload or claim the development payload remained unchanged.
+
+Next: connect Convert > PDF to the review and worker, with one combined result,
+quiet success and whole-document retry retaining the reviewed order. Required
+Office transformations and the full broad-file/release gates remain open.

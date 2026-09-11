@@ -22,7 +22,7 @@ internal static class ViewContracts
         // not be called. No production licensing state is touched.
         var licenseModel = new LicenseViewModel(new(new UnusedLicenseService(),
             new LicenseStore(Path.Combine(Path.GetTempPath(), "unused-license-view-contract.bin"), LicenseEnvironment.Sandbox)));
-        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new LicenseWindow(licenseModel), new AudioConversionWindow()];
+        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new LicenseWindow(licenseModel), new AudioConversionWindow(), new ImagePdfOrderWindow()];
         try
         {
             foreach (var window in windows)
@@ -40,6 +40,7 @@ internal static class ViewContracts
             }
             var main = windows[0]; var convert = windows[1]; var optimize = windows[2]; var settings = windows[3]; var license = windows[4];
             var audio = windows[5];
+            passed += ImagePdfOrderViewContracts.Run(windows[6]);
             Check(!Find<Expander>(audio, "AudioConversionFiles").IsExpanded && Find<Button>(audio, "CancelAudioConversion").IsCancel &&
                 !Find<Button>(audio, "ConfirmAudioConversion").IsDefault,
                 "audio decision: files start collapsed; Escape cancels and Enter does not implicitly confirm");
@@ -80,7 +81,7 @@ internal static class ViewContracts
                 "audio decision: closing files restores compact content height");
             foreach (var (window, id) in new[] { (main, "BatchSummary"), (main, "RecoveryNotice"), (main, "InputNotice"),
                 (convert, "ConversionPlanStatus"), (convert, "ConversionPreviewStatus"), (convert, "ConversionTrialStatus"),
-                (optimize, "OptimizationPlanStatus"), (optimize, "OptimizationTrialStatus"), (settings, "SettingsMessage"), (license, "LicenseStatus"), (audio, "AudioConversionStatus") })
+                (optimize, "OptimizationPlanStatus"), (optimize, "OptimizationTrialStatus"), (settings, "SettingsMessage"), (license, "LicenseStatus"), (audio, "AudioConversionStatus"), (windows[6], "ImagePdfOrderStatus") })
             {
                 var control = Find<StatusTextBlock>(window, id);
                 control.Text = "A file needs attention.";

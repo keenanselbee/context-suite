@@ -57,6 +57,17 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-10 focused image-PDF order dialog now provides numbered filenames and
+folders, keyboard move commands, a first-page-derived destination and access
+refresh without losing order. The helper confirms one image directly and several
+through one review; direct menu/combined-result retry integration remains next.
+Fresh checks pass 1,669 foundation, 102 hidden-view and 10 isolated license-harness
+contracts. Isolated Release staging `04a6c35e61904d87b21b19f93eb4003d` passes
+payload checks with zero warnings/errors. The first build also refreshed the
+ignored development payload because its staging ID was omitted; see
+[the evidence and build deviation](image-pdf-candidate.md). Visible/accessibility
+acceptance and optional-engine production adoption remain open.
+
 The 2026-09-10 combined-PDF worker/publication checkpoint connects ordered images
 to the optional validator and one transactional PDF copy under normal paid/trial
 admission. The app locks and journals every original through final publication;
@@ -65,7 +76,8 @@ passes 56 checks, including five actual app-crash checkpoints, and the regressio
 passes 1,851 foundation/image-worker checks plus 25 PDF-page and 18 direct-page
 checks. Fresh isolated Release stage `2cdfc9bd64a242f4ae0cd4321797a4c3` passes
 payload checks using `-SkipShell` and matches the tested payload bytes. The order
-dialog and direct Convert > PDF action are still pending, as are native engine
+dialog was added by the later checkpoint above. The direct Convert > PDF action
+is still pending, as are native engine
 adoption and broader acceptance. See [the detailed evidence](image-pdf-candidate.md).
 
 The independent image-PDF validation checkpoint (2026-09-10) adds an optional

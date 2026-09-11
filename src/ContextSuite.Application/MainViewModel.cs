@@ -51,6 +51,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     public event Action<string>? SettingsRequested;
     public event Func<ConversionViewModel, CancellationToken, Task<ConfirmedImageBatch?>>? ConversionRequested;
     public event Func<AudioConversionViewModel, CancellationToken, Task<ConfirmedAudioConversion?>>? AudioConversionRequested;
+    public event Func<ImagePdfOrderViewModel, CancellationToken, Task<ConfirmedImagePdf?>>? ImagePdfOrderRequested;
     public event Action<OperationRequest, FileRow[]>? QuickBatchStarted;
     public event Action<OperationRequest, FileRow[]>? QuickBatchCompleted;
     public event PropertyChangedEventHandler? PropertyChanged;

@@ -5,6 +5,7 @@ using ContextSuite.Core.Transport;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Audio;
+using ContextSuite.Core.Pdf;
 
 namespace ContextSuite.Application;
 
@@ -22,6 +23,7 @@ public partial class App : System.Windows.Application
     private string _requestedSettingsSection = "convert";
     private ConversionWindow? _conversionWindow;
     private AudioConversionWindow? _audioConversionWindow;
+    private ImagePdfOrderWindow? _imagePdfOrderWindow;
     private readonly QuietWorkflow _quiet = new();
     private readonly System.Windows.Threading.DispatcherTimer _quietTimer = new() { Interval = TimeSpan.FromMilliseconds(200) };
     private bool _userOpened;
@@ -81,6 +83,7 @@ public partial class App : System.Windows.Application
             _viewModel.SettingsRequested += ShowSettings;
             _viewModel.ConversionRequested += ShowConversionAsync;
             _viewModel.AudioConversionRequested += ShowAudioConversionAsync;
+            _viewModel.ImagePdfOrderRequested += ShowImagePdfOrderAsync;
             var window = new MainWindow { DataContext = _viewModel };
             window.InputNotice.Text = _settings.Warning ?? "";
             MainWindow = window;
@@ -154,7 +157,7 @@ public partial class App : System.Windows.Application
         if (_paidLicense is null || _closing) return;
         if (_licenseWindow is not null) { _licenseWindow.Activate(); return; }
         _licenseWindow = new(new LicenseViewModel(_paidLicense));
-        var owner = _audioConversionWindow as Window ?? _conversionWindow as Window ?? _settingsWindow ?? MainWindow;
+        var owner = _imagePdfOrderWindow as Window ?? _audioConversionWindow as Window ?? _conversionWindow as Window ?? _settingsWindow ?? MainWindow;
         if (owner.IsVisible) _licenseWindow.Owner = owner;
         _licenseWindow.Closed += async (_, _) =>
         {
@@ -162,6 +165,7 @@ public partial class App : System.Windows.Application
             if (_closing) return;
             if (_conversionWindow?.DataContext is ConversionViewModel converter) await converter.RefreshAccessAsync();
             if (_audioConversionWindow?.DataContext is AudioConversionViewModel audio) await audio.RefreshAccessAsync();
+            if (_imagePdfOrderWindow?.DataContext is ImagePdfOrderViewModel order) await order.RefreshAccessAsync();
         };
         _licenseWindow.Show();
     }
@@ -191,7 +195,7 @@ public partial class App : System.Windows.Application
     private async void CheckQuietWindow(object? sender, EventArgs e)
     {
         if (_closing || _viewModel is null) return;
-        if (!_userOpened && _conversionWindow is null && _audioConversionWindow is null && _quiet.ShowProgress(DateTimeOffset.UtcNow)) MainWindow.Show();
+        if (!_userOpened && _conversionWindow is null && _audioConversionWindow is null && _imagePdfOrderWindow is null && _quiet.ShowProgress(DateTimeOffset.UtcNow)) MainWindow.Show();
         if (_viewModel.IsBusy || _userOpened || _quiet.NeedsAttention || _settingsWindow is not null || _openingSettings || _licenseWindow is not null) return;
         MainWindow.Hide();
         // A bounded refresh may finish quietly before exit so short image jobs do
@@ -243,6 +247,22 @@ public partial class App : System.Windows.Application
         using var registration = token.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
         try { await decision.RefreshAccessAsync(); return await completion.Task; }
         finally { decision.Confirmed -= Confirmed; _audioConversionWindow = null; }
+    }
+
+    private async Task<ConfirmedImagePdf?> ShowImagePdfOrderAsync(ImagePdfOrderViewModel decision, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var completion = new TaskCompletionSource<ConfirmedImagePdf?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var window = new ImagePdfOrderWindow { DataContext = decision };
+        if (MainWindow.IsVisible) window.Owner = MainWindow;
+        _imagePdfOrderWindow = window;
+        void Confirmed(ConfirmedImagePdf confirmed) { completion.TrySetResult(confirmed); window.Close(); }
+        decision.Confirmed += Confirmed;
+        window.Closed += (_, _) => { decision.Dispose(); completion.TrySetResult(null); };
+        window.Show();
+        using var registration = token.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
+        try { await decision.RefreshAccessAsync(); return await completion.Task; }
+        finally { decision.Confirmed -= Confirmed; _imagePdfOrderWindow = null; }
     }
 
     private async void ShowSettings(string section)

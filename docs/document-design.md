@@ -1,7 +1,7 @@
 Document Support Design
 =======================
 
-Status: bounded package analysis, optional direct structural PDF optimization and PDF-to-PNG implemented with automated evidence; engine adoption, remaining transformations and launch acceptance pending
+Status: bounded package analysis, optional direct structural PDF optimization and PDF-to-PNG implemented with automated evidence; combined image-PDF backend and order dialog implemented, direct integration pending; engine adoption, remaining transformations and launch acceptance pending
 
 Boundary
 --------

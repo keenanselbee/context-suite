@@ -141,6 +141,7 @@ try
     ImagePdfContracts.Run(args[0], Check);
     ImagePdfValidationContracts.Run(args[0], Check);
     await ImagePdfBatchContracts.RunAsync(args[0], Check);
+    await ImagePdfOrderContracts.RunAsync(args[0], Check);
     await PdfBatchContracts.RunAsync(args[0], Check);
     FlacSeekContracts.Run(Check);
     await FlacBatchContracts.RunAsync(args[0], Check);

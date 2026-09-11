@@ -38,6 +38,7 @@
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Pdf.cs" Link="Runtime\MainViewModel.Pdf.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\FileRow.Pdf.cs" Link="Runtime\FileRow.Pdf.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\AudioConversionViewModel.cs" Link="Runtime\AudioConversionViewModel.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\ImagePdfOrderViewModel.cs" Link="Runtime\ImagePdfOrderViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.cs" Link="Runtime\ConversionViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.Dds.cs" Link="Runtime\ConversionViewModel.Dds.cs" />
   </ItemGroup>
