@@ -67,10 +67,15 @@ try
                 audio ??= new AudioProbeAdapter(Path.Combine(AppContext.BaseDirectory, "audio-engine"));
                 reply = new(1, command.RequestId, [], Audio: await audio.ProbeAsync(command.AudioBytes!, lifetime.Token));
             }
-            else if (command.Command == "pdf-probe")
+            else if (command.Command is "pdf-probe" or "pdf-file-probe" or "pdf-optimize")
             {
                 pdf ??= new PdfProbeAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-engine"), args[5]);
-                reply = new(1, command.RequestId, [], Pdf: await pdf.ProbeAsync(command.PdfBytes!, lifetime.Token));
+                reply = command.Command switch
+                {
+                    "pdf-probe" => new(1, command.RequestId, [], Pdf: await pdf.ProbeAsync(command.PdfBytes!, lifetime.Token)),
+                    "pdf-file-probe" => new(1, command.RequestId, [], PdfSource: await pdf.ProbeFileAsync(command.PdfFile!, lifetime.Token)),
+                    _ => new(1, command.RequestId, [], PdfResult: await pdf.OptimizeFileAsync(command.PdfWork!, lifetime.Token))
+                };
             }
             else
             {

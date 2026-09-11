@@ -34,6 +34,12 @@ internal static class LicenseStorageContracts
         var flac = FlacOptimizationPlan.Create(Guid.NewGuid(), [audio], new("optimize", new())).Confirm(false, false);
         var flacAdmission = await access.AdmitOptimizationAsync(flac, default);
         check(flacAdmission.IsAllowed && !File.Exists(trialPath), "license: paid FLAC admission does not start trial");
+        var pdf = ContextSuite.Core.Pdf.PdfOptimizationPlan.Create(Guid.NewGuid(),
+            [new(Guid.NewGuid(), Path.Combine(root, "fixture.pdf"), new('C', 64), 100, new(2, false, false, 0, 0, 0, 0, false))],
+            new("optimize", new())).Confirm();
+        var pdfAdmission = await access.AdmitOptimizationAsync(pdf, default);
+        check(pdfAdmission.IsAllowed && pdfAdmission.BatchId == pdf.Plan.BatchId && !File.Exists(trialPath),
+            "license: paid PDF optimization does not start trial");
         var audioConversion = AudioConversionBatch.Create(Guid.NewGuid(), [audio], AudioFormat.Wave, new("convert", new())).Confirm(0, false, false);
         var audioAdmission = await access.AdmitConversionAsync(audioConversion, default);
         check(audioAdmission.IsAllowed && audioAdmission.BatchId == audioConversion.Plan.BatchId && !File.Exists(trialPath),
@@ -65,6 +71,8 @@ internal static class LicenseStorageContracts
             "license: paid expiry preserves old admission and cannot fall back to a new trial");
         check(flacAdmission.IsAllowed && !(await access.AdmitOptimizationAsync(flac, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid FLAC expiry preserves admission and cannot fall back to trial");
+        check(pdfAdmission.IsAllowed && !(await access.AdmitOptimizationAsync(pdf, default)).IsAllowed && !File.Exists(trialPath),
+            "license: paid PDF expiry preserves admission and cannot fall back to trial");
         check(audioAdmission.IsAllowed && !(await access.AdmitConversionAsync(audioConversion, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid audio conversion expiry preserves admission and cannot fall back to trial");
         clock.Now = clock.Now.AddDays(-2);

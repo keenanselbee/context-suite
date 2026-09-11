@@ -293,3 +293,52 @@ actions remain open. No menu capability, installation, native recycling, visible
 UI, signing or live commerce is enabled or accepted by this slice. Audio/image
 engine and hidden-window suites were not rerun because those implementations did
 not change. The broad-file goal remains active.
+
+PDF optimization worker/publication (2026-09-10)
+-----------------------------------------------
+
+The candidate now has typed file-probe/work/result messages, an immutable PDF
+optimization plan, normal trial/paid admission and a sequential application
+executor. The worker holds a checked source read handle, verifies its planned
+SHA-256/length and writes only an existing empty single-link reservation. The
+engine still receives owned snapshots, never the user source or final output
+path. The app verifies the reservation digest and publishes a collision-safe
+copy. Saved overwrite settings never authorize PDF replacement in this slice.
+No-smaller results discard the reservation and leave no duplicate output.
+
+**1,507 foundation contracts** pass, including 17 new PDF plan/IPC/trial/executor
+boundary checks and two paid admission/expiry checks. **11 PDF Analyze checks**
+and **17 new real-worker optimization checks** pass against isolated Release
+stage `artifacts/production-staging/5af83dd3c17a41a9b5d613a59cb95a58`:
+
+```text
+.codex-temp/pdf-engine/3edb2e8361e04782a91ef8364bd3a537/
+  worker-55ac8502da7d4deea3d6180925704661/results/analysis-results.txt
+  worker-55ac8502da7d4deea3d6180925704661/optimization-results/pdf-optimization-workflow.json
+```
+
+The generated workflow verifies one admission across trial expiry, denial of a
+new expired batch, mandatory copies with overwrite selected, collision naming,
+original hashes, unchanged results, post-plan source mutation, complete-object
+signature refusal, known encrypted-file exclusion, later-file continuation,
+cancellation between files and immediately after reservation, nonempty and
+hard-linked reservation refusal, independent worker source-hash validation and
+owned temporary/record cleanup. No actual recycling runs. Native-phase
+cancellation, killed-worker recovery and injected publication failures are not
+covered by these cancellation checks.
+
+**15 PDFium checks** pass against the actual first published copy, including
+matching page geometry and identical rendered pixels on both generated pages:
+`.codex-temp/pdfium-engine/cee300f69505476e87893226200b171e/matrix-7e3a93e52d2e46bfac9a3e3e907d235e/report.json`.
+The source/copy lengths remain 27,683/3,942 bytes. This is narrow generated
+coverage, not broad PDF appearance or accessibility acceptance.
+
+Release compilation reports zero warnings/errors, with the existing curated
+identity, payload allowlist, dependency and notice checks passing. `-SkipShell`
+performs no installation/registration. Evaluation engines remain outside normal
+staging and are copied only into the isolated test payload. No direct PDF menu
+dispatch, visible UI, screen-reader/theme/DPI, installer, signing or live commerce
+acceptance is claimed. Previous private PDF/audio and image/native/hidden suites
+were not rerun; their dated evidence remains separate. Direct mixed-family
+dispatch, broader document fidelity, native failure/recovery and engine adoption
+remain open, as do images/PDF and Office-to-PDF conversion.

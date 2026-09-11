@@ -2,6 +2,7 @@ using ContextSuite.Core.Operations;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Analysis;
+using ContextSuite.Core.Pdf;
 
 namespace ContextSuite.Core.Transport;
 
@@ -11,7 +12,7 @@ public sealed record ActivationReceipt(int Version, Guid RequestId);
 public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     ImageProbe? Probe = null, ImageWork? Work = null, ImagePreviewRequest? Preview = null, PngOptimizationWork? Optimization = null,
     byte[]? AudioBytes = null, byte[]? PdfBytes = null, AudioFileProbe? AudioFile = null, FlacOptimizationWork? FlacWork = null,
-    AudioFormat? AudioTarget = null, AudioConversionWork? AudioWork = null)
+    AudioFormat? AudioTarget = null, AudioConversionWork? AudioWork = null, PdfFileProbe? PdfFile = null, PdfOptimizationWork? PdfWork = null)
 {
     public const int MaximumAudioProbeBytes = 1024 * 1024;
     // A complete seekable PDF snapshot is required; base64 stays below the IPC frame limit.
@@ -19,6 +20,24 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     public void Validate()
     {
         if (Version != 1 || RequestId == Guid.Empty) throw new InvalidDataException("Invalid worker request identity.");
+        if (Command is "pdf-file-probe" or "pdf-optimize")
+        {
+            if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
+                PdfBytes is not null || AudioFile is not null || FlacWork is not null || AudioTarget is not null || AudioWork is not null)
+                throw new InvalidDataException("Unexpected data in PDF file request.");
+            if (Command == "pdf-file-probe")
+            {
+                if (PdfFile is null || PdfWork is not null) throw new InvalidDataException("Invalid PDF file probe payload.");
+                PdfFile.Validate();
+            }
+            else
+            {
+                if (PdfWork is null || PdfFile is not null) throw new InvalidDataException("Invalid PDF optimization payload.");
+                PdfWork.Validate();
+            }
+            return;
+        }
+        if (PdfFile is not null || PdfWork is not null) throw new InvalidDataException("Unexpected PDF file payload.");
         if (Command is "audio-file-probe" or "audio-convert")
         {
             if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
@@ -88,4 +107,5 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
 public sealed record ImageEngineIdentity(string Package, string Version, string NativeVersion);
 public sealed record WorkerReply(int Version, Guid RequestId, MediaCapability[] Capabilities, ImageEngineIdentity? Engine = null,
     ImageSourceFacts? Source = null, ImageWorkResult? ImageResult = null, ImagePreview? Preview = null, ImageFailure? Failure = null,
-    AudioProbeFacts? Audio = null, PdfProbeFacts? Pdf = null, AudioFileSource? AudioSource = null, AudioWorkResult? AudioResult = null);
+    AudioProbeFacts? Audio = null, PdfProbeFacts? Pdf = null, AudioFileSource? AudioSource = null, AudioWorkResult? AudioResult = null,
+    PdfFileSource? PdfSource = null, PdfWorkResult? PdfResult = null);

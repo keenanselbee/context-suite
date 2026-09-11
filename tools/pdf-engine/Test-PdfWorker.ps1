@@ -22,4 +22,6 @@ Get-ChildItem -LiteralPath (Join-Path $prepared 'unpacked\qpdf-12.4.1-msvc64\bin
 Copy-Item -LiteralPath (Join-Path $prepared 'evaluation.json') -Destination $pdf
 & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --pdf-worker (Join-Path $scratch 'results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
 if ($LASTEXITCODE -ne 0) { throw 'Isolated PDF worker checks failed.' }
+& dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --pdf-optimization-worker (Join-Path $scratch 'optimization-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
+if ($LASTEXITCODE -ne 0) { throw 'Isolated PDF optimization workflow checks failed.' }
 Write-Output "Evaluation-only worker payload and results: $scratch"

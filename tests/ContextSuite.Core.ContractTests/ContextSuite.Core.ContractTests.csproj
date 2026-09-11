@@ -15,6 +15,7 @@
     <Compile Include="..\..\src\ContextSuite.Application\OptimizationViewModel.cs" Link="Runtime\OptimizationViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PngOptimizationExecutor.cs" Link="Runtime\PngOptimizationExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\FlacOptimizationExecutor.cs" Link="Runtime\FlacOptimizationExecutor.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PdfOptimizationExecutor.cs" Link="Runtime\PdfOptimizationExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\AudioConversionExecutor.cs" Link="Runtime\AudioConversionExecutor.cs" />
     <ProjectReference Include="..\..\src\ContextSuite.Core\ContextSuite.Core.csproj" />
     <Compile Include="..\..\src\Shared\LocalPipe.cs" Link="Runtime\LocalPipe.cs" />

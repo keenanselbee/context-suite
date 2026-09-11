@@ -47,8 +47,11 @@ The private adapter tests also exercise a structural optimization candidate:
 fixed lossless stream recompression, complete object/stream preservation checks,
 signature/encryption/revision refusal, smaller-only results and owned snapshot
 cleanup. `probe-adapter.json` now records both probe and optimization checks, and
-`optimized-candidate.pdf` retains the generated accepted candidate. The worker
-still exposes only PDF Analyze; transformation access/publication remains pending.
+`optimized-candidate.pdf` retains the generated accepted candidate. `Test-PdfWorker.ps1`
+also runs the file-based optimization worker through real trial admission and
+application-owned copy publication. Its separate `optimization-results` directory
+records collisions, source changes, protection refusal, cancellation and no-change
+outcomes. It does not enable direct PDF commands or add engines to normal staging.
 
 To compare that candidate independently, add
 `-OptimizedCandidate '<generated adapter directory>\optimized-candidate.pdf'`

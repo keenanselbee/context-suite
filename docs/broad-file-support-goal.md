@@ -189,33 +189,44 @@ generated candidate pages. Transformation worker/access/publication, broader
 rendering/native failure coverage and all other required PDF/Office actions remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,488 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
+1,507 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
 29 FLAC description/artwork, 22 seek-table, 24 batch/IPC/access, 34 WAV inventory,
 26 FLAC/shared conversion metadata, 47 Ogg inventory, 86 MP3 inventory and 53 M4A
 inventory checks, 35 audio conversion batch/IPC/access checks and two additional
 paid-audio-admission checks, 14 direct-action/quality-decision checks and 32 PDF
-rewrite checks. The preceding 292 combined private audio checks and 113 real-worker
+rewrite checks and 19 PDF batch/access checks. The preceding 292 combined private audio checks and 113 real-worker
 audio checks were not rerun for the PDF-only change. This slice passes 27 private
-PDF adapter checks, 11 PDF Analyze worker checks and 15 independent PDFium checks.
+PDF adapter checks (preceding candidate milestone), 11 PDF Analyze worker checks,
+17 new PDF optimization worker/publication checks and 15 independent PDFium checks.
 The earlier shared
 reservation-handle refactor passed all 942 image-engine checks; those were not
 rerun. The preceding 86 hidden view contracts, 13 image direct-command checks and
-native shell contracts were not repeated for this parser-only change. They passed the expanded Convert menu's complete
+native shell contracts were not repeated for this PDF integration change. They passed the expanded Convert menu's complete
 multi-file activation without registration or installation. The
 [catalog inventory](file-type-inventory.md) separates descriptions from detectors.
 The [source audit](catalog-source-review.json) records 223 references: 186 retrieved,
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/9d52ae4f454141e3b5482fc00beb0814` includes the private
+`artifacts/production-staging/5af83dd3c17a41a9b5d613a59cb95a58` includes the private
 audio candidates, direct quality window and existing optional PDF worker
-integration and the isolated structural PDF optimization candidate. Release compilation, curated engine identities, file allowlist,
+integration and structural PDF optimization worker/executor. Release compilation, curated engine identities, file allowlist,
 package dependencies and notice checks pass, with zero compiler warnings/errors.
-This parser-only stage used `-SkipShell`; the preceding stage built native shell
+This PDF integration stage used `-SkipShell`; an earlier stage built native shell
 into isolated scratch. See [dated audio evidence](audio-engine-evaluation.md).
 Installed lifecycle and visible acceptance were not performed. The
 evaluation audio and PDF engines are not part of this normal payload. Manual review remains
 pending; earlier image acceptance does not prove the expanded report UI.
+
+The PDF executor now admits one batch, uses the existing sequential worker and
+publishes validated smaller copies through the shared transaction journal. PDF
+copies are mandatory even with overwrite selected; unchanged results publish no
+duplicate. Generated checks cover collision naming, expiry during/after a batch,
+changed sources, signature/encryption refusal, cancellation around reservation
+and between files, nonempty/hard-linked outputs and cleanup. Independent PDFium
+rendering matches the source for both published generated pages. Direct PDF
+Optimize dispatch and mixed image/audio/PDF admission, native-phase termination
+and recovery, broader fidelity and all other document actions remain open.
 
 Product boundaries
 ------------------

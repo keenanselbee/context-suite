@@ -42,9 +42,10 @@ cross-format pairs, direct Convert commands and a compact prompt for required
 quality changes. Production audio engine adoption and visible acceptance remain
 pending. Broader analysis remains in progress. Selected document launch actions are
 images-to-PDF, PDF pages-to-images, PDF optimization and Word/Excel/PowerPoint-to-PDF.
-A structural PDF optimization adapter candidate passes generated-file checks and
-independent two-page rendering comparison; transformation worker/publication,
-broader fidelity and the other document actions remain pending. The [goal record](docs/broad-file-support-goal.md)
+A structural PDF optimization candidate now passes isolated worker, paid-access
+and copy-publication checks, plus independent two-page rendering comparison.
+Direct PDF dispatch, broader fidelity, engine adoption and the other document
+actions remain pending. The [goal record](docs/broad-file-support-goal.md)
 identifies the latest isolated staging and its limited acceptance scope.
 The owner accepted the image utility's simplified UI; screen-reader, additional
 themes/DPI and installed lifecycle coverage remain separate gates. Signing is

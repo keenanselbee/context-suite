@@ -53,6 +53,14 @@ if (args.Length == 4 && args[0] == "--pdf-worker")
     Console.WriteLine($"Passed {checks} isolated PDF-worker checks.");
     return 0;
 }
+if (args.Length == 4 && args[0] == "--pdf-optimization-worker")
+{
+    var checks = 0;
+    await PdfOptimizationWorkflowContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated PDF optimization workflow checks.");
+    return 0;
+}
 if (args.Length is 4 or 5 && args[0] == "--audio-worker")
 {
     var checks = 0;
@@ -87,6 +95,7 @@ try
     await AudioBatchContracts.RunAsync(args[0], Check);
     await AudioDecisionContracts.RunAsync(args[0], Check);
     PdfRewriteContracts.Run(Check);
+    await PdfBatchContracts.RunAsync(args[0], Check);
     FlacSeekContracts.Run(Check);
     await FlacBatchContracts.RunAsync(args[0], Check);
     AudioProbeContracts.Run(Check);

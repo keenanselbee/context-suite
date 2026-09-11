@@ -123,12 +123,21 @@ the rooted document graph, ordinary unreferenced components, original document
 identifier when present and PDF version. Object numbering and reviewed physical
 storage fields may change. Unknown extra storage metadata remains compared.
 
-This is a candidate adapter, not a registered Optimize action or a publication
-receipt. The [dated evidence](pdf-engine-evaluation.md) includes 32 core contracts,
-27 private checks and independent PDFium comparison of two generated pages.
-Worker transformation messages, shared paid admission/publication, real failure/
-recovery tests, larger document/feature coverage and production engine adoption
-remain required. Incremental/linearized inputs with revision links need a history
+The file-based worker and application executor now use this candidate through
+normal trial/paid admission and transactional copy publication. A source read
+handle stays open while the worker validates snapshots and fills the app's
+checked empty reservation; final naming remains application-owned. PDF work
+always requests copies even when the saved Optimize preference selects overwrite.
+The publisher discards unchanged results without creating duplicates. Summary
+facts can exclude known protected files, but cannot approve preservation; the
+complete inventory remains the execution admission authority.
+
+This is not a registered direct Optimize action. The [dated evidence](pdf-engine-evaluation.md)
+includes 32 rewrite contracts, 19 new plan/access contracts, 27 private adapter
+checks, 17 real optimization workflow checks and independent PDFium comparison
+of two generated published pages. Native-phase crash/recovery tests, larger
+document/feature coverage and production engine adoption remain required.
+Incremental/linearized inputs with revision links need a history
 handler; declining them is a current limitation, not the final launch scope.
 Images-to-PDF, PDF pages-to-images and Word/Excel/PowerPoint-to-PDF remain required
 and unimplemented.

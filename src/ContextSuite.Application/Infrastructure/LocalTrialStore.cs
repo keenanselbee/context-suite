@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Audio;
+using ContextSuite.Core.Pdf;
 
 namespace ContextSuite.Application.Infrastructure;
 
@@ -16,6 +17,14 @@ internal sealed record TrialAdmission(LocalTrialStatus Status, Guid BatchId, Dat
 // Local trial bookkeeping only. No key validation, hidden copies, reset switch or permissive fallback.
 internal sealed class LocalTrialStore : IOperationAccess
 {
+    async Task<OperationAdmission> IOperationAccess.AdmitOptimizationAsync(ConfirmedPdfOptimization confirmed, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(confirmed);
+        if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No confirmed PDF optimization can execute.");
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
     async Task<OperationAccessStatus> IOperationAccess.ReadAccessAsync(CancellationToken cancellationToken)
     {
         var status = await ReadStatusAsync(cancellationToken);
