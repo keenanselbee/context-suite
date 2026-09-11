@@ -1,4 +1,5 @@
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <aclapi.h>
 #include <userenv.h>
@@ -84,14 +85,17 @@ DWORD OpenAttempt(const fs::path& path, bool write) {
         FILE_SHARE_READ, nullptr, write ? CREATE_ALWAYS : OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
     return file.value == INVALID_HANDLE_VALUE ? GetLastError() : ERROR_SUCCESS;
 }
-int ConnectAttempt(unsigned short port) {
-    Socket connection(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
+int ConnectAttempt(unsigned short port, bool ipv6 = false) {
+    Socket connection(socket(ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, IPPROTO_TCP));
     if (connection.value == INVALID_SOCKET) return WSAGetLastError();
     u_long nonblocking = 1;
     if (ioctlsocket(connection.value, FIONBIO, &nonblocking) != 0) return WSAGetLastError();
     sockaddr_in address{};
     address.sin_family = AF_INET; address.sin_addr.s_addr = htonl(INADDR_LOOPBACK); address.sin_port = htons(port);
-    if (connect(connection.value, reinterpret_cast<sockaddr*>(&address), sizeof(address)) == 0) return 0;
+    sockaddr_in6 address6{};
+    address6.sin6_family = AF_INET6; address6.sin6_addr = in6addr_loopback; address6.sin6_port = htons(port);
+    const auto target = ipv6 ? reinterpret_cast<sockaddr*>(&address6) : reinterpret_cast<sockaddr*>(&address);
+    if (connect(connection.value, target, ipv6 ? sizeof(address6) : sizeof(address)) == 0) return 0;
     const auto error = WSAGetLastError();
     if (error != WSAEWOULDBLOCK) return error;
     fd_set writeSet, errorSet; FD_ZERO(&writeSet); FD_ZERO(&errorSet);
@@ -102,7 +106,7 @@ int ConnectAttempt(unsigned short port) {
     if (getsockopt(connection.value, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&result), &length) != 0) return WSAGetLastError();
     return result;
 }
-int Child(const fs::path& root, unsigned short port, bool isolated) {
+int Child(const fs::path& root, unsigned short port, unsigned short port6, bool isolated) {
     HANDLE tokenValue = nullptr;
     Require(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &tokenValue) != FALSE, "Read child token");
     Handle token(tokenValue);
@@ -114,15 +118,16 @@ int Child(const fs::path& root, unsigned short port, bool isolated) {
     const auto deniedWrite = OpenAttempt(root / L"denied" / L"output.txt", true);
     const auto readOnlyWrite = OpenAttempt(root / L"allowed" / L"input.txt", true);
     const auto network = ConnectAttempt(port);
+    const auto network6 = ConnectAttempt(port6, true);
     std::cout << "{\"appContainer\":" << appContainer << ",\"allowedRead\":" << allowedRead
         << ",\"deniedRead\":" << deniedRead << ",\"allowedWrite\":" << allowedWrite
         << ",\"deniedWrite\":" << deniedWrite << ",\"readOnlyWrite\":" << readOnlyWrite
-        << ",\"loopbackConnect\":" << network << "}\n";
+        << ",\"loopbackConnect\":" << network << ",\"ipv6LoopbackConnect\":" << network6 << "}\n";
     if (isolated) return appContainer == 1 && allowedRead == 0 && allowedWrite == 0 &&
         deniedRead == ERROR_ACCESS_DENIED && deniedWrite == ERROR_ACCESS_DENIED &&
-        readOnlyWrite == ERROR_ACCESS_DENIED && network == WSAEACCES ? 0 : 3;
+        readOnlyWrite == ERROR_ACCESS_DENIED && network == WSAEACCES && network6 == WSAEACCES ? 0 : 3;
     return appContainer == 0 && allowedRead == 0 && deniedRead == 0 && allowedWrite == 0 &&
-        deniedWrite == 0 && readOnlyWrite == 0 && network == 0 ? 0 : 4;
+        deniedWrite == 0 && readOnlyWrite == 0 && network == 0 && network6 == 0 ? 0 : 4;
 }
 constexpr SIZE_T MiB = 1024ULL * 1024;
 struct JobBudget { DWORD processes = 8; SIZE_T processBytes = 512 * MiB; SIZE_T jobBytes = 1024 * MiB; };
@@ -431,8 +436,9 @@ int wmain(int argc, wchar_t** argv) {
             std::cout << "{\"descendant\":" << info.dwProcessId << "}\n";
             return 0;
         }
-        if (argc == 5 && std::wstring(argv[1]) == L"--child")
-            return Child(argv[2], static_cast<unsigned short>(std::stoul(argv[3])), std::wstring(argv[4]) == L"isolated");
+        if (argc == 6 && std::wstring(argv[1]) == L"--child")
+            return Child(argv[2], static_cast<unsigned short>(std::stoul(argv[3])),
+                static_cast<unsigned short>(std::stoul(argv[4])), std::wstring(argv[5]) == L"isolated");
         const bool createProfile = argc == 3 && std::wstring(argv[2]) == L"--create-disposable-profile";
         if (argc != 2 && !createProfile) return 2;
         const auto root = fs::absolute(argv[1]).lexically_normal();
@@ -465,7 +471,19 @@ int wmain(int argc, wchar_t** argv) {
         int addressSize = sizeof(address);
         Require(getsockname(server.value, reinterpret_cast<sockaddr*>(&address), &addressSize) == 0, "Read local listener port");
         const auto port = std::to_wstring(ntohs(address.sin_port));
-        const auto control = Run(child, { L"--child", root.native(), port, L"control" }, root, nullptr);
+        Socket server6(socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP));
+        Require(server6.value != INVALID_SOCKET, "Create IPv6 local listener");
+        const DWORD ipv6Only = 1;
+        Require(setsockopt(server6.value, IPPROTO_IPV6, IPV6_V6ONLY,
+            reinterpret_cast<const char*>(&ipv6Only), sizeof(ipv6Only)) == 0, "Require an IPv6-only listener");
+        sockaddr_in6 address6{};
+        address6.sin6_family = AF_INET6; address6.sin6_addr = in6addr_loopback;
+        Require(bind(server6.value, reinterpret_cast<sockaddr*>(&address6), sizeof(address6)) == 0 &&
+            listen(server6.value, 8) == 0, "Start IPv6 local listener");
+        int address6Size = sizeof(address6);
+        Require(getsockname(server6.value, reinterpret_cast<sockaddr*>(&address6), &address6Size) == 0, "Read IPv6 listener port");
+        const auto port6 = std::to_wstring(ntohs(address6.sin6_port));
+        const auto control = Run(child, { L"--child", root.native(), port, port6, L"control" }, root, nullptr);
         std::ofstream(root / L"control.json") << control.output;
         std::cout << "Control: " << control.output;
         Require(control.exitCode == 0 && !control.timedOut && !control.outputLimit && !control.output.empty(), "Unrestricted control must demonstrate accessible fixtures/listener");
@@ -488,12 +506,12 @@ int wmain(int argc, wchar_t** argv) {
             std::cout << "NOT RUN: AppContainer access matrix requires explicit disposable-profile opt-in. Unregistered launch previously failed with Windows error 2.\n";
             return 0;
         }
-        const auto isolated = Run(child, { L"--child", root.native(), port, L"isolated" }, root, sid.value);
+        const auto isolated = Run(child, { L"--child", root.native(), port, port6, L"isolated" }, root, sid.value);
         std::ofstream(root / L"isolated.json") << isolated.output;
         std::cout << "Isolated: " << isolated.output;
         Require(isolated.exitCode == 0 && !isolated.timedOut && !isolated.outputLimit && !isolated.output.empty(), "AppContainer access matrix");
         profile.Remove();
-        std::cout << "PASS: explicit scratch read/write, withheld file and write denial, read-only source denial, local network denial, actual AppContainer token.\n";
+        std::cout << "PASS: explicit scratch read/write, withheld file and write denial, read-only source denial, IPv4/IPv6 loopback denial, actual AppContainer token.\n";
         return 0;
     } catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }
 }

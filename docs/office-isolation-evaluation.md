@@ -162,6 +162,22 @@ renderer boundary before production adoption.
 Prepared access matrix and authorization
 ----------------------------------------
 
+The 2026-09-11 network preflight now includes independent IPv4 and IPv6-only
+loopback listeners. Each has its own ephemeral port and remains owned by the
+probe. The unrestricted child must connect successfully to both; the prepared
+isolated child must return `WSAEACCES` for both. A missing/unreachable listener or
+disabled IPv6 cannot count as successful isolation. Each nonblocking connection
+has a two-second deadline within the enclosing bounded job.
+
+The updated x64 warnings-as-errors build and default preflight pass at
+`.codex-temp/office-isolation/17656800e8594b1383b0b417cccb4487`, with log
+`.codex-temp/office-ipv6-preflight-final.log`. `case/control.json` records
+`loopbackConnect: 0`, `ipv6LoopbackConnect: 0` and `appContainer: 0`.
+The existing descendant/owner-crash cleanup, diagnostic, timeout and resource
+checks also pass. No AppContainer profile was created; the actual IPv4/IPv6
+denial assertions remain unexecuted pending the authorization below. This does
+not test external network destinations or DNS.
+
 The initially attempted unregistered SID could not launch an AppContainer child
 on this machine. That failure occurs before file/network assertions and is not
 evidence of either access denial or engine incompatibility. The default now runs
@@ -186,7 +202,7 @@ a package, changing Explorer registration or modifying another application's pro
 
 The prepared child checks its actual AppContainer token, allowed reads/writes,
 denial of withheld fixture access, denial of writes to read-only inputs, and
-WSAEACCES when connecting to a known reachable loopback listener. Control success
+WSAEACCES when connecting to known reachable IPv4 and IPv6 loopback listeners. Control success
 precedes denial assertions to avoid mistaking a missing file or dead listener for
 isolation. The isolated case never falls back to an unrestricted token.
 
@@ -197,7 +213,8 @@ Run and verify that access matrix after authorization, including profile cleanup
 and retained scratch ACL scope. Then evaluate Office engine startup, font/runtime
 access, profile paths, explicit environment, output validation, and independent
 rendering inside the same boundary. Carry the verified resource tests into that
-boundary, including owner-crash cleanup. Test IPv6/network cases, active-content/external-reference denial, hostile
+boundary, including owner-crash cleanup. Execute the prepared IPv6 denial check
+and test further network cases, active-content/external-reference denial, hostile
 documents, resource budgets and mixed-batch recovery before production adoption.
 The full broad-file goal remains active; this preflight is not a substitute for
 the selected Office conversions or other launch requirements.

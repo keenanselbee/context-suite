@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [Office IPv6 preflight](office-isolation-evaluation.md) adds a
+separate IPv6-only loopback endpoint to the prepared isolation matrix. The
+unrestricted generated child connects to both IPv4 and IPv6 successfully; native
+lifetime and resource checks still pass. Actual isolated denial, profile cleanup
+and Office execution inside that boundary remain pending explicit disposable
+AppContainer-profile approval. This is preparation, not customer Office conversion.
+
 The 2026-09-11 [PDF packaging checkpoint](pdf-production-payload.md) connects
 qpdf/PDFium and the authored renderer/validator to one isolated production build
 with images/audio. The 45 pinned PDF files include full retained notices and

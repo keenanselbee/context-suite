@@ -5,6 +5,11 @@ using three small, passive fixtures authored in this repository. They do not
 enable an Office command or add a production dependency. See the
 [evidence and remaining gates](../../docs/office-engine-evaluation.md).
 
+The separate native isolation preflight now checks reachable IPv4 and IPv6-only
+loopback listeners. Its default uses no AppContainer profile and makes no denial
+claim. The separately authorized disposable-profile mode requires actual denial
+on both endpoints; see [isolation scope and evidence](../../docs/office-isolation-evaluation.md).
+
 Run from the Context Suite repository with the .NET 10 SDK:
 
 ```powershell
