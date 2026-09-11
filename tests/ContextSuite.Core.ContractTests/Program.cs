@@ -129,6 +129,7 @@ try
     await AudioDecisionContracts.RunAsync(args[0], Check);
     PdfRewriteContracts.Run(Check);
     PdfRasterContracts.Run(Check);
+    ImagePdfContracts.Run(args[0], Check);
     await PdfBatchContracts.RunAsync(args[0], Check);
     FlacSeekContracts.Run(Check);
     await FlacBatchContracts.RunAsync(args[0], Check);

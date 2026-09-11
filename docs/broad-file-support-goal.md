@@ -57,6 +57,16 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-10 [combined image-PDF checkpoint](image-pdf-candidate.md) implements
+an immutable ordered plan and private fixed raster PDF writer candidate. The
+owner selected one combined document; several images will require a focused
+page-order review. The candidate retains full samples, orientation, ICC and alpha
+and leases every original through serialization. It passes 133 independent
+qpdf/PDFium/sample/source-safety checks on 23 combined pages and 1,587 foundation
+contracts. Production output validation, all-source publication, worker/direct
+integration and the order dialog remain open. This is not an enabled menu action
+or completion of the required images-to-PDF scope.
+
 The direct PDF-to-PNG checkpoint (2026-09-10) adds PDFs to the existing **Convert >
 PNG** command when the optional renderer is present. Mixed images/PDFs share one
 admission; each PDF has one result with numbered page details. Partial cancellation
@@ -445,7 +455,7 @@ Evaluate engines, exact variants and policies for these selected actions:
 
 | Action | Main questions to settle |
 | --- | --- |
-| Images to PDF | Page size/order, image quality, one file versus per-input files, multi-output publication semantics |
+| Images to PDF | One combined PDF selected; focused page-order review, physical sizing, image fidelity and all-source transactional copy publication |
 | PDF pages to images | All pages versus selected pages, resolution, transparency and predictable page names |
 | PDF optimization | Preserve text, vectors, links, forms, accessibility tags and signatures; distinguish image downsampling from structural recompression |
 | Word/Excel/PowerPoint to PDF | Installed Office dependency versus standalone rendering, font substitution, pagination, workbook print areas and fidelity |

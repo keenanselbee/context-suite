@@ -92,3 +92,12 @@ PNG-command tests for mixed selections, partial-page retry, changed sources,
 access denial and missing engines, recording `direct-results/pdf-page-direct.json`.
 No installed payload is changed; see
 [the document design](../../docs/document-design.md).
+
+Evaluate the ordered image-to-PDF writer with
+`Test-ImagePdfCandidate.ps1 -PdfPreparedDirectory '<prepared qpdf directory>'
+-PdfiumPreparedDirectory '<prepared PDFium directory>'`. It uses the prepared
+qpdf runtime inventory and separate PDFium evaluation probe to check structure,
+decoded samples/profiles, rendered appearance and source leases on generated
+fixtures. Fresh `image-pdf-*` evidence stays under PDFium scratch. It does not
+enable a menu action, publish a customer output or add either evaluation engine
+to normal packaging. See [candidate scope and page order](../../docs/image-pdf-candidate.md).

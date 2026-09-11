@@ -88,7 +88,9 @@ document contents are copied.
 Selected launch transformations
 -------------------------------
 
-- Images to PDF with an explicit page/order/output policy.
+- Images to one combined PDF, with a focused page-order review for multiple
+  images. See the [ordered writer candidate](image-pdf-candidate.md); direct
+  command and validated publication are still pending.
 - PDF pages to images with fixed reviewed resolution and predictable naming.
 - PDF optimization with declared preservation of text/vector/document features.
 - Word, Excel and PowerPoint to PDF with evaluated font/layout fidelity and dependencies.
