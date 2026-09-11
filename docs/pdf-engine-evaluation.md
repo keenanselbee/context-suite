@@ -218,3 +218,78 @@ Next acceptance work
 4. Complete publication, cancellation/failure and smaller-only checks before
    enabling PDF Optimize. Finish the remaining image/PDF and Office renderers,
    payload/notice review, integrated staging and actual UI acceptance separately.
+
+Structural optimization adapter candidate (2026-09-10)
+------------------------------------------------------
+
+Implemented `pdf-structural-1` in the private adapter and the public
+`PdfRewriteInventory` preservation oracle. qpdf's complete JSON v2 contains the
+object inventory and optional inline stream bytes; its summaries are separate.
+See [qpdf JSON semantics](https://qpdf.readthedocs.io/en/latest/json.html) and
+[strict inspection/encryption exit statuses](https://qpdf.readthedocs.io/en/12.0/cli.html).
+The adapter checks encryption first, inventories dictionaries without stream
+payload extraction, then rejects signatures/protection markers, external streams
+and trailer revision links before strict checking and full decoded inventory.
+Warnings and heuristic recovery are not accepted.
+
+The recipe preserves existing object-stream use, unreferenced objects/resources
+and PDF version; it compresses/recompresses supported streams at level 9 with no
+image optimization. Output travels through bounded stdout, never a customer path.
+The output must pass strict checking and complete graph comparison. Rooted
+structure, decoded/retained stream data, ordinary unreferenced components and
+original document identity are compared across renumbering. Reviewed xref/object
+stream and linearization storage may differ; unknown extra metadata remains part
+of comparison. A non-smaller candidate returns identical source bytes.
+
+Bounds: 16 MiB source/output, 32 MiB JSON per inventory, 32,768 objects, one million
+inventory/traversal nodes, graph depth 64 and 64 MiB total canonical data. One
+60-second deadline covers the operation. Each native child joins the existing
+kill-on-close, 1 GiB memory-limited job before receiving arguments; stdout and
+stderr readers terminate it on failure. Owned source/output snapshots are hashed,
+held read-only and removed after use. These controls are not an OS filesystem or
+network sandbox. Native-phase cancellation/crash injection and residual recovery
+remain acceptance work.
+
+**1,488 foundation contracts** pass, including **32 new structural PDF checks**.
+They cover renumbering/cycles, content and identity changes, missing streams,
+invalid encodings, escaped/duplicate names, unreachable signature dictionaries,
+protection markers, external references, revision links, object/depth limits and
+ordinary unreferenced information. The initial native invocation accidentally
+used the archived failed `matrix-bd183...` fixture set; it failed the existing
+signature-summary expectation. No guard was weakened. Fresh fixtures passed all
+**13 qpdf evaluation checks** at:
+
+```text
+.codex-temp/pdf-engine/3edb2e8361e04782a91ef8364bd3a537/
+  matrix-038ef085a612442ba0d28ad20f4f8d47/report.json
+  adapter-ffdda32352954e0aaff4a0b065ab90a1/probe-adapter.json
+  adapter-ffdda32352954e0aaff4a0b065ab90a1/optimized-candidate.pdf
+  adapter-ffdda32352954e0aaff4a0b065ab90a1/incremental.pdf
+  worker-81952d7efd1044df80ad0cfe1e530eb0/results/analysis-results.txt
+```
+
+**27 private checks** pass (the preceding 16 probe checks plus 11 optimization
+checks). The generated two-page PDF shrank from **27,683 to 3,942 bytes**. Both
+attached and unattached signature canaries are refused, as are password-required,
+owner-protected and damaged-xref inputs. A generated incremental revision remains
+readable for Analyze and is explicitly refused for optimization. Repeated work,
+pre-cancellation and snapshot cleanup pass.
+
+**15 independent PDFium checks** pass at
+`.codex-temp/pdfium-engine/cee300f69505476e87893226200b171e/matrix-8eced96ca69f4ca78738da0e1ebe9403/report.json`.
+The added three checks compare the candidate's page geometry and both rendered
+pages at 150 DPI with widgets: pixels are identical. That candidate came from
+`adapter-f75dbaa408704899a9317cb10311f843`, before adding the incremental fixture
+test and escaped-revision guard; the encoding recipe was unchanged. This is two authored pages, not broad
+font/color/forms/accessibility or signed-document fidelity acceptance.
+
+The existing **11 PDF Analyze worker checks** pass against isolated Release stage
+`artifacts/production-staging/9d52ae4f454141e3b5482fc00beb0814`. Compilation has zero
+warnings/errors; normal curated identity, payload, dependency and notice checks
+pass. The stage uses `-SkipShell` and still excludes evaluation PDF/audio engines.
+Transformation worker dispatch, access/publication, crash recovery, broader PDF
+features, larger inputs, source/payload review and the other required document
+actions remain open. No menu capability, installation, native recycling, visible
+UI, signing or live commerce is enabled or accepted by this slice. Audio/image
+engine and hidden-window suites were not rerun because those implementations did
+not change. The broad-file goal remains active.

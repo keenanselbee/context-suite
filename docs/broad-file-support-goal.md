@@ -179,19 +179,25 @@ behavior and 13 passing checks. It found a signature-summary blind spot; zero
 reported signatures must not authorize rewriting. Optional private adapter/worker/
 Analyze integration now passes 16 private adapter and 11 app-to-worker checks.
 Bounded snapshots, locked-encryption facts, header fallback and cleanup are tested;
-the separate PDFium evaluation now adds 12 passing generated-fixture checks,
+the separate PDFium evaluation now adds 15 passing generated-fixture checks,
 including exact source/optimized rendered pixels and image alpha round trips.
-Broader rendering/native failure coverage and all PDF transformations remain
+The first structural optimization adapter candidate now passes 27 private checks
+and 32 public graph/preservation contracts. It rejects signature/encryption and
+uninspected revision history, compares rooted and ordinary unreferenced content,
+and returns only smaller outputs. Independent PDFium rendering matches both
+generated candidate pages. Transformation worker/access/publication, broader
+rendering/native failure coverage and all other required PDF/Office actions remain
 pending. No qpdf or PDFium payload ships yet.
 
-1,456 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
+1,488 foundation contracts pass, including 30 audio-plan, 17 streaming sample,
 29 FLAC description/artwork, 22 seek-table, 24 batch/IPC/access, 34 WAV inventory,
 26 FLAC/shared conversion metadata, 47 Ogg inventory, 86 MP3 inventory and 53 M4A
 inventory checks, 35 audio conversion batch/IPC/access checks and two additional
-paid-audio-admission checks, plus 14 direct-action/quality-decision checks. All 292
-combined private audio checks pass, including 61 MP3 preservation checks. This slice
-passed 52 conversion, 20 direct-conversion, 11 Analyze, 14 FLAC workflow and 16
-direct-audio checks through the real worker (113 total). The earlier shared
+paid-audio-admission checks, 14 direct-action/quality-decision checks and 32 PDF
+rewrite checks. The preceding 292 combined private audio checks and 113 real-worker
+audio checks were not rerun for the PDF-only change. This slice passes 27 private
+PDF adapter checks, 11 PDF Analyze worker checks and 15 independent PDFium checks.
+The earlier shared
 reservation-handle refactor passed all 942 image-engine checks; those were not
 rerun. The preceding 86 hidden view contracts, 13 image direct-command checks and
 native shell contracts were not repeated for this parser-only change. They passed the expanded Convert menu's complete
@@ -201,9 +207,9 @@ The [source audit](catalog-source-review.json) records 223 references: 186 retri
 7 search-indexed and 30 unavailable for retrieval; factual/provenance review remains
 open. These checks do not finish the catalog, detailed media/document analysis or
 audio/document operations. A fresh isolated Release build at
-`artifacts/production-staging/4338b5fdd1e0489b8bf77d004c3bb7f6` includes the private
+`artifacts/production-staging/9d52ae4f454141e3b5482fc00beb0814` includes the private
 audio candidates, direct quality window and existing optional PDF worker
-integration. Release compilation, curated engine identities, file allowlist,
+integration and the isolated structural PDF optimization candidate. Release compilation, curated engine identities, file allowlist,
 package dependencies and notice checks pass, with zero compiler warnings/errors.
 This parser-only stage used `-SkipShell`; the preceding stage built native shell
 into isolated scratch. See [dated audio evidence](audio-engine-evaluation.md).

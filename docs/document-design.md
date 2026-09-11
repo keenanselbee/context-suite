@@ -1,7 +1,7 @@
 Document Support Design
 =======================
 
-Status: bounded package analysis implemented; launch transformation engines, exact variants and implementation pending
+Status: bounded package analysis and a structural PDF optimization candidate implemented; transformation worker/publication, renderers and launch acceptance pending
 
 Boundary
 --------
@@ -105,6 +105,33 @@ Optional private adapter/worker/Analyze integration adds pages, encryption and
 reported document inventories using complete snapshots up to 16 MiB. It passes
 16 private and 11 app-to-worker checks; the engine remains evaluation-only.
 Independent rendering/fidelity and the other engine experiments remain pending.
+
+Structural PDF optimization candidate (2026-09-10)
+--------------------------------------------------
+
+The private `PdfProbeAdapter.OptimizeAsync` now evaluates fixed policy
+`pdf-structural-1` on owned snapshots. It recompresses supported streams at level 9
+without image downsampling, rasterization or a format-version increase. Existing
+object streams and unreferenced objects/resources are preserved. A result must
+be strictly smaller; otherwise the source bytes are returned unchanged.
+
+The public `PdfRewriteInventory` reads complete qpdf JSON v2. It inspects all
+object dictionaries before decoding streams, refusing encryption, signature-related
+information, external streams and uninspected revision history. The field summary
+is never an admission authority. Complete inline-stream inventories then compare
+the rooted document graph, ordinary unreferenced components, original document
+identifier when present and PDF version. Object numbering and reviewed physical
+storage fields may change. Unknown extra storage metadata remains compared.
+
+This is a candidate adapter, not a registered Optimize action or a publication
+receipt. The [dated evidence](pdf-engine-evaluation.md) includes 32 core contracts,
+27 private checks and independent PDFium comparison of two generated pages.
+Worker transformation messages, shared paid admission/publication, real failure/
+recovery tests, larger document/feature coverage and production engine adoption
+remain required. Incremental/linearized inputs with revision links need a history
+handler; declining them is a current limitation, not the final launch scope.
+Images-to-PDF, PDF pages-to-images and Word/Excel/PowerPoint-to-PDF remain required
+and unimplemented.
 
 For each selected action, document source/target variants, rendering requirements,
 metadata/accessibility/signature consequences, cancellation, resource limits,

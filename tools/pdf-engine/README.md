@@ -42,3 +42,17 @@ with no installation or production-stage changes. Testing compares rendered
 pixels, checks form drawing, records signature/encryption observations and
 round-trips an authored BGRA image. JSON and PNG evidence stays in a new scratch
 directory. This is not a general PDF converter or a production sandbox.
+
+The private adapter tests also exercise a structural optimization candidate:
+fixed lossless stream recompression, complete object/stream preservation checks,
+signature/encryption/revision refusal, smaller-only results and owned snapshot
+cleanup. `probe-adapter.json` now records both probe and optimization checks, and
+`optimized-candidate.pdf` retains the generated accepted candidate. The worker
+still exposes only PDF Analyze; transformation access/publication remains pending.
+
+To compare that candidate independently, add
+`-OptimizedCandidate '<generated adapter directory>\optimized-candidate.pdf'`
+to `Test-PdfiumEvaluation.ps1`, using the same source fixture directory. It must be
+inside repository PDF scratch. Three additional checks compare source/candidate
+page geometry and both authored pages' rendered pixels. This does not establish
+broad document fidelity or native failure/sandbox acceptance.

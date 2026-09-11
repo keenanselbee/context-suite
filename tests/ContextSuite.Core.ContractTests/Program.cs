@@ -86,6 +86,7 @@ try
     await M4aMetadataContracts.RunAsync(Check);
     await AudioBatchContracts.RunAsync(args[0], Check);
     await AudioDecisionContracts.RunAsync(args[0], Check);
+    PdfRewriteContracts.Run(Check);
     FlacSeekContracts.Run(Check);
     await FlacBatchContracts.RunAsync(args[0], Check);
     AudioProbeContracts.Run(Check);

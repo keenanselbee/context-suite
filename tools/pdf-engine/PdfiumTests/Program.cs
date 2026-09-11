@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-if (args.Length != 3) throw new ArgumentException("Expected probe, generated qpdf fixture directory and new output directory.");
+if (args.Length is not (3 or 4)) throw new ArgumentException("Expected probe, generated qpdf fixture directory, new output directory and optional generated optimized candidate.");
 var executable = Path.GetFullPath(args[0]);
 var fixtures = Path.GetFullPath(args[1]);
 var output = Path.GetFullPath(args[2]);
@@ -13,6 +13,7 @@ Directory.CreateDirectory(output);
 var checks = new List<object>();
 var observations = new List<object>();
 var inputs = Directory.GetFiles(fixtures, "*.pdf").ToDictionary(path => path, Hash);
+if (args.Length == 4) inputs.Add(Path.GetFullPath(args[3]), Hash(args[3]));
 var failures = 0;
 void Check(string name, bool passed) { checks.Add(new { name, passed }); if (!passed) failures++; }
 string FileAt(string name) => Path.Combine(fixtures, name);
@@ -88,6 +89,13 @@ var optimized = await Render(FileAt("optimized copy ü.pdf"), "optimized");
 Check("Two rendered pages retain geometry", source.GetArrayLength() == 2 && source.ToString() == optimized.ToString());
 for (var page = 1; page <= 2; page++)
     Check($"Optimized page {page} has identical rendered pixels", Hash(ResultAt($"source-{page}.bgra")) == Hash(ResultAt($"optimized-{page}.bgra")));
+if (args.Length == 4)
+{
+    var candidate = await Render(args[3], "candidate");
+    Check("Adapter candidate retains page geometry", source.ToString() == candidate.ToString());
+    for (var page = 1; page <= source.GetArrayLength(); page++)
+        Check($"Adapter candidate page {page} retains rendered pixels", Hash(ResultAt($"source-{page}.bgra")) == Hash(ResultAt($"candidate-{page}.bgra")));
+}
 await Render(FileAt("authored original ü.pdf"), "without-widgets", widgets: "none");
 Check("Form widget drawing changes visible pixels", Hash(ResultAt("source-1.bgra")) != Hash(ResultAt("without-widgets-1.bgra")));
 await Render(FileAt("authored original ü.pdf"), "transparent", backing: "transparent");
