@@ -35,8 +35,20 @@ Retained evidence includes the MSI, extracted cabinet and raw members, mapped
 inventory, generated originals/PDFs, BGRA renders, text and execution JSON. Each
 evaluation's `profiles.txt` lists its disposable profiles under
 `.codex-temp/office-profile-<guid>`. These shorter sibling paths avoid a failure
-observed with deeper Unicode profiles; the exact cause remains unresolved. No
+observed with deeper profiles; controlled tests below isolate a length dependency. No
 automatic evidence cleanup runs. Allow several GB of scratch space.
+
+Add `-ProfileMatrix` to the test wrapper to repeat the PowerPoint fixture across
+short/long and ASCII/Unicode profile paths while holding source/output paths and
+export options fixed. This mode records missing-PDF observations and finishes the
+matrix; completing the matrix does not mean every conversion passed. On this
+machine both 90-character profiles passed, including Unicode, and both
+154-character profiles returned exit zero without a PDF. `-ProfileLengths` instead
+uses a fixed ASCII parent/depth and profile lengths of 90/110/130/150/170 characters.
+The first three passed, while the last two returned zero without a PDF. The
+profile also determines temporary/data directories, so the responsible internal
+path and exact cutoff are still unknown. Select only one experiment switch at a
+time; see the evidence record.
 
 The child wrapper provides a 60-second deadline, bounded diagnostics and an owned
 process-tree kill attempt. Its profile disables macros, active content, Python
@@ -46,3 +58,31 @@ testing. Use only these authored passive fixtures. Extracted fonts and VC runtim
 files outside INSTALLLOCATION are excluded; the current machine's existing fonts
 and runtime can affect results. Package completeness and redistribution remain
 unresolved.
+
+The separate native isolation experiment is:
+
+```powershell
+.\tools\office-engine\Test-OfficeIsolation.ps1
+```
+
+It builds an independently authored Windows x64 probe, generates scratch file and
+loopback-listener controls, and tests job ownership, timeout and diagnostic limits.
+The default runs only preflight. It does not create an AppContainer profile or
+claim that access restrictions passed. No Office engine or customer document runs.
+
+`-CreateDisposableProfile` is a separate explicit opt-in for the prepared
+AppContainer file/network matrix. **Obtain owner authorization before using it:**
+Windows creates per-user profile files beneath `%LOCALAPPDATA%\Packages` and
+profile registry metadata outside the repository. The moniker is
+`ContextSuite.Office.Evaluation.<scratch-guid>`, recorded in `case/profile-name.txt`.
+The probe refuses a collision, requests no capabilities, grants read/execute only
+to its owned fixture/executable directory and modification only to its owned
+output directory, and removes only the profile it successfully created. Failed
+cleanup prints a recovery warning; preserve the recorded profile name. It never
+installs/registers a Context Suite package or changes Explorer registration.
+
+The opt-in path is prepared but has not been executed. The earlier unregistered
+AppContainer attempt failed at process creation with Windows error 2. The probe
+therefore does not fall back to unrestricted execution for an isolated case.
+Read the [isolation evidence](../../docs/office-isolation-evaluation.md) for exact
+scope, remaining tests and authorization requirements.

@@ -57,6 +57,16 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The Office follow-up isolates a profile/temp-root length dependency: fixed-parent
+ASCII profiles of 90/110/130 characters produce validated PowerPoint PDFs, while
+150/170-character profiles return zero without output. Short Unicode profiles
+also pass. The [engine record](office-engine-evaluation.md) retains both controlled
+matrices; the internal failing path and exact cutoff remain unknown. A separate
+[native isolation preflight](office-isolation-evaluation.md) passes local control,
+descendant cleanup, timeout and diagnostic limits. The registered AppContainer
+file/network matrix is prepared but awaits specific per-user profile permission.
+It has not replaced the Office smoke wrapper or enabled customer conversion.
+
 The 2026-09-10 [Office engine evaluation](office-engine-evaluation.md) pins and
 unpacks LibreOffice without installation. Three generated passive DOCX/XLSX/PPTX
 fixtures pass independent PDF parsing, rendering, text/page geometry and original
