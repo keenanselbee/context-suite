@@ -33,4 +33,6 @@ foreach ($name in @('ContextSuite.ImagePdfValidator.exe', 'qpdf30.dll', 'concrt1
 Copy-Item -LiteralPath (Join-Path $prepared 'image-validator-build.json') -Destination $validator
 & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --image-pdf-worker (Join-Path $scratch 'results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
 if ($LASTEXITCODE -ne 0) { throw "Combined PDF workflow failed; evidence retained at $scratch" }
+& dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --image-pdf-direct (Join-Path $scratch 'direct') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
+if ($LASTEXITCODE -ne 0) { throw "Direct combined PDF workflow failed; evidence retained at $scratch" }
 Write-Output "Evaluation-only combined PDF worker: $scratch"

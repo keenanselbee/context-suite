@@ -1,7 +1,7 @@
 Document Support Design
 =======================
 
-Status: bounded package analysis, optional direct structural PDF optimization and PDF-to-PNG implemented with automated evidence; combined image-PDF backend and order dialog implemented, direct integration pending; engine adoption, remaining transformations and launch acceptance pending
+Status: bounded package analysis and optional direct PDF optimization, PDF-to-PNG and combined image-to-PDF implemented with automated evidence; engine adoption, Office transformations and launch acceptance pending
 
 Boundary
 --------
@@ -90,8 +90,9 @@ Selected launch transformations
 
 - Images to one combined PDF, with a focused page-order review for multiple
   images. The [ordered writer and worker](image-pdf-candidate.md) now have isolated
-  validated publication and all-source recovery evidence. The order dialog and
-  direct command are still pending.
+  validated publication and all-source recovery evidence. The direct command
+  invokes the order dialog for several images and publishes one PDF result;
+  retries retain the reviewed order with current Convert output settings.
 - PDF pages to images with fixed reviewed resolution and predictable naming.
 - PDF optimization with declared preservation of text/vector/document features.
 - Word, Excel and PowerPoint to PDF with evaluated font/layout fidelity and dependencies.
@@ -362,6 +363,7 @@ reference executable, signing purchase, native recycling or installed change ran
 
 Actual visible layout/keyboard review of the new document results is still needed;
 hidden view checks do not prove desktop or screen-reader delivery, themes or DPI.
-Next implementation work includes images-to-PDF and required Word/Excel/PowerPoint-
-to-PDF, followed by wider PDF fidelity and renderer interruption coverage, production
+The later [combined image-PDF checkpoint](image-pdf-candidate.md) adds its direct
+command. Next implementation work includes required Word/Excel/PowerPoint-to-PDF,
+wider PDF fidelity and renderer interruption coverage, production
 engine adoption and the broad-file goal's remaining catalog/analysis/release gates.

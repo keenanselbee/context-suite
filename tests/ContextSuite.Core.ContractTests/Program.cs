@@ -22,6 +22,14 @@ if (args.Length == 4 && args[0] == "--image-pdf-worker")
     Console.WriteLine($"Passed {checks} isolated combined PDF workflow checks.");
     return 0;
 }
+if (args.Length == 4 && args[0] == "--image-pdf-direct")
+{
+    var checks = 0;
+    await ImagePdfDirectContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated direct image PDF checks.");
+    return 0;
+}
 if (args.Length == 5 && args[0] == "--pdf-publication-crash") return await PdfPublicationCrashContracts.RunChildAsync(args[1], args[2], args[3], args[4]);
 if (args.Length == 4 && args[0] == "--audio-conversion-direct")
 {

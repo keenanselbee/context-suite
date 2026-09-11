@@ -57,6 +57,19 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The 2026-09-10 direct **Convert > PDF** checkpoint connects supported images to
+one reviewed document, validated copy publication and whole-document retry.
+Multiple images invoke the focused order dialog; retry retains that order and
+uses current Convert output settings. Changed inputs require a new command, and
+overlapping selections remain distinct retry jobs. Fresh evidence passes 20
+direct workflow checks, the existing 56 combined worker/recovery checks, native
+shell/host handoff contracts, 1,869 foundation/image-worker checks, 43 PDF-page
+checks, 102 hidden-view checks and 10 licensing-harness checks. Full isolated Release
+stage `ce26f4b0eb00464ba9c49f2782227db4` passes payload checks with fresh native
+output and zero warnings/errors. See [evidence and limits](image-pdf-candidate.md).
+Normal staging still excludes the optional validator; engine adoption, visible
+acceptance, required Office transformations and remaining broad-file work are open.
+
 The 2026-09-10 focused image-PDF order dialog now provides numbered filenames and
 folders, keyboard move commands, a first-page-derived destination and access
 refresh without losing order. The helper confirms one image directly and several

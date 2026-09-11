@@ -117,5 +117,8 @@ It copies the stage into new scratch, adds only the checked validator runtime
 there and runs real worker/access/publication contracts. It intentionally kills
 owned test workers and test applications to verify retained originals, candidate
 state and recovery journals; no unrelated process or installed app is changed.
-Generated `image-pdf-worker-*/results/app-crashes` evidence is retained. This does
-not enable the customer command or imply visible recovery acceptance.
+It also runs direct Convert > PDF contracts for reviewed order, one result,
+quiet completion and whole-document retry, writing `direct/image-pdf-direct.json`.
+Generated `image-pdf-worker-*/results/app-crashes` evidence is retained. The command
+still needs production validator adoption; this harness does not imply visible
+recovery or installed Explorer acceptance.

@@ -1,9 +1,9 @@
 Combined Image PDF Candidate
 ============================
 
-Status: ordered plan, writer, independent validator, isolated worker/publication
-and focused order dialog implemented with automated evidence; direct command
-integration and visible acceptance remain pending.
+Status: direct Convert > PDF, focused page-order review, validated worker output
+and all-source copy publication implemented with automated evidence. Optional
+engine adoption and visible acceptance remain pending.
 
 Owner decision and page-order policy
 -----------------------------------
@@ -31,9 +31,9 @@ one-PDF-per-image proposal. The intended Convert > PDF behavior is:
   Overwrite originals cannot recycle any member of a combined selection.
 
 Immutable plan/order enforcement, writing, independent validation and transactional
-copy publication and the focused order dialog are implemented. The menu command
-integration is next; isolated execution and hidden-view tests do not establish
-visible acceptance or an enabled customer action.
+copy publication, the focused order dialog and menu command are implemented when
+the optional validator is present. Isolated execution and hidden-view tests do
+not establish visible acceptance or production engine adoption.
 
 Fixed image representation
 --------------------------
@@ -130,9 +130,9 @@ was tested. Existing image-worker, raster/optimization, audio and hidden UI suit
 were not rerun for this unconnected writer slice; their earlier evidence retains
 its original scope. No desktop or assistive-technology test ran.
 
-The subsequent checkpoints add worker/access/validation/publication below.
-Still required: order dialog and direct command, wider fidelity,
-resource-limit benchmarking, crash/timeout/failed-publication tests, reader
+The subsequent checkpoints add worker/access/validation/publication, the order
+dialog and direct command below. Still required: wider fidelity,
+resource-limit benchmarking, native crash/timeout tests, reader
 compatibility, actual visual/keyboard/screen-reader/theme/DPI review, and the
 remaining [broad-file goal](broad-file-support-goal.md). This checkpoint does not
 complete images-to-PDF or authorize commercial release.
@@ -329,6 +329,68 @@ owner. It did not run installation or registration commands. The subsequent buil
 used the fresh isolated staging path above. Do not treat the initial build as an
 isolated payload or claim the development payload remained unchanged.
 
-Next: connect Convert > PDF to the review and worker, with one combined result,
-quiet success and whole-document retry retaining the reviewed order. Required
-Office transformations and the full broad-file/release gates remain open.
+The next checkpoint below connects Convert > PDF to this review and the worker.
+Required Office transformations and the full broad-file/release gates remain open.
+
+Direct combined-PDF command checkpoint (2026-09-10)
+-------------------------------------------------
+
+The native Convert submenu and host/request validation now accept **PDF** as a
+distinct target. Existing action positions and identities are retained. The
+shell only hands off the selection; it never loads an engine. The app declines
+this action before probing/admission when the optional validator is absent.
+Supported static images form one job and one result row, with every original
+listed in details. Several images invoke the focused order review; one image
+converts directly. Every source must probe and fit the per-page/aggregate bounds.
+An unsupported, unreadable or duplicate member prevents the entire document;
+no selected image is silently omitted. Aggregate input budgets are checked during
+preflight, and the session queue counts all selected images despite combined rows.
+
+One ordinary paid/trial admission covers execution. Success follows the existing
+quiet-completion policy; failure remains actionable. The result shows the reviewed
+page order and aggregate source bytes; the output name follows the reviewed first
+image even when it differs from the request's original first path. All outputs
+are copies, including with Overwrite originals selected.
+
+Retry recreates the entire failed/cancelled document, skips completed output and
+retains reviewed order without prompting again. It uses current Convert output
+settings, as other direct retries do. A cancelled review without confirmation
+must still be reviewed on retry. Every source is re-probed against its reviewed
+hash/length before a new admission; changed input requires a new Convert > PDF
+command. Separate selections remain separate retry jobs even if they overlap or
+start with the same image. Repeated retry clicks queue one attempt per document.
+All selected paths must still exist before a retry can be queued.
+
+Fresh isolated workflow evidence passes **20 direct image-PDF checks** and the
+existing **56 worker/publication/crash checks**, with real image/PDF engines and
+generated disposable fixtures. Cases include reviewed reverse order, one row and
+quiet completion, direct single-image output, publication failure, current-folder
+retry, cancelled review, changed secondary input, overlapping groups, duplicates,
+unsupported members, expired/reactivated admission and missing-engine refusal.
+All original hashes remain unchanged. Evidence is under `.codex-temp/pdf-engine/`
+`3edb2e8361e04782a91ef8364bd3a537/image-pdf-worker-5b363597ac1644eea3c0c9c2a4278b36`,
+including `direct/image-pdf-direct.json` and `results/app-crashes`.
+
+The shared regression passes **1,869 foundation/image-worker checks** (1,669
+foundation plus 200 existing real image-worker checks). Existing PDF page
+publication and direct workflows pass **25 + 18 checks**, with evidence under
+the prepared PDFium directory at `page-worker-9b01087f069c407993c6bf84c8338a5f`.
+The **10 isolated licensing-harness checks** also pass. Logs are
+`.codex-temp/image-pdf-direct-regression.log`, `image-pdf-direct-page-regression.log`
+and `image-pdf-direct-license.log`. Native writer/validator algorithms and audio
+engines were not changed; their separate suites were not rerun in this slice.
+
+The full isolated Release stage is
+`artifacts/production-staging/ce26f4b0eb00464ba9c49f2782227db4`, built with fresh
+native shell/host output and zero warnings/errors. Curated payload, dependency,
+notice and allowlist checks pass. Native shell COM/host contracts pass for the PDF
+action and full selection handoff; no registration is needed for these tests.
+Its files match the workflow-tested `9142d42355b94bb48bf7763ff4f48900` stage except
+the inventory and shell DLL (updated PDF tooltip); native contracts use the final
+shell DLL. Logs: `.codex-temp/image-pdf-direct-workflow.log`,
+`image-pdf-direct-final-build.log`, `image-pdf-direct-shell.log` and
+`image-pdf-direct-views.log`. The **102 hidden-view checks** pass; actual desktop,
+keyboard focus/input, screen-reader, theme/DPI and installed acceptance remain
+unverified for this command. Engine adoption, wider native interruption/resource/
+reader/fidelity acceptance, Office-to-PDF and all remaining broad-file/release
+requirements remain open. No install, registration, recycling or live provider ran.

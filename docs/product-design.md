@@ -18,7 +18,9 @@ analysis. Selected launch actions include images-to-PDF, PDF pages-to-images,
 PDF optimization and Word/Excel/PowerPoint-to-PDF. Optional PDF optimization has
 direct worker/publication coverage; PDF-to-PNG has direct PNG-command coverage
 with per-document summaries and partial-page retries. Renderer packaging and
-visible acceptance remain pending. Other selected document conversions remain planned;
+visible acceptance remain pending. Optional Convert > PDF now combines images
+through a focused order review, one validated copy and whole-document retry.
+Office-to-PDF remains planned;
 retain the simple customer surfaces above. Shared Analyze/fallback,
 bounded JSON/XML structure analysis and a 237-entry catalog are implemented with automated
 evidence; see [current coverage](file-type-coverage.md). Signing is deferred.

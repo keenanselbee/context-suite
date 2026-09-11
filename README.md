@@ -49,7 +49,11 @@ mandatory PDF copies. Broader fidelity, engine adoption and the other document
 actions remain pending. **Convert > PNG** now includes PDFs when the optional
 renderer is present, with numbered page copies, one document result and retries
 that skip completed pages. Partial failure/cancellation remain visible; normal
-packaging still excludes the renderer. The [goal record](docs/broad-file-support-goal.md)
+packaging still excludes the renderer. **Convert > PDF** now combines supported
+images into one validated copy when the optional validator is present. Several
+images require page-order review; retries keep that order and preserve originals.
+Normal packaging still excludes this validator. Office-to-PDF remains pending.
+The [goal record](docs/broad-file-support-goal.md)
 identifies the latest isolated staging and its limited acceptance scope.
 The owner accepted the image utility's simplified UI; screen-reader, additional
 themes/DPI and installed lifecycle coverage remain separate gates. Signing is

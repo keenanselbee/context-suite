@@ -37,8 +37,9 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     public IEnumerable<FileRow> DisplayRows => Rows.Where(row => !row.WasRetried);
     private IEnumerable<FileRow> RetryCandidates => Rows.Where(row => row.Operation is "convert" or "optimize")
         .GroupBy(row => row.Operation)
-        .SelectMany(tool => tool.GroupBy(row => row.Path, StringComparer.OrdinalIgnoreCase).Select(file => file.Last()))
-        .Where(row => !row.PdfResumeBlocked && (row.Result.State == OperationState.Failed && row.Result.Publication?.IsCommitted != true ||
+        .SelectMany(tool => tool.GroupBy(row => row.IsImagePdf ? "image-pdf:" + row.ImagePdfRetryId : row.Path, StringComparer.OrdinalIgnoreCase).Select(file => file.Last()))
+        .Where(row => !row.PdfResumeBlocked && !row.ImagePdfRetryBlocked && (row.Result.State == OperationState.Failed && row.Result.Publication?.IsCommitted != true ||
+            row.IsImagePdf && row.Result.State == OperationState.Cancelled ||
             row.HasIncompletePdfPages && row.Result.State is OperationState.Failed or OperationState.Cancelled));
     public bool CanRetry => !IsBusy && RetryCandidates.Any();
     public bool HasProblems => DisplayRows.Any(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.PartialOutput || row.Result.Publication?.HasWarning == true);
@@ -70,16 +71,21 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         }
         if (_received.Contains(request.RequestId)) return new(1, request.RequestId, true, "Already received.");
         // Bound both pending work and retained UI history. Never silently discard selections.
-        if (_lifetime.IsCancellationRequested || Rows.Count + request.Paths.Length > 16384 || _received.Count >= 1024)
+        if (_lifetime.IsCancellationRequested || Rows.Sum(row => row.IsImagePdf ? row.ImagePdfPaths.Length : 1) + request.Paths.Length > 16384 || _received.Count >= 1024)
             return new(1, request.RequestId, false, "The session queue is full. Close it after work finishes and try again.");
         _received.Add(request.RequestId);
         var batchId = ++_batch;
         var snapshot = Settings.Capture(request.Operation);
-        var rows = request.Paths.Select(path => new FileRow(batchId, request.Operation, path, snapshot, request.Action)).ToArray();
+        var rows = (request.IsImagePdfConversion ? request.Paths.Take(1) : request.Paths)
+            .Select(path => new FileRow(batchId, request.Operation, path, snapshot, request.Action)).ToArray();
+        if (request.IsImagePdfConversion) rows[0].ImagePdfPaths = request.Paths;
         if (retryRows is not null)
             foreach (var row in rows)
                 if (retryRows.FirstOrDefault(previous => string.Equals(previous.Path, row.Path, StringComparison.OrdinalIgnoreCase)) is { } previous)
+                {
                     row.ResumePdfFrom(previous);
+                    row.ResumeImagePdfFrom(previous);
+                }
         foreach (var row in rows) Rows.Add(row);
         Changed(nameof(HasResults)); Changed(nameof(IsLanding)); Changed(nameof(DisplayRows));
         _pending.Enqueue((request, rows));
@@ -171,6 +177,11 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
 
     private async Task ConvertBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
     {
+        if (request.IsImagePdfConversion)
+        {
+            await ConvertImagesToPdfAsync(request, rows[0], cancellationToken);
+            return;
+        }
         if (request.IsQuickAudioConversion)
         {
             await ConvertAudioBatchAsync(request, rows, cancellationToken);
@@ -428,9 +439,18 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         // Newly queued rows immediately suppress a second click, even before dispatch.
         var failed = RetryCandidates.ToArray();
         if (failed.Length == 0) return "No files need another attempt. Completed files are skipped.";
-        var available = failed.Where(row => File.Exists(row.Path)).ToArray();
+        var available = failed.Where(row => row.IsImagePdf ? row.ImagePdfPaths.All(File.Exists) : File.Exists(row.Path)).ToArray();
         var received = 0;
-        foreach (var group in available.GroupBy(row => (row.Operation, row.Action)))
+        foreach (var row in available.Where(row => row.IsImagePdf))
+        {
+            try
+            {
+                if (AdmitCore(new(Guid.NewGuid(), "convert", "pdf", row.ImagePdfPaths), [row]).Accepted)
+                { received++; row.WasRetried = true; }
+            }
+            catch (Exception error) when (error is InvalidDataException or ArgumentException or IOException) { }
+        }
+        foreach (var group in available.Where(row => !row.IsImagePdf).GroupBy(row => (row.Operation, row.Action)))
         foreach (var chunk in group.Chunk(OperationRequest.MaximumPaths))
         {
             try
@@ -533,7 +553,7 @@ internal sealed partial class FileRow(int batch, string operation, string path, 
     public string Operation { get; } = operation;
     public string Action { get; } = action ?? (operation switch { "optimize" => "choose-preset", "analyze" => "open-details", _ => "choose-format" });
     public string Path { get; } = path;
-    public string Name => System.IO.Path.GetFileName(Path);
+    public string Name => IsImagePdf ? $"{ImagePdfPaths.Length} image{(ImagePdfPaths.Length == 1 ? "" : "s")} → PDF" : System.IO.Path.GetFileName(Path);
     public BatchSettings Settings { get; } = settings;
     public FileResult Result { get; private set; } = new(path, OperationState.Pending, "Pending");
     public FileAnalysis? Analysis { get; private set; }
@@ -556,7 +576,7 @@ internal sealed partial class FileRow(int batch, string operation, string path, 
         (Result.EngineIdentity is null ? "" : $"\nEngine / policy: {Result.EngineIdentity}") +
         (OutputPath.Length == 0 ? "" : $"\nOutput: {OutputPath}") +
         (RetainedOriginalPath.Length == 0 ? "" : $"\nRetained original: {RetainedOriginalPath}") +
-        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}") + PdfPageDetails;
+        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}") + PdfPageDetails + ImagePdfDetails;
 
     public string AnalysisSummary => Analysis is not { } analysis ? "" :
         $"What it is: {analysis.Identity.Name} ({(analysis.Identity.Basis == IdentificationBasis.Filename ? "filename hint" : analysis.Identity.Confidence.ToString().ToLowerInvariant())})\n" +
