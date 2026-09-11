@@ -1,15 +1,16 @@
 Audio Engine Curation
 =====================
 
-Status: six source inputs retained and isolated audio dependency recipes tested,
+Status: nine source inputs retained and isolated audio dependency recipes tested,
 2026-09-11. The tested audio adapter and direct commands remain optional because
 normal production staging has no adopted audio payload. This work does not enable
 an unreviewed supplier bundle.
 
 The [current dependency build record](audio-dependency-builds.md) covers Opus,
 Ogg/Vorbis and LAME, including independent generated-MP3 decoding. The supplier's
-LAME snapshot is an alpha; stable MP3 baseline selection and complete FFmpeg
-composition remain open. The sections below retain earlier source/Opus evidence.
+LAME snapshot is an alpha; stable LAME 4.0 now passes a separate source build and
+generated-media check. Complete FFmpeg composition remains open. The sections
+below retain earlier source/Opus evidence.
 
 Why staging still excludes the evaluation engine
 ------------------------------------------------
@@ -26,7 +27,7 @@ Retained inputs
 ---------------
 
 [source-inputs.json](../tools/audio-engine/source-inputs.json) pins archive hashes,
-sizes, immutable revisions and expected source/license entries for six inputs:
+sizes, revisions and expected source/license entries for nine inputs:
 
 | Input | Revision | Evidence |
 | --- | --- | --- |
@@ -36,6 +37,9 @@ sizes, immutable revisions and expected source/license entries for six inputs:
 | Vorbis | `1b75110b5a2754ba1931d82dd83cb822b266a21d` | Exact source revision declared by that recipe |
 | Opus | `3da9f7a6db1c05c3996cb363a9d1931a978bf1be` | Exact source revision declared by that recipe |
 | LAME | SVN `6761` | File contents exported from the recipe's fixed upstream revision |
+| Stable LAME | `4.0` | Original tarball from the official SourceForge release endpoint |
+| GNU make | `4.4.1` | Original GNU release tarball; build tool only |
+| NASM | `3.02` | Original source ZIP from the official release directory; build tool only |
 
 Sources were independently downloaded, without reference binaries or source
 copying. The retained supplier recipe is read-only research and has not been
@@ -47,7 +51,7 @@ complete corresponding-source distribution.
 The [preparation script](../tools/audio-engine/Prepare-AudioSources.ps1) downloads
 only the exact pinned archives into repository scratch. Existing files must match;
 there is no fallback to latest and no overwrite of a mismatched cache. It holds a
-read lease while checking size/hash and required ZIP entries, without extraction
+read lease while checking size/hash and required archive entries, without extraction
 or upstream script execution. `-VerifyOnly` performs no downloads or output writes.
 
 LAME uses the independently authored [HTTP exporter](../tools/audio-engine/Download-LameSource.py)
@@ -59,6 +63,30 @@ metadata. The wrapper verifies the final 7,747,642-byte archive against SHA256
 `C9FF77F7A92E64A21E6CC77F1DE8F1CA4652743F8BB4A5354E6760157525954C`.
 This is a file-content export, not SVN properties or history. Source fixtures are
 retained without playback or execution; partial failures stay in scratch.
+
+The three release archives are pinned by locally measured SHA256 and size from
+their official HTTPS endpoints; publisher signatures have not been verified.
+Schema 3 requires all nine files, totaling 45,902,328 bytes. Existing six-file
+caches need the three new inputs before `-VerifyOnly` or a dependency build.
+The original release archives remain intact; they are not repackaged into ZIPs.
+
+The [tar reader](../tools/audio-engine/Read-SourceTar.py) requires Python 3.14,
+verifies archive identity and checks all entries before extraction into a fresh
+scratch directory. It permits only regular files/directories, rejects links,
+special entries, sparse files, traversal, Windows device/stream names and path
+collisions, and bounds entry count, depth, per-file size and total size. It writes
+files exclusively and returns per-file hashes for the build inventory. It never
+uses automatic tar extraction. ZIP extraction follows the existing pinned path.
+
+All nine source checks pass in the original cache. Six authored tar test groups
+pass (`python -B tools/audio-engine/Test-SourceTar.py`), covering valid release
+layout, unsafe paths, links/special entries, collisions, required files and limits.
+Four CLI refusal checks also pass: outside scratch, parent traversal, changed
+archive bytes and existing destination. They preserve the original archive and
+destination sentinel; evidence is at
+`.codex-temp/source-tar-guards-9183fecb17dd413dacd4b5005d0f69a4`.
+GNU make and NASM have not been built or installed. Their source pins are inputs
+for the next build-tool recipes, not tested executables or shipping dependencies.
 
 Outstanding source and build inputs
 ----------------------------------
@@ -76,7 +104,7 @@ Outstanding source and build inputs
   below needs no model download with the neural features disabled; this does not
   establish the stock supplier bootstrap's source completeness.
 - Pin the actual compiler, assembler, build tools, CRT and every linked library;
-  retain source/configuration/patches/notices and output inventories. The six
+  retain source/configuration/patches/notices and output inventories. The nine
   archives do not cover the supplier package's other enabled components.
 - Establish the actual configuration and license/notice inventory of the curated
   binary. FFmpeg's [upstream guidance](https://ffmpeg.org/legal.html) calls for

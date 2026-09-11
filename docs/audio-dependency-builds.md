@@ -15,6 +15,7 @@ Prepare the [pinned source cache](audio-engine-curation.md), then run:
 .\tools\audio-engine\Build-AudioDependency.ps1 -Dependency Opus -SourceDirectory '<source cache>'
 .\tools\audio-engine\Build-AudioDependency.ps1 -Dependency OggVorbis -SourceDirectory '<source cache>'
 .\tools\audio-engine\Build-AudioDependency.ps1 -Dependency Lame -SourceDirectory '<source cache>'
+.\tools\audio-engine\Build-AudioDependency.ps1 -Dependency LameStable -SourceDirectory '<source cache>'
 ```
 
 The existing `Build-OpusDependency.ps1` command forwards to the shared runner.
@@ -35,6 +36,7 @@ evidence is not a production manifest or proof of bit-for-bit reproducibility.
 | Opus | Static Opus and linked version probe | Five upstream tests and runtime source-version identity |
 | OggVorbis | Static Ogg, Vorbis, Vorbis encoder and Vorbis file libraries | Ogg bitwise/framing tests and Vorbis stream/codebook tests |
 | Lame | Static core MP3 encoder, including upstream SIMD routines | Authored stereo VBR2 encoding, followed by independent decoding below |
+| LameStable | Stable LAME 4.0 core encoder | Exact runtime version, authored VBR2 encoding and independent decoding |
 
 Ogg and Vorbis use their unchanged upstream CMake projects. The wrapper supplies
 the Ogg target directly to Vorbis, with static libraries, dynamic CRT and tests
@@ -42,8 +44,8 @@ enabled. Generated test audio stays in the build directory. The complete FFmpeg
 link must select only the libraries it needs; building `vorbisfile.lib` does not
 authorize including unused code in the shipping payload.
 
-The LAME wrapper selects the 27 core/vector translation units from the pinned
-upstream library project and copies `configMS.h` into the binary directory. It
+The LAME wrapper selects 27 core/vector translation units for the supplier alpha,
+or 21 for stable 4.0, and copies `configMS.h` into the binary directory. It
 excludes frontends, MP3 decoders, drivers and network clients. Dynamic CRT, stack
 protection, control-flow guard and x64 continuation protection are selected. This
 configuration builds without an external iconv library; that does not prove the
@@ -73,23 +75,27 @@ channel or timing errors for this authored signal. They are not listening criter
 metadata/artwork acceptance, malicious-input testing or the full product matrix.
 Original MP3 bytes remain unchanged.
 
-The built source identifies itself as **LAME 4.1 alpha 0**. The
-[official release page](https://lame.sourceforge.io/download.php) lists **4.0**.
-Retain this supplier-source result as evaluation evidence and evaluate a pinned
-stable release before choosing the shipping MP3 baseline. Do not silently adopt
-the development snapshot because this one generated clip passes.
+The supplier source identifies itself as **LAME 4.1 alpha 0**. The separate stable
+candidate uses **4.0** from the [official release page](https://lame.sourceforge.io/download.php),
+retaining its original release tarball. `LameStable` selects its smaller upstream
+vector source list and requires runtime `get_lame_version()` to equal `4.0`.
+It passes the same authored encoding and independent decode checks: 11,684 bytes,
+44,100 frames, and the same measured errors above. Stable 4.0 is the candidate for
+the next curated FFmpeg build; shipping adoption still requires the full audio
+matrix. The alpha result remains supplier-comparison evidence.
 
 
 Verified evidence
 -----------------
 
-All three final builds report zero compiler warnings/errors and unchanged source:
+The recorded builds report zero compiler warnings/errors and unchanged source:
 
 | Dependency | Scratch directory suffix | Source files | Native tests |
 | --- | --- | --- | --- |
 | Ogg/Vorbis | `audio-ogg-vorbis-60bfc013079d4de3b5a18641f667615e` | 546 | 4 passed, 5.90 seconds |
 | Opus regression | `audio-opus-d83484e46cff4b89bd481cf99ce8281b` | 752 | 6 passed, 68.52 seconds |
 | LAME | `audio-lame-9b7197bf07d845bc8fcd5288592e5d21` | 418 | Authored encoding passed |
+| Stable LAME 4.0 | `audio-lame-5b1849b0f6af4718acce8907caadddae` | 316 | Runtime version and authored encoding passed |
 
 Directories are under `.codex-temp`. LAME's independent result is in
 `independent-check-c7116742de3542c09920bff77e098914` beneath that build. The checker
@@ -102,18 +108,26 @@ beside each build, with Python/PowerShell syntax and repository checks recorded.
 No private adapter, production engine pin, customer media, installed state or UI
 acceptance changed.
 
+The stable build's independent result is
+`independent-check-d7f574a245164070a743e8cd70edaeb7`. Its manifest also hashes the
+release-tar reader. The earlier stable build at
+`audio-lame-05080d80a7ca49f098b4b0497ea386a0` passed before adding the explicit
+runtime-version assertion; the table identifies the final recipe. Previous ZIP
+build evidence remains historical and was not rerun for the new tar branch.
+
 
 Next build work
 ---------------
 
-Choose the stable MP3 baseline, then compose the restricted FFmpeg build and run
+Compose the restricted FFmpeg build with stable LAME 4.0 and run
 the existing complete audio adapter/worker matrix against it. Retain the compiler,
 CRT, linked-component, source and notice inventory before production adoption.
 
 [FFmpeg's Windows instructions](https://ffmpeg.org/platform.html#Microsoft-Visual-C_002b_002b-or-Intel-C_002b_002b-Compiler-for-Windows)
 support MSVC with a Unix-like build environment and assembler. GNU make and NASM
-remain to be supplied through reviewed repository-local build inputs; the existing
-Git Bash installation alone has no make executable. Do not install a toolchain
+now have pinned original release source archives in the cache: GNU make 4.4.1 and
+NASM 3.02. Their repository-local build recipes and native checks remain pending;
+the existing Git Bash installation alone has no make executable. Do not install a toolchain
 or remove required codec behavior just to get a build to pass.
 
 The pinned FFmpeg configure script rejects whitespace in an out-of-tree source

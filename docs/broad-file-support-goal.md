@@ -57,6 +57,15 @@ Starting evidence
 Implementation progress (2026-09-09)
 ------------------------------------
 
+The subsequent 2026-09-11 [stable MP3 checkpoint](audio-dependency-builds.md)
+builds LAME 4.0 from its original pinned release archive, with exact runtime
+version, no compiler warnings/errors and 316 unchanged source files. Independent
+decoding passes the authored stereo sample-count and signal-error checks. Nine
+source archives now verify, including GNU make/NASM inputs for the remaining
+build-tool work; six tar-reader test groups and four CLI refusals pass. Stable
+LAME is the candidate for the curated build. FFmpeg composition, the full audio
+matrix, source/notice inventory and production adoption remain open.
+
 The 2026-09-11 [shared audio dependency builds](audio-dependency-builds.md) add
 Ogg/Vorbis and the LAME core encoder while retaining the existing Opus command.
 Fresh builds pass four Ogg/Vorbis tests, six Opus regression tests and authored

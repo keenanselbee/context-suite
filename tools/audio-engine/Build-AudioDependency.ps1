@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $SourceDirectory,
-      [Parameter(Mandatory)][ValidateSet('Opus', 'OggVorbis', 'Lame')][string] $Dependency)
+      [Parameter(Mandatory)][ValidateSet('Opus', 'OggVorbis', 'Lame', 'LameStable')][string] $Dependency)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 & (Join-Path $PSScriptRoot 'Prepare-AudioSources.ps1') -SourceDirectory $SourceDirectory -VerifyOnly
@@ -24,8 +24,8 @@ switch ($Dependency) {
             'vorbis/lib/Release/vorbisfile.lib', 'ogg/Release/test_bitwise.exe', 'ogg/Release/test_framing.exe',
             'vorbis/test/Release/vorbis_test.exe', 'vorbis/test/Release/test_codebook.exe')
     }
-    'Lame' {
-        $sourceIds = @('lame')
+    { $_ -in 'Lame', 'LameStable' } {
+        $sourceIds = if ($Dependency -eq 'LameStable') { @('lame-stable') } else { @('lame') }
         $recipeName = 'lame'
         $testCount = 1
         $artifacts = @('Release/mp3lame.lib', 'Release/ContextSuite.Lame.Probe.exe', 'lame-vbr2.mp3')
@@ -47,7 +47,6 @@ foreach ($id in $sourceIds) {
     $pin = $pins | Where-Object id -eq $id
     $source = Join-Path $workspace ('source/' + $id)
     $sources[$id] = $source
-    New-Item -ItemType Directory -Path $source | Out-Null
     $archivePath = Join-Path ([IO.Path]::GetFullPath($SourceDirectory)) $pin.file
     $stream = [IO.File]::Open($archivePath, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::Read)
     try {
@@ -55,6 +54,13 @@ foreach ($id in $sourceIds) {
         try { $archiveHash = [BitConverter]::ToString($hasher.ComputeHash($stream)).Replace('-', '') }
         finally { $hasher.Dispose() }
         if ($stream.Length -ne $pin.bytes -or $archiveHash -ne $pin.sha256) { throw 'Source archive changed before extraction.' }
+        if ($pin.downloadKind -eq 'release-tar') {
+            $result = & python (Join-Path $PSScriptRoot 'Read-SourceTar.py') $SourceDirectory $id $source
+            if ($LASTEXITCODE -ne 0) { throw 'Pinned release source extraction failed.' }
+            $sourceFiles += ($result | ConvertFrom-Json).files
+            continue
+        }
+        New-Item -ItemType Directory -Path $source | Out-Null
         $stream.Position = 0
         $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Read, $true)
         try {
@@ -86,7 +92,11 @@ $configure = @('-S', $recipe, '-B', $build, '-G', 'Visual Studio 18 2026', '-A',
     "-DCMAKE_GENERATOR_INSTANCE=$visualStudio", '-DCMAKE_SYSTEM_VERSION=10.0.26100.0',
     '-DCMAKE_VS_GLOBALS=ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false'
 )
-foreach ($id in $sourceIds) { $configure += "-D$($id.ToUpperInvariant())_SOURCE=$($sources[$id])" }
+foreach ($id in $sourceIds) {
+    $variable = if ($id -eq 'lame-stable') { 'LAME' } else { $id.ToUpperInvariant() }
+    $configure += "-D${variable}_SOURCE=$($sources[$id])"
+}
+if ($Dependency -eq 'LameStable') { $configure += '-DLAME_STABLE=ON' }
 if ($Dependency -eq 'Opus') { $configure += "-DOPUS_PACKAGE_VERSION=$($opus.packageVersion)" }
 
 function Invoke-BuildStep([string] $Executable, [string[]] $Arguments, [string] $LogName) {
@@ -133,6 +143,7 @@ $inventory = @($artifacts | ForEach-Object {
     testLogSha256=(Get-FileHash -LiteralPath (Join-Path $workspace 'tests.log')).Hash;
     recipeSha256=(Get-FileHash -LiteralPath (Join-Path $recipe 'CMakeLists.txt')).Hash;
     recipeFiles=@(Get-ChildItem -LiteralPath $recipe -Recurse -File | ForEach-Object { [ordered]@{ path=$_.FullName.Substring($recipe.Length + 1); sha256=(Get-FileHash -LiteralPath $_.FullName).Hash } });
-    scriptSha256=(Get-FileHash -LiteralPath $PSCommandPath).Hash; artifacts=$inventory } |
+    scriptSha256=(Get-FileHash -LiteralPath $PSCommandPath).Hash;
+    sourceReaderSha256=(Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'Read-SourceTar.py')).Hash; artifacts=$inventory } |
     ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $workspace 'dependency-build.json') -Encoding UTF8
 Write-Output "Verified $Dependency dependency build: $workspace"

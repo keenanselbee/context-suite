@@ -146,13 +146,18 @@ Actual production adoption needs retained reproducible source/dependency inputs,
 license/notice review and an intentionally bounded capability build.
 
 Use `Prepare-AudioSources.ps1` to retain the currently pinned FFmpeg, supplier
-recipe, Ogg, Vorbis, Opus and LAME source archives in a new repository scratch directory.
+recipe, Ogg, Vorbis, Opus, supplier LAME, stable LAME 4.0, GNU make and NASM source
+archives in a new repository scratch directory.
 Use `-SourceDirectory '<existing repository scratch directory>' -VerifyOnly` to
 verify them without downloads or writes. Hash/size mismatches are refused; no
 upstream scripts execute. The five GitHub archives are retained without extraction;
 LAME's fixed SVN revision is exported over HTTP using Python 3.14 or later, with
 bounded reads, a per-file inventory and a deterministic pinned ZIP. SVN properties
-and history are not exported. The
+and history are not exported. Stable LAME and GNU make retain their original
+release tarballs; NASM retains its original source ZIP. The checked tar reader
+rejects unsafe paths, links and oversized entries before extraction. Python 3.14
+is required for tar verification too. Source schema 3 requires all nine archives,
+including when verifying an older cache. The
 [curation record](../../docs/audio-engine-curation.md) lists unresolved SVN-property,
 Opus bootstrap, toolchain and transitive inputs, plus the preliminary Opus findings
 and subsequent verified dependency recipe. These archives do not constitute
@@ -172,13 +177,17 @@ staging run. The repository wrapper supplies a truthful source version and fixes
 the pinned CMake/MSVC flag mismatch without editing upstream files. This Opus
 dependency does not yet provide the complete curated FFmpeg audio payload.
 
-`Build-AudioDependency.ps1` accepts `-Dependency Opus`, `OggVorbis` or `Lame`, plus
+`Build-AudioDependency.ps1` accepts `-Dependency Opus`, `OggVorbis`, `Lame` or
+`LameStable`, plus
 `-SourceDirectory '<verified source cache>'`. It shares the source, build, test
-and inventory checks across all three selections; the older Opus command forwards
+and inventory checks across all selections; the older Opus command forwards
 to it.
 Ogg/Vorbis runs four upstream tests. LAME builds only the core encoder and an
 authored VBR2 probe. Run `python tools/audio-engine/Test-LameDependency.py
 '<completed Lame build>' '<evaluation engine bin>'` for independent stream,
 gapless sample-count and generated-tone checks after verifying the complete
 pinned decoder runtime. See [exact evidence and remaining work](../../docs/audio-dependency-builds.md),
-including the LAME alpha/stable selection and missing FFmpeg build inputs.
+including the passing stable LAME candidate and remaining FFmpeg/build-tool work.
+`LameStable` checks its runtime version as well as encoding. GNU make and NASM
+source retention does not yet provide tested build executables. Use
+`python -B tools/audio-engine/Test-SourceTar.py` for authored tar-reader checks.

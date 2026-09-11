@@ -50,7 +50,7 @@ def main():
     if not {"ffmpeg.exe", "ffprobe.exe"}.issubset(runtime) or {path.name for path in engine.glob("*.dll")} != {name for name in runtime if name.endswith(".dll")}:
         raise ValueError("Evaluation runtime file membership changed")
     identity = json.loads((build / "dependency-build.json").read_text(encoding="utf-8-sig"))
-    if identity["dependency"] != "Lame":
+    if identity["dependency"] not in ("Lame", "LameStable"):
         raise ValueError("Use a completed LAME dependency build")
     fixture = build / "build/lame-vbr2.mp3"
     expected = next(item for item in identity["artifacts"] if item["path"] == "lame-vbr2.mp3")

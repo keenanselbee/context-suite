@@ -1,5 +1,5 @@
 {
-  "schema": 2,
+  "schema": 3,
   "status": "retained source inputs for audio curation; not a complete corresponding-source bundle or production adoption",
   "evaluationArchiveSha256": "575642722B7C7079C6855C166ED1EA9D5B7451CDF70919871229E4E1EBE24A34",
   "archives": [
@@ -74,6 +74,42 @@
       "prefix": "lame-r6761/",
       "requiredEntries": ["COPYING", "LICENSE", "configure", "Makefile.MSVC", "include/lame.h"],
       "exportScope": "Deterministic HTTP file-content ZIP; SVN properties and history are not exported."
+    },
+    {
+      "id": "lame-stable",
+      "revision": "4.0",
+      "url": "https://downloads.sourceforge.net/project/lame/lame/4.0/lame-4.0.tar.gz",
+      "file": "lame-stable.tar.gz",
+      "bytes": 1496810,
+      "sha256": "3DF5124D5AD3A98312FFD7BA6A9B36230E4F8A3E66D3CE0F425E336C32D216EB",
+      "prefix": "lame-4.0/",
+      "requiredEntries": ["COPYING", "LICENSE", "configure", "configMS.h", "include/lame.h", "libmp3lame/version.h"],
+      "downloadKind": "release-tar",
+      "pinEvidence": "Locally measured release archive from the official HTTPS endpoint; publisher signature not verified."
+    },
+    {
+      "id": "make",
+      "revision": "4.4.1",
+      "url": "https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz",
+      "file": "make.tar.gz",
+      "bytes": 2348200,
+      "sha256": "DD16FB1D67BFAB79A72F5E8390735C49E3E8E70B4945A15AB1F81DDB78658FB3",
+      "prefix": "make-4.4.1/",
+      "requiredEntries": ["COPYING", "README.W32", "build_w32.bat", "src/config.h.W32"],
+      "downloadKind": "release-tar",
+      "pinEvidence": "Locally measured release archive from the official HTTPS endpoint; publisher signature not verified."
+    },
+    {
+      "id": "nasm",
+      "revision": "3.02",
+      "url": "https://www.nasm.us/pub/nasm/releasebuilds/3.02/nasm-3.02.zip",
+      "file": "nasm.zip",
+      "bytes": 2891254,
+      "sha256": "E50CF30A199E36436D74332042FDE761BD7EF6B13BE9F2C4D7460E08B5C09E5D",
+      "prefix": "",
+      "requiredEntries": ["LICENSE", "AUTHORS", "version", "version.h", "config/msvc.h", "Mkfiles/msvc.mak"],
+      "downloadKind": "release-zip",
+      "pinEvidence": "Locally measured release archive from the official HTTPS endpoint; publisher signature not verified."
     }
   ],
   "unresolvedInputs": [

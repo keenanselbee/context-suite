@@ -17,7 +17,7 @@ for ($ancestor = $directory; $ancestor -and $ancestor -ne $repository; $ancestor
     }
 }
 $pin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'source-inputs.json') -Raw | ConvertFrom-Json
-if ($pin.schema -ne 2 -or $pin.archives.Count -ne 6) { throw 'Unsupported source inventory.' }
+if ($pin.schema -ne 3 -or $pin.archives.Count -ne 9) { throw 'Unsupported source inventory.' }
 if (-not (Test-Path -LiteralPath $directory)) {
     if ($VerifyOnly) { throw 'Source directory does not exist.' }
     New-Item -ItemType Directory -Path $directory | Out-Null
@@ -25,7 +25,7 @@ if (-not (Test-Path -LiteralPath $directory)) {
 Add-Type -AssemblyName System.IO.Compression
 $ProgressPreference = 'SilentlyContinue'
 foreach ($archive in $pin.archives) {
-    if ($archive.file -notmatch '^[a-z-]+\.zip$' -or $archive.sha256 -notmatch '^[A-F0-9]{64}$' -or
+    if ($archive.file -notmatch '^[a-z-]+\.(zip|tar\.gz)$' -or $archive.sha256 -notmatch '^[A-F0-9]{64}$' -or
         $archive.bytes -le 0 -or $archive.bytes -gt 128MB) {
         throw 'Invalid pinned source input.'
     }
@@ -41,6 +41,18 @@ foreach ($archive in $pin.archives) {
                 $archive.url -ne 'https://svn.code.sf.net/p/lame/svn/!svn/bc/6761/trunk/lame/' -or
                 $archive.prefix -ne 'lame-r6761/') {
                 throw 'Unsupported SVN source export.'
+            }
+        }
+        { $_ -in 'release-tar', 'release-zip' } {
+            $release = switch ($archive.id) {
+                'lame-stable' { @('4.0', 'https://downloads.sourceforge.net/project/lame/lame/4.0/lame-4.0.tar.gz', 'lame-stable.tar.gz', 'lame-4.0/', 'release-tar') }
+                'make' { @('4.4.1', 'https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz', 'make.tar.gz', 'make-4.4.1/', 'release-tar') }
+                'nasm' { @('3.02', 'https://www.nasm.us/pub/nasm/releasebuilds/3.02/nasm-3.02.zip', 'nasm.zip', '', 'release-zip') }
+                default { throw 'Unsupported release source input.' }
+            }
+            if ($archive.revision -ne $release[0] -or $archive.url -ne $release[1] -or
+                $archive.file -ne $release[2] -or $archive.prefix -ne $release[3] -or $archive.downloadKind -ne $release[4]) {
+                throw 'Release source identity changed.'
             }
         }
         default { throw 'Unsupported source download kind.' }
@@ -64,6 +76,12 @@ foreach ($archive in $pin.archives) {
         try { $hash = [BitConverter]::ToString($hasher.ComputeHash($stream)).Replace('-', '') }
         finally { $hasher.Dispose() }
         if ($hash -ne $archive.sha256) { throw "Source archive identity changed: $($archive.file)" }
+        if ($archive.downloadKind -eq 'release-tar') {
+            & python (Join-Path $PSScriptRoot 'Read-SourceTar.py') $directory $archive.id | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "Release tar verification failed: $($archive.id)" }
+            Write-Output "Verified source input: $($archive.id) $($archive.revision)"
+            continue
+        }
         $stream.Position = 0
         $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Read, $true)
         try {

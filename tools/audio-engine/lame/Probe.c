@@ -16,6 +16,13 @@ int main(int argc, char **argv)
     if (!encoder)
         return 2;
     printf("LAME %s\n", get_lame_version());
+#ifdef CONTEXT_SUITE_LAME_STABLE
+    if (strcmp(get_lame_version(), "4.0") != 0)
+    {
+        lame_close(encoder);
+        return 9;
+    }
+#endif
     if (lame_set_in_samplerate(encoder, 44100) != 0 ||
         lame_set_num_channels(encoder, 2) != 0 ||
         lame_set_num_samples(encoder, sample_count) != 0 ||
