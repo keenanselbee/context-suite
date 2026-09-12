@@ -171,7 +171,22 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             catch (InvalidDataException)
             { row.ApplyResult(new(row.Path, OperationState.Unsupported, "This path cannot be analyzed. Choose an available regular file; linked paths and offline placeholders are not read.")); }
             catch (Exception error) when (error is IOException or UnauthorizedAccessException or Win32Exception)
-            { row.ApplyResult(new(row.Path, OperationState.Failed, "Could not read a stable file header. Check that the file is available and has finished saving, then run Analyze again.")); }
+            {
+                var message = error switch
+                {
+                    FileAnalysisTimeoutException => "This file took too long to read. Check its drive or network connection, then run Analyze again.",
+                    FileNotFoundException or DirectoryNotFoundException or Win32Exception { NativeErrorCode: 2 or 3 } =>
+                        "This file could not be found. Check whether it was moved or deleted, then select it again.",
+                    UnauthorizedAccessException or Win32Exception { NativeErrorCode: 5 } =>
+                        "Context Suite does not have permission to read this file. Check its access permissions, then run Analyze again.",
+                    Win32Exception { NativeErrorCode: 32 or 33 } =>
+                        "Another program is using this file. Close it there, then run Analyze again.",
+                    IOException when (error.HResult & 0xffff) is 32 or 33 =>
+                        "Another program is using this file. Close it there, then run Analyze again.",
+                    _ => "Could not read a stable file header. Check that the file is available and has finished saving, then run Analyze again."
+                };
+                row.ApplyResult(new(row.Path, OperationState.Failed, message));
+            }
         }
     }
 

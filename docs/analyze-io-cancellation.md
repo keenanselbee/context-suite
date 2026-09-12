@@ -99,3 +99,36 @@ the production application payload. Logs are `.codex-temp/analyze-admission-foun
 `.codex-temp/analyze-admission-host.log` and `.codex-temp/analyze-admission-production.log`.
 The preceding performance refresh remains dated evidence, not a new benchmark run.
 Actual installed-shell and visible acceptance remain unverified.
+
+Failure guidance follow-up (2026-09-11)
+--------------------------------------
+
+The results model now distinguishes a read deadline, missing file, access denial
+and sharing/locking conflict. Previously all four became the same stable-header
+failure message, hiding the cause established by the reader. Messages now direct
+the user to check the drive/network, locate the moved/deleted file, check access
+permissions or close the file in the other program. Other read errors retain the
+existing fallback, and unsupported paths retain their regular-file explanation.
+
+`FileAnalysisTimeoutException` preserves the existing `IOException` contract
+while letting the UI distinguish a read-budget failure without matching text.
+Only the ordinary failure message changes; no automatic retry, output or paid
+admission is added. Other members of the Analyze batch continue after a failure.
+
+All 2,367 foundation contracts pass, with nine new checks and a strengthened
+typed-timeout assertion. Evidence uses a real sharing violation, an authored file
+with read access temporarily denied, and an actual five-second blocked-open
+timeout through the batch handler. The access-denial fixture's original security
+descriptor, bytes and write time are verified after restoring its DACL. The
+timed-out batch input retains its bytes/time, and the next file succeeds before
+the blocking test lock is released. Missing-file and folder guidance is also
+checked through the existing mixed-selection case.
+
+Logs are `.codex-temp/analyze-failure-guidance-foundation.log` and
+`.codex-temp/analyze-failure-guidance-production.log`. Fresh Release stage
+`artifacts/production-staging/f3c475e2de144a9789ebd7df46353f4e` includes catalog
+2026-09-11.11 and the native shell build; managed/native builds and payload checks
+pass with no reported warnings/errors. No private implementation, installed state,
+Explorer routing, recycling or live commerce changes were made. This proves
+result-model delivery, not visible layout, screen-reader announcement or wider
+driver/network acceptance. The earlier performance measurement was not repeated.

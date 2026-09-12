@@ -1,6 +1,8 @@
 using System.Buffers.Binary;
 using System.Collections.Immutable;
 using System.Security.Cryptography;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 using ContextSuite.Application;
@@ -231,6 +233,8 @@ internal static class AnalysisContracts
                 "analysis: unknown binary, PDF and text share the actual application batch");
             check(view.Rows.All(row => row.Result.Publication is null && !row.HasOutput) && !view.CanRetry,
                 "analysis: read-only results never publish or enter transformation retry");
+            check(view.Rows[0].Status.Contains("Another program is using") && view.Rows[0].Status.Contains("Close it there"),
+                "analysis: actual sharing violation explains how to retry");
             check(view.Rows[2].AnalysisSummary.Contains("Commonly used for:") && view.Rows[2].AnalysisDetails.Contains("not parsed"),
                 "analysis: ordinary summary and evidence details remain separate");
             check(view.Rows[2].AnalysisDetails.Contains("Catalog MIME types (descriptive; exact variant not determined): application/pdf") &&
@@ -249,9 +253,39 @@ internal static class AnalysisContracts
                 OperationState.Unsupported, OperationState.Succeeded }), "analysis admission: missing and directory rows do not stop valid results");
             check(view.Rows.All(row => row.Result.Publication is null && !row.HasOutput) && !view.CanRetry,
                 "analysis admission: unavailable rows grant no publication or transformation retry");
-            check(view.Rows[0].Status.Contains("Check that the file is available") && view.Rows[2].Status.Contains("regular file"),
+            check(view.Rows[0].Status.Contains("moved or deleted") && view.Rows[2].Status.Contains("regular file"),
                 "analysis admission: unavailable and non-file rows explain the next action");
         }
+        var denied = new FileInfo(Path.Combine(root, "read-denied.txt"));
+        await File.WriteAllTextAsync(denied.FullName, "Authored access-denial fixture");
+        var deniedHash = SHA256.HashData(await File.ReadAllBytesAsync(denied.FullName));
+        var deniedTime = File.GetLastWriteTimeUtc(denied.FullName);
+        var originalSecurity = denied.GetAccessControl();
+        var restrictedSecurity = denied.GetAccessControl();
+        using (var identity = WindowsIdentity.GetCurrent())
+            restrictedSecurity.AddAccessRule(new FileSystemAccessRule(identity.User!, FileSystemRights.ReadData, AccessControlType.Deny));
+        try
+        {
+            denied.SetAccessControl(restrictedSecurity);
+            await using var worker = new WorkerClient(Path.Combine(root, "must-not-start.exe"));
+            await using var view = new MainViewModel(worker, trial: new ForbiddenAccess());
+            check(view.Admit(new(Guid.NewGuid(), "analyze", "open-details", [denied.FullName, text])).Accepted,
+                "analysis: read-denied member is admitted for per-file inspection");
+            await view.WaitForIdleAsync();
+            check(view.Rows[0].Result.State == OperationState.Failed && view.Rows[0].Status.Contains("does not have permission") &&
+                view.Rows[1].Result.State == OperationState.Succeeded && view.Rows.All(row => !row.HasOutput),
+                "analysis: actual read denial has specific guidance while the next file succeeds");
+        }
+        finally
+        {
+            var restoredSecurity = new FileSecurity();
+            restoredSecurity.SetSecurityDescriptorBinaryForm(originalSecurity.GetSecurityDescriptorBinaryForm(), AccessControlSections.Access);
+            denied.SetAccessControl(restoredSecurity);
+        }
+        var restoredHash = SHA256.HashData(await File.ReadAllBytesAsync(denied.FullName));
+        check(deniedHash.SequenceEqual(restoredHash) && deniedTime == File.GetLastWriteTimeUtc(denied.FullName) &&
+            denied.GetAccessControl().GetSecurityDescriptorBinaryForm().SequenceEqual(originalSecurity.GetSecurityDescriptorBinaryForm()),
+            "analysis: disposable denial fixture retains contents/time and its original access rules");
         var after = SHA256.HashData(await File.ReadAllBytesAsync(binary));
         check(before.SequenceEqual(after) && timestamp == File.GetLastWriteTimeUtc(binary),
             "analysis: source bytes and write timestamp unchanged");

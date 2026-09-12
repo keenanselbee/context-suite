@@ -22,7 +22,7 @@ internal static class FileAnalysisReader
             return await Task.Run(() => ReadCoreAsync(path, cancellationToken, deadline, audioProbe, pdfProbe, headerOnly), cancellationToken);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        { throw new IOException("Opening or reading the file exceeded the time limit."); }
+        { throw new FileAnalysisTimeoutException("Opening or reading the file exceeded the time limit."); }
     }
 
     private static async Task<FileAnalysis> ReadCoreAsync(string path, CancellationToken cancellationToken,
@@ -36,7 +36,7 @@ internal static class FileAnalysisReader
         int read;
         try { read = await stream.ReadAtLeastAsync(bytes, bytes.Length, throwOnEndOfStream: false, deadline.Token); }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        { throw new IOException("Reading the file header exceeded the time limit."); }
+        { throw new FileAnalysisTimeoutException("Reading the file header exceeded the time limit."); }
         cancellationToken.ThrowIfCancellationRequested();
         if (read != bytes.Length || ReadState(stream, deadline.Token) != (length, modified))
             throw new IOException("The file changed during analysis. Try again after it finishes saving.");
@@ -150,7 +150,7 @@ internal static class FileAnalysisReader
                 throw new IOException("The file changed during analysis. Try again after it finishes saving.");
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        { throw new IOException("Checking the file after analysis exceeded the time limit."); }
+        { throw new FileAnalysisTimeoutException("Checking the file after analysis exceeded the time limit."); }
     }
 
     // OPEN_REPARSE_POINT and OPEN_NO_RECALL complement preflight attribute checks;
@@ -162,3 +162,5 @@ internal static class FileAnalysisReader
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern uint GetFileType(SafeFileHandle handle);
 }
+
+internal sealed class FileAnalysisTimeoutException(string message) : IOException(message);

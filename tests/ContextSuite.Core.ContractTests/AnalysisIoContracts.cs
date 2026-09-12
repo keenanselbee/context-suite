@@ -2,7 +2,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using ContextSuite.Application;
 using ContextSuite.Application.Infrastructure;
+using ContextSuite.Core.Operations;
 using Microsoft.Win32.SafeHandles;
 
 internal static class AnalysisIoContracts
@@ -44,7 +46,7 @@ internal static class AnalysisIoContracts
                 }
                 catch (IOException error)
                 {
-                    check(mode == "deadline" && error.Message == "Opening or reading the file exceeded the time limit.",
+                    check(mode == "deadline" && error is FileAnalysisTimeoutException && error.Message == "Opening or reading the file exceeded the time limit.",
                         "analysis I/O: blocked open returns a readable deadline failure without releasing oplock");
                     outcome = "deadline";
                 }
@@ -68,6 +70,34 @@ internal static class AnalysisIoContracts
             check((await FileAnalysisReader.ReadAsync(path, CancellationToken.None)).FileBytes == 4,
                 "analysis I/O: " + mode + " permits a fresh analysis");
         }
+
+        var slowPath = Path.Combine(root, "slow-batch.bin");
+        var goodPath = Path.Combine(root, "good-batch.bin");
+        await File.WriteAllBytesAsync(slowPath, [7, 8, 9]);
+        await File.WriteAllBytesAsync(goodPath, [10, 11, 12]);
+        var slowHash = SHA256.HashData(await File.ReadAllBytesAsync(slowPath));
+        var slowTime = File.GetLastWriteTimeUtc(slowPath);
+        using (var held = new HeldOplock(slowPath))
+        await using (var worker = new WorkerClient(Path.Combine(root, "must-not-start.exe")))
+        await using (var view = new MainViewModel(worker))
+        {
+            check(view.Admit(new(Guid.NewGuid(), "analyze", "open-details", [slowPath, goodPath])).Accepted,
+                "analysis I/O: blocked input enters actual mixed batch");
+            var idle = view.WaitForIdleAsync();
+            try
+            {
+                check(await Task.Run(() => held.Broken.WaitOne(TimeSpan.FromSeconds(3))), "analysis I/O: mixed batch reaches blocked native open");
+                await idle.WaitAsync(TimeSpan.FromSeconds(8));
+                check(view.Rows[0].Result.State == OperationState.Failed && view.Rows[0].Status.Contains("took too long") &&
+                    view.Rows[0].Status.Contains("drive or network connection"), "analysis I/O: actual deadline reaches the row with specific guidance");
+                check(view.Rows[1].Result.State == OperationState.Succeeded && !view.CanRetry && view.Rows.All(row => !row.HasOutput),
+                    "analysis I/O: timeout preserves later read-only results without transformation retry");
+            }
+            finally { held.Dispose(); await idle; }
+        }
+        var slowAfter = SHA256.HashData(await File.ReadAllBytesAsync(slowPath));
+        check(slowHash.SequenceEqual(slowAfter) && slowTime == File.GetLastWriteTimeUtc(slowPath),
+            "analysis I/O: timed-out batch input retains bytes and time");
 
         // Keep the same native thread after scope disposal, then cancel its old
         // token while a new unrelated open is blocked. A late cancellation must

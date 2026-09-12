@@ -57,11 +57,10 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
 The latest combined production stage is
-`artifacts/production-staging/27cef67c42a0418c826910a124b28bcd`.
-It includes catalog revision 2026-09-11.10, synchronous reader cancellation and
-per-row Analyze availability, with the native shell build included.
-The later catalog-only revision 2026-09-11.11 is not in that stage.
-The latest foundation run passes 2,358 contracts. The earlier FLAC
+`artifacts/production-staging/f3c475e2de144a9789ebd7df46353f4e`.
+It includes catalog revision 2026-09-11.11, synchronous reader cancellation,
+per-row Analyze availability and specific failure guidance, with the native shell
+build included. The latest foundation run passes 2,367 contracts. The earlier FLAC
 checkpoint passes 24 optimization interruption, 96 conversion interruption and
 11 normal worker checks on stage `dc5a863d901b4eb89f94b943682511aa`.
 These are separate runs, not evidence that every release suite
@@ -102,6 +101,13 @@ commercial release gates under their existing authorization boundaries.
 
 Starting evidence
 -----------------
+
+The 2026-09-11 [Analyze failure-guidance follow-up](analyze-io-cancellation.md#failure-guidance-follow-up-2026-09-11)
+keeps timeout, missing-file, access-denial and sharing-conflict causes visible in
+the result model. All 2,367 foundation contracts pass, including actual denied-read
+and timed-out mixed batches with original/ACL preservation. Fresh combined staging
+passes with the latest catalog. Visible and assistive-technology delivery remain
+unverified; these are result-model checks.
 
 The 2026-09-11 [remaining image catalog review](catalog-image-review.md) checks
 26 purposes beyond the earlier four common-image records and improves twelve
