@@ -28,8 +28,10 @@ small JSON, 128 MiB unknown binary, approximately 8 MiB JSON, and a DOCX package
 with an unrelated 64 MiB stored ZIP member. The package's document declarations
 are minimal and independently authored; it is not a rendered Office fixture.
 One existing file is held with exclusive sharing during the benchmark, then
-released. A missing-file reader case is separate because application admission
-correctly rejects missing selections before queuing them.
+released. The missing-file reader case remains a separate measurement. At the
+initial baseline, application admission rejected missing selections; the later
+[admission fix](analyze-io-cancellation.md#admission-follow-up-2026-09-11) handles
+them per row. The recorded benchmark selection itself has not changed.
 
 The mixed-selection case exercises the application coordinator with eight
 existing files, including the locked file. It checks that every row completes,

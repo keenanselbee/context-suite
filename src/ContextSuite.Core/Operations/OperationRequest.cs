@@ -39,7 +39,10 @@ public sealed record OperationRequest(Guid RequestId, string Operation, string A
             if (string.IsNullOrWhiteSpace(path) || path.Length > 32767 ||
                 path.IndexOfAny(['\0', '\r', '\n']) >= 0 || !Path.IsPathFullyQualified(path))
                 throw new InvalidDataException("Selected paths must be absolute file paths.");
-            if (requireExistingFiles && !File.Exists(path))
+            // Analyze checks availability per row in its cancellable reader.
+            // Admission runs on the UI/router path and must not query a selected
+            // filesystem or reject good files because another item disappeared.
+            if (requireExistingFiles && Operation != "analyze" && !File.Exists(path))
                 throw new InvalidDataException("A selected file is missing or is not a file.");
         }
     }

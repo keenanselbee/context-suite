@@ -221,8 +221,15 @@ try
     Reject(() => ActivationParser.Parse(Encoding.UTF8.GetBytes(RequestText().Replace("ContextSuiteActivation/1", "ContextSuiteActivation/2"))), "unknown schema");
     Reject(() => (request with { RequestId = Guid.Empty }).Validate(), "empty ID");
     Reject(() => (request with { Paths = ["relative.png"] }).Validate(), "relative path");
-    Reject(() => (request with { Paths = [args[0]] }).Validate(), "directory selection");
-    Reject(() => (request with { Paths = [fixture + ".missing"] }).Validate(), "missing selection");
+    foreach (var unavailablePath in new[] { args[0], fixture + ".missing" })
+    {
+        (request with { Paths = [unavailablePath] }).Validate();
+        Check(ActivationParser.Parse(Encoding.UTF8.GetBytes(RequestText().Replace(fixture, unavailablePath))).Paths.Single() == unavailablePath,
+            "Analyze defers selected-path availability through parser and admission");
+        foreach (var transform in new[] { ("convert", "png"), ("optimize", "auto") })
+            Reject(() => (request with { Operation = transform.Item1, Action = transform.Item2, Paths = [unavailablePath] }).Validate(),
+                transform.Item1 + " still rejects missing/directory selections");
+    }
     Reject(() => (request with { Paths = ImmutableArray.CreateRange(new string[4097]) }).Validate(), "path limit");
     var many = request with { Paths = Enumerable.Repeat(fixture, 4096).ToImmutableArray() };
     many.Validate();

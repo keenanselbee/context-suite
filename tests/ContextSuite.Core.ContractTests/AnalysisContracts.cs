@@ -237,6 +237,21 @@ internal static class AnalysisContracts
                 !view.Rows[2].AnalysisSummary.Contains("MIME") && !view.Rows[1].AnalysisDetails.Contains("MIME"),
                 "analysis: MIME descriptions stay in technical details and unknown files receive no invented type");
         }
+        await using (var worker = new WorkerClient(Path.Combine(root, "must-not-start.exe")))
+        await using (var view = new MainViewModel(worker, trial: new ForbiddenAccess()))
+        {
+            var missing = Path.Combine(root, "disappeared.bin");
+            var request = new OperationRequest(Guid.NewGuid(), "analyze", "open-details", [missing, binary, root, pdf]);
+            check(view.Admit(request).Accepted, "analysis admission: unavailable members do not reject a mixed selection");
+            check(view.Admit(request).Accepted && view.Rows.Count == 4, "analysis admission: duplicate request does not duplicate unavailable rows");
+            await view.WaitForIdleAsync();
+            check(view.Rows.Select(row => row.Result.State).SequenceEqual(new[] { OperationState.Failed, OperationState.Succeeded,
+                OperationState.Unsupported, OperationState.Succeeded }), "analysis admission: missing and directory rows do not stop valid results");
+            check(view.Rows.All(row => row.Result.Publication is null && !row.HasOutput) && !view.CanRetry,
+                "analysis admission: unavailable rows grant no publication or transformation retry");
+            check(view.Rows[0].Status.Contains("Check that the file is available") && view.Rows[2].Status.Contains("regular file"),
+                "analysis admission: unavailable and non-file rows explain the next action");
+        }
         var after = SHA256.HashData(await File.ReadAllBytesAsync(binary));
         check(before.SequenceEqual(after) && timestamp == File.GetLastWriteTimeUtc(binary),
             "analysis: source bytes and write timestamp unchanged");

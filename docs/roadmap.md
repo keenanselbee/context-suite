@@ -32,7 +32,8 @@ shell-integration discovery prototype. It proves:
   identities backed by one native shell DLL and one out-of-process host.
 - Direct Analyzer activation and isolated one-level Convert and Optimize menus.
 - A bounded, versioned activation file carrying a complete multi-file selection.
-- Host-side schema, action, path-count, absolute-path, and existence validation.
+- Host-side schema, action, path-count and absolute-path validation; transformation
+  availability checks and cancellable per-row Analyze availability checks.
 - Debug and Release builds plus automated three-file COM activation contracts.
 
 This evidence resolves the shell-discovery portion of Milestone 0. Production UI,

@@ -305,11 +305,16 @@ bool ParseRequest(const std::string& content, ActivationRequest& request, std::w
             return false;
         }
 
-        const DWORD attributes = GetFileAttributesW(path.c_str());
-        if (attributes == INVALID_FILE_ATTRIBUTES || (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+        // Analyze performs availability checks per item in the cancellable reader.
+        // Do not block handoff or reject the entire selection for one unavailable path.
+        if (request.operation != L"analyze")
         {
-            error = L"A selected file is missing or is not a regular file.";
-            return false;
+            const DWORD attributes = GetFileAttributesW(path.c_str());
+            if (attributes == INVALID_FILE_ATTRIBUTES || (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+            {
+                error = L"A selected file is missing or is not a regular file.";
+                return false;
+            }
         }
         request.paths.push_back(std::move(path));
     }

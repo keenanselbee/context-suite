@@ -4,6 +4,7 @@ param(
     [string] $Configuration = 'Debug',
 
     [switch] $SkipBuild,
+    [switch] $HostOnly,
     [string] $OutputDirectory
 )
 
@@ -44,7 +45,7 @@ $packageDefinitions = @(
 if (-not (Test-Path -LiteralPath $hostExecutable)) {
     throw "Host executable was not found: $hostExecutable"
 }
-if (-not (Test-Path -LiteralPath $contractTests) -or -not (Test-Path -LiteralPath $shellLibrary)) {
+if (-not $HostOnly -and (-not (Test-Path -LiteralPath $contractTests) -or -not (Test-Path -LiteralPath $shellLibrary))) {
     throw 'The native shell contract binaries were not found.'
 }
 
@@ -170,6 +171,25 @@ try {
         }
     }
 
+    foreach ($operation in @('analyze', 'convert', 'optimize')) {
+        foreach ($unavailable in @('missing', 'directory')) {
+            $selectedPath = if ($unavailable -eq 'missing') { Join-Path $temporaryRoot 'absent.bin' } else { $temporaryRoot }
+            $requestPath = Join-Path $temporaryRoot "$operation-$unavailable.request"
+            $resultPath = Join-Path $temporaryRoot "$operation-$unavailable.result"
+            $requestLines = @('ContextSuiteActivation/1', "requestId=$([guid]::NewGuid().ToString('D'))",
+                "operation=$operation", "action=$($operationActions[$operation])", 'pathCount=2',
+                "path=$selectedPath", "path=$($selectedFiles[0])")
+            [IO.File]::WriteAllLines($requestPath, $requestLines, [Text.UTF8Encoding]::new($false))
+            $exitCode = Invoke-HostValidation -RequestPath $requestPath -ResultPath $resultPath
+            if (($operation -eq 'analyze') -ne ($exitCode -eq 0)) {
+                throw "$operation returned unexpected admission for a mixed $unavailable selection: $exitCode."
+            }
+            if ($operation -eq 'analyze' -and (Get-Content -LiteralPath $resultPath) -notcontains 'pathCount=2') {
+                throw 'Analyze silently omitted an unavailable selection member.'
+            }
+        }
+    }
+
     $invalidRequest = Join-Path $temporaryRoot 'invalid.request'
     [System.IO.File]::WriteAllText($invalidRequest, "ContextSuiteActivation/999`n")
     $invalidExitCode = Invoke-HostValidation -RequestPath $invalidRequest
@@ -177,14 +197,16 @@ try {
         throw 'The host accepted an unknown activation schema.'
     }
 
-    $contractArguments = @(
-        (ConvertTo-NativeArgument $shellLibrary),
-        (ConvertTo-NativeArgument $temporaryRoot)
-    )
-    $contractArguments += $selectedFiles | ForEach-Object { ConvertTo-NativeArgument $_ }
-    $contractExitCode = Invoke-NativeProcess -FilePath $contractTests -Arguments $contractArguments
-    if ($contractExitCode -ne 0) {
-        throw "The native shell activation contracts failed with exit code $contractExitCode."
+    if (-not $HostOnly) {
+        $contractArguments = @(
+            (ConvertTo-NativeArgument $shellLibrary),
+            (ConvertTo-NativeArgument $temporaryRoot)
+        )
+        $contractArguments += $selectedFiles | ForEach-Object { ConvertTo-NativeArgument $_ }
+        $contractExitCode = Invoke-NativeProcess -FilePath $contractTests -Arguments $contractArguments
+        if ($contractExitCode -ne 0) {
+            throw "The native shell activation contracts failed with exit code $contractExitCode."
+        }
     }
 }
 finally {
@@ -195,4 +217,8 @@ finally {
     }
 }
 
-Write-Output 'Shell prototype contracts passed: three independent identity packages and three-file activation batches.'
+if ($HostOnly) {
+    Write-Output 'Host-only checks passed: three identity manifests, three valid batches, six mixed-availability cases and unknown-schema refusal. COM invocation and Explorer routing were not tested.'
+} else {
+    Write-Output 'Shell prototype contracts passed: three independent identity packages, mixed-availability validation and three-file activation batches.'
+}

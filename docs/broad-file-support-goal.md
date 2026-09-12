@@ -49,7 +49,7 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 
 | Area | Implemented or measured | Work required to close the area |
 | --- | --- | --- |
-| Universal Analyze | Shared results, generic/header fallback, bounded family readers, synchronous I/O cancellation and refreshed mixed-batch performance baseline | Audit admission and fallback against the advertised regular-file scope; test remaining driver/network and metadata-stall cases; accept the visible report |
+| Universal Analyze | Shared results, generic/header fallback, bounded family readers, per-row availability after admission, synchronous I/O cancellation and refreshed mixed-batch performance baseline | Finish the advertised regular-file acceptance matrix; test remaining driver/network and metadata-stall cases; accept the visible report |
 | Offline catalog | 243 records, schema/version validation, source references, qualified MIME details and completed family reviews | Finish factual/provenance review of the existing inventory and its claimed aliases/detectors; publish exact descriptive versus detected coverage. More records are not a substitute for finishing that review |
 | Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker and interruption/recovery evidence | Close the advertised input/output and metadata matrix, human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
 | PDF | Optional structural optimization, all-page PNG conversion and combined image PDF with explicit order review | Close documented fidelity/unsupported-input and recovery gaps; accept the order dialog and outputs visibly; review redistribution and adopt the selected payload |
@@ -57,9 +57,10 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
 The latest combined production stage is
-`artifacts/production-staging/070dd01a49c14d5db5458aa8a5fccb01`.
-It includes catalog revision 2026-09-11.10 and the synchronous reader cancellation
-change. The latest foundation run passes 2,349 contracts. The earlier FLAC
+`artifacts/production-staging/27cef67c42a0418c826910a124b28bcd`.
+It includes catalog revision 2026-09-11.10, synchronous reader cancellation and
+per-row Analyze availability, with the native shell build included.
+The latest foundation run passes 2,358 contracts. The earlier FLAC
 checkpoint passes 24 optimization interruption, 96 conversion interruption and
 11 normal worker checks on stage `dc5a863d901b4eb89f94b943682511aa`.
 These are separate runs, not evidence that every release suite
@@ -100,6 +101,13 @@ commercial release gates under their existing authorization boundaries.
 
 Starting evidence
 -----------------
+
+The 2026-09-11 [Analyze admission follow-up](analyze-io-cancellation.md#admission-follow-up-2026-09-11)
+removes selected-file availability queries from Analyze's managed/native admission.
+Missing/non-file members receive individual results without rejecting valid files.
+All 2,358 foundation contracts and native host-only validation pass; a fresh stage
+includes the native shell build and passes payload checks. COM invocation, installed
+Explorer routing and visible acceptance were not performed.
 
 The 2026-09-11 [Analyze I/O cancellation checkpoint](analyze-io-cancellation.md)
 starts the read deadline before file setup and requests cancellation of synchronous

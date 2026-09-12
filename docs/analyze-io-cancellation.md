@@ -63,7 +63,39 @@ notice, dependency and allowlist checks using `-SkipShell`. Its log is
 `.codex-temp/analysis-io-production.log`. No private implementation changed.
 
 Remote storage, hostile/non-cooperative drivers, an individually blocked metadata
-query, application admission before this reader, broader selections and actual
+query, broader selections and actual
 visible/accessibility acceptance remain separate checks. Existing private
 real-worker suites were not repeated for this public reader change. No installed
 state, Explorer registration, native recycling or live commerce was changed.
+
+Admission follow-up (2026-09-11)
+--------------------------------
+
+Analyze admission no longer calls `File.Exists` in the managed request validator
+or `GetFileAttributesW` in the native prototype host. Both still validate schema,
+operation/action, count and absolute-path syntax. This reaches the activation
+parser, application router and view-model admission through their shared validator.
+File availability and regular-file restrictions are checked per row by the
+cancellable reader. A missing or inaccessible member cannot reject valid members
+of the selection; folders receive an unsupported row rather than being read.
+Transformations retain their existing availability checks and publication rules.
+
+All 2,358 foundation contracts pass. Added/updated cases exercise parser admission
+for unavailable paths, continued Convert/Optimize refusal, a real mixed Analyze
+batch with missing/file/folder/file members, duplicate-request handling, readable
+failure guidance, no licensing/worker access and no output/retry authority.
+The earlier blocked-open and cancellation-race tests also pass in this run.
+
+The native [host-only checks](shell-integration.md#host-only-validation)
+pass three manifest inspections, three valid batches, six mixed-availability
+cases and unknown-schema refusal. They use `--validate-only` with generated
+repository-local requests, never COM invocation or application routing.
+
+Fresh Release stage `artifacts/production-staging/27cef67c42a0418c826910a124b28bcd`
+passes managed/native builds and payload verification, this time including the
+native shell build. The separate prototype host is tested from
+`.codex-temp/native-staging-27cef67c42a0418c826910a124b28bcd`; it is not added to
+the production application payload. Logs are `.codex-temp/analyze-admission-foundation.log`,
+`.codex-temp/analyze-admission-host.log` and `.codex-temp/analyze-admission-production.log`.
+The preceding performance refresh remains dated evidence, not a new benchmark run.
+Actual installed-shell and visible acceptance remain unverified.

@@ -200,7 +200,8 @@ The repository contains a Windows 11 x64 discovery prototype with:
 - One immutable, UTF-8, versioned activation request for the complete Explorer
   selection. The request is capped at 4 MiB and 4,096 paths.
 - A separate native host that distrusts and revalidates the schema, operation,
-  action, selection count, absolute paths, and file existence.
+  action, selection count and absolute paths. Analyze defers file availability
+  to its cancellable per-row reader; transformations still check existence.
 - Contract tests that invoke all three COM classes with one three-file
   `IShellItemArray` and verify one complete host activation per command.
 
@@ -228,3 +229,22 @@ Shell integration requires tests for:
 - Missing host or media engine behavior without destabilizing Explorer.
 - Installation, upgrade, repair, and uninstallation without duplicate commands.
 - End-to-end execution from each root through host-side revalidation.
+
+
+Host-only validation
+--------------------
+
+Use `tools/Test-ShellPrototype.ps1 -HostOnly` to validate manifests and the native
+host's request parser without invoking COM commands, writing shell activation
+requests outside the repository or routing into an application. Use `-SkipBuild`
+and `-OutputDirectory` with an already built isolated native output directory.
+Without `-SkipBuild`, the canonical native build runs first; this never installs
+or registers a package. The default mode still includes COM invocation and is a
+separate acceptance scope.
+
+Host-only cases check all three operations, mixed selections containing missing
+paths or folders, and unknown-schema refusal. Analyze accepts syntactically valid
+members for later per-file checks; Convert and Optimize retain their existing
+availability refusals. Temporary requests/results are generated under the
+repository's `.codex-temp` and removed by the wrapper. See the
+[admission evidence](analyze-io-cancellation.md#admission-follow-up-2026-09-11).
