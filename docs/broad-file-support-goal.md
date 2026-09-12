@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [data catalog review](catalog-data-review.md) checks all 37 Data
+records and improves fifteen descriptions/references. Revision 2026-09-11.9 keeps
+243 records with unchanged recognition/operation fields. Feather versions and
+pickle loading have clearer explanations; complete variant/alias and remaining
+family review remain required.
+
 The 2026-09-11 [Word revision analysis](word-revision-analysis.md) adds bounded
 insertion/deletion/move-marker counts from the already parsed main XML, with
 explicit scope and unavailable results for unsupported compatibility processing.

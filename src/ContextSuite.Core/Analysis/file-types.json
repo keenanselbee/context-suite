@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.8",
+  "revision": "2026-09-11.9",
   "types": [
     {
       "id": "3gp",
@@ -58,12 +58,12 @@
       "id": "access",
       "name": "Access database",
       "family": "Data",
-      "commonUses": "Microsoft Access databases containing tables and potentially forms, queries and application logic.",
+      "commonUses": "Records and application components for Microsoft Access, such as tables, forms, queries and reports.",
       "extensions": [
         ".mdb",
         ".accdb"
       ],
-      "source": "https://learn.microsoft.com/en-us/office/client-developer/access/desktop-database-reference/microsoft-access-database-engine-sql-reference"
+      "source": "https://support.microsoft.com/en-US/Access/database-basics"
     },
     {
       "id": "adobe-swatches",
@@ -111,12 +111,12 @@
       "id": "arrow",
       "name": "Apache Arrow data",
       "family": "Data",
-      "commonUses": "Columnar data exchanged between analytical applications; Feather uses Arrow file storage.",
+      "commonUses": "Columnar tables exchanged by analytical applications; Feather V2 uses Arrow storage, while V1 uses a different layout.",
       "extensions": [
         ".arrow",
         ".feather"
       ],
-      "source": "https://arrow.apache.org/docs/format/Columnar.html"
+      "source": "https://arrow.apache.org/docs/python/feather.html"
     },
     {
       "id": "aseprite",
@@ -204,7 +204,7 @@
       "id": "avro",
       "name": "Apache Avro data",
       "family": "Data",
-      "commonUses": "Schema-described records stored or exchanged by data-processing systems.",
+      "commonUses": "Records stored with a schema describing their structure, commonly exchanged by data-processing systems.",
       "extensions": [
         ".avro"
       ],
@@ -508,7 +508,7 @@
       "extensions": [
         ".dbf"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000325.shtml"
+      "source": "https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm"
     },
     {
       "id": "dds",
@@ -545,12 +545,12 @@
       "id": "dicom",
       "name": "DICOM medical data",
       "family": "Data",
-      "commonUses": "Medical images and associated clinical or equipment metadata. Identification is not clinical interpretation.",
+      "commonUses": "Medical imaging information and related data exchanged between healthcare systems. Identification is not clinical interpretation.",
       "extensions": [
         ".dcm",
         ".dicom"
       ],
-      "source": "https://www.dicomstandard.org/current"
+      "source": "https://dicom.nema.org/medical/dicom/current/output/chtml/part01/chapter_1.html"
     },
     {
       "id": "djvu",
@@ -816,7 +816,7 @@
         ".fit",
         ".fts"
       ],
-      "source": "https://fits.gsfc.nasa.gov/fits_standard.html"
+      "source": "https://fits.gsfc.nasa.gov/"
     },
     {
       "id": "flac",
@@ -991,7 +991,7 @@
       "id": "har",
       "name": "HTTP archive",
       "family": "Data",
-      "commonUses": "Recorded web request and response information for debugging; it can include private request data.",
+      "commonUses": "Logs of web requests, responses and timings used to diagnose page loading; they can contain private request data.",
       "extensions": [
         ".har"
       ],
@@ -1270,7 +1270,7 @@
       "id": "json-lines",
       "name": "JSON Lines data",
       "family": "Data",
-      "commonUses": "Sequences of JSON values, commonly used for logs, records and streaming data.",
+      "commonUses": "One JSON value per line, used for logs, streaming records and data exchange.",
       "extensions": [
         ".jsonl",
         ".ndjson"
@@ -1645,7 +1645,7 @@
         ".nc4",
         ".cdf"
       ],
-      "source": "https://docs.unidata.ucar.edu/netcdf-c/current/file_format_specifications.html"
+      "source": "https://www.unidata.ucar.edu/software/netcdf/"
     },
     {
       "id": "notebook",
@@ -1662,7 +1662,7 @@
       "id": "npy",
       "name": "NumPy array",
       "family": "Data",
-      "commonUses": "NumPy array data; NPZ packages one or more arrays in a ZIP container.",
+      "commonUses": "Saved NumPy arrays for numerical work; NPY stores one array and NPZ bundles arrays in a ZIP container.",
       "extensions": [
         ".npy",
         ".npz"
@@ -1871,7 +1871,7 @@
       "extensions": [
         ".parquet"
       ],
-      "source": "https://parquet.apache.org/docs/file-format/"
+      "source": "https://parquet.apache.org/docs/overview/"
     },
     {
       "id": "pcap",
@@ -1882,7 +1882,7 @@
         ".pcap",
         ".cap"
       ],
-      "source": "https://www.tcpdump.org/manpages/pcap-savefile.5.html"
+      "source": "https://www.ietf.org/archive/id/draft-ietf-opsawg-pcap-06.html"
     },
     {
       "id": "pcapng",
@@ -1963,7 +1963,7 @@
       "id": "pickle",
       "name": "Python pickle data",
       "family": "Data",
-      "commonUses": "Serialized Python objects. Reading them as code can execute behavior, so Analyze does not unpickle them.",
+      "commonUses": "Serialized Python objects for saving or exchanging program data. Unpickling can execute code; Analyze does not unpickle.",
       "extensions": [
         ".pkl",
         ".pickle"
@@ -1974,7 +1974,7 @@
       "id": "pkcs12",
       "name": "PKCS #12 key container",
       "family": "Data",
-      "commonUses": "Certificates and potentially private keys packaged for transfer or installation.",
+      "commonUses": "Certificates and optional private keys packaged for transferring digital identities between applications.",
       "extensions": [
         ".p12",
         ".pfx"
@@ -2392,7 +2392,7 @@
       "id": "sqlite",
       "name": "SQLite database",
       "family": "Data",
-      "commonUses": "A database containing tables, indexes and other SQLite objects. Generic .db names are not proof of SQLite.",
+      "commonUses": "Application databases with tables, indexes and other SQLite objects; a .db suffix alone does not establish SQLite.",
       "extensions": [
         ".sqlite",
         ".sqlite3",

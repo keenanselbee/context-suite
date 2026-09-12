@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-11.8; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-11.9; expanded catalog and bounded structure analysis, not release acceptance
 
 Recognition and capabilities
 ----------------------------
@@ -42,6 +42,9 @@ records. Variant/alias and executable-capability acceptance remain separate.
 The [source/configuration purpose review](catalog-source-code-review.md) checks
 49 records and improves twenty descriptions/references, distinguishing source,
 automation, declarations and settings. It adds no execution or syntax validation.
+The [data purpose review](catalog-data-review.md) checks all 37 Data records and
+updates fifteen descriptions/references, including Feather versions and pickle
+loading behavior. Database, scientific and application semantics remain separate.
 The [document font reference scan](document-font-references.md) adds optional
 literal names and unresolved theme references from selected OOXML XML parts,
 with declared scope and unavailable results on budget/format failure.
