@@ -83,8 +83,11 @@ The later [audio rate/layout checkpoint](audio-rate-layout-verification.md) pass
 300 private adapter checks and 2,386 foundation contracts. Its 222-cell generated
 matrix contains 151 successful conversions, 37 unchanged WAV cases and 34 expected
 refusals. It corrects Opus 5.0/6.1 channel order and declines speaker layouts the
-pinned presets cannot preserve before encoding. Listening, independent Opus
-decoding and complete source-container/rate/layout coverage remain unverified.
+pinned presets cannot preserve before encoding. A subsequent explicit native/Xiph
+Opus comparison confirms all 33 outputs' complete frame counts and seven layouts'
+source-channel identities, but exits 1 for unresolved surround sample differences.
+The matrix record retains the failed comparison; independent Opus fidelity,
+listening and complete source-container/rate/layout acceptance remain open.
 The fresh stage above passes 11 packaged audio checks, 52 conversion/publication
 checks and 20 direct-conversion checks; logs and exact scope are in the matrix
 record. Build, payload and source/notice inventories pass. No installed or visible

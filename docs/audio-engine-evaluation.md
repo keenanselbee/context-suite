@@ -8,6 +8,9 @@ The later [rate/layout matrix](audio-rate-layout-verification.md) completes 222
 observations, finds and fixes Opus 5.0/6.1 channel permutation, and gives early
 refusals for layouts the current presets cannot preserve. The full private suite
 then passes 300 checks. Historical counts below describe their own checkpoints.
+The subsequent native/Xiph Opus probe confirms complete samples and channel order
+but retains an unresolved surround sample-comparison failure. It does not close
+independent fidelity or listening acceptance; details are in the matrix record.
 
 The 2026-09-11 [curation record](audio-engine-curation.md) retains ten exact
 source/build-input archives. The independently built

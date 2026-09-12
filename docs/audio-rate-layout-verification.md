@@ -126,6 +126,63 @@ after the run. This stage also includes catalog revision 2026-09-12.1 and the
 optional PDF candidates; their full engine suites were not rerun here.
 
 This is generated-signal and adapter evidence. It does not certify listening,
-independent Opus decoding, speaker playback, every source format/rate/layout
+speaker playback, every source format/rate/layout
 combination, screen-reader delivery, visible UI or installed behavior. Copies
 and source preservation are retained; no native recycling was tested.
+
+
+Independent Opus decoder investigation
+--------------------------------------
+
+The subsequent [decoder probe](../tools/audio-engine/Test-OpusDecoder.py) compares
+the actual 33 accepted Opus outputs with explicit FFmpeg native `opus` and Xiph
+`libopus` decoders. The pinned supplier runtime contains both implementations;
+its archive and executable/DLL hashes are verified before and after decoding.
+Production uses FFmpeg's native decoder. These are separate audio decoders with
+shared FFmpeg container handling, not an independent end-to-end playback stack.
+The [FFmpeg codec documentation](https://ffmpeg.org/ffmpeg-codecs.html#libopus)
+describes the two implementations.
+
+All 33 outputs decode to exactly 48,000 finite frames with both decoders, without
+trimming, padding or an output resampling request. At 48 kHz, all seven layouts
+also preserve the distinct source-channel signals: each decoded channel is closest
+to its own source channel, with same-channel RMSE below the existing generated
+fixture bound of 0.1. Both implementations are checked against the source.
+A swapped-channel reference is detected, as is a truncated encoded file. Source
+and encoded-output hashes and write times remain unchanged.
+
+The cross-decoder sample comparison is **unresolved**, and the probe exits 1.
+Its initial diagnostic maximum-difference threshold of 0.0001 is not an Opus
+conformance or listening standard. Explicit floating-point decode requests do not
+remove the differences:
+
+| Layout | Maximum absolute decoder difference |
+| --- | --- |
+| 5.0 | 0.0339211 |
+| 5.1 | 0.0339525 |
+| 6.1 | 0.000124209 |
+| 7.1 | 0.0366483 |
+
+The larger differences concentrate in the center channel of 5.0, 5.1 and 7.1.
+A diagnostic shift comparison does not explain them as a simple constant timing
+offset. The native implementation has a SILK resampling path, but inspecting that
+path does not establish the cause. No production preset or validation tolerance
+was changed to obtain a pass. Further codec-mode investigation and perceptual
+review are required before closing independent Opus fidelity acceptance.
+
+Reproduce using the retained accepted adapter matrix and verified supplier bin:
+
+```powershell
+python -B tools/audio-engine/Test-OpusDecoder.py --matrix '<rate-layout matrix directory>' --decoder '<verified evaluation bin>'
+```
+
+The complete float-request run is retained at
+`.codex-temp/opus-decoder-c4f40c7f41d1448cb4ca578c6cb171a3/opus-decoder.json`,
+with `.codex-temp/opus-decoder-float.log` and recorded exit code 1. The report
+explicitly marks `review-required` and retains differences, channel comparisons,
+negative controls and decoder identities. Earlier default-sample-format
+observations remain at
+`.codex-temp/opus-decoder-519c42a86592471898b9148bcda5c3bf/opus-decoder.json`;
+the diagnostic shift results are `.codex-temp/opus-center-lags.json`.
+This probe is generated-tone evidence, not human listening, other-player
+acceptance or independent verification of the input resampler.
