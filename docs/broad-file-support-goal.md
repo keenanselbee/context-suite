@@ -60,6 +60,7 @@ The latest combined production stage is
 `artifacts/production-staging/27cef67c42a0418c826910a124b28bcd`.
 It includes catalog revision 2026-09-11.10, synchronous reader cancellation and
 per-row Analyze availability, with the native shell build included.
+The later catalog-only revision 2026-09-11.11 is not in that stage.
 The latest foundation run passes 2,358 contracts. The earlier FLAC
 checkpoint passes 24 optimization interruption, 96 conversion interruption and
 11 normal worker checks on stage `dc5a863d901b4eb89f94b943682511aa`.
@@ -101,6 +102,12 @@ commercial release gates under their existing authorization boundaries.
 
 Starting evidence
 -----------------
+
+The 2026-09-11 [remaining image catalog review](catalog-image-review.md) checks
+26 purposes beyond the earlier four common-image records and improves twelve
+descriptions/references. Catalog revision 2026-09-11.11 retains 243 entries with
+unchanged identification and operation fields. This finishes the current Image
+family's purpose review, not exact-variant, decoder or transformation acceptance.
 
 The 2026-09-11 [Analyze admission follow-up](analyze-io-cancellation.md#admission-follow-up-2026-09-11)
 removes selected-file availability queries from Analyze's managed/native admission.

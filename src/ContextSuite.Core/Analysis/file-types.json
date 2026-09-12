@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.10",
+  "revision": "2026-09-11.11",
   "types": [
     {
       "id": "3gp",
@@ -192,7 +192,7 @@
       "extensions": [
         ".avif"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000540.shtml",
+      "source": "https://aomediacodec.github.io/av1-avif/v1.2.0.html",
       "mimeTypes": [
         {
           "value": "image/avif",
@@ -482,7 +482,7 @@
       "id": "cur",
       "name": "Windows cursor",
       "family": "Image",
-      "commonUses": "Mouse pointer artwork; animated cursor variants may contain multiple frames.",
+      "commonUses": "Mouse-pointer artwork for Windows. CUR stores static cursors; ANI is a related animated-cursor format.",
       "extensions": [
         ".cur",
         ".ani"
@@ -729,12 +729,12 @@
       "id": "eps",
       "name": "Encapsulated PostScript",
       "family": "Image",
-      "commonUses": "Placing PostScript artwork into publishing documents. It is a program-like description, not just stored pixels.",
+      "commonUses": "Artwork placed into publishing documents, with PostScript descriptions that can include vector graphics and raster images.",
       "extensions": [
         ".eps",
         ".epsf"
       ],
-      "source": "https://www.adobe.com/jp/print/postscript/pdfs/5002.EPSF_Spec.pdf",
+      "source": "https://helpx.adobe.com/photoshop/using/saving-files-graphics-formats.html",
       "textCompatible": true
     },
     {
@@ -1117,7 +1117,7 @@
       "extensions": [
         ".ico"
       ],
-      "source": "https://learn.microsoft.com/en-us/previous-versions/ms997538(v=msdn.10)"
+      "source": "https://learn.microsoft.com/en-us/windows/win32/uxguide/vis-icons"
     },
     {
       "id": "iges",
@@ -1240,14 +1240,14 @@
       "id": "jpeg2000",
       "name": "JPEG 2000 image",
       "family": "Image",
-      "commonUses": "Raster imagery using JPEG 2000 coding, including archival and specialist imaging workflows.",
+      "commonUses": "Raster images for medical imaging, maps and publishing, using lossless or lossy JPEG 2000 compression.",
       "extensions": [
         ".jp2",
         ".j2k",
         ".jpf",
         ".jpx"
       ],
-      "source": "https://jpeg.org/jpeg2000/"
+      "source": "https://jpeg.org/jpeg2000/applications.html"
     },
     {
       "id": "json",
@@ -1293,7 +1293,7 @@
       "id": "jxl",
       "name": "JPEG XL image",
       "family": "Image",
-      "commonUses": "Raster images stored with JPEG XL lossless or lossy compression.",
+      "commonUses": "Photographs and web images using lossless or lossy JPEG XL compression.",
       "extensions": [
         ".jxl"
       ],
@@ -1831,7 +1831,7 @@
       "extensions": [
         ".ora"
       ],
-      "source": "https://www.openraster.org/"
+      "source": "https://www.openraster.org/baseline/baseline.html"
     },
     {
       "id": "opentype",
@@ -2017,7 +2017,7 @@
       "id": "png",
       "name": "PNG image",
       "family": "Image",
-      "commonUses": "Screenshots, graphics and images that need lossless storage or transparency.",
+      "commonUses": "Screenshots, graphics and images needing lossless storage or transparency; APNG adds animation.",
       "extensions": [
         ".png",
         ".apng"
@@ -2038,7 +2038,7 @@
       "id": "pnm",
       "name": "Portable anymap image",
       "family": "Image",
-      "commonUses": "Simple raster images used for processing and interchange, with monochrome, grayscale and color variants.",
+      "commonUses": "Simple monochrome, grayscale and color images for processing and interchange. Related PAM files can store extra channels, including transparency.",
       "extensions": [
         ".pbm",
         ".pgm",
@@ -2046,7 +2046,7 @@
         ".pnm",
         ".pam"
       ],
-      "source": "https://netpbm.sourceforge.net/doc/"
+      "source": "https://netpbm.sourceforge.net/doc/pam.html"
     },
     {
       "id": "postscript",
@@ -2157,12 +2157,12 @@
       "id": "psd",
       "name": "Photoshop document",
       "family": "Image",
-      "commonUses": "Editable artwork with layers, masks and other Photoshop editing information.",
+      "commonUses": "Editable Photoshop artwork with layers and masks; PSB is the related large-document format.",
       "extensions": [
         ".psd",
         ".psb"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000523.shtml"
+      "source": "https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/"
     },
     {
       "id": "python",
@@ -2522,18 +2522,18 @@
         ".tga",
         ".targa"
       ],
-      "source": "https://imagemagick.org/formats/"
+      "source": "https://github.com/microsoft/DirectXTex/wiki/Texconv"
     },
     {
       "id": "tiff",
       "name": "TIFF image",
       "family": "Image",
-      "commonUses": "Scanned pages, photography and publishing images, sometimes with multiple pages.",
+      "commonUses": "Raster images used for photography and publishing, sometimes containing multiple images in one file.",
       "extensions": [
         ".tif",
         ".tiff"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000022.shtml",
+      "source": "https://helpx.adobe.com/bridge/desktop/share-and-export/supported-export-file-formats.html",
       "mimeTypes": [
         {
           "value": "image/tiff",

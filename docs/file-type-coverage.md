@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-11.10; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-11.11; expanded catalog and bounded structure analysis, not release acceptance
 
 Recognition and capabilities
 ----------------------------
@@ -48,6 +48,10 @@ loading behavior. Database, scientific and application semantics remain separate
 The [video purpose review](catalog-video-review.md) checks ten records and improves
 seven descriptions/references. Containers remain distinct from codecs, and no
 video conversion or playback capability is added.
+The [remaining image purpose review](catalog-image-review.md) checks 26 records
+beyond the four earlier common-image entries and improves twelve descriptions or
+references. Grouped image variants are clearer; all recognition fields and
+executable capabilities remain unchanged.
 The [document font reference scan](document-font-references.md) adds optional
 literal names and unresolved theme references from selected OOXML XML parts,
 with declared scope and unavailable results on budget/format failure.

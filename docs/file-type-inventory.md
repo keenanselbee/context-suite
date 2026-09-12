@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-11.10; 243 records. This is a descriptive
+Catalog revision: 2026-09-11.11; 243 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -13,6 +13,9 @@ The [source retrieval audit](catalog-source-review.json) records available,
 search-indexed and unavailable references. Retrieval is not a substitute for
 semantic and format-variant review; unresolved source gaps remain release work.
 No registry database, source text or reference implementation was imported.
+The [image purpose review](catalog-image-review.md), together with the earlier
+four common-image reviews, covers the current 30 Image records' typical uses.
+It does not establish complete variant or transformation support.
 The later [alias review](catalog-alias-review.md) records six added alternative
 meanings and the static/import-library wording correction.
 The [audio purpose review](catalog-audio-review.md) checks eighteen Audio records'
