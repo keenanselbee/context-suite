@@ -187,6 +187,7 @@ public static partial class DocumentAnalysis
             var count = containers.SelectMany(element => element.Elements(XName.Get(id == "xlsx" ? "sheet" : "sldId", ns))).Count();
             facts.Add(new(id == "xlsx" ? "document.sheets" : "document.slides", "Document",
                 id == "xlsx" ? "Declared sheets (contents not validated)" : "Declared slides (contents not validated)", Integer: count));
+            if (id == "pptx") await AddSlideVisibilityAsync(package, main, types, target, facts, warnings, cancellationToken);
         }
         return id;
     }

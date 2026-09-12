@@ -26,6 +26,9 @@ Default release adoption and required Office conversion remain pending.
 
 Bounded [OOXML/OpenDocument package inspection](document-design.md) identifies
 supported document families and reports declared sheet/slide counts. OOXML also
+adds [PowerPoint visibility counts](powerpoint-slide-analysis.md) from referenced
+slide settings, distinguishing defaults and incomplete scans. These counts do
+not predict rendering or a custom slide show. OOXML
 reports external-link declarations from bounded relationship-file inspection,
 with an explicit scope and unavailable counts after partial/unsupported scans.
 It never opens those targets or treats a zero count as safety approval. Encrypted,

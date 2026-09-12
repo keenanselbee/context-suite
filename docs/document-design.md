@@ -31,6 +31,12 @@ insertion/deletion/move-marker counts from the main XML without additional reads
 It reports stored declarations independently of display settings; zero is not a
 whole-document revision scan or conversion-admission result.
 
+The [PowerPoint visibility reader](powerpoint-slide-analysis.md) adds visible,
+hidden and default-setting counts from referenced slide parts within shared
+limits. Unsupported or incomplete scans leave those counts unavailable while
+retaining declared totals and identity. Custom shows, notes and rendered PDF
+page counts remain outside this inspection.
+
 
 Workbook setting declarations (2026-09-11)
 ------------------------------------------

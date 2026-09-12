@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [PowerPoint visibility analysis](powerpoint-slide-analysis.md)
+adds bounded visible/hidden/default counts from referenced slide XML, retaining
+basic facts when the optional scan fails. All 2,320 foundation contracts pass,
+including 54 new checks; four retained PPTX inputs also match independent XML
+counts through the real file reader with original bytes/times preserved.
+This does not implement the still-required Office converter.
+
 The 2026-09-11 [PowerPoint slide/notes evaluation](powerpoint-slide-evaluation.md)
 adds four generated PPTX exports with saved order, hidden end slides and an
 identical-input positive notes control. All ten parsed/rendered PDF pages match

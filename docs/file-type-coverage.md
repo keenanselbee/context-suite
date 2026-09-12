@@ -54,6 +54,9 @@ Missing flags are not assigned defaults; effective rendering behavior is not inf
 The [Word revision scan](word-revision-analysis.md) counts four marker kinds in
 the main XML, with explicit exclusions and unavailable counts when compatibility
 processing is required. It does not decide what a PDF export should display.
+The [PowerPoint visibility scan](powerpoint-slide-analysis.md) distinguishes
+visible, hidden and default-setting slides from a complete bounded reference scan.
+Invalid or over-budget slide details retain identity and declared totals.
 
 Current implementation and remaining work are separate:
 
@@ -75,7 +78,7 @@ Current implementation and remaining work are separate:
 | AU | Signature and fixed header | Declared encoding/channels/rate/extent; interpreted PCM precision and aligned derived timing | None added |
 | FLAC | Marker and first STREAMINFO declaration | Channels/rate/precision/sample count and derived duration, declared checksum presence, observed comment/picture block counts and metadata-list completeness; no frame or metadata-content validation | Fixed audio conversion and lossless recompression implemented with the optional reviewed engine |
 | Ogg | Ogg page marker | Container only; does not imply Vorbis or Opus | Optional audio conversion requires separately probed supported codec; recognition alone is insufficient |
-| DOCX / XLSX / PPTX | Agreeing package relationship, main content type and main XML root within fixed limits | Declared sheet/slide counts and macro-enabled type; scoped Word revision markers; rendered pages unavailable; identity likely | PDF conversion selected; implementation pending |
+| DOCX / XLSX / PPTX | Agreeing package relationship, main content type and main XML root within fixed limits | Declared sheet/slide counts, bounded slide visibility and macro-enabled type; scoped Word revision markers; rendered pages unavailable; identity likely | PDF conversion selected; implementation pending |
 | ODT / ODS / ODP | Agreeing MIME, manifest and supported unencrypted content family | Sheet/slide elements, declared content encryption; encrypted content remains unavailable; identity likely | Analysis only selected |
 | Other readable regular files | Generic fallback regardless of extension | Size, inspected-byte count, unknown identity or qualified filename hint | No new operation |
 | TrueType / OpenType / font collections / WOFF / WOFF2 | Font tags and available fixed headers; additional plausibility checks for numeric TrueType tag | Declared flavor, table/font counts and packaged-size references; table contents, glyphs, names and rights unavailable | None |
