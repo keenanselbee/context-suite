@@ -45,6 +45,10 @@ checks both reported precision and exact decoded samples. This behavior follows
 the [encoder's documented implementation](https://www.ffmpeg.org/doxygen/trunk/libavcodec_2flacenc_8c_source.html).
 Independent FLAC-decoder/player compatibility and extreme-value coverage remain
 release gates; experimental mode is not enabled for other codecs.
+The later [Xiph decoder matrix](audio-independent-flac.md) verifies exact PCM32
+extrema and partial final frames for mono/stereo/six-channel conversion and
+optimization. It advances independent decoder evidence without establishing
+older-player/device compatibility or listening acceptance.
 
 Vorbis uses `-page_duration 1` to flush each encoded packet to an Ogg page.
 The pinned default packing produced incorrect decoded lengths for generated

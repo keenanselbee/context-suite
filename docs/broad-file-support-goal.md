@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [independent FLAC decoder checkpoint](audio-independent-flac.md)
+verifies eighteen real-adapter conversion/optimization outputs with publisher-
+verified Xiph FLAC 1.5.0. PCM16/24/32 mono/stereo/six-channel samples match exactly,
+including signed extrema and partial final blocks; corrupt/truncated controls
+fail. Older players, listening and redistribution approval remain separate gates.
+
 The 2026-09-11 [document font reference checkpoint](document-font-references.md)
 adds bounded optional OOXML font-name and theme declarations while preserving
 basic identity on optional failure. All 2,132 foundation contracts pass, plus
