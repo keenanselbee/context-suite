@@ -587,11 +587,20 @@ internal sealed partial class FileRow(int batch, string operation, string path, 
 
     public string AnalysisDetails => Analysis is not { } analysis ? "" :
         $"Source: {Path}\n{string.Join("\n", analysis.Identity.Evidence)}\n" +
+        CatalogMimeDetails(analysis) +
         string.Join("\n", analysis.Facts.GroupBy(fact => fact.Group).Select(group => group.Key + ":\n" +
             string.Join("\n", group.Select(fact => $"{fact.Label}: {FactText(fact)}")))) +
         $"\nRead-only analysis; no files changed. Analyzer {FileAnalysis.AnalyzerVersion}; catalog {FileTypeCatalog.Default.Revision}.";
 
     public string ResultDetails => HasAnalysis ? AnalysisSummary + "\n" + AnalysisDetails : OperationDetails;
+
+    private static string CatalogMimeDetails(FileAnalysis analysis)
+    {
+        var description = FileTypeCatalog.Default.Types.FirstOrDefault(type => type.Id == analysis.Identity.FormatId);
+        return description is null || description.MimeTypes.IsEmpty ? "" :
+            "Catalog MIME types (descriptive; exact variant not determined): " +
+            string.Join(", ", description.MimeTypes.Select(mime => mime.Value)) + "\n";
+    }
 
     private static string FactText(AnalysisFact fact) => fact.Availability switch
     {

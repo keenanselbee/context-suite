@@ -3,9 +3,14 @@ using System.Text.Json;
 
 namespace ContextSuite.Core.Analysis;
 
+public sealed record CatalogMimeType(string Value, string Source);
+
 public sealed record FileTypeDescription(string Id, string Name, string Family, string CommonUses,
     ImmutableArray<string> Extensions, string Source, bool TextCompatible = false,
-    ImmutableArray<string> FileNames = default);
+    ImmutableArray<string> FileNames = default)
+{
+    public ImmutableArray<CatalogMimeType> MimeTypes { get; init; } = [];
+}
 
 public sealed record FileTypeCatalog(int SchemaVersion, string Revision, ImmutableArray<FileTypeDescription> Types)
 {
@@ -45,7 +50,22 @@ public sealed record FileTypeCatalog(int SchemaVersion, string Revision, Immutab
                     type.FileNames.Distinct(StringComparer.OrdinalIgnoreCase).Count() != type.FileNames.Length)) ||
                 !Uri.TryCreate(type.Source, UriKind.Absolute, out var source) || source.Scheme != "https")
                 throw new InvalidDataException("Invalid file-type catalog entry.");
+            if (type.MimeTypes.IsDefault || type.MimeTypes.Length > 16 ||
+                type.MimeTypes.Any(mime => mime is null || !ValidMimeType(mime.Value) ||
+                    !Uri.TryCreate(mime.Source, UriKind.Absolute, out var reference) || reference.Scheme != "https") ||
+                type.MimeTypes.Select(mime => mime.Value).Distinct(StringComparer.OrdinalIgnoreCase).Count() != type.MimeTypes.Length)
+                throw new InvalidDataException("Invalid catalog MIME description.");
         }
+    }
+
+    private static bool ValidMimeType(string? value)
+    {
+        // Canonical, parameter-free registry names; not an HTTP Content-Type parser.
+        if (value is null || value.Length > 255) return false;
+        var parts = value.Split('/');
+        return parts.Length == 2 && parts.All(part => part.Length is > 0 and <= 127 &&
+            char.IsAsciiLetterOrDigit(part[0]) && part.All(character =>
+                char.IsAsciiDigit(character) || character is >= 'a' and <= 'z' || "!#$&-^_.+".Contains(character)));
     }
 
     private static FileTypeCatalog Load()

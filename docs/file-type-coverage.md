@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-11.2; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-11.3; expanded catalog and bounded structure analysis, not release acceptance
 
 Recognition and capabilities
 ----------------------------
@@ -10,7 +10,7 @@ The embedded [catalog](../src/ContextSuite.Core/Analysis/file-types.json) curren
 contains 243 independently authored descriptions; aliases do not inflate this count.
 The [inventory](file-type-inventory.md) lists each entry and its actual detector status.
 Catalog schema 1 has stable IDs, extension aliases, exact filenames,
-families, typical uses and source references. It contains no commands or
+families, typical uses, optional MIME identifiers and source references. It contains no commands or
 conversion permissions. Validate its schema, IDs, aliases and sources with the
 foundation contracts. Preserve IDs across revisions; incompatible schemas require
 an explicit reader update and migration decision.
@@ -19,11 +19,14 @@ The historical [source retrieval audit](catalog-source-review.json) covers 223 r
 186 retrieved, 7 search-indexed and 30 unavailable to the research tool. This
 is a reachability/title review, not completed factual, variant or reuse-rights
 acceptance. Unavailable retrieval does not establish a broken URL. MIME coverage
-and complete description/detector provenance remain pending. The later
+beyond the first 36 records and complete description/detector provenance remain pending. The later
 [common image review](image-header-analysis.md) verifies four descriptions and
 their newly implemented bounded detectors against primary specifications.
 The [alias review](catalog-alias-review.md) adds six missing alternative meanings
 and corrects the static/import-library description; none adds a content detector.
+
+The [MIME review](catalog-mime-descriptions.md) supplies 59 descriptive identifiers
+for 36 records, with per-identifier provenance and qualified technical details.
 
 Current implementation and remaining work are separate:
 

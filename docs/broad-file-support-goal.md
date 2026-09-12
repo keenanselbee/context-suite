@@ -40,6 +40,14 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [MIME catalog checkpoint](catalog-mime-descriptions.md) adds 59
+registered descriptive identifiers to 36 catalog records, with per-identifier
+provenance. Schema 1 remains compatible with records that omit MIME metadata.
+Analyze exposes these only in qualified technical details, independent of
+identity confidence and operation support. All 1,884 foundation contracts and
+fresh combined application/payload staging pass; broader MIME and factual review
+and actual visible acceptance remain open.
+
 The 2026-09-11 [Office profile correction](office-profile-settings.md) reapplies
 typed settings after initialization and verifies their saved declarations after
 rendering. Seventeen guard contracts and authored Word/Excel/PowerPoint PDF

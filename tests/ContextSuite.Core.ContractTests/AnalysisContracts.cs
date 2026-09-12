@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using ContextSuite.Application;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Analysis;
@@ -15,6 +16,32 @@ internal static class AnalysisContracts
         AudioAnalysisContracts.Run(Path.Combine(scratch, "audio-analysis"), check);
         var catalog = FileTypeCatalog.Default;
         catalog.Validate();
+        check(catalog.Types.Count(type => !type.MimeTypes.IsEmpty) >= 36 &&
+            catalog.Get("png").MimeTypes.Select(mime => mime.Value).SequenceEqual(new[] { "image/png", "image/apng" }) &&
+            catalog.Get("ogg").MimeTypes.Length == 3 && catalog.Get("docx").MimeTypes.Length == 4,
+            "analysis catalog: reviewed MIME descriptions preserve container and document variants");
+        var legacyDescription = JsonSerializer.Deserialize<FileTypeDescription>("""
+            {"Id":"legacy","Name":"Legacy record","Family":"Data","CommonUses":"An authored compatibility fixture.",
+             "Extensions":[".legacy"],"Source":"https://example.test/format"}
+            """);
+        check(legacyDescription is { MimeTypes.IsEmpty: true }, "analysis catalog: omitted additive MIME metadata defaults to empty");
+        var mimeRoundtrip = JsonSerializer.Deserialize<FileTypeDescription>(JsonSerializer.Serialize(catalog.Get("docx") with { FileNames = [] }));
+        check(mimeRoundtrip!.MimeTypes.SequenceEqual(catalog.Get("docx").MimeTypes), "analysis catalog: MIME identifiers and provenance survive JSON roundtrip");
+        foreach (var invalidMime in new string?[] { null, "", "text", "text/", "/plain", "text//plain", "text/PLAIN",
+            "text/*", "text/plain; charset=utf-8", "text/pl ain", "text/pl\r\nain", "text/pl\u00e4in", "text/" + new string('a', 128) })
+        {
+            var invalid = catalog with { Types = [catalog.Get("text") with { MimeTypes = [new(invalidMime!, "https://example.test/type")] }] };
+            try { invalid.Validate(); check(false, "analysis catalog: reject malformed or noncanonical MIME identifier"); }
+            catch (InvalidDataException) { check(true, "analysis catalog: reject malformed or noncanonical MIME identifier"); }
+        }
+        foreach (var invalidMimes in new ImmutableArray<CatalogMimeType>[] { default, [null!],
+            [new("text/plain", "file:///local")], [new("text/plain", "https://example.test/type"), new("text/plain", "https://example.test/duplicate")],
+            Enumerable.Range(0, 17).Select(index => new CatalogMimeType("text/type" + index, "https://example.test/type")).ToImmutableArray() })
+        {
+            var invalid = catalog with { Types = [catalog.Get("text") with { MimeTypes = invalidMimes }] };
+            try { invalid.Validate(); check(false, "analysis catalog: reject missing arrays, null entries, unreviewable sources, duplicates and excess MIME entries"); }
+            catch (InvalidDataException) { check(true, "analysis catalog: reject missing arrays, null entries, unreviewable sources, duplicates and excess MIME entries"); }
+        }
         check(catalog.FindByName("REPORT.DOCX").Single().Id == "docx", "analysis catalog: case-insensitive extension hints");
         check(catalog.FindByName("unknown.unregistered").IsEmpty, "analysis catalog: unknown extension has no invented entry");
         check(catalog.Types.Length >= 200 && catalog.Types.Select(type => type.Id).Distinct().Count() == catalog.Types.Length,
@@ -203,6 +230,9 @@ internal static class AnalysisContracts
                 "analysis: read-only results never publish or enter transformation retry");
             check(view.Rows[2].AnalysisSummary.Contains("Commonly used for:") && view.Rows[2].AnalysisDetails.Contains("not parsed"),
                 "analysis: ordinary summary and evidence details remain separate");
+            check(view.Rows[2].AnalysisDetails.Contains("Catalog MIME types (descriptive; exact variant not determined): application/pdf") &&
+                !view.Rows[2].AnalysisSummary.Contains("MIME") && !view.Rows[1].AnalysisDetails.Contains("MIME"),
+                "analysis: MIME descriptions stay in technical details and unknown files receive no invented type");
         }
         var after = SHA256.HashData(await File.ReadAllBytesAsync(binary));
         check(before.SequenceEqual(after) && timestamp == File.GetLastWriteTimeUtc(binary),

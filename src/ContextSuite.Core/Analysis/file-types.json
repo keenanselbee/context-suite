@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.2",
+  "revision": "2026-09-11.3",
   "types": [
     {
       "id": "3gp",
@@ -192,7 +192,13 @@
       "extensions": [
         ".avif"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000540.shtml"
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000540.shtml",
+      "mimeTypes": [
+        {
+          "value": "image/avif",
+          "source": "https://www.iana.org/assignments/media-types/image/avif"
+        }
+      ]
     },
     {
       "id": "avro",
@@ -257,7 +263,13 @@
         ".bmp",
         ".dib"
       ],
-      "source": "https://learn.microsoft.com/en-us/windows/win32/gdi/bitmap-storage"
+      "source": "https://learn.microsoft.com/en-us/windows/win32/gdi/bitmap-storage",
+      "mimeTypes": [
+        {
+          "value": "image/bmp",
+          "source": "https://www.iana.org/assignments/media-types/image/bmp"
+        }
+      ]
     },
     {
       "id": "bzip2",
@@ -430,7 +442,13 @@
         ".css"
       ],
       "source": "https://www.w3.org/TR/CSS/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/css",
+          "source": "https://www.iana.org/assignments/media-types/text/css"
+        }
+      ]
     },
     {
       "id": "csv",
@@ -441,7 +459,13 @@
         ".csv"
       ],
       "source": "https://www.rfc-editor.org/rfc/rfc4180.html",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/csv",
+          "source": "https://www.iana.org/assignments/media-types/text/csv"
+        }
+      ]
     },
     {
       "id": "cue",
@@ -568,7 +592,13 @@
         ".doc",
         ".dot"
       ],
-      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-doc/ccd7b486-7881-484c-a137-51170af7cc22"
+      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-doc/ccd7b486-7881-484c-a137-51170af7cc22",
+      "mimeTypes": [
+        {
+          "value": "application/msword",
+          "source": "https://www.iana.org/assignments/media-types/application/msword"
+        }
+      ]
     },
     {
       "id": "dockerfile",
@@ -594,7 +624,25 @@
         ".dotx",
         ".dotm"
       ],
-      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/"
+      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        },
+        {
+          "value": "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+        },
+        {
+          "value": "application/vnd.ms-word.document.macroenabled.12",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-word.document.macroEnabled.12"
+        },
+        {
+          "value": "application/vnd.ms-word.template.macroenabled.12",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-word.template.macroEnabled.12"
+        }
+      ]
     },
     {
       "id": "dwg",
@@ -697,7 +745,13 @@
       "extensions": [
         ".epub"
       ],
-      "source": "https://www.w3.org/TR/epub-33/"
+      "source": "https://www.w3.org/TR/epub-33/",
+      "mimeTypes": [
+        {
+          "value": "application/epub+zip",
+          "source": "https://www.iana.org/assignments/media-types/application/epub+zip"
+        }
+      ]
     },
     {
       "id": "erlang",
@@ -772,7 +826,13 @@
       "extensions": [
         ".flac"
       ],
-      "source": "https://www.rfc-editor.org/rfc/rfc9639.html"
+      "source": "https://www.rfc-editor.org/rfc/rfc9639.html",
+      "mimeTypes": [
+        {
+          "value": "audio/flac",
+          "source": "https://www.iana.org/assignments/media-types/audio/flac"
+        }
+      ]
     },
     {
       "id": "flv",
@@ -844,7 +904,13 @@
       "extensions": [
         ".gif"
       ],
-      "source": "https://www.w3.org/Graphics/GIF/spec-gif89a.txt"
+      "source": "https://www.w3.org/Graphics/GIF/spec-gif89a.txt",
+      "mimeTypes": [
+        {
+          "value": "image/gif",
+          "source": "https://www.iana.org/assignments/media-types/image/gif"
+        }
+      ]
     },
     {
       "id": "gitignore",
@@ -913,7 +979,13 @@
         ".gz",
         ".gzip"
       ],
-      "source": "https://www.rfc-editor.org/rfc/rfc1952.html"
+      "source": "https://www.rfc-editor.org/rfc/rfc1952.html",
+      "mimeTypes": [
+        {
+          "value": "application/gzip",
+          "source": "https://www.iana.org/assignments/media-types/application/gzip"
+        }
+      ]
     },
     {
       "id": "har",
@@ -972,7 +1044,25 @@
         ".heic",
         ".hif"
       ],
-      "source": "https://nokiatech.github.io/heif/"
+      "source": "https://nokiatech.github.io/heif/",
+      "mimeTypes": [
+        {
+          "value": "image/heif",
+          "source": "https://www.iana.org/assignments/media-types/image/heif"
+        },
+        {
+          "value": "image/heif-sequence",
+          "source": "https://www.iana.org/assignments/media-types/image/heif-sequence"
+        },
+        {
+          "value": "image/heic",
+          "source": "https://www.iana.org/assignments/media-types/image/heic"
+        },
+        {
+          "value": "image/heic-sequence",
+          "source": "https://www.iana.org/assignments/media-types/image/heic-sequence"
+        }
+      ]
     },
     {
       "id": "html",
@@ -985,7 +1075,17 @@
         ".xhtml"
       ],
       "source": "https://html.spec.whatwg.org/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/html",
+          "source": "https://www.iana.org/assignments/media-types/text/html"
+        },
+        {
+          "value": "application/xhtml+xml",
+          "source": "https://www.iana.org/assignments/media-types/application/xhtml+xml"
+        }
+      ]
     },
     {
       "id": "ical",
@@ -1109,7 +1209,13 @@
         ".jsx"
       ],
       "source": "https://tc39.es/ecma262/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/javascript",
+          "source": "https://www.iana.org/assignments/media-types/text/javascript"
+        }
+      ]
     },
     {
       "id": "jpeg",
@@ -1122,7 +1228,13 @@
         ".jpe",
         ".jfif"
       ],
-      "source": "https://www.w3.org/Graphics/JPEG/itu-t81.pdf"
+      "source": "https://www.w3.org/Graphics/JPEG/itu-t81.pdf",
+      "mimeTypes": [
+        {
+          "value": "image/jpeg",
+          "source": "https://www.iana.org/assignments/media-types/image/jpeg"
+        }
+      ]
     },
     {
       "id": "jpeg2000",
@@ -1146,7 +1258,13 @@
         ".json"
       ],
       "source": "https://www.rfc-editor.org/rfc/rfc8259.html",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/json",
+          "source": "https://www.iana.org/assignments/media-types/application/json"
+        }
+      ]
     },
     {
       "id": "json-lines",
@@ -1301,7 +1419,13 @@
         ".m4a",
         ".m4b"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000155.shtml"
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000155.shtml",
+      "mimeTypes": [
+        {
+          "value": "audio/mp4",
+          "source": "https://www.iana.org/assignments/media-types/audio/mp4"
+        }
+      ]
     },
     {
       "id": "makefile",
@@ -1329,7 +1453,13 @@
         ".markdown"
       ],
       "source": "https://spec.commonmark.org/0.31.2/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/markdown",
+          "source": "https://www.iana.org/assignments/media-types/text/markdown"
+        }
+      ]
     },
     {
       "id": "matlab-data",
@@ -1418,7 +1548,13 @@
       "extensions": [
         ".mp3"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000012.shtml"
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000012.shtml",
+      "mimeTypes": [
+        {
+          "value": "audio/mpeg",
+          "source": "https://www.iana.org/assignments/media-types/audio/mpeg"
+        }
+      ]
     },
     {
       "id": "mp4",
@@ -1597,7 +1733,17 @@
         ".odp",
         ".otp"
       ],
-      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html"
+      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.oasis.opendocument.presentation",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.oasis.opendocument.presentation"
+        },
+        {
+          "value": "application/vnd.oasis.opendocument.presentation-template",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.oasis.opendocument.presentation-template"
+        }
+      ]
     },
     {
       "id": "ods",
@@ -1608,7 +1754,17 @@
         ".ods",
         ".ots"
       ],
-      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html"
+      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.oasis.opendocument.spreadsheet",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.oasis.opendocument.spreadsheet"
+        },
+        {
+          "value": "application/vnd.oasis.opendocument.spreadsheet-template",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.oasis.opendocument.spreadsheet-template"
+        }
+      ]
     },
     {
       "id": "odt",
@@ -1619,7 +1775,17 @@
         ".odt",
         ".ott"
       ],
-      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html"
+      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.oasis.opendocument.text",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.oasis.opendocument.text"
+        },
+        {
+          "value": "application/vnd.oasis.opendocument.text-template",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.oasis.opendocument.text-template"
+        }
+      ]
     },
     {
       "id": "ogg",
@@ -1633,7 +1799,21 @@
         ".opus",
         ".ogx"
       ],
-      "source": "https://www.rfc-editor.org/rfc/rfc3533.html"
+      "source": "https://www.rfc-editor.org/rfc/rfc3533.html",
+      "mimeTypes": [
+        {
+          "value": "application/ogg",
+          "source": "https://www.iana.org/assignments/media-types/application/ogg"
+        },
+        {
+          "value": "audio/ogg",
+          "source": "https://www.iana.org/assignments/media-types/audio/ogg"
+        },
+        {
+          "value": "video/ogg",
+          "source": "https://www.iana.org/assignments/media-types/video/ogg"
+        }
+      ]
     },
     {
       "id": "ole",
@@ -1732,7 +1912,13 @@
       "extensions": [
         ".pdf"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000030.shtml"
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000030.shtml",
+      "mimeTypes": [
+        {
+          "value": "application/pdf",
+          "source": "https://www.iana.org/assignments/media-types/application/pdf"
+        }
+      ]
     },
     {
       "id": "pe",
@@ -1836,7 +2022,17 @@
         ".png",
         ".apng"
       ],
-      "source": "https://www.w3.org/TR/png-3/"
+      "source": "https://www.w3.org/TR/png-3/",
+      "mimeTypes": [
+        {
+          "value": "image/png",
+          "source": "https://www.iana.org/assignments/media-types/image/png"
+        },
+        {
+          "value": "image/apng",
+          "source": "https://www.iana.org/assignments/media-types/image/apng"
+        }
+      ]
     },
     {
       "id": "pnm",
@@ -1886,7 +2082,13 @@
         ".pot",
         ".pps"
       ],
-      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/6be79dde-33c1-4c1b-8ccc-4b2301c08662"
+      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/6be79dde-33c1-4c1b-8ccc-4b2301c08662",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.ms-powerpoint",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-powerpoint"
+        }
+      ]
     },
     {
       "id": "pptx",
@@ -1901,7 +2103,33 @@
         ".ppsx",
         ".ppsm"
       ],
-      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/"
+      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        },
+        {
+          "value": "application/vnd.openxmlformats-officedocument.presentationml.template",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.openxmlformats-officedocument.presentationml.template"
+        },
+        {
+          "value": "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.openxmlformats-officedocument.presentationml.slideshow"
+        },
+        {
+          "value": "application/vnd.ms-powerpoint.presentation.macroenabled.12",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-powerpoint.presentation.macroEnabled.12"
+        },
+        {
+          "value": "application/vnd.ms-powerpoint.template.macroenabled.12",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-powerpoint.template.macroEnabled.12"
+        },
+        {
+          "value": "application/vnd.ms-powerpoint.slideshow.macroenabled.12",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-powerpoint.slideshow.macroEnabled.12"
+        }
+      ]
     },
     {
       "id": "properties",
@@ -2055,7 +2283,17 @@
         ".rtf"
       ],
       "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000473.shtml",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/rtf",
+          "source": "https://www.iana.org/assignments/media-types/application/rtf"
+        },
+        {
+          "value": "text/rtf",
+          "source": "https://www.iana.org/assignments/media-types/text/rtf"
+        }
+      ]
     },
     {
       "id": "ruby",
@@ -2216,7 +2454,13 @@
         ".svg"
       ],
       "source": "https://www.w3.org/TR/SVG2/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "image/svg+xml",
+          "source": "https://www.iana.org/assignments/media-types/image/svg+xml"
+        }
+      ]
     },
     {
       "id": "swift",
@@ -2261,7 +2505,13 @@
         ".log"
       ],
       "source": "https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-2/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/plain",
+          "source": "https://www.iana.org/assignments/media-types/text/plain"
+        }
+      ]
     },
     {
       "id": "tga",
@@ -2283,7 +2533,13 @@
         ".tif",
         ".tiff"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000022.shtml"
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000022.shtml",
+      "mimeTypes": [
+        {
+          "value": "image/tiff",
+          "source": "https://www.iana.org/assignments/media-types/image/tiff"
+        }
+      ]
     },
     {
       "id": "toml",
@@ -2514,7 +2770,13 @@
       "extensions": [
         ".webp"
       ],
-      "source": "https://developers.google.com/speed/webp/docs/riff_container"
+      "source": "https://developers.google.com/speed/webp/docs/riff_container",
+      "mimeTypes": [
+        {
+          "value": "image/webp",
+          "source": "https://www.iana.org/assignments/media-types/image/webp"
+        }
+      ]
     },
     {
       "id": "webvtt",
@@ -2628,7 +2890,13 @@
         ".xls",
         ".xlt"
       ],
-      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xls/cd03cb5f-ca02-4934-a391-bb674cb8aa06"
+      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xls/cd03cb5f-ca02-4934-a391-bb674cb8aa06",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.ms-excel",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-excel"
+        }
+      ]
     },
     {
       "id": "xlsb",
@@ -2651,7 +2919,25 @@
         ".xltx",
         ".xltm"
       ],
-      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/"
+      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        },
+        {
+          "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.openxmlformats-officedocument.spreadsheetml.template"
+        },
+        {
+          "value": "application/vnd.ms-excel.sheet.macroenabled.12",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-excel.sheet.macroEnabled.12"
+        },
+        {
+          "value": "application/vnd.ms-excel.template.macroenabled.12",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-excel.template.macroEnabled.12"
+        }
+      ]
     },
     {
       "id": "xml",
@@ -2662,7 +2948,17 @@
         ".xml"
       ],
       "source": "https://www.w3.org/TR/xml/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/xml",
+          "source": "https://www.iana.org/assignments/media-types/application/xml"
+        },
+        {
+          "value": "text/xml",
+          "source": "https://www.iana.org/assignments/media-types/text/xml"
+        }
+      ]
     },
     {
       "id": "xpi",
@@ -2706,7 +3002,13 @@
         ".yml"
       ],
       "source": "https://yaml.org/spec/1.2.2/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/yaml",
+          "source": "https://www.iana.org/assignments/media-types/application/yaml"
+        }
+      ]
     },
     {
       "id": "zip",
@@ -2717,7 +3019,13 @@
         ".zip",
         ".zipx"
       ],
-      "source": "https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT"
+      "source": "https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT",
+      "mimeTypes": [
+        {
+          "value": "application/zip",
+          "source": "https://www.iana.org/assignments/media-types/application/zip"
+        }
+      ]
     },
     {
       "id": "zstd",
