@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $PreparedDirectory, [Parameter(Mandatory)][string] $PdfPreparedDirectory,
-    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation)
+    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution)
 $ErrorActionPreference = 'Stop'
-if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
+if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $office = (Resolve-Path -LiteralPath $PreparedDirectory).Path
 $pdf = (Resolve-Path -LiteralPath $PdfPreparedDirectory).Path
@@ -39,6 +39,7 @@ if ($EnvironmentPaths) { $probeArguments += 'EnvironmentPaths' }
 if ($LegacyAnalysis) { $probeArguments += 'LegacyAnalysis' }
 if ($LegacyPdf) { $probeArguments += 'LegacyPdf' }
 if ($ExcelCalculation) { $probeArguments += 'ExcelCalculation' }
+if ($FontSubstitution) { $probeArguments += 'FontSubstitution' }
 & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- @probeArguments
 if ($LASTEXITCODE) { throw 'Office evaluation failed; inspect retained scratch evidence.' }
 Write-Output 'Authored passive Office fixtures and disposable exports only. No arbitrary-document isolation, installer or production acceptance implied.'

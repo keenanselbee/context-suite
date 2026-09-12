@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [Office font substitution evaluation](office-font-substitution.md)
+compares six authored exports. Missing requested fonts silently become Bodoni MT
+Black in the Word title and DejaVu Sans in Excel/PowerPoint on this host. Page
+counts/text still pass, while four paired page renders differ. Source/PDF hashes
+and font-only source differences are verified. Explicit missing-font handling,
+broader layout fidelity and required Office conversion remain open.
+
 The 2026-09-11 [font header checkpoint](font-header-analysis.md) reviews five
 catalog records and adds likely content identification with bounded header facts.
 All 2,102 foundation contracts pass, including 218 new checks and actual-reader

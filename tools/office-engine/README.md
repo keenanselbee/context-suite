@@ -115,6 +115,15 @@ files outside INSTALLLOCATION are excluded; the current machine's existing fonts
 and runtime can affect results. Package completeness and redistribution remain
 unresolved.
 
+`Test-OfficeEvaluation.ps1 -FontSubstitution` uses the same three prepared-directory
+arguments to compare authored Word/Excel/PowerPoint pairs requesting Arial or
+`ContextSuiteAbsentFont9361`. It retains PDF font-name declarations, text and
+96 DPI renders. Run `python -B tools/office-engine/Inspect-OfficeFontComparison.py
+'<printed evaluation directory>'` to verify retained source/PDF hashes, check that
+the paired document parts differ only by requested font name, and report exact
+pixel differences. These are substitution observations, not font/layout acceptance
+or a production missing-font detector.
+
 The separate native isolation experiment is:
 
 ```powershell

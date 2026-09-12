@@ -434,3 +434,8 @@ Office conversion or settle isolation, wider fidelity and runtime packaging.
 Next implementation work includes required Word/Excel/PowerPoint-to-PDF,
 wider PDF fidelity and renderer interruption coverage, production
 engine adoption and the broad-file goal's remaining catalog/analysis/release gates.
+
+The later [Office font substitution evaluation](office-font-substitution.md)
+finds silent typography changes despite matching page/text checks. Missing-font
+handling must be explicit in the required Office converter; the evaluation does
+not provide a production font-resolution detector or accepted fidelity tolerance.
