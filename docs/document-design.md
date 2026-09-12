@@ -448,6 +448,11 @@ Next implementation work includes required Word/Excel/PowerPoint-to-PDF,
 wider PDF fidelity and renderer interruption coverage, production
 engine adoption and the broad-file goal's remaining catalog/analysis/release gates.
 
+The [Excel print layout evaluation](excel-print-layout-evaluation.md) adds passive
+fixtures for saved print areas, manual breaks, repeated title rows, fit-to-page
+and hidden cells. It separates successful export from matching page-level text
+and does not establish general spreadsheet layout or enable Office conversion.
+
 The later [Office font substitution evaluation](office-font-substitution.md)
 finds silent typography changes despite matching page/text checks. Missing-font
 handling must be explicit in the required Office converter; the evaluation does

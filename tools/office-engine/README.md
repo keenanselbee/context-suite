@@ -136,6 +136,15 @@ to independently check retained package values/styles/date-system declarations,
 source/PDF hashes and per-cell text observations. This is a passive fixture
 experiment, not customer conversion or general date/locale compatibility.
 
+`Test-OfficeEvaluation.ps1 -ExcelPrint` exports five passive XLSX fixtures covering
+manual page breaks, repeated title rows, fit-to-one-page, disjoint print areas and
+hidden rows/columns. It records exact normalized text per page as a fidelity
+observation, independently checks PDF structure/page geometry, and retains 96 DPI
+renders. Use `python -B tools/office-engine/Inspect-ExcelPrint.py '<evaluation directory>'`
+to verify original print declarations, source/PDF hashes and recorded observations.
+See [print layout scope and results](../../docs/excel-print-layout-evaluation.md).
+Completion alone does not imply all five print policies matched.
+
 The separate native isolation experiment is:
 
 ```powershell

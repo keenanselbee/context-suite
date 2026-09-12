@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [Excel print-layout evaluation](excel-print-layout-evaluation.md)
+matches all five passive workbook cases across eight PDF pages: manual breaks,
+repeated title rows, fit-to-page, disjoint areas and hidden cells. Independent
+source/PDF/hash inspection and two altered-evidence refusal checks pass.
+These saved-print findings do not enable required Office conversion or resolve
+isolation, calculation/date/font handling and broader layout acceptance.
+
 The 2026-09-11 [audio publication crash checkpoint](audio-publication-crash-verification.md)
 passes 74 checks across ten abrupt application-layer terminations, plus 11 normal
 audio-worker checks. WAV-to-FLAC and FLAC optimization preserve originals,
