@@ -6,6 +6,10 @@ and worker termination during actual native audio encoding. It uses the existing
 packaged candidate, the real worker client and the transactional copy publisher.
 No production behavior, engine pin or installed state changes were needed.
 
+The later five-target matrix below extends this to **96 checks** across FLAC,
+MP3, M4A/AAC, Ogg Vorbis and Opus. The original run remains historical evidence;
+the current harness uses a tone fixture for its same-target retries.
+
 
 Execution and observations
 --------------------------
@@ -81,3 +85,65 @@ filesystem/network isolation, visible/accessibility acceptance and engine releas
 adoption remain separate work. The wider foundation, 298 private adapter and 116
 audio workflow suites were not rerun for this test-only change. The earlier
 production build remains the tested payload; no fresh production build is claimed.
+
+
+Five-target encoder interruption matrix (2026-09-11)
+--------------------------------------------------
+
+The harness now repeats cancellation, client-deadline expiry and worker-only
+termination for all five compressed targets. Each case derives its reservation
+extension and consent from the existing fixed target plan. It verifies the same
+native parent/path, CPU activity, candidate growth and output lock before
+injecting the fault. No synthetic pass substitutes for observing a live encoder.
+
+The two-minute PCM24 noise input remains the interrupted source. The one-second
+retry now contains separately authored 440 Hz and 660 Hz stereo tones at 40%
+amplitude, using the same 48 kHz PCM24 layout. It exercises successful lossy
+publication without claiming that the interrupted noise input meets every codec's
+signal-error bound. The initial full FLAC conversion remains a preservation
+control; every subsequent successful retry also becomes a hash control.
+
+| Target | Cancellation | Client timeout | Worker termination | Same-target validated retries |
+| --- | --- | --- | --- | --- |
+| FLAC | Pass | Pass | Pass | 3 |
+| MP3 | Pass | Pass | Pass | 3 |
+| M4A/AAC | Pass | Pass | Pass | 3 |
+| Ogg Vorbis | Pass | Pass | Pass | 3 |
+| Opus | Pass | Pass | Pass | 3 |
+
+All 15 cases retained the correct failure classification, stopped the owned
+worker/encoder, removed unfinished reservations/journals/scratch, preserved both
+original hashes/write times and earlier committed copies, and completed a
+same-target retry using a fresh worker. The timeout still uses the injected
+clock after checking the 150-second production deadline; this is not a timed
+150-second endurance test. A refusing recycler prevents native recycling.
+
+All **96 interruption checks** and **11 normal audio-worker checks** pass with
+the unchanged staged worker:
+`artifacts/production-staging/c2a73562db084b148f407c62d74c82d4`.
+The wrapper's complete pre-run payload check and before/after pinned audio
+inventory checks pass. The Release public test host compiles and runs successfully.
+No production code or engine payload changed, so no new production build is claimed.
+
+Evidence:
+`.codex-temp/audio-engine/worker-177f760ce67c4606a0f0415aebd42a50/interruption-results/audio-interruptions.json`.
+The log is `.codex-temp/audio-five-target-interruptions.log`. Evidence includes
+target/fault pairs, observed worker/native process IDs and candidate byte growth,
+abandoned publication outcomes, retry outcomes and committed-output hashes.
+
+Separate post-run inspection confirms all 15 distinct target/fault pairs, both
+original hashes, all 16 committed-output hashes, each retry's expected extension,
+container header and recorded length, empty journals/worker scratch and absence
+of unfinished temporary files. All recorded process IDs are absent. Container
+headers are an additional inspection, not independent decoding or a substitute
+for the production semantic/sample validation used before publication.
+
+This covers one lossless source layout and five compressed targets during
+encoding. WAVE output, other input codecs/rates/layouts, reference decoding,
+output validation, optimization and publication interruption phases need their
+own evidence. The short tone is not representative listening or player/device
+acceptance. Native overwrite, visible/accessibility acceptance and engine release
+adoption remain separate gates. The foundation, private adapter and full audio
+workflow matrices were not rerun for this test-only expansion. Public-source
+boundary, system-theme policy, 95 documentation files and both repositories'
+whitespace checks pass.

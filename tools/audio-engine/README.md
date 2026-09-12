@@ -110,9 +110,10 @@ verify the existing audio workflows alongside conversion.
 
 Optional `-IncludeInterruptions` authors a long PCM24 noise fixture and verifies
 cancellation, client-deadline expiry and worker-only termination while a real
-native encoder is consuming CPU and growing its candidate. It checks native
+native FLAC, MP3, AAC, Vorbis or Opus encoder is consuming CPU and growing its
+candidate. Each of the five targets runs all three faults. It checks native
 exit, original/committed-copy preservation, reservation/journal/scratch cleanup
-and a validated retry with a fresh worker. The new public host mode is
+and a validated same-target tone-file retry with a fresh worker. The public host mode is
 `--audio-interruptions <new-evidence> <worker-executable>`; the wrapper supplies
 these paths and verifies the packaged inventory before and after execution.
 See [actual results and scope](../../docs/audio-interruption-verification.md).

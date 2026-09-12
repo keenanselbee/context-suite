@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [five-target audio interruption matrix](audio-interruption-verification.md)
+passes 96 checks across FLAC, MP3, M4A/AAC, Vorbis and Opus encoding. All 15
+target/fault pairs preserve originals and earlier copies, clean unfinished work,
+and complete validated same-target retries. The 11 normal audio-worker checks
+and payload inventory checks also pass. Other phases, listening/player acceptance
+and release adoption remain separate work.
+
 The 2026-09-11 [source/configuration review](catalog-source-code-review.md) checks
 all 49 records in those families and improves twenty descriptions/references.
 Catalog revision 2026-09-11.8 retains 243 entries and unchanged recognition fields.

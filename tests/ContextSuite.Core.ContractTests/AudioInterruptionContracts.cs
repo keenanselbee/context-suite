@@ -17,7 +17,7 @@ internal static class AudioInterruptionContracts
         var sourcePath = Path.Combine(root, "Authored noise \u00fc.wav");
         var retryPath = Path.Combine(root, "Authored short.wav");
         WriteWave(sourcePath, 120);
-        WriteWave(retryPath, 1);
+        WriteWave(retryPath, 1, noise: false);
         var sourceHash = await Hash(sourcePath);
         var sourceTime = File.GetLastWriteTimeUtc(sourcePath);
         var retryHash = await Hash(retryPath);
@@ -29,18 +29,21 @@ internal static class AudioInterruptionContracts
         await using var worker = new WorkerClient(executable, workerRoot, clock);
         var executor = new AudioConversionExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial.json")));
         var source = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), sourcePath), AudioFormat.Flac, default);
-        var baseline = await executor.ExecuteAsync(Plan(source), null, default);
+        var baseline = await executor.ExecuteAsync(Plan(source, AudioFormat.Flac), null, default);
         var baselineOutput = baseline.Results.Single().Publication;
         check(baselineOutput is { Outcome: PublicationOutcome.CopyCreated, OutputPath: not null },
             "Audio interruption: long authored fixture first completes exact-sample FLAC publication");
         var committed = new Dictionary<string, string> { [baselineOutput!.OutputPath!] = await Hash(baselineOutput.OutputPath!) };
         var evidence = new List<object>();
+        foreach (var target in new[] { AudioFormat.Flac, AudioFormat.Mp3, AudioFormat.M4a, AudioFormat.Vorbis, AudioFormat.Opus })
         foreach (var fault in new[] { "cancel", "client-timeout", "worker-crash" })
         {
-            source = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), sourcePath), AudioFormat.Flac, default);
-            var reservation = await publisher.ReserveAsync(new(source.ItemId, sourcePath, "flac", new("convert", new())));
+            var scenario = target + "/" + fault;
+            source = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), sourcePath), target, default);
+            var encoding = AudioConversionPlan.Create(source.Facts, target);
+            var reservation = await publisher.ReserveAsync(new(source.ItemId, sourcePath, encoding.Extension.TrimStart('.'), new("convert", new())));
             using var cancellation = new CancellationTokenSource();
-            var operation = worker.ConvertAudioAsync(new(source, reservation.TemporaryPath, AudioFormat.Flac, AudioConversionConsent.None), cancellation.Token);
+            var operation = worker.ConvertAudioAsync(new(source, reservation.TemporaryPath, target, encoding.RequiredConsent), cancellation.Token);
             var workerId = worker.ProcessId!.Value;
             Process? native = null;
             string? candidate = null;
@@ -70,14 +73,14 @@ internal static class AudioInterruptionContracts
                     await Task.Delay(5);
                 }
                 if (native is null || native.HasExited || operation.IsCompleted)
-                    throw new InvalidOperationException("Did not observe a live encoder growing its candidate before " + fault);
+                    throw new InvalidOperationException("Did not observe a live encoder growing its candidate before " + scenario);
                 var nativeId = native.Id;
                 check(afterBytes > beforeBytes && IsLocked(reservation.TemporaryPath),
-                    "Audio interruption: encoder CPU, growing candidate and reserved-output lock observed before " + fault);
+                    "Audio interruption: encoder CPU, growing candidate and reserved-output lock observed before " + scenario);
                 if (fault == "cancel") cancellation.Cancel();
                 else if (fault == "client-timeout")
                 {
-                    check(clock.Current!.Due == TimeSpan.FromSeconds(150), "Audio interruption: production client deadline is 150 seconds");
+                    check(clock.Current!.Due == TimeSpan.FromSeconds(150), "Audio interruption: production client deadline is 150 seconds for " + target);
                     clock.Current.Expire();
                 }
                 else
@@ -87,30 +90,30 @@ internal static class AudioInterruptionContracts
                 }
                 try { await operation.WaitAsync(TimeSpan.FromSeconds(10)); throw new InvalidOperationException("Interrupted audio conversion succeeded."); }
                 catch (OperationCanceledException) when (fault == "cancel")
-                { check(true, "Audio interruption: cancellation retains its distinct result"); }
+                { check(true, "Audio interruption: cancellation retains its distinct result for " + target); }
                 catch (MediaWorkerException error) when (fault != "cancel")
                 {
                     check(error.Failure == (fault == "client-timeout" ? ImageFailure.TimedOut : ImageFailure.WorkerTerminated),
-                        "Audio interruption: distinct typed failure for " + fault);
+                        "Audio interruption: distinct typed failure for " + scenario);
                 }
                 await native.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(5));
-                check(native.HasExited && worker.ProcessId is null, "Audio interruption: worker and owned native encoder exit after " + fault);
+                check(native.HasExited && worker.ProcessId is null, "Audio interruption: worker and owned native encoder exit after " + scenario);
                 var result = await publisher.AbandonAsync(reservation, fault == "cancel");
                 check(result.Outcome == (fault == "cancel" ? PublicationOutcome.Cancelled : PublicationOutcome.Failed) &&
                     !File.Exists(reservation.TemporaryPath) && !File.Exists(reservation.Record.OutputPath) &&
                     !Directory.EnumerateDirectories(workerRoot).Any() && !Directory.EnumerateFiles(records).Any(),
-                    "Audio interruption: incomplete output, journal and owned worker scratch are removed after " + fault);
+                    "Audio interruption: incomplete output, journal and owned worker scratch are removed after " + scenario);
                 var preserved = await Hash(sourcePath) == sourceHash && File.GetLastWriteTimeUtc(sourcePath) == sourceTime &&
                     await Hash(retryPath) == retryHash && File.GetLastWriteTimeUtc(retryPath) == retryTime;
                 foreach (var output in committed) preserved &= await Hash(output.Key) == output.Value;
-                check(preserved, "Audio interruption: originals and earlier committed copies survive " + fault);
-                var retry = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), retryPath), AudioFormat.Flac, default);
-                var resumed = await executor.ExecuteAsync(Plan(retry), null, default);
+                check(preserved, "Audio interruption: originals and earlier committed copies survive " + scenario);
+                var retry = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), retryPath), target, default);
+                var resumed = await executor.ExecuteAsync(Plan(retry, target), null, default);
                 var resumedOutput = resumed.Results.Single().Publication;
                 check(worker.ProcessId != workerId && resumedOutput is { Outcome: PublicationOutcome.CopyCreated, OutputPath: not null },
-                    "Audio interruption: a fresh worker publishes a validated retry after " + fault);
+                    "Audio interruption: a fresh worker publishes a validated same-target retry after " + scenario);
                 committed.Add(resumedOutput!.OutputPath!, await Hash(resumedOutput.OutputPath!));
-                evidence.Add(new { fault, workerId, nativeId, candidate, beforeBytes, afterBytes, result, resumed });
+                evidence.Add(new { target = target.ToString(), fault, workerId, nativeId, candidate, beforeBytes, afterBytes, result, resumed });
             }
             finally
             {
@@ -123,11 +126,14 @@ internal static class AudioInterruptionContracts
         await File.WriteAllTextAsync(Path.Combine(root, "audio-interruptions.json"), JsonSerializer.Serialize(
             new { sourceHash, retryHash, committed, evidence }, new JsonSerializerOptions { WriteIndented = true }));
 
-        ConfirmedAudioConversion Plan(AudioFileSource input) =>
-            AudioConversionBatch.Create(Guid.NewGuid(), [input], AudioFormat.Flac, new("convert", new())).Confirm(AudioConversionConsent.None, false, false);
+        ConfirmedAudioConversion Plan(AudioFileSource input, AudioFormat target)
+        {
+            var batch = AudioConversionBatch.Create(Guid.NewGuid(), [input], target, new("convert", new()));
+            return batch.Confirm(batch.RequiredConsent, false, false);
+        }
     }
 
-    private static void WriteWave(string path, int seconds)
+    private static void WriteWave(string path, int seconds, bool noise = true)
     {
         const int rate = 48000, frameBytes = 6;
         var bytes = checked(rate * seconds * frameBytes);
@@ -143,6 +149,22 @@ internal static class AudioInterruptionContracts
         "data"u8.CopyTo(header.AsSpan(36)); BinaryPrimitives.WriteInt32LittleEndian(header.AsSpan(40), bytes);
         using var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
         output.Write(header);
+        if (!noise)
+        {
+            var frame = new byte[frameBytes];
+            for (var index = 0; index < rate * seconds; index++)
+            {
+                for (var channel = 0; channel < 2; channel++)
+                {
+                    var sample = (int)Math.Round(0.4 * 8388607 * Math.Sin(2 * Math.PI * (channel == 0 ? 440 : 660) * index / rate));
+                    frame[channel * 3] = (byte)sample;
+                    frame[channel * 3 + 1] = (byte)(sample >> 8);
+                    frame[channel * 3 + 2] = (byte)(sample >> 16);
+                }
+                output.Write(frame);
+            }
+            return;
+        }
         var random = new Random(933107);
         var buffer = new byte[48000];
         while (bytes > 0)
