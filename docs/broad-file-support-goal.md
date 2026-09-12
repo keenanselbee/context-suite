@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [catalog alias review](catalog-alias-review.md) adds six missing
+meanings for shared extensions and corrects the static/import-library wording.
+The catalog now contains 243 records. Undecoded shared suffixes retain ambiguity;
+content evidence still takes precedence. Broader factual/provenance review and
+MIME coverage remain open.
+
 The 2026-09-11 [common image Analyze checkpoint](image-header-analysis.md) replaces
 filename-only JPEG/GIF/BMP/WebP identity with bounded content/header evidence,
 adds declared dimensions and keeps actual decoded/media properties unavailable.
@@ -358,7 +364,7 @@ The broad-file goal remains active; this does not satisfy the required Office
 conversions, complete document fidelity or independent release gates.
 
 The first Analyze slice now supplies typed shared results, an unknown/empty-file
-fallback, qualified content/filename evidence and an embedded 237-entry catalog.
+fallback, qualified content/filename evidence and an embedded 243-entry catalog.
 DDS details are retained; initial image/document/container/text signatures share
 the same read-only batch. The report shows a compact summary and collapsed
 technical evidence. See [exact coverage and limits](file-type-coverage.md).

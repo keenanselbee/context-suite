@@ -41,6 +41,26 @@ internal static class AnalysisContracts
         }
 
         FileAnalysis Inspect(byte[] bytes, string name = "unknown", long? length = null) => HeaderAnalyzer.Analyze(name, bytes, length ?? bytes.Length);
+        foreach (var (extension, candidates) in new[] {
+            (".fit", new[] { "fit-activity", "fits" }), (".pdb", new[] { "pdb", "protein-data-bank" }),
+            (".hdf", new[] { "hdf4", "hdf5" }), (".cdf", new[] { "cdf", "netcdf" }),
+            (".res", new[] { "godot-resource", "windows-resource" }), (".ase", new[] { "adobe-swatches", "aseprite" }) })
+        {
+            var name = "fixture" + extension.ToUpperInvariant();
+            check(catalog.FindByName(name).Select(type => type.Id).Order().SequenceEqual(candidates),
+                "analysis catalog: distinct common meanings retained for " + extension);
+            var undecoded = Inspect([0, 1, 2, 255], name);
+            check(undecoded.Identity is { FormatId: null, Confidence: IdentificationConfidence.Ambiguous } &&
+                undecoded.FilenameHints.Select(type => type.Id).Order().SequenceEqual(candidates),
+                "analysis: undecoded content cannot choose a meaning for " + extension);
+            var identified = Inspect("%PDF-1.7\n"u8.ToArray(), name);
+            check(identified.Identity is { FormatId: "pdf", Basis: IdentificationBasis.Content } &&
+                identified.Warnings.Any(warning => warning.Contains("different type")),
+                "analysis: content evidence overrides shared filename meanings for " + extension);
+        }
+        check(Inspect("HEADER    AUTHORED TEXT ONLY\n"u8.ToArray(), "model.pdb").Identity is
+            { FormatId: "protein-data-bank", Basis: IdentificationBasis.Filename, Confidence: IdentificationConfidence.Likely },
+            "analysis: readable PDB text is a qualified molecular filename hint, not a validated structure");
         var sourceText = "print('Hello')\n"u8.ToArray();
         foreach (var (name, id) in new[] { ("script.py", "python"), ("Dockerfile", "dockerfile"),
             ("data.json", "json"), ("CMakeLists.txt", "cmake"), ("README.md", "markdown"), ("app.ts", "typescript") })

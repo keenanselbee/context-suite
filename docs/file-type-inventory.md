@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-11.1; 237 records. This is a descriptive
+Catalog revision: 2026-09-11.2; 243 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -13,6 +13,8 @@ The [source retrieval audit](catalog-source-review.json) records available,
 search-indexed and unavailable references. Retrieval is not a substitute for
 semantic and format-variant review; unresolved source gaps remain release work.
 No registry database, source text or reference implementation was imported.
+The later [alias review](catalog-alias-review.md) records six added alternative
+meanings and the static/import-library wording correction.
 
 Core tests validate lookup reachability, ambiguity and confidence behavior.
 Filename hints never enable an operation. See [verified analysis coverage](file-type-coverage.md)
@@ -26,6 +28,7 @@ for actual parsed facts and current resource limits.
 | aab | Android App Bundle | `.aab` | Filename hint only |
 | aac | AAC audio stream | `.aac`, `.adts` | Filename hint only |
 | access | Access database | `.mdb`, `.accdb` | Filename hint only |
+| adobe-swatches | Adobe Swatch Exchange | `.ase` | Filename hint only |
 | aiff | AIFF audio | `.aif`, `.aiff`, `.aifc` | Filename hint only |
 | ape | Monkey's Audio | `.ape` | Filename hint only |
 | apk | Android package | `.apk` | Filename hint only |
@@ -48,6 +51,7 @@ for actual parsed facts and current resource limits.
 | cab | Windows cabinet | `.cab` | Filename hint only |
 | caf | Core Audio file | `.caf` | Filename hint only |
 | camera-raw | Camera raw image | `.cr2`, `.cr3`, `.nef`, `.nrw`, `.arw`, `.raf`, `.rw2`, `.orf`, `.pef`, `.srw` | Filename hint only |
+| cdf | Common Data Format dataset | `.cdf` | Filename hint only |
 | certificate | Certificate or encoded key data | `.pem`, `.crt`, `.cer`, `.der`, `.key` | Filename hint; text sampling |
 | chm | Compiled HTML Help | `.chm` | Filename hint only |
 | cmake | CMake build configuration | `CMakeLists.txt`, `.cmake` | Filename hint; text sampling |
@@ -84,6 +88,7 @@ for actual parsed facts and current resource limits.
 | event-log | Windows event log | `.evtx`, `.evt` | Filename hint only |
 | exr | OpenEXR image | `.exr` | Filename hint only |
 | fbx | FBX scene | `.fbx` | Filename hint only |
+| fit-activity | FIT activity and device data | `.fit` | Filename hint only |
 | fits | FITS scientific data | `.fits`, `.fit`, `.fts` | Filename hint only |
 | flac | FLAC audio | `.flac` | Bounded STREAMINFO and metadata block observations; samples not validated |
 | flv | Flash video | `.flv`, `.f4v` | Filename hint only |
@@ -100,6 +105,7 @@ for actual parsed facts and current resource limits.
 | gzip | GZIP compressed data | `.gz`, `.gzip` | Filename hint only |
 | har | HTTP archive | `.har` | Filename hint; text sampling |
 | haskell | Haskell source | `.hs`, `.lhs` | Filename hint; text sampling |
+| hdf4 | HDF4 dataset | `.h4`, `.hdf4`, `.hdf` | Filename hint only |
 | hdf5 | HDF5 dataset | `.h5`, `.hdf5`, `.hdf` | Filename hint only |
 | heif | HEIF image container | `.heif`, `.heic`, `.hif` | Filename hint only |
 | html | HTML document | `.html`, `.htm`, `.xhtml` | Filename hint; text sampling |
@@ -185,6 +191,7 @@ for actual parsed facts and current resource limits.
 | ppt | Legacy PowerPoint presentation | `.ppt`, `.pot`, `.pps` | Bounded root streams and supported PowerPoint headers; likely |
 | pptx | PowerPoint presentation | `.pptx`, `.pptm`, `.potx`, `.potm`, `.ppsx`, `.ppsm` | Bounded package declarations and main XML; likely family |
 | properties | Java properties | `.properties` | Filename hint; text sampling |
+| protein-data-bank | Protein Data Bank structure | `.pdb` | Filename hint; text sampling |
 | psd | Photoshop document | `.psd`, `.psb` | Filename hint only |
 | python | Python source | `.py`, `.pyw`, `.pyi` | Filename hint; text sampling |
 | python-bytecode | Python bytecode | `.pyc`, `.pyo` | Filename hint only |
@@ -207,7 +214,7 @@ for actual parsed facts and current resource limits.
 | sql | SQL script | `.sql` | Filename hint; text sampling |
 | sqlite | SQLite database | `.sqlite`, `.sqlite3`, `.db`, `.db3` | Filename hint only |
 | srt | SubRip subtitles | `.srt` | Filename hint; text sampling |
-| static-library | Static code library | `.a`, `.lib` | Filename hint only |
+| static-library | Static or import library | `.a`, `.lib` | Filename hint only |
 | step | STEP product data | `.step`, `.stp` | Filename hint; text sampling |
 | stl | STL mesh | `.stl` | Filename hint only |
 | svg | SVG vector image | `.svg` | Filename hint; text sampling |
@@ -241,6 +248,7 @@ for actual parsed facts and current resource limits.
 | webvtt | WebVTT captions | `.vtt` | Filename hint; text sampling |
 | wheel | Python wheel | `.whl` | Filename hint only |
 | wim | Windows imaging archive | `.wim`, `.esd` | Filename hint only |
+| windows-resource | Compiled Windows resources | `.res` | Filename hint only |
 | windows-shortcut | Windows shortcut | `.lnk` | Filename hint only |
 | windows-url | Internet shortcut | `.url` | Filename hint; text sampling |
 | wma | Windows Media audio | `.wma` | Filename hint only |

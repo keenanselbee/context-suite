@@ -1,13 +1,13 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-11.1; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-11.2; expanded catalog and bounded structure analysis, not release acceptance
 
 Recognition and capabilities
 ----------------------------
 
 The embedded [catalog](../src/ContextSuite.Core/Analysis/file-types.json) currently
-contains 237 independently authored descriptions; aliases do not inflate this count.
+contains 243 independently authored descriptions; aliases do not inflate this count.
 The [inventory](file-type-inventory.md) lists each entry and its actual detector status.
 Catalog schema 1 has stable IDs, extension aliases, exact filenames,
 families, typical uses and source references. It contains no commands or
@@ -22,6 +22,8 @@ acceptance. Unavailable retrieval does not establish a broken URL. MIME coverage
 and complete description/detector provenance remain pending. The later
 [common image review](image-header-analysis.md) verifies four descriptions and
 their newly implemented bounded detectors against primary specifications.
+The [alias review](catalog-alias-review.md) adds six missing alternative meanings
+and corrects the static/import-library description; none adds a content detector.
 
 Current implementation and remaining work are separate:
 

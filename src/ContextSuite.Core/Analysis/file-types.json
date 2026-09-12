@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.1",
+  "revision": "2026-09-11.2",
   "types": [
     {
       "id": "3gp",
@@ -64,6 +64,16 @@
         ".accdb"
       ],
       "source": "https://learn.microsoft.com/en-us/office/client-developer/access/desktop-database-reference/microsoft-access-database-engine-sql-reference"
+    },
+    {
+      "id": "adobe-swatches",
+      "name": "Adobe Swatch Exchange",
+      "family": "Image",
+      "commonUses": "Color swatches shared between Adobe design applications.",
+      "extensions": [
+        ".ase"
+      ],
+      "source": "https://helpx.adobe.com/indesign/desktop/apply-color/define-and-manage-color-assets/organize-and-reuse-color-swatches.html"
     },
     {
       "id": "aiff",
@@ -312,6 +322,16 @@
         ".srw"
       ],
       "source": "https://helpx.adobe.com/camera-raw/kb/camera-raw-plug-supported-cameras.html"
+    },
+    {
+      "id": "cdf",
+      "name": "Common Data Format dataset",
+      "family": "Data",
+      "commonUses": "Multidimensional scientific datasets and metadata using NASA Common Data Format.",
+      "extensions": [
+        ".cdf"
+      ],
+      "source": "https://cdf.gsfc.nasa.gov/"
     },
     {
       "id": "certificate",
@@ -723,6 +743,16 @@
       "source": "https://help.autodesk.com/view/FBX/2020/ENU/"
     },
     {
+      "id": "fit-activity",
+      "name": "FIT activity and device data",
+      "family": "Data",
+      "commonUses": "Fitness activities, courses, workouts and related device data.",
+      "extensions": [
+        ".fit"
+      ],
+      "source": "https://developer.garmin.com/fit/file-types/"
+    },
+    {
       "id": "fits",
       "name": "FITS scientific data",
       "family": "Data",
@@ -907,6 +937,18 @@
       ],
       "source": "https://www.haskell.org/onlinereport/haskell2010/",
       "textCompatible": true
+    },
+    {
+      "id": "hdf4",
+      "name": "HDF4 dataset",
+      "family": "Data",
+      "commonUses": "Scientific datasets, including Earth-observation data, stored in the older HDF4 format.",
+      "extensions": [
+        ".h4",
+        ".hdf4",
+        ".hdf"
+      ],
+      "source": "https://www.hdfgroup.org/solutions/hdf4/"
     },
     {
       "id": "hdf5",
@@ -1873,6 +1915,17 @@
       "textCompatible": true
     },
     {
+      "id": "protein-data-bank",
+      "name": "Protein Data Bank structure",
+      "family": "Data",
+      "commonUses": "Molecular coordinates and annotations in the legacy text PDB format.",
+      "extensions": [
+        ".pdb"
+      ],
+      "source": "https://www.wwpdb.org/documentation/file-format-content/format33/v3.3.html",
+      "textCompatible": true
+    },
+    {
       "id": "psd",
       "name": "Photoshop document",
       "family": "Image",
@@ -2123,14 +2176,14 @@
     },
     {
       "id": "static-library",
-      "name": "Static code library",
+      "name": "Static or import library",
       "family": "Program or development data",
-      "commonUses": "Compiled objects packaged for linking into software; formats depend on the toolchain.",
+      "commonUses": "Compiled objects or references to shared-library exports used when linking software; formats depend on the toolchain.",
       "extensions": [
         ".a",
         ".lib"
       ],
-      "source": "https://sourceware.org/binutils/docs/binutils/ar.html"
+      "source": "https://learn.microsoft.com/en-us/cpp/build/reference/dot-lib-files-as-linker-input?view=msvc-170"
     },
     {
       "id": "step",
@@ -2494,6 +2547,16 @@
         ".esd"
       ],
       "source": "https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/work-with-windows-images"
+    },
+    {
+      "id": "windows-resource",
+      "name": "Compiled Windows resources",
+      "family": "Program or development data",
+      "commonUses": "Compiled application resources, such as dialogs, icons and strings, ready to link into a Windows program.",
+      "extensions": [
+        ".res"
+      ],
+      "source": "https://learn.microsoft.com/en-us/windows/win32/menurc/about-resource-files"
     },
     {
       "id": "windows-shortcut",
