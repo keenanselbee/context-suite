@@ -153,6 +153,10 @@ and required Office transformations remain pending.
 - Word, Excel and PowerPoint to PDF with evaluated font/layout fidelity and dependencies.
 
 OpenDocument analysis remains required; OpenDocument-to-PDF has not been selected.
+Excel PDF export also requires an explicit calculation policy. The
+[formula-cache experiment](excel-calculation-evaluation.md) shows that the
+candidate's default can retain stale saved results even in an automatic workbook.
+Do not infer calculation fidelity from correct-cache fixtures or successful export.
 Exact legacy/modern input variants, presets and engine choices remain to be
 evaluated. No rendering engine is adopted or installed by this scope decision.
 

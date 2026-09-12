@@ -40,6 +40,15 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [Excel calculation experiment](excel-calculation-evaluation.md)
+adds twelve isolated exports across saved/missing formula values and three
+requested profile settings. Fresh-profile overrides were initially discarded;
+initializing first makes the explicit recalculation setting persist and change
+stale results. Forced recalculation also overrides manual workbook mode, while
+"never" still computes missing caches. A launch calculation policy and effective
+profile/update restrictions remain to be resolved; this does not enable Office
+conversion or prove arbitrary-document isolation.
+
 The 2026-09-11 [catalog alias review](catalog-alias-review.md) adds six missing
 meanings for shared extensions and corrects the static/import-library wording.
 The catalog now contains 243 records. Undecoded shared suffixes retain ambiguity;

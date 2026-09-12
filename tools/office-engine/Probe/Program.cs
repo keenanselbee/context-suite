@@ -5,10 +5,11 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf")) return 2;
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation")) return 2;
 var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths";
+var excelCalculation = args.Length == 4 && args[3] == "ExcelCalculation";
 var legacyPdf = args.Length == 4 && args[3] == "LegacyPdf";
-var profileStyles = legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "EnvironmentPaths"
+var profileStyles = excelCalculation ? new[] { "calc-default", "calc-always", "calc-never" } : legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "EnvironmentPaths"
     ? new[] { "env-control", "env-all", "env-profile", "env-TEMP", "env-TMP", "env-APPDATA", "env-LOCALAPPDATA" } : args[3] == "ProfileLengths"
     ? new[] { "length-90", "length-110", "length-130", "length-150", "length-170" }
     : new[] { "short-ascii", "short-unicode", "long-ascii", "long-unicode" };
@@ -59,16 +60,17 @@ if (args.Length == 4 && args[3] is "LegacyAnalysis" or "LegacyPdf")
 }
 var baselines = new Dictionary<string, (string Folder, JsonElement Render, string[] Text)>();
 var comparisons = new List<object>();
-foreach (var (name, filter, expectedPages) in new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) })
+var conversionCases = excelCalculation ? ExcelCalculationFixtures.Create(fixtures) : new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) };
+foreach (var (name, filter, expectedPages) in conversionCases)
 {
-    if (args.Length == 4 && !legacyPdf && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
+    if (args.Length == 4 && !legacyPdf && !excelCalculation && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
     foreach (var profileStyle in profileStyles)
     {
         var extension = filter switch { "writer_pdf_Export" => "doc", "calc_pdf_Export" => "xls", _ => "ppt" };
         var source = legacyPdf && profileStyle == "legacy"
             ? Path.Combine(root, "legacy-" + extension, Path.ChangeExtension(name, extension)) : Path.Combine(fixtures, name);
         var hash = Hash(source);
-        var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name) + (legacyPdf ? "-" + profileStyle : "")); Directory.CreateDirectory(folder);
+        var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name) + (legacyPdf || excelCalculation ? "-" + profileStyle : "")); Directory.CreateDirectory(folder);
         // Keep input and output paths identical across profile variants, then retain each result separately.
         var outputFolder = profileMatrix ? Path.Combine(root, "conversion") : folder; Directory.CreateDirectory(outputFolder);
         var options = new Dictionary<string, object>();
@@ -108,7 +110,8 @@ foreach (var (name, filter, expectedPages) in new[] { ("Word ü.docx", "writer_p
             "calc_pdf_Export" => text.Length == 1 && text[0].Contains("Excel café") && text[0].Contains("Formula result") && text[0].Contains('5') && !text[0].Contains("HIDDEN") && !text[0].Contains("OUTSIDE"),
             _ => text.Length == 2 && text[0].Contains("slide 1 café") && text[1].Contains("slide 3 café") && text.All(page => !page.Contains("HIDDEN"))
         };
-        if (!textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
+        var calculationObservation = excelCalculation ? ExcelCalculationFixtures.Observe(name, text) : null;
+        if (!excelCalculation && !textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
         if (filter == "writer_pdf_Export" &&
             (!text[0].Contains("FIRST PAGE HEADER") || text[0].Contains("RUNNING HEADER") ||
              !text[1].Contains("RUNNING HEADER") || text[1].Contains("FIRST PAGE HEADER") ||
@@ -116,8 +119,9 @@ foreach (var (name, filter, expectedPages) in new[] { ("Word ü.docx", "writer_p
             throw new InvalidDataException("Word first/default headers or PAGE/NUMPAGES field rendering did not match authored expectations.");
         if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
         results.Add(new { Source = Path.GetFileName(source), SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile, conversion.EnvironmentPaths,
-            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds,
+            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds, CalculationObservation = calculationObservation,
             ConversionOutput = conversion.Output, Diagnostics = conversion.Error, Text = text, Render = rendered.RootElement.Clone() });
+        if (calculationObservation is not null) Console.WriteLine("OBSERVED: " + name + ": " + calculationObservation);
         if (profileMatrix) File.Move(pdf, Path.Combine(folder, Path.GetFileName(pdf)));
         SaveResults();
         Console.WriteLine($"PASS: {Path.GetFileName(source)} ({profileStyle}, {conversion.Profile!.Length} profile characters): {pages} independently parsed/rendered pages, expected text/geometry, original unchanged, {conversion.Milliseconds} ms.");
@@ -144,7 +148,7 @@ return 0;
 void SaveResults()
 {
     File.WriteAllText(Path.Combine(root, "office-evaluation.json"), JsonSerializer.Serialize(new { Version = version.Output.Trim(), ProfileMatrix = profileMatrix,
-        Mode = profileMatrix || legacyPdf ? args[3] : "Conversion", Results = results,
+        Mode = profileMatrix || legacyPdf || excelCalculation ? args[3] : "Conversion", Results = results,
         Scope = "Authored passive Office fixtures and generated legacy copies only; bounded text/geometry checks, not broad font/layout fidelity, arbitrary-document isolation or launch acceptance. Profile-matrix observations include failed conversions." }, new JsonSerializerOptions { WriteIndented = true }));
 }
 
@@ -183,9 +187,29 @@ async Task<RunResult> RunOffice(string name, string[] arguments, string profileS
         <item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="UseOpenCL" oor:op="fuse"><value>false</value></prop></item>
         </oor:items>
         """, new UTF8Encoding(false));
+    var officeArguments = new[] { "-env:UserInstallation=" + new Uri(profile + Path.DirectorySeparatorChar).AbsoluteUri,
+        "--headless", "--nologo", "--nodefault", "--norestore", "--unaccept=all" };
+    if (profileStyle.StartsWith("calc-", StringComparison.Ordinal))
+    {
+        var initialization = await Run(Path.Combine(payload, "program", "soffice.com"),
+            officeArguments.Concat(new[] { "--terminate_after_init" }), root, profile, environment);
+        File.WriteAllText(Path.Combine(profile, "initialization.json"), JsonSerializer.Serialize(initialization));
+    }
+    if (profileStyle is "calc-always" or "calc-never")
+    {
+        var settingsPath = Path.Combine(user, "registrymodifications.xcu");
+        var settings = System.Xml.Linq.XDocument.Load(settingsPath);
+        System.Xml.Linq.XNamespace registry = "http://openoffice.org/2001/registry";
+        settings.Root!.Add(new System.Xml.Linq.XElement("item",
+            new System.Xml.Linq.XAttribute(registry + "path", "/org.openoffice.Office.Calc/Formula/Load"),
+            new System.Xml.Linq.XElement("prop", new System.Xml.Linq.XAttribute(registry + "name", "OOXMLRecalcMode"),
+                new System.Xml.Linq.XAttribute(registry + "op", "fuse"),
+                new System.Xml.Linq.XElement("value", profileStyle == "calc-always" ? "0" : "1"))));
+        settings.Save(settingsPath);
+        File.Copy(settingsPath, Path.Combine(profile, "requested-settings.xcu"), false);
+    }
     return await Run(Path.Combine(payload, "program", "soffice.com"),
-        new[] { "-env:UserInstallation=" + new Uri(profile + Path.DirectorySeparatorChar).AbsoluteUri,
-            "--headless", "--nologo", "--nodefault", "--norestore", "--unaccept=all" }.Concat(arguments), root, profile, environment);
+        officeArguments.Concat(arguments), root, profile, environment);
 }
 
 static async Task<RunResult> Run(string executable, IEnumerable<string> arguments, string directory, string? profile = null,
