@@ -468,6 +468,12 @@ WAV-to-FLAC encode. It verifies native exit, cleanup, preserved originals and
 committed copies, and successful fresh-worker retries. Other phases, codecs and
 application/publication crash boundaries retain their separate acceptance scope.
 
+The [application publication crash matrix](audio-publication-crash-verification.md)
+adds five copy-publication checkpoints for WAV-to-FLAC conversion and FLAC
+optimization. Restart discovery preserves journals and surviving files, and fresh
+operations complete without overwriting that evidence. This does not implement
+automatic recovery or establish native overwrite and visible recovery acceptance.
+
 Direct Convert and required quality decisions
 ---------------------------------------------
 

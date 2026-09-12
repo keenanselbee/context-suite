@@ -117,6 +117,14 @@ and a validated retry with a fresh worker. The new public host mode is
 these paths and verifies the packaged inventory before and after execution.
 See [actual results and scope](../../docs/audio-interruption-verification.md).
 
+Optional `-IncludePublicationCrashes` verifies WAV-to-FLAC conversion and FLAC
+optimization across five abrupt application-layer publication checkpoints. It
+checks original/candidate fingerprints, worker exit, restart recovery notices,
+retained journals and fresh collision-safe work. It uses the real executors and
+publisher in a child test process, with native recycling disabled. Retained
+recovery files are deliberate evidence, not temporary files to delete on restart.
+See [the ten-case matrix](../../docs/audio-publication-crash-verification.md).
+
 The latest adapter run passes 292 combined checks. FLAC conversion cases include
 original-block inventory, literal Unicode/multiline tag transport, canonical
 comment aliases, refusal of unsupported metadata, stale seek tables and corrupt

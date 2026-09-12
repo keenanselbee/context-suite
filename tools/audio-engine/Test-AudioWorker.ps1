@@ -4,7 +4,7 @@ param([Parameter(Mandatory)][string] $ProductionStage,
     [Parameter(Mandatory, ParameterSetName = 'Curated')][string] $CandidateDirectory,
     [Parameter(Mandatory, ParameterSetName = 'Packaged')][switch] $Packaged,
     [Parameter(Mandatory)][string] $FixtureDirectory, [string] $ArtworkFixture, [switch] $IncludeOptimization, [switch] $IncludeConversion,
-    [switch] $IncludeInterruptions)
+    [switch] $IncludeInterruptions, [switch] $IncludePublicationCrashes)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $stage = (Resolve-Path -LiteralPath $ProductionStage).Path
@@ -88,6 +88,10 @@ if ($IncludeConversion) {
 if ($IncludeInterruptions) {
     & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-interruptions (Join-Path $scratch 'interruption-results') (Join-Path $payload 'ContextSuite.Worker.exe')
     if ($LASTEXITCODE -ne 0) { throw 'Isolated audio interruption checks failed.' }
+}
+if ($IncludePublicationCrashes) {
+    & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-publication-crashes (Join-Path $scratch 'publication-crash-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
+    if ($LASTEXITCODE -ne 0) { throw 'Isolated audio publication crash checks failed.' }
 }
 if ($Packaged) {
     & python -B (Join-Path $PSScriptRoot 'Stage-AudioPayload.py') --payload $stage --inventory

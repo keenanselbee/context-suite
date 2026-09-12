@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [audio publication crash checkpoint](audio-publication-crash-verification.md)
+passes 74 checks across ten abrupt application-layer terminations, plus 11 normal
+audio-worker checks. WAV-to-FLAC and FLAC optimization preserve originals,
+candidates/copies and journals; restart discovery and fresh operations pass.
+The unchanged combined stage retains its verified inventory. Manual recovery,
+native overwrite and other release gates remain separate.
+
 The 2026-09-11 [audio interruption checkpoint](audio-interruption-verification.md)
 passes 20 encoder-phase cancellation/timeout/worker-crash checks plus 11 ordinary
 audio-worker checks on the existing combined stage. Native CPU and candidate
