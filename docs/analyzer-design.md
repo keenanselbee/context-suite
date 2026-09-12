@@ -2,7 +2,7 @@ Context Analyzer Design
 =======================
 
 Status: generic Analyze fallback, initial header identification, DDS details,
-bounded JSON/XML structure analysis, WAVE/FLAC header facts, document package and
+bounded JSON/XML structure analysis, WAVE/FLAC/AIFF/AU header facts, document package and
 legacy compound analysis, and a 243-entry descriptive catalog are
 implemented. The [coverage inventory](file-type-coverage.md) records exact
 facts, limits and tests; broader catalog/family analysis remains in progress.

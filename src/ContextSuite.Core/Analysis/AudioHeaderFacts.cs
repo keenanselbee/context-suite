@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 namespace ContextSuite.Core.Analysis;
 
 // Reads declarations only. No sample decoding, allocation from file lengths, or I/O.
-internal static class AudioHeaderFacts
+internal static partial class AudioHeaderFacts
 {
     private const int MaximumRecords = 256;
 

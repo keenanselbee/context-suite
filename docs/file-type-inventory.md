@@ -34,14 +34,14 @@ for actual parsed facts and current resource limits.
 | aac | AAC audio stream | `.aac`, `.adts` | Filename hint only |
 | access | Access database | `.mdb`, `.accdb` | Filename hint only |
 | adobe-swatches | Adobe Swatch Exchange | `.ase` | Filename hint only |
-| aiff | AIFF audio | `.aif`, `.aiff`, `.aifc` | Filename hint only |
+| aiff | AIFF audio | `.aif`, `.aiff`, `.aifc` | FORM/AIFF or AIFC tag and bounded Common Chunk declarations; likely |
 | ape | Monkey's Audio | `.ape` | Filename hint only |
 | apk | Android package | `.apk` | Filename hint only |
 | arrow | Apache Arrow data | `.arrow`, `.feather` | Filename hint only |
 | aseprite | Aseprite sprite | `.aseprite`, `.ase` | Filename hint only |
 | asf | Advanced Systems Format | `.asf`, `.wmv` | Filename hint only |
 | ass | ASS/SSA subtitles | `.ass`, `.ssa` | Filename hint; text sampling |
-| au | AU audio | `.au`, `.snd` | Filename hint only |
+| au | AU audio | `.au`, `.snd` | AU signature and fixed header declarations; likely |
 | audacity | Audacity project | `.aup`, `.aup3` | Filename hint only |
 | avi | AVI video | `.avi` | Filename hint only |
 | avif | AVIF image | `.avif` | Filename hint only |

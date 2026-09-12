@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [AIFF/AU header checkpoint](aiff-au-header-analysis.md) adds bounded
+read-only content identification and audio declarations without a worker or
+conversion permission. All 2,182 foundation checks pass, including 50 new cases;
+fresh combined staging passes with zero warnings/errors. A discovered image-test
+thread-affinity issue is fixed separately; visible/installed acceptance remains open.
+
 The 2026-09-11 [audio catalog purpose review](catalog-audio-review.md) checks all
 eighteen Audio descriptions against primary documentation, clarifies fourteen
 records and replaces broad references. Catalog revision 2026-09-11.5 retains all

@@ -116,6 +116,19 @@ public static class HeaderAnalyzer
             evidence.Add("RIFF/WAVE header declarations were inspected within fixed limits. Audio samples were not decoded or validated.");
             AudioHeaderFacts.AddWave(bytes, fileBytes, facts, warnings);
         }
+        else if (bytes.Length >= 12 && bytes.StartsWith("FORM"u8) &&
+            (bytes.Slice(8, 4).SequenceEqual("AIFF"u8) || bytes.Slice(8, 4).SequenceEqual("AIFC"u8)))
+        {
+            id = "aiff";
+            evidence.Add("FORM/AIFF or AIFF-C signature and bounded Common Chunk declarations inspected. Sound data, compression, version chunks, instruments, loops and metadata were not validated.");
+            AudioHeaderFacts.AddAiff(bytes, fileBytes, facts, warnings);
+        }
+        else if (bytes.StartsWith(".snd"u8))
+        {
+            id = "au";
+            evidence.Add("AU signature and fixed header declarations inspected. Annotation content and audio samples were not interpreted or validated.");
+            AudioHeaderFacts.AddAu(bytes, fileBytes, facts, warnings);
+        }
         else if (bytes.StartsWith("fLaC"u8))
         {
             id = "flac";

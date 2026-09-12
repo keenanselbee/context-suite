@@ -53,6 +53,8 @@ Current implementation and remaining work are separate:
 | JSON | Whole-file object/array parsing within 64 KiB and depth 32 | Root kind and top-level count; no application semantics | None |
 | XML | Whole-file parsing within 64 KiB and depth 32; DTDs prohibited and resolver disabled | Root name, namespace and element count; no schema validation | None |
 | WAVE | RIFF/WAVE and bounded chunk/header declarations | PCM/float versus uninterpreted codec, channels/rate, sample container/valid bits, raw speaker mask, first data chunk size and derived PCM timing | Fixed audio conversion implemented with the optional reviewed engine |
+| AIFF / AIFF-C | FORM tag and bounded Common Chunk | Declared channels/frames/original bits, raw compression code and 80-bit rate; approximate rate/timing | None added |
+| AU | Signature and fixed header | Declared encoding/channels/rate/extent; interpreted PCM precision and aligned derived timing | None added |
 | FLAC | Marker and first STREAMINFO declaration | Channels/rate/precision/sample count and derived duration, declared checksum presence, observed comment/picture block counts and metadata-list completeness; no frame or metadata-content validation | Fixed audio conversion and lossless recompression implemented with the optional reviewed engine |
 | Ogg | Ogg page marker | Container only; does not imply Vorbis or Opus | Optional audio conversion requires separately probed supported codec; recognition alone is insufficient |
 | DOCX / XLSX / PPTX | Agreeing package relationship, main content type and main XML root within fixed limits | Declared sheet/slide counts and macro-enabled type; rendered pages unavailable; identity likely | PDF conversion selected; implementation pending |
