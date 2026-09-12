@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [Office profile correction](office-profile-settings.md) reapplies
+typed settings after initialization and verifies their saved declarations after
+rendering. Seventeen guard contracts and authored Word/Excel/PowerPoint PDF
+exports pass, with seven required declarations retained in each profile and
+originals unchanged. This closes the observed profile-seeding gap for the tested
+settings, not the separate engine-enforcement or AppContainer isolation gates.
+
 The 2026-09-11 [Excel calculation experiment](excel-calculation-evaluation.md)
 adds twelve isolated exports across saved/missing formula values and three
 requested profile settings. Fresh-profile overrides were initially discarded;

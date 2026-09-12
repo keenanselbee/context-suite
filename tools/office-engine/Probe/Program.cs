@@ -22,6 +22,7 @@ var root = Path.Combine(prepared, "evaluation-" + Guid.NewGuid().ToString("N"));
 var fixtures = Path.Combine(root, "fixtures"); Directory.CreateDirectory(fixtures); OfficeFixtures.Create(fixtures);
 var results = new List<object>();
 Console.WriteLine("Office evaluation evidence: " + root);
+OfficeProfileContracts.Run(Path.Combine(root, "profile-contracts"));
 var version = await RunOffice("version", ["--version"]); Console.WriteLine(version.Output.Trim());
 if (args.Length == 4 && args[3] is "LegacyAnalysis" or "LegacyPdf")
 {
@@ -179,37 +180,32 @@ async Task<RunResult> RunOffice(string name, string[] arguments, string profileS
     }
     var user = Path.Combine(profile, "user"); Directory.CreateDirectory(user);
     File.AppendAllText(Path.Combine(root, "profiles.txt"), name + "=" + profile + Environment.NewLine);
-    File.WriteAllText(Path.Combine(user, "registrymodifications.xcu"), """
-        <?xml version="1.0" encoding="UTF-8"?>
-        <oor:items xmlns:oor="http://openoffice.org/2001/registry">
-        <item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="DisableMacrosExecution" oor:op="fuse"><value>true</value></prop><prop oor:name="DisableActiveContent" oor:op="fuse"><value>true</value></prop><prop oor:name="DisablePythonRuntime" oor:op="fuse"><value>true</value></prop><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item>
-        <item oor:path="/org.openoffice.Office.Jobs/Jobs/org.openoffice.Office.Jobs:Job['UpdateCheck']/Arguments"><prop oor:name="AutoCheckEnabled" oor:op="fuse"><value>false</value></prop><prop oor:name="AutoDownloadEnabled" oor:op="fuse"><value>false</value></prop></item>
-        <item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="UseOpenCL" oor:op="fuse"><value>false</value></prop></item>
-        </oor:items>
-        """, new UTF8Encoding(false));
+    var settingsPath = Path.Combine(user, "registrymodifications.xcu");
+    OfficeProfileSettings.Apply(settingsPath);
     var officeArguments = new[] { "-env:UserInstallation=" + new Uri(profile + Path.DirectorySeparatorChar).AbsoluteUri,
         "--headless", "--nologo", "--nodefault", "--norestore", "--unaccept=all" };
-    if (profileStyle.StartsWith("calc-", StringComparison.Ordinal))
+    var initializeProfile = !profileMatrix && arguments is not ["--version"];
+    if (initializeProfile)
     {
         var initialization = await Run(Path.Combine(payload, "program", "soffice.com"),
             officeArguments.Concat(new[] { "--terminate_after_init" }), root, profile, environment);
         File.WriteAllText(Path.Combine(profile, "initialization.json"), JsonSerializer.Serialize(initialization));
     }
-    if (profileStyle is "calc-always" or "calc-never")
-    {
-        var settingsPath = Path.Combine(user, "registrymodifications.xcu");
-        var settings = System.Xml.Linq.XDocument.Load(settingsPath);
-        System.Xml.Linq.XNamespace registry = "http://openoffice.org/2001/registry";
-        settings.Root!.Add(new System.Xml.Linq.XElement("item",
-            new System.Xml.Linq.XAttribute(registry + "path", "/org.openoffice.Office.Calc/Formula/Load"),
-            new System.Xml.Linq.XElement("prop", new System.Xml.Linq.XAttribute(registry + "name", "OOXMLRecalcMode"),
-                new System.Xml.Linq.XAttribute(registry + "op", "fuse"),
-                new System.Xml.Linq.XElement("value", profileStyle == "calc-always" ? "0" : "1"))));
-        settings.Save(settingsPath);
-        File.Copy(settingsPath, Path.Combine(profile, "requested-settings.xcu"), false);
-    }
-    return await Run(Path.Combine(payload, "program", "soffice.com"),
+    int? calculationMode = profileStyle == "calc-always" ? 0 : profileStyle == "calc-never" ? 1 : null;
+    OfficeProfileSettings.Apply(settingsPath, calculationMode);
+    File.Copy(settingsPath, Path.Combine(profile, "requested-settings.xcu"), false);
+    var result = await Run(Path.Combine(payload, "program", "soffice.com"),
         officeArguments.Concat(arguments), root, profile, environment);
+    if (initializeProfile)
+    {
+        OfficeProfileSettings.Verify(settingsPath, calculationMode);
+        File.WriteAllText(Path.Combine(profile, "settings-verification.json"), JsonSerializer.Serialize(new
+        {
+            Verified = true, CalculationMode = calculationMode,
+            Scope = "Requested declarations retained after engine exit; not observed enforcement or network isolation."
+        }));
+    }
+    return result;
 }
 
 static async Task<RunResult> Run(string executable, IEnumerable<string> arguments, string directory, string? profile = null,

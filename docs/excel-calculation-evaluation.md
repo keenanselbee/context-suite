@@ -118,5 +118,7 @@ coverage. Arbitrary-document isolation and production integration remain open.
 Other profile settings also require verification after initialization: a retained
 profile showed `AutoCheckEnabled=true` despite the initial false seed. This
 experiment did not trace network activity or establish effective update disabling.
+The subsequent [profile-settings correction](office-profile-settings.md) tracks
+reapplication and saved-declaration verification separately from enforcement.
 No installer, live service, AppContainer profile, visible UI or screen-reader
 acceptance is established here.
