@@ -24,7 +24,7 @@ Bounded legacy DOC/XLS/PPT analysis now supplements package analysis; its
 [supported headers and limits](legacy-document-analysis.md) are explicit.
 Office-to-PDF remains planned;
 retain the simple customer surfaces above. Shared Analyze/fallback,
-bounded JSON/XML structure analysis and a 237-entry catalog are implemented with automated
+bounded JSON/XML structure analysis and a 243-entry catalog are implemented with automated
 evidence; see [current coverage](file-type-coverage.md). Signing is deferred.
 
 Status: shell/process and output-safety foundations implemented; PNG/JPEG/WebP/BMP/TGA

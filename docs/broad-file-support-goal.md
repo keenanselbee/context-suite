@@ -38,7 +38,7 @@ on 2026-09-09. The first checkpoint committed the accumulated work in four publi
 commits ending at `d5dff37` and four private commits ending at `82fb7e7`.
 Repeat this review/verification/commit workflow after each coherent milestone.
 
-Current completion path (2026-09-11)
+Current completion path (2026-09-12)
 ------------------------------------
 
 Use this summary for current priority; the dated evidence below records individual
@@ -50,7 +50,7 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Area | Implemented or measured | Work required to close the area |
 | --- | --- | --- |
 | Universal Analyze | Shared results, generic/header fallback, bounded family readers, per-row availability after admission, synchronous I/O cancellation and refreshed mixed-batch performance baseline | Finish the advertised regular-file acceptance matrix; test remaining driver/network and metadata-stall cases; accept the visible report |
-| Offline catalog | 243 records, schema/version validation, source references, qualified MIME details and completed family reviews | Finish factual/provenance review of the existing inventory and its claimed aliases/detectors; publish exact descriptive versus detected coverage. More records are not a substitute for finishing that review |
+| Offline catalog | 243 records, schema/version validation, source references, qualified MIME details and a reconciled typical-use review for every current record | Finish exact alias/variant, MIME and detector provenance; preserve the published distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
 | Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker and interruption/recovery evidence | Close the advertised input/output and metadata matrix, human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
 | PDF | Optional structural optimization, all-page PNG conversion and combined image PDF with explicit order review | Close documented fidelity/unsupported-input and recovery gaps; accept the order dialog and outputs visibly; review redistribution and adopt the selected payload |
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
@@ -65,6 +65,18 @@ checkpoint passes 24 optimization interruption, 96 conversion interruption and
 11 normal worker checks on stage `dc5a863d901b4eb89f94b943682511aa`.
 These are separate runs, not evidence that every release suite
 has passed on a final payload.
+
+The subsequent [catalog purpose reconciliation](catalog-purpose-review.md),
+revision 2026-09-12.1, reviews the final 34 descriptions and improves fifteen
+descriptions/references. All 243 current IDs have a purpose review, without gaps
+or duplicate counting. This catalog revision is newer than the stage above;
+it changes no recognition or capability fields. Alias/variant, MIME and detector
+provenance remain open, as do the required Office converter and integrated gates.
+Verification passes 2,367 foundation contracts and 104 documentation files, with
+an independent check that only purpose/source fields and revision changed and
+that every current ID occurs once in the purpose-review partition. The successful
+foundation log is `.codex-temp/catalog-remaining-foundation-retry.log`; the first
+run ended without a terminal result and is not counted as passing evidence.
 
 Prioritize the remaining work in this order:
 

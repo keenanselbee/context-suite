@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.11",
+  "revision": "2026-09-12.1",
   "types": [
     {
       "id": "3gp",
@@ -21,7 +21,7 @@
       "extensions": [
         ".3mf"
       ],
-      "source": "https://3mf.io/specification/"
+      "source": "https://3mf.io/spec/"
     },
     {
       "id": "7z",
@@ -231,7 +231,7 @@
         ".bsa",
         ".ba2"
       ],
-      "source": "https://en.uesp.net/wiki/Skyrim_Mod:Archive_File_Format"
+      "source": "https://github.com/AlexxEG/BSA_Browser"
     },
     {
       "id": "bibtex",
@@ -252,7 +252,7 @@
       "extensions": [
         ".blend"
       ],
-      "source": "https://docs.blender.org/manual/en/latest/files/blend/index.html"
+      "source": "https://docs.blender.org/manual/en/5.0/scene_layout/scene/introduction.html"
     },
     {
       "id": "bmp",
@@ -652,7 +652,7 @@
       "extensions": [
         ".dwg"
       ],
-      "source": "https://www.autodesk.com/products/autocad/overview"
+      "source": "https://www.autodesk.com/support/technical/article/caas/sfdcarticles/sfdcarticles/AutoCAD-drawing-file-format.html"
     },
     {
       "id": "dxf",
@@ -662,7 +662,7 @@
       "extensions": [
         ".dxf"
       ],
-      "source": "https://help.autodesk.com/cloudhelp/2021/ENU/AutoCAD-DXF/files/GUID-235B22E0-A567-4CF6-92D3-38A2306D73F3.htm",
+      "source": "https://help.autodesk.com/cloudhelp/2023/ENU/AutoCAD-DXF/files/GUID-73E9E797-3BAA-4795-BBD8-4CE7A03E93CF.htm",
       "textCompatible": true
     },
     {
@@ -681,7 +681,7 @@
       "id": "elf",
       "name": "ELF program or library",
       "family": "Program or development data",
-      "commonUses": "Executable, object or shared-library data used by many Unix-like systems.",
+      "commonUses": "Programs, compiled objects, shared libraries and crash data used by many Unix-like systems.",
       "extensions": [
         ".elf",
         ".so"
@@ -794,7 +794,7 @@
       "extensions": [
         ".fbx"
       ],
-      "source": "https://help.autodesk.com/view/FBX/2020/ENU/"
+      "source": "https://help.autodesk.com/cloudhelp/2022/ENU/Maya-DataExchange/files/GUID-18A2CDD7-3334-4FC1-A1B3-A308AD331BB2.htm"
     },
     {
       "id": "fit-activity",
@@ -1128,7 +1128,7 @@
         ".iges",
         ".igs"
       ],
-      "source": "https://nvlpubs.nist.gov/nistpubs/Legacy/IR/nbsir82-2631.pdf",
+      "source": "https://www.nist.gov/publications/introduction-iso-10303-step-standard-product-data-exchange",
       "textCompatible": true
     },
     {
@@ -1527,7 +1527,7 @@
         ".dmp",
         ".mdmp"
       ],
-      "source": "https://learn.microsoft.com/en-us/windows/win32/debug/minidump-files"
+      "source": "https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/dbgeng/nf-dbgeng-idebugclient4-writedumpfile"
     },
     {
       "id": "mobi",
@@ -2011,7 +2011,7 @@
       "extensions": [
         ".ply"
       ],
-      "source": "https://paulbourke.net/dataformats/ply/"
+      "source": "https://graphics.stanford.edu/data/3Dscanrep/"
     },
     {
       "id": "png",
@@ -2443,7 +2443,7 @@
       "extensions": [
         ".stl"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000504.shtml"
+      "source": "https://docs.blender.org/manual/en/5.0/modeling/geometry_nodes/input/import/stl.html"
     },
     {
       "id": "svg",
@@ -2625,12 +2625,12 @@
       "id": "unreal-asset",
       "name": "Unreal Engine asset",
       "family": "3D, CAD or game asset",
-      "commonUses": "Unreal Engine assets or maps; companion files and the matching engine version may be required.",
+      "commonUses": "Unreal Engine project assets and maps. Compatibility depends on the engine version and referenced project content.",
       "extensions": [
         ".uasset",
         ".umap"
       ],
-      "source": "https://dev.epicgames.com/documentation/en-us/unreal-engine/assets-and-packages-in-unreal-engine"
+      "source": "https://dev.epicgames.com/documentation/unreal-engine/versioning-of-assets-and-packages-in-unreal-engine"
     },
     {
       "id": "usd",
@@ -2653,7 +2653,7 @@
       "extensions": [
         ".vpk"
       ],
-      "source": "https://developer.valvesoftware.com/wiki/VPK"
+      "source": "https://github.com/craftablescience/VPKEdit"
     },
     {
       "id": "vbscript",
@@ -2734,12 +2734,12 @@
       "id": "wavefront",
       "name": "Wavefront model",
       "family": "3D, CAD or game asset",
-      "commonUses": "3D mesh geometry and material descriptions. The .obj suffix can also mean compiled object code.",
+      "commonUses": "3D geometry in OBJ files, with companion MTL files describing materials. The .obj suffix can also mean compiled object code.",
       "extensions": [
         ".obj",
         ".mtl"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000507.shtml",
+      "source": "https://docs.blender.org/manual/en/3.3/files/import_export/obj.html",
       "textCompatible": true
     },
     {
@@ -2828,7 +2828,7 @@
       "extensions": [
         ".lnk"
       ],
-      "source": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-shllink/747629b3-b5be-452a-8101-b9a2ec49978c"
+      "source": "https://learn.microsoft.com/en-us/windows/win32/shell/links"
     },
     {
       "id": "windows-url",

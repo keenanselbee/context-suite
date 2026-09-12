@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-11.11; 243 records. This is a descriptive
+Catalog revision: 2026-09-12.1; 243 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -28,6 +28,9 @@ The [data purpose review](catalog-data-review.md) covers 37 Data records and
 updates fifteen descriptions/references; it does not certify all format variants.
 The [video purpose review](catalog-video-review.md) covers ten records and updates
 seven descriptions/references without adding video actions or codec guarantees.
+The [purpose reconciliation](catalog-purpose-review.md) reviews the remaining
+34 records and maps all 243 current IDs to their purpose reviews. Complete
+alias/variant and detector provenance remains separate from this description review.
 
 The [MIME review](catalog-mime-descriptions.md) lists 59 descriptive identifiers
 for 36 records; these do not determine the exact variant of a file.
