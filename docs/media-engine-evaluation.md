@@ -1,10 +1,19 @@
 Media Engine Evaluation
 =======================
 
-Review date: 2026-09-09. Status: source-based comparison plus an
-[isolated audio experiment](audio-engine-evaluation.md) and
-[qpdf inspection/recompression experiment](pdf-engine-evaluation.md). No new production
-dependency or document-engine acceptance yet.
+Initial comparison: 2026-09-09. Current status (2026-09-11): optional curated
+audio and PDF candidates are implemented and have isolated combined staging
+evidence; default engine adoption and document launch acceptance remain pending.
+The comparison table below records the initial evaluation direction, not current
+implementation status. See the [current completion path](broad-file-support-goal.md#current-completion-path-2026-09-11).
+
+The [audio evidence](audio-engine-evaluation.md),
+[PDF payload](pdf-production-payload.md) and
+[combined image PDF](image-pdf-candidate.md) describe the selected candidates.
+The image PDF candidate uses the project's own fixed writer, rather than adopting
+PDFsharp from the initial comparison. The [Office evaluation](office-engine-evaluation.md)
+has measured an independently sourced uninstalled renderer; required Office
+conversion and [isolation acceptance](office-isolation-evaluation.md) remain open.
 
 The owner selected images-to-PDF, PDF pages-to-images, PDF optimization and
 Word/Excel/PowerPoint-to-PDF for launch. These accompany common audio conversion

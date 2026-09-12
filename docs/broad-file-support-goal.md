@@ -1,7 +1,8 @@
 Broad File Support Goal
 ======================
 
-Status: active; first universal Analyze slice implemented, broader coverage pending
+Status: active; universal Analyze and optional audio/PDF candidates implemented;
+required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
 Objective
@@ -36,6 +37,65 @@ explicitly authorized these checkpoints for both public and private repositories
 on 2026-09-09. The first checkpoint committed the accumulated work in four public
 commits ending at `d5dff37` and four private commits ending at `82fb7e7`.
 Repeat this review/verification/commit workflow after each coherent milestone.
+
+Current completion path (2026-09-11)
+------------------------------------
+
+Use this summary for current priority; the dated evidence below records individual
+checkpoints and is not a cumulative release-test result. An unchecked milestone
+can contain implemented work: check it only when its whole stated obligation and
+exit evidence are satisfied. Do not repeat a passing suite merely to add another
+checkpoint; rerun it for relevant changes, a failure or the final integrated build.
+
+| Area | Implemented or measured | Work required to close the area |
+| --- | --- | --- |
+| Universal Analyze | Shared results, generic/header fallback, bounded family readers and mixed-batch performance baseline | Audit admission and fallback against the advertised regular-file scope; resolve cancellation/deadline coverage around synchronous file metadata/open operations; refresh performance evidence after parser changes and accept the visible report |
+| Offline catalog | 243 records, schema/version validation, source references, qualified MIME details and completed family reviews | Finish factual/provenance review of the existing inventory and its claimed aliases/detectors; publish exact descriptive versus detected coverage. More records are not a substitute for finishing that review |
+| Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker and interruption/recovery evidence | Close the advertised input/output and metadata matrix, human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
+| PDF | Optional structural optimization, all-page PNG conversion and combined image PDF with explicit order review | Close documented fidelity/unsupported-input and recovery gaps; accept the order dialog and outputs visibly; review redistribution and adopt the selected payload |
+| Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
+| Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
+
+The latest combined production stage is
+`artifacts/production-staging/dc5a863d901b4eb89f94b943682511aa`.
+It predates the catalog-only revision 2026-09-11.10. The latest foundation run
+passes 2,320 contracts; the subsequent FLAC checkpoint passes 24 optimization
+interruption, 96 conversion interruption and 11 normal worker checks on that
+unchanged stage. These are separate runs, not evidence that every release suite
+has passed on a final payload.
+
+Prioritize the remaining work in this order:
+
+1. Resolve the [Office isolation evaluation](office-isolation-evaluation.md).
+   The prepared disposable AppContainer profile still needs the already-requested
+   authorization for its named per-user filesystem/registry state. After that,
+   verify file/network denial and cleanup, then run the renderer inside the same
+   boundary. An unrestricted passive export does not clear this gate.
+2. Settle the concrete Office policies exposed by experiments:
+   [Excel calculation](excel-calculation-evaluation.md),
+   [early date systems](excel-date-system-evaluation.md),
+   [Word revisions](word-revision-evaluation.md) and
+   [missing fonts](office-font-substitution.md). Use the existing
+   [print-layout](excel-print-layout-evaluation.md) and
+   [slide/notes](powerpoint-slide-evaluation.md) fixtures as acceptance controls.
+   Record exact supported variants and refusals; implement Word/Excel/PowerPoint
+   conversion only with a defensible isolation and fidelity policy.
+3. In independent work, close known Analyze resource/admission gaps and finish
+   review of the current catalog inventory. Add a parser field or catalog entry
+   only to close a declared capability gap or defect, rather than continually
+   expanding the completion target.
+4. Finish the selected audio/PDF acceptance matrices and arrange manual review
+   of listening/player behavior, Analyze, necessary prompts, page order and
+   recovery. Record keyboard, screen reader, themes and DPI individually; an
+   unavailable test stays unverified.
+5. Freeze the local candidate, run the relevant integrated regressions and fresh
+   packaging verification, reconcile customer claims with evidence, and perform
+   the final public/private DIFF/COMMIT checkpoint. Apply the same checkpoint
+   workflow after each coherent implementation milestone above.
+
+Required Office conversion cannot be replaced with more document analysis.
+Signing, native installer lifecycle, live commerce and publication remain separate
+commercial release gates under their existing authorization boundaries.
 
 Starting evidence
 -----------------
@@ -907,7 +967,7 @@ Evaluate engines, exact variants and policies for these selected actions:
   automation or a large rendering dependency merely because a reference uses it.
 - [ ] Create [document design](document-design.md) implementation decisions and
   representative fixtures before enabling actions. The linked design records
-  the current decision boundary, not an implemented converter.
+  implemented optional PDF candidates and the still-unimplemented Office converter.
 - [ ] Implement selected actions using fixed policies and copies by default.
   Review multi-page/multi-output atomicity and recovery before allowing overwrite.
 - [ ] Test encrypted, malformed, signed, scanned and text/vector documents,

@@ -255,8 +255,9 @@ or establish visible recovery usability. Larger document/feature coverage,
 UNC/long engine-install paths and production engine adoption remain required.
 Incremental/linearized inputs with revision links need a history
 handler; declining them is a current limitation, not the final launch scope.
-Images-to-PDF, PDF pages-to-images and Word/Excel/PowerPoint-to-PDF remain required
-and unimplemented.
+The later [combined image PDF](image-pdf-candidate.md) and direct PDF-to-PNG
+checkpoints below implement those optional candidates. Word/Excel/PowerPoint-to-PDF
+remains required and unimplemented; none of these candidates has launch clearance.
 
 For each selected action, document source/target variants, rendering requirements,
 metadata/accessibility/signature consequences, cancellation, resource limits,
@@ -332,10 +333,10 @@ physical-density test now accepts the integer PNG unit conversion. Normal Releas
 stage `artifacts/production-staging/a2469abd2ce342c6aae6135f0983c8b7` builds without
 warnings/errors and passes payload checks using `-SkipShell`. It excludes PDFium.
 
-The worker checkpoint below adds batch budgets and page publication. Direct-command
-integration, images-to-PDF and required Office-to-PDF remain separate implementation
-work. Wider fonts/ICC/CMYK/rotation/scan/form/XFA
-and damaged-document fidelity, in-flight renderer interruption, UNC paths,
+The subsequent checkpoints add batch budgets, page publication, direct-command
+integration and combined images-to-PDF. Required Office-to-PDF remains unimplemented.
+Wider fonts/ICC/CMYK/rotation/scan/form/XFA
+and damaged-document fidelity, UNC paths,
 dependency redistribution/runtime inventory and production engine adoption remain
 open. Existing image/worker/UI suites were not rerun for this adapter-only slice;
 manual, screen-reader, theme, DPI and installer acceptance are not implied.
@@ -402,8 +403,10 @@ Evaluation wrappers add engines only to copies in scratch; normal packaging stil
 excludes them. No installation, Explorer registration, recycling or live Polar ran.
 
 The subsequent direct checkpoint below implements per-document summaries,
-partial-output reporting and retry behavior. In-flight renderer-specific interruption, broader
-PDF fidelity, all other required document actions, production engine adoption,
+partial-output reporting and retry behavior. The later
+[renderer interruption matrix](pdf-page-interruption.md) covers three injected
+faults, and [combined image PDF](image-pdf-candidate.md) has its own implementation.
+Broader PDF fidelity, required Office conversion, production engine adoption,
 visible/accessibility acceptance and independent release gates remain open.
 
 Direct PDF-to-PNG and partial retry (2026-09-10)
