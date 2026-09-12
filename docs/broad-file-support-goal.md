@@ -51,32 +51,44 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | --- | --- | --- |
 | Universal Analyze | Shared results, generic/header fallback, bounded family readers, per-row availability after admission, synchronous I/O cancellation and refreshed mixed-batch performance baseline | Finish the advertised regular-file acceptance matrix; test remaining driver/network and metadata-stall cases; accept the visible report |
 | Offline catalog | 243 records, schema/version validation, source references, qualified MIME details and a reconciled typical-use review for every current record | Finish exact alias/variant, MIME and detector provenance; preserve the published distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
-| Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker and interruption/recovery evidence | Close the advertised input/output and metadata matrix, human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
+| Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker/interruption evidence and a rate/layout matrix with corrected Opus surround mapping | Close remaining input/metadata variants, independent decoding and human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
 | PDF | Optional structural optimization, all-page PNG conversion and combined image PDF with explicit order review | Close documented fidelity/unsupported-input and recovery gaps; accept the order dialog and outputs visibly; review redistribution and adopt the selected payload |
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
 The latest combined production stage is
-`artifacts/production-staging/f3c475e2de144a9789ebd7df46353f4e`.
-It includes catalog revision 2026-09-11.11, synchronous reader cancellation,
-per-row Analyze availability and specific failure guidance, with the native shell
-build included. The latest foundation run passes 2,367 contracts. The earlier FLAC
+`artifacts/production-staging/4921457d351a4daf85270a7f6672b542`.
+It includes catalog revision 2026-09-12.1, synchronous reader cancellation,
+per-row Analyze availability, specific failure guidance and corrected Opus surround
+mapping, with the native shell build included. The latest foundation run passes
+2,386 contracts. The earlier FLAC
 checkpoint passes 24 optimization interruption, 96 conversion interruption and
 11 normal worker checks on stage `dc5a863d901b4eb89f94b943682511aa`.
 These are separate runs, not evidence that every release suite
 has passed on a final payload.
 
-The subsequent [catalog purpose reconciliation](catalog-purpose-review.md),
+The [catalog purpose reconciliation](catalog-purpose-review.md),
 revision 2026-09-12.1, reviews the final 34 descriptions and improves fifteen
 descriptions/references. All 243 current IDs have a purpose review, without gaps
-or duplicate counting. This catalog revision is newer than the stage above;
-it changes no recognition or capability fields. Alias/variant, MIME and detector
+or duplicate counting. The catalog changes no recognition or capability fields.
+Alias/variant, MIME and detector
 provenance remain open, as do the required Office converter and integrated gates.
 Verification passes 2,367 foundation contracts and 104 documentation files, with
 an independent check that only purpose/source fields and revision changed and
 that every current ID occurs once in the purpose-review partition. The successful
 foundation log is `.codex-temp/catalog-remaining-foundation-retry.log`; the first
 run ended without a terminal result and is not counted as passing evidence.
+
+The later [audio rate/layout checkpoint](audio-rate-layout-verification.md) passes
+300 private adapter checks and 2,386 foundation contracts. Its 222-cell generated
+matrix contains 151 successful conversions, 37 unchanged WAV cases and 34 expected
+refusals. It corrects Opus 5.0/6.1 channel order and declines speaker layouts the
+pinned presets cannot preserve before encoding. Listening, independent Opus
+decoding and complete source-container/rate/layout coverage remain unverified.
+The fresh stage above passes 11 packaged audio checks, 52 conversion/publication
+checks and 20 direct-conversion checks; logs and exact scope are in the matrix
+record. Build, payload and source/notice inventories pass. No installed or visible
+acceptance is inferred from those automated checks.
 
 Prioritize the remaining work in this order:
 

@@ -53,6 +53,20 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         var consent = AudioConversionConsent.None;
         var notices = ImmutableArray.CreateBuilder<string>();
         var already = sourceFormat == target;
+        if (!already && audio.Channels > 2)
+        {
+            var layoutSupported = target switch
+            {
+                AudioFormat.M4a => audio.ChannelLayout is "2.1" or "quad" or "4.0" or "5.0" or "5.1" or "7.1",
+                AudioFormat.Vorbis or AudioFormat.Opus => audio.ChannelLayout is "quad" or "5.0" or "5.1" or "6.1" or "7.1",
+                _ => true
+            };
+            if (!layoutSupported)
+            {
+                var targetName = target switch { AudioFormat.M4a => "M4A (AAC)", AudioFormat.Vorbis => "Ogg Vorbis", _ => "Opus" };
+                throw new NotSupportedException($"This {targetName} preset cannot preserve the {audio.ChannelLayout} speaker layout. Choose WAV or FLAC.");
+            }
+        }
         if (lossy && targetLossy && !already)
         {
             consent |= AudioConversionConsent.LossyTranscoding;

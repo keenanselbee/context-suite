@@ -1,0 +1,131 @@
+Audio Rate and Speaker Layout Verification
+==========================================
+
+The 2026-09-12 matrix exercises the real private adapter against the pinned curated
+audio runtime. It exposes a channel-order defect in the default Opus encoder path
+and layouts that the selected presets cannot preserve. The fix explicitly selects
+Opus mapping family 1 for supported surround audio. Bitrate, sample-error limits,
+resampling consent and lossless preservation requirements remain unchanged.
+
+
+Authored corpus and exact coverage
+----------------------------------
+
+Every source is an independently generated, one-second PCM16 WAV with distinct
+channel tones at moderate amplitude. LFE content uses 60 Hz. Multichannel files
+declare explicit WAVE extensible speaker masks. Source hashes and write times must
+remain unchanged, and adapter scratch must be empty after every operation.
+There is no music, speech, customer recording or third-party audio in the corpus.
+
+Mono and stereo are tested at 8,000, 11,025, 12,000, 16,000, 22,050, 24,000,
+32,000, 44,100, 48,000, 64,000, 88,200, 96,000, 176,400 and 192,000 Hz. Nine
+multichannel layouts are tested separately at 48,000 Hz. Each of the 37 sources
+is submitted to all six targets: **222 observations**. This is not a Cartesian
+test of every surround layout at every rate or every supported source container.
+The earlier six-by-six container matrix remains separate evidence.
+
+| Input layout at 48 kHz | WAV | FLAC | MP3 | M4A/AAC | Ogg Vorbis | Opus |
+| --- | --- | --- | --- | --- | --- | --- |
+| Mono / stereo | Unchanged | Exact | Pass | Pass | Pass | Pass |
+| 2.1 | Unchanged | Exact | Refused | Pass | Refused | Refused |
+| Quad | Unchanged | Exact | Refused | Pass | Pass | Pass |
+| 4.0 | Unchanged | Exact | Refused | Pass | Refused | Refused |
+| 5.0 | Unchanged | Exact | Refused | Pass | Pass | Pass after fix |
+| 5.0(side) | Unchanged | Exact | Refused | Refused | Refused | Refused |
+| 5.1 | Unchanged | Exact | Refused | Pass | Pass | Pass |
+| 5.1(side) | Unchanged | Exact | Refused | Refused | Refused | Refused |
+| 6.1 | Unchanged | Exact | Refused | Refused | Pass | Pass after fix |
+| 7.1 | Unchanged | Exact | Refused | Pass | Pass | Pass |
+
+At the tested mono/stereo rates, MP3 refuses rates above 48 kHz and AAC refuses
+176.4/192 kHz, matching their existing fixed-rate rules. Other tested cells pass.
+Opus explicitly resamples non-48 kHz input after the required acknowledgement.
+An accepted conversion retains the expected decoded frame count, channel count,
+speaker layout, admitted metadata and finite sample comparisons. The generated
+signals additionally require RMSE below 0.1; lossless FLAC requires exact samples.
+This fixture bound does not replace production validation or listening review.
+
+
+Channel-order discovery and correction
+--------------------------------------
+
+The initial matrix recorded 186 passing observations, 25 refusals and 11 validation
+failures. No failed adapter result was admitted for publication. Two Opus failures
+were channel permutations, not insufficient bitrate: with the pinned default
+mapping, distinct 5.0 output channels matched source indices 0,1,3,4,2; 6.1 matched
+0,1,5,3,2,4,6. Explicit family 1 restored the intended order in both cases.
+
+The diagnostic runs compare every decoded channel against every authored source
+channel. With family 1, same-channel RMSE is below 0.004 for 5.0 and below 0.025
+for 6.1, with each channel closest to its own source. The test-only direct engine
+runs retain unadmitted artifacts for inspection. The final acceptance matrix uses
+the production adapter, with all ordinary validation still enabled.
+
+The pinned FFmpeg source at revision
+`9b0578816c6f94514d330d4f2ae7e44a9fb42692`, `libavcodec/libopusenc.c`, distinguishes
+its default legacy multistream path from explicit family selection. The
+[FFmpeg implementation documentation](https://ffmpeg.org/doxygen/trunk/libopusenc_8c_source.html)
+explains that distinction; [RFC 7845](https://www.rfc-editor.org/rfc/rfc7845.html),
+section 5.1.1, defines mapping families and channel meaning. This checkpoint
+changes the application's fixed arguments, not the upstream source or runtime.
+The complete adapter suite now includes 5.0 and 6.1 regression cases.
+
+Other failed cells changed speaker positions or could not encode the given layout.
+The pinned AAC implementation's PCE configuration also maps side-layout inputs
+to back-channel declarations. The public plan now refuses those target/layout
+pairs before encoding and explains that WAV or FLAC can preserve them. It does
+not downmix, rename speaker positions or accept an output with a different layout.
+These are limits of the selected presets/runtime, not universal claims about all
+possible AAC, Vorbis or Opus implementations. Richer layout support remains a
+future implementation/compatibility task rather than permission to drop channels.
+
+
+Reproduction and retained evidence
+----------------------------------
+
+First verify the staged audio identity, then build and run the focused private
+contract host with a new repository-local evidence directory:
+
+```powershell
+python -B tools/audio-engine/Stage-AudioPayload.py --payload '<isolated production stage>' --inventory
+dotnet build proprietary/tests/ContextSuite.Audio.ContractTests -c Release --nologo
+dotnet artifacts/managed/bin/ContextSuite.Audio.ContractTests/Release/net10.0/ContextSuite.Audio.ContractTests.dll --rate-layout-matrix '<stage>/audio-engine' '<new .codex-temp evidence directory>'
+```
+
+The focused host records each cell and rejects unexpected successes, refusals or
+validation failures. A successful run contains **188 passing observations**
+(151 conversions and 37 unchanged WAV cases) and **34 expected refusals**.
+Refusals are not counted as successful conversions.
+
+The final matrix is
+`.codex-temp/audio-rate-layout-108c05febe9b4f238230d0864d4628cb/matrix.json`, with
+log `.codex-temp/audio-rate-layout-final.log` and recorded exit code 0. It uses
+the native runtime from stage `f3c475e2de144a9789ebd7df46353f4e` and the newly built
+adapter, not that stage's older managed application. The initial matrix location
+is retained in `.codex-temp/audio-rate-layout-current.txt`. Channel diagnostics are
+in `.codex-temp/opus-layout-diagnostic-161809eacd584651bf31d9580662fa6e/diagnostic.json`.
+
+The full curated adapter suite passes **300 checks**, including both new channel
+regressions, at
+`.codex-temp/audio-ffmpeg-8982dc9e3a0646f0bc201d7c61784128/adapter-68e2eee078674fbfb3bc735100d0dde0`.
+The Release foundation passes **2,386 contracts**, including 19 new admission and
+preserved-alternative checks. Logs are `.codex-temp/audio-surround-adapter.log`
+and `.codex-temp/audio-surround-foundation.log`. The focused matrix predates a
+display-name-only change from M4a/Vorbis to M4A (AAC)/Ogg Vorbis in refusal text;
+the full suites include that change. No matrix outcome depends on that wording.
+
+Fresh combined stage
+`artifacts/production-staging/4921457d351a4daf85270a7f6672b542` builds the updated
+managed application/worker and native shell, with zero reported build warnings
+or errors and passed engine, notice, dependency and file-inventory checks. The
+packaged worker passes **11 audio checks, 52 conversion/publication checks and
+20 direct-conversion checks** against the generated six-format corpus. Evidence:
+`.codex-temp/audio-engine/worker-7af3047fcd2c4cf3a7113351b638182d` and
+`.codex-temp/audio-surround-worker.log`. The runtime inventory remains unchanged
+after the run. This stage also includes catalog revision 2026-09-12.1 and the
+optional PDF candidates; their full engine suites were not rerun here.
+
+This is generated-signal and adapter evidence. It does not certify listening,
+independent Opus decoding, speaker playback, every source format/rate/layout
+combination, screen-reader delivery, visible UI or installed behavior. Copies
+and source preservation are retained; no native recycling was tested.

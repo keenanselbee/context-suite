@@ -4,6 +4,11 @@ Audio Engine Evaluation Results
 Date: 2026-09-09 onward. Status: generated-fixture evaluation, private integration
 and direct audio commands implemented; production audio payload adoption pending.
 
+The later [rate/layout matrix](audio-rate-layout-verification.md) completes 222
+observations, finds and fixes Opus 5.0/6.1 channel permutation, and gives early
+refusals for layouts the current presets cannot preserve. The full private suite
+then passes 300 checks. Historical counts below describe their own checkpoints.
+
 The 2026-09-11 [curation record](audio-engine-curation.md) retains ten exact
 source/build-input archives. The independently built
 [restricted candidate](audio-ffmpeg-build.md) now passes native hardening review,

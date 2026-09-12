@@ -49,6 +49,23 @@ internal static class AudioConversionContracts
         Reject(() => AudioConversionPlan.Create(Facts("wav", "pcm_s16le", channels: 6, layout: "5.1"), AudioFormat.Mp3), "no implicit multichannel downmix");
         var surround = AudioConversionPlan.Create(Facts("wav", "pcm_s24le", channels: 6, layout: "5.1"), AudioFormat.Flac);
         check(surround.Channels == 6 && surround.SampleBits == 24, "audio plan: known surround layout retains channels and precision");
+        foreach (var target in new[] { AudioFormat.M4a, AudioFormat.Vorbis, AudioFormat.Opus })
+        foreach (var layout in new[] { "5.0(side)", "5.1(side)" })
+        {
+            var side = Facts("wav", "pcm_s16le", channels: layout.StartsWith("5.0") ? 5 : 6, layout: layout);
+            Reject(() => AudioConversionPlan.Create(side, target), "side speakers cannot be silently relabeled for " + target + " " + layout);
+            check(AudioConversionPlan.Create(side, AudioFormat.Flac).RequiresExactSamples,
+                "audio plan: side layout remains available through exact FLAC " + target + " " + layout);
+        }
+        foreach (var target in new[] { AudioFormat.Vorbis, AudioFormat.Opus })
+        foreach (var layout in new[] { "2.1", "4.0" })
+            Reject(() => AudioConversionPlan.Create(Facts("wav", "pcm_s16le", channels: layout == "2.1" ? 3 : 4, layout: layout), target),
+                "unsupported Ogg speaker layout is refused before encoding " + target + " " + layout);
+        Reject(() => AudioConversionPlan.Create(Facts("wav", "pcm_s16le", channels: 7, layout: "6.1"), AudioFormat.M4a),
+            "AAC preset cannot relabel 6.1 side speakers");
+        foreach (var layout in new[] { "5.0", "6.1" })
+            check(AudioConversionPlan.Create(Facts("wav", "pcm_s16le", channels: layout == "5.0" ? 5 : 7, layout: layout), AudioFormat.Opus).Channels == (layout == "5.0" ? 5 : 7),
+                "audio plan: corrected Opus mapping retains supported surround " + layout);
         Reject(() => AudioConversionPlan.Create(Facts("wav", "pcm_s16le", channels: 6), AudioFormat.Flac), "unknown surround layout is not guessed");
         Reject(() => AudioConversionPlan.Create(Facts("mov,mp4,m4a,3gp,3g2,mj2", "alac"), AudioFormat.Mp3), "container recognition does not admit an unverified codec");
         Reject(() => AudioConversionPlan.Create(Facts("wav", "aac"), AudioFormat.Mp3), "unsupported codec/container pairing is rejected");

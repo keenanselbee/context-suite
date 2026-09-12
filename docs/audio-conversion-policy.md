@@ -3,7 +3,7 @@ Audio Conversion And FLAC Optimization Policy
 
 Status: typed audio conversion, worker/publication integration, direct Convert
 actions with a compact quality prompt, and direct FLAC Auto/Lossless dispatch.
-Visible acceptance and engine shipping adoption remain pending. Updated: 2026-09-10.
+Visible acceptance and engine shipping adoption remain pending. Updated: 2026-09-12.
 
 The public `AudioConversionPlan` separates recognized container/codec pairs from
 conversion admission. Policy `audio-fixed-1` is implemented for isolated testing;
@@ -32,6 +32,14 @@ separate raw-preservation path for embedded artwork, described below.
 Rates are bounded to 8–192 kHz and
 channels to 1–8, with target-specific restrictions. This policy range is not a
 claim that every rate/layout pair has passed engine tests.
+
+The [rate/layout matrix](audio-rate-layout-verification.md) tests fourteen rates
+for mono/stereo and nine surround layouts at 48 kHz. The pinned Opus encoder now
+uses explicit mapping family 1 for surround, correcting 5.0/6.1 channel order.
+AAC currently admits 2.1, quad, 4.0, 5.0, 5.1 and 7.1 layouts; Vorbis/Opus admit
+quad, 5.0, 5.1, 6.1 and 7.1. These target restrictions apply to conversion,
+retaining the existing same-format no-op behavior. Unsupported speaker layouts
+receive early WAV/FLAC guidance, without automatic downmixing or relabeling.
 
 Lossy-to-lossy conversion, resampling and floating-to-integer precision reduction
 have independent typed acknowledgement flags. Accepting one does not authorize
