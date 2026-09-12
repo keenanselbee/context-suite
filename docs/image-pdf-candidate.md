@@ -70,8 +70,10 @@ DDS, HDR, animation and unsupported color interpretations remain excluded.
 Limits: 128 MiB per source, 512 MiB across the selection, 16 million pixels per
 page, 128 million pixels total, 4,096 pages, 16,384 pixels per dimension and
 positive physical page dimensions from 0.01 to 14,400 points. The output stream
-is capped at 128 MiB. Large-image memory/output-limit acceptance remains pending;
-these bounds are refusals, not promises to complete every file at the limit.
+is capped at 128 MiB. The later resource checkpoint covers large opaque BMP pages
+and output-cap refusal. Other precision/transparency/container combinations and
+whole-worker memory acceptance remain open. These bounds are refusals, not
+promises to complete every file at the limit.
 
 The writer takes checked read-only, single-link source leases for **all** inputs
 before decoding the first image. It rechecks exact source facts while decoding,
@@ -394,3 +396,53 @@ keyboard focus/input, screen-reader, theme/DPI and installed acceptance remain
 unverified for this command. Engine adoption, wider native interruption/resource/
 reader/fidelity acceptance, Office-to-PDF and all remaining broad-file/release
 requirements remain open. No install, registration, recycling or live provider ran.
+
+
+Large-image and output-budget evidence (2026-09-12)
+--------------------------------------------------
+
+Five resource cases now exercise the real image adapter, managed PDF writer and
+pinned independent validator. The fixtures are authored top-down, 24-bit BMPs
+with deterministic noise. An RGB digest is calculated while generating each
+source, independently of image decoding and PDF serialization. Successful output
+must match that digest through the writer's sample inventory and the independent
+validator's decoded PDF streams.
+
+| Case | Observed result | Elapsed seconds |
+| --- | --- | --- |
+| 4,000 x 4,000 pixels, the 16-million-pixel page limit | Exact RGB samples; validated 48,018,667-byte PDF | 3.05 |
+| 16,384 x 1 pixels, the width limit | Exact RGB samples; validated 53,180-byte PDF | 0.17 |
+| Three distinct 4,000 x 4,000 source files | Writer refuses the 128 MiB output cap; no candidate returned | 4.66 |
+| 4,001 x 4,000 pixels | Plan refuses the per-page pixel budget | 0.90 |
+| 32 x 24 pixels after both refusals | Same adapter and validator produce a valid 6,306-byte PDF | 0.58 |
+
+Every original retains its SHA-256 and write timestamp. Exclusive read access
+after each case proves the source leases were released. The independent
+validator leaves no owned snapshots, and image scratch contains only its intended
+configuration directory. All created PDF files remain test artifacts in repository
+scratch; this suite does not invoke application publication or native recycling.
+
+These are single-run timings, including source checks, not percentile benchmarks.
+The host's cumulative peak working set reaches 857,714,688 bytes (about 818 MiB).
+It includes preceding cases and excludes native validator children; it is not a
+per-case or whole-worker memory ceiling. This result does not establish every
+large alpha/16-bit/profile/container combination, all aggregate input limits,
+native allocation failure, deadlines, publication recovery or visible acceptance.
+No production limits or implementation changed.
+
+Reproduce with the parent-owned wrapper:
+
+```powershell
+.\tools\pdf-engine\Test-ImagePdfResources.ps1 -ProductionStage '<isolated stage with the PDF candidate>'
+```
+
+The wrapper verifies the stage's complete PDF payload before and after the run,
+builds the private contract host and creates fresh repository evidence. The tested
+stage is `artifacts/production-staging/4921457d351a4daf85270a7f6672b542`.
+Final results are
+`.codex-temp/image-pdf-resources-0e87f0b918544e2c85330372e4888a4b/image-pdf-resources.json`,
+with `.codex-temp/image-pdf-resources-final.log` and recorded exit code 0.
+The initial host build has zero warnings/errors; its log is
+`.codex-temp/image-pdf-resources-build.log`. Earlier passing evidence at
+`.codex-temp/image-pdf-resources-0a12d8180c5348278506820ddf8f6280` predates the
+explicit image-scratch cleanup assertion and the reproducible wrapper.

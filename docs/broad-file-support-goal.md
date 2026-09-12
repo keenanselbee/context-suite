@@ -95,6 +95,14 @@ checks and 20 direct-conversion checks; logs and exact scope are in the matrix
 record. Build, payload and source/notice inventories pass. No installed or visible
 acceptance is inferred from those automated checks.
 
+The later [combined-image resource checkpoint](image-pdf-candidate.md) passes five
+real writer/validator cases: maximum pixel count and width, oversized output and
+pixel-budget refusals, and successful reuse after refusal. Source hashes, write
+times, released leases and scratch cleanup pass. The host peaks around 818 MiB;
+this excludes validator children and is not whole-worker memory acceptance.
+Large alpha/16-bit inputs, native resource failures and visible acceptance remain
+open. Production source and the staged payload are unchanged.
+
 Prioritize the remaining work in this order:
 
 1. Resolve the [Office isolation evaluation](office-isolation-evaluation.md).

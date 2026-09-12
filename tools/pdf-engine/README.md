@@ -136,3 +136,10 @@ quiet completion and whole-document retry, writing `direct/image-pdf-direct.json
 Generated `image-pdf-worker-*/results/app-crashes` evidence is retained. The command
 still needs production validator adoption; this harness does not imply visible
 recovery or installed Explorer acceptance.
+
+Run `Test-ImagePdfResources.ps1 -ProductionStage '<isolated combined stage>'` for
+large generated image-PDF cases. It verifies the PDF payload, builds the private
+host and checks full-resolution RGB samples at the page/width limits, output-cap
+and pixel-budget refusals, source leases and successful reuse. Evidence stays in
+fresh `.codex-temp/image-pdf-resources-*` directories. The host's recorded memory
+peak excludes validator children; this is not whole-worker or visible acceptance.
