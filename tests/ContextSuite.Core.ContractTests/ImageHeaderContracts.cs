@@ -106,9 +106,11 @@ internal static class ImageHeaderContracts
         }
         var pixels = Enumerable.Range(0, 7 * 5 * 3).Select(value => (byte)(value * 17)).ToArray();
         var image = BitmapSource.Create(7, 5, 96, 96, PixelFormats.Rgb24, null, pixels, 21); image.Freeze();
-        foreach (var (id, encoder) in new (string, BitmapEncoder)[]
-                 { ("jpeg", new JpegBitmapEncoder()), ("gif", new GifBitmapEncoder()), ("bmp", new BmpBitmapEncoder()) })
+        foreach (var id in new[] { "jpeg", "gif", "bmp" })
         {
+            // An async continuation may use a different thread after writing the
+            // previous fixture. Create each thread-affine encoder where it is used.
+            BitmapEncoder encoder = id switch { "jpeg" => new JpegBitmapEncoder(), "gif" => new GifBitmapEncoder(), _ => new BmpBitmapEncoder() };
             encoder.Frames.Add(BitmapFrame.Create(image));
             using var encoded = new MemoryStream(); encoder.Save(encoded);
             var bytes = encoded.ToArray(); var result = Inspect(bytes);
