@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [font header checkpoint](font-header-analysis.md) reviews five
+catalog records and adds likely content identification with bounded header facts.
+All 2,102 foundation contracts pass, including 218 new checks and actual-reader
+source preservation. Fonts are never installed, rendered or decompressed;
+complete font validity and wider catalog review remain unclaimed.
+
 The 2026-09-11 [PDF page interruption checkpoint](pdf-page-interruption.md)
 passes twenty actual staged-worker checks for cancellation, client deadline
 expiry and worker termination after observing the owned native renderer alive.

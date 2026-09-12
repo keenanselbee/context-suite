@@ -14,6 +14,7 @@ internal static class AnalysisContracts
     public static async Task RunAsync(string scratch, Action<bool, string> check)
     {
         AudioAnalysisContracts.Run(Path.Combine(scratch, "audio-analysis"), check);
+        await FontAnalysisContracts.RunAsync(Path.Combine(scratch, "font-headers"), check);
         var catalog = FileTypeCatalog.Default;
         catalog.Validate();
         check(catalog.Types.Count(type => !type.MimeTypes.IsEmpty) >= 36 &&

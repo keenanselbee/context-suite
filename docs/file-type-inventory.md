@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-11.3; 243 records. This is a descriptive
+Catalog revision: 2026-09-11.4; 243 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -95,7 +95,7 @@ for actual parsed facts and current resource limits.
 | fits | FITS scientific data | `.fits`, `.fit`, `.fts` | Filename hint only |
 | flac | FLAC audio | `.flac` | Bounded STREAMINFO and metadata block observations; samples not validated |
 | flv | Flash video | `.flv`, `.f4v` | Filename hint only |
-| font-collection | Font collection | `.ttc`, `.otc` | Filename hint only |
+| font-collection | Font collection | `.ttc`, `.otc` | Bounded font header declarations; likely, no glyph validation |
 | fortran | Fortran source | `.f`, `.for`, `.f90`, `.f95`, `.f03`, `.f08` | Filename hint; text sampling |
 | fsharp | F# source | `.fs`, `.fsi`, `.fsx` | Filename hint; text sampling |
 | geojson | GeoJSON geographic data | `.geojson` | Filename hint; text sampling |
@@ -171,7 +171,7 @@ for actual parsed facts and current resource limits.
 | ogg | Ogg container | `.ogg`, `.oga`, `.ogv`, `.opus`, `.ogx` | Existing bounded content detector |
 | ole | Compound file container | Signature only | Bounded CFB directory/allocation facts; family needs agreeing binary headers |
 | openraster | OpenRaster image | `.ora` | Filename hint only |
-| opentype | OpenType font | `.otf` | Filename hint only |
+| opentype | OpenType font | `.otf` | Bounded font header declarations; likely, no glyph validation |
 | orc | Apache ORC data | `.orc` | Filename hint only |
 | pages | Pages document | `.pages` | Filename hint only |
 | parquet | Apache Parquet data | `.parquet` | Filename hint only |
@@ -230,7 +230,7 @@ for actual parsed facts and current resource limits.
 | toml | TOML configuration | `.toml` | Filename hint; text sampling |
 | torrent | BitTorrent metadata | `.torrent` | Filename hint only |
 | tracker | Tracker music module | `.mod`, `.xm`, `.it`, `.s3m`, `.mptm` | Filename hint only |
-| truetype | TrueType font | `.ttf` | Filename hint only |
+| truetype | TrueType font | `.ttf` | Bounded font header declarations; likely, no glyph validation |
 | tsv | Tab-separated table | `.tsv`, `.tab` | Filename hint; text sampling |
 | typescript | TypeScript source | `.ts`, `.tsx`, `.d.ts` | Filename hint; text sampling |
 | unitypackage | Unity asset package | `.unitypackage` | Filename hint only |
@@ -255,8 +255,8 @@ for actual parsed facts and current resource limits.
 | windows-shortcut | Windows shortcut | `.lnk` | Filename hint only |
 | windows-url | Internet shortcut | `.url` | Filename hint; text sampling |
 | wma | Windows Media audio | `.wma` | Filename hint only |
-| woff | WOFF web font | `.woff` | Filename hint only |
-| woff2 | WOFF2 web font | `.woff2` | Filename hint only |
+| woff | WOFF web font | `.woff` | Bounded font header declarations; likely, no glyph validation |
+| woff2 | WOFF2 web font | `.woff2` | Bounded font header declarations; likely, no glyph validation |
 | xcf | GIMP image | `.xcf` | Filename hint only |
 | xls | Legacy Excel workbook | `.xls`, `.xlt` | Bounded root stream and BIFF8 workbook BOF; likely |
 | xlsb | Excel binary workbook | `.xlsb` | Filename hint only |

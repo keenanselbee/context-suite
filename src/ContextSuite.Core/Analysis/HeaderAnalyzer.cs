@@ -127,6 +127,12 @@ public static class HeaderAnalyzer
             id = "ogg";
             evidence.Add("Ogg page signature; the contained codecs were not identified.");
         }
+        else if (FontHeaderFacts.Identify(bytes, fileBytes) is { } font)
+        {
+            id = font;
+            evidence.Add("Font signature and available header declarations inspected. Table contents, names, glyphs, compression and embedding rights were not validated; the font was not installed or rendered.");
+            FontHeaderFacts.Add(id, bytes, fileBytes, facts, warnings);
+        }
         else if (TryText(bytes, fileBytes > bytes.Length, out var encoding, out var text))
         {
             id = "text";

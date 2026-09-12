@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-11.3; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-11.4; expanded catalog and bounded structure analysis, not release acceptance
 
 Recognition and capabilities
 ----------------------------
@@ -27,6 +27,8 @@ and corrects the static/import-library description; none adds a content detector
 
 The [MIME review](catalog-mime-descriptions.md) supplies 59 descriptive identifiers
 for 36 records, with per-identifier provenance and qualified technical details.
+The [font header review](font-header-analysis.md) verifies five font descriptions
+and adds bounded declarations without installation, rendering or decompression.
 
 Current implementation and remaining work are separate:
 
@@ -49,6 +51,7 @@ Current implementation and remaining work are separate:
 | DOCX / XLSX / PPTX | Agreeing package relationship, main content type and main XML root within fixed limits | Declared sheet/slide counts and macro-enabled type; rendered pages unavailable; identity likely | PDF conversion selected; implementation pending |
 | ODT / ODS / ODP | Agreeing MIME, manifest and supported unencrypted content family | Sheet/slide elements, declared content encryption; encrypted content remains unavailable; identity likely | Analysis only selected |
 | Other readable regular files | Generic fallback regardless of extension | Size, inspected-byte count, unknown identity or qualified filename hint | No new operation |
+| TrueType / OpenType / font collections / WOFF / WOFF2 | Font tags and available fixed headers; additional plausibility checks for numeric TrueType tag | Declared flavor, table/font counts and packaged-size references; table contents, glyphs, names and rights unavailable | None |
 
 Other existing image conversions retain their earlier matrix; absence from this
 initial Analyze catalog does not remove them. Likewise, a catalog entry does not

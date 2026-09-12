@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.3",
+  "revision": "2026-09-11.4",
   "types": [
     {
       "id": "3gp",
@@ -1837,11 +1837,11 @@
       "id": "opentype",
       "name": "OpenType font",
       "family": "Font",
-      "commonUses": "Scalable fonts with layout and typographic information.",
+      "commonUses": "Fonts for text layout and display, including CFF outlines and optional color glyph data.",
       "extensions": [
         ".otf"
       ],
-      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/"
+      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff"
     },
     {
       "id": "orc",
@@ -2584,7 +2584,7 @@
       "extensions": [
         ".ttf"
       ],
-      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/"
+      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff"
     },
     {
       "id": "tsv",
