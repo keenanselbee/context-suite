@@ -10,7 +10,7 @@ using ContextSuite.Core.Operations;
 
 internal static class AudioInterruptionContracts
 {
-    public static async Task RunAsync(string root, string executable, Action<bool, string> check)
+    public static async Task RunAsync(string root, string executable, Action<bool, string> check, bool optimize = false)
     {
         if (Directory.Exists(root)) throw new IOException("Use a new audio interruption directory.");
         Directory.CreateDirectory(root);
@@ -22,6 +22,7 @@ internal static class AudioInterruptionContracts
         var sourceTime = File.GetLastWriteTimeUtc(sourcePath);
         var retryHash = await Hash(retryPath);
         var retryTime = File.GetLastWriteTimeUtc(retryPath);
+        var originals = new Dictionary<string, (string Hash, DateTime Time)> { [sourcePath] = (sourceHash, sourceTime), [retryPath] = (retryHash, retryTime) };
         var records = Path.Combine(root, "records");
         var workerRoot = Path.Combine(root, "workers");
         var publisher = new OutputPublisher(records, new NoRecycle());
@@ -34,16 +35,34 @@ internal static class AudioInterruptionContracts
         check(baselineOutput is { Outcome: PublicationOutcome.CopyCreated, OutputPath: not null },
             "Audio interruption: long authored fixture first completes exact-sample FLAC publication");
         var committed = new Dictionary<string, string> { [baselineOutput!.OutputPath!] = await Hash(baselineOutput.OutputPath!) };
+        if (optimize)
+        {
+            var shortSource = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), retryPath), AudioFormat.Flac, default);
+            var shortConversion = await executor.ExecuteAsync(Plan(shortSource, AudioFormat.Flac), null, default);
+            var shortOutput = shortConversion.Results.Single().Publication;
+            check(shortOutput is { Outcome: PublicationOutcome.CopyCreated, OutputPath: not null },
+                "FLAC interruption: short retry fixture first completes exact-sample FLAC publication");
+            committed.Add(shortOutput!.OutputPath!, await Hash(shortOutput.OutputPath!));
+            sourcePath = Path.Combine(root, "Authored padded noise.flac");
+            retryPath = Path.Combine(root, "Authored padded short.flac");
+            AddPadding(baselineOutput.OutputPath!, sourcePath);
+            AddPadding(shortOutput.OutputPath!, retryPath);
+            sourceHash = await Hash(sourcePath); sourceTime = File.GetLastWriteTimeUtc(sourcePath);
+            retryHash = await Hash(retryPath); retryTime = File.GetLastWriteTimeUtc(retryPath);
+            originals.Add(sourcePath, (sourceHash, sourceTime)); originals.Add(retryPath, (retryHash, retryTime));
+        }
         var evidence = new List<object>();
-        foreach (var target in new[] { AudioFormat.Flac, AudioFormat.Mp3, AudioFormat.M4a, AudioFormat.Vorbis, AudioFormat.Opus })
+        foreach (var target in optimize ? new[] { AudioFormat.Flac } : new[] { AudioFormat.Flac, AudioFormat.Mp3, AudioFormat.M4a, AudioFormat.Vorbis, AudioFormat.Opus })
         foreach (var fault in new[] { "cancel", "client-timeout", "worker-crash" })
         {
-            var scenario = target + "/" + fault;
-            source = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), sourcePath), target, default);
+            var scenario = (optimize ? "OptimizeFlac" : target.ToString()) + "/" + fault;
+            source = optimize ? await worker.ProbeFlacAsync(new(Guid.NewGuid(), sourcePath), default) :
+                await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), sourcePath), target, default);
             var encoding = AudioConversionPlan.Create(source.Facts, target);
-            var reservation = await publisher.ReserveAsync(new(source.ItemId, sourcePath, encoding.Extension.TrimStart('.'), new("convert", new())));
+            var reservation = await publisher.ReserveAsync(new(source.ItemId, sourcePath, encoding.Extension.TrimStart('.'), new(optimize ? "optimize" : "convert", new())));
             using var cancellation = new CancellationTokenSource();
-            var operation = worker.ConvertAudioAsync(new(source, reservation.TemporaryPath, target, encoding.RequiredConsent), cancellation.Token);
+            Task operation = optimize ? worker.OptimizeFlacAsync(new(source, reservation.TemporaryPath), cancellation.Token) :
+                worker.ConvertAudioAsync(new(source, reservation.TemporaryPath, target, encoding.RequiredConsent), cancellation.Token);
             var workerId = worker.ProcessId!.Value;
             Process? native = null;
             string? candidate = null;
@@ -88,7 +107,7 @@ internal static class AudioInterruptionContracts
                     using var owned = Process.GetProcessById(workerId);
                     owned.Kill(); // Worker only: its kill-on-close job must stop ffmpeg.
                 }
-                try { await operation.WaitAsync(TimeSpan.FromSeconds(10)); throw new InvalidOperationException("Interrupted audio conversion succeeded."); }
+                try { await operation.WaitAsync(TimeSpan.FromSeconds(10)); throw new InvalidOperationException("Interrupted audio work succeeded."); }
                 catch (OperationCanceledException) when (fault == "cancel")
                 { check(true, "Audio interruption: cancellation retains its distinct result for " + target); }
                 catch (MediaWorkerException error) when (fault != "cancel")
@@ -103,16 +122,27 @@ internal static class AudioInterruptionContracts
                     !File.Exists(reservation.TemporaryPath) && !File.Exists(reservation.Record.OutputPath) &&
                     !Directory.EnumerateDirectories(workerRoot).Any() && !Directory.EnumerateFiles(records).Any(),
                     "Audio interruption: incomplete output, journal and owned worker scratch are removed after " + scenario);
-                var preserved = await Hash(sourcePath) == sourceHash && File.GetLastWriteTimeUtc(sourcePath) == sourceTime &&
-                    await Hash(retryPath) == retryHash && File.GetLastWriteTimeUtc(retryPath) == retryTime;
+                var preserved = true;
+                foreach (var original in originals) preserved &= await Hash(original.Key) == original.Value.Hash && File.GetLastWriteTimeUtc(original.Key) == original.Value.Time;
                 foreach (var output in committed) preserved &= await Hash(output.Key) == output.Value;
                 check(preserved, "Audio interruption: originals and earlier committed copies survive " + scenario);
-                var retry = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), retryPath), target, default);
-                var resumed = await executor.ExecuteAsync(Plan(retry, target), null, default);
+                var retry = optimize ? await worker.ProbeFlacAsync(new(Guid.NewGuid(), retryPath), default) :
+                    await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), retryPath), target, default);
+                var resumed = optimize ? await new FlacOptimizationExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial.json")))
+                    .ExecuteAsync(FlacOptimizationPlan.Create(Guid.NewGuid(), [retry], new("optimize", new())).Confirm(false, false), null, default) :
+                    await executor.ExecuteAsync(Plan(retry, target), null, default);
                 var resumedOutput = resumed.Results.Single().Publication;
                 check(worker.ProcessId != workerId && resumedOutput is { Outcome: PublicationOutcome.CopyCreated, OutputPath: not null },
-                    "Audio interruption: a fresh worker publishes a validated same-target retry after " + scenario);
+                    "Audio interruption: a fresh worker publishes a validated same-action retry after " + scenario);
                 committed.Add(resumedOutput!.OutputPath!, await Hash(resumedOutput.OutputPath!));
+                if (optimize)
+                {
+                    var originalBytes = await File.ReadAllBytesAsync(retryPath);
+                    var optimizedBytes = await File.ReadAllBytesAsync(resumedOutput.OutputPath!);
+                    FlacMetadata.RequirePreservedMetadata(FlacMetadata.Parse(originalBytes), FlacMetadata.Parse(optimizedBytes));
+                    check(optimizedBytes.Length < originalBytes.Length,
+                        "FLAC interruption: resumed optimization publishes a smaller result with preserved metadata after " + scenario);
+                }
                 evidence.Add(new { target = target.ToString(), fault, workerId, nativeId, candidate, beforeBytes, afterBytes, result, resumed });
             }
             finally
@@ -124,13 +154,24 @@ internal static class AudioInterruptionContracts
             }
         }
         await File.WriteAllTextAsync(Path.Combine(root, "audio-interruptions.json"), JsonSerializer.Serialize(
-            new { sourceHash, retryHash, committed, evidence }, new JsonSerializerOptions { WriteIndented = true }));
+            new { operation = optimize ? "optimize" : "convert", sourceHash, retryHash,
+                originals = originals.ToDictionary(item => item.Key, item => new { item.Value.Hash, item.Value.Time }), committed, evidence }, new JsonSerializerOptions { WriteIndented = true }));
 
         ConfirmedAudioConversion Plan(AudioFileSource input, AudioFormat target)
         {
             var batch = AudioConversionBatch.Create(Guid.NewGuid(), [input], target, new("convert", new()));
             return batch.Confirm(batch.RequiredConsent, false, false);
         }
+    }
+
+    private static void AddPadding(string input, string output)
+    {
+        var bytes = File.ReadAllBytes(input);
+        if (bytes.Length < 42 || !bytes.AsSpan(0, 8).SequenceEqual(new byte[] { 102, 76, 97, 67, 0, 0, 0, 34 }))
+            throw new InvalidDataException("Expected authored FLAC with non-final STREAMINFO.");
+        var padding = new byte[4 + 262144]; padding[0] = 1; padding[1] = 4;
+        using var file = new FileStream(output, FileMode.CreateNew);
+        file.Write(bytes.AsSpan(0, 42)); file.Write(padding); file.Write(bytes.AsSpan(42));
     }
 
     private static void WriteWave(string path, int seconds, bool noise = true)

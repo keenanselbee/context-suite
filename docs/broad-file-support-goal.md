@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [FLAC optimization interruption matrix](audio-interruption-verification.md)
+passes 24 new checks for live-encoder cancellation, client timeout and worker
+termination with smaller validated retry copies. The shared conversion harness
+also repeats all 96 interruption checks and 11 normal worker checks. Separate
+inspection verifies six originals, 21 committed copies, cleanup and process exit.
+This covers encoding, not every optimization phase or listening/UI acceptance.
+
 The 2026-09-11 [video catalog review](catalog-video-review.md) checks all ten Video
 entries and improves seven descriptions/references. Catalog 2026-09-11.10 retains
 243 records and unchanged identification/operation fields. Mobile/Flash variants

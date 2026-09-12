@@ -147,3 +147,66 @@ adoption remain separate gates. The foundation, private adapter and full audio
 workflow matrices were not rerun for this test-only expansion. Public-source
 boundary, system-theme policy, 95 documentation files and both repositories'
 whitespace checks pass.
+
+
+FLAC optimization encoder interruptions (2026-09-11)
+---------------------------------------------------
+
+The same harness now supports `--flac-interruptions`, exposed by the packaged
+worker wrapper's `-IncludeOptimizationInterruptions`. It executes the real
+`OptimizeFlacAsync` worker path and retries through `FlacOptimizationExecutor`,
+with ordinary local trial admission and transactional copy publication.
+
+The harness first converts its two-minute PCM24 noise and one-second stereo tone
+to exact-sample validated FLAC copies. It authors separate optimization inputs
+by inserting a 256 KiB padding block after the non-final STREAMINFO. This adds
+removable storage without changing audio frames or required metadata. Both WAV
+originals and both padded FLAC originals are hash/time controls; the initial
+FLAC copies and every committed retry remain hash controls.
+
+Cancellation, client-timeout expiry and worker-only termination each require
+observing the owned ffmpeg encoder's CPU activity, growing encoded candidate and
+locked application reservation. Probe/reference-decode work cannot alone satisfy
+that observation. After each injected fault, the harness checks typed failure,
+worker/native exit, abandoned reservation/journal cleanup, empty worker scratch
+and source/copy preservation. It then starts a fresh worker for a short-file
+optimization retry, requiring a committed smaller copy and preserved FLAC
+metadata in addition to the production exact-sample validation.
+
+The client timeout still uses the test clock after verifying the 150-second
+production deadline. This is not a 150-second wall-clock endurance test. A
+refusing recycler excludes native recycling; the optimization settings select
+copies. The added mode does not change production timeout or failure behavior.
+
+The combined run passes **24 FLAC optimization interruption checks**, all **96
+conversion interruption checks** and **11 normal audio-worker checks**. It uses
+unchanged isolated stage
+`artifacts/production-staging/dc5a863d901b4eb89f94b943682511aa`; complete pre-run
+payload verification and before/after pinned audio inventory checks pass. The
+Release public host builds with zero warnings/errors. No production source or
+payload was changed, and no new production build is claimed.
+
+Each of the three optimization retries creates a 111,442-byte copy from the
+381,786-byte padded short input. Required metadata and exact-sample validation
+pass before publication. Separate inspection confirms all 18 target/fault pairs,
+six original hashes/write times, 21 committed-output hashes, candidate growth,
+empty reservations/journals/worker scratch and absence of all 35 distinct process
+IDs counted within the two reports. The optimization copies also agree with a
+separate check of non-padding metadata, STREAMINFO sample fields and MD5. That
+inspection is not an independent audio decoder or listening acceptance.
+
+Evidence is retained under
+`.codex-temp/audio-engine/worker-955f8a5fafcf4fed8840c02ca78028a1/`:
+
+- `interruption-results/audio-interruptions.json`: the repeated five-target matrix.
+- `optimization-interruption-results/audio-interruptions.json`: new FLAC faults
+  and smaller-copy retries, including all original hash/time controls.
+- `independent-interruption-verification.json` and `post-run-preservation.txt`:
+  separate post-run checks.
+
+The wrapper log is `.codex-temp/audio-optimization-interruptions.log`. The full
+foundation, private adapter and 116-check audio workflow suites were not rerun
+for this test-only expansion. Encoding is the observed interruption phase;
+reference decoding, output validation, other
+source layouts/rates, listening/player compatibility, native overwrite and
+visible/accessibility acceptance retain their separate evidence requirements.

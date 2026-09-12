@@ -23,12 +23,12 @@ if (args.Length == 4 && args[0] == "--audio-publication-crashes")
     Console.WriteLine($"Passed {checks} isolated audio publication crash checks.");
     return 0;
 }
-if (args.Length == 3 && args[0] == "--audio-interruptions")
+if (args.Length == 3 && args[0] is "--audio-interruptions" or "--flac-interruptions")
 {
     var checks = 0;
     await AudioInterruptionContracts.RunAsync(args[1], args[2], (condition, message) =>
-    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
-    Console.WriteLine($"Passed {checks} isolated audio interruption checks.");
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); }, args[0] == "--flac-interruptions");
+    Console.WriteLine($"Passed {checks} isolated {(args[0] == "--flac-interruptions" ? "FLAC optimization" : "audio")} interruption checks.");
     return 0;
 }
 if (args.Length == 2 && args[0] == "--recycle") return await WindowsRecycleContracts.RunAsync(args[1]);

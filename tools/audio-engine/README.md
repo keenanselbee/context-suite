@@ -1,6 +1,12 @@
 Isolated Audio Engine Evaluation
 ===============================
 
+`Test-AudioWorker.ps1 -Packaged -IncludeOptimizationInterruptions` tests live
+FLAC recompression cancellation, client timeout and worker termination, then
+validated smaller-copy retries. It uses generated padded FLAC inputs and a
+refusing recycler. Add `-IncludeInterruptions` to also run the five-target
+conversion interruption matrix. See [scope and retained evidence](../../docs/audio-interruption-verification.md).
+
 These tools evaluate a pinned third-party FFmpeg build independently of the
 installed Context Suite application. They do not stage a production dependency,
 install software, change PATH or touch Explorer registrations.
