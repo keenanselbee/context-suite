@@ -5,6 +5,12 @@ using three small, passive fixtures authored in this repository. They do not
 enable an Office command or add a production dependency. See the
 [evidence and remaining gates](../../docs/office-engine-evaluation.md).
 
+`Test-OfficeEvaluation.ps1 -WordRevisions` adds four passive DOCX cases for tracked
+insertions/deletions with shown, hidden or omitted revision-display settings and
+a clean control. `Inspect-WordRevisions.py '<printed evaluation directory>'`
+cross-checks the retained source declarations, hashes and PDF text observations.
+See [results and export-policy implications](../../docs/word-revision-evaluation.md).
+
 The separate native isolation preflight now checks reachable IPv4 and IPv6-only
 loopback listeners. Its default uses no AppContainer profile and makes no denial
 claim. The separately authorized disposable-profile mode requires actual denial

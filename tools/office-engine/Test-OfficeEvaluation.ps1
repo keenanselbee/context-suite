@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $PreparedDirectory, [Parameter(Mandatory)][string] $PdfPreparedDirectory,
-    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelPrint)
+    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelPrint, [switch] $WordRevisions)
 $ErrorActionPreference = 'Stop'
-if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelPrint).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
+if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelPrint, $WordRevisions).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $office = (Resolve-Path -LiteralPath $PreparedDirectory).Path
 $pdf = (Resolve-Path -LiteralPath $PdfPreparedDirectory).Path
@@ -42,6 +42,7 @@ if ($ExcelCalculation) { $probeArguments += 'ExcelCalculation' }
 if ($FontSubstitution) { $probeArguments += 'FontSubstitution' }
 if ($ExcelDates) { $probeArguments += 'ExcelDates' }
 if ($ExcelPrint) { $probeArguments += 'ExcelPrint' }
+if ($WordRevisions) { $probeArguments += 'WordRevisions' }
 & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- @probeArguments
 if ($LASTEXITCODE) { throw 'Office evaluation failed; inspect retained scratch evidence.' }
 Write-Output 'Authored passive Office fixtures and disposable exports only. No arbitrary-document isolation, installer or production acceptance implied.'
@@ -50,3 +51,5 @@ if ($ProfileMatrix -or $ProfileLengths -or $EnvironmentPaths) { Write-Output 'Pr
 if ($ExcelDates) { Write-Output 'Date-system completion records display differences; inspect DateObservations before claiming fidelity.' }
 
 if ($ExcelPrint) { Write-Output 'Print-layout completion records observations; inspect PrintObservation before claiming fidelity.' }
+
+if ($WordRevisions) { Write-Output 'Revision completion records PDF text; inspect RevisionObservation before choosing an export policy.' }

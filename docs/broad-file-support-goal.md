@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [Word revision evaluation](word-revision-evaluation.md) exports
+four passive DOCX cases and records deleted text in PDFs for shown/unspecified
+revision settings, but not hidden settings or the clean control. Independent
+source/PDF/declaration inspection and two altered-evidence refusals pass. This
+adds a concrete revision-policy requirement before Word-to-PDF adoption; it does
+not implement the converter or resolve isolation and broader fidelity.
+
 The 2026-09-11 [five-target audio interruption matrix](audio-interruption-verification.md)
 passes 96 checks across FLAC, MP3, M4A/AAC, Vorbis and Opus encoding. All 15
 target/fault pairs preserve originals and earlier copies, clean unfinished work,
