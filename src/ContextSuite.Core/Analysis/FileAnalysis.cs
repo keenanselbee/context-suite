@@ -20,5 +20,5 @@ public sealed record FileAnalysis(string Path, long FileBytes, FormatIdentity Id
     DdsInfo? Texture = null, ImmutableArray<FileTypeDescription> FilenameHints = default)
 {
     public const int SchemaVersion = 1;
-    public const string AnalyzerVersion = "workbook-settings-1";
+    public const string AnalyzerVersion = "word-revisions-1";
 }

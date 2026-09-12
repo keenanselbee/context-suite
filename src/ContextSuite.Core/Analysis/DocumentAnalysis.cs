@@ -178,6 +178,7 @@ public static partial class DocumentAnalysis
         {
             if (main.Elements(XName.Get("body", ns)).Count() != 1) throw new InvalidDataException("Missing document body.");
             facts.Add(new("document.pages", "Document", "Rendered pages", Availability: FactAvailability.Unavailable));
+            AddWordRevisionDeclarations(main, facts, warnings, cancellationToken);
         }
         else
         {

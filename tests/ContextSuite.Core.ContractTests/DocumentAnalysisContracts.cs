@@ -55,6 +55,7 @@ internal static partial class DocumentAnalysisContracts
         await RelationshipContractsAsync(check);
         await FontReferenceContractsAsync(scratch, check);
         await WorkbookSettingsContractsAsync(scratch, check);
+        await WordRevisionContractsAsync(scratch, check);
         var unsupported = new List<(string Name, byte[] Bytes)>
         {
             ("missing main relationship", Zip(word.Where(part => part.Name != "_rels/.rels").ToArray())),

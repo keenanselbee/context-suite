@@ -40,6 +40,14 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [Word revision analysis](word-revision-analysis.md) adds bounded
+insertion/deletion/move-marker counts from the already parsed main XML, with
+explicit scope and unavailable results for unsupported compatibility processing.
+All 2,266 foundation contracts pass; the four retained export fixtures also match
+an independent XML count with originals preserved. Fresh isolated stage
+`885c764010054136b49d8718a1b2fa09` passes packaging checks. Required Office export
+and complete revision/fidelity acceptance remain open.
+
 The 2026-09-11 [Word revision evaluation](word-revision-evaluation.md) exports
 four passive DOCX cases and records deleted text in PDFs for shown/unspecified
 revision settings, but not hidden settings or the clean control. Independent

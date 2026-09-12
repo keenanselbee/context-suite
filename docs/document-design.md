@@ -26,6 +26,11 @@ Do not guess page counts for reflowable documents, confuse sheet/slide counts wi
 pages, bypass encryption, execute active content, resolve external references or
 require installed Office simply to explain a file.
 
+The [Word revision declaration reader](word-revision-analysis.md) adds scoped
+insertion/deletion/move-marker counts from the main XML without additional reads.
+It reports stored declarations independently of display settings; zero is not a
+whole-document revision scan or conversion-admission result.
+
 
 Workbook setting declarations (2026-09-11)
 ------------------------------------------
