@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [Excel date-system experiment](excel-date-system-evaluation.md)
+completes three passive exports but finds six early-1900 display mismatches
+across 21 numeric date/time observations. Modern/fractional dates, elapsed hours
+and all tested 1904-system values match. Independent source/text/hash inspection
+confirms the finding; date-aware handling remains required before Office adoption.
+
 The 2026-09-11 [independent FLAC decoder checkpoint](audio-independent-flac.md)
 verifies eighteen real-adapter conversion/optimization outputs with publisher-
 verified Xiph FLAC 1.5.0. PCM16/24/32 mono/stereo/six-channel samples match exactly,

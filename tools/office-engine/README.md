@@ -124,6 +124,18 @@ the paired document parts differ only by requested font name, and report exact
 pixel differences. These are substitution observations, not font/layout acceptance
 or a production missing-font detector.
 
+`Test-OfficeEvaluation.ps1 -ExcelDates` exports three authored XLSX fixtures:
+omitted/explicit 1900 date systems and an explicit 1904 date system. Numeric cells
+cover early serials, the 1900 leap-day compatibility anomaly, a modern date,
+fractional days and elapsed hours. ISO-style formats avoid relying on the current
+regional short-date display. No formulas are present in the printed worksheet.
+The report records each expected Excel display and actual extracted PDF value;
+completing the exports does not accept differences as fidelity passes.
+Use `python -B tools/office-engine/Inspect-ExcelDates.py '<evaluation directory>'`
+to independently check retained package values/styles/date-system declarations,
+source/PDF hashes and per-cell text observations. This is a passive fixture
+experiment, not customer conversion or general date/locale compatibility.
+
 The separate native isolation experiment is:
 
 ```powershell

@@ -5,9 +5,10 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution")) return 2;
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates")) return 2;
 var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths";
 var fontSubstitution = args.Length == 4 && args[3] == "FontSubstitution";
+var excelDates = args.Length == 4 && args[3] == "ExcelDates";
 var excelCalculation = args.Length == 4 && args[3] == "ExcelCalculation";
 var legacyPdf = args.Length == 4 && args[3] == "LegacyPdf";
 var profileStyles = excelCalculation ? new[] { "calc-default", "calc-always", "calc-never" } : legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "EnvironmentPaths"
@@ -62,10 +63,10 @@ if (args.Length == 4 && args[3] is "LegacyAnalysis" or "LegacyPdf")
 }
 var baselines = new Dictionary<string, (string Folder, JsonElement Render, string[] Text)>();
 var comparisons = new List<object>();
-var conversionCases = fontSubstitution ? OfficeFontFixtures.Create(fixtures) : excelCalculation ? ExcelCalculationFixtures.Create(fixtures) : new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) };
+var conversionCases = excelDates ? ExcelDateFixtures.Create(fixtures) : fontSubstitution ? OfficeFontFixtures.Create(fixtures) : excelCalculation ? ExcelCalculationFixtures.Create(fixtures) : new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) };
 foreach (var (name, filter, expectedPages) in conversionCases)
 {
-    if (args.Length == 4 && !legacyPdf && !excelCalculation && !fontSubstitution && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
+    if (args.Length == 4 && !legacyPdf && !excelCalculation && !excelDates && !fontSubstitution && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
     foreach (var profileStyle in profileStyles)
     {
         var extension = filter switch { "writer_pdf_Export" => "doc", "calc_pdf_Export" => "xls", _ => "ppt" };
@@ -121,7 +122,8 @@ foreach (var (name, filter, expectedPages) in conversionCases)
             Console.WriteLine("OBSERVED: " + name + " PDF fonts: " + string.Join(", ", pdfFonts));
         }
         var calculationObservation = excelCalculation ? ExcelCalculationFixtures.Observe(name, text) : null;
-        if (!excelCalculation && !textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
+        var dateObservations = excelDates ? ExcelDateFixtures.Observe(name, text) : null;
+        if (!excelCalculation && !excelDates && !textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
         if (filter == "writer_pdf_Export" &&
             (!text[0].Contains("FIRST PAGE HEADER") || text[0].Contains("RUNNING HEADER") ||
              !text[1].Contains("RUNNING HEADER") || text[1].Contains("FIRST PAGE HEADER") ||
@@ -129,13 +131,15 @@ foreach (var (name, filter, expectedPages) in conversionCases)
             throw new InvalidDataException("Word first/default headers or PAGE/NUMPAGES field rendering did not match authored expectations.");
         if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
         results.Add(new { Source = Path.GetFileName(source), SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile, conversion.EnvironmentPaths,
-            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds, CalculationObservation = calculationObservation, PdfFontNames = pdfFonts,
+            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds, CalculationObservation = calculationObservation, DateObservations = dateObservations, PdfFontNames = pdfFonts,
             RequestedFont = fontSubstitution ? (name.Contains("missing", StringComparison.Ordinal) ? OfficeFontFixtures.MissingFont : "Arial") : null,
             ConversionOutput = conversion.Output, Diagnostics = conversion.Error, Text = text, Render = rendered.RootElement.Clone() });
+        if (dateObservations is not null) Console.WriteLine("OBSERVED: " + name + ": " + dateObservations.Count(item => item.Matches) + "/7 dates/durations match Excel display expectations.");
         if (calculationObservation is not null) Console.WriteLine("OBSERVED: " + name + ": " + calculationObservation);
         if (profileMatrix) File.Move(pdf, Path.Combine(folder, Path.GetFileName(pdf)));
         SaveResults();
-        Console.WriteLine($"PASS: {Path.GetFileName(source)} ({profileStyle}, {conversion.Profile!.Length} profile characters): {pages} independently parsed/rendered pages, expected text/geometry, original unchanged, {conversion.Milliseconds} ms.");
+        var textScope = excelDates ? "date observations retained (not a fidelity pass)" : "expected text";
+        Console.WriteLine($"PASS: {Path.GetFileName(source)} ({profileStyle}, {conversion.Profile!.Length} profile characters): {pages} independently parsed/rendered pages, {textScope}, expected geometry, original unchanged, {conversion.Milliseconds} ms.");
         if (legacyPdf)
         {
             if (profileStyle == "modern") baselines.Add(name, (folder, rendered.RootElement.Clone(), text));
@@ -159,7 +163,7 @@ return 0;
 void SaveResults()
 {
     File.WriteAllText(Path.Combine(root, "office-evaluation.json"), JsonSerializer.Serialize(new { Version = version.Output.Trim(), ProfileMatrix = profileMatrix,
-        Mode = profileMatrix || legacyPdf || excelCalculation || fontSubstitution ? args[3] : "Conversion", Results = results,
+        Mode = profileMatrix || legacyPdf || excelCalculation || excelDates || fontSubstitution ? args[3] : "Conversion", Results = results,
         Scope = "Authored passive Office fixtures and generated legacy copies only; bounded text/geometry checks, not broad font/layout fidelity, arbitrary-document isolation or launch acceptance. Profile-matrix observations include failed conversions." }, new JsonSerializerOptions { WriteIndented = true }));
 }
 

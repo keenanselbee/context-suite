@@ -157,6 +157,9 @@ Excel PDF export also requires an explicit calculation policy. The
 [formula-cache experiment](excel-calculation-evaluation.md) shows that the
 candidate's default can retain stale saved results even in an automatic workbook.
 Do not infer calculation fidelity from correct-cache fixtures or successful export.
+The [date-system experiment](excel-date-system-evaluation.md) also finds incorrect
+early-1900 date displays despite successful export. Passing modern-date and
+1904-system controls rule out applying an unconditional numeric/date adjustment.
 Exact legacy/modern input variants, presets and engine choices remain to be
 evaluated. No rendering engine is adopted or installed by this scope decision.
 
