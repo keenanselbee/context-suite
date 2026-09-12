@@ -29,6 +29,9 @@ The [MIME review](catalog-mime-descriptions.md) supplies 59 descriptive identifi
 for 36 records, with per-identifier provenance and qualified technical details.
 The [font header review](font-header-analysis.md) verifies five font descriptions
 and adds bounded declarations without installation, rendering or decompression.
+The [document font reference scan](document-font-references.md) adds optional
+literal names and unresolved theme references from selected OOXML XML parts,
+with declared scope and unavailable results on budget/format failure.
 
 Current implementation and remaining work are separate:
 

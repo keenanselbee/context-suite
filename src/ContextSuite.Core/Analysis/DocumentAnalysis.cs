@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace ContextSuite.Core.Analysis;
 
-public static class DocumentAnalysis
+public static partial class DocumentAnalysis
 {
     private const string ContentTypes = "http://schemas.openxmlformats.org/package/2006/content-types";
     private const string Relationships = "http://schemas.openxmlformats.org/package/2006/relationships";
@@ -46,6 +46,20 @@ public static class DocumentAnalysis
                 }
                 facts.Add(new("document.relationship-scope", "Document", "Link inspection scope",
                     Text: "Relationship declarations only; targets were not opened. Document fields and embedded content were not scanned."));
+                try
+                {
+                    var fonts = await ReadFontReferencesAsync(package, cancellationToken);
+                    facts.Add(new("document.font-names", "Document", "Font names declared in selected XML parts", Text: fonts.Names));
+                    facts.Add(new("document.font-themes", "Document", "Unresolved font theme references", Text: fonts.Themes));
+                    facts.Add(new("document.font-parts", "Document", "XML parts inspected for font declarations", Integer: fonts.Parts));
+                }
+                catch (Exception error) when (error is IOException or InvalidDataException or XmlException or DecoderFallbackException)
+                {
+                    facts.Add(new("document.font-names", "Document", "Font names declared in selected XML parts", Availability: FactAvailability.Unavailable));
+                    warnings = warnings.Add("Font declarations are unavailable: selected XML parts are inconsistent, unsupported or exceed the analysis limits.");
+                }
+                facts.Add(new("document.font-scope", "Document", "Font inspection scope",
+                    Text: "Selected content-type overrides only, including potentially unused parts and styles. Names and theme references are declarations, not resolved fonts. Installed fonts, glyph coverage and embedding rights were not checked."));
             }
             facts.Add(new("package.entries", "Package", "Directory entries", Integer: package.Count));
             facts.Add(new("package.bytes-read", "Package", "Additional bytes read (including repeat reads)", Integer: package.BytesRead));

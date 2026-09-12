@@ -53,6 +53,7 @@ internal static class DocumentAnalysisContracts
         check(macroResult.Identity.FormatId == "docx" && macroResult.Facts.Single(fact => fact.Id == "document.macro-type").Boolean == true,
             "documents: macro-enabled type is a declaration, not proof that a VBA project is present");
         await RelationshipContractsAsync(check);
+        await FontReferenceContractsAsync(scratch, check);
         var unsupported = new List<(string Name, byte[] Bytes)>
         {
             ("missing main relationship", Zip(word.Where(part => part.Name != "_rels/.rels").ToArray())),
@@ -219,6 +220,88 @@ internal static class DocumentAnalysisContracts
         }
         catch (OperationCanceledException)
         { check(true, "documents: cancellation during optional relationship reads propagates"); }
+    }
+
+    private static async Task FontReferenceContractsAsync(string scratch, Action<bool, string> check)
+    {
+        foreach (var id in new[] { "docx", "xlsx", "pptx" })
+        foreach (var strict in new[] { false, true })
+        {
+            var family = id == "docx" ? "wordprocessingml" : id == "xlsx" ? "spreadsheetml" : "drawingml";
+            var ns = strict ? $"http://purl.oclc.org/ooxml/{family}/main" : $"http://schemas.openxmlformats.org/{family}/2006/main";
+            var xml = id == "docx" ? $"<w:styles xmlns:w=\"{ns}\"><w:rPr><w:rFonts w:ascii=\"Alpha\" w:hAnsi=\"Alpha\" w:cs=\"Beta\" w:asciiTheme=\"majorAscii\" w:cstheme=\"minorBidi\"/></w:rPr></w:styles>" :
+                id == "xlsx" ? $"<styleSheet xmlns=\"{ns}\"><fonts><font><name val=\"Alpha\"/><scheme val=\"major\"/></font></fonts><rPr><rFont val=\"Beta\"/></rPr></styleSheet>" :
+                $"<a:theme xmlns:a=\"{ns}\"><a:latin typeface=\"Alpha\"/><a:font script=\"Jpan\" typeface=\"Beta\"/><a:ea typeface=\"\"/><a:latin typeface=\"+mn-lt\"/></a:theme>";
+            var bytes = WithFonts(id, strict, xml);
+            var analysis = await AnalyzeAsync(bytes);
+            check(analysis.Identity.FormatId == id && analysis.Facts.Single(f => f.Id == "document.font-names").Text == "[\"Alpha\",\"Beta\"]" &&
+                analysis.Facts.Single(f => f.Id == "document.font-parts").Integer == 2,
+                "documents: content-type-selected font names are deduplicated and sorted: " + id + "/strict=" + strict);
+            var themes = analysis.Facts.Single(f => f.Id == "document.font-themes").Text!;
+            check(themes.Contains(id == "docx" ? "minorBidi" : id == "xlsx" ? "major" : "mn-lt") &&
+                analysis.Facts.Single(f => f.Id == "document.font-scope").Text!.Contains("not resolved fonts"),
+                "documents: theme declarations remain separate from resolved font names: " + id + "/strict=" + strict);
+            var path = Path.Combine(scratch, "font-references-" + id + "-" + strict + ".bin");
+            await File.WriteAllBytesAsync(path, bytes);
+            var modified = File.GetLastWriteTimeUtc(path);
+            var read = await FileAnalysisReader.ReadAsync(path, default);
+            check(read.Identity.FormatId == id && read.Facts.Single(f => f.Id == "document.font-names").Text == "[\"Alpha\",\"Beta\"]" &&
+                (await File.ReadAllBytesAsync(path)).SequenceEqual(bytes) && File.GetLastWriteTimeUtc(path) == modified,
+                "documents: normal reader preserves original with optional font declarations: " + id + "/strict=" + strict);
+        }
+        const string wordNs = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+        foreach (var (name, xml) in new[] {
+            ("DTD", "<!DOCTYPE x [<!ENTITY e SYSTEM 'file:///never-read'>]><x>&e;</x>"),
+            ("oversized XML", "<x>" + new string('x', 300 * 1024) + "</x>"),
+            ("long font", $"<w:rFonts xmlns:w=\"{wordNs}\" w:ascii=\"{new string('x', 129)}\"/>"),
+            ("control in font", $"<w:rFonts xmlns:w=\"{wordNs}\" w:ascii=\"one&#10;two\"/>"),
+            ("too many names", $"<w:styles xmlns:w=\"{wordNs}\">" + string.Concat(Enumerable.Range(0, 65).Select(i => $"<w:rFonts w:ascii=\"Font{i}\"/>")) + "</w:styles>") })
+        {
+            var result = await AnalyzeAsync(WithFonts("docx", false, xml));
+            check(result.Identity.FormatId == "docx" && result.Facts.Single(f => f.Id == "document.font-names").Availability == FactAvailability.Unavailable &&
+                result.Facts.All(f => f.Id != "document.font-themes" && f.Id != "document.font-parts"),
+                "documents: optional font failure preserves identity without partial/zero claims: " + name);
+        }
+        var none = await AnalyzeAsync(OpenXml("docx"));
+        var unicode = await AnalyzeAsync(WithFonts("docx", false, $"<w:rFonts xmlns:w=\"{wordNs}\" w:ascii=\"\u660e\u671d\"/>"));
+        check(unicode.Facts.Single(f => f.Id == "document.font-names").Text == "[\"\u660e\u671d\"]",
+            "documents: Unicode font names remain readable in quoted declarations");
+        check(none.Facts.Single(f => f.Id == "document.font-names").Text == "None observed in selected parts",
+            "documents: no observed declaration does not claim absence of fonts");
+        var foreign = await AnalyzeAsync(WithFonts("docx", false, "<w:rFonts xmlns:w=\"urn:unrelated\" w:ascii=\"DoNotReport\"/>"));
+        check(!foreign.Facts.Single(f => f.Id == "document.font-names").Text!.Contains("DoNotReport"),
+            "documents: unrelated XML namespace cannot introduce font declarations");
+        var original = OpenXmlParts("docx");
+        foreach (var (label, declarations, extras) in new[] {
+            ("duplicate override", "<Override PartName=\"/content/main.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/>", Array.Empty<(string, string)>()),
+            ("traversal override", "<Override PartName=\"/../outside.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml\"/>", Array.Empty<(string, string)>()),
+            ("part count", string.Concat(Enumerable.Range(0, 32).Select(i => $"<Override PartName=\"/part{i}.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>")),
+                Enumerable.Range(0, 32).Select(i => ($"part{i}.xml", "<x/>")).ToArray()) })
+        {
+            // Duplicate only an optional declaration; duplicated main declarations
+            // correctly invalidate identification itself, so use an unused part.
+            var addition = declarations.Replace("/content/main.xml", "/unused.xml");
+            if (label == "duplicate override") addition += addition;
+            var entries = original.Select(part => part.Name == "[Content_Types].xml" ?
+                (part.Name, part.Text.Replace("</Types>", addition + "</Types>")) : part).ToArray();
+            var result = await AnalyzeAsync(Zip([.. entries, .. extras]));
+            check(result.Identity.FormatId == "docx" && result.Facts.Single(f => f.Id == "document.font-names").Availability == FactAvailability.Unavailable,
+                "documents: invalid optional font selection retains basic identity: " + label);
+        }
+        var cancelBytes = WithFonts("docx", false, $"<w:styles xmlns:w=\"{wordNs}\"/>");
+        using var cancelled = new CancellationTokenSource();
+        var header = HeaderAnalyzer.Analyze("test.docx", cancelBytes, cancelBytes.Length);
+        using var cancelStream = new CancelOnRead(cancelBytes, Find(cancelBytes, "content/fonts.xml"u8) - 30, cancelled);
+        try { await DocumentAnalysis.AddPackageAsync(header, cancelStream, cancelled.Token); check(false, "Font cancellation was swallowed."); }
+        catch (OperationCanceledException) { check(true, "documents: cancellation during optional font reads propagates"); }
+
+        byte[] WithFonts(string id, bool strict, string xml)
+        {
+            var type = id == "docx" ? "wordprocessingml.styles" : id == "xlsx" ? "spreadsheetml.styles" : "theme";
+            var parts = OpenXmlParts(id, strict).Select(part => part.Name == "[Content_Types].xml" ?
+                (part.Name, part.Text.Replace("</Types>", $"<Override PartName=\"/content/fonts.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.{type}+xml\"/></Types>")) : part).ToArray();
+            return Zip([.. parts, ("content/fonts.xml", xml)]);
+        }
     }
 
     private sealed class CancelOnRead(byte[] bytes, int position, CancellationTokenSource cancellation) : MemoryStream(bytes, writable: false)

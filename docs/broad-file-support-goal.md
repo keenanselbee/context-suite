@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [document font reference checkpoint](document-font-references.md)
+adds bounded optional OOXML font-name and theme declarations while preserving
+basic identity on optional failure. All 2,132 foundation contracts pass, plus
+read-only verification of the six retained Office font fixtures. This is declared
+reference analysis, not installed-font resolution or a customer Office converter.
+
 The 2026-09-11 [Office font substitution evaluation](office-font-substitution.md)
 compares six authored exports. Missing requested fonts silently become Bodoni MT
 Black in the Word title and DejaVu Sans in Excel/PowerPoint on this host. Page

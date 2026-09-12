@@ -58,6 +58,9 @@ Comparing PDF BaseFont strings alone is not an adequate production detector.
 Preserve copies and use a compact necessary decision when fidelity cannot be
 maintained, within the existing context-menu UX; a general planner is unnecessary.
 The detector and exact customer flow are still unimplemented.
+The subsequent [read-only declaration scan](document-font-references.md) reports
+requested names and unresolved themes within fixed limits; it does not establish
+installed availability or determine the fonts actually used by the renderer.
 
 This finding adds to the unresolved calculation policy and isolated-engine gates;
 it does not enable customer Office conversion or replace that requirement with
