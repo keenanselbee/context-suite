@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.4",
+  "revision": "2026-09-11.5",
   "types": [
     {
       "id": "3gp",
@@ -47,7 +47,7 @@
       "id": "aac",
       "name": "AAC audio stream",
       "family": "Audio",
-      "commonUses": "AAC-encoded audio, often transported as a sequence of framed audio packets.",
+      "commonUses": "Compressed music and speech distributed as AAC audio; ADTS is one way to package the stream.",
       "extensions": [
         ".aac",
         ".adts"
@@ -79,13 +79,13 @@
       "id": "aiff",
       "name": "AIFF audio",
       "family": "Audio",
-      "commonUses": "Audio recording and interchange, including compressed AIFF-C variants.",
+      "commonUses": "Audio recording and exchange. AIFF-C variants can use compressed or uncompressed sound.",
       "extensions": [
         ".aif",
         ".aiff",
         ".aifc"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000005.shtml"
+      "source": "https://developer.apple.com/library/archive/documentation/MusicAudio/Conceptual/CoreAudioOverview/SupportedAudioFormatsMacOSX/SupportedAudioFormatsMacOSX.html"
     },
     {
       "id": "ape",
@@ -156,18 +156,18 @@
       "id": "au",
       "name": "AU audio",
       "family": "Audio",
-      "commonUses": "Audio interchange used by Unix and older multimedia applications; encodings vary.",
+      "commonUses": "Recorded sound in the NeXT/Sun audio format, with several possible audio encodings.",
       "extensions": [
         ".au",
         ".snd"
       ],
-      "source": "https://www.opengroup.org/view-standards-information-base-historical"
+      "source": "https://docs.oracle.com/cd/E19253-01/816-5174/6mbb98ucf/index.html"
     },
     {
       "id": "audacity",
       "name": "Audacity project",
       "family": "Audio",
-      "commonUses": "Editable Audacity recording and editing projects; older projects may depend on a separate data folder.",
+      "commonUses": "Editable tracks and clips saved for continued work in Audacity. Older AUP projects also need their data folder.",
       "extensions": [
         ".aup",
         ".aup3"
@@ -310,11 +310,11 @@
       "id": "caf",
       "name": "Core Audio file",
       "family": "Audio",
-      "commonUses": "Audio and associated metadata used by Apple audio applications.",
+      "commonUses": "Recorded sound and metadata in Apple's flexible audio container; the audio encoding can vary.",
       "extensions": [
         ".caf"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000591.shtml"
+      "source": "https://developer.apple.com/library/archive/documentation/MusicAudio/Reference/CAFSpec/CAF_overview/CAF_overview.html"
     },
     {
       "id": "camera-raw",
@@ -471,7 +471,7 @@
       "id": "cue",
       "name": "Cue sheet",
       "family": "Audio",
-      "commonUses": "Text instructions describing track boundaries and referenced media for disc images or audio albums.",
+      "commonUses": "Track layout and media-file references for audio albums and disc images; the referenced media is stored separately.",
       "extensions": [
         ".cue"
       ],
@@ -1402,7 +1402,7 @@
       "id": "m3u",
       "name": "M3U playlist",
       "family": "Audio",
-      "commonUses": "Lists of media locations; M3U8 is also used for HTTP Live Streaming playlists.",
+      "commonUses": "Lists that point to media files or streams, including HTTP Live Streaming playlists.",
       "extensions": [
         ".m3u",
         ".m3u8"
@@ -1419,7 +1419,7 @@
         ".m4a",
         ".m4b"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000155.shtml",
+      "source": "https://developer.apple.com/library/archive/documentation/MusicAudio/Conceptual/CoreAudioOverview/SupportedAudioFormatsMacOSX/SupportedAudioFormatsMacOSX.html",
       "mimeTypes": [
         {
           "value": "audio/mp4",
@@ -1510,7 +1510,7 @@
       "id": "midi",
       "name": "MIDI sequence",
       "family": "Audio",
-      "commonUses": "Timed musical performance instructions for instruments and software, rather than a recording of sound.",
+      "commonUses": "Timed notes and musical performance instructions played by instruments or synthesizer software.",
       "extensions": [
         ".mid",
         ".midi",
@@ -1544,11 +1544,11 @@
       "id": "mp3",
       "name": "MP3 audio",
       "family": "Audio",
-      "commonUses": "Compressed music, speech and other audio for broad playback compatibility.",
+      "commonUses": "Compressed music and speech for everyday playback and sharing.",
       "extensions": [
         ".mp3"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000012.shtml",
+      "source": "https://www.iis.fraunhofer.de/en/ff/amm/consumer-electronics/mp3.html",
       "mimeTypes": [
         {
           "value": "audio/mpeg",
@@ -1996,11 +1996,11 @@
       "id": "pls",
       "name": "PLS playlist",
       "family": "Audio",
-      "commonUses": "Lists of audio tracks or stream locations for media players.",
+      "commonUses": "Playback lists containing media-file or stream locations, with optional titles and durations.",
       "extensions": [
         ".pls"
       ],
-      "source": "https://wiki.videolan.org/Playlist/",
+      "source": "https://github.com/videolan/vlc/blob/master/modules/demux/playlist/pls.c",
       "textCompatible": true
     },
     {
@@ -2370,12 +2370,12 @@
       "id": "soundfont",
       "name": "SoundFont instrument bank",
       "family": "Audio",
-      "commonUses": "Instrument samples and playback settings used by software synthesizers.",
+      "commonUses": "Instrument sounds and playback settings loaded by synthesizer software to turn MIDI notes into audio.",
       "extensions": [
         ".sf2",
         ".sf3"
       ],
-      "source": "https://www.fluidsynth.org/"
+      "source": "https://www.fluidsynth.org/wiki/GettingStarted/"
     },
     {
       "id": "sql",
@@ -2746,7 +2746,7 @@
       "id": "wavpack",
       "name": "WavPack audio",
       "family": "Audio",
-      "commonUses": "Audio stored using WavPack lossless, lossy or hybrid compression modes.",
+      "commonUses": "Music and audio stored with lossless, lossy or hybrid compression. Hybrid files need their correction file for full lossless restoration.",
       "extensions": [
         ".wv"
       ],
@@ -2845,7 +2845,7 @@
       "id": "wma",
       "name": "Windows Media audio",
       "family": "Audio",
-      "commonUses": "Audio distributed using Windows Media technology, with several encoding variants.",
+      "commonUses": "Windows Media audio for playback and streaming; variants include lossy and lossless encoding.",
       "extensions": [
         ".wma"
       ],

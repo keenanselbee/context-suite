@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [audio catalog purpose review](catalog-audio-review.md) checks all
+eighteen Audio descriptions against primary documentation, clarifies fourteen
+records and replaces broad references. Catalog revision 2026-09-11.5 retains all
+243 IDs and recognition fields. Alias/variant and other-family review remains
+open; descriptions grant no new conversion or parsing capability.
+
 The 2026-09-11 [Excel date-system experiment](excel-date-system-evaluation.md)
 completes three passive exports but finds six early-1900 display mismatches
 across 21 numeric date/time observations. Modern/fractional dates, elapsed hours

@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-11.4; 243 records. This is a descriptive
+Catalog revision: 2026-09-11.5; 243 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -15,6 +15,8 @@ semantic and format-variant review; unresolved source gaps remain release work.
 No registry database, source text or reference implementation was imported.
 The later [alias review](catalog-alias-review.md) records six added alternative
 meanings and the static/import-library wording correction.
+The [audio purpose review](catalog-audio-review.md) checks eighteen Audio records'
+descriptions; it does not claim exhaustive alias or detector acceptance.
 
 The [MIME review](catalog-mime-descriptions.md) lists 59 descriptive identifiers
 for 36 records; these do not determine the exact variant of a file.
