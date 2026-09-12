@@ -7,6 +7,11 @@ legacy compound analysis, and a 243-entry descriptive catalog are
 implemented. The [coverage inventory](file-type-coverage.md) records exact
 facts, limits and tests; broader catalog/family analysis remains in progress.
 
+The [file I/O cancellation scope](analyze-io-cancellation.md) now covers synchronous
+opening and metadata operations as well as the asynchronous read budget. Local
+blocked-open tests pass; driver-dependent completion and remote-storage acceptance
+remain explicit limitations.
+
 The [common image header reader](image-header-analysis.md) now adds content-based
 JPEG/GIF/BMP/WebP identification and declared dimensions within the same 64 KiB
 prefix. It does not decode pixels, apply orientation or establish complete validity.

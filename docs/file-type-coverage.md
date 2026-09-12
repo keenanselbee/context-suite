@@ -120,9 +120,11 @@ handle is checked again; write/delete sharing is denied, and length/write-time
 changes invalidate the result. Hard links do not require the publication path's
 one-link restriction because Analyze is read-only.
 
-The asynchronous content read has a five-second cancellation deadline. Filesystem
-metadata queries and handle opening occur off the UI thread but do not yet have a
-hard wall-clock timeout. Network-filesystem stalls, real cloud-provider hydration
+The five-second read budget now starts before scheduling file inspection.
+[Synchronous cancellation requests](analyze-io-cancellation.md) cover path metadata,
+opening and source-state queries, with tested local blocked-open cancellation and
+timeout. Driver-dependent completion still prevents a guaranteed wall-clock return
+bound. Network-filesystem stalls, real cloud-provider hydration
 behavior, mapped concurrent writers and reparse-point races need dedicated
 acceptance before making stronger guarantees. These are not covered merely by
 testing an offline attribute on a generated local file.

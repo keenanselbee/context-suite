@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\FileAnalysisReader.cs" Link="Runtime\FileAnalysisReader.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\SynchronousFileIo.cs" Link="Runtime\SynchronousFileIo.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\LicenseViewModel.cs" Link="Runtime\LicenseViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OperationAccess.cs" Link="Runtime\OperationAccess.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\LicenseStore.cs" Link="Runtime\LicenseStore.cs" />

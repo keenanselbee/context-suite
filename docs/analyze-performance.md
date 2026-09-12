@@ -81,7 +81,7 @@ repeated median allocations above 1 MiB for an individual case or 4 MiB for the
 mixed selection. All measured cases are within these provisional budgets.
 They provide headroom over observed timing/allocation and are review triggers,
 not automatic failure thresholds for arbitrary machines or a customer SLA.
-The existing five-second content deadline is a separate cancellation limit.
+The five-second read deadline is a separate cancellation limit.
 
 Evidence and limitations
 -------------------------
@@ -97,6 +97,21 @@ incorrect missing-file batch fixture; they are not counted as passing runs.
 Optional audio/PDF worker latency, image decoding, visible UI responsiveness,
 Explorer activation, large selections beyond eight files, slower hardware,
 remote/cloud storage and true cold storage remain unmeasured. Metadata/path
-queries and initial file opening still lack a hard OS-I/O deadline. This
-benchmark does not resolve that previously documented limitation or establish
+queries and initial file opening now have
+[synchronous cancellation requests](analyze-io-cancellation.md), with driver-dependent
+completion rather than a hard OS-I/O return deadline. This benchmark does not establish
 screen-reader, theme/DPI or installed lifecycle acceptance.
+
+Reader cancellation refresh (2026-09-11)
+---------------------------------------
+
+After adding the synchronous I/O scope, the same benchmark ran again under
+`.codex-temp/analyze-benchmark/6db84f4ede3a42e1b804ca27ca1896fc`, with command log
+`.codex-temp/analysis-io-benchmark.log`. The Release host builds with zero warnings
+and errors; all source hash/time and reported inspection checks pass.
+
+The eight-file mixed selection measures 136.33 ms first-call median and 6.98 ms
+repeated median / 9.93 ms p95. Individual cases have at most 99.21 ms first-call
+median and 3.17 ms repeated p95. Every case remains within the timing/allocation
+budgets above. This refresh includes the current readers but retains the same
+small synthetic workload; it does not extend the environment or worker coverage.
