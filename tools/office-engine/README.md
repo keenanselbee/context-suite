@@ -5,6 +5,12 @@ using three small, passive fixtures authored in this repository. They do not
 enable an Office command or add a production dependency. See the
 [evidence and remaining gates](../../docs/office-engine-evaluation.md).
 
+`Test-OfficeEvaluation.ps1 -PowerPointSlides` compares saved slide order, hidden
+first/last slides and speaker-note exclusion. An identical-input notes-page export
+provides a positive control. `Inspect-PowerPointSlides.py '<printed evaluation
+directory>'` cross-checks retained declarations, hashes and observations. See
+[slide/notes evidence](../../docs/powerpoint-slide-evaluation.md).
+
 `Test-OfficeEvaluation.ps1 -WordRevisions` adds four passive DOCX cases for tracked
 insertions/deletions with shown, hidden or omitted revision-display settings and
 a clean control. `Inspect-WordRevisions.py '<printed evaluation directory>'`

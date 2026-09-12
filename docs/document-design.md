@@ -184,6 +184,11 @@ is omitted. Explicitly hidden revisions exclude that marker in the tested export
 while retaining it in the source. Required Word conversion needs an explicit
 revision policy; successful export does not mean a clean accepted-text document.
 
+The [PowerPoint slide/notes experiment](powerpoint-slide-evaluation.md) tests
+saved slide order, hidden first/last slides and speaker-note exclusion, with a
+positive notes-export control. Its observed results inform the export policy;
+simple slide text does not establish complete presentation fidelity.
+
 The [legacy PDF experiment](office-engine-evaluation.md) now covers passive
 generated DOC/XLS/PPT roundtrips through the candidate. Page/text assertions pass;
 Excel/PowerPoint rendering differs from their modern baselines. This is evidence

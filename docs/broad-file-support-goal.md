@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [PowerPoint slide/notes evaluation](powerpoint-slide-evaluation.md)
+adds four generated PPTX exports with saved order, hidden end slides and an
+identical-input positive notes control. All ten parsed/rendered PDF pages match
+the tested text policy; independent source/PDF/relationship checks pass and three
+altered evidence copies are rejected. Required Office implementation, isolation
+and broader fidelity decisions remain open.
+
 The 2026-09-11 [data catalog review](catalog-data-review.md) checks all 37 Data
 records and improves fifteen descriptions/references. Revision 2026-09-11.9 keeps
 243 records with unchanged recognition/operation fields. Feather versions and
