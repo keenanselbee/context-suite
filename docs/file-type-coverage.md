@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-09.2; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-11.1; expanded catalog and bounded structure analysis, not release acceptance
 
 Recognition and capabilities
 ----------------------------
@@ -15,11 +15,13 @@ conversion permissions. Validate its schema, IDs, aliases and sources with the
 foundation contracts. Preserve IDs across revisions; incompatible schemas require
 an explicit reader update and migration decision.
 
-The [source retrieval audit](catalog-source-review.json) covers 223 references:
+The historical [source retrieval audit](catalog-source-review.json) covers 223 references:
 186 retrieved, 7 search-indexed and 30 unavailable to the research tool. This
 is a reachability/title review, not completed factual, variant or reuse-rights
 acceptance. Unavailable retrieval does not establish a broken URL. MIME coverage
-and complete description/detector provenance remain pending.
+and complete description/detector provenance remain pending. The later
+[common image review](image-header-analysis.md) verifies four descriptions and
+their newly implemented bounded detectors against primary specifications.
 
 Current implementation and remaining work are separate:
 
@@ -27,7 +29,8 @@ Current implementation and remaining work are separate:
 | --- | --- | --- | --- |
 | DDS | Signature and existing DDS header parser | Existing texture structure, raw identifiers, dimensions, mip/array/depth, alpha and color interpretation, payload accounting and warnings | Existing bounded DDS conversion; no new operation |
 | PNG | Signature, optional first IHDR | Declared dimensions, sample depth and raw color type; transparency/animation explicitly unavailable | Existing bounded image conversion and PNG presets |
-| PDF | Initial PDF signature; optional bounded complete-snapshot worker probe | Header version; with the evaluation engine, reported pages/encryption/forms/attachments/bookmarks; locked content remains unavailable | PDF tools selected; implementation pending |
+| JPEG / GIF / BMP / WebP | Signatures and bounded supported headers | Declared dimensions and format-specific header facts; actual transparency/animation/orientation/color remain unavailable | Recognition adds no transformations; existing image capability rules remain separate |
+| PDF | Initial PDF signature; optional bounded complete-snapshot worker probe | Header version; with the candidate engine, reported pages/encryption/forms/attachments/bookmarks; locked content remains unavailable | Optional PDF-to-PNG and structural optimization implemented; default release adoption pending |
 | ZIP | Initial record signature plus bounded ZIP32 directory when available | Directory count; selected document declarations only; no extraction | None |
 | Compound file | Signature and bounded CFB directory/allocation inspection | Container version, sector size and reachable/root stream counts; container alone does not identify an Office family | None |
 | DOC / XLS / PPT | Root-level stream names agreeing with supported binary headers | Bounded legacy version/size/encryption declarations; rendered pages and active content unavailable; identity likely | PDF conversion selected; implementation pending |
@@ -35,9 +38,9 @@ Current implementation and remaining work are separate:
 | Text | Strict UTF-8/UTF-16/UTF-32 sampling with recognized BOMs where present | Possible encoding, explicitly derived; no application-purpose inference | None |
 | JSON | Whole-file object/array parsing within 64 KiB and depth 32 | Root kind and top-level count; no application semantics | None |
 | XML | Whole-file parsing within 64 KiB and depth 32; DTDs prohibited and resolver disabled | Root name, namespace and element count; no schema validation | None |
-| WAVE | RIFF/WAVE and bounded chunk/header declarations | PCM/float versus uninterpreted codec, channels/rate, sample container/valid bits, raw speaker mask, first data chunk size and derived PCM timing | Audio operations planned |
-| FLAC | Marker and first STREAMINFO declaration | Channels/rate/precision/sample count and derived duration, declared checksum presence, observed comment/picture block counts and metadata-list completeness; no frame or metadata-content validation | Audio conversion and lossless recompression planned |
-| Ogg | Ogg page marker | Container only; does not imply Vorbis or Opus | Audio operations planned |
+| WAVE | RIFF/WAVE and bounded chunk/header declarations | PCM/float versus uninterpreted codec, channels/rate, sample container/valid bits, raw speaker mask, first data chunk size and derived PCM timing | Fixed audio conversion implemented with the optional reviewed engine |
+| FLAC | Marker and first STREAMINFO declaration | Channels/rate/precision/sample count and derived duration, declared checksum presence, observed comment/picture block counts and metadata-list completeness; no frame or metadata-content validation | Fixed audio conversion and lossless recompression implemented with the optional reviewed engine |
+| Ogg | Ogg page marker | Container only; does not imply Vorbis or Opus | Optional audio conversion requires separately probed supported codec; recognition alone is insufficient |
 | DOCX / XLSX / PPTX | Agreeing package relationship, main content type and main XML root within fixed limits | Declared sheet/slide counts and macro-enabled type; rendered pages unavailable; identity likely | PDF conversion selected; implementation pending |
 | ODT / ODS / ODP | Agreeing MIME, manifest and supported unencrypted content family | Sheet/slide elements, declared content encryption; encrypted content remains unavailable; identity likely | Analysis only selected |
 | Other readable regular files | Generic fallback regardless of extension | Size, inspected-byte count, unknown identity or qualified filename hint | No new operation |
@@ -68,7 +71,8 @@ at most 2 MiB of managed reads under that lease for the
 audio payload is present, eligible media can additionally supply at most 1 MiB
 to its worker probe under the same read lease. Optional PDF probing uses a complete
 snapshot up to 16 MiB because its engine needs seekable input; larger files retain
-the header report. Normal production packaging includes neither evaluation engine.
+the header report. Explicit [combined production staging](pdf-production-payload.md)
+includes the reviewed audio/PDF candidates; default release packaging omits them.
 It rejects linked paths,
 devices and offline/recall-marked items before reading content. An opened disk-file
 handle is checked again; write/delete sharing is denied, and length/write-time

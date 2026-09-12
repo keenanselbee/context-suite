@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-09.2",
+  "revision": "2026-09-11.1",
   "types": [
     {
       "id": "3gp",
@@ -1073,14 +1073,14 @@
       "id": "jpeg",
       "name": "JPEG image",
       "family": "Image",
-      "commonUses": "Photographs and other images where compact storage is more important than preserving every original pixel.",
+      "commonUses": "Photographs and other raster images, usually stored with lossy compression; some JPEG variants use lossless coding.",
       "extensions": [
         ".jpg",
         ".jpeg",
         ".jpe",
         ".jfif"
       ],
-      "source": "https://www.w3.org/Graphics/JPEG/"
+      "source": "https://www.w3.org/Graphics/JPEG/itu-t81.pdf"
     },
     {
       "id": "jpeg2000",

@@ -40,6 +40,14 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [common image Analyze checkpoint](image-header-analysis.md) replaces
+filename-only JPEG/GIF/BMP/WebP identity with bounded content/header evidence,
+adds declared dimensions and keeps actual decoded/media properties unavailable.
+Four catalog descriptions/detectors were reviewed against primary specifications;
+JPEG's description now covers lossless variants. All 1,837 foundation checks pass,
+including 47 new header cases, 1,200 mutations, independent Windows-encoded images
+and actual-reader original preservation. Broader catalog review remains open.
+
 The 2026-09-11 [Office IPv6 preflight](office-isolation-evaluation.md) adds a
 separate IPv6-only loopback endpoint to the prepared isolation matrix. The
 unrestricted generated child connects to both IPv4 and IPv6 successfully; native

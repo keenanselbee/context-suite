@@ -65,6 +65,14 @@ public static class HeaderAnalyzer
             }
             else warnings.Add("A complete PNG image header was not found in the inspected bytes.");
         }
+        else if (bytes.StartsWith(new byte[] { 0xff, 0xd8, 0xff }) || bytes.StartsWith("GIF87a"u8) ||
+                 bytes.StartsWith("GIF89a"u8) || bytes.StartsWith("BM"u8) ||
+                 bytes.Length >= 12 && bytes.StartsWith("RIFF"u8) && bytes.Slice(8, 4).SequenceEqual("WEBP"u8))
+        {
+            id = bytes[0] == 0xff ? "jpeg" : bytes[0] == 'G' ? "gif" : bytes[0] == 'B' ? "bmp" : "webp";
+            evidence.Add("Image signature and available header declarations inspected. Pixel data, later frames and metadata were not validated; dimensions are not adjusted for display orientation.");
+            ImageHeaderFacts.Add(id, bytes, fileBytes, facts, warnings);
+        }
         else if (bytes.StartsWith("%PDF-"u8))
         {
             id = "pdf";

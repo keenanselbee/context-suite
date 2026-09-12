@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-09.2; 237 records. This is a descriptive
+Catalog revision: 2026-09-11.1; 237 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -42,7 +42,7 @@ for actual parsed facts and current resource limits.
 | bethesda-archive | Bethesda game archive | `.bsa`, `.ba2` | Filename hint only |
 | bibtex | BibTeX bibliography | `.bib` | Filename hint; text sampling |
 | blend | Blender project | `.blend` | Filename hint only |
-| bmp | Windows bitmap | `.bmp`, `.dib` | Filename hint only |
+| bmp | Windows bitmap | `.bmp`, `.dib` | BMP signature and bounded supported DIB header; raw `.dib` remains a hint |
 | bzip2 | Bzip2 compressed data | `.bz2`, `.bzip2`, `.tbz`, `.tbz2` | Filename hint only |
 | c | C source or header | `.c`, `.h` | Filename hint; text sampling |
 | cab | Windows cabinet | `.cab` | Filename hint only |
@@ -91,7 +91,7 @@ for actual parsed facts and current resource limits.
 | fortran | Fortran source | `.f`, `.for`, `.f90`, `.f95`, `.f03`, `.f08` | Filename hint; text sampling |
 | fsharp | F# source | `.fs`, `.fsi`, `.fsx` | Filename hint; text sampling |
 | geojson | GeoJSON geographic data | `.geojson` | Filename hint; text sampling |
-| gif | GIF image | `.gif` | Filename hint only |
+| gif | GIF image | `.gif` | GIF87a/89a signature and logical-screen declarations |
 | gitignore | Git ignore rules | `.gitignore` | Filename hint; text sampling |
 | gltf | glTF scene | `.gltf`, `.glb` | Filename hint only |
 | go | Go source | `.go` | Filename hint; text sampling |
@@ -114,7 +114,7 @@ for actual parsed facts and current resource limits.
 | java-archive | Java archive | `.jar`, `.war`, `.ear` | Filename hint only |
 | java-class | Java class file | `.class` | Filename hint only |
 | javascript | JavaScript source | `.js`, `.mjs`, `.cjs`, `.jsx` | Filename hint; text sampling |
-| jpeg | JPEG image | `.jpg`, `.jpeg`, `.jpe`, `.jfif` | Filename hint only |
+| jpeg | JPEG image | `.jpg`, `.jpeg`, `.jpe`, `.jfif` | JPEG signature and bounded SOF0-3 declarations |
 | jpeg2000 | JPEG 2000 image | `.jp2`, `.j2k`, `.jpf`, `.jpx` | Filename hint only |
 | json | JSON data | `.json` | Bounded whole-file structure parser; filename hint otherwise |
 | json-lines | JSON Lines data | `.jsonl`, `.ndjson` | Filename hint; text sampling |
@@ -237,7 +237,7 @@ for actual parsed facts and current resource limits.
 | wavefront | Wavefront model | `.obj`, `.mtl` | Filename hint; text sampling |
 | wavpack | WavPack audio | `.wv` | Filename hint only |
 | webm | WebM media container | `.webm` | Filename hint only |
-| webp | WebP image | `.webp` | Filename hint only |
+| webp | WebP image | `.webp` | RIFF/WEBP signature and first VP8X/VP8L/VP8 header |
 | webvtt | WebVTT captions | `.vtt` | Filename hint; text sampling |
 | wheel | Python wheel | `.whl` | Filename hint only |
 | wim | Windows imaging archive | `.wim`, `.esd` | Filename hint only |

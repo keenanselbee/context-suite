@@ -133,6 +133,7 @@ try
     await SettingsContracts.RunAsync(args[0], Check);
     await DdsContracts.RunAsync(args[0], Check);
     await AnalysisContracts.RunAsync(args[0], Check);
+    await ImageHeaderContracts.RunAsync(args[0], Check);
     await DocumentAnalysisContracts.RunAsync(args[0], Check);
     await LegacyDocumentAnalysisContracts.RunAsync(args[0], Check);
     PdfProbeContracts.Run(Check);

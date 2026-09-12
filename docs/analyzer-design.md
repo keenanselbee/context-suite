@@ -7,17 +7,22 @@ legacy compound analysis, and a 237-entry descriptive catalog are
 implemented. The [coverage inventory](file-type-coverage.md) records exact
 facts, limits and tests; broader catalog/family analysis remains in progress.
 
+The [common image header reader](image-header-analysis.md) now adds content-based
+JPEG/GIF/BMP/WebP identification and declared dimensions within the same 64 KiB
+prefix. It does not decode pixels, apply orientation or establish complete validity.
+
 Optional deeper audio probing is now connected to the worker and Analyze. It
 enriches collapsed details from a bounded byte snapshot and retains the header
-report on probe failure. The evaluation audio payload is only present in isolated
-test staging; normal production packaging and wider acceptance remain pending.
+report on probe failure. The reviewed audio payload is available in explicit
+isolated production staging; default release adoption and wider acceptance remain pending.
 
 Optional [PDF probing](pdf-engine-evaluation.md) is also connected. It reports
 pages, encryption and document inventories from a complete bounded snapshot,
 retaining unavailable content facts for password-required inputs and header
 fallback on failure. Zero reported signature fields never means unsigned. Its
-evaluation engine is absent from normal packaging; PDF transformations remain
-unimplemented.
+candidate engine is available in [explicit combined staging](pdf-production-payload.md),
+alongside optional PDF-to-PNG, PDF optimization and combined image-to-PDF.
+Default release adoption and required Office conversion remain pending.
 
 Bounded [OOXML/OpenDocument package inspection](document-design.md) identifies
 supported document families and reports declared sheet/slide counts. OOXML also
