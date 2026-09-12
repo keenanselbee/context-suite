@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.7",
+  "revision": "2026-09-11.8",
   "types": [
     {
       "id": "3gp",
@@ -214,7 +214,7 @@
       "id": "batch",
       "name": "Windows batch script",
       "family": "Source code",
-      "commonUses": "Commands for the Windows command interpreter.",
+      "commonUses": "Commands that automate tasks in the Windows command interpreter.",
       "extensions": [
         ".bat",
         ".cmd"
@@ -241,7 +241,7 @@
       "extensions": [
         ".bib"
       ],
-      "source": "https://www.bibtex.org/Format/",
+      "source": "https://ctan.org/pkg/bibtex",
       "textCompatible": true
     },
     {
@@ -374,7 +374,7 @@
       "id": "cmake",
       "name": "CMake build configuration",
       "family": "Configuration or system data",
-      "commonUses": "Build-system configuration and reusable modules for CMake.",
+      "commonUses": "Build-system instructions, reusable modules or standalone automation scripts for CMake.",
       "extensions": [
         ".cmake"
       ],
@@ -497,7 +497,7 @@
       "extensions": [
         ".dart"
       ],
-      "source": "https://dart.dev/language",
+      "source": "https://dart.dev/overview",
       "textCompatible": true
     },
     {
@@ -604,9 +604,9 @@
       "id": "dockerfile",
       "name": "Docker build instructions",
       "family": "Configuration or system data",
-      "commonUses": "Instructions used to build a container image.",
+      "commonUses": "Instructions for building container images with tools such as Docker or Podman.",
       "extensions": [],
-      "source": "https://docs.docker.com/reference/dockerfile/",
+      "source": "https://docs.podman.io/en/latest/markdown/podman-build.1.html",
       "textCompatible": true,
       "fileNames": [
         "Dockerfile",
@@ -715,7 +715,7 @@
       "id": "environment",
       "name": "Environment configuration",
       "family": "Configuration or system data",
-      "commonUses": "Environment-variable assignments for development or application configuration; values may contain secrets.",
+      "commonUses": "Named environment settings for applications and development tools; syntax depends on the application.",
       "extensions": [
         ".env"
       ],
@@ -869,7 +869,7 @@
         ".f03",
         ".f08"
       ],
-      "source": "https://gcc.gnu.org/onlinedocs/gfortran/",
+      "source": "https://fortran-lang.org/",
       "textCompatible": true
     },
     {
@@ -1002,12 +1002,12 @@
       "id": "haskell",
       "name": "Haskell source",
       "family": "Source code",
-      "commonUses": "Programs written in Haskell, including literate source variants.",
+      "commonUses": "Haskell programs; literate source mixes explanatory writing with code.",
       "extensions": [
         ".hs",
         ".lhs"
       ],
-      "source": "https://www.haskell.org/onlinereport/haskell2010/",
+      "source": "https://www.haskell.org/onlinereport/haskell2010/haskellch10.html",
       "textCompatible": true
     },
     {
@@ -1074,7 +1074,7 @@
         ".htm",
         ".xhtml"
       ],
-      "source": "https://html.spec.whatwg.org/",
+      "source": "https://html.spec.whatwg.org/multipage/introduction.html",
       "textCompatible": true,
       "mimeTypes": [
         {
@@ -1145,7 +1145,7 @@
       "id": "ini",
       "name": "INI-style configuration",
       "family": "Configuration or system data",
-      "commonUses": "Application settings; these suffixes cover multiple configuration syntaxes.",
+      "commonUses": "Application settings stored in sections and named values; .cfg and .conf can use other formats.",
       "extensions": [
         ".ini",
         ".cfg",
@@ -1208,7 +1208,7 @@
         ".cjs",
         ".jsx"
       ],
-      "source": "https://tc39.es/ecma262/",
+      "source": "https://tc39.es/ecma262/multipage/overview.html",
       "textCompatible": true,
       "mimeTypes": [
         {
@@ -1286,7 +1286,7 @@
       "extensions": [
         ".jl"
       ],
-      "source": "https://docs.julialang.org/en/v1/manual/getting-started/",
+      "source": "https://julialang.org/",
       "textCompatible": true
     },
     {
@@ -1335,7 +1335,7 @@
       "id": "kotlin",
       "name": "Kotlin source",
       "family": "Source code",
-      "commonUses": "Kotlin application code and scripts, including Android and other JVM projects.",
+      "commonUses": "Kotlin application code and scripts, including Android, server and multiplatform projects.",
       "extensions": [
         ".kt",
         ".kts"
@@ -1385,7 +1385,7 @@
       "extensions": [
         ".lua"
       ],
-      "source": "https://www.lua.org/manual/5.4/",
+      "source": "https://www.lua.org/about.html",
       "textCompatible": true
     },
     {
@@ -2063,7 +2063,7 @@
       "id": "powershell",
       "name": "PowerShell script",
       "family": "Source code",
-      "commonUses": "PowerShell automation scripts, modules and data or module manifests.",
+      "commonUses": "Automation scripts (.ps1), reusable modules (.psm1), or data and module settings (.psd1).",
       "extensions": [
         ".ps1",
         ".psm1",
@@ -2168,7 +2168,7 @@
       "id": "python",
       "name": "Python source",
       "family": "Source code",
-      "commonUses": "Python programs, scripts or type declarations.",
+      "commonUses": "Python application and automation code; .pyi files describe types and interfaces for development tools.",
       "extensions": [
         ".py",
         ".pyw",
@@ -2299,7 +2299,7 @@
       "id": "ruby",
       "name": "Ruby source",
       "family": "Source code",
-      "commonUses": "Ruby programs, build tasks and package specifications.",
+      "commonUses": "Ruby application code, Rake automation tasks, or RubyGems package definitions.",
       "extensions": [
         ".rb",
         ".rake",
@@ -2335,12 +2335,12 @@
       "id": "scala",
       "name": "Scala source",
       "family": "Source code",
-      "commonUses": "Scala programs and scripts, commonly targeting the JVM.",
+      "commonUses": "Scala application code and scripts for JVM, JavaScript or native runtimes.",
       "extensions": [
         ".scala",
         ".sc"
       ],
-      "source": "https://docs.scala-lang.org/tour/basics.html",
+      "source": "https://www.scala-lang.org/",
       "textCompatible": true
     },
     {
@@ -2470,7 +2470,7 @@
       "extensions": [
         ".swift"
       ],
-      "source": "https://docs.swift.org/swift-book/documentation/the-swift-programming-language/",
+      "source": "https://www.swift.org/about/",
       "textCompatible": true
     },
     {
@@ -2602,13 +2602,13 @@
       "id": "typescript",
       "name": "TypeScript source",
       "family": "Source code",
-      "commonUses": "Typed JavaScript-related source code and declarations; .ts is also used for video streams.",
+      "commonUses": "TypeScript application code and type declarations; TSX can include interface markup, and .ts is also used for video streams.",
       "extensions": [
         ".ts",
         ".tsx",
         ".d.ts"
       ],
-      "source": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html",
+      "source": "https://www.typescriptlang.org/docs/handbook/2/type-declarations.html",
       "textCompatible": true
     },
     {

@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [source/configuration review](catalog-source-code-review.md) checks
+all 49 records in those families and improves twenty descriptions/references.
+Catalog revision 2026-09-11.8 retains 243 entries and unchanged recognition fields.
+Source, scripts, type declarations and configuration have clearer purpose text;
+full variant/alias and remaining-family review is still required.
+
 The 2026-09-11 [archive/package catalog review](catalog-archive-review.md) checks
 all 29 records in the two archive/package families and improves sixteen records'
 wording/references. Catalog revision 2026-09-11.7 retains 243 entries and unchanged
