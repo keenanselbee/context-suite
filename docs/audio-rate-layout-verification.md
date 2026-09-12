@@ -151,7 +151,8 @@ fixture bound of 0.1. Both implementations are checked against the source.
 A swapped-channel reference is detected, as is a truncated encoded file. Source
 and encoded-output hashes and write times remain unchanged.
 
-The cross-decoder sample comparison is **unresolved**, and the probe exits 1.
+The strict cross-decoder sample comparison still exits 1; the later spectral
+comparison below provides additional evidence without changing that threshold.
 Its initial diagnostic maximum-difference threshold of 0.0001 is not an Opus
 conformance or listening standard. Explicit floating-point decode requests do not
 remove the differences:
@@ -167,8 +168,8 @@ The larger differences concentrate in the center channel of 5.0, 5.1 and 7.1.
 A diagnostic shift comparison does not explain them as a simple constant timing
 offset. The native implementation has a SILK resampling path, but inspecting that
 path does not establish the cause. No production preset or validation tolerance
-was changed to obtain a pass. Further codec-mode investigation and perceptual
-review are required before closing independent Opus fidelity acceptance.
+was changed to obtain a pass. The mode investigation below narrows the difference;
+perceptual review remains required before closing independent Opus fidelity acceptance.
 
 Reproduce using the retained accepted adapter matrix and verified supplier bin:
 
@@ -186,3 +187,64 @@ observations remain at
 the diagnostic shift results are `.codex-temp/opus-center-lags.json`.
 This probe is generated-tone evidence, not human listening, other-player
 acceptance or independent verification of the input resampler.
+
+
+Codec-mode and spectral comparison follow-up
+--------------------------------------------
+
+Eight disposable encodes compare the normal `audio` application mode with
+`lowdelay` for 5.0, 5.1, 6.1 and 7.1. Both keep the same 160 kb/s VBR setting and
+explicit mapping family 1. With `audio`, the larger differences recur. With
+`lowdelay`, every channel's maximum decoder difference is below 0.00000015.
+The [FFmpeg options documentation](https://ffmpeg.org/ffmpeg-codecs.html) explains
+that low-delay mode disables voice-optimized modes. This narrows the observed
+variation to the voice-capable path; it does not prove a specific filter defect.
+The production preset remains `audio`.
+
+[RFC 6716 section 4.2.9](https://www.rfc-editor.org/rfc/rfc6716.html#section-4.2.9)
+permits different SILK resampling methods and explains why phase differences can
+defeat simple sample alignment. Its
+[testing guidance](https://www.rfc-editor.org/rfc/rfc6716.html#section-6.1) uses
+`opus_compare` for a spectral metric. A score of zero or higher passes that tool, but the
+RFC recommends a score above 90 for 48 kHz decoding unless listening establishes
+acceptable quality. Running this metric on authored tones does not perform the
+RFC's full decoder conformance test, including official vectors and range states.
+
+The new [comparison tool](../tools/audio-engine/Test-OpusComparison.py) verifies
+the already-pinned Opus source archive, builds its unmodified `src/opus_compare.c`
+in fresh repository scratch, and compares the actual 33 adapter outputs. Each
+speaker is extracted from explicit floating-point native/Xiph decodes, quantized
+to PCM16 identically and duplicated into stereo for the tool's input convention.
+No frames are shifted, dropped or padded. Xiph is the reference. Output/runtime
+identities are checked again afterwards; originals are not inputs to this decoder
+comparison and are not modified.
+
+All **72 speaker comparisons** pass the upstream metric. Silence and a different
+speaker tone both fail as expected. Scores range from **48.8 to 100**. Four
+comparisons remain below the 48 kHz listening-review recommendation:
+
+| Source layout | Speaker index (zero based, WAVE order) | Score |
+| --- | --- | --- |
+| 5.0 | 2, center | 62.0 |
+| 5.1 | 2, center | 61.3 |
+| 7.1 | 2, center | 48.8 |
+| 7.1 | 7, side right | 77.7 |
+
+The report separates `metricStatus: passed` from `fidelityAcceptance: incomplete`
+and lists these four results in `listeningReview`. This is additional independent
+decoder evidence, not permission to close listening, player or overall fidelity
+acceptance. The earlier strict numeric probe and its failed result are retained.
+Neither production encoding nor production validation changed.
+
+```powershell
+python -B tools/audio-engine/Test-OpusComparison.py --matrix '<rate-layout matrix directory>' --decoder '<verified evaluation bin>' --opus-source-archive '<retained pinned opus.zip>'
+```
+
+Final evidence is
+`.codex-temp/opus-comparison-b2c0ffd513a5456fbec7db86027a16c8/comparison.json`,
+with `.codex-temp/opus-comparison-final.log` and recorded exit code 0. Build output,
+source/license, comparator hash and each compared PCM pair are retained beside
+the report. Mode evidence is
+`.codex-temp/opus-modes-4f392141016045f88538840fcd3c223d/mode-comparison.json`,
+produced by the retained `.codex-temp/InspectOpusModes.py` diagnostic. Those
+eight direct encodes are diagnostic artifacts, not adapter-admitted outputs.

@@ -86,8 +86,10 @@ refusals. It corrects Opus 5.0/6.1 channel order and declines speaker layouts th
 pinned presets cannot preserve before encoding. A subsequent explicit native/Xiph
 Opus comparison confirms all 33 outputs' complete frame counts and seven layouts'
 source-channel identities, but exits 1 for unresolved surround sample differences.
-The matrix record retains the failed comparison; independent Opus fidelity,
-listening and complete source-container/rate/layout acceptance remain open.
+The matrix record retains the failed comparison. A follow-up Xiph spectral
+comparison passes 72 speaker comparisons and two negative controls, while four
+scores still require listening review. Independent Opus fidelity, listening and
+complete source-container/rate/layout acceptance remain open.
 The fresh stage above passes 11 packaged audio checks, 52 conversion/publication
 checks and 20 direct-conversion checks; logs and exact scope are in the matrix
 record. Build, payload and source/notice inventories pass. No installed or visible
