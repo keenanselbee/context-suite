@@ -32,6 +32,8 @@ foreach ($name in @('ContextSuite.PdfRenderer.exe', 'pdfium.dll')) {
 Copy-Item -LiteralPath (Join-Path $prepared 'renderer-build.json') -Destination $renderer
 & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --pdf-page-worker (Join-Path $scratch 'results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
 if ($LASTEXITCODE -ne 0) { throw "PDF page workflow failed; evidence retained at $scratch" }
+& dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --pdf-page-failures (Join-Path $scratch 'interruptions') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
+if ($LASTEXITCODE -ne 0) { throw "PDF page interruption workflow failed; evidence retained at $scratch" }
 & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --pdf-page-direct (Join-Path $scratch 'direct-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
 if ($LASTEXITCODE -ne 0) { throw "Direct PDF page workflow failed; evidence retained at $scratch" }
 Write-Output "Evaluation-only PDF page worker: $scratch"

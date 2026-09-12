@@ -31,6 +31,7 @@ $cases = @(
     @('--pdf-failures', 'failures', $pdfFixtures),
     @('--pdf-direct', 'direct', $pdfFixtures, $audioFixtures),
     @('--pdf-page-worker', 'pages', $pdfFixtures),
+    @('--pdf-page-failures', 'page-failures', $pdfFixtures),
     @('--pdf-page-direct', 'pages-direct', $pdfFixtures),
     @('--image-pdf-worker', 'combined', $imageFixtures),
     @('--image-pdf-direct', 'combined-direct', $imageFixtures)

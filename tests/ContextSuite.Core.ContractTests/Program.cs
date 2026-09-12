@@ -104,6 +104,14 @@ if (args.Length == 4 && args[0] == "--pdf-page-worker")
     Console.WriteLine($"Passed {checks} isolated PDF page workflow checks.");
     return 0;
 }
+if (args.Length == 4 && args[0] == "--pdf-page-failures")
+{
+    var checks = 0;
+    await PdfPageFailureContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated PDF page interruption checks.");
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--pdf-page-direct")
 {
     var checks = 0;

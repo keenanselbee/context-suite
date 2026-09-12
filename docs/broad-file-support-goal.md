@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [PDF page interruption checkpoint](pdf-page-interruption.md)
+passes twenty actual staged-worker checks for cancellation, client deadline
+expiry and worker termination after observing the owned native renderer alive.
+Originals remain unchanged, owned temporary state is cleaned and a fresh worker
+publishes both retry pages. The actual adapter deadline and wider fidelity/UI
+acceptance remain separate gaps.
+
 The 2026-09-11 [Analyze performance baseline](analyze-performance.md) measures
 three fresh processes and thirty repeated samples per case on a recorded
 Windows host. The 128 MiB binary reports 64 KiB inspected; a DOCX with a 64 MiB

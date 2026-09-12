@@ -145,7 +145,7 @@ internal static class PdfFailureContracts
         catch (IOException error) when ((error.HResult & 0xffff) == 32) { return true; }
     }
 
-    private static Process? FindChild(int parent, string executable)
+    internal static Process? FindChild(int parent, string executable)
     {
         using var snapshot = CreateToolhelp32Snapshot(2, 0);
         if (snapshot.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -153,12 +153,12 @@ internal static class PdfFailureContracts
         if (!Process32FirstW(snapshot, ref entry)) throw new Win32Exception(Marshal.GetLastWin32Error());
         do
         {
-            if (entry.Parent != parent || !string.Equals(entry.Executable, "qpdf.exe", StringComparison.OrdinalIgnoreCase)) continue;
+            if (entry.Parent != parent || !string.Equals(entry.Executable, Path.GetFileName(executable), StringComparison.OrdinalIgnoreCase)) continue;
             Process? child = null;
             try
             {
                 child = Process.GetProcessById((int)entry.Id);
-                if (!child.HasExited && string.Equals(child.MainModule!.FileName, executable, StringComparison.OrdinalIgnoreCase)) return child;
+                if (!child.HasExited && string.Equals(child.MainModule?.FileName, executable, StringComparison.OrdinalIgnoreCase)) return child;
             }
             catch (Exception error) when (error is ArgumentException or InvalidOperationException or Win32Exception) { }
             child?.Dispose();

@@ -16,6 +16,10 @@ all three PDF workflows directly against a combined image/audio/PDF stage.
 native dependency closure. See [commands and evidence](../../docs/pdf-production-payload.md).
 Default release packaging still rejects these candidates.
 
+The page and combined-production wrappers include the
+[live renderer interruption checks](../../docs/pdf-page-interruption.md),
+covering cancellation, client deadline expiry and worker exit before publication.
+
 From the repository root:
 
 ```powershell
