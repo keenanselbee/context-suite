@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.5",
+  "revision": "2026-09-11.6",
   "types": [
     {
       "id": "3gp",
@@ -561,7 +561,7 @@
         ".djvu",
         ".djv"
       ],
-      "source": "https://djvu.org/resources/"
+      "source": "https://djvu.org/"
     },
     {
       "id": "dmg",
@@ -624,7 +624,7 @@
         ".dotx",
         ".dotm"
       ],
-      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/",
+      "source": "https://learn.microsoft.com/en-us/office/compatibility/office-file-format-reference",
       "mimeTypes": [
         {
           "value": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -1498,7 +1498,7 @@
       "id": "mhtml",
       "name": "Archived web page",
       "family": "Document",
-      "commonUses": "A web page and related resources bundled using MIME messages.",
+      "commonUses": "A saved web page bundled with resources such as images in one MIME archive.",
       "extensions": [
         ".mht",
         ".mhtml"
@@ -1597,11 +1597,11 @@
       "id": "msg",
       "name": "Outlook message",
       "family": "Document",
-      "commonUses": "An Outlook message or related item stored with its properties and possible attachments.",
+      "commonUses": "Saved Outlook items, such as email, appointments, contacts and tasks.",
       "extensions": [
         ".msg"
       ],
-      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-oxmsg/b046868c-9fbf-41ae-9ffb-8de2bd4eec82"
+      "source": "https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxmsg/b046868c-9fbf-41ae-9ffb-8de2bd4eec82"
     },
     {
       "id": "msi",
@@ -1684,7 +1684,7 @@
       "id": "numbers",
       "name": "Numbers spreadsheet",
       "family": "Document",
-      "commonUses": "Spreadsheets created with Apple's Numbers application.",
+      "commonUses": "Editable tables, calculations and charts created with Apple's Numbers application.",
       "extensions": [
         ".numbers"
       ],
@@ -1857,7 +1857,7 @@
       "id": "pages",
       "name": "Pages document",
       "family": "Document",
-      "commonUses": "Editable documents created with Apple's Pages application.",
+      "commonUses": "Editable reports, letters and page layouts created with Apple's Pages application.",
       "extensions": [
         ".pages"
       ],
@@ -1912,7 +1912,7 @@
       "extensions": [
         ".pdf"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000030.shtml",
+      "source": "https://helpx.adobe.com/uk/incopy/desktop/save-export-and-print/pdf.html",
       "mimeTypes": [
         {
           "value": "application/pdf",
@@ -2052,7 +2052,7 @@
       "id": "postscript",
       "name": "PostScript document",
       "family": "Document",
-      "commonUses": "Page descriptions and graphics for publishing and printing systems.",
+      "commonUses": "Instructions that describe text and graphics for printing and publishing.",
       "extensions": [
         ".ps"
       ],
@@ -2094,7 +2094,7 @@
       "id": "pptx",
       "name": "PowerPoint presentation",
       "family": "Presentation",
-      "commonUses": "Slide presentations containing text, graphics and other media. Some variants are templates or may contain macros.",
+      "commonUses": "Slide presentations with text, graphics and media. Related variants are templates or slide shows, and some permit macros.",
       "extensions": [
         ".pptx",
         ".pptm",
@@ -2103,7 +2103,7 @@
         ".ppsx",
         ".ppsm"
       ],
-      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/",
+      "source": "https://learn.microsoft.com/en-us/office/compatibility/office-file-format-reference",
       "mimeTypes": [
         {
           "value": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -2282,7 +2282,7 @@
       "extensions": [
         ".rtf"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000473.shtml",
+      "source": "https://learn.microsoft.com/en-us/office/compatibility/office-file-format-reference",
       "textCompatible": true,
       "mimeTypes": [
         {
@@ -2782,7 +2782,7 @@
       "id": "webvtt",
       "name": "WebVTT captions",
       "family": "Document",
-      "commonUses": "Timed captions, subtitles and other text tracks for web media.",
+      "commonUses": "Timed captions, subtitles, chapter markers and other text tracks for audio or video.",
       "extensions": [
         ".vtt"
       ],
@@ -2902,7 +2902,7 @@
       "id": "xlsb",
       "name": "Excel binary workbook",
       "family": "Document",
-      "commonUses": "Excel spreadsheets stored as binary workbook parts inside a package.",
+      "commonUses": "Excel workbooks with tables, formulas and charts stored in a binary format.",
       "extensions": [
         ".xlsb"
       ],
@@ -2919,7 +2919,7 @@
         ".xltx",
         ".xltm"
       ],
-      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-376/",
+      "source": "https://learn.microsoft.com/en-us/office/compatibility/office-file-format-reference",
       "mimeTypes": [
         {
           "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -2974,12 +2974,12 @@
       "id": "xps",
       "name": "XML Paper Specification document",
       "family": "Document",
-      "commonUses": "Fixed-layout pages intended to preserve document appearance for viewing and printing.",
+      "commonUses": "Fixed-layout documents for viewing and printing. This family includes the related XPS and OpenXPS formats.",
       "extensions": [
         ".xps",
         ".oxps"
       ],
-      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-388/"
+      "source": "https://learn.microsoft.com/en-us/windows-hardware/drivers/print/driver-support-for-openxps"
     },
     {
       "id": "xz",

@@ -40,6 +40,11 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [document catalog review](catalog-document-review.md) checks 31
+document-related purposes and improves fourteen descriptions/references. Revision
+2026-09-11.6 preserves all 243 records and their recognition fields. Required
+Office conversion, remaining catalog families and variant acceptance stay open.
+
 The 2026-09-11 [AIFF/AU header checkpoint](aiff-au-header-analysis.md) adds bounded
 read-only content identification and audio declarations without a worker or
 conversion permission. All 2,182 foundation checks pass, including 50 new cases;

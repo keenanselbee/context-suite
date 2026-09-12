@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-11.5; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-11.6; expanded catalog and bounded structure analysis, not release acceptance
 
 Recognition and capabilities
 ----------------------------
@@ -33,6 +33,9 @@ The [audio purpose review](catalog-audio-review.md) checks all eighteen Audio
 descriptions and updates fourteen records' wording/references. It separates
 playlists, projects, musical instructions and audio containers; full alias and
 variant provenance remains a separate review scope.
+The [document purpose review](catalog-document-review.md) checks 31 document,
+spreadsheet and presentation records and clarifies fourteen descriptions/references.
+It preserves recognition fields and does not imply Office conversion is available.
 The [document font reference scan](document-font-references.md) adds optional
 literal names and unresolved theme references from selected OOXML XML parts,
 with declared scope and unavailable results on budget/format failure.
