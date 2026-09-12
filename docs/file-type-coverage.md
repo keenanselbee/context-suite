@@ -39,6 +39,9 @@ It preserves recognition fields and does not imply Office conversion is availabl
 The [document font reference scan](document-font-references.md) adds optional
 literal names and unresolved theme references from selected OOXML XML parts,
 with declared scope and unavailable results on budget/format failure.
+The [workbook settings scan](workbook-settings-analysis.md) reports saved date
+and calculation flags from the main spreadsheet XML without extra package reads.
+Missing flags are not assigned defaults; effective rendering behavior is not inferred.
 
 Current implementation and remaining work are separate:
 

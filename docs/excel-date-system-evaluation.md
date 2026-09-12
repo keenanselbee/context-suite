@@ -63,6 +63,11 @@ the current observation code is not a production detector or repair. Calculation
 policy, arbitrary-document isolation and customer integration remain separate
 required work. No launch requirement is removed by this finding.
 
+The later [workbook settings analyzer](workbook-settings-analysis.md) reports
+saved date1904 and dateCompatibility flags, keeping omissions distinct from false.
+It does not yet identify affected cells, derive their effective date system or
+repair the rendering mismatch.
+
 
 Evidence and limits
 -------------------

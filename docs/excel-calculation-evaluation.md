@@ -110,6 +110,11 @@ after the final run.
 Remaining acceptance
 --------------------
 
+The later [workbook settings analyzer](workbook-settings-analysis.md) reports
+saved calculation mode and selected flags without supplying missing defaults.
+Retained correct-cache, stale-cache and missing-cache automatic fixtures all
+report Automatic as declared; this cannot certify the freshness of their values.
+
 The launch implementation must choose and document an explicit calculation
 policy; neither a successful export nor a cached-value match proves fresh or
 Excel-equivalent results. Broader formulas, dates/locales, missing fonts,

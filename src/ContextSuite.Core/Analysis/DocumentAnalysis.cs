@@ -27,10 +27,11 @@ public static partial class DocumentAnalysis
             var hasOpenDocument = package.Contains("mimetype") && package.Contains("META-INF/manifest.xml");
             if (hasOpenXml && hasOpenDocument) throw new InvalidDataException("Conflicting document families.");
             var facts = ImmutableArray.CreateBuilder<AnalysisFact>();
+            var detailWarnings = ImmutableArray.CreateBuilder<string>();
             string? id = null;
-            if (hasOpenXml) id = await ReadOpenXmlAsync(package, facts, cancellationToken);
+            if (hasOpenXml) id = await ReadOpenXmlAsync(package, facts, detailWarnings, cancellationToken);
             else if (hasOpenDocument) id = await ReadOpenDocumentAsync(package, facts, cancellationToken);
-            var warnings = header.Warnings;
+            var warnings = header.Warnings.AddRange(detailWarnings);
             if (hasOpenXml && id is not null)
             {
                 try
@@ -124,7 +125,7 @@ public static partial class DocumentAnalysis
     }
 
     private static async Task<string?> ReadOpenXmlAsync(DocumentPackageReader package,
-        ImmutableArray<AnalysisFact>.Builder facts, CancellationToken cancellationToken)
+        ImmutableArray<AnalysisFact>.Builder facts, ImmutableArray<string>.Builder warnings, CancellationToken cancellationToken)
     {
         var types = ParseXml(await package.ReadPartAsync("[Content_Types].xml"), cancellationToken);
         var relationships = ParseXml(await package.ReadPartAsync("_rels/.rels"), cancellationToken);
@@ -170,6 +171,7 @@ public static partial class DocumentAnalysis
         if (ns != $"http://schemas.openxmlformats.org/{family}/2006/main" && ns != $"http://purl.oclc.org/ooxml/{family}/main")
             throw new InvalidDataException("Unexpected document namespace.");
         RequireRoot(main, ns, id switch { "docx" => "document", "xlsx" => "workbook", _ => "presentation" });
+        if (id == "xlsx") AddWorkbookDeclarations(main, facts, warnings, cancellationToken);
         facts.Add(new("document.content-type", "Document", "Declared main content type", Text: contentType));
         facts.Add(new("document.macro-type", "Document", "Macro-enabled package type (not a macro scan)", Boolean: contentType.Contains("macroEnabled", StringComparison.Ordinal)));
         if (id == "docx")

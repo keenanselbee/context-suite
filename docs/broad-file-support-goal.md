@@ -40,6 +40,13 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [workbook settings checkpoint](workbook-settings-analysis.md) adds
+typed date/calculation declarations with scoped optional failure and no new I/O.
+All 2,243 foundation checks pass, including 61 new checks, and seven retained
+Office fixtures match independent source-XML inspection. Fresh combined staging
+passes with zero warnings/errors. Office rendering policy, isolation and actual
+conversion remain required; declarations do not prove formula/date fidelity.
+
 The 2026-09-11 [document catalog review](catalog-document-review.md) checks 31
 document-related purposes and improves fourteen descriptions/references. Revision
 2026-09-11.6 preserves all 243 records and their recognition fields. Required

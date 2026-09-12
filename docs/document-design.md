@@ -27,6 +27,16 @@ pages, bypass encryption, execute active content, resolve external references or
 require installed Office simply to explain a file.
 
 
+Workbook setting declarations (2026-09-11)
+------------------------------------------
+
+The [workbook settings reader](workbook-settings-analysis.md) adds optional typed
+date-base and calculation declarations from the already inspected main XML.
+Omissions remain distinct from false/default values. Ambiguous settings leave
+their group unavailable while retaining basic identity. No cells are evaluated,
+and these declarations do not establish cache freshness or rendering fidelity.
+
+
 External relationship analysis (2026-09-11)
 ------------------------------------------
 

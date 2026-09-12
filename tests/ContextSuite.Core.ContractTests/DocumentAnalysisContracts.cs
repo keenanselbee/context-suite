@@ -5,7 +5,7 @@ using System.Text;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Analysis;
 
-internal static class DocumentAnalysisContracts
+internal static partial class DocumentAnalysisContracts
 {
     private const string Office = "urn:oasis:names:tc:opendocument:xmlns:office:1.0";
     private const string Manifest = "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0";
@@ -54,6 +54,7 @@ internal static class DocumentAnalysisContracts
             "documents: macro-enabled type is a declaration, not proof that a VBA project is present");
         await RelationshipContractsAsync(check);
         await FontReferenceContractsAsync(scratch, check);
+        await WorkbookSettingsContractsAsync(scratch, check);
         var unsupported = new List<(string Name, byte[] Bytes)>
         {
             ("missing main relationship", Zip(word.Where(part => part.Name != "_rels/.rels").ToArray())),
