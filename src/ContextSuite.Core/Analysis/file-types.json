@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.9",
+  "revision": "2026-09-11.10",
   "types": [
     {
       "id": "3gp",
       "name": "3GPP media container",
       "family": "Video",
-      "commonUses": "Mobile-device audio and video recordings and messaging media.",
+      "commonUses": "Mobile audio and video for messaging, playback and streaming; 3GP and 3G2 are related formats with different specifications.",
       "extensions": [
         ".3gp",
         ".3g2"
       ],
-      "source": "https://www.3gpp.org/technologies/codecs"
+      "source": "https://www.rfc-editor.org/rfc/rfc3839.html"
     },
     {
       "id": "3mf",
@@ -178,7 +178,7 @@
       "id": "avi",
       "name": "AVI video",
       "family": "Video",
-      "commonUses": "Windows video and audio interchange; the contained codecs can vary widely.",
+      "commonUses": "Audio and video recordings used for capture, editing and playback. The container can hold different codecs.",
       "extensions": [
         ".avi"
       ],
@@ -838,12 +838,12 @@
       "id": "flv",
       "name": "Flash video",
       "family": "Video",
-      "commonUses": "Video and audio for older Flash-based playback and streaming systems.",
+      "commonUses": "Audio and video in FLV or F4V containers, used by older Flash playback and streaming systems.",
       "extensions": [
         ".flv",
         ".f4v"
       ],
-      "source": "https://www.adobe.com/content/dam/acom/en/devnet/flv/video_file_format_spec_v10.pdf"
+      "source": "https://helpx.adobe.com/media-encoder/desktop/encoding-quick-start-and-basics/file-formats-supported-import.html"
     },
     {
       "id": "font-collection",
@@ -1565,20 +1565,20 @@
         ".mp4",
         ".m4v"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000155.shtml"
+      "source": "https://www.iso.org/standard/79110.html"
     },
     {
       "id": "mpeg",
       "name": "MPEG program stream",
       "family": "Video",
-      "commonUses": "Multiplexed video and audio, including DVD video-object files.",
+      "commonUses": "Video and audio packaged together for playback, including DVD video-object files.",
       "extensions": [
         ".mpg",
         ".mpeg",
         ".mpe",
         ".vob"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/browse_list.shtml"
+      "source": "https://www.itu.int/rec/T-REC-H.222.0"
     },
     {
       "id": "mpeg-ts",
@@ -1591,7 +1591,7 @@
         ".mts",
         ".m2t"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/browse_list.shtml"
+      "source": "https://www.itu.int/rec/T-REC-H.222.0"
     },
     {
       "id": "msg",
@@ -2756,7 +2756,7 @@
       "id": "webm",
       "name": "WebM media container",
       "family": "Video",
-      "commonUses": "Web-oriented video and audio using the WebM container and supported codecs.",
+      "commonUses": "Video or audio packaged for web playback; WebM uses a restricted form of the Matroska container.",
       "extensions": [
         ".webm"
       ],

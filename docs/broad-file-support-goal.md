@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [video catalog review](catalog-video-review.md) checks all ten Video
+entries and improves seven descriptions/references. Catalog 2026-09-11.10 retains
+243 records and unchanged identification/operation fields. Mobile/Flash variants
+and container-versus-codec distinctions are clearer; complete variant coverage
+and other remaining family reviews are separate work.
+
 The 2026-09-11 [PowerPoint visibility analysis](powerpoint-slide-analysis.md)
 adds bounded visible/hidden/default counts from referenced slide XML, retaining
 basic facts when the optional scan fails. All 2,320 foundation contracts pass,
