@@ -3,7 +3,8 @@ param([Parameter(Mandatory)][string] $ProductionStage,
     [Parameter(Mandatory, ParameterSetName = 'Evaluation')][string] $PreparedDirectory,
     [Parameter(Mandatory, ParameterSetName = 'Curated')][string] $CandidateDirectory,
     [Parameter(Mandatory, ParameterSetName = 'Packaged')][switch] $Packaged,
-    [Parameter(Mandatory)][string] $FixtureDirectory, [string] $ArtworkFixture, [switch] $IncludeOptimization, [switch] $IncludeConversion)
+    [Parameter(Mandatory)][string] $FixtureDirectory, [string] $ArtworkFixture, [switch] $IncludeOptimization, [switch] $IncludeConversion,
+    [switch] $IncludeInterruptions)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $stage = (Resolve-Path -LiteralPath $ProductionStage).Path
@@ -83,6 +84,10 @@ if ($IncludeConversion) {
     if ($LASTEXITCODE -ne 0) { throw 'Isolated audio conversion workflow checks failed.' }
     & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-conversion-direct (Join-Path $scratch 'conversion-direct-results') (Join-Path $payload 'ContextSuite.Worker.exe') $fixtures
     if ($LASTEXITCODE -ne 0) { throw 'Isolated direct audio conversion checks failed.' }
+}
+if ($IncludeInterruptions) {
+    & dotnet run --project (Join-Path $repository 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj') -c Release -- --audio-interruptions (Join-Path $scratch 'interruption-results') (Join-Path $payload 'ContextSuite.Worker.exe')
+    if ($LASTEXITCODE -ne 0) { throw 'Isolated audio interruption checks failed.' }
 }
 if ($Packaged) {
     & python -B (Join-Path $PSScriptRoot 'Stage-AudioPayload.py') --payload $stage --inventory

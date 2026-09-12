@@ -108,6 +108,15 @@ recycler excludes native recycling. The tests call the actual decision model;
 they do not operate Explorer or inspect visible windows. Use both switches to
 verify the existing audio workflows alongside conversion.
 
+Optional `-IncludeInterruptions` authors a long PCM24 noise fixture and verifies
+cancellation, client-deadline expiry and worker-only termination while a real
+native encoder is consuming CPU and growing its candidate. It checks native
+exit, original/committed-copy preservation, reservation/journal/scratch cleanup
+and a validated retry with a fresh worker. The new public host mode is
+`--audio-interruptions <new-evidence> <worker-executable>`; the wrapper supplies
+these paths and verifies the packaged inventory before and after execution.
+See [actual results and scope](../../docs/audio-interruption-verification.md).
+
 The latest adapter run passes 292 combined checks. FLAC conversion cases include
 original-block inventory, literal Unicode/multiline tag transport, canonical
 comment aliases, refusal of unsupported metadata, stale seek tables and corrupt

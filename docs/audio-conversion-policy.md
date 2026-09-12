@@ -462,6 +462,12 @@ recycler; no native overwrite/recycling acceptance is implied. Paid-access
 contracts also verify no trial fallback after paid expiry. Listening, broader
 metadata, crash recovery and shipping-engine acceptance remain open.
 
+The later [encoder interruption matrix](audio-interruption-verification.md)
+passes real cancellation, client timeout and worker termination during a growing
+WAV-to-FLAC encode. It verifies native exit, cleanup, preserved originals and
+committed copies, and successful fresh-worker retries. Other phases, codecs and
+application/publication crash boundaries retain their separate acceptance scope.
+
 Direct Convert and required quality decisions
 ---------------------------------------------
 

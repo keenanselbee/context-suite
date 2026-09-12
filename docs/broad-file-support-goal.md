@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [audio interruption checkpoint](audio-interruption-verification.md)
+passes 20 encoder-phase cancellation/timeout/worker-crash checks plus 11 ordinary
+audio-worker checks on the existing combined stage. Native CPU and candidate
+growth are observed before each fault; cleanup, original/committed-copy safety
+and fresh-worker retries pass. Other crash phases and release gates remain open.
+
 The 2026-09-11 [workbook settings checkpoint](workbook-settings-analysis.md) adds
 typed date/calculation declarations with scoped optional failure and no new I/O.
 All 2,243 foundation checks pass, including 61 new checks, and seven retained
