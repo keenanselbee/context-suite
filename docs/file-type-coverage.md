@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-11.6; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-11.7; expanded catalog and bounded structure analysis, not release acceptance
 
 Recognition and capabilities
 ----------------------------
@@ -36,6 +36,9 @@ variant provenance remains a separate review scope.
 The [document purpose review](catalog-document-review.md) checks 31 document,
 spreadsheet and presentation records and clarifies fourteen descriptions/references.
 It preserves recognition fields and does not imply Office conversion is available.
+The [archive/package purpose review](catalog-archive-review.md) checks 29 archive,
+compressed-stream, software-package and disk-image descriptions, updating sixteen
+records. Variant/alias and executable-capability acceptance remain separate.
 The [document font reference scan](document-font-references.md) adds optional
 literal names and unresolved theme references from selected OOXML XML parts,
 with declared scope and unavailable results on budget/format failure.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-11.6",
+  "revision": "2026-09-11.7",
   "types": [
     {
       "id": "3gp",
@@ -27,7 +27,7 @@
       "id": "7z",
       "name": "7-Zip archive",
       "family": "Archive or package",
-      "commonUses": "Files bundled with compression and optional encryption in the 7z format.",
+      "commonUses": "Files bundled for storage or sharing, with optional compression and encryption.",
       "extensions": [
         ".7z"
       ],
@@ -37,7 +37,7 @@
       "id": "aab",
       "name": "Android App Bundle",
       "family": "Archive or package",
-      "commonUses": "Android publishing packages used to generate device-specific installable applications.",
+      "commonUses": "Android app code and resources prepared for publishing; used to generate installable APK packages.",
       "extensions": [
         ".aab"
       ],
@@ -275,7 +275,7 @@
       "id": "bzip2",
       "name": "Bzip2 compressed data",
       "family": "Archive or package",
-      "commonUses": "Compressed data, sometimes wrapping a TAR archive.",
+      "commonUses": "Data compressed to reduce file size, sometimes containing a TAR archive.",
       "extensions": [
         ".bz2",
         ".bzip2",
@@ -416,11 +416,11 @@
       "id": "crx",
       "name": "Chrome extension",
       "family": "Archive or package",
-      "commonUses": "Packaged Chromium browser extensions with a signed package envelope.",
+      "commonUses": "Browser extensions or themes packaged for distribution to Chrome and related browsers.",
       "extensions": [
         ".crx"
       ],
-      "source": "https://www.chromium.org/developers/design-documents/crx-package-format/"
+      "source": "https://developer.chrome.com/docs/extensions/how-to/distribute/host-on-linux"
     },
     {
       "id": "csharp",
@@ -567,7 +567,7 @@
       "id": "dmg",
       "name": "Apple disk image",
       "family": "Archive or package",
-      "commonUses": "Disk images commonly used to distribute macOS software or store a virtual volume.",
+      "commonUses": "Disk or folder contents stored as an image that can be mounted as a volume on a Mac.",
       "extensions": [
         ".dmg"
       ],
@@ -1179,13 +1179,13 @@
       "id": "java-archive",
       "name": "Java archive",
       "family": "Archive or package",
-      "commonUses": "Java classes, resources and deployment metadata packaged for Java applications.",
+      "commonUses": "Java code and resources bundled as libraries, applications or web and enterprise deployments.",
       "extensions": [
         ".jar",
         ".war",
         ".ear"
       ],
-      "source": "https://docs.oracle.com/en/java/javase/25/docs/specs/jar/jar.html"
+      "source": "https://docs.oracle.com/javaee/7/tutorial/packaging001.htm"
     },
     {
       "id": "java-class",
@@ -1392,7 +1392,7 @@
       "id": "lz4",
       "name": "LZ4 compressed data",
       "family": "Archive or package",
-      "commonUses": "Fast-compressed data streams using an LZ4 framing format.",
+      "commonUses": "Data compressed using LZ4 for file storage or streaming.",
       "extensions": [
         ".lz4"
       ],
@@ -1607,7 +1607,7 @@
       "id": "msi",
       "name": "Windows Installer database",
       "family": "Archive or package",
-      "commonUses": "Windows installation databases or patches describing software deployment and maintenance.",
+      "commonUses": "Windows software installation packages (.msi) or update patches (.msp).",
       "extensions": [
         ".msi",
         ".msp"
@@ -1673,7 +1673,7 @@
       "id": "nuget",
       "name": "NuGet package",
       "family": "Archive or package",
-      "commonUses": "Libraries, build assets or symbols distributed through the NuGet package format.",
+      "commonUses": "Code libraries and related files for .NET projects; .snupkg files supply debugging symbols.",
       "extensions": [
         ".nupkg",
         ".snupkg"
@@ -2192,12 +2192,12 @@
       "id": "qcow2",
       "name": "QEMU virtual disk",
       "family": "Archive or package",
-      "commonUses": "Virtual-machine disk images with features such as allocation-on-demand and snapshots.",
+      "commonUses": "Virtual-machine disk images; QCOW and QCOW2 use different layouts and support different features.",
       "extensions": [
         ".qcow",
         ".qcow2"
       ],
-      "source": "https://www.qemu.org/docs/master/interop/qcow2.html"
+      "source": "https://www.qemu.org/docs/master/system/images.html"
     },
     {
       "id": "qoi",
@@ -2268,11 +2268,11 @@
       "id": "rpm",
       "name": "RPM package",
       "family": "Archive or package",
-      "commonUses": "Software packages and metadata for RPM-based systems.",
+      "commonUses": "Software files and installation metadata for RPM-based systems; packages can also carry source code.",
       "extensions": [
         ".rpm"
       ],
-      "source": "https://rpm.org/docs/4.20.x/manual/format.html"
+      "source": "https://rpm.org/docs/6.0.x/manual/format_v3.html"
     },
     {
       "id": "rtf",
@@ -2481,7 +2481,7 @@
       "extensions": [
         ".tar"
       ],
-      "source": "https://www.gnu.org/software/tar/manual/html_node/Standard.html"
+      "source": "https://www.gnu.org/software/tar/manual/tar.html"
     },
     {
       "id": "tar-gzip",
@@ -2492,7 +2492,7 @@
         ".tar.gz",
         ".tgz"
       ],
-      "source": "https://www.gnu.org/software/tar/manual/html_node/gzip.html"
+      "source": "https://www.gnu.org/software/tar/manual/tar.html"
     },
     {
       "id": "text",
@@ -2697,7 +2697,7 @@
       "extensions": [
         ".vmdk"
       ],
-      "source": "https://knowledge.broadcom.com/external/article/320398/virtual-disk-formats.html"
+      "source": "https://knowledge.broadcom.com/external/article/321422"
     },
     {
       "id": "vsix",
@@ -2793,7 +2793,7 @@
       "id": "wheel",
       "name": "Python wheel",
       "family": "Archive or package",
-      "commonUses": "Built Python distributions containing modules and installation metadata.",
+      "commonUses": "Python software packaged for installation, with code, resources and package metadata.",
       "extensions": [
         ".whl"
       ],
@@ -2985,7 +2985,7 @@
       "id": "xz",
       "name": "XZ compressed data",
       "family": "Archive or package",
-      "commonUses": "Compressed data streams, often used to distribute software or TAR archives.",
+      "commonUses": "Data compressed with XZ, often containing a TAR archive; XZ alone does not bundle files into an archive.",
       "extensions": [
         ".xz",
         ".txz"

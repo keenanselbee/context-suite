@@ -40,6 +40,12 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [archive/package catalog review](catalog-archive-review.md) checks
+all 29 records in the two archive/package families and improves sixteen records'
+wording/references. Catalog revision 2026-09-11.7 retains 243 entries and unchanged
+recognition/operation fields. Full variant, alias and remaining-family review is
+still required; this does not add extraction, mounting or installation actions.
+
 The 2026-09-11 [Excel print-layout evaluation](excel-print-layout-evaluation.md)
 matches all five passive workbook cases across eight PDF pages: manual breaks,
 repeated title rows, fit-to-page, disjoint areas and hidden cells. Independent
