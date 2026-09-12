@@ -40,6 +40,15 @@ Repeat this review/verification/commit workflow after each coherent milestone.
 Starting evidence
 -----------------
 
+The 2026-09-11 [Analyze performance baseline](analyze-performance.md) measures
+three fresh processes and thirty repeated samples per case on a recorded
+Windows host. The 128 MiB binary reports 64 KiB inspected; a DOCX with a 64 MiB
+unrelated member reports 131,093 bytes. The eight-file mixed selection, including
+a locked item, has 6.02 ms repeated median and 11.51 ms p95, with originals
+unchanged. Provisional reference-machine review budgets are recorded. Disk-cache
+cold, optional-worker, visible UI, broader hardware/storage and larger-selection
+acceptance remain open.
+
 The 2026-09-11 [MIME catalog checkpoint](catalog-mime-descriptions.md) adds 59
 registered descriptive identifiers to 36 catalog records, with per-identifier
 provenance. Schema 1 remains compatible with records that omit MIME metadata.
