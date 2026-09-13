@@ -66,13 +66,16 @@ no document was open during those interruption tests. The separate access-matrix
 rendering policies and production integration remain pending.
 
 The latest combined production stage is
-`artifacts/production-staging/a27c34ab662a44ee9ece421d94b49c19`.
-It includes catalog revision 2026-09-12.1, synchronous reader cancellation,
-per-row Analyze availability, specific failure guidance and corrected Opus surround
-mapping and actionable combined-PDF processing-limit guidance, with the native
-shell build included. The latest foundation run passes
-2,449 contracts in the current worktree. This includes catalog revision
-2026-09-13.1, separate trial-policy edits and the ID3v2.2 reader not present in the staged PDF payload.
+`artifacts/production-staging/1bcf6e8fd25f4f35bf1260c15a05e387`.
+It includes catalog revision 2026-09-13.1, the prior Analyze and combined-PDF
+failure handling, corrected Opus surround mapping, separate trial-policy edits,
+the ID3v2.2 reader and bounded FLAC-to-Vorbis/Opus artwork transport, with the
+native shell build included. The latest foundation run passes 2,464 contracts.
+The [artwork checkpoint](audio-artwork-conversion.md) additionally passes 33
+focused private, 36 direct-command and 52 audio conversion workflow checks.
+Picture bytes, descriptions and order survive both target formats; other artwork
+paths and human listening/player acceptance remain open. This fresh staging is
+not an all-feature regression or commercial release clearance.
 The earlier FLAC
 checkpoint passes 24 optimization interruption, 96 conversion interruption and
 11 normal worker checks on stage `dc5a863d901b4eb89f94b943682511aa`.

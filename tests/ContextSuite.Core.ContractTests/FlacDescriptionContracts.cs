@@ -55,6 +55,10 @@ internal static class FlacDescriptionContracts
             report.Facts.All(fact => fact.Id != "audio.probe.stream.1.rate"), "audio analysis: artwork is named clearly without irrelevant audio fields");
         try { AudioConversionPlan.Create(facts, AudioFormat.Wave); check(false, "audio conversion: artwork cannot be silently discarded"); }
         catch (NotSupportedException) { check(true, "audio conversion: artwork cannot be silently discarded"); }
+        foreach (var target in new[] { AudioFormat.Vorbis, AudioFormat.Opus })
+            check(AudioConversionPlan.Create(facts, target) is { AlreadyTarget: false, RequiredConsent: AudioConversionConsent.None },
+                "FLAC artwork: bounded Ogg target plan " + target);
+        check(AudioConversionPlan.Create(facts, AudioFormat.Flac).AlreadyTarget, "FLAC artwork: same-format byte retention needs no rewrite");
         try { AudioConversionPlan.CreateFlacOptimization(facts with { Streams = [facts.Streams[0], facts.Streams[1] with { AttachedPicture = false }] }); check(false, "FLAC optimization: ordinary video is not an attachment"); }
         catch (NotSupportedException) { check(true, "FLAC optimization: ordinary video is not an attachment"); }
         foreach (var disposition in new[] { "2", "-1", "true", "{}" })
@@ -78,7 +82,7 @@ internal static class FlacDescriptionContracts
         return stream.ToArray();
     }
 
-    private static byte[] Picture(string media, string description, byte[] data)
+    internal static byte[] Picture(string media, string description, byte[] data)
     {
         using var stream = new MemoryStream();
         void Number(uint value) { Span<byte> bytes = stackalloc byte[4]; BinaryPrimitives.WriteUInt32BigEndian(bytes, value); stream.Write(bytes); }

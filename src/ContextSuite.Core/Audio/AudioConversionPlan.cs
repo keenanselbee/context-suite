@@ -32,14 +32,17 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
     {
         source.Validate();
         if (!Enum.IsDefined(target)) throw new ArgumentOutOfRangeException(nameof(target));
-        if (source.Streams.Length != 1 || source.Streams[0].Kind != "audio")
+        if (source.Streams.Count(stream => stream.Kind == "audio") != 1 || source.Streams.Any(stream => stream.Kind != "audio" && !stream.AttachedPicture))
             throw new NotSupportedException("Additional streams or artwork need a preservation plan before conversion.");
-        var audio = source.Streams[0];
+        var audio = source.Streams.Single(stream => stream.Kind == "audio");
         if (audio.SampleRate is not (>= 8000 and <= 192000) || audio.Channels is not (>= 1 and <= 8))
             throw new NotSupportedException("The sample rate or channel count is outside the current audio policy.");
         if (audio.Channels > 2 && audio.ChannelLayout is not ("2.1" or "quad" or "4.0" or "5.0" or "5.0(side)" or "5.1" or "5.1(side)" or "6.1" or "7.1"))
             throw new NotSupportedException("The channel layout must be known before multichannel conversion.");
         var sourceFormat = SourceFormat(source.Container, audio.Codec);
+        if (source.Streams.Any(stream => stream.AttachedPicture) && sourceFormat != target &&
+            !(sourceFormat == AudioFormat.Flac && target is AudioFormat.Vorbis or AudioFormat.Opus))
+            throw new NotSupportedException("Artwork needs a preservation handler for these formats. Originals were kept.");
         var sourceBits = audio.SampleBits ?? audio.Codec switch
         { "pcm_u8" => 8, "pcm_s16le" => 16, "pcm_s24le" => 24, "pcm_s32le" or "pcm_f32le" => 32, "pcm_f64le" => 64, _ => (int?)null };
         var floating = audio.Codec is "pcm_f32le" or "pcm_f64le";

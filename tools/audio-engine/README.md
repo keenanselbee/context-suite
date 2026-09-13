@@ -60,6 +60,14 @@ ownership checks. It also generates a five-minute PCM24 recording to test the
 file API beyond the old encoded/decoded array limits, managed allocation,
 artifact leases/disposal and cancellation after native output is observed.
 Generated outputs stay under the new evidence directory.
+The private test host also accepts `--flac-ogg-artwork <candidate-bin>
+<generated-six-format-fixtures> <fresh-absolute-evidence-directory>
+<independent-decoder-bin>` for 33 focused artwork transport and framing checks.
+Build that Release test host first. The public host accepts an optional fifth
+argument to `--audio-conversion-direct <scratch> <worker> <fixtures>` pointing
+to that generated artwork evidence directory; it adds 16 real-worker publication
+checks using `two-covers.flac` and `large-cover.flac`. See the
+[exact scope and retained evidence](../../docs/audio-artwork-conversion.md).
 The artwork fixture adds two authored PNG covers (including alpha), duplicate
 comments, multiline lyrics and Unicode text. It checks raw metadata and decoded
 RGBA preservation during FLAC optimization, plus refusal of linked/malformed

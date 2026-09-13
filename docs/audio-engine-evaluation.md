@@ -4,6 +4,12 @@ Audio Engine Evaluation Results
 Date: 2026-09-09 onward. Status: generated-fixture evaluation, private integration
 and direct audio commands implemented; production audio payload adoption pending.
 
+The latest [FLAC artwork conversion checkpoint](audio-artwork-conversion.md)
+passes 33 focused private checks, 36 direct-command checks, 52 audio conversion
+workflow checks and 2,464 foundation contracts. A fresh combined stage includes
+the exact FLAC-to-Vorbis/Opus picture transport and prior ID3v2.2 reader. These
+scoped results do not replace the remaining listening, player and release gates.
+
 The later [rate/layout matrix](audio-rate-layout-verification.md) completes 222
 observations, finds and fixes Opus 5.0/6.1 channel permutation, and gives early
 refusals for layouts the current presets cannot preserve. The full private suite

@@ -26,8 +26,10 @@ Fixed target policies
 
 The policy accepts one audio stream in WAVE PCM/float, native FLAC, MP3,
 M4A/AAC or Ogg Vorbis/Opus. ALAC and other codecs are not admitted by recognizing
-their container. Additional streams/artwork and unknown multichannel layouts
-require preservation work before conversion. Native FLAC optimization now has a
+their container. FLAC embedded artwork can now convert to Vorbis/Opus through
+exact picture-block transport; see the [boundary and evidence](audio-artwork-conversion.md).
+Other cross-format artwork, additional streams and unknown multichannel layouts
+require preservation work before conversion. Native FLAC optimization has its
 separate raw-preservation path for embedded artwork, described below.
 Rates are bounded to 8–192 kHz and
 channels to 1–8, with target-specific restrictions. This policy range is not a
@@ -162,8 +164,10 @@ FLAC conversion metadata admission
 
 Cross-format FLAC conversion now inventories the original blocks and ordered
 UTF-8 comments before encoding. STREAMINFO, padding, seek tables and comments
-are admitted; application data, cue sheets, artwork and unknown blocks need
-preservation handlers. The complete source frame index and CRCs are validated,
+are admitted; embedded pictures additionally have an exact Vorbis/Opus transport
+handler with a separate 8 MiB base64 budget. Application data, cue sheets, other
+artwork targets and unknown blocks need preservation handlers. The complete
+source frame index and CRCs are validated,
 and any seek table must match those frames. Same-rate decoded length must match
 the declared sample count when present.
 

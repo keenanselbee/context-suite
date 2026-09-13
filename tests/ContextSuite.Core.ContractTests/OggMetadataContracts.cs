@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Collections.Immutable;
 using ContextSuite.Core.Audio;
 
 internal static class OggMetadataContracts
@@ -7,6 +8,30 @@ internal static class OggMetadataContracts
     {
         foreach (var opus in new[] { false, true })
         {
+            var pictures = ImmutableArray.Create(new FlacMetadataBlock(6, ImmutableArray.Create(FlacDescriptionContracts.Picture("image/png", "Cover", new byte[900000]))));
+            var picturePacket = OggPictureComments.AppendToPacket(Comments(opus, "TITLE=Retained"), pictures);
+            var pictureFile = FileWithCommentPages(opus, picturePacket);
+            using (var input = new MemoryStream(pictureFile))
+            {
+                input.Position = 3;
+                var pictured = await OggMetadata.ReadAsync(input, default, true);
+                check(pictured.ConversionTags(pictures)["title"] == "Retained" && input.Position == 3 &&
+                    pictured.FinalGranule == 96312, "Ogg artwork: large continued packet preserves title, extent and position: " + opus);
+                try { pictured.ConversionTags(); check(false, "Ogg artwork: requires an explicit original picture inventory"); }
+                catch (NotSupportedException) { check(true, "Ogg artwork: requires an explicit original picture inventory"); }
+                foreach (var wrong in new[] { ImmutableArray<FlacMetadataBlock>.Empty,
+                    ImmutableArray.Create(new FlacMetadataBlock(6, ImmutableArray.Create(FlacDescriptionContracts.Picture("image/png", "Other", new byte[900000])))) })
+                {
+                    try { pictured.ConversionTags(wrong); check(false, "Ogg artwork: mismatched picture inventory"); }
+                    catch (InvalidDataException) { check(true, "Ogg artwork: mismatched picture inventory"); }
+                }
+            }
+            await Reject(pictureFile, "large picture packet without explicit picture budget");
+            using (var input = new MemoryStream(FileWithCommentPages(opus, Comments(opus, "TITLE=" + new string('x', VorbisComments.MaximumTextBytes)))))
+            {
+                try { await OggMetadata.ReadAsync(input, default, true); check(false, "Ogg artwork: ordinary text budget remains bounded"); }
+                catch (InvalidDataException) { check(true, "Ogg artwork: ordinary text budget remains bounded"); }
+            }
             var bytes = FileOf(opus, Comments(opus, "TITLE=Title \u00fc", "COMMENT=Line one\r\nLine two"));
             using var source = new MemoryStream(bytes); source.Position = 5;
             var inventory = await OggMetadata.ReadAsync(source, default);
@@ -92,6 +117,18 @@ internal static class OggMetadataContracts
         var pages = new[] { Page(2, 0, 0, Identification(opus)), Page(0, 1, 0, comments) };
         if (!opus) pages = pages.Append(Page(0, 2, 0, "\x05vorbis\x01"u8.ToArray())).ToArray();
         return pages.Append(audioPage ?? Page(4, opus ? 2u : 3u, 96312, [2])).SelectMany(page => page).ToArray();
+    }
+    private static byte[] FileWithCommentPages(bool opus, byte[] comments)
+    {
+        var pages = new List<byte[]> { Page(2, 0, 0, Identification(opus)) }; uint sequence = 1;
+        var offset = 0;
+        while (comments.Length - offset >= 65025)
+        {
+            pages.Add(Page(offset == 0 ? (byte)0 : (byte)1, sequence++, -1, comments[offset..(offset + 65025)], true)); offset += 65025;
+        }
+        pages.Add(Page(offset == 0 ? (byte)0 : (byte)1, sequence++, 0, comments[offset..]));
+        if (!opus) pages.Add(Page(0, sequence++, 0, "\x05vorbis\x01"u8.ToArray()));
+        pages.Add(Page(4, sequence, 96312, [2])); return pages.SelectMany(page => page).ToArray();
     }
     private static byte[] Identification(bool opus)
     {

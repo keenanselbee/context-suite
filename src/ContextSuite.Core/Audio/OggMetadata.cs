@@ -11,6 +11,13 @@ public sealed record OggMetadataInventory(string Codec, int SampleRate, int Chan
         if (OutputGain != 0) throw new NotSupportedException("Opus playback gain needs an explicit conversion policy.");
         return AudioCommentConversion.Read(Descriptions.Comments);
     }
+
+    public ImmutableDictionary<string, string> ConversionTags(ImmutableArray<FlacMetadataBlock> expectedPictures)
+    {
+        if (OutputGain != 0) throw new NotSupportedException("Opus playback gain needs an explicit conversion policy.");
+        OggPictureComments.RequirePreserved(expectedPictures, Descriptions);
+        return AudioCommentConversion.Read(Descriptions.Comments.Where(comment => !OggPictureComments.IsPicture(comment.Name)));
+    }
 }
 
 // Validate every page with bounded storage, retaining only one packet at a time.
@@ -19,9 +26,10 @@ public static class OggMetadata
 {
     public const int MaximumPages = 131072;
     public const int MaximumPacketBytes = 1024 * 1024;
+    public const int MaximumPicturePacketBytes = VorbisComments.MaximumPictureTextBytes + VorbisComments.MaximumTextBytes + 32768;
     private static readonly uint[] CrcTable = BuildCrcTable();
 
-    public static async Task<OggMetadataInventory> ReadAsync(Stream source, CancellationToken token)
+    public static async Task<OggMetadataInventory> ReadAsync(Stream source, CancellationToken token, bool allowPictureComments = false)
     {
         if (!source.CanRead || !source.CanSeek || source.Length is < 27 or > AudioFileSource.MaximumFileBytes)
             throw new InvalidDataException("Ogg inventory requires a bounded seekable input.");
@@ -73,7 +81,8 @@ public static class OggMetadata
                 for (var i = 0; i < segments; i++)
                 {
                     var length = page[27 + i];
-                    if (packet.Length + length > MaximumPacketBytes) throw new InvalidDataException("Ogg packet exceeds its byte budget.");
+                    var packetLimit = packets == 1 && allowPictureComments ? MaximumPicturePacketBytes : MaximumPacketBytes;
+                    if (packet.Length + length > packetLimit) throw new InvalidDataException("Ogg packet exceeds its byte budget.");
                     packet.Write(page, body, length); body += length;
                     pending = length == 255;
                     if (pending) continue;
@@ -90,7 +99,7 @@ public static class OggMetadata
                         var prefix = opus ? "OpusTags"u8 : "\x03vorbis"u8;
                         if (!data.StartsWith(prefix)) throw new InvalidDataException("Missing Ogg comment header.");
                         var textBytes = 0;
-                        var descriptions = VorbisComments.Read(data[prefix.Length..], ref textBytes, out var consumed);
+                        var descriptions = VorbisComments.Read(data[prefix.Length..], ref textBytes, out var consumed, allowPictureComments);
                         var trailing = data[(prefix.Length + consumed)..];
                         if (opus)
                         {

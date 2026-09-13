@@ -18,7 +18,9 @@ public static class FlacDescriptiveMetadata
     public const int MaximumPictures = 31;
     private static readonly UTF8Encoding Utf8 = new(false, true);
 
-    public static FlacDescriptions Read(FlacMetadataHeader header)
+    public static FlacDescriptions Read(FlacMetadataHeader header) => ReadBlocks(header.Blocks);
+
+    public static FlacDescriptions ReadBlocks(ImmutableArray<FlacMetadataBlock> blocks)
     {
         string? vendor = null;
         var comments = ImmutableArray.CreateBuilder<AudioComment>();
@@ -27,7 +29,7 @@ public static class FlacDescriptiveMetadata
         var textBytes = 0;
         try
         {
-            foreach (var block in header.Blocks)
+            foreach (var block in blocks)
             {
                 var data = block.Data.AsSpan();
                 var offset = 0;

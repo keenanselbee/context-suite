@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Collections.Immutable;
 using System.Text.Json;
 using ContextSuite.Application;
 using ContextSuite.Application.Infrastructure;
@@ -8,7 +9,7 @@ using ContextSuite.Core.Operations;
 
 internal static class AudioConversionDirectContracts
 {
-    public static async Task RunAsync(string scratch, string executable, string fixtures, Action<bool, string> check)
+    public static async Task RunAsync(string scratch, string executable, string fixtures, Action<bool, string> check, string? artworkFixtures = null)
     {
         Directory.CreateDirectory(scratch);
         var wave = Path.Combine(scratch, "Audio.wav"); var mp3 = Path.Combine(scratch, "Compressed.mp3");
@@ -35,6 +36,44 @@ internal static class AudioConversionDirectContracts
         check(prompts == 0 && starts == 6 && finishes == 6 && access.Admissions == 5 && !quiet.NeedsAttention && !vm.HasProblems,
             "Audio direct conversion: routine work uses one quiet completion per batch without a prompt");
         var processId = worker.ProcessId;
+        if (artworkFixtures is not null)
+        {
+            foreach (var name in new[] { "two-covers", "large-cover" })
+            {
+                var original = Path.Combine(scratch, name + ".flac");
+                File.Copy(Path.Combine(artworkFixtures, name + ".flac"), original);
+                var bytes = await File.ReadAllBytesAsync(original); var digest = SHA256.HashData(bytes);
+                var pictures = FlacMetadata.Parse(bytes).Blocks.Where(block => block.Type == 6).ToImmutableArray();
+                var admissions = access.Admissions;
+                vm.Admit(new(Guid.NewGuid(), "convert", "flac", [original])); await vm.WaitForIdleAsync();
+                check(vm.Rows[^1].Result.State == OperationState.Unchanged && access.Admissions == admissions,
+                    "Audio artwork direct: same-format no-op starts no admission: " + name);
+                foreach (var action in new[] { "vorbis", "opus" })
+                {
+                    var extension = action == "vorbis" ? ".ogg" : ".opus";
+                    vm.Admit(new(Guid.NewGuid(), "convert", action, [original])); await vm.WaitForIdleAsync();
+                    var row = vm.Rows[^1]; var output = row.OutputPath;
+                    check(row.Result.State == OperationState.Succeeded && row.Result.Publication?.Outcome == PublicationOutcome.CopyCreated &&
+                        output.EndsWith(extension) && prompts == 0 && !quiet.NeedsAttention && !vm.HasProblems && worker.ProcessId == processId,
+                        "Audio artwork direct: quiet validated copy without a prompt: " + name + "/" + action);
+                    using (var file = File.OpenRead(output))
+                    {
+                        var inventory = await OggMetadata.ReadAsync(file, default, true);
+                        var tags = inventory.ConversionTags(pictures);
+                        check(tags["title"] == "Artwork title" && tags["artist"] == "Fixture artist" &&
+                            inventory.Channels == 2 && inventory.SampleRate == 48000,
+                            "Audio artwork direct: published complete pictures, descriptions, tags and audio properties: " + name + "/" + action);
+                    }
+                    var outputHash = SHA256.HashData(await File.ReadAllBytesAsync(output));
+                    vm.Admit(new(Guid.NewGuid(), "convert", action, [original])); await vm.WaitForIdleAsync();
+                    check(vm.Rows[^1].Result.State == OperationState.Succeeded && vm.Rows[^1].OutputPath != output &&
+                        SHA256.HashData(await File.ReadAllBytesAsync(output)).SequenceEqual(outputHash),
+                        "Audio artwork direct: repeated conversion preserves the existing copy: " + name + "/" + action);
+                }
+                check(SHA256.HashData(await File.ReadAllBytesAsync(original)).SequenceEqual(digest),
+                    "Audio artwork direct: original hash unchanged: " + name);
+            }
+        }
         var folder = Path.Combine(scratch, "Captured output"); Directory.CreateDirectory(folder);
         vm.Settings = new() { Convert = new(OutputDirectory: folder), PlayCompletionSound = false };
         var before = access.Admissions;

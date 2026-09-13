@@ -68,11 +68,11 @@ if (args.Length == 4 && args[0] == "--image-pdf-direct")
     return 0;
 }
 if (args.Length == 5 && args[0] == "--pdf-publication-crash") return await PdfPublicationCrashContracts.RunChildAsync(args[1], args[2], args[3], args[4]);
-if (args.Length == 4 && args[0] == "--audio-conversion-direct")
+if (args.Length is 4 or 5 && args[0] == "--audio-conversion-direct")
 {
     var checks = 0;
     await AudioConversionDirectContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
-    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); }, args.Length == 5 ? args[4] : null);
     Console.WriteLine($"Passed {checks} isolated direct audio conversion checks.");
     return 0;
 }
