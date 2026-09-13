@@ -57,11 +57,13 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
 The latest combined production stage is
-`artifacts/production-staging/4921457d351a4daf85270a7f6672b542`.
+`artifacts/production-staging/a27c34ab662a44ee9ece421d94b49c19`.
 It includes catalog revision 2026-09-12.1, synchronous reader cancellation,
 per-row Analyze availability, specific failure guidance and corrected Opus surround
-mapping, with the native shell build included. The latest foundation run passes
-2,386 contracts. The earlier FLAC
+mapping and actionable combined-PDF processing-limit guidance, with the native
+shell build included. The latest foundation run passes
+2,391 contracts in the current worktree. This includes separate trial-policy
+edits not present in the staged PDF payload. The earlier FLAC
 checkpoint passes 24 optimization interruption, 96 conversion interruption and
 11 normal worker checks on stage `dc5a863d901b4eb89f94b943682511aa`.
 These are separate runs, not evidence that every release suite
@@ -90,7 +92,7 @@ The matrix record retains the failed comparison. A follow-up Xiph spectral
 comparison passes 72 speaker comparisons and two negative controls, while four
 scores still require listening review. Independent Opus fidelity, listening and
 complete source-container/rate/layout acceptance remain open.
-The fresh stage above passes 11 packaged audio checks, 52 conversion/publication
+Stage `4921457d351a4daf85270a7f6672b542` passes 11 packaged audio checks, 52 conversion/publication
 checks and 20 direct-conversion checks; logs and exact scope are in the matrix
 record. Build, payload and source/notice inventories pass. No installed or visible
 acceptance is inferred from those automated checks.
@@ -101,7 +103,19 @@ pixel-budget refusals, and successful reuse after refusal. Source hashes, write
 times, released leases and scratch cleanup pass. The host peaks around 818 MiB;
 this excludes validator children and is not whole-worker memory acceptance.
 Large alpha/16-bit inputs, native resource failures and visible acceptance remain
-open. Production source and the staged payload are unchanged.
+open. Its follow-up tests the actual worker and publisher: a large page publishes
+identically, output-cap failure cleans its reservation/journal, and a later image
+completes in the same worker. The writer now reports the existing resource-limit
+category and the app advises selecting fewer or smaller images. Three workflows
+pass on the latest stage above, with full payload inventory verification. Worker
+and validator memory measurements are scoped to these generated opaque BMPs;
+no native-allocation failure or universal memory ceiling is established.
+
+The full regression initially stalled in a rejected test-oplock cleanup. The
+[test-helper fix](analyze-io-cancellation.md) tracks actual pending requests,
+adds two refused-request regressions and bounds setup-only retries. Five isolated
+runs pass 36 checks each, then the complete foundation passes 2,391. Production
+Analyze cancellation is unchanged; the initial stalled run remains failed evidence.
 
 Prioritize the remaining work in this order:
 

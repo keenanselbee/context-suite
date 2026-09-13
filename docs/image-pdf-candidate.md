@@ -446,3 +446,61 @@ The initial host build has zero warnings/errors; its log is
 `.codex-temp/image-pdf-resources-build.log`. Earlier passing evidence at
 `.codex-temp/image-pdf-resources-0a12d8180c5348278506820ddf8f6280` predates the
 explicit image-scratch cleanup assertion and the reproducible wrapper.
+
+
+Packaged resource workflow and limit guidance (2026-09-12)
+----------------------------------------------------------
+
+The [worker resource wrapper](../tools/pdf-engine/Test-ImagePdfResourceWorker.ps1)
+now uses those generated fixtures through the actual staged worker and application
+publisher. The 16-million-pixel page publishes a named copy byte-identical to the
+independently sample-validated writer output. Three noisy pages exceed the output
+cap without publishing a partial document. A small conversion then succeeds in
+the same worker. All originals retain their hashes and timestamps; exclusive
+reads verify source-lease release. Reservations and journals are removed after
+each workflow, and disposing the worker removes its scratch and ends the process.
+Overwrite preference remains unable to recycle any original.
+
+This exposed a generic failure message at the output limit. The writer now emits
+the existing typed `ResourceLimit` category instead of reporting unsupported input.
+The executor gives a specific next action: "PDF conversion reached a processing
+limit. Select fewer or smaller images and try again. All originals were kept."
+No raw engine diagnostic crosses IPC, no new protocol field is added, and the
+128 MiB cap and output validation remain unchanged. The direct writer resource
+test also requires the typed limit failure.
+
+Fresh combined stage
+`artifacts/production-staging/a27c34ab662a44ee9ece421d94b49c19` includes this change
+and the native shell build. Build output reports zero warnings/errors; engine,
+dependency, notice, file-allowlist and inventory checks pass. The final three
+workflows pass at
+`.codex-temp/image-pdf-resource-worker-1db220c2df48417b924262b290cc7b8b/image-pdf-resource-worker.json`,
+with log `.codex-temp/image-pdf-resource-worker-final.log` and recorded exit code 0.
+The production build log is `.codex-temp/image-pdf-resource-production.log`.
+The typed writer/validator regression passes all five cases at
+`.codex-temp/image-pdf-resources-4bafa1d0a2974acdb09278fb2dc42807`, with log
+`.codex-temp/image-pdf-resources-typed.log` and exit code 0. The foundation run
+initially exposed the [rejected test-oplock cleanup bug](analyze-io-cancellation.md).
+After that test-only fix, all 2,391 current-worktree foundation contracts pass;
+separate trial-policy edits in that worktree are not part of the staged PDF
+payload or this PDF checkpoint. Broader image/audio and hidden-view suites were
+not rerun for the resource error-category/message change.
+
+One live validator was observed by exact executable path and worker parent PID.
+The worker's cumulative peak working set was 707,121,152 bytes; the observed
+validator peak was 104,255,488 bytes. Concurrent 20 ms sampling reached
+690,421,760 bytes. The concurrent sample is not the sum of per-process high-water
+marks and can miss transient peaks or short-lived children. The application host
+is excluded. These are measurements for these opaque BMP workflows, not a memory
+ceiling, native-allocation-failure test or broad input acceptance.
+
+```powershell
+.\tools\pdf-engine\Test-ImagePdfResourceWorker.ps1 -ProductionStage '<isolated combined stage>' -FixtureDirectory '<generated image-pdf-resources directory>'
+```
+
+The wrapper checks the full staged file inventory before and after execution.
+The earlier baseline at
+`.codex-temp/image-pdf-resource-worker-e269c89836614374b2e077c87a65c5f0` passes safe
+publication/refusal/reuse on the previous stage, with the old generic wording;
+it is not evidence for the new message. The timed results do not establish
+visible status delivery, keyboard, screen-reader, theme/DPI or installed behavior.

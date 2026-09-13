@@ -143,3 +143,12 @@ host and checks full-resolution RGB samples at the page/width limits, output-cap
 and pixel-budget refusals, source leases and successful reuse. Evidence stays in
 fresh `.codex-temp/image-pdf-resources-*` directories. The host's recorded memory
 peak excludes validator children; this is not whole-worker or visible acceptance.
+
+Use `Test-ImagePdfResourceWorker.ps1 -ProductionStage '<isolated combined stage>'
+-FixtureDirectory '<generated image-pdf-resources directory>'` to run the large
+page, output-cap refusal and post-refusal conversion through the staged worker
+and publisher. It verifies output identity/naming, original preservation,
+reservation/journal cleanup, actionable limit guidance and worker reuse/exit.
+The existing production inventory verifier checks the complete stage before and
+after the run. Memory sampling includes observed validator children, with its
+sampling limits recorded separately from per-process high-water marks.

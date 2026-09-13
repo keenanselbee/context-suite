@@ -55,7 +55,9 @@ internal sealed class ImagePdfExecutor(WorkerClient worker, OutputPublisher publ
                     (await publisher.AbandonAsync(reservation, false)).ToFileResult();
                 if (result.Publication?.IsCommitted != true)
                     result = result with { State = error is MediaWorkerException { Failure: ImageFailure.UnsupportedInput } ? OperationState.Unsupported : OperationState.Failed,
-                        Message = "PDF conversion failed. No images were omitted and all originals were kept." };
+                        Message = error is MediaWorkerException { Failure: ImageFailure.ResourceLimit }
+                            ? "PDF conversion reached a processing limit. Select fewer or smaller images and try again. All originals were kept."
+                            : "PDF conversion failed. No images were omitted and all originals were kept." };
             }
         }
         report?.Invoke(result);

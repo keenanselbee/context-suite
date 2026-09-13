@@ -41,6 +41,11 @@ if (args.Length == 3 && args[0] is "--audio-interruptions" or "--flac-interrupti
 }
 if (args.Length == 2 && args[0] == "--recycle") return await WindowsRecycleContracts.RunAsync(args[1]);
 if (args.Length == 5 && args[0] == "--image-pdf-publication-crash") return await ImagePdfPublicationCrashContracts.RunChildAsync(args[1], args[2], args[3], args[4]);
+if (args.Length == 4 && args[0] == "--image-pdf-resource-worker")
+{
+    await ImagePdfResourceWorkerContracts.RunAsync(args[1], args[2], args[3]);
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--image-pdf-worker")
 {
     var checks = 0;
