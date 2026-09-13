@@ -70,9 +70,10 @@ DDS, HDR, animation and unsupported color interpretations remain excluded.
 Limits: 128 MiB per source, 512 MiB across the selection, 16 million pixels per
 page, 128 million pixels total, 4,096 pages, 16,384 pixels per dimension and
 positive physical page dimensions from 0.01 to 14,400 points. The output stream
-is capped at 128 MiB. The later resource checkpoint covers large opaque BMP pages
-and output-cap refusal. Other precision/transparency/container combinations and
-whole-worker memory acceptance remain open. These bounds are refusals, not
+is capped at 128 MiB. Resource checkpoints cover large opaque BMP pages,
+output-cap refusal and the complete RGB/grayscale, 8/16-bit, opaque/alpha matrix
+of authored PNGs at the page pixel limit. Broader container combinations, native
+resource failures and whole-process-tree memory acceptance remain open. These bounds are refusals, not
 promises to complete every file at the limit.
 
 The writer takes checked read-only, single-link source leases for **all** inputs
@@ -504,3 +505,69 @@ The earlier baseline at
 publication/refusal/reuse on the previous stage, with the old generic wording;
 it is not evidence for the new message. The timed results do not establish
 visible status delivery, keyboard, screen-reader, theme/DPI or installed behavior.
+
+
+Large PNG precision and transparency (2026-09-13)
+------------------------------------------------
+
+Nine independently authored PNG fixtures now pass both the writer/validator and
+actual staged-worker publication paths. Eight are 4,000 by 4,000 pixels: the full
+RGB/grayscale, 8/16-bit and opaque/alpha cross-product at the 16-million-pixel page
+limit. A final 19-by-11, 16-bit RGBA case verifies successful small work afterward.
+No resize, matte, precision reduction or changed production limit is used.
+
+The generator writes PNG rows with .NET compression and the existing authored
+PNG chunk helper; ImageMagick does not generate its input or expected samples.
+Separate row hashes cover every color and alpha sample before encoding. Patterns
+exercise varying low 16-bit values, zero/full/partial alpha and nonzero invisible
+colors. RGB uses the pinned sRGB profile; gray uses the existing authored profile
+derived from its white point and tone curve. Decoded dimensions, bit depth,
+components, transparency and exact ICC bytes must agree before PDF validation.
+The independent pinned validator then checks complete PDF image/mask streams
+against those expectations. This is sample preservation, not rendered appearance.
+
+The public workflow copies the fixtures into an isolated test folder, uses the
+real worker and publisher with overwrite preference enabled, and requires named
+PDF copies byte-identical to the independently validated outputs. All nine pass
+in worker PID 36884, followed by verified exit and empty worker scratch. Source
+hashes/timestamps and exclusive source reads pass after each case. No journal or
+output reservation remains, and a throwing recycler proves mandatory copies.
+
+| Samples at 4,000 by 4,000 | Opaque PDF bytes | Alpha PDF bytes |
+| --- | --- | --- |
+| 8-bit grayscale | 201,722 | 438,902 |
+| 8-bit RGB | 934,322 | 1,171,503 |
+| 16-bit grayscale | 16,951,940 | 32,588,304 |
+| 16-bit RGB | 73,511,968 | 89,148,332 |
+
+Writer/validator processing takes 1.12-8.93 seconds for the large cases, excluding
+fixture generation. Staged-worker probe/conversion/publication takes 2.19-12.32
+seconds. These timings include the respective harness checks and are observations,
+not performance guarantees. The private host peaks at 1,516,486,656 working-set
+bytes; the worker peaks at 1,754,255,360 bytes. Both are cumulative per-process
+high-water marks and exclude validator children. Neither measures a concurrent
+process-tree peak or establishes a universal memory ceiling.
+
+Reproduction uses the existing isolated stage
+`artifacts/production-staging/a27c34ab662a44ee9ece421d94b49c19`:
+
+```powershell
+.\tools\pdf-engine\Test-ImagePdfPrecisionResources.ps1 -ProductionStage '<isolated combined stage>'
+.\tools\pdf-engine\Test-ImagePdfPrecisionWorker.ps1 -ProductionStage '<isolated combined stage>' -FixtureDirectory '<generated precision resource directory>'
+```
+
+Both commands pass and record exit code 0. Evidence is
+`.codex-temp/image-pdf-precision-resources-7bae41a9e750491c83f7ddf053eb461c/image-pdf-precision-resources.json`
+and its `worker/precision-worker.json`, with logs
+`.codex-temp/image-pdf-precision-resources.log` and
+`.codex-temp/image-pdf-precision-worker.log`. Generated sources and validated PDFs
+remain available there. The first command checks the pinned PDF payload before
+and after; the worker wrapper verifies the entire staged inventory before and
+after. Production implementations and this stage are unchanged. The stage still
+predates later catalog/trial changes; it is not a new integrated release payload.
+
+The two Release test hosts build and execute the new modes successfully. The
+2,403-contract foundation run remains the preceding catalog checkpoint's evidence;
+it is not rerun or augmented by these eighteen separately reported cases. Remaining
+work includes other large container/profile/orientation combinations, live native
+allocation failures, rendering and visible/accessibility/installed acceptance.

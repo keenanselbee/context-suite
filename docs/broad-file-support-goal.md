@@ -107,8 +107,9 @@ real writer/validator cases: maximum pixel count and width, oversized output and
 pixel-budget refusals, and successful reuse after refusal. Source hashes, write
 times, released leases and scratch cleanup pass. The host peaks around 818 MiB;
 this excludes validator children and is not whole-worker memory acceptance.
-Large alpha/16-bit inputs, native resource failures and visible acceptance remain
-open. Its follow-up tests the actual worker and publisher: a large page publishes
+The later PNG precision matrix below covers large alpha/16-bit samples; native
+resource failures and visible acceptance remain open. Its follow-up tests the
+actual worker and publisher: a large page publishes
 identically, output-cap failure cleans its reservation/journal, and a later image
 completes in the same worker. The writer now reports the existing resource-limit
 category and the app advises selecting fewer or smaller images. Three workflows
@@ -130,6 +131,16 @@ at 243 records, with unchanged MIME descriptions and detectors. All 2,403
 foundation contracts pass, including 12 new confidence-boundary checks. The
 current staging predates these aliases; their inclusion remains part of the next
 integrated payload. Additional meaningful MIME coverage and wider aliases remain open.
+
+The [large PNG precision matrix](image-pdf-candidate.md#large-png-precision-and-transparency-2026-09-13)
+now passes nine writer/independent-validator cases and nine actual-worker copy
+workflows. All eight RGB/grayscale, 8/16-bit and opaque/alpha combinations succeed
+at 16 million pixels, with exact sample/profile preservation, followed by small
+work in the same host/worker. Original/lease/journal/scratch and worker-exit checks
+pass. Cumulative host and worker memory measurements exclude validator children;
+native-allocation failures, wider large-input variants and rendering/visible
+acceptance remain open. The existing stage is verified unchanged; no new
+production payload or broad regression run is claimed for these test additions.
 
 Prioritize the remaining work in this order:
 

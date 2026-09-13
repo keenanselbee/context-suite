@@ -152,3 +152,18 @@ reservation/journal cleanup, actionable limit guidance and worker reuse/exit.
 The existing production inventory verifier checks the complete stage before and
 after the run. Memory sampling includes observed validator children, with its
 sampling limits recorded separately from per-process high-water marks.
+
+Run `Test-ImagePdfPrecisionResources.ps1 -ProductionStage '<isolated combined stage>'`
+for all eight RGB/grayscale, 8/16-bit and opaque/alpha combinations at 16 million
+pixels, followed by a small conversion in the same host. Generated PNG rows supply
+independent color/alpha hashes; the pinned PDF validator verifies complete output
+streams and ICC profiles. Inputs and PDFs remain under fresh
+`.codex-temp/image-pdf-precision-resources-*` directories. This tests writer and
+validator precision/resource handling, not application publication or rendering.
+
+Then run `Test-ImagePdfPrecisionWorker.ps1 -ProductionStage '<isolated combined stage>'
+-FixtureDirectory '<generated precision resource directory>'` to verify those
+nine files through the actual staged worker and publisher. It requires exact
+validated PDF identity, named copies, unchanged originals, cleared journals and
+worker reuse/exit. The entire staged inventory is checked before and after.
+Use a fresh generated matrix; worker evidence is retained in its `worker` folder.
