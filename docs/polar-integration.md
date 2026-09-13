@@ -42,18 +42,28 @@ That file is not required for reading or validating these public docs.
 | Product ID | Recorded privately | Recorded privately |
 | License benefit ID | Recorded privately | Recorded privately |
 | Checkout URL | Recorded privately | Recorded privately |
-| Customer portal URL | `<customer-portal-url>` | Pending |
+| Customer portal URL | Recorded privately; authenticated recovery unverified | Recorded privately; authenticated recovery unverified |
 
 The organization, product, and license benefit IDs and checkout URL were supplied
 by the user during production onboarding. Confirm their environment and product
-association before release use; sandbox checkout and benefit delivery have
-owner-provided screenshot evidence, but desktop activation remains unverified.
+association before release use. Sandbox checkout and benefit delivery have
+owner-provided screenshot evidence. The owner also exercised sandbox desktop
+activation, validation, second-install refusal and transfer; see the dated
+[release evidence](commercial-release-candidate-goal.md). Final test-activation
+cleanup and installed production acceptance remain unverified.
 The organization slug and support email are recorded with the private values.
 The portal URL follows the documented slug-based format; verify it opens the
 correct organization before shipping. See
 [Polar customer portal](https://polar.sh/docs/features/customer-portal/introduction).
 The displayed CAD default is a product/checkout setting, not verification of
 the payout currency. Screenshot observations are not live integration tests.
+
+The owner confirmed on 2026-09-13 that Context Suite's existing live product is
+CAD 5.00 as a one-time purchase, matching decision 0020. This is owner confirmation,
+not a completed production purchase. Navigator's separate benefit screenshots do
+not establish Context Suite's benefit settings, even though both products use
+the same Polar organization. Trials remain local and retain their original start
+time; no Polar subscription trial is needed.
 
 Keep actual environment values in the private configuration record, not this
 public table. This is release organization, not a security boundary: identifiers
