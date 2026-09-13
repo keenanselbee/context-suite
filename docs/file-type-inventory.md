@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-12.1; 243 records. This is a descriptive
+Catalog revision: 2026-09-13.1; 243 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -37,6 +37,9 @@ optional MP3 probe. These are bounded identification routes, not complete decode
 
 The [MIME review](catalog-mime-descriptions.md) lists 59 descriptive identifiers
 for 36 records; these do not determine the exact variant of a file.
+The [registration/variant reconciliation](catalog-mime-variant-review.md) reviews
+those claims and adds seven alias associations, preserving shared HEIF/AVIF
+candidates and the distinction between content and filename evidence.
 
 Core tests validate lookup reachability, ambiguity and confidence behavior.
 Filename hints never enable an operation. See [verified analysis coverage](file-type-coverage.md)
@@ -61,7 +64,7 @@ for actual parsed facts and current resource limits.
 | au | AU audio | `.au`, `.snd` | AU signature and fixed header declarations; likely |
 | audacity | Audacity project | `.aup`, `.aup3` | Filename hint only |
 | avi | AVI video | `.avi` | Filename hint only |
-| avif | AVIF image | `.avif` | Filename hint only |
+| avif | AVIF image | `.avif`, `.heif`, `.heifs`, `.hif` | Filename hint only |
 | avro | Apache Avro data | `.avro` | Filename hint only |
 | batch | Windows batch script | `.bat`, `.cmd` | Filename hint; text sampling |
 | bethesda-archive | Bethesda game archive | `.bsa`, `.ba2` | Filename hint only |
@@ -129,8 +132,8 @@ for actual parsed facts and current resource limits.
 | haskell | Haskell source | `.hs`, `.lhs` | Filename hint; text sampling |
 | hdf4 | HDF4 dataset | `.h4`, `.hdf4`, `.hdf` | Filename hint only |
 | hdf5 | HDF5 dataset | `.h5`, `.hdf5`, `.hdf` | Filename hint only |
-| heif | HEIF image container | `.heif`, `.heic`, `.hif` | Filename hint only |
-| html | HTML document | `.html`, `.htm`, `.xhtml` | Filename hint; text sampling |
+| heif | HEIF image container | `.heif`, `.heic`, `.hif`, `.heifs`, `.heics` | Filename hint only |
+| html | HTML document | `.html`, `.htm`, `.xhtml`, `.xht` | Filename hint; text sampling |
 | ical | Calendar data | `.ics`, `.ical` | Filename hint; text sampling |
 | icns | Apple icon | `.icns` | Filename hint only |
 | ico | Windows icon | `.ico` | Filename hint only |
@@ -187,7 +190,7 @@ for actual parsed facts and current resource limits.
 | odp | OpenDocument presentation | `.odp`, `.otp` | Bounded MIME/manifest and unencrypted content family |
 | ods | OpenDocument spreadsheet | `.ods`, `.ots` | Bounded MIME/manifest and unencrypted content family |
 | odt | OpenDocument text | `.odt`, `.ott` | Bounded MIME/manifest and unencrypted content family |
-| ogg | Ogg container | `.ogg`, `.oga`, `.ogv`, `.opus`, `.ogx` | Initial OggS page marker; no prefix codec or checksum validation |
+| ogg | Ogg container | `.ogg`, `.oga`, `.ogv`, `.opus`, `.ogx`, `.spx` | Initial OggS page marker; no prefix codec or checksum validation |
 | ole | Compound file container | Signature only | Bounded CFB directory/allocation facts; family needs agreeing binary headers |
 | openraster | OpenRaster image | `.ora` | Filename hint only |
 | opentype | OpenType font | `.otf` | Bounded font header declarations; likely, no glyph validation |

@@ -76,7 +76,9 @@ internal static class AnalysisContracts
         foreach (var (extension, candidates) in new[] {
             (".fit", new[] { "fit-activity", "fits" }), (".pdb", new[] { "pdb", "protein-data-bank" }),
             (".hdf", new[] { "hdf4", "hdf5" }), (".cdf", new[] { "cdf", "netcdf" }),
-            (".res", new[] { "godot-resource", "windows-resource" }), (".ase", new[] { "adobe-swatches", "aseprite" }) })
+            (".res", new[] { "godot-resource", "windows-resource" }), (".ase", new[] { "adobe-swatches", "aseprite" }),
+            (".heif", new[] { "avif", "heif" }), (".heifs", new[] { "avif", "heif" }),
+            (".hif", new[] { "avif", "heif" }) })
         {
             var name = "fixture" + extension.ToUpperInvariant();
             check(catalog.FindByName(name).Select(type => type.Id).Order().SequenceEqual(candidates),
@@ -90,6 +92,15 @@ internal static class AnalysisContracts
                 identified.Warnings.Any(warning => warning.Contains("different type")),
                 "analysis: content evidence overrides shared filename meanings for " + extension);
         }
+        check(Inspect([0, 1, 2, 255], "sequence.HEICS").Identity is
+            { FormatId: "heif", Basis: IdentificationBasis.Filename, Confidence: IdentificationConfidence.Likely },
+            "analysis: HEIC sequence suffix remains a qualified family hint without frame or codec inference");
+        check(Inspect("OggS"u8.ToArray(), "speech.SPX").Identity is
+            { FormatId: "ogg", Basis: IdentificationBasis.Content, Confidence: IdentificationConfidence.Likely },
+            "analysis: SPX with an Ogg marker identifies the container without claiming a Speex codec");
+        check(Inspect("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head/><body/></html>"u8.ToArray(), "page.XHT").Identity is
+            { FormatId: "xml", Basis: IdentificationBasis.Content, Confidence: IdentificationConfidence.Confirmed },
+            "analysis: XHT filename cannot promote generic XML parsing into validated XHTML");
         check(Inspect("HEADER    AUTHORED TEXT ONLY\n"u8.ToArray(), "model.pdb").Identity is
             { FormatId: "protein-data-bank", Basis: IdentificationBasis.Filename, Confidence: IdentificationConfidence.Likely },
             "analysis: readable PDB text is a qualified molecular filename hint, not a validated structure");

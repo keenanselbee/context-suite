@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-12.1",
+  "revision": "2026-09-13.1",
   "types": [
     {
       "id": "3gp",
@@ -190,7 +190,10 @@
       "family": "Image",
       "commonUses": "Compact images using AV1 coding, including high-dynamic-range and transparent variants.",
       "extensions": [
-        ".avif"
+        ".avif",
+        ".heif",
+        ".heifs",
+        ".hif"
       ],
       "source": "https://aomediacodec.github.io/av1-avif/v1.2.0.html",
       "mimeTypes": [
@@ -1042,7 +1045,9 @@
       "extensions": [
         ".heif",
         ".heic",
-        ".hif"
+        ".hif",
+        ".heifs",
+        ".heics"
       ],
       "source": "https://nokiatech.github.io/heif/",
       "mimeTypes": [
@@ -1072,7 +1077,8 @@
       "extensions": [
         ".html",
         ".htm",
-        ".xhtml"
+        ".xhtml",
+        ".xht"
       ],
       "source": "https://html.spec.whatwg.org/multipage/introduction.html",
       "textCompatible": true,
@@ -1797,7 +1803,8 @@
         ".oga",
         ".ogv",
         ".opus",
-        ".ogx"
+        ".ogx",
+        ".spx"
       ],
       "source": "https://www.rfc-editor.org/rfc/rfc3533.html",
       "mimeTypes": [

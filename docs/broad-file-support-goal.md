@@ -50,7 +50,7 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Area | Implemented or measured | Work required to close the area |
 | --- | --- | --- |
 | Universal Analyze | Shared results, generic/header fallback, bounded family readers, per-row availability after admission, synchronous I/O cancellation and refreshed mixed-batch performance baseline | Finish the advertised regular-file acceptance matrix; test remaining driver/network and metadata-stall cases; accept the visible report |
-| Offline catalog | 243 records, schema/version validation, source references, qualified MIME details, reconciled typical-use descriptions and current detector-route provenance | Finish exact alias/variant and MIME review; preserve the published distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
+| Offline catalog | 243 records, schema/version validation, source references, reviewed current MIME claims, reconciled typical-use descriptions and current detector-route provenance | Finish wider alias/variant review and additional meaningful MIME coverage; preserve the distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
 | Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker/interruption evidence and a rate/layout matrix with corrected Opus surround mapping | Close remaining input/metadata variants, independent decoding and human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
 | PDF | Optional structural optimization, all-page PNG conversion and combined image PDF with explicit order review | Close documented fidelity/unsupported-input and recovery gaps; accept the order dialog and outputs visibly; review redistribution and adopt the selected payload |
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
@@ -62,8 +62,9 @@ It includes catalog revision 2026-09-12.1, synchronous reader cancellation,
 per-row Analyze availability, specific failure guidance and corrected Opus surround
 mapping and actionable combined-PDF processing-limit guidance, with the native
 shell build included. The latest foundation run passes
-2,391 contracts in the current worktree. This includes separate trial-policy
-edits not present in the staged PDF payload. The earlier FLAC
+2,403 contracts in the current worktree. This includes catalog revision
+2026-09-13.1 and separate trial-policy edits not present in the staged PDF payload.
+The earlier FLAC
 checkpoint passes 24 optimization interruption, 96 conversion interruption and
 11 normal worker checks on stage `dc5a863d901b4eb89f94b943682511aa`.
 These are separate runs, not evidence that every release suite
@@ -120,6 +121,15 @@ The full regression initially stalled in a rejected test-oplock cleanup. The
 adds two refused-request regressions and bounds setup-only retries. Five isolated
 runs pass 36 checks each, then the complete foundation passes 2,391. Production
 Analyze cancellation is unchanged; the initial stalled run remains failed evidence.
+
+The [MIME registration/variant review](catalog-mime-variant-review.md) checks all
+59 current claims across 36 records and corrects seven alias associations in four
+existing records. Shared HEIF/AVIF suffixes retain multiple candidates; XHT and
+SPX remain subject to existing content/filename distinctions. The catalog stays
+at 243 records, with unchanged MIME descriptions and detectors. All 2,403
+foundation contracts pass, including 12 new confidence-boundary checks. The
+current staging predates these aliases; their inclusion remains part of the next
+integrated payload. Additional meaningful MIME coverage and wider aliases remain open.
 
 Prioritize the remaining work in this order:
 

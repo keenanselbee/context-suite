@@ -11,7 +11,7 @@ Storage and presentation
 Catalog schema 1 gains an optional `mimeTypes` array of `{ value, source }`
 records. Omitted metadata defaults to an empty array, preserving older catalog
 records. Each identifier has its own HTTPS provenance. Names use lowercase,
-parameter-free type/subtype syntax with 1?127 characters per component and a
+parameter-free type/subtype syntax with 1-127 characters per component and a
 maximum of 16 entries per record. Null entries, duplicate identifiers, invalid
 syntax and non-HTTPS references fail validation. Syntax validation does not
 itself prove IANA registration or a correct file-family association.
@@ -40,7 +40,7 @@ Only the selected identifiers and links enter the catalog; descriptions and
 format associations are independently maintained. There is no runtime registry
 download or dependency on scratch/reference files.
 
-[IANA?s protocol-registry licensing statement](https://www.iana.org/help/licensing-terms)
+[IANA's protocol-registry licensing statement](https://www.iana.org/help/licensing-terms)
 applies CC0 1.0 to applicable rights IANA/IETF hold in those registries. Its scope
 excludes linked RFCs and other materials. No RFC prose, parser code or registry
 description text is copied. Name constraints follow the registration syntax in
@@ -49,6 +49,10 @@ description text is copied. Name constraints follow the registration syntax in
 This review establishes selected registration spellings and family mappings, not
 complete catalog factual review or every MIME alias in use. The historical
 [source retrieval audit](catalog-source-review.json) remains unchanged.
+The later [variant review](catalog-mime-variant-review.md) retrieves all 59
+registrations, reconciles the current 36 MIME-bearing records and corrects seven
+missing/shared alias associations. Wider alias and additional MIME coverage
+remain open.
 
 | Catalog ID | Descriptive MIME identifiers |
 | --- | --- |
