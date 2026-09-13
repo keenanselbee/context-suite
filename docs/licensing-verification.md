@@ -16,7 +16,15 @@ contracts. Coverage includes schema-1 trial records between days three and
 seven receiving only the remaining time from their original start, restart
 persistence, concurrency, exact 168-hour expiry, clock rollback and admitted-work
 preservation. Expiry fixtures now advance beyond seven days across media flows.
-This run did not use `-Integration` or perform installed desktop acceptance.
+The follow-up production build used a fresh staging directory and passed engine
+identity, dependency and payload checks. Running the foundation contracts against
+that real worker and application passed 2,650 checks, including private image
+execution, cancellation/crash recovery, WPF startup, repeated activation and
+parent-exit cleanup. Nothing was installed or registered with Explorer.
+The staged files and logs are identified by
+`.codex-temp/licensing-production-evidence.json`; concurrent unrelated source
+work means this is test evidence, not a clean, versioned release artifact.
+Installed interactive licensing acceptance remains pending.
 Live CAD pricing, delivery and production purchase behavior remain separate gates.
 
 Customer workflow
