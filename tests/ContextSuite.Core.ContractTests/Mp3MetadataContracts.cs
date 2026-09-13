@@ -6,23 +6,63 @@ internal static class Mp3MetadataContracts
 {
     public static async Task RunAsync(Action<bool, string> check)
     {
-        foreach (var (version, encoding) in new[] { (3, 0), (3, 1), (4, 2), (4, 3) })
+        foreach (var (version, encoding) in new[] { (2, 0), (2, 1), (3, 0), (3, 1), (4, 2), (4, 3) })
         {
-            var bytes = FileOf(Tag(version, Frame(version, "TIT2", Text(encoding, "Title \u00fc")),
-                Frame(version, "TXXX", Text(encoding, "comment\0Line one\r\nLine two"))));
+            var bytes = FileOf(Tag(version, Frame(version, version == 2 ? "TT2" : "TIT2", Text(encoding, "Title \u00fc")),
+                Frame(version, version == 2 ? "TXX" : "TXXX", Text(encoding, "comment\0Line one\r\nLine two"))));
             using var stream = new MemoryStream(bytes); stream.Position = 5;
             var inventory = await Mp3Metadata.ReadAsync(stream, default);
             check(inventory.SampleRate == 48000 && inventory.Channels == 2 && inventory.AudioFrames == 2 &&
                 inventory.Tags["title"] == "Title \u00fc" && inventory.Tags["comment"] == "Line one\r\nLine two" && stream.Position == 5,
                 "MP3 inventory: ID3 version/text encoding and literal comments: " + version + "/" + encoding);
         }
-        foreach (var version in new[] { 3, 4 })
+        foreach (var version in new[] { 2, 3, 4 })
         {
             var data = Text(0, "A\u00ff\u00e0B");
-            var payload = version == 3 ? Escape(Frame(version, "TIT2", data)) : Frame(version, "TIT2", Escape(data), 2);
-            var tag = Tag(version, payload); if (version == 3) tag[5] = 128;
+            var payload = version <= 3 ? Escape(Frame(version, version == 2 ? "TT2" : "TIT2", data)) : Frame(version, "TIT2", Escape(data), 2);
+            var tag = Tag(version, payload); if (version <= 3) tag[5] = 128;
             using var stream = new MemoryStream(FileOf(tag));
             check((await Mp3Metadata.ReadAsync(stream, default)).Tags["title"] == "A\u00ff\u00e0B", "MP3 inventory: unsynchronisation version " + version);
+        }
+        foreach (var (id, key, value) in new[] { ("TT2", "title", "Title"), ("TP1", "artist", "Artist"),
+            ("TP2", "album_artist", "Band"), ("TAL", "album", "Album"), ("TRK", "track", "2/9"),
+            ("TPA", "disc", "1/2"), ("TCM", "composer", "Composer"), ("TCR", "copyright", "2026 Owner"),
+            ("TEN", "encoded_by", "Engineer"), ("TPB", "publisher", "Publisher"), ("TLA", "language", "eng"),
+            ("TP3", "performer", "Conductor"), ("TYE", "date", "1997"), ("TT1", "grouping", "Group"),
+            ("TCO", "genre", "Rock") })
+        {
+            using var stream = new MemoryStream(FileOf(Tag(2, Frame(2, id, Text(0, value)))));
+            var tags = (await Mp3Metadata.ReadAsync(stream, default)).Tags;
+            check(tags.Count == 1 && tags[key] == value, "MP3 inventory: v2.2 field " + id);
+        }
+        foreach (var (encoded, expected) in new[] { ("(17)", "Rock"), ("(17)Rock", "Rock"),
+            ("(RX)", "Remix"), ("(CR)", "Cover"), ("((Live)", "(Live)") })
+        {
+            using var stream = new MemoryStream(FileOf(Tag(2, Frame(2, "TCO", Text(0, encoded)))));
+            check((await Mp3Metadata.ReadAsync(stream, default)).Tags["genre"] == expected, "MP3 inventory: v2.2 genre " + encoded);
+        }
+        using (var stream = new MemoryStream(FileOf(Tag(2, Frame(2, "TSS", Text(0, new string('e', 65536))),
+            Frame(2, "COM", new byte[] { 0 }.Concat("und\0Comment"u8.ToArray()).ToArray()), new byte[3]))))
+        {
+            var tags = (await Mp3Metadata.ReadAsync(stream, default)).Tags;
+            check(tags.Count == 1 && tags["comment"] == "Comment", "MP3 inventory: v2.2 24-bit size, following comment and short padding");
+        }
+        foreach (var id in new[] { "PIC", "GEO", "POP", "ULT", "CRM", "TDA", "TIM", "XYZ" })
+            await Reject(FileOf(Tag(2, Frame(2, id, Text(0, "Extra")))), "unmapped v2.2 frame " + id);
+        foreach (var encoding in new[] { 2, 3 })
+            await Reject(FileOf(Tag(2, Frame(2, "TT2", Text(encoding, "Wrong")))), "v2.2 later encoding " + encoding);
+        await Reject(FileOf(Tag(2, Frame(2, "TT2", [1, 65, 0]))), "v2.2 ambiguous Unicode without BOM");
+        await Reject(FileOf(Tag(2, Frame(2, "TT2", Text(0, "One")), Frame(2, "TT2", Text(0, "Two")))), "v2.2 duplicate title");
+        await Reject(FileOf(Tag(2, Frame(2, "TCO", Text(0, "(17)(20)")))), "v2.2 multiple genres");
+        await Reject(FileOf(Tag(2, Frame(2, "TXX", Text(0, "REPLAYGAIN_TRACK_GAIN\0-3 dB")))), "v2.2 gain semantics");
+        await Reject(FileOf(Tag(2, Frame(2, "COM", new byte[] { 0 }.Concat("eng\0English"u8.ToArray()).ToArray()))), "v2.2 comment language");
+        await Reject(FileOf(Tag(2, "TT2\0\0"u8.ToArray())), "v2.2 truncated frame header");
+        await Reject(FileOf(Tag(2, "TT2\0\0\0"u8.ToArray())), "v2.2 zero frame size");
+        await Reject(FileOf(Tag(2, new byte[] { 84, 84, 50, 255, 255, 255, 0 })), "v2.2 24-bit extent beyond tag");
+        foreach (var flag in new byte[] { 1, 16, 32, 64 })
+        {
+            var tag = Tag(2, Frame(2, "TT2", Text(0, "Flag"))); tag[5] = flag;
+            await Reject(FileOf(tag), "v2.2 unsupported tag flag " + flag);
         }
         var footerTag = Tag(4, Frame(4, "TIT2", Text(3, "Footer"))); footerTag[5] = 16;
         var footer = footerTag[..10].ToArray(); "3DI"u8.CopyTo(footer);
@@ -151,6 +191,8 @@ internal static class Mp3MetadataContracts
     }
     internal static byte[] Frame(int version, string id, byte[] data, ushort flags = 0)
     {
+        if (version == 2)
+            return Encoding.ASCII.GetBytes(id).Concat(new byte[] { (byte)(data.Length >> 16), (byte)(data.Length >> 8), (byte)data.Length }).Concat(data).ToArray();
         var header = new byte[10]; Encoding.ASCII.GetBytes(id).CopyTo(header, 0);
         if (version == 4) Size(data.Length).CopyTo(header, 4); else BinaryPrimitives.WriteInt32BigEndian(header.AsSpan(4), data.Length);
         BinaryPrimitives.WriteUInt16BigEndian(header.AsSpan(8), flags); return header.Concat(data).ToArray();

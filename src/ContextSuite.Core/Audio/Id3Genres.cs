@@ -33,7 +33,7 @@ internal static class Id3Genres
     internal static string FromText(string value, int version)
     {
         if (value.Length == 0) return value;
-        if (version == 3 && value.StartsWith("((", StringComparison.Ordinal)) return value[1..];
+        if (version <= 3 && value.StartsWith("((", StringComparison.Ordinal)) return value[1..];
         var code = value; var refinement = "";
         if (value.StartsWith('('))
         {

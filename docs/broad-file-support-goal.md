@@ -62,13 +62,19 @@ It includes catalog revision 2026-09-12.1, synchronous reader cancellation,
 per-row Analyze availability, specific failure guidance and corrected Opus surround
 mapping and actionable combined-PDF processing-limit guidance, with the native
 shell build included. The latest foundation run passes
-2,403 contracts in the current worktree. This includes catalog revision
-2026-09-13.1 and separate trial-policy edits not present in the staged PDF payload.
+2,449 contracts in the current worktree. This includes catalog revision
+2026-09-13.1, separate trial-policy edits and the ID3v2.2 reader not present in the staged PDF payload.
 The earlier FLAC
 checkpoint passes 24 optimization interruption, 96 conversion interruption and
 11 normal worker checks on stage `dc5a863d901b4eb89f94b943682511aa`.
 These are separate runs, not evidence that every release suite
 has passed on a final payload.
+
+The [ID3v2.2 checkpoint](audio-engine-evaluation.md#id3v22-text-preservation-2026-09-13)
+adds bounded older-MP3 text admission and passes 100 focused native checks,
+including metadata transport, decoded lengths, safe refusals and no-op bytes.
+It closes that text-header variant; artwork, other metadata conventions,
+independent fidelity/listening and integrated payload acceptance remain open.
 
 The [catalog purpose reconciliation](catalog-purpose-review.md),
 revision 2026-09-12.1, reviews the final 34 descriptions and improves fifteen

@@ -29,6 +29,14 @@ public static class Mp3Metadata
         ["TSSE"] = "encoder", ["TDRC"] = "date", ["TYER"] = "date", ["TSST"] = "disc_subtitle",
         ["TIT1"] = "grouping", ["TCON"] = "genre"
     };
+    private static readonly Dictionary<string, string> VersionTwoNames = new(StringComparer.Ordinal)
+    {
+        ["TT2"] = "TIT2", ["TP1"] = "TPE1", ["TP2"] = "TPE2", ["TAL"] = "TALB",
+        ["TRK"] = "TRCK", ["TPA"] = "TPOS", ["TCM"] = "TCOM", ["TCR"] = "TCOP",
+        ["TEN"] = "TENC", ["TPB"] = "TPUB", ["TLA"] = "TLAN", ["TP3"] = "TPE3",
+        ["TSS"] = "TSSE", ["TYE"] = "TYER", ["TT1"] = "TIT1", ["TCO"] = "TCON",
+        ["TXX"] = "TXXX", ["COM"] = "COMM"
+    };
 
     public static async Task<Mp3MetadataInventory> ReadAsync(Stream source, CancellationToken token)
     {
@@ -44,9 +52,9 @@ public static class Mp3Metadata
             {
                 await source.ReadExactlyAsync(header.AsMemory(3, 7), token);
                 var version = header[3];
-                if (version is not (3 or 4) || header[4] != 0) throw new NotSupportedException("This ID3 version needs a metadata handler.");
-                var permittedFlags = version == 3 ? 0x80 : 0x90;
-                if ((header[5] & ~permittedFlags) != 0) throw new NotSupportedException("Extended or experimental ID3 headers need a preservation handler.");
+                if (version is not (2 or 3 or 4) || header[4] != 0) throw new NotSupportedException("This ID3 version needs a metadata handler.");
+                var permittedFlags = version == 4 ? 0x90 : 0x80;
+                if ((header[5] & ~permittedFlags) != 0) throw new NotSupportedException("Compressed, extended or experimental ID3 headers need a preservation handler.");
                 var length = Synchsafe(header.AsSpan(6));
                 if (length > MaximumTagBytes || length > source.Length - source.Position) throw new InvalidDataException("ID3 tag exceeds its extent or byte budget.");
                 var payload = new byte[length]; await source.ReadExactlyAsync(payload, token);
@@ -106,8 +114,10 @@ public static class Mp3Metadata
 
     private static ImmutableArray<AudioComment> ReadFrames(byte[] payload, int version, bool unsynchronised)
     {
-        if (version == 3 && unsynchronised) payload = RestoreUnsynchronisation(payload);
+        if (version <= 3 && unsynchronised) payload = RestoreUnsynchronisation(payload);
         var comments = ImmutableArray.CreateBuilder<AudioComment>(); var offset = 0; var count = 0; var textBytes = 0;
+        var headerBytes = version == 2 ? 6 : 10;
+        var identifierBytes = version == 2 ? 3 : 4;
         while (offset < payload.Length)
         {
             if (payload[offset] == 0)
@@ -115,16 +125,17 @@ public static class Mp3Metadata
                 if (payload.AsSpan(offset).IndexOfAnyExcept((byte)0) >= 0) throw new InvalidDataException("ID3 padding contains nonzero data.");
                 break;
             }
-            if (++count > MaximumTagFrames || offset > payload.Length - 10) throw new InvalidDataException("ID3 frame extent or count is invalid.");
-            var frame = payload.AsSpan(offset, 10);
-            foreach (var value in frame[..4])
+            if (++count > MaximumTagFrames || offset > payload.Length - headerBytes) throw new InvalidDataException("ID3 frame extent or count is invalid.");
+            var frame = payload.AsSpan(offset, headerBytes);
+            foreach (var value in frame[..identifierBytes])
                 if (value is not (>= 65 and <= 90) and not (>= 48 and <= 57)) throw new InvalidDataException("Invalid ID3 frame identifier.");
-            var id = Encoding.ASCII.GetString(frame[..4]);
-            var length = version == 4 ? (uint)Synchsafe(frame[4..8]) : BinaryPrimitives.ReadUInt32BigEndian(frame[4..8]);
-            var flags = BinaryPrimitives.ReadUInt16BigEndian(frame[8..]);
+            var id = Encoding.ASCII.GetString(frame[..identifierBytes]);
+            var length = version == 2 ? (uint)((frame[3] << 16) | (frame[4] << 8) | frame[5]) :
+                version == 4 ? (uint)Synchsafe(frame[4..8]) : BinaryPrimitives.ReadUInt32BigEndian(frame[4..8]);
+            var flags = version == 2 ? 0 : BinaryPrimitives.ReadUInt16BigEndian(frame[8..]);
             if ((version == 3 && flags != 0) || (version == 4 && (flags & ~3) != 0))
                 throw new NotSupportedException("ID3 compression, encryption, grouping or status flags need a preservation handler.");
-            offset += 10;
+            offset += headerBytes;
             if (length == 0 || length > payload.Length - offset) throw new InvalidDataException("ID3 frame is empty or truncated.");
             var data = payload.AsSpan(offset, checked((int)length)); offset += (int)length;
             byte[]? restored = null;
@@ -136,7 +147,10 @@ public static class Mp3Metadata
             }
             if (data.Length == 0) throw new InvalidDataException("ID3 frame has no value.");
             var encoding = data[0];
-            if (encoding > (version == 3 ? 1 : 3)) throw new NotSupportedException("ID3 text encoding is not permitted by this version.");
+            if (encoding > (version == 4 ? 3 : 1)) throw new NotSupportedException("ID3 text encoding is not permitted by this version.");
+            if (version == 2)
+                id = VersionTwoNames.TryGetValue(id, out var mapped) ? mapped :
+                    throw new NotSupportedException("ID3 frame needs a preservation handler: " + id);
             string key, valueText;
             if (id == "TXXX")
             {

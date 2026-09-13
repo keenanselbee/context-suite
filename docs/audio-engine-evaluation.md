@@ -983,3 +983,45 @@ The preceding 86 hidden views, 13 image direct-command and native shell contract
 were not rerun for this parser change; neither were the earlier 942 image-engine
 checks. Visible UI, screen-reader/themes/DPI, installer/signing and live commerce
 were not tested. The broad-file and commercial release goals remain incomplete.
+
+ID3v2.2 text preservation (2026-09-13)
+-------------------------------------
+
+The public MP3 reader now admits the bounded v2.2 text subset documented in
+[audio conversion policy](audio-conversion-policy.md). It reads the older frame
+headers and reuses explicit metadata writing and output validation. Production
+native recipes are unchanged; same-format MP3 remains byte-identical.
+
+**2,449 foundation contracts pass**, including 46 new MP3 inventory checks for
+both admitted encodings, every mapped descriptive frame, genre semantics,
+tag-wide unsynchronisation, a three-byte size exceeding 64 KiB, following frames
+and padding. Refusals cover unsupported metadata, encodings, duplicate fields,
+ambiguous Unicode, gain/comment semantics, zero/truncated extents and tag flags.
+The existing position-restoration and resource limits still apply.
+
+**100 focused MP3 native checks pass** using the curated runtime under
+`.codex-temp/audio-ffmpeg-8982dc9e3a0646f0bc201d7c61784128/bin` and the retained
+generated `source.mp3` in evaluation matrix `1aed7d0a6e644d999646e12e232c1533`.
+The 39 added cases exercise v2.2 common fields across five conversions and one
+MP3 no-op, Unicode/multiline and unsynchronised text to FLAC/M4A/Vorbis/Opus,
+nine additional descriptive mappings to FLAC, special genres and seven unsafe
+metadata/extent refusals. Unicode WAV retains its existing refusal policy.
+Conversions retain 96,000 decoded frames, verified source metadata and no
+missing output tags. Original digest and scratch cleanup pass.
+
+Retained evidence:
+
+```text
+.codex-temp/mp3-v22-foundation.log
+.codex-temp/mp3-v22-foundation-exit.txt
+.codex-temp/mp3-v22-native.log
+.codex-temp/mp3-v22-native-exit.txt
+.codex-temp/mp3-v22-fedfc0a04ef548a2ba7a2db8a212cb5a/mp3-preservation.json
+```
+
+Both commands exit zero and compile their Release test hosts. This is scoped
+parser/adapter evidence: the complete private audio suite, worker/publication,
+production staging, independent decoder and visible/listening acceptance were
+not rerun. The latest staged payload predates this reader change. Remaining
+metadata variants, player/listening review and the required Office converter
+remain part of the active broad-file goal.

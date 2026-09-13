@@ -3,7 +3,7 @@ Audio Conversion And FLAC Optimization Policy
 
 Status: typed audio conversion, worker/publication integration, direct Convert
 actions with a compact quality prompt, and direct FLAC Auto/Lossless dispatch.
-Visible acceptance and engine shipping adoption remain pending. Updated: 2026-09-12.
+Visible acceptance and engine shipping adoption remain pending. Updated: 2026-09-13.
 
 The public `AudioConversionPlan` separates recognized container/codec pairs from
 conversion admission. Policy `audio-fixed-1` is implemented for isolated testing;
@@ -225,7 +225,7 @@ descriptive comments when validating an Ogg output.
 MP3 conversion metadata admission
 ----------------------------------
 
-`Mp3Metadata` reads an initial ID3v2.3.0 or ID3v2.4.0 tag, then walks every MPEG
+`Mp3Metadata` reads an initial ID3v2.2.0, ID3v2.3.0 or ID3v2.4.0 tag, then walks every MPEG
 Layer III frame boundary while seeking past compressed samples. MPEG 1, 2 and
 2.5 rate/bitrate forms are supported; rate and channel count must remain stable
 and agree with the native probe. The frame count includes encoder-information
@@ -239,8 +239,9 @@ Limits are 2 MiB of ID3 data, 4,096 tag frames, the shared 256 KiB text budget,
 one million MPEG frames and the existing 512 MiB file/deadline bounds. The caller's
 position is restored on all outcomes. Version-specific sizes, padding, v2.4
 footer and data-length indicator are checked. Unsynchronisation is reversed
-before v2.3 frame traversal or for each affected v2.4 frame. The implementation
-follows the [ID3v2.3 standard copy](https://id3lib.sourceforge.net/id3/id3v2.3.0.html)
+before v2.2/v2.3 frame traversal or for each affected v2.4 frame. The implementation
+follows the [ID3v2.2 standard copy](https://mutagen-specs.readthedocs.io/en/latest/id3/id3v2.2.html),
+the [ID3v2.3 standard copy](https://id3lib.sourceforge.net/id3/id3v2.3.0.html)
 and [ID3v2.4 structure](https://github.com/id3/ID3v2.4/blob/master/id3v2.40-structure.txt).
 
 Admitted text frames cover title, artist/album artist, album, track/disc, composer,
@@ -251,8 +252,18 @@ are accepted in both versions; v2.4 also supports UTF-16BE and UTF-8. Single
 undefined-language comments with an empty description are supported. Duplicate
 or multiple values, composite/refined genres, named/language-specific comments,
 artwork, lyrics, chapters, ratings, objects/private frames, extended headers,
-compression/encryption/status flags, APE and older ID3v2 versions need handlers.
+compression/encryption/status flags, APE and other ID3 versions need handlers.
 Refusal retains originals; these gaps remain part of completing common MP3 support.
+
+The v2.2 subset reads six-byte frame headers with ordinary 24-bit big-endian
+lengths. Its three-character text identifiers map to the same shared fields;
+`TXX` and `COM` retain the custom-text and unnamed/undefined-language comment
+restrictions. Latin-1 and BOM-marked Unicode are admitted; ambiguous Unicode
+without a BOM and later encoding markers are refused. `TYE` retains the year;
+separate `TDA`/`TIM` date/time parts require a preservation mapping and stop
+conversion. Compressed tags, pictures, objects, lyrics and other unknown frames
+are refused rather than omitted. No native encoder or fixed recipe changes.
+See the [dated engine evidence](audio-engine-evaluation.md#id3v22-text-preservation-2026-09-13).
 
 A final 128-byte ID3v1.0/1.1 trailer is now inventoried separately from MPEG
 frames. Latin-1 title, artist, album, year and comment fields, the v1.1 track byte
@@ -272,7 +283,7 @@ obeys the shared field/value limits.
 Genre codes 0-147 map to their defined names, including established Winamp
 extensions; an ID3v1 genre byte of 255 is unclassified. Numeric v2 text and legacy
 parenthesized references are recognized, as are Remix/Cover and redundant matching
-refinements. Version-three escaped parentheses and version-four literal text are
+refinements. Version-two/three escaped parentheses and version-four literal text are
 kept distinct. Multiple references, different refinements and unreviewed numeric
 codes remain unsupported. The mappings follow
 [ID3v2.3 genre semantics and Appendix A](https://id3lib.sourceforge.net/id3/id3v2.3.0.html)

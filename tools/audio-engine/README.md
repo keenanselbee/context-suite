@@ -145,13 +145,16 @@ that behavior without relaxing sample counts or signal-error limits. The
 private test host also accepts `--ogg-preservation <pinned-bin> <generated-fixtures>
 <new-evidence>` for focused diagnostics; the normal adapter script includes all
 51 of these checks.
-MP3 includes 61 cases for ID3 versions/encodings, exact unsynchronised values across
+  MP3 includes 100 cases for ID3 versions/encodings, exact unsynchronised values across
 outputs, unsupported metadata, complete frame boundaries and low-rate gapless
 decoding. `--mp3-preservation` accepts the same three arguments for a focused run.
 The MP3 suite now also converts generated ID3v1.0/1.1 trailers, Latin-1 text,
 track/genre fields and agreeing combined v1/v2 tags. It verifies original hashes,
 actual output tags and decoded extents, and refuses contradictory trailers.
-Codes 0-147 use reviewed names; composite or unreviewed genres remain refused.
+  Codes 0-147 use reviewed names; composite or unreviewed genres remain refused.
+  The v2.2 cases cover shorter frame headers, shared descriptive fields and
+  Unicode/unsynchronisation, with five target conversions and one byte-identical
+  MP3 no-op. Compressed tags and unmapped picture/object/date/time frames refuse.
 These cases do not finish APE, additional genre conventions, language-specific comments,
 artwork or the remaining M4A metadata variants. The native Analyze probe retains its separately
 documented unsynchronised-tag reporting limitation.
