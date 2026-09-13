@@ -50,7 +50,7 @@ internal static class ImagePdfWorkerContracts
             Check(members.EnumerateArray().Select(member => member.GetProperty("ItemId").GetGuid()).SequenceEqual(sources.Select(source => source.ItemId)),
                 "combined PDF: recovery journal retains every original in reviewed order");
         };
-        var completed = await executor.ExecuteAsync(plan, row => { if (row.Message == "Creating and validating PDF") clock.Now = clock.Now.AddDays(4); }, default);
+        var completed = await executor.ExecuteAsync(plan, row => { if (row.Message == "Creating and validating PDF") clock.Now = clock.Now.AddDays(8); }, default);
         io.Check = null;
         Check(completed.Result.Publication?.Outcome == PublicationOutcome.CopyCreated && access.Admissions == 1 && worker.ProcessId == workerId,
             "combined PDF: one sequential worker and one admission complete seven mixed images across trial expiry");

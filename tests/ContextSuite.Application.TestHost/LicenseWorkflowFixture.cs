@@ -25,7 +25,7 @@ internal sealed class LicenseWorkflowFixture : ILicenseService
         var now = DateTimeOffset.UtcNow;
         File.WriteAllText(Path.Combine(access.FullName, "trial.json"), JsonSerializer.Serialize(new
         {
-            SchemaVersion = 1, StartedUtc = now.AddDays(-4), LastObservedUtc = now
+            SchemaVersion = 1, StartedUtc = now.AddDays(-8), LastObservedUtc = now
         }));
         var pixels = new byte[64 * 48 * 3];
         for (var y = 0; y < 48; y++)

@@ -81,7 +81,7 @@ internal sealed class LocalTrialStore : IOperationAccess
         MaxDepth = 4,
         WriteIndented = true
     };
-    private static readonly TimeSpan Duration = TimeSpan.FromHours(72);
+    private static readonly TimeSpan Duration = TimeSpan.FromDays(7);
     private static readonly TimeSpan RollbackTolerance = TimeSpan.FromMinutes(5);
     private readonly string _path;
     private readonly TimeProvider _clock;
@@ -106,7 +106,7 @@ internal sealed class LocalTrialStore : IOperationAccess
         try
         {
             var record = await ReadAsync(cancellationToken);
-            if (record is null) return new(LocalTrialState.NotStarted, "Your 72-hour trial starts when you confirm your first valid conversion or optimization.");
+            if (record is null) return new(LocalTrialState.NotStarted, "Your 7-day trial starts when you confirm your first valid conversion or optimization.");
             var now = Observe(record.LastObservedUtc);
             return Status(record, now);
         }

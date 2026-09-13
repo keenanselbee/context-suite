@@ -4,6 +4,9 @@ Lossless PNG Recompression
 Status: accepted for bounded implementation; customer release clearance pending
 Date: 2026-09-08
 
+Trial duration is superseded by [decision 0020](0020-seven-day-trial-and-pricing.md):
+seven days from the original first confirmed conversion or optimization.
+
 [Decision 0014](0014-png-precision-presets.md) subsequently extends the planner
 with bounded lossy presets; this lossless policy and its preservation rules remain unchanged.
 

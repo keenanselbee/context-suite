@@ -60,7 +60,7 @@ internal static class AudioBatchContracts
         check((await trial.ReadAccessAsync()).CanStart && !File.Exists(trialPath), "Audio access: status does not start trial");
         var admitted = await trial.AdmitConversionAsync(confirmed, default);
         check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && File.Exists(trialPath), "Audio access: one confirmed batch uses existing trial bookkeeping");
-        clock.Now = clock.Now.AddDays(4);
+        clock.Now = clock.Now.AddDays(8);
         check(admitted.IsAllowed && !(await trial.AdmitConversionAsync(confirmed, default)).IsAllowed, "Audio access: expiry blocks new work without revoking admission");
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         var untouched = Path.Combine(scratch, "audio-cancelled-trial-" + Guid.NewGuid().ToString("N"), "trial.json");

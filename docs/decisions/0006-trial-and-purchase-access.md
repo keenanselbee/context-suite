@@ -4,6 +4,10 @@ Trial And Purchase Access
 Status: accepted; trial settled in decision 0009, paid policy settled in decision 0017
 Date: 2026-09-06
 
+Trial duration and pricing are superseded by
+[decision 0020](0020-seven-day-trial-and-pricing.md): seven days and $5 CAD.
+Other accepted access and safety rules remain in effect.
+
 
 Context
 -------

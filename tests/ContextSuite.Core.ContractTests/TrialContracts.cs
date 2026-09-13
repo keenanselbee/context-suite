@@ -26,7 +26,7 @@ internal static class TrialContracts
         }
         var first = await store.AdmitAsync(confirmed);
         var start = clock.Utc;
-        check(first.IsAllowed && first.Status.ExpiresUtc == start.AddHours(72) && File.Exists(path), "trial: first confirmed conversion atomically starts 72 hours");
+        check(first.IsAllowed && first.Status.ExpiresUtc == start.AddHours(168) && File.Exists(path), "trial: first confirmed conversion atomically starts 168 hours");
         var firstBytes = await File.ReadAllBytesAsync(path);
         clock.Advance(TimeSpan.FromHours(1));
         var restarted = new LocalTrialStore(path, clock);
@@ -38,17 +38,32 @@ internal static class TrialContracts
         check(concurrent.All(a => a.IsAllowed && a.Status.ExpiresUtc == first.Status.ExpiresUtc), "trial: concurrent admissions serialize without resetting start");
         clock.Utc = clock.Utc.ToOffset(TimeSpan.FromHours(-7));
         check((await store.AdmitAsync(confirmed)).IsAllowed, "trial: UTC policy ignores local timezone offset");
-        clock.Advance(TimeSpan.FromHours(71) - TimeSpan.FromTicks(1));
+        clock.Advance(TimeSpan.FromHours(167) - TimeSpan.FromTicks(1));
         var lastMoment = await store.AdmitAsync(confirmed);
         check(lastMoment.IsAllowed, "trial: last tick before expiry admits work");
         clock.Advance(TimeSpan.FromTicks(1));
         check(!(await store.AdmitAsync(confirmed)).IsAllowed && (await store.ReadStatusAsync()).State == LocalTrialState.Expired,
-            "trial: exact 72-hour boundary blocks new work");
+            "trial: exact 168-hour boundary blocks new work");
         check(lastMoment.IsAllowed, "trial: existing admission remains valid after expiry");
         clock.Utc -= TimeSpan.FromHours(5);
         check((await store.ReadStatusAsync()).State == LocalTrialState.Unavailable, "trial: large rollback unavailable");
         clock.Utc += TimeSpan.FromHours(5);
         check((await store.ReadStatusAsync()).State == LocalTrialState.Expired, "trial: corrected clock cannot restore expired trial");
+
+        var legacyPath = Path.Combine(root, "legacy-trial.json");
+        await File.WriteAllTextAsync(legacyPath, JsonSerializer.Serialize(new
+        {
+            SchemaVersion = 1, StartedUtc = start, LastObservedUtc = start.AddDays(4)
+        }));
+        var legacyClock = new TestClock(start.AddDays(5));
+        var legacy = new LocalTrialStore(legacyPath, legacyClock);
+        var extended = await legacy.ReadStatusAsync();
+        check(extended.State == LocalTrialState.Active && extended.ExpiresUtc == start.AddDays(7),
+            "trial: previous three-day record receives seven days total from original start");
+        check((await legacy.AdmitAsync(confirmed)).IsAllowed, "trial: day-five legacy trial can admit work");
+        legacyClock.Advance(TimeSpan.FromDays(2));
+        check(!(await new LocalTrialStore(legacyPath, legacyClock).AdmitAsync(confirmed)).IsAllowed,
+            "trial: upgraded legacy record still expires seven days after original start");
 
         var smallPath = Path.Combine(root, "small", "trial.json");
         var smallClock = new TestClock(start);

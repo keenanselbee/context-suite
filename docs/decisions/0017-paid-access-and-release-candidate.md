@@ -4,6 +4,10 @@ Paid Access And Image Release Candidate
 Status: accepted; implementation in progress
 Date: 2026-09-09
 
+Trial duration and pricing are superseded by
+[decision 0020](0020-seven-day-trial-and-pricing.md): seven days and $5 CAD.
+Other accepted access and safety rules remain in effect.
+
 This decision settles the paid-access questions in decision 0006. It does not
 claim release approval or authorize live commerce, publishing or installation.
 

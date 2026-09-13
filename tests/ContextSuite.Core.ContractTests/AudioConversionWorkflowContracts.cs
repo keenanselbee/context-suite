@@ -58,7 +58,7 @@ internal static class AudioConversionWorkflowContracts
         var confirmed = AudioConversionBatch.Create(Guid.NewGuid(), [a, b], AudioFormat.Flac, new("convert", new())).Confirm(0, false, false);
         var beforeAdmission = access.Admissions;
         var acrossExpiry = await executor.ExecuteAsync(confirmed, (item, row) =>
-        { if (item.Source.ItemId == a.ItemId && row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(4); }, default);
+        { if (item.Source.ItemId == a.ItemId && row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8); }, default);
         check(acrossExpiry.Results.All(row => row.Publication?.Outcome == PublicationOutcome.CopyCreated) && access.Admissions == beforeAdmission + 1,
             "Audio conversion: admitted batch finishes both files across expiry");
         check(acrossExpiry.Results[0].Publication!.OutputPath != collision && await Hash(collision) == collisionHash,

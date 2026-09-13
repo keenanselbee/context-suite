@@ -4,6 +4,10 @@ First Image Engine And Local Trial
 Status: accepted; bounded conversion and local-trial acceptance matrix passed locally
 Date: 2026-09-06
 
+Trial duration and pricing are superseded by
+[decision 0020](0020-seven-day-trial-and-pricing.md): seven days and $5 CAD.
+Other accepted access and safety rules remain in effect.
+
 
 Decision
 --------

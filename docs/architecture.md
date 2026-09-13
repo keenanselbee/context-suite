@@ -251,7 +251,7 @@ Settings And Presets
 Commercial Access Boundary
 --------------------------
 
-The planned application admits work using trial or purchase state. Three-day
+The application admits work using trial or purchase state. Seven-day
 trial expiry may block new paid operations but must not interrupt an admitted
 batch or hide its results. Media engines and output validation do not branch on
 account credentials or contact the website.
@@ -260,7 +260,8 @@ Polar license activation and validation are allowed network operations. Media
 contents and selected paths remain local. The private commercial adapter serves
 the public access-policy contract in application orchestration; neither Explorer
 nor the media worker owns licensing. No custom website accounts are planned.
-Offline grace, refresh, and outage behavior must be decided before enforcement.
+Paid access refreshes daily and permits 30 days offline after successful
+validation; outages cannot extend that deadline. See decisions 0017 and 0020.
 Polar JSON responses are not signed offline licenses. Keep administrative tokens,
 customer keys, and signing private keys out of both repositories and build output.
 See the [Polar integration plan](polar-integration.md).

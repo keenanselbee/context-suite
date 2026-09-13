@@ -108,7 +108,7 @@ internal static class ImageConversionSmoke
                 "unsupported input does not offer an ineffective Try again action");
 
             File.WriteAllText(trial, JsonSerializer.Serialize(new { SchemaVersion = 1,
-                StartedUtc = DateTimeOffset.UtcNow.AddDays(-4), LastObservedUtc = DateTimeOffset.UtcNow }));
+                StartedUtc = DateTimeOffset.UtcNow.AddDays(-8), LastObservedUtc = DateTimeOffset.UtcNow }));
             Activate("convert", "tga", [files[1]]);
             Wait(() => IsIdle(main), "expired direct conversion completion");
             Check(!File.Exists(Path.Combine(inputs, "opaque - Converted.tga")) && Control(main, "OpenLicense").IsEnabled,

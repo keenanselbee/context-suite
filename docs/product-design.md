@@ -275,7 +275,7 @@ where their dependencies permit. Public-only builds cover the shell prototype
 and component contracts, not the complete production application. See
 [decision 0005](decisions/0005-public-and-proprietary-builds.md).
 
-The commercial direction is a three-day trial followed by Polar license-key
+The commercial direction is a seven-day trial followed by Polar license-key
 activation. Hosted checkout and the customer portal replace custom website
 accounts. A checkout redirect alone does not establish paid access. All media
 processing stays local; account services do not receive selected paths or media
@@ -283,7 +283,7 @@ contents. Access is checked by the application before work starts, never while
 Explorer constructs a menu. An admitted batch may finish after trial expiry,
 and its results remain available.
 
-The local trial starts at the first confirmed valid conversion or optimization and lasts 72
+The local trial starts at the first confirmed valid conversion or optimization and lasts 168
 elapsed hours; [decision 0009](decisions/0009-first-image-engine-and-trial.md)
 and its [PNG extension](decisions/0013-lossless-png-optimization.md)
 define clock and failure handling. Browser activation
@@ -292,7 +292,9 @@ is replaced by in-app key activation. The accepted
 all future updates, one active installation with transfer, daily revalidation,
 30-day offline grace and free Analyze access after trial expiry. Implementation
 and actual activation/transfer verification remain in progress.
-Polar is selected; pricing and license terms are still undecided. See the
+The accepted price is $5 CAD, one time, under
+[decision 0020](decisions/0020-seven-day-trial-and-pricing.md). Final licence terms
+and live checkout verification remain pending. See the
 [Polar integration plan](polar-integration.md). Keep protection modest and accept
 that determined users may reset local trials or modify binaries. See
 [decision 0006](decisions/0006-trial-and-purchase-access.md).

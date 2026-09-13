@@ -46,7 +46,7 @@ internal static class DdsWorkerContracts
         var publisher = new OutputPublisher(Path.Combine(root, "journal"), new NoRecycle());
         var executor = new ImageBatchExecutor(worker, publisher, trial);
         var result = await executor.ExecuteAsync(plan.Confirm(true, false, false), (_, state) =>
-        { if (state.State == OperationState.Succeeded) clock.Utc += TimeSpan.FromHours(73); }, default);
+        { if (state.State == OperationState.Succeeded) clock.Utc += TimeSpan.FromHours(169); }, default);
         check(result.Admission.IsAllowed && result.Results.All(item => item.State == OperationState.Succeeded), "DDS orchestration: admitted batch completes after trial expiry");
         var outputs = Directory.GetFiles(root, "* - BC7-sRGB*.dds");
         check(outputs.Length == 2 && outputs.Any(file => file.EndsWith(" (2).dds", StringComparison.Ordinal)) &&

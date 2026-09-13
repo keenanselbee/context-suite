@@ -17,11 +17,11 @@ This plan implements the direction in
 Product Setup To Confirm
 -----------------------
 
-- Product: Context Suite, one-time purchase including all future updates; final price remains open.
+- Product: Context Suite, one-time purchase including all future updates; price is $5 CAD under [decision 0020](decisions/0020-seven-day-trial-and-pricing.md).
 - Fulfillment: Polar delivers license keys and the installer when release-ready.
 - License benefit: visible, prefix CONTEXT, one activation, customer deactivation
   enabled, no usage quota, and no paid-key expiry. These are intended settings,
-  not verified dashboard state. The three-day app trial is separate.
+  not verified dashboard state. The seven-day app trial is separate.
 - Hosted checkout with Polar's default confirmation page; no custom account site.
 - Keep live checkout unpublished until delivery and commercial access pass tests.
 

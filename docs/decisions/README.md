@@ -1,8 +1,8 @@
 Architecture Decisions
 ======================
 
-Latest: [0018: Context-menu utility and output preference](0018-context-menu-utility-and-output-preference.md) --
-accepted; implementation tracked in the [simplification goal](../context-menu-simplification-goal.md).
+Latest: [0020: Seven-day trial and pricing](0020-seven-day-trial-and-pricing.md) --
+accepted; seven-day trials and a $5 CAD lifetime purchase.
 
 Use this directory for decisions that constrain implementation, packaging,
 public behavior, or long-term maintenance. Do not create a decision record for a

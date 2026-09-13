@@ -4,6 +4,10 @@ PNG, JPEG, And WebP Conversion Goal
 Status: completed locally for the bounded PNG/JPEG/WebP slice; commercial release gates remain
 Date: 2026-09-06
 
+The completed evidence below records the original 72-hour trial. The current
+duration is seven days under [decision 0020](decisions/0020-seven-day-trial-and-pricing.md),
+verified separately in [licensing verification](licensing-verification.md).
+
 
 Objective
 ---------

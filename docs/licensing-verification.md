@@ -3,8 +3,21 @@ Licensing Implementation And Verification
 
 Status: implemented locally; live Polar and interactive acceptance pending
 
-The accepted policy is [decision 0017](decisions/0017-paid-access-and-release-candidate.md).
+The accepted policy is [decision 0017](decisions/0017-paid-access-and-release-candidate.md),
+with seven-day trials and $5 CAD pricing under
+[decision 0020](decisions/0020-seven-day-trial-and-pricing.md).
 This is not commercial-release clearance or evidence of live entitlement delivery.
+
+Seven-day trial verification
+---------------------------
+
+On 2026-09-13, `tools/Test-Foundation.ps1 -Configuration Release` passed 2,403
+contracts. Coverage includes schema-1 trial records between days three and
+seven receiving only the remaining time from their original start, restart
+persistence, concurrency, exact 168-hour expiry, clock rollback and admitted-work
+preservation. Expiry fixtures now advance beyond seven days across media flows.
+This run did not use `-Integration` or perform installed desktop acceptance.
+Live CAD pricing, delivery and production purchase behavior remain separate gates.
 
 Customer workflow
 -----------------
@@ -38,7 +51,7 @@ its confirmation button remains disabled until the portal check is acknowledged.
 
 Analyze, Settings and saved results remain available after expiry. Already
 admitted media work finishes. Expired/revoked paid access does not silently start
-a new trial. Normal unactivated admission retains the existing 72-hour trial.
+a new trial. Normal unactivated admission retains the seven-day trial from its original start time.
 
 Protection and boundaries
 -------------------------

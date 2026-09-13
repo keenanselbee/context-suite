@@ -95,8 +95,9 @@ License and transfer
 --------------------
 
 The trial starts with the first confirmed valid conversion or optimization and
-lasts 72 hours. Analyze and viewing results do not start it. One purchase includes
-all future updates and allows one active installation at a time.
+lasts seven days (168 hours). Analyze and viewing results do not start it. A $5 CAD
+one-time purchase includes all future updates and allows one active installation
+at a time. Existing trials retain their original start time.
 
 Open **License...** from results, Settings or a conversion prompt, paste your purchase key,
 and select **Activate**. A successful activation is saved using Windows per-user

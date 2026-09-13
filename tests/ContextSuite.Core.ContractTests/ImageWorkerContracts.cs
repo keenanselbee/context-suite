@@ -137,7 +137,7 @@ internal static class ImageWorkerContracts
         check(!File.Exists(trialPath), "image orchestration: probing/planning/preview do not create trial data");
         var execution = await executor.ExecuteAsync(batchPlan.Confirm(true, false, false), (_, result) =>
         {
-            if (result.State == OperationState.Succeeded) clock.Utc += TimeSpan.FromHours(73);
+            if (result.State == OperationState.Succeeded) clock.Utc += TimeSpan.FromHours(169);
         }, CancellationToken.None);
         check(execution.Admission.IsAllowed && execution.Results.All(r => r.State == OperationState.Succeeded) && File.Exists(trialPath),
             "image orchestration: first confirmation persists isolated trial, admitted batch finishes after expiry");

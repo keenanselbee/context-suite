@@ -35,7 +35,7 @@ internal static class FlacWorkflowContracts
         var confirmed = FlacOptimizationPlan.Create(Guid.NewGuid(), [first, second], new("optimize", new())).Confirm(false, false);
         var result = await executor.ExecuteAsync(confirmed, (item, row) =>
         {
-            if (item.Source.ItemId == first.ItemId && row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(4);
+            if (item.Source.ItemId == first.ItemId && row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8);
         }, default);
         check(result.Admission.IsAllowed && access.Admissions == 1 && result.Results.All(row => row.Publication?.Outcome == PublicationOutcome.CopyCreated),
             "FLAC workflow: one trial admission lets both files finish across expiry");

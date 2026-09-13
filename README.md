@@ -175,14 +175,14 @@ native prototype commands remain independent. Production composition now builds;
 paid licensing is locally implemented and contract-tested, not live-verified. The image conversion flow and its bounded
 media/failure acceptance matrix are verified locally.
 
-The commercial direction is a three-day trial followed by Polar license-key
+The commercial direction is a seven-day trial followed by Polar license-key
 activation, using hosted checkout without custom website accounts. Polar account
 approval is user-confirmed; app integration has synthetic-provider evidence. Media processing
-remains local. Decision 0009 settles a 72-hour local trial starting at the first
+remains local. Decision 0020 extends the local trial to seven days starting at the first
 confirmed valid conversion or optimization; its store, execution gate and conversion UI are tested
 with isolated trial data. One purchase includes all future updates; paid access
-uses daily validation and 30-day offline grace. Final pricing and source-license
-terms remain release decisions. See the active
+uses daily validation and 30-day offline grace. The price is $5 CAD per product, with one active transferable installation.
+Final source-license terms and live checkout verification remain release decisions. See the active
 [commercial release-candidate goal](docs/commercial-release-candidate-goal.md).
 See [build ownership](docs/decisions/0005-public-and-proprietary-builds.md) and
 [commercial access](docs/decisions/0006-trial-and-purchase-access.md).

@@ -133,7 +133,7 @@ internal static class PngOptimizationContracts
         replacementView.Preset = PngOptimizationPreset.Smallest;
         check(!replacementView.ReplacementConfirmed && !replacementView.CanConfirm, "PNG UI: changed loss policy requires fresh replacement consent");
         var admission = await trial.AdmitAsync(confirmed!);
-        check(admission.IsAllowed && File.Exists(trialPath), "PNG trial: first optimization starts the same 72-hour trial");
+        check(admission.IsAllowed && File.Exists(trialPath), "PNG trial: first optimization starts the same 7-day trial");
         viewModel.ReplaceOriginal = true;
         check(!viewModel.CanConfirm, "PNG UI: unauthorized replacement cannot execute");
 
@@ -161,7 +161,7 @@ internal static class PngOptimizationContracts
         var plan = PngOptimizationPlan.Create(Guid.NewGuid(), [facts, facts with { ItemId = Guid.NewGuid() }], new("optimize", new()));
         var execution = await executor.ExecuteAsync(plan.Confirm(false, false), (_, result) =>
         {
-            if (result.State == OperationState.Succeeded) clock.Utc = clock.Utc.AddDays(4);
+            if (result.State == OperationState.Succeeded) clock.Utc = clock.Utc.AddDays(8);
         }, default);
         check(execution.Admission.IsAllowed && execution.Results.All(result => result.State == OperationState.Succeeded), "PNG batch: both admitted items finish after trial expires");
         var first = execution.Results[0].Publication!;

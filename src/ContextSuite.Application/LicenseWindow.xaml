@@ -10,7 +10,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="24">
         <TextBlock Text="Your Context Suite license" FontSize="24" Margin="0,0,0,12" />
-        <TextBlock Text="One purchase. All future updates. One active installation, transferable through Polar." TextWrapping="Wrap" />
+        <TextBlock Text="Purchase for $5 CAD. All future updates. One active installation, transferable through Polar." TextWrapping="Wrap" />
         <Label Content="License _key" Target="{Binding ElementName=LicenseKey}" Margin="0,12,0,0" />
         <PasswordBox x:Name="LicenseKey" MaxLength="512" Padding="8" IsEnabled="{Binding CanActivate}"
                      AutomationProperties.Name="License key" AutomationProperties.AutomationId="LicenseKey" />

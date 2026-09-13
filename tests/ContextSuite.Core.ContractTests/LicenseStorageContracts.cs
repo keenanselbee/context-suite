@@ -238,7 +238,7 @@ internal static class LicenseStorageContracts
         var selection = new[] { new ConversionSelection(facts.ItemId, facts.Path, facts, null) };
         var initial = ImageConversionPlanner.Create(Guid.NewGuid(), [facts], new(ImageFormat.Tga), new("convert", new())).Confirm(true, false, false);
         await trial.AdmitAsync(initial);
-        clock.Now = clock.Now.AddDays(4);
+        clock.Now = clock.Now.AddDays(8);
         check((await trial.ReadStatusAsync()).State == LocalTrialState.Expired, "open planners: fixture has expired trial");
         var trialBefore = await File.ReadAllBytesAsync(trialPath);
         await using var worker = new WorkerClient(Path.Combine(root, "must-not-start.exe"));

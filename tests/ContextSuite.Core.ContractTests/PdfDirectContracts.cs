@@ -37,7 +37,7 @@ internal static class PdfDirectContracts
                 foreach (var row in rows) row.PropertyChanged += (_, e) =>
                 {
                     if (e.PropertyName == nameof(FileRow.Result) && row.Path == png && row.Result.State == OperationState.Succeeded)
-                        clock.Now = clock.Now.AddDays(4);
+                        clock.Now = clock.Now.AddDays(8);
                 };
             };
             vm.QuickBatchCompleted += (request, rows) => { finishes++; quiet.Complete(request.RequestId, rows.Select(row => row.Result).ToArray()); };

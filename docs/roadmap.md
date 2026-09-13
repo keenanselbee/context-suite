@@ -59,7 +59,7 @@ trial-gated publication and a tested system-themed planner; its bounded media
 and failure acceptance matrix passes.
 This does not complete Milestone 2 or the other media milestones.
 
-The public/private repository direction and three-day commercial trial are now
+The public/private repository direction and seven-day commercial trial are now
 recorded in decisions 0005 and 0006. The single production foundation builds;
 trial storage/admission is now connected to the tested conversion UI;
 Polar activation is locally implemented with synthetic-provider contracts;
@@ -138,7 +138,7 @@ Historical image implementation sequence (retained milestone references):
 
 The completed brief is [PNG/JPEG/WebP batch conversion](image-conversion-goal.md).
 [Decision 0009](decisions/0009-first-image-engine-and-trial.md) settles the initial
-package, media policies and implemented 72-hour local trial. Live Polar integration remains deferred and no
+package, media policies and implemented 168-hour local trial. Live Polar integration remains deferred and no
 shipping bypass is permitted. Robust behavior takes priority over advertised
 format count. Actual codec, worker, isolated conversion-UI and production-window
 tests pass; the [acceptance audit](image-conversion-goal.md) records scope and
@@ -214,7 +214,7 @@ Resolve before the dependent media or release work:
   engine before their dependent slices.
 - Installer, signing, update, and diagnostics strategy.
 - Exact private engine adapters and optimization policy definitions.
-- Access-policy boundary for the three-day trial and purchase workflow
+- Access-policy boundary for the seven-day trial and purchase workflow
   (direction accepted in decision 0006; timing and offline policy still open).
 
 Exit criteria:
@@ -449,7 +449,7 @@ no separate portfolio application or shipping access bypass.
 
 Deliver and verify:
 
-- The three-day trial with clear expiry information and completion of batches
+- The seven-day trial with clear expiry information and completion of batches
   admitted before expiry.
 - Polar hosted checkout, key activation with one active installation, and the
   chosen local storage and verification policy. Redirects cannot grant access.

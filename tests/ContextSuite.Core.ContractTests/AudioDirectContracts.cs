@@ -37,7 +37,7 @@ internal static class AudioDirectContracts
                     row.PropertyChanged += (_, e) =>
                     {
                         if (e.PropertyName == nameof(FileRow.Result) && row.Path == png && row.Result.State is OperationState.Succeeded or OperationState.Unchanged)
-                            clock.Now = clock.Now.AddDays(4);
+                            clock.Now = clock.Now.AddDays(8);
                     };
             };
             vm.QuickBatchCompleted += (request, rows) => { finishes++; quiet.Complete(request.RequestId, rows.Select(row => row.Result).ToArray()); };

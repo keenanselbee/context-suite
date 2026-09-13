@@ -45,7 +45,7 @@ internal static class FlacBatchContracts
         check((await access.ReadAccessAsync()).CanStart && !File.Exists(trialPath), "FLAC access: read-only status does not start trial");
         var admitted = await access.AdmitOptimizationAsync(confirmed, default);
         check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && File.Exists(trialPath), "FLAC access: confirmed batch starts existing trial bookkeeping");
-        clock.Now = clock.Now.AddDays(4);
+        clock.Now = clock.Now.AddDays(8);
         check(admitted.IsAllowed && !(await access.AdmitOptimizationAsync(confirmed, default)).IsAllowed, "FLAC access: expiry blocks new work without revoking admitted batch");
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         var cancelledPath = Path.Combine(scratch, "flac-cancelled-trial-" + Guid.NewGuid().ToString("N"), "trial.json");

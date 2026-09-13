@@ -33,7 +33,7 @@ internal static class PdfPageWorkflowContracts
         await File.WriteAllTextAsync(collision, "existing file canary");
         var plan = Plan(first, second);
         var completed = await executor.ExecuteAsync(plan, (_, _, row) =>
-        { if (row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(4); }, default);
+        { if (row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8); }, default);
         check(completed.Admission.IsAllowed && completed.Pages.Count == 4 && completed.Pages.All(page => page.Result.Publication?.Outcome == PublicationOutcome.CopyCreated) && access.Admissions == 1,
             "PDF pages: four page copies complete under one admission across trial expiry and overwrite preference");
         check(worker.ProcessId == workerId, "PDF pages: one sequential worker handles the batch");

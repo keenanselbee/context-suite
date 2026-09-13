@@ -33,7 +33,7 @@ internal static class PdfOptimizationWorkflowContracts
         var confirmed = PdfOptimizationPlan.Create(Guid.NewGuid(), [first, second], new("optimize", new(ReplaceOriginals: true))).Confirm();
         var result = await executor.ExecuteAsync(confirmed, (item, row) =>
         {
-            if (item.Source.ItemId == first.ItemId && row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(4);
+            if (item.Source.ItemId == first.ItemId && row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8);
         }, default);
         check(result.Admission.IsAllowed && access.Admissions == 1 && result.Results.All(row => row.Publication?.Outcome == PublicationOutcome.CopyCreated),
             "PDF optimization: one trial admission completes both copies across expiry despite overwrite preference");

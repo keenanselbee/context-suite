@@ -30,7 +30,7 @@ internal static class PdfPageDirectContracts
             {
                 starts++; quiet.Begin(request.RequestId, true, DateTimeOffset.UtcNow);
                 foreach (var row in rows) row.PropertyChanged += (_, e) =>
-                { if (e.PropertyName == nameof(FileRow.Result) && row.Path == bmp && row.Result.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(4); };
+                { if (e.PropertyName == nameof(FileRow.Result) && row.Path == bmp && row.Result.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8); };
             };
             vm.QuickBatchCompleted += (request, rows) => { finishes++; sound = quiet.Complete(request.RequestId, rows.Select(row => row.Result).ToArray()); };
             vm.Admit(new(Guid.NewGuid(), "convert", "png", [pdf, bmp, png])); await vm.WaitForIdleAsync();
