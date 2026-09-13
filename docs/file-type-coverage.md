@@ -19,7 +19,7 @@ The historical [source retrieval audit](catalog-source-review.json) covers 223 r
 186 retrieved, 7 search-indexed and 30 unavailable to the research tool. This
 is a reachability/title review, not completed factual, variant or reuse-rights
 acceptance. Unavailable retrieval does not establish a broken URL. MIME coverage
-beyond the first 36 records and complete alias/variant/detector provenance remain pending. The later
+beyond the first 36 records and complete alias/variant provenance remain pending. The later
 [common image review](image-header-analysis.md) verifies four descriptions and
 their newly implemented bounded detectors against primary specifications.
 The [alias review](catalog-alias-review.md) adds six missing alternative meanings
@@ -55,8 +55,12 @@ executable capabilities remain unchanged.
 The [purpose reconciliation](catalog-purpose-review.md) reviews the remaining
 34 records and accounts for all 243 current descriptions without duplicate or
 missing IDs. Fifteen descriptions/references improve. This completes the
-typical-use review; exact aliases, variants, MIME identifiers and detector evidence
-remain separate acceptance obligations.
+typical-use review; exact aliases, variants and MIME identifiers remain separate
+acceptance obligations. The [detector provenance reconciliation](catalog-detector-review.md)
+now accounts for all 34 content-identifiable catalog IDs and 209 filename-hint
+records. It corrects the inventory's stale MP3 label and records the precise
+prefix, package and optional-probe distinctions, without adding runtime behavior
+or claiming complete format validation.
 The [document font reference scan](document-font-references.md) adds optional
 literal names and unresolved theme references from selected OOXML XML parts,
 with declared scope and unavailable results on budget/format failure.

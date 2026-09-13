@@ -50,7 +50,7 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Area | Implemented or measured | Work required to close the area |
 | --- | --- | --- |
 | Universal Analyze | Shared results, generic/header fallback, bounded family readers, per-row availability after admission, synchronous I/O cancellation and refreshed mixed-batch performance baseline | Finish the advertised regular-file acceptance matrix; test remaining driver/network and metadata-stall cases; accept the visible report |
-| Offline catalog | 243 records, schema/version validation, source references, qualified MIME details and a reconciled typical-use review for every current record | Finish exact alias/variant, MIME and detector provenance; preserve the published distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
+| Offline catalog | 243 records, schema/version validation, source references, qualified MIME details, reconciled typical-use descriptions and current detector-route provenance | Finish exact alias/variant and MIME review; preserve the published distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
 | Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker/interruption evidence and a rate/layout matrix with corrected Opus surround mapping | Close remaining input/metadata variants, independent decoding and human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
 | PDF | Optional structural optimization, all-page PNG conversion and combined image PDF with explicit order review | Close documented fidelity/unsupported-input and recovery gaps; accept the order dialog and outputs visibly; review redistribution and adopt the selected payload |
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
@@ -73,9 +73,13 @@ The [catalog purpose reconciliation](catalog-purpose-review.md),
 revision 2026-09-12.1, reviews the final 34 descriptions and improves fifteen
 descriptions/references. All 243 current IDs have a purpose review, without gaps
 or duplicate counting. The catalog changes no recognition or capability fields.
-Alias/variant, MIME and detector
-provenance remain open, as do the required Office converter and integrated gates.
-Verification passes 2,367 foundation contracts and 104 documentation files, with
+Alias/variant and MIME review remain open, as do the required Office converter and
+integrated gates. The [detector-route reconciliation](catalog-detector-review.md)
+accounts for all 34 content-identifiable IDs and 209 filename-hint records. It
+corrects the inventory's MP3 optional-probe description without changing runtime
+behavior, aliases, confidence or capabilities. Format conformance and broader
+resource/visible acceptance remain separate from this provenance inventory.
+That earlier purpose review passed 2,367 foundation contracts and 104 documentation files, with
 an independent check that only purpose/source fields and revision changed and
 that every current ID occurs once in the purpose-review partition. The successful
 foundation log is `.codex-temp/catalog-remaining-foundation-retry.log`; the first

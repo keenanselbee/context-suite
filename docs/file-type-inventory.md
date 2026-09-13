@@ -30,7 +30,10 @@ The [video purpose review](catalog-video-review.md) covers ten records and updat
 seven descriptions/references without adding video actions or codec guarantees.
 The [purpose reconciliation](catalog-purpose-review.md) reviews the remaining
 34 records and maps all 243 current IDs to their purpose reviews. Complete
-alias/variant and detector provenance remains separate from this description review.
+alias/variant provenance remains separate from this description review.
+The [detector reconciliation](catalog-detector-review.md) accounts for 34 IDs
+reachable through content evidence and 209 filename-hint records, including the
+optional MP3 probe. These are bounded identification routes, not complete decoders.
 
 The [MIME review](catalog-mime-descriptions.md) lists 59 descriptive identifiers
 for 36 records; these do not determine the exact variant of a file.
@@ -84,7 +87,7 @@ for actual parsed facts and current resource limits.
 | cur | Windows cursor | `.cur`, `.ani` | Filename hint only |
 | dart | Dart source | `.dart` | Filename hint; text sampling |
 | dbase | dBASE table | `.dbf` | Filename hint only |
-| dds | DDS texture | `.dds` | Existing bounded content detector |
+| dds | DDS texture | `.dds` | DDS signature; supported header parsing can confirm structure, not pixels |
 | deb | Debian package | `.deb` | Filename hint only |
 | desktop-entry | Desktop entry | `.desktop` | Filename hint; text sampling |
 | dicom | DICOM medical data | `.dcm`, `.dicom` | Filename hint only |
@@ -165,14 +168,14 @@ for actual parsed facts and current resource limits.
 | midi | MIDI sequence | `.mid`, `.midi`, `.kar` | Filename hint only |
 | minidump | Crash dump | `.dmp`, `.mdmp` | Filename hint only |
 | mobi | Mobipocket e-book | `.mobi`, `.prc` | Filename hint only |
-| mp3 | MP3 audio | `.mp3` | Filename hint only |
+| mp3 | MP3 audio | `.mp3` | Filename hint without the optional audio probe; reported MP3 container gives likely content identity |
 | mp4 | MPEG-4 media container | `.mp4`, `.m4v` | Filename hint only |
 | mpeg | MPEG program stream | `.mpg`, `.mpeg`, `.mpe`, `.vob` | Filename hint only |
 | mpeg-ts | MPEG transport stream | `.ts`, `.m2ts`, `.mts`, `.m2t` | Filename hint only |
 | msg | Outlook message | `.msg` | Filename hint only |
 | msi | Windows Installer database | `.msi`, `.msp` | Filename hint only |
 | msix | Windows app package | `.msix`, `.appx`, `.msixbundle`, `.appxbundle` | Filename hint only |
-| mz | DOS executable header | Signature only | Existing bounded content detector |
+| mz | DOS executable header | Signature only | Initial MZ signature; no later executable-family guarantee |
 | netcdf | NetCDF dataset | `.nc`, `.nc4`, `.cdf` | Filename hint only |
 | notebook | Jupyter notebook | `.ipynb` | Filename hint; text sampling |
 | npy | NumPy array | `.npy`, `.npz` | Filename hint only |
@@ -184,7 +187,7 @@ for actual parsed facts and current resource limits.
 | odp | OpenDocument presentation | `.odp`, `.otp` | Bounded MIME/manifest and unencrypted content family |
 | ods | OpenDocument spreadsheet | `.ods`, `.ots` | Bounded MIME/manifest and unencrypted content family |
 | odt | OpenDocument text | `.odt`, `.ott` | Bounded MIME/manifest and unencrypted content family |
-| ogg | Ogg container | `.ogg`, `.oga`, `.ogv`, `.opus`, `.ogx` | Existing bounded content detector |
+| ogg | Ogg container | `.ogg`, `.oga`, `.ogv`, `.opus`, `.ogx` | Initial OggS page marker; no prefix codec or checksum validation |
 | ole | Compound file container | Signature only | Bounded CFB directory/allocation facts; family needs agreeing binary headers |
 | openraster | OpenRaster image | `.ora` | Filename hint only |
 | opentype | OpenType font | `.otf` | Bounded font header declarations; likely, no glyph validation |
@@ -194,8 +197,8 @@ for actual parsed facts and current resource limits.
 | pcap | Packet capture | `.pcap`, `.cap` | Filename hint only |
 | pcapng | PCAP Next Generation capture | `.pcapng` | Filename hint only |
 | pdb | Program debug database | `.pdb` | Filename hint only |
-| pdf | PDF document | `.pdf` | Existing bounded content detector |
-| pe | Windows executable image | `.exe`, `.dll`, `.sys`, `.scr`, `.cpl`, `.ocx` | Existing bounded content detector |
+| pdf | PDF document | `.pdf` | Initial PDF signature and header version; optional bounded structural probe |
+| pe | Windows executable image | `.exe`, `.dll`, `.sys`, `.scr`, `.cpl`, `.ocx` | MZ plus bounded declared PE signature/COFF header; sections not validated |
 | perl | Perl source | `.pl`, `.pm` | Filename hint; text sampling |
 | php | PHP source | `.php`, `.phtml` | Filename hint; text sampling |
 | pickle | Python pickle data | `.pkl`, `.pickle` | Filename hint only |
@@ -203,7 +206,7 @@ for actual parsed facts and current resource limits.
 | plist | Apple property list | `.plist` | Filename hint; text sampling |
 | pls | PLS playlist | `.pls` | Filename hint; text sampling |
 | ply | PLY geometry | `.ply` | Filename hint only |
-| png | PNG image | `.png`, `.apng` | Existing bounded content detector |
+| png | PNG image | `.png`, `.apng` | PNG signature and available first IHDR; no CRC or animation validation |
 | pnm | Portable anymap image | `.pbm`, `.pgm`, `.ppm`, `.pnm`, `.pam` | Filename hint only |
 | postscript | PostScript document | `.ps` | Filename hint; text sampling |
 | powershell | PowerShell script | `.ps1`, `.psm1`, `.psd1` | Filename hint; text sampling |
@@ -240,7 +243,7 @@ for actual parsed facts and current resource limits.
 | swift | Swift source | `.swift` | Filename hint; text sampling |
 | tar | TAR archive | `.tar` | Filename hint only |
 | tar-gzip | GZIP-compressed TAR archive | `.tar.gz`, `.tgz` | Filename hint only |
-| text | Text | `.txt`, `.text`, `.log` | Existing bounded content detector |
+| text | Text | `.txt`, `.text`, `.log` | Strict Unicode sampling and control-character heuristic; possible encoding |
 | tga | Targa image | `.tga`, `.targa` | Filename hint only |
 | tiff | TIFF image | `.tif`, `.tiff` | Filename hint only |
 | toml | TOML configuration | `.toml` | Filename hint; text sampling |
@@ -282,7 +285,7 @@ for actual parsed facts and current resource limits.
 | xps | XML Paper Specification document | `.xps`, `.oxps` | Filename hint only |
 | xz | XZ compressed data | `.xz`, `.txz` | Filename hint only |
 | yaml | YAML data | `.yaml`, `.yml` | Filename hint; text sampling |
-| zip | ZIP container | `.zip`, `.zipx` | Existing bounded content detector |
+| zip | ZIP container | `.zip`, `.zipx` | Initial ZIP record marker; bounded document inspection may identify a family |
 | zstd | Zstandard compressed data | `.zst`, `.zstd`, `.tzst` | Filename hint only |
 
 The next coverage pass should add MIME identifiers where meaningful, independently
