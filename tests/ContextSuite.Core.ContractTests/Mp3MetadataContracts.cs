@@ -2,10 +2,11 @@ using System.Buffers.Binary;
 using System.Text;
 using ContextSuite.Core.Audio;
 
-internal static class Mp3MetadataContracts
+internal static partial class Mp3MetadataContracts
 {
     public static async Task RunAsync(Action<bool, string> check)
     {
+        await PicturesAsync(check);
         foreach (var (version, encoding) in new[] { (2, 0), (2, 1), (3, 0), (3, 1), (4, 2), (4, 3) })
         {
             var bytes = FileOf(Tag(version, Frame(version, version == 2 ? "TT2" : "TIT2", Text(encoding, "Title \u00fc")),

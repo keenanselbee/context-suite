@@ -28,6 +28,8 @@ The policy accepts one audio stream in WAVE PCM/float, native FLAC, MP3,
 M4A/AAC or Ogg Vorbis/Opus. ALAC and other codecs are not admitted by recognizing
 their container. FLAC embedded artwork can now convert to Vorbis/Opus through
 exact picture-block transport; see the [boundary and evidence](audio-artwork-conversion.md).
+MP3 PNG/JPEG artwork can convert to FLAC/Vorbis/Opus through the bounded
+[ID3 picture handler](mp3-artwork-conversion.md), retaining all quality decisions.
 Other cross-format artwork, additional streams and unknown multichannel layouts
 require preservation work before conversion. Native FLAC optimization has its
 separate raw-preservation path for embedded artwork, described below.
@@ -255,7 +257,7 @@ text fields use the shared alias/semantic rules. Latin-1 and BOM-qualified UTF-1
 are accepted in both versions; v2.4 also supports UTF-16BE and UTF-8. Single
 undefined-language comments with an empty description are supported. Duplicate
 or multiple values, composite/refined genres, named/language-specific comments,
-artwork, lyrics, chapters, ratings, objects/private frames, extended headers,
+unreviewed artwork, lyrics, chapters, ratings, objects/private frames, extended headers,
 compression/encryption/status flags, APE and other ID3 versions need handlers.
 Refusal retains originals; these gaps remain part of completing common MP3 support.
 
@@ -265,9 +267,13 @@ lengths. Its three-character text identifiers map to the same shared fields;
 restrictions. Latin-1 and BOM-marked Unicode are admitted; ambiguous Unicode
 without a BOM and later encoding markers are refused. `TYE` retains the year;
 separate `TDA`/`TIM` date/time parts require a preservation mapping and stop
-conversion. Compressed tags, pictures, objects, lyrics and other unknown frames
+conversion. Compressed tags, unreviewed pictures, objects, lyrics and other unknown frames
 are refused rather than omitted. No native encoder or fixed recipe changes.
 See the [dated engine evidence](audio-engine-evaluation.md#id3v22-text-preservation-2026-09-13).
+
+The later [MP3 artwork handler](mp3-artwork-conversion.md) explicitly admits
+bounded PIC/APIC PNG/JPEG payloads for FLAC/Vorbis/Opus, preserving complete image
+bytes and picture semantics. Other picture targets/formats remain refused.
 
 A final 128-byte ID3v1.0/1.1 trailer is now inventoried separately from MPEG
 frames. Latin-1 title, artist, album, year and comment fields, the v1.1 track byte

@@ -7,7 +7,7 @@ using ContextSuite.Core.Audio;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Operations;
 
-internal static class AudioConversionDirectContracts
+internal static partial class AudioConversionDirectContracts
 {
     public static async Task RunAsync(string scratch, string executable, string fixtures, Action<bool, string> check, string? artworkFixtures = null)
     {

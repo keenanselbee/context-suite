@@ -68,6 +68,14 @@ if (args.Length == 4 && args[0] == "--image-pdf-direct")
     return 0;
 }
 if (args.Length == 5 && args[0] == "--pdf-publication-crash") return await PdfPublicationCrashContracts.RunChildAsync(args[1], args[2], args[3], args[4]);
+if (args.Length == 4 && args[0] == "--mp3-artwork-direct")
+{
+    var checks = 0;
+    await AudioConversionDirectContracts.Mp3PicturesAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated direct MP3 artwork checks.");
+    return 0;
+}
 if (args.Length is 4 or 5 && args[0] == "--audio-conversion-direct")
 {
     var checks = 0;

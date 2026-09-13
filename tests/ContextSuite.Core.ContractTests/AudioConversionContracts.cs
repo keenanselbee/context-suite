@@ -31,6 +31,16 @@ internal static class AudioConversionContracts
                 plan.RequiredConsent == AudioConversionConsent.None, "audio plan: ordinary target retains rate/channels " + target);
         }
         var mp3 = Facts("mp3", "mp3");
+        var picturedMp3 = mp3 with { Streams = mp3.Streams.Add(new(1, "video", "png", null, null, null, null, null, null, empty, true)) };
+        foreach (var target in new[] { AudioFormat.Flac, AudioFormat.Vorbis, AudioFormat.Opus })
+        {
+            var pictured = AudioConversionPlan.Create(picturedMp3, target);
+            check(pictured.RequiredConsent == (target == AudioFormat.Flac ? AudioConversionConsent.PrecisionReduction : AudioConversionConsent.LossyTranscoding),
+                "audio plan: MP3 artwork handler retains required quality consent " + target);
+        }
+        foreach (var target in new[] { AudioFormat.Wave, AudioFormat.M4a })
+            Reject(() => AudioConversionPlan.Create(picturedMp3, target), "MP3 artwork requires target handler " + target);
+        check(AudioConversionPlan.Create(picturedMp3, AudioFormat.Mp3).AlreadyTarget, "audio plan: MP3 artwork same-format no-op");
         var decoded = AudioConversionPlan.Create(mp3, AudioFormat.Wave);
         check(decoded.OutputCodec == "pcm_f32le" && decoded.RequiresExactSamples && decoded.Notices.Any(text => text.Contains("cannot restore")),
             "audio plan: lossless output preserves decoded audio without restoration claim");

@@ -4,7 +4,11 @@ Audio Engine Evaluation Results
 Date: 2026-09-09 onward. Status: generated-fixture evaluation, private integration
 and direct audio commands implemented; production audio payload adoption pending.
 
-The latest [FLAC artwork conversion checkpoint](audio-artwork-conversion.md)
+The latest [MP3 artwork checkpoint](mp3-artwork-conversion.md) adds bounded
+PNG/JPEG cover preservation for FLAC, Vorbis and Opus. Its independent cover
+decoding and fresh worker/publication results are recorded separately.
+
+The earlier [FLAC artwork conversion checkpoint](audio-artwork-conversion.md)
 passes 33 focused private checks, 36 direct-command checks, 52 audio conversion
 workflow checks and 2,464 foundation contracts. A fresh combined stage includes
 the exact FLAC-to-Vorbis/Opus picture transport and prior ID3v2.2 reader. These

@@ -72,18 +72,23 @@ advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
 The latest combined production stage is
-`artifacts/production-staging/394a9b5bb92b45a5ae3b6ec3b5c73f46`.
+`artifacts/production-staging/747958a4173e4bf4b16ad92e9fd9c7a2`.
 It includes catalog revision 2026-09-13.1, the prior Analyze and combined-PDF
 failure handling, corrected Opus surround mapping, separate trial-policy edits,
 the ID3v2.2 reader and bounded FLAC-to-Vorbis/Opus artwork transport, with the
 native shell build included. It also includes the new
 [Office embedded-reference analysis](document-embedded-analysis.md), which
 classifies image, OLE/package and VBA relationships without reading their targets.
-The latest foundation run passes 2,496 contracts, including 32 new declaration checks.
-The [artwork checkpoint](audio-artwork-conversion.md) additionally passes 33
+It now also includes the [MP3 artwork handler](mp3-artwork-conversion.md) for
+PNG/JPEG covers to FLAC, Vorbis and Opus. The latest foundation run passes 2,561
+contracts, including 65 added picture/consent checks; 91 focused private artwork,
+100 existing MP3 preservation and 58 fresh worker/direct checks also pass.
+Cover bytes, descriptions, order and independent image decoding are verified;
+quality decisions, copy defaults and original-file protection remain intact.
+The earlier [FLAC artwork checkpoint](audio-artwork-conversion.md) passes 33
 focused private, 36 direct-command and 52 audio conversion workflow checks.
-Picture bytes, descriptions and order survive both target formats; other artwork
-paths and human listening/player acceptance remain open. This fresh staging is
+Picture bytes, descriptions and order survive those target formats; remaining
+artwork paths and human listening/player acceptance remain open. This fresh staging is
 not an all-feature regression or commercial release clearance.
 The earlier FLAC
 checkpoint passes 24 optimization interruption, 96 conversion interruption and

@@ -6,11 +6,14 @@ using System.Text;
 namespace ContextSuite.Core.Audio;
 
 public sealed record Mp3MetadataInventory(int SampleRate, int Channels, int AudioFrames, long AudioOffset,
-    ImmutableDictionary<string, string> Tags);
+    ImmutableDictionary<string, string> Tags)
+{
+    public ImmutableArray<FlacMetadataBlock> Pictures { get; init; } = [];
+}
 
 // Inventory tags and walk every MPEG Layer III frame boundary, seeking past
 // compressed samples. Native decoding still owns audio validity and gapless trim.
-public static class Mp3Metadata
+public static partial class Mp3Metadata
 {
     public const int MaximumTagBytes = 2 * 1024 * 1024;
     public const int MaximumTagFrames = 4096;
@@ -38,7 +41,7 @@ public static class Mp3Metadata
         ["TXX"] = "TXXX", ["COM"] = "COMM"
     };
 
-    public static async Task<Mp3MetadataInventory> ReadAsync(Stream source, CancellationToken token)
+    public static async Task<Mp3MetadataInventory> ReadAsync(Stream source, CancellationToken token, bool preservePictures = false)
     {
         if (!source.CanRead || !source.CanSeek || source.Length is < 4 or > AudioFileSource.MaximumFileBytes)
             throw new InvalidDataException("MP3 inventory requires a bounded seekable input.");
@@ -48,6 +51,7 @@ public static class Mp3Metadata
             token.ThrowIfCancellationRequested(); source.Position = 0;
             var header = new byte[10]; await source.ReadExactlyAsync(header.AsMemory(0, 3), token);
             var comments = ImmutableArray<AudioComment>.Empty;
+            var pictures = ImmutableArray.CreateBuilder<FlacMetadataBlock>();
             if (header.AsSpan(0, 3).SequenceEqual("ID3"u8))
             {
                 await source.ReadExactlyAsync(header.AsMemory(3, 7), token);
@@ -58,7 +62,7 @@ public static class Mp3Metadata
                 var length = Synchsafe(header.AsSpan(6));
                 if (length > MaximumTagBytes || length > source.Length - source.Position) throw new InvalidDataException("ID3 tag exceeds its extent or byte budget.");
                 var payload = new byte[length]; await source.ReadExactlyAsync(payload, token);
-                comments = ReadFrames(payload, version, (header[5] & 128) != 0);
+                comments = ReadFrames(payload, version, (header[5] & 128) != 0, pictures, preservePictures);
                 if ((header[5] & 16) != 0)
                 {
                     var footer = new byte[10]; await source.ReadExactlyAsync(footer, token);
@@ -106,13 +110,18 @@ public static class Mp3Metadata
             if (count == 0) throw new InvalidDataException("MP3 contains no audio frames.");
             var tags = AudioCommentConversion.Read(comments);
             if (legacy is not null) tags = MergeLegacy(legacy, tags);
-            return new(rate, channels, count, audioOffset, tags);
+            var pictureBlocks = pictures.ToImmutable();
+            var descriptions = FlacDescriptiveMetadata.ReadBlocks(pictureBlocks);
+            if (descriptions.Pictures.Select(picture => picture.Description).Distinct(StringComparer.Ordinal).Count() != pictures.Count)
+                throw new InvalidDataException("ID3 pictures have duplicate descriptions.");
+            return new(rate, channels, count, audioOffset, tags) { Pictures = pictureBlocks };
         }
         catch (EndOfStreamException ex) { throw new InvalidDataException("MP3 tag or frame is truncated.", ex); }
         finally { source.Position = position; }
     }
 
-    private static ImmutableArray<AudioComment> ReadFrames(byte[] payload, int version, bool unsynchronised)
+    private static ImmutableArray<AudioComment> ReadFrames(byte[] payload, int version, bool unsynchronised,
+        ImmutableArray<FlacMetadataBlock>.Builder pictures, bool preservePictures)
     {
         if (version <= 3 && unsynchronised) payload = RestoreUnsynchronisation(payload);
         var comments = ImmutableArray.CreateBuilder<AudioComment>(); var offset = 0; var count = 0; var textBytes = 0;
@@ -148,6 +157,13 @@ public static class Mp3Metadata
             if (data.Length == 0) throw new InvalidDataException("ID3 frame has no value.");
             var encoding = data[0];
             if (encoding > (version == 4 ? 3 : 1)) throw new NotSupportedException("ID3 text encoding is not permitted by this version.");
+            if (id == (version == 2 ? "PIC" : "APIC"))
+            {
+                if (!preservePictures) throw new NotSupportedException("ID3 artwork requires an explicit target preservation handler.");
+                if (pictures.Count >= FlacDescriptiveMetadata.MaximumPictures) throw new InvalidDataException("Too many ID3 pictures.");
+                pictures.Add(ReadPicture(data, version, ref textBytes));
+                continue;
+            }
             if (version == 2)
                 id = VersionTwoNames.TryGetValue(id, out var mapped) ? mapped :
                     throw new NotSupportedException("ID3 frame needs a preservation handler: " + id);

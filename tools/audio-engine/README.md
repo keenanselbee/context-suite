@@ -68,6 +68,13 @@ argument to `--audio-conversion-direct <scratch> <worker> <fixtures>` pointing
 to that generated artwork evidence directory; it adds 16 real-worker publication
 checks using `two-covers.flac` and `large-cover.flac`. See the
 [exact scope and retained evidence](../../docs/audio-artwork-conversion.md).
+Use `--mp3-artwork <candidate-bin> <generated-six-format-fixtures>
+<fresh-absolute-evidence-directory> <independent-decoder-bin>` for the separate
+ID3 PNG/JPEG checks. The public test host accepts `--mp3-artwork-direct
+<fresh-absolute-scratch> <staged-worker> <mp3-artwork-evidence-directory>` for
+quality consent, no-op, complete cover publication and collision checks using
+the generated v2/v3/v4 inputs. See the
+[MP3 artwork record](../../docs/mp3-artwork-conversion.md).
 The artwork fixture adds two authored PNG covers (including alpha), duplicate
 comments, multiline lyrics and Unicode text. It checks raw metadata and decoded
 RGBA preservation during FLAC optimization, plus refusal of linked/malformed
