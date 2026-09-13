@@ -68,6 +68,14 @@ if (args.Length == 4 && args[0] == "--image-pdf-direct")
     return 0;
 }
 if (args.Length == 5 && args[0] == "--pdf-publication-crash") return await PdfPublicationCrashContracts.RunChildAsync(args[1], args[2], args[3], args[4]);
+if (args.Length == 3 && args[0] == "--pdf-page-geometry")
+{
+    var checks = 0;
+    await PdfPageGeometryContracts.RunAsync(args[1], args[2], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated PDF page geometry checks.");
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--mp3-artwork-direct")
 {
     var checks = 0;

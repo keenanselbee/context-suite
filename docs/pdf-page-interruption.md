@@ -73,3 +73,6 @@ Remaining coverage includes the actual adapter deadline, renderer-specific
 crashes/resource exhaustion, broader document fidelity and user-visible partial
 results. Existing publication-crash and retry tests cover separate layers;
 neither those tests nor these twenty checks establish full release acceptance.
+The later [page geometry matrix](pdf-page-geometry.md) checks actual maximum-size
+outputs and crop/rotation pixels; it does not replace native allocation-failure
+or deadline evidence.

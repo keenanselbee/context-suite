@@ -56,6 +56,13 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments, owned evaluation jobs and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
+The [PDF page geometry matrix](pdf-page-geometry.md) passes 50 additional actual
+worker/publication checks on the latest unchanged combined stage. It covers
+crop/rotation pixels, 16-million-pixel pages, maximum width/height, out-of-bound
+refusal and later valid work. It also records a remaining UX gap: native page-size
+refusals currently use the generic invalid-input category. Native allocation
+failure, inherited/other page geometry and visible acceptance remain open.
+
 The [Office evaluation lifetime checkpoint](office-process-lifetime.md) passes
 sixteen helper checks and three real passive exports through creation-time
 Windows job ownership. It closes the evaluation launcher's descendant/diagnostic

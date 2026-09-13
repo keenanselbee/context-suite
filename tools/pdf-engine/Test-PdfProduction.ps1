@@ -41,6 +41,8 @@ foreach ($case in $cases) {
     & dotnet run --project $project -c Release -- @arguments
     if ($LASTEXITCODE -ne 0) { throw "Packaged PDF workflow failed: $($case[0]); results retained at $scratch" }
 }
+& dotnet run --project $project -c Release -- --pdf-page-geometry (Join-Path $scratch 'page-geometry') $worker
+if ($LASTEXITCODE -ne 0) { throw "PDF page geometry workflow failed; evidence retained at $scratch" }
 & python -B $inventoryTool --payload $stage --inventory
 if ($LASTEXITCODE -ne 0) { throw 'Combined production payload changed during PDF workflows.' }
 Write-Output "Actual packaged PDF worker: $worker; results: $scratch"

@@ -19,6 +19,12 @@ Default release packaging still rejects these candidates.
 The page and combined-production wrappers include the
 [live renderer interruption checks](../../docs/pdf-page-interruption.md),
 covering cancellation, client deadline expiry and worker exit before publication.
+The combined-production wrapper also runs the
+[page geometry checks](../../docs/pdf-page-geometry.md). To run those alone,
+use `Test-PdfPageGeometry.ps1 -ProductionStage '<existing combined stage>'`.
+It authors disposable crop/rotation and size-boundary PDFs, verifies complete
+published pixels, and records out-of-bound refusal and subsequent recovery.
+It does not install, register or mutate the staged payload.
 
 From the repository root:
 

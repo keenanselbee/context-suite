@@ -3,6 +3,11 @@ Document Support Design
 
 Status: bounded package analysis and optional direct PDF optimization, PDF-to-PNG and combined image-to-PDF implemented with automated evidence; engine adoption, Office transformations and launch acceptance pending
 
+The [PDF page geometry matrix](pdf-page-geometry.md) now verifies cropped and
+rotated page pixels and the current maximum output dimensions through actual
+copy publication. Native page-limit refusals still need clearer classification;
+the matrix does not close renderer allocation-failure or visible acceptance.
+
 Boundary
 --------
 
