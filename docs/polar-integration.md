@@ -19,9 +19,10 @@ Product Setup To Confirm
 
 - Product: Context Suite, one-time purchase including all future updates; price is $5 CAD under [decision 0020](decisions/0020-seven-day-trial-and-pricing.md).
 - Fulfillment: Polar delivers license keys and the installer when release-ready.
-- License benefit: visible, prefix CONTEXT, one activation, customer deactivation
-  enabled, no usage quota, and no paid-key expiry. These are intended settings,
-  not verified dashboard state. The seven-day app trial is separate.
+- License benefit: the owner confirmed one activation, customer deactivation
+  enabled, no usage quota and no paid-key expiry on 2026-09-13. Visible delivery
+  and prefix CONTEXT remain intended presentation settings. The seven-day app
+  trial is separate; owner confirmation is not live API acceptance.
 - Hosted checkout with Polar's default confirmation page; no custom account site.
 - Keep live checkout unpublished until delivery and commercial access pass tests.
 
@@ -60,9 +61,10 @@ the payout currency. Screenshot observations are not live integration tests.
 
 The owner confirmed on 2026-09-13 that Context Suite's existing live product is
 CAD 5.00 as a one-time purchase, matching decision 0020. This is owner confirmation,
-not a completed production purchase. Navigator's separate benefit screenshots do
-not establish Context Suite's benefit settings, even though both products use
-the same Polar organization. Trials remain local and retain their original start
+not a completed production purchase. Context Suite's four access-related benefit
+settings also have separate owner confirmation; Navigator's screenshots alone
+would not establish them. Both products use the same Polar organization.
+Trials remain local and retain their original start
 time; no Polar subscription trial is needed.
 
 Keep actual environment values in the private configuration record, not this
