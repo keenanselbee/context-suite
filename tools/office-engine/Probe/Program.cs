@@ -26,8 +26,9 @@ if (args is ["--process-owner", var ownerRoot])
     await OfficeEvaluationProcess.RunAsync(Environment.ProcessPath!, ["--process-child", "orphan", ownerRoot], ownerRoot);
     return 0;
 }
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates" or "ExcelPrint" or "WordRevisions" or "PowerPointSlides")) return 2;
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates" or "ExcelPrint" or "WordRevisions" or "PowerPointSlides" or "EmbeddedImages")) return 2;
 var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths";
+var embeddedImages = args.Length == 4 && args[3] == "EmbeddedImages";
 var fontSubstitution = args.Length == 4 && args[3] == "FontSubstitution";
 var powerPointSlides = args.Length == 4 && args[3] == "PowerPointSlides";
 var wordRevisions = args.Length == 4 && args[3] == "WordRevisions";
@@ -87,10 +88,10 @@ if (args.Length == 4 && args[3] is "LegacyAnalysis" or "LegacyPdf")
 }
 var baselines = new Dictionary<string, (string Folder, JsonElement Render, string[] Text)>();
 var comparisons = new List<object>();
-var conversionCases = powerPointSlides ? PowerPointSlideFixtures.Create(fixtures) : wordRevisions ? WordRevisionFixtures.Create(fixtures) : excelPrint ? ExcelPrintFixtures.Create(fixtures) : excelDates ? ExcelDateFixtures.Create(fixtures) : fontSubstitution ? OfficeFontFixtures.Create(fixtures) : excelCalculation ? ExcelCalculationFixtures.Create(fixtures) : new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) };
+var conversionCases = embeddedImages ? OfficeImageFixtures.Create(fixtures) : powerPointSlides ? PowerPointSlideFixtures.Create(fixtures) : wordRevisions ? WordRevisionFixtures.Create(fixtures) : excelPrint ? ExcelPrintFixtures.Create(fixtures) : excelDates ? ExcelDateFixtures.Create(fixtures) : fontSubstitution ? OfficeFontFixtures.Create(fixtures) : excelCalculation ? ExcelCalculationFixtures.Create(fixtures) : new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) };
 foreach (var (name, filter, expectedPages) in conversionCases)
 {
-    if (args.Length == 4 && !legacyPdf && !excelCalculation && !excelDates && !excelPrint && !wordRevisions && !powerPointSlides && !fontSubstitution && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
+    if (args.Length == 4 && !legacyPdf && !excelCalculation && !excelDates && !excelPrint && !wordRevisions && !powerPointSlides && !fontSubstitution && !embeddedImages && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
     foreach (var profileStyle in profileStyles)
     {
         var extension = filter switch { "writer_pdf_Export" => "doc", "calc_pdf_Export" => "xls", _ => "ppt" };
@@ -110,6 +111,11 @@ foreach (var (name, filter, expectedPages) in conversionCases)
         {
             options["ExportNotesPages"] = new { type = "boolean", value = "true" };
             options["ExportOnlyNotesPages"] = new { type = "boolean", value = "true" };
+        }
+        if (embeddedImages && name.Contains("reduced", StringComparison.Ordinal))
+        {
+            options["ReduceImageResolution"] = new { type = "boolean", value = "true" };
+            options["MaxImageResolution"] = new { type = "long", value = "150" };
         }
         options["SelectPdfVersion"] = new { type = "long", value = "17" };
         var conversion = await RunOffice(Path.GetFileNameWithoutExtension(name), ["--convert-to", "pdf:" + filter + ":" + JsonSerializer.Serialize(options), "--outdir", outputFolder, source], profileStyle);
@@ -152,6 +158,12 @@ foreach (var (name, filter, expectedPages) in conversionCases)
             pdfFonts = OfficeFontFixtures.Observe(fontJson.Output);
             Console.WriteLine("OBSERVED: " + name + " PDF fonts: " + string.Join(", ", pdfFonts));
         }
+        if (embeddedImages)
+        {
+            await Run(qpdf, ["--json-output=2", "--decode-level=all", pdf, Path.Combine(folder, "pdf-image-objects.json")], root);
+            if (new FileInfo(Path.Combine(folder, "pdf-image-objects.json")).Length > 16 * 1024 * 1024)
+                throw new InvalidDataException("Image inspection JSON exceeds the passive fixture budget.");
+        }
         var calculationObservation = excelCalculation ? ExcelCalculationFixtures.Observe(name, text) : null;
         var slideObservation = powerPointSlides ? PowerPointSlideFixtures.Observe(name, text) : null;
         var revisionObservation = wordRevisions ? WordRevisionFixtures.Observe(name, text) : null;
@@ -165,7 +177,7 @@ foreach (var (name, filter, expectedPages) in conversionCases)
             throw new InvalidDataException("Word first/default headers or PAGE/NUMPAGES field rendering did not match authored expectations.");
         if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
         results.Add(new { Source = Path.GetFileName(source), SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile, conversion.EnvironmentPaths,
-            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds, CalculationObservation = calculationObservation, DateObservations = dateObservations, PrintObservation = printObservation, RevisionObservation = revisionObservation, SlideObservation = slideObservation, ExportOptions = powerPointSlides ? options : null, PdfFontNames = pdfFonts,
+            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds, CalculationObservation = calculationObservation, DateObservations = dateObservations, PrintObservation = printObservation, RevisionObservation = revisionObservation, SlideObservation = slideObservation, ExportOptions = powerPointSlides || embeddedImages ? options : null, PdfFontNames = pdfFonts,
             RequestedFont = fontSubstitution ? (name.Contains("missing", StringComparison.Ordinal) ? OfficeFontFixtures.MissingFont : "Arial") : null,
             ConversionOutput = conversion.Output, Diagnostics = conversion.Error, Text = text, Render = rendered.RootElement.Clone() });
         if (slideObservation is not null) Console.WriteLine("OBSERVED: " + name + ": slide/notes policy matches=" + slideObservation.Matches);
@@ -200,7 +212,7 @@ return 0;
 void SaveResults()
 {
     File.WriteAllText(Path.Combine(root, "office-evaluation.json"), JsonSerializer.Serialize(new { Version = version.Output.Trim(), ProfileMatrix = profileMatrix,
-        Mode = profileMatrix || legacyPdf || excelCalculation || excelDates || fontSubstitution || excelPrint || wordRevisions || powerPointSlides ? args[3] : "Conversion", Results = results,
+        Mode = profileMatrix || legacyPdf || excelCalculation || excelDates || fontSubstitution || excelPrint || wordRevisions || powerPointSlides || embeddedImages ? args[3] : "Conversion", Results = results,
         Scope = "Authored passive Office fixtures and generated legacy copies only; bounded text/geometry checks, not broad font/layout fidelity, arbitrary-document isolation or launch acceptance. Profile-matrix observations include failed conversions." }, new JsonSerializerOptions { WriteIndented = true }));
 }
 

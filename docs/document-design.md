@@ -195,6 +195,11 @@ saved slide order, hidden first/last slides and speaker-note exclusion, with a
 positive notes-export control. Its observed results inform the export policy;
 simple slide text does not establish complete presentation fidelity.
 
+The [embedded-image experiment](office-image-evaluation.md) compares retained
+resolution and transparency with explicit reduction controls across all three
+modern Office families. It checks PDF samples and rendered patches separately
+from text/geometry acceptance and does not establish broad document fidelity.
+
 The [legacy PDF experiment](office-engine-evaluation.md) now covers passive
 generated DOC/XLS/PPT roundtrips through the candidate. Page/text assertions pass;
 Excel/PowerPoint rendering differs from their modern baselines. This is evidence

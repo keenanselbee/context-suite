@@ -65,6 +65,12 @@ pass cancellation/owner-crash cleanup and reuse of the same disposable profiles;
 no document was open during those interruption tests. The separate access-matrix authorization,
 rendering policies and production integration remain pending.
 
+The [Office embedded-image checkpoint](office-image-evaluation.md) verifies
+six passive modern exports, exact retained PNG resolution/visible samples/alpha,
+three effective downsampling controls and independently rendered patches. It
+advances document fidelity evidence while the required customer converter,
+isolation authorization and other rendering decisions remain outstanding.
+
 The latest combined production stage is
 `artifacts/production-staging/1bcf6e8fd25f4f35bf1260c15a05e387`.
 It includes catalog revision 2026-09-13.1, the prior Analyze and combined-PDF

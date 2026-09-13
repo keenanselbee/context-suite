@@ -8,6 +8,12 @@ Word/Excel/PowerPoint-to-PDF remains unimplemented in the customer application.
 This checkpoint does not adopt or package LibreOffice. Follow the
 [document design](document-design.md) and [broad-file goal](broad-file-support-goal.md).
 
+The later [embedded-image experiment](office-image-evaluation.md) passes six
+modern exports: the retained cases keep 1,024-square PNG resolution, exact
+visible RGB samples and alpha; explicit 150-DPI controls reduce to 300-square.
+Independent PDFium rendered patches also pass. This closes that specific
+embedded PNG evidence gap without establishing broader image/document fidelity.
+
 Candidate and acquisition
 -------------------------
 

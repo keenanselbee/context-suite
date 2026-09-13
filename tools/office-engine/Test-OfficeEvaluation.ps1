@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $PreparedDirectory, [Parameter(Mandatory)][string] $PdfPreparedDirectory,
-    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelPrint, [switch] $WordRevisions, [switch] $PowerPointSlides)
+    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelPrint, [switch] $WordRevisions, [switch] $PowerPointSlides, [switch] $EmbeddedImages)
 $ErrorActionPreference = 'Stop'
-if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelPrint, $WordRevisions, $PowerPointSlides).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
+if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelPrint, $WordRevisions, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $office = (Resolve-Path -LiteralPath $PreparedDirectory).Path
 $pdf = (Resolve-Path -LiteralPath $PdfPreparedDirectory).Path
@@ -43,6 +43,7 @@ if ($FontSubstitution) { $probeArguments += 'FontSubstitution' }
 if ($ExcelDates) { $probeArguments += 'ExcelDates' }
 if ($ExcelPrint) { $probeArguments += 'ExcelPrint' }
 if ($PowerPointSlides) { $probeArguments += 'PowerPointSlides' }
+if ($EmbeddedImages) { $probeArguments += 'EmbeddedImages' }
 if ($WordRevisions) { $probeArguments += 'WordRevisions' }
 & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- @probeArguments
 if ($LASTEXITCODE) { throw 'Office evaluation failed; inspect retained scratch evidence.' }
@@ -56,3 +57,5 @@ if ($ExcelPrint) { Write-Output 'Print-layout completion records observations; i
 if ($WordRevisions) { Write-Output 'Revision completion records PDF text; inspect RevisionObservation before choosing an export policy.' }
 
 if ($PowerPointSlides) { Write-Output 'Slide-policy completion records order, hidden-slide and note observations; inspect SlideObservation before claiming fidelity.' }
+
+if ($EmbeddedImages) { Write-Output 'Image export completion requires Inspect-OfficeImages.py before claiming pixel/resolution preservation.' }

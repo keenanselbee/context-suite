@@ -5,6 +5,13 @@ using three small, passive fixtures authored in this repository. They do not
 enable an Office command or add a production dependency. See the
 [evidence and remaining gates](../../docs/office-engine-evaluation.md).
 
+`Test-OfficeEvaluation.ps1 -EmbeddedImages` adds a generated high-resolution
+RGBA PNG to Word/Excel/PowerPoint and exports paired no-downsampling/150-DPI
+controls. Run `Inspect-OfficeImages.py '<printed evaluation directory>'` to
+reconcile package/PDF hashes, full visible image samples and alpha, rendered
+patches and the effective resolution settings. See the
+[image-preservation evidence and limits](../../docs/office-image-evaluation.md).
+
 `Test-OfficeEvaluation.ps1 -PowerPointSlides` compares saved slide order, hidden
 first/last slides and speaker-note exclusion. An identical-input notes-page export
 provides a positive control. `Inspect-PowerPointSlides.py '<printed evaluation
