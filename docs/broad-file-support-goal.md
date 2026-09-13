@@ -57,10 +57,12 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
 The [Office evaluation lifetime checkpoint](office-process-lifetime.md) passes
-thirteen helper checks and three real passive exports through creation-time
+sixteen helper checks and three real passive exports through creation-time
 Windows job ownership. It closes the evaluation launcher's descendant/diagnostic
 cleanup gap without establishing filesystem/network isolation or implementing
-the required customer converter. The separate access-matrix authorization,
+the required customer converter. Two real engine startup-interruption cases also
+pass cancellation/owner-crash cleanup and reuse of the same disposable profiles;
+no document was open during those interruption tests. The separate access-matrix authorization,
 rendering policies and production integration remain pending.
 
 The latest combined production stage is

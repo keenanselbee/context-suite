@@ -80,7 +80,63 @@ were not rerun for this evaluation-only work.
 
 These jobs control lifetime and resource requests, not access to files, registry
 or networks. The [AppContainer experiment](office-isolation-evaluation.md) still
-awaits its separately requested authorization. Arbitrary documents, real Office
+awaits its separately requested authorization. Arbitrary documents, active-document
 cancellation/crashes, hostile-content denial, memory-pressure behavior, rendering
 policies, production integration and visible acceptance remain required. Only
 the authored passive fixtures may use this evaluation launcher.
+
+Actual engine startup interruption (2026-09-13)
+----------------------------------------------
+
+`Test-OfficeEngineLifetime.ps1 -PreparedDirectory '<retained Office directory>'`
+now verifies the MSI and complete recorded payload before running two bounded
+engine-lifetime cases. It accepts no document path. Each case initializes a new
+short repository-local profile, reapplies/verifies the existing profile settings,
+then starts headless LibreOffice without a document or termination argument.
+
+The launcher exposes a scoped observer that can test membership in its exact
+job using Microsoft's [IsProcessInJob API](https://learn.microsoft.com/en-us/windows/win32/api/jobapi/nf-jobapi-isprocessinjob).
+The observer requires both `soffice.com` and the pinned `soffice.bin` to be members
+of that job, checks their executable paths and retains process handles, creation
+times and a 300 ms live control interval. Looking up an engine process by name
+alone never authorizes observation as this test's owned engine or termination.
+
+Both cases pass:
+
+| Case | Observed stop | Same-profile recovery |
+| --- | --- | --- |
+| Cancellation after live engine control | Launcher and engine handles signal exit 71; cleanup 23 ms | Initialization completes in 2,211 ms; settings verify; zero active job processes |
+| Abrupt evaluation-owner death | Only owner is killed, exit -1; retained launcher and engine both signal exit 0; cleanup 19 ms | Initialization completes in 2,136 ms; settings verify; zero active job processes |
+
+Exit zero after job-handle closure is an observed exit code, not proof of graceful
+engine shutdown. The owner-crash observer independently checks the reported PIDs,
+creation times and executable paths, and verifies another live interval before
+killing its created owner. It holds process handles, not the owner's job handle.
+No tree kill or unrelated-process termination can satisfy these assertions.
+
+After each interruption the settings file opens with exclusive sharing and the
+same profile restarts with `--terminate_after_init`. No fresh replacement profile
+hides recovery failure; all profile files and evidence are retained. No documents
+were opened, and there is no partial-PDF or active-document recovery claim.
+
+Evidence is under the pinned prepared directory at
+`lifetime-e786667dfa594244b749f1d6e4c88868/engine-lifetime.json`, with per-case
+`profile.json` and `stopped.json`. The wrapper log is
+`.codex-temp/office-engine-lifetime.log`, matching exit record zero. No Office or
+evaluation processes remained after completion.
+
+Sixteen helper contracts now pass, including three added checks for exact-job
+membership, observer failure cleanup and canceling an unfinished observer when
+its root exits. The last case prevents observation from delaying cleanup until
+the full deadline. Its evidence is
+`.codex-temp/office-process-f0c5511554f54f068daf11f652a228e5/process-contracts.json`
+and `.codex-temp/office-engine-observer-final.log`, exit zero. The earlier thirteen
+helper checks also passed before this observer extension; they are not additional
+independent cases. The Release host builds without warnings/errors.
+
+The engine cases exercise startup interruption and profile reuse, not interruption
+during Word/Excel/PowerPoint rendering, full descendant inventory after owner
+death, external-access denial, memory pressure or commercial release acceptance.
+The AppContainer authorization, rendering policies and required production Office
+converter remain open. Foundation/media suites and production staging were not
+rerun for these evaluation-only changes.

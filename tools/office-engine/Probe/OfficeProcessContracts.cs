@@ -30,6 +30,29 @@ internal static class OfficeProcessContracts
         await Tree("orphan", false);
         await Tree("cancel", true);
         await OwnerCrash();
+        var observerTimer = Stopwatch.StartNew();
+        try
+        {
+            await OfficeEvaluationProcess.RunAsync(executable, ["--process-child", "sleep", root], root,
+                observe: (pid, belongs, token) =>
+                {
+                    using var child = Process.GetProcessById(pid); using var self = Process.GetCurrentProcess();
+                    Check(belongs(child) && !belongs(self), "observer distinguishes its exact child job from the caller");
+                    throw new InvalidDataException("deliberate observer failure");
+                });
+            throw new Exception("Observer failure returned success.");
+        }
+        catch (InvalidDataException ex) when (ex.Message == "deliberate observer failure")
+        { Check(observerTimer.Elapsed < TimeSpan.FromSeconds(10), "observer failure stops and cleans its owned child"); }
+        observerTimer.Restart();
+        try
+        {
+            await OfficeEvaluationProcess.RunAsync(executable, ["--process-child", "echo", root], root,
+                observe: (_, _, token) => Task.Delay(Timeout.Infinite, token));
+            throw new Exception("Incomplete observer returned success.");
+        }
+        catch (OperationCanceledException)
+        { Check(observerTimer.Elapsed < TimeSpan.FromSeconds(10), "root exit cancels an unfinished observer without delaying cleanup"); }
         var followup = await OfficeEvaluationProcess.RunAsync(executable, ["--process-child", "echo", root], root);
         Check(followup.Output.Contains("Arguments", StringComparison.Ordinal), "fresh successful child after failure and owner crash");
         reports.Add(followup);

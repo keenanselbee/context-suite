@@ -122,7 +122,12 @@ The [owned-job launcher](../../docs/office-process-lifetime.md) now assigns each
 child to a bounded Windows job during process creation. It enforces a 60-second
 deadline and 64 KiB per diagnostic stream, terminates descendants on root exit
 or cancellation, and verifies zero active job members. Run
-`Test-OfficeProcesses.ps1` for thirteen helper-only lifetime/diagnostic contracts.
+`Test-OfficeProcesses.ps1` for sixteen helper-only lifetime/diagnostic contracts.
+`Test-OfficeEngineLifetime.ps1 -PreparedDirectory '<retained Office directory>'`
+additionally verifies real engine startup cancellation, owner-crash cleanup and
+reuse of the same interrupted profiles. It opens no documents and verifies exact
+job membership before treating a process as the owned engine. Full evidence and
+remaining active-document/isolation gates are in the linked lifetime record.
 Its profile disables macros, active content, Python
 runtime and automatic update checks. **It is not a filesystem/network sandbox**,
 and neither those settings nor hostile-content isolation have been accepted by

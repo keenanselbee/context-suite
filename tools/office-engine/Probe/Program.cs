@@ -5,6 +5,16 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
+if (args is ["--engine-lifetime", var enginePrepared, var engineRoot])
+{
+    await OfficeEngineLifetimeContracts.RunAsync(enginePrepared, engineRoot);
+    return 0;
+}
+if (args is ["--engine-owner", var engineExecutable, var engineProfile, var engineFolder])
+{
+    await OfficeEngineLifetimeContracts.OwnerAsync(engineExecutable, engineProfile, engineFolder);
+    return 0;
+}
 if (args is ["--process-contracts", var processRoot])
 {
     await OfficeProcessContracts.RunAsync(processRoot);

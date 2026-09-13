@@ -14,10 +14,11 @@ internal static class OfficeEvaluationProcess
 
     internal static async Task<Result> RunAsync(string executable, IEnumerable<string> arguments, string directory,
         IReadOnlyDictionary<string, string>? overrides = null, CancellationToken token = default,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null, Func<int, Func<Process, bool>, CancellationToken, Task>? observe = null)
     {
         token.ThrowIfCancellationRequested();
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+        using var observationCancellation = CancellationTokenSource.CreateLinkedTokenSource(deadline.Token);
         deadline.CancelAfter(timeout ?? TimeSpan.FromSeconds(60));
         using var job = CreateJobObject(IntPtr.Zero, null);
         Require(!job.IsInvalid);
@@ -38,6 +39,7 @@ internal static class OfficeEvaluationProcess
         stdout.DisposeLocalCopyOfClientHandle(); stderr.DisposeLocalCopyOfClientHandle();
         stdin.DisposeLocalCopyOfClientHandle(); stdin.Dispose(); // Empty input, never the caller's console.
         Task<string>[] readers = [];
+        Task observation = Task.CompletedTask;
         void Stop() => TerminateJobObject(job, 71);
         try
         {
@@ -53,10 +55,21 @@ internal static class OfficeEvaluationProcess
                     TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
             deadline.Token.ThrowIfCancellationRequested();
             if (ResumeThread(thread) == uint.MaxValue) throw new Win32Exception(Marshal.GetLastWin32Error());
+            if (observe is not null)
+            {
+                observation = observe(process.Id, candidate =>
+                {
+                    Require(IsProcessInJob(candidate.Handle, job, out var member)); return member;
+                }, observationCancellation.Token);
+                _ = observation.ContinueWith(_ => Stop(), CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            }
             var exited = process.WaitForExitAsync(deadline.Token);
             await exited;
             // The root can exit while a descendant is alive and holds stdout.
             Stop();
+            observationCancellation.Cancel();
+            await observation;
             await Task.WhenAll(readers);
             deadline.Token.ThrowIfCancellationRequested();
             if (process.ExitCode != 0) throw new IOException($"Evaluation child exited {process.ExitCode}: {await errors}");
@@ -66,8 +79,9 @@ internal static class OfficeEvaluationProcess
         finally
         {
             Stop();
+            deadline.Cancel();
             await Empty(job);
-            try { await Task.WhenAll(readers); }
+            try { await Task.WhenAll(readers.Cast<Task>().Append(observation)); }
             catch { /* Preserve the operation's failure after owned writers exit. */ }
         }
     }
@@ -195,6 +209,8 @@ internal static class OfficeEvaluationProcess
     private static extern bool QueryInformationJobObject(SafeFileHandle job, int kind, out Accounting accounting, uint bytes, IntPtr returned);
     [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool TerminateJobObject(SafeFileHandle job, uint exitCode);
+    [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsProcessInJob(IntPtr process, SafeFileHandle job, [MarshalAs(UnmanagedType.Bool)] out bool member);
     [DllImport("kernel32.dll", SetLastError = true)] private static extern uint ResumeThread(SafeFileHandle thread);
     [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool InitializeProcThreadAttributeList(IntPtr list, int count, uint flags, ref nuint bytes);
