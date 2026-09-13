@@ -14,6 +14,16 @@ internal static class AnalysisIoContracts
         var root = Path.Combine(scratch, "analysis-io-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         var observations = new List<object>();
+        var refusedPath = Path.Combine(root, "refused-oplock.bin");
+        await File.WriteAllBytesAsync(refusedPath, [1, 2, 3]);
+        using (var otherReader = new FileStream(refusedPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+        {
+            try { using var refused = new HeldOplock(refusedPath); check(false, "analysis I/O: competing handle must refuse the exclusive test oplock"); }
+            catch (Win32Exception error) when (error.NativeErrorCode == 300)
+            { check(true, "analysis I/O: refused oplock setup returns without waiting for an unsubmitted request"); }
+        }
+        using (new FileStream(refusedPath, FileMode.Open, FileAccess.Read, FileShare.None))
+            check(true, "analysis I/O: refused oplock setup releases its input handle");
         foreach (var mode in new[] { "cancel", "deadline", "release" })
         {
             var path = Path.Combine(root, mode + ".bin");
@@ -21,7 +31,7 @@ internal static class AnalysisIoContracts
             var hash = SHA256.HashData(await File.ReadAllBytesAsync(path));
             var modified = File.GetLastWriteTimeUtc(path);
             using var cancellation = new CancellationTokenSource();
-            using var held = new HeldOplock(path);
+            using var held = await HeldOplock.AcquireAsync(path);
             var elapsed = Stopwatch.StartNew();
             var reading = FileAnalysisReader.ReadAsync(path, cancellation.Token);
             try
@@ -77,7 +87,7 @@ internal static class AnalysisIoContracts
         await File.WriteAllBytesAsync(goodPath, [10, 11, 12]);
         var slowHash = SHA256.HashData(await File.ReadAllBytesAsync(slowPath));
         var slowTime = File.GetLastWriteTimeUtc(slowPath);
-        using (var held = new HeldOplock(slowPath))
+        using (var held = await HeldOplock.AcquireAsync(slowPath))
         await using (var worker = new WorkerClient(Path.Combine(root, "must-not-start.exe")))
         await using (var view = new MainViewModel(worker))
         {
@@ -105,7 +115,7 @@ internal static class AnalysisIoContracts
         var reusePath = Path.Combine(root, "thread-reuse.bin");
         await File.WriteAllBytesAsync(reusePath, [1, 2, 3]);
         using var oldToken = new CancellationTokenSource();
-        using var reuseLock = new HeldOplock(reusePath);
+        using var reuseLock = await HeldOplock.AcquireAsync(reusePath);
         var reuse = Task.Run(() =>
         {
             SynchronousFileIo.Run(() => { oldToken.Cancel(); return 1; }, oldToken.Token);
@@ -123,7 +133,7 @@ internal static class AnalysisIoContracts
         var racePath = Path.Combine(root, "cancel-before-open.bin");
         await File.WriteAllBytesAsync(racePath, [4, 5, 6]);
         using var raceToken = new CancellationTokenSource();
-        using var raceLock = new HeldOplock(racePath);
+        using var raceLock = await HeldOplock.AcquireAsync(racePath);
         using var entered = new ManualResetEventSlim();
         using var proceed = new ManualResetEventSlim();
         var race = Task.Run(() => SynchronousFileIo.Run(() =>
@@ -159,6 +169,7 @@ internal static class AnalysisIoContracts
     {
         private readonly SafeFileHandle _file;
         private IntPtr _overlapped;
+        private bool _pending;
         public EventWaitHandle Broken { get; } = new(false, EventResetMode.ManualReset);
 
         public HeldOplock(string path)
@@ -168,7 +179,27 @@ internal static class AnalysisIoContracts
             _overlapped = Marshal.AllocHGlobal(Marshal.SizeOf<Overlapped>());
             Marshal.StructureToPtr(new Overlapped { Event = Broken.SafeWaitHandle.DangerousGetHandle() }, _overlapped, false);
             if (DeviceIoControl(_file, 0x90000, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, _overlapped) || Marshal.GetLastWin32Error() != 997)
-            { var error = Marshal.GetLastWin32Error(); Dispose(); throw new Win32Exception(error, "Authored oplock was not granted as pending."); }
+            {
+                var error = Marshal.GetLastWin32Error();
+                Dispose();
+                throw new Win32Exception(error, "Authored oplock was not granted as pending.");
+            }
+            _pending = true;
+        }
+
+        public static async Task<HeldOplock> AcquireAsync(string path)
+        {
+            // Other transient readers can refuse the exclusive setup lock.
+            // Retry only setup, never a failed analysis or cancellation assertion.
+            for (var attempt = 0; ; attempt++)
+            {
+                try { return new HeldOplock(path); }
+                catch (Win32Exception error) when (error.NativeErrorCode == 300 && attempt < 19)
+                {
+                    Console.WriteLine("Analysis I/O setup: exclusive oplock refused; retry " + (attempt + 1));
+                    await Task.Delay(50);
+                }
+            }
         }
 
         public static SafeFileHandle Open(string path) => CreateFileW(path, 0x80000000, 7, IntPtr.Zero, 3, 0x40000000, IntPtr.Zero);
@@ -177,8 +208,14 @@ internal static class AnalysisIoContracts
         {
             if (_overlapped != IntPtr.Zero)
             {
-                CancelIoEx(_file, _overlapped);
-                GetOverlappedResult(_file, _overlapped, out _, true);
+                // A refused DeviceIoControl can leave Internal == STATUS_PENDING
+                // even though no request was submitted. Only IO_PENDING from the
+                // call authorizes cancellation and waiting for completion.
+                if (_pending)
+                {
+                    CancelIoEx(_file, _overlapped);
+                    GetOverlappedResult(_file, _overlapped, out _, true);
+                }
                 _file.Dispose();
                 Marshal.FreeHGlobal(_overlapped);
                 _overlapped = IntPtr.Zero;

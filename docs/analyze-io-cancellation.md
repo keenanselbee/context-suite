@@ -132,3 +132,50 @@ pass with no reported warnings/errors. No private implementation, installed stat
 Explorer routing, recycling or live commerce changes were made. This proves
 result-model delivery, not visible layout, screen-reader announcement or wider
 driver/network acceptance. The earlier performance measurement was not repeated.
+
+
+Rejected test-oplock cleanup (2026-09-13)
+----------------------------------------
+
+A foundation run during PDF resource verification stalled in the test helper,
+not in an admitted Analyze operation. An isolated trace captured
+`DeviceIoControl` refusing a level-1 oplock with error 300 while the supplied
+OVERLAPPED structure still contained `STATUS_PENDING`. The helper incorrectly
+called blocking `GetOverlappedResult` during cleanup of that rejected request.
+There was no submitted operation whose completion could release that wait.
+The [Windows API documentation](https://learn.microsoft.com/en-us/windows/win32/api/ioapiset/nf-ioapiset-getoverlappedresult)
+defines pending submission by the call's `ERROR_IO_PENDING` return, not by reading
+the structure's internal member after a failed request.
+
+The helper now tracks actual pending submission and waits only for those requests
+before freeing their native storage. A real competing read handle deliberately
+refuses an oplock; two regression assertions require prompt return and released
+input handles. Ordinary setup retries only error 300, at most 20 attempts separated
+by 50 ms. This occurs before the measured analysis begins; failed reader,
+deadline, cancellation and same-thread assertions are never retried or skipped.
+Production `SynchronousFileIo` and all reader deadlines remain unchanged.
+
+The focused mode is:
+
+```powershell
+dotnet run --project tests/ContextSuite.Core.ContractTests -c Release -- --analysis-io '<repository scratch directory>'
+```
+
+Five consecutive isolated runs pass **36 checks each**, including the refused
+request regression and the existing real reader/mixed-batch/cancellation races.
+Two runs also encounter transient setup refusals, recovering after one and two
+retries respectively. Evidence is
+`.codex-temp/analysis-io-repeat-a0c0a000a490461ca33e377e8e1259c2/runs.json` and its
+five logs. The preceding bounded reproduction times out and terminates its owned
+child after 30 seconds; its trace is
+`.codex-temp/analysis-io-repeat-0b886e3058de4266a228bd2a002e2e4b/0.log`.
+The earlier stalled foundation log, `.codex-temp/image-pdf-resource-foundation.log`,
+is retained as a failed run; only its verified owned test process was stopped.
+
+The final complete foundation run passes **2,391 contracts** with recorded exit
+code 0 in `.codex-temp/image-pdf-resource-foundation-final.log`. This is current
+worktree evidence, including separate trial-policy edits; it is not a claim that
+those edits were present in the earlier staged PDF payload. Native wait-chain
+inspection did not identify the cause; the explicit failed-request trace did.
+These tests do not close remaining remote-driver, metadata-stall or visible
+Analyze acceptance.

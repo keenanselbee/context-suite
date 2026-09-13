@@ -13,6 +13,14 @@ using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
 if (args.Length == 2 && args[0] == "--benchmark-analyze") return await AnalyzeBenchmark.RunAsync(args[1]);
+if (args.Length == 2 && args[0] == "--analysis-io")
+{
+    var checks = 0;
+    await AnalysisIoContracts.RunAsync(args[1], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated analysis I/O checks.");
+    return 0;
+}
 if (args.Length == 5 && args[0] == "--audio-publication-crash-child")
     return await AudioPublicationCrashContracts.RunChildAsync(args[1], args[2], args[3], args[4]);
 if (args.Length == 4 && args[0] == "--audio-publication-crashes")
