@@ -118,8 +118,12 @@ It is a diagnostic for these authored fixtures: its subprocess has a 20-second
 deadline and post-run output-size checks, not a production hostile-PDF sandbox.
 Neither matching fonts nor matching text proves visual or accessibility fidelity.
 
-The child wrapper provides a 60-second deadline, bounded diagnostics and an owned
-process-tree kill attempt. Its profile disables macros, active content, Python
+The [owned-job launcher](../../docs/office-process-lifetime.md) now assigns each
+child to a bounded Windows job during process creation. It enforces a 60-second
+deadline and 64 KiB per diagnostic stream, terminates descendants on root exit
+or cancellation, and verifies zero active job members. Run
+`Test-OfficeProcesses.ps1` for thirteen helper-only lifetime/diagnostic contracts.
+Its profile disables macros, active content, Python
 runtime and automatic update checks. **It is not a filesystem/network sandbox**,
 and neither those settings nor hostile-content isolation have been accepted by
 testing. Use only these authored passive fixtures. Extracted fonts and VC runtime

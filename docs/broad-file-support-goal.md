@@ -53,8 +53,15 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Offline catalog | 243 records, schema/version validation, source references, reviewed current MIME claims, reconciled typical-use descriptions and current detector-route provenance | Finish wider alias/variant review and additional meaningful MIME coverage; preserve the distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
 | Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker/interruption evidence and a rate/layout matrix with corrected Opus surround mapping | Close remaining input/metadata variants, independent decoding and human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
 | PDF | Optional structural optimization, all-page PNG conversion and combined image PDF with explicit order review | Close documented fidelity/unsupported-input and recovery gaps; accept the order dialog and outputs visibly; review redistribution and adopt the selected payload |
-| Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
+| Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments, owned evaluation jobs and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
+
+The [Office evaluation lifetime checkpoint](office-process-lifetime.md) passes
+thirteen helper checks and three real passive exports through creation-time
+Windows job ownership. It closes the evaluation launcher's descendant/diagnostic
+cleanup gap without establishing filesystem/network isolation or implementing
+the required customer converter. The separate access-matrix authorization,
+rendering policies and production integration remain pending.
 
 The latest combined production stage is
 `artifacts/production-staging/a27c34ab662a44ee9ece421d94b49c19`.

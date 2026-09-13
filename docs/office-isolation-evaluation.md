@@ -36,8 +36,11 @@ kill-on-close. It limits diagnostics to 64 KiB and normal execution to 30 second
 Cleanup explicitly terminates the job and checks that active process count reaches
 zero within five seconds, including when the launcher itself already exited.
 The initial preflight configured resource limits; the follow-up below now tests
-commit-memory and process-count enforcement. The experiment has not replaced the Office smoke wrapper
-or any shipping process launcher.
+commit-memory and process-count enforcement. This native experiment has not
+replaced a shipping process launcher. The later, separate
+[Office evaluation launcher](office-process-lifetime.md) now uses creation-time
+job assignment and has its own lifetime contracts plus passive export evidence.
+Neither launcher establishes the pending AppContainer access boundary.
 
 Passed preflight tests:
 

@@ -1,7 +1,8 @@
 Office-to-PDF Engine Evaluation
 ==============================
 
-Status: passive modern/legacy PDF exports tested through 2026-09-11; legacy Excel
+Status: passive modern/legacy PDF exports tested, with owned-job modern exports
+verified on 2026-09-13; legacy Excel
 and PowerPoint roundtrips have measured rendering differences. Required
 Word/Excel/PowerPoint-to-PDF remains unimplemented in the customer application.
 This checkpoint does not adopt or package LibreOffice. Follow the
@@ -88,11 +89,13 @@ The profile disables macros, active content, Python runtime and update checks
 using settings present in the pinned package's registry schema. Startup uses
 `soffice.com`, headless mode and a unique UserInstallation, consistent with the
 [upstream startup documentation](https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html).
-TEMP/TMP/APPDATA/LOCALAPPDATA point into the owned profile. The wrapper has a
-60-second deadline, bounded stdout/stderr and an owned process-tree kill attempt.
-It does not establish filesystem/network isolation, restricted-token execution,
-resource limits or proven descendant cleanup after a launcher exits. No hostile
-macro, external-link, network-denial or arbitrary-customer-document test ran.
+TEMP/TMP/APPDATA/LOCALAPPDATA point into the owned profile. The later
+[owned-job launcher](office-process-lifetime.md) replaces the original process-tree
+kill attempt with creation-time job assignment, bounded diagnostics/deadline and
+verified descendant cleanup. Three passive modern exports pass that launcher.
+It does not establish filesystem/network isolation, restricted-token execution
+or general Office resource acceptance. No hostile macro, external-link,
+network-denial or arbitrary-customer-document test ran.
 
 Evidence and repeatability
 --------------------------

@@ -5,6 +5,17 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
+if (args is ["--process-contracts", var processRoot])
+{
+    await OfficeProcessContracts.RunAsync(processRoot);
+    return 0;
+}
+if (args.Length >= 3 && args[0] == "--process-child") return await OfficeProcessContracts.Child(args[1], args[2], args[3..]);
+if (args is ["--process-owner", var ownerRoot])
+{
+    await OfficeEvaluationProcess.RunAsync(Environment.ProcessPath!, ["--process-child", "orphan", ownerRoot], ownerRoot);
+    return 0;
+}
 if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates" or "ExcelPrint" or "WordRevisions" or "PowerPointSlides")) return 2;
 var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths";
 var fontSubstitution = args.Length == 4 && args[3] == "FontSubstitution";
@@ -241,39 +252,17 @@ async Task<RunResult> RunOffice(string name, string[] arguments, string profileS
 static async Task<RunResult> Run(string executable, IEnumerable<string> arguments, string directory, string? profile = null,
     IReadOnlyDictionary<string, string>? environment = null)
 {
-    var start = new ProcessStartInfo(executable) { UseShellExecute = false, CreateNoWindow = true,
-        RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = directory };
-    foreach (var arg in arguments) start.ArgumentList.Add(arg);
+    var overrides = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     if (profile is not null)
     {
         foreach (var (variable, path) in environment ?? throw new InvalidDataException("An Office profile requires explicit local environment paths."))
-        { Directory.CreateDirectory(path); start.Environment[variable] = path; }
-        start.Environment["SAL_DISABLE_OPENCL"] = "1";
-        start.Environment["SAL_LOG"] = "+WARN";
+        { Directory.CreateDirectory(path); overrides[variable] = path; }
+        overrides["SAL_DISABLE_OPENCL"] = "1";
+        overrides["SAL_LOG"] = "+WARN";
     }
-    using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-    var timer = Stopwatch.StartNew();
-    using var process = Process.Start(start) ?? throw new IOException("Cannot start evaluation child.");
-    void Stop() { try { if (!process.HasExited) process.Kill(true); } catch (InvalidOperationException) { } }
-    using var cancel = deadline.Token.Register(Stop);
-    try
-    {
-        var stdout = Read(process.StandardOutput, deadline.Token); var stderr = Read(process.StandardError, deadline.Token);
-        await Task.WhenAll(stdout, stderr, process.WaitForExitAsync(deadline.Token));
-        if (process.ExitCode != 0) throw new IOException($"Evaluation child exited {process.ExitCode}: {await stderr}");
-        return new(await stdout, await stderr, timer.ElapsedMilliseconds, profile, environment);
-    }
-    catch { Stop(); throw; }
-}
-static async Task<string> Read(StreamReader reader, CancellationToken token)
-{
-    var text = new StringBuilder(); var buffer = new char[4096];
-    while (true)
-    {
-        var size = await reader.ReadAsync(buffer.AsMemory(), token); if (size == 0) return text.ToString();
-        if (text.Length + size > 65536) throw new InvalidDataException("Evaluation diagnostics exceed the budget.");
-        text.Append(buffer, 0, size);
-    }
+    var result = await OfficeEvaluationProcess.RunAsync(executable, arguments, directory, overrides);
+    return new(result.Output, result.Error, result.Milliseconds, profile, environment, result.ProcessId, result.TotalProcesses, result.ActiveProcessesAfterCleanup);
 }
 static string Hash(string path) { using var input = File.OpenRead(path); return Convert.ToHexString(SHA256.HashData(input)); }
-internal sealed record RunResult(string Output, string Error, long Milliseconds, string? Profile, IReadOnlyDictionary<string, string>? EnvironmentPaths);
+internal sealed record RunResult(string Output, string Error, long Milliseconds, string? Profile, IReadOnlyDictionary<string, string>? EnvironmentPaths,
+    int ProcessId, uint JobTotalProcesses, uint JobActiveProcessesAfterCleanup);
