@@ -25,7 +25,30 @@ The staged files and logs are identified by
 `.codex-temp/licensing-production-evidence.json`; concurrent unrelated source
 work means this is test evidence, not a clean, versioned release artifact.
 Installed interactive licensing acceptance remains pending.
-Live CAD pricing, delivery and production purchase behavior remain separate gates.
+The owner subsequently confirmed live CAD 5.00 one-time pricing. Delivery and
+production purchase behavior remain separate gates.
+
+Clean candidate follow-up (2026-09-13): the exact archived production app and
+worker pass 2,665 foundation contracts, including original-start trial retention,
+admitted work, interruption recovery and actual WPF startup/IPC. The candidate
+uses clean public `c1be58074d936f4eb9868ab009cbf444caaec4b6` and private
+`c9fc230ab05f6596e998b97a9961e52ebbd2489b` worktrees; its manifest records
+`dirtySources: false`, 42 payload files and both revisions. All 17 release
+packaging checks pass, including required commercial runtime, changed hashes,
+duplicate/unsafe inventory entries and staging reuse rejection.
+
+The archive is under
+`.codex-temp/licensing-release-candidate/artifacts/release-candidates/119b77aeec1c4d82a532fd4085877c3b/ContextSuite-win-x64-unsigned.zip`.
+SHA-256: `9FE32749D6F9932807236C3949019791B9432E7A9D54179B75CA50DD4584CE45`.
+The adjacent `ContextSuite/release-manifest.json` inventories the payload; build,
+contract and packaging logs are in that worktree's `.codex-temp` directory.
+The first build rejected differing identity-file bytes after clean checkout;
+restaging the same pinned PNG/palette inputs resolved this without changing pins.
+The first contract invocation used a relative scratch path and stopped before
+integration; the corrected absolute-path run completed. No installation or
+registration changed. This is the normal image/DDS production composition,
+not acceptance of optional audio/PDF payloads, final product version/identity,
+signed installation or live commerce.
 
 Customer workflow
 -----------------

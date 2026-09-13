@@ -9,6 +9,14 @@ The owner accepted [context-menu simplification](context-menu-simplification-goa
 Signing is deferred. Preserve the dated evidence and independent release gates
 below; they do not establish acceptance of new audio/document/catalog capabilities.
 
+Clean 2026-09-13 follow-up: the normal production archive now has exact public
+and private revision provenance, 42 verified payload files, 17 passing packaging
+checks and 2,665 contracts against its real packaged app/worker. See
+[licensing verification](licensing-verification.md#seven-day-trial-verification)
+for its archive hash and paths. Earlier dirty-source artifacts below remain
+historical. This unsigned internal archive does not settle final identity/version,
+native installation or the current broader product's release adoption.
+
 Original image-only objective: implement the approved [paid-access policy](decisions/0017-paid-access-and-release-candidate.md),
 integrate it into the existing quiet image workflow, and produce verifiable
 release-candidate evidence without expanding image recipes or adding audio.
