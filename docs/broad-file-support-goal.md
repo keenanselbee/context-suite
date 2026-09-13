@@ -72,11 +72,14 @@ advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
 The latest combined production stage is
-`artifacts/production-staging/1bcf6e8fd25f4f35bf1260c15a05e387`.
+`artifacts/production-staging/394a9b5bb92b45a5ae3b6ec3b5c73f46`.
 It includes catalog revision 2026-09-13.1, the prior Analyze and combined-PDF
 failure handling, corrected Opus surround mapping, separate trial-policy edits,
 the ID3v2.2 reader and bounded FLAC-to-Vorbis/Opus artwork transport, with the
-native shell build included. The latest foundation run passes 2,464 contracts.
+native shell build included. It also includes the new
+[Office embedded-reference analysis](document-embedded-analysis.md), which
+classifies image, OLE/package and VBA relationships without reading their targets.
+The latest foundation run passes 2,496 contracts, including 32 new declaration checks.
 The [artwork checkpoint](audio-artwork-conversion.md) additionally passes 33
 focused private, 36 direct-command and 52 audio conversion workflow checks.
 Picture bytes, descriptions and order survive both target formats; other artwork

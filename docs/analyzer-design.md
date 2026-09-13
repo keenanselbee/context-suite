@@ -36,6 +36,8 @@ slide settings, distinguishing defaults and incomplete scans. These counts do
 not predict rendering or a custom slide show. OOXML
 reports external-link declarations from bounded relationship-file inspection,
 with an explicit scope and unavailable counts after partial/unsupported scans.
+The same scan reports [internal image, embedded-object and VBA references](document-embedded-analysis.md)
+as declarations, keeping them separate from verified contents and unique files.
 It never opens those targets or treats a zero count as safety approval. Encrypted,
 unsupported and over-budget parts retain basic facts. This does not enable
 document transformation or validate rendered layout. Bounded

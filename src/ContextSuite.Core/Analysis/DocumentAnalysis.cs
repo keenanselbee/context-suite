@@ -39,14 +39,20 @@ public static partial class DocumentAnalysis
                     var links = await ReadRelationshipsAsync(package, cancellationToken);
                     facts.Add(new("document.relationship-parts", "Document", "Relationship files inspected", Integer: links.Parts));
                     facts.Add(new("document.external-relationships", "Document", "Declared external links (relationship files)", Integer: links.External));
+                    facts.Add(new("document.image-relationships", "Document", "Image references (internal)", Integer: links.Images));
+                    facts.Add(new("document.embedded-relationships", "Document", "Embedded-object references (internal)", Integer: links.Objects));
+                    facts.Add(new("document.vba-relationships", "Document", "VBA project references (internal)", Integer: links.VbaProjects));
                 }
                 catch (Exception error) when (error is IOException or InvalidDataException or XmlException or DecoderFallbackException)
                 {
                     facts.Add(new("document.external-relationships", "Document", "Declared external links (relationship files)", Availability: FactAvailability.Unavailable));
-                    warnings = warnings.Add("External-link details are unavailable: relationship files are inconsistent, unsupported or exceed the analysis limits.");
+                    facts.Add(new("document.image-relationships", "Document", "Image references (internal)", Availability: FactAvailability.Unavailable));
+                    facts.Add(new("document.embedded-relationships", "Document", "Embedded-object references (internal)", Availability: FactAvailability.Unavailable));
+                    facts.Add(new("document.vba-relationships", "Document", "VBA project references (internal)", Availability: FactAvailability.Unavailable));
+                    warnings = warnings.Add("Relationship details are unavailable: relationship files are inconsistent, unsupported or exceed the analysis limits.");
                 }
                 facts.Add(new("document.relationship-scope", "Document", "Link inspection scope",
-                    Text: "Relationship declarations only; targets were not opened. Document fields and embedded content were not scanned."));
+                    Text: "Relationship declarations only, including potentially unused parts. Counts are references, not unique or verified files; targets were not opened. Document fields and embedded content were not scanned. Zero does not establish that a document is safe."));
                 try
                 {
                     var fonts = await ReadFontReferencesAsync(package, cancellationToken);
@@ -89,12 +95,12 @@ public static partial class DocumentAnalysis
         }
     }
 
-    private static async Task<(int Parts, int External)> ReadRelationshipsAsync(DocumentPackageReader package, CancellationToken cancellationToken)
+    private static async Task<(int Parts, int External, int Images, int Objects, int VbaProjects)> ReadRelationshipsAsync(DocumentPackageReader package, CancellationToken cancellationToken)
     {
         var names = package.Names.Where(name => name.Equals("_rels/.rels", StringComparison.OrdinalIgnoreCase) ||
             name.EndsWith(".rels", StringComparison.OrdinalIgnoreCase) &&
             (name.StartsWith("_rels/", StringComparison.OrdinalIgnoreCase) || name.Contains("/_rels/", StringComparison.OrdinalIgnoreCase))).ToArray();
-        var external = 0;
+        var external = 0; var images = 0; var objects = 0; var vbaProjects = 0;
         foreach (var name in names)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -118,10 +124,23 @@ public static partial class DocumentAnalysis
                     throw new InvalidDataException("Incomplete or ambiguous relationship declaration.");
                 // External targets may be relative. Never resolve, open or fetch
                 // a target, including an ordinary hyperlink or an unknown type.
-                if (mode == "External") external++;
+                if (mode == "External") { external++; continue; }
+                switch (type)
+                {
+                    case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image":
+                    case "http://purl.oclc.org/ooxml/officeDocument/relationships/image":
+                        images++; break;
+                    case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject":
+                    case "http://purl.oclc.org/ooxml/officeDocument/relationships/oleObject":
+                    case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/package":
+                    case "http://purl.oclc.org/ooxml/officeDocument/relationships/package":
+                        objects++; break;
+                    case "http://schemas.microsoft.com/office/2006/relationships/vbaProject":
+                        vbaProjects++; break;
+                }
             }
         }
-        return (names.Length, external);
+        return (names.Length, external, images, objects, vbaProjects);
     }
 
     private static async Task<string?> ReadOpenXmlAsync(DocumentPackageReader package,

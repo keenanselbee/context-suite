@@ -53,6 +53,7 @@ internal static partial class DocumentAnalysisContracts
         check(macroResult.Identity.FormatId == "docx" && macroResult.Facts.Single(fact => fact.Id == "document.macro-type").Boolean == true,
             "documents: macro-enabled type is a declaration, not proof that a VBA project is present");
         await RelationshipContractsAsync(check);
+        await EmbeddedRelationshipContractsAsync(scratch, check);
         await FontReferenceContractsAsync(scratch, check);
         await WorkbookSettingsContractsAsync(scratch, check);
         await WordRevisionContractsAsync(scratch, check);
@@ -198,7 +199,7 @@ internal static partial class DocumentAnalysisContracts
                 ("later/_rels/bad.xml.rels", text)]));
             var fact = result.Facts.Single(fact => fact.Id == "document.external-relationships");
             check(result.Identity.FormatId == "docx" && fact.Integer is null && fact.Availability == FactAvailability.Unavailable &&
-                result.Facts.Any(value => value.Id == "document.pages") && result.Warnings.Any(warning => warning.Contains("External-link details")),
+                result.Facts.Any(value => value.Id == "document.pages") && result.Warnings.Any(warning => warning.Contains("Relationship details")),
                 "documents: optional relationship failure preserves identity without a partial/zero link count: " + name);
         }
         var noncanonical = await AnalyzeAsync(Zip([.. parts, ("content/_RELS/main.xml.RELS", Relations(externalLink))]));

@@ -68,6 +68,11 @@ files, not zero possible external activity or proof that a document is safe.
 No target address is copied into the displayed facts. ODF and legacy documents
 do not receive a zero count for a scan that was not performed.
 
+The [embedded-reference follow-up](document-embedded-analysis.md) additionally
+classifies internal image, OLE/package and VBA-project declarations in that same
+scan without new reads. Counts include repeated targets and potentially unused
+relationships; they do not prove that payloads exist, are used or are safe.
+
 Malformed, duplicate-ID, unsupported or over-budget relationship files leave the
 link count unavailable and retain the already identified document family and
 basic facts. Partial counts are not presented as complete. Cancellation still
