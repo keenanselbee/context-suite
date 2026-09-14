@@ -254,6 +254,15 @@ therefore does not fall back to unrestricted execution for an isolated case.
 Read the [isolation evidence](../../docs/office-isolation-evaluation.md) for exact
 scope, remaining tests and authorization requirements.
 
+Access-test children now receive an explicit eight-variable Unicode environment.
+Known Windows AppContainer redirection of local/temp paths is checked against
+exact owned scratch locations. Actual file writes/readback through all five
+storage variables pass, with three changed-environment controls. Unknown variables
+are counted but their values are never logged. The build receipt includes
+`Environment.h`; environment checks do not imply renderer compatibility or resolve
+the failed network-denial matrix. See the linked isolation record for retained
+observations and profile cleanup.
+
 `Read-OfficeNetworkEvents.ps1 -StagingId <scratch-guid> -PlanOnly` prepares four
 read-only WFP queries for the retained probe's IPv4/IPv6 loopback events and
 filters. It verifies the probe hash and profile name and rejects reparse paths.

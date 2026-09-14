@@ -17,6 +17,7 @@ if ($LASTEXITCODE) { throw 'Isolation probe build failed.' }
 $executable = Join-Path $build 'bin\Release\ContextSuite.Office.IsolationProbe.exe'
 [ordered]@{ executable=$executable; sha256=(Get-FileHash -LiteralPath $executable).Hash;
     sourceSha256=(Get-FileHash -LiteralPath (Join-Path $source 'Probe.cpp')).Hash;
+    environmentSha256=(Get-FileHash -LiteralPath (Join-Path $source 'Environment.h')).Hash;
     cmakeSha256=(Get-FileHash -LiteralPath (Join-Path $source 'CMakeLists.txt')).Hash } |
     ConvertTo-Json | Set-Content -LiteralPath (Join-Path $scratch 'build.json') -Encoding UTF8
 Write-Output "Isolation evidence: $scratch"

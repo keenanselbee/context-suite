@@ -53,6 +53,7 @@ struct Socket {
 void Require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(std::string(message) + " (Windows error " + std::to_string(GetLastError()) + ")");
 }
+#include "Environment.h"
 std::wstring Quote(const std::wstring& value) {
     std::wstring result = L"\"";
     size_t slashes = 0;
@@ -143,6 +144,18 @@ int Child(const fs::path& root, unsigned short port, unsigned short port6, bool 
     Require(GetTokenInformation(token.value, TokenCapabilities, capabilityBuffer.data(), capabilityBytes, &returned) != FALSE &&
         returned >= sizeof(DWORD) && returned <= capabilityBytes, "Read token capabilities");
     const auto capabilityCount = reinterpret_cast<const TOKEN_GROUPS*>(capabilityBuffer.data())->GroupCount;
+    const auto environmentMatches = AccessEnvironmentMatches(root, isolated, true);
+    bool environmentStorage = environmentMatches;
+    if (environmentMatches) {
+        for (const auto* name : { L"APPDATA", L"LOCALAPPDATA", L"TEMP", L"TMP", L"USERPROFILE" }) {
+            wchar_t path[32768]{};
+            const auto length = GetEnvironmentVariableW(name, path, static_cast<DWORD>(std::size(path)));
+            Require(length > 0 && length < std::size(path), "Read supplied storage variable");
+            const auto file = fs::path(path) / (std::wstring(L"environment-") + name + L".txt");
+            const std::string contents = isolated ? "isolated environment fixture" : "control environment fixture";
+            environmentStorage &= WriteAttempt(file, contents) == 0 && ReadAttempt(file, contents) == 0;
+        }
+    }
     const auto allowedRead = ReadAttempt(root / L"allowed" / L"input.txt", "generated readable fixture");
     const auto deniedRead = ReadAttempt(root / L"denied" / L"input.txt", "generated withheld fixture");
     const auto outputText = isolated ? "isolated output fixture" : "control output fixture";
@@ -165,6 +178,8 @@ int Child(const fs::path& root, unsigned short port, unsigned short port6, bool 
     const auto diagnosis = diagnose(L"127.0.0.1", &reason);
     const auto diagnosis6 = diagnose(L"::1", &reason6);
     std::cout << "{\"appContainer\":" << appContainer << ",\"allowedRead\":" << allowedRead
+        << ",\"environmentMatches\":" << (environmentMatches ? "true" : "false")
+        << ",\"environmentStorage\":" << (environmentStorage ? "true" : "false")
         << ",\"capabilityCount\":" << capabilityCount << ",\"outputReadback\":" << outputReadback
         << ",\"deniedRead\":" << deniedRead << ",\"allowedWrite\":" << allowedWrite
         << ",\"deniedWrite\":" << deniedWrite << ",\"readOnlyWrite\":" << readOnlyWrite
@@ -173,10 +188,10 @@ int Child(const fs::path& root, unsigned short port, unsigned short port6, bool 
         << ",\"ipv6ObservationExpired\":" << (expired6 ? "true" : "false")
         << ",\"networkDiagnosis\":" << diagnosis << ",\"networkReason\":" << reason
         << ",\"ipv6Diagnosis\":" << diagnosis6 << ",\"ipv6Reason\":" << reason6 << "}\n";
-    if (isolated) return appContainer == 1 && capabilityCount == 0 && allowedRead == 0 && allowedWrite == 0 && outputReadback == 0 &&
+    if (isolated) return environmentStorage && appContainer == 1 && capabilityCount == 0 && allowedRead == 0 && allowedWrite == 0 && outputReadback == 0 &&
         deniedRead == ERROR_ACCESS_DENIED && deniedWrite == ERROR_ACCESS_DENIED &&
         readOnlyWrite == ERROR_ACCESS_DENIED && network == WSAEACCES && network6 == WSAEACCES ? 0 : 3;
-    return appContainer == 0 && capabilityCount == 0 && allowedRead == 0 && deniedRead == 0 && allowedWrite == 0 && outputReadback == 0 &&
+    return environmentStorage && appContainer == 0 && capabilityCount == 0 && allowedRead == 0 && deniedRead == 0 && allowedWrite == 0 && outputReadback == 0 &&
         deniedWrite == 0 && readOnlyWrite == 0 && network == 0 && network6 == 0 ? 0 : 4;
 }
 constexpr SIZE_T MiB = 1024ULL * 1024;
@@ -184,7 +199,8 @@ struct JobBudget { DWORD processes = 8; SIZE_T processBytes = 512 * MiB; SIZE_T 
 struct ChildResult { DWORD exitCode; std::string output; bool timedOut; bool outputLimit; DWORD totalProcesses; DWORD activeBeforeStop;
     SIZE_T peakProcessBytes; SIZE_T peakJobBytes; };
 ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arguments,
-    const fs::path& directory, PSID sid, ULONGLONG timeoutMilliseconds = 30000, JobBudget budget = {}) {
+    const fs::path& directory, PSID sid, ULONGLONG timeoutMilliseconds = 30000, JobBudget budget = {},
+    const std::vector<wchar_t>* environment = nullptr) {
     Handle job(CreateJobObjectW(nullptr, nullptr));
     Require(job.value != nullptr, "Create owned job");
     JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};
@@ -226,7 +242,8 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
     Require(command.size() < 32767, "Bound command line");
     PROCESS_INFORMATION info{};
     Require(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE,
-        CREATE_SUSPENDED | CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT, nullptr,
+        CREATE_SUSPENDED | CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT,
+        environment ? const_cast<wchar_t*>(environment->data()) : nullptr,
         directory.c_str(), &startup.StartupInfo, &info) != FALSE, "Create suspended child");
     Handle process(info.hProcess), thread(info.hThread);
     struct ProcessGuard { HANDLE value; ~ProcessGuard() { TerminateProcess(value, 1); } } terminate{ process.value };
@@ -489,11 +506,21 @@ int wmain(int argc, wchar_t** argv) {
         if (argc == 6 && std::wstring(argv[1]) == L"--child")
             return Child(argv[2], static_cast<unsigned short>(std::stoul(argv[3])),
                 static_cast<unsigned short>(std::stoul(argv[4])), std::wstring(argv[5]) == L"isolated");
+        if (argc == 3 && std::wstring(argv[1]) == L"--environment") {
+            const auto matches = AccessEnvironmentMatches(argv[2]);
+            std::cout << "{\"exactEnvironment\":" << (matches ? "true" : "false") << "}\n";
+            return matches ? 0 : 5;
+        }
         const bool createProfile = argc == 3 && std::wstring(argv[2]) == L"--create-disposable-profile";
         if (argc != 2 && !createProfile) return 2;
         const auto root = fs::absolute(argv[1]).lexically_normal();
         Require(root.native().find(L"\\.codex-temp\\office-isolation\\") != std::wstring::npos && !fs::exists(root), "Use fresh owned office-isolation scratch");
         fs::create_directories(root / L"allowed"); fs::create_directories(root / L"denied"); fs::create_directories(root / L"writable");
+        const auto environmentValues = AccessEnvironmentValues(root);
+        for (const auto& name : { L"APPDATA", L"LOCALAPPDATA", L"TEMP" })
+            fs::create_directories(environmentValues.at(name));
+        fs::create_directories(AccessEnvironmentValues(root, true).at(L"TEMP"));
+        const auto environment = EnvironmentBlock(environmentValues);
         std::ofstream(root / L"allowed" / L"input.txt") << "generated readable fixture";
         std::ofstream(root / L"denied" / L"input.txt") << "generated withheld fixture";
         wchar_t module[32768]{};
@@ -533,7 +560,19 @@ int wmain(int argc, wchar_t** argv) {
         int address6Size = sizeof(address6);
         Require(getsockname(server6.value, reinterpret_cast<sockaddr*>(&address6), &address6Size) == 0, "Read IPv6 listener port");
         const auto port6 = std::to_wstring(ntohs(address6.sin6_port));
-        const auto control = Run(child, { L"--child", root.native(), port, port6, L"control" }, root, nullptr);
+        for (const auto& variant : { L"exact", L"extra", L"missing", L"changed" }) {
+            auto values = environmentValues;
+            if (std::wstring(variant) == L"extra") values[L"CONTEXTSUITE_ENV_SENTINEL"] = L"generated-only";
+            if (std::wstring(variant) == L"missing") values.erase(L"TEMP");
+            if (std::wstring(variant) == L"changed") values[L"PATH"] = root.native();
+            const auto block = EnvironmentBlock(values);
+            const auto result = Run(child, { L"--environment", root.native() }, root, nullptr, 30000, {}, &block);
+            std::ofstream(root / (std::wstring(L"environment-") + variant + L".json")) << result.output;
+            Require(result.exitCode == (std::wstring(variant) == L"exact" ? 0UL : 5UL) && !result.timedOut && !result.outputLimit,
+                "Explicit Unicode environment and changed-input controls");
+        }
+        std::cout << "PASS: explicit Unicode environment; extra, missing and changed variables rejected.\n";
+        const auto control = Run(child, { L"--child", root.native(), port, port6, L"control" }, root, nullptr, 30000, {}, &environment);
         std::ofstream(root / L"control.json") << control.output;
         std::cout << "Control: " << control.output;
         Require(control.exitCode == 0 && !control.timedOut && !control.outputLimit && !control.output.empty(), "Unrestricted control must demonstrate accessible fixtures/listener");
@@ -559,7 +598,7 @@ int wmain(int argc, wchar_t** argv) {
             std::cout << "NOT RUN: AppContainer access matrix requires explicit disposable-profile opt-in. Unregistered launch previously failed with Windows error 2.\n";
             return 0;
         }
-        const auto isolated = Run(child, { L"--child", root.native(), port, port6, L"isolated" }, root, sid.value);
+        const auto isolated = Run(child, { L"--child", root.native(), port, port6, L"isolated" }, root, sid.value, 30000, {}, &environment);
         std::ofstream(root / L"isolated.json") << isolated.output;
         std::cout << "Isolated: " << isolated.output;
         // A failed connection observation must not prevent checking listener

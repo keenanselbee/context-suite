@@ -107,6 +107,13 @@ does not explain the result, and reading scoped filtering events requires
 elevation. Authorization for this test is resolved; enforcement evidence and
 Office execution inside the boundary remain unfinished.
 
+The subsequent [explicit-environment check](office-isolation-evaluation.md#explicit-environment-and-redirected-storage-2026-09-14)
+verifies exactly eight variables and actual writes/readback through five scratch
+storage variables in the AppContainer. It accounts for Windows' local/temp path
+redirection, rejects three changed-environment controls and independently verifies
+disposable profile cleanup. Network enforcement and actual Office renderer
+compatibility remain open; the combined isolation matrix still fails.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

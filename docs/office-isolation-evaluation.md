@@ -1,7 +1,7 @@
 Office Process Isolation Evaluation
 ===================================
 
-Status: authorized AppContainer file/token/content checks passed; IPv4/IPv6
+Status: authorized AppContainer file/token/content and explicit-environment checks passed; IPv4/IPv6
 attempts reach observation deadlines rather than proven access denial, so the
 combined matrix fails. Profiles were removed. No production isolation claim or
 Office document execution in this probe, updated 2026-09-14.
@@ -329,3 +329,45 @@ and test further network cases, active-content/external-reference denial, hostil
 documents, resource budgets and mixed-batch recovery before production adoption.
 The full broad-file goal remains active; this preflight is not a substitute for
 the selected Office conversions or other launch requirements.
+
+
+Explicit environment and redirected storage (2026-09-14)
+-------------------------------------------------------
+
+The access probe now receives an explicit eight-variable Unicode environment,
+rather than the caller's process environment. `PATH` contains only System32;
+`SYSTEMROOT` and `WINDIR` come from the Windows directory API. `USERPROFILE`,
+`APPDATA`, `LOCALAPPDATA`, `TEMP` and `TMP` point beneath the owned writable
+scratch directory, including spaces and non-ASCII characters. Unrelated lifetime
+helpers retain their previous launch behavior. This is evaluation code, not a
+production Office launcher or proof that environment paths enforce access rights.
+
+The ordinary-process environment matches exactly. Three negative controls reject
+an extra generated variable, missing `TEMP`, and changed `PATH`. The first two
+AppContainer observations failed that exact comparison: Windows rewrote
+`LOCALAPPDATA`, `TEMP` and `TMP`. This matches the documented
+[AppContainer environment redirection](https://learn.microsoft.com/en-us/windows/win32/secauthz/implementing-an-appcontainer#creating-the-profile).
+Here the redirected directories remain beneath the explicitly supplied scratch
+`LOCALAPPDATA`, using the disposable profile moniker. The final check permits only
+those exact derived paths and still requires exactly eight variables.
+
+The parent creates the expected redirected directory before assigning scratch
+ACLs. Both ordinary and actual AppContainer children verify exact environment
+contents and write/read distinct fixture bytes through all five storage variables.
+The parent independently checks the eight retained files. Diagnostics retain only
+the eight known path values and the variable count, never unknown variable values.
+File/token, resource, timeout and owner-crash cleanup checks continue to pass.
+
+Final evidence: `.codex-temp/office-isolation/e481f5b70b29422c862f27739777486d`.
+The x64 `/W4 /WX` build passes. The environment mismatch observations are retained
+at `68641ebbf59a476988485cc6ec14c221` and `f0e061ce9e554423a1221d6989abbb6e` under
+the same scratch parent. All three disposable profile folders and registry
+mappings are verified absent in `.codex-temp/office-environment-verification.json`.
+Logs use `office-environment-preflight`, `office-environment-isolated`,
+`office-environment-diagnosis` and `office-environment-final` prefixes.
+
+The combined matrix still **fails**: both isolated network attempts reach their
+observation deadlines. No network assertion was relaxed, elevated query executed,
+Office renderer launched or production payload changed. Future renderer tests
+must verify its own initialization and descendants under this explicit environment;
+this authored helper does not establish Office compatibility.
