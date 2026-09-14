@@ -69,8 +69,16 @@ pass, and all twelve published copies independently decode within their expected
 extents. All 2,822 foundation contracts pass; Release builds have zero warnings
 or errors. Candidate 1.0.9 is preserved unchanged. See the
 [candidate receipt and exact acceptance scope](finite-audio-resampling.md).
-This does not close listening, interrupted-worker recovery, visible acceptance,
+This does not close listening, wider recovery coverage, visible acceptance,
 required Office conversion or the separate release gates.
+
+The same candidate subsequently passes **20 finite-resampling interruption
+checks**: cancellation, client timeout and owned-worker termination after its
+real working file appears. Temporary files and journals are removed, originals
+and prior copies survive, and each same-source retry publishes through a fresh
+worker. All four committed copies independently decode to 1,536 finite stereo
+frames. See the [scoped recovery evidence](finite-audio-resampling.md#finite-path-interruption-and-retry).
+This adds no product payload change or visible acceptance claim.
 
 Current completion path (2026-09-12)
 ------------------------------------

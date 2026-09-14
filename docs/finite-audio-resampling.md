@@ -91,7 +91,7 @@ The reconciled counts and evidence hashes are in
 
 Candidate 1.0.9 remains unchanged and predates both the guard and this repair.
 Broader input/metadata variants, short surround encoding, representative
-listening/player acceptance, interrupted-worker recovery, visible UI, required
+listening/player acceptance, wider recovery coverage, visible UI, required
 Office conversion and commercial release gates remain open.
 
 
@@ -131,3 +131,37 @@ directory. `.codex-temp/resampling-direct-final-independent.json` records all
 twelve decoded outputs; `.codex-temp/resampling-payload-verification.json`
 reconciles both candidates. Build and test logs use `resampling-production`,
 `resampling-direct-final` and `resampling-foundation` prefixes.
+
+
+Finite-path interruption and retry
+---------------------------------
+
+The staged 1.1.0 worker passes **20 focused interruption checks** using an authored
+256-frame, 8 kHz stereo WAV. Each fault is injected only after observing the
+worker's real `finite-extended.wav` while conversion is still active. The cases
+cover cancellation, simulated expiry of the unchanged 150-second client deadline,
+and termination of the owned worker process.
+
+Each case returns its distinct cancellation or typed failure, exits the owned
+worker, removes its working directory, abandons the output reservation and clears
+the publication journal. Source bytes/write time and already committed copies
+are preserved. A fresh worker then publishes a validated same-source retry with
+a new output name. The baseline and three retry copies independently decode to
+exactly 1,536 finite stereo frames, and their recorded hashes match.
+
+This observes the finite working-file phase, not an exact native encoder
+instruction or every interruption point. Native child-process exit is not
+independently observed by this test. It uses a refusing recycler and isolated
+trial state; no installed app, Explorer, customer license or visible UI is used.
+The production payload is unchanged, and the previously passing foundation suite
+was not repeated for this test-only addition.
+
+```powershell
+dotnet '<public contract DLL>' --finite-resampling-interruptions '<new evidence>' '<staged worker>' '<short matrix fixtures>'
+```
+
+`.codex-temp/finite-interruptions-session.json` identifies the evidence directory.
+Its `finite-interruptions.json` records faults, process identities, preservation
+hashes and retry outputs; `independent-decode.json` records decoded copy extents.
+The Release public test-host build reports zero warnings/errors. Build and test
+logs use the `finite-interruptions` prefix.

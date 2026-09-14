@@ -13,6 +13,14 @@ using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
 if (args.Length == 2 && args[0] == "--benchmark-analyze") return await AnalyzeBenchmark.RunAsync(args[1]);
+if (args.Length == 4 && args[0] == "--finite-resampling-interruptions")
+{
+    var checks = 0;
+    await AudioInterruptionContracts.FiniteResamplingAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} finite-resampling interruption checks.");
+    return 0;
+}
 if (args.Length == 2 && args[0] == "--analysis-mapping")
 {
     var checks = 0;

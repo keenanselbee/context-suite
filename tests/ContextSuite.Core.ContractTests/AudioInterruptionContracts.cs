@@ -8,7 +8,7 @@ using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Operations;
 
-internal static class AudioInterruptionContracts
+internal static partial class AudioInterruptionContracts
 {
     public static async Task RunAsync(string root, string executable, Action<bool, string> check, bool optimize = false)
     {
