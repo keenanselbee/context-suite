@@ -50,6 +50,16 @@ the correction; explicitly selecting MP3 decodes exactly 47 frames. This remains
 an open tiny-file compatibility case. The matrix records automatic recognition
 separately from explicit-format decoding; it does not claim all-player acceptance.
 
+A 2026-09-14 trace identifies the automatic-probe conflict: the independent
+runtime scores both H.263 and MP3 at 25 for this file and refuses to choose.
+Its audio format whitelist does not remove that probing conflict. Explicit MP3
+selection still decodes exactly 47 frames; the curated runtime, which has no
+H.263 demuxer, also decodes 47 frames through automatic recognition. Evidence is
+`.codex-temp/mp3-probe-collision.json` and the matching per-mode trace logs;
+the candidate trace is `.codex-temp/mp3-auto-candidate.log`. Source bytes and
+write time are unchanged. This explains this runtime's failure without proving
+compatibility with other players or changing the encoded audio to influence probes.
+
 Reproduce with a Release private contract host and absolute paths:
 
 ```powershell
