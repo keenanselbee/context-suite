@@ -58,7 +58,7 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 
 The [PDF page geometry matrix](pdf-page-geometry.md), extended by the
 [typed limit follow-up](pdf-page-limits.md), passes 59 actual worker/publication
-checks on the latest combined stage. It covers
+checks on its dated combined stage. It covers
 crop/rotation pixels, 16-million-pixel pages, maximum width/height, out-of-bound
 refusal and later valid work. Native page-size refusals now use a typed limit
 category and clear guidance, distinct from malformed input. Native allocation
@@ -80,7 +80,7 @@ advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
 The latest combined production stage is
-`artifacts/production-staging/14e7cec5306a4660a6fedeb7f5922c3c`.
+`artifacts/production-staging/b40f5ba06ef84842a2e7504d97cde70a`.
 It includes catalog revision 2026-09-13.1, the prior Analyze and combined-PDF
 failure handling, corrected Opus surround mapping, separate trial-policy edits,
 the ID3v2.2 reader and bounded FLAC-to-Vorbis/Opus artwork transport, with the
@@ -88,9 +88,12 @@ native shell build included. It also includes the new
 [Office embedded-reference analysis](document-embedded-analysis.md), which
 classifies image, OLE/package and VBA relationships without reading their targets.
 It now also includes the [MP3 artwork handler](mp3-artwork-conversion.md) for
-PNG/JPEG covers to FLAC, Vorbis and Opus. The latest foundation run passes 2,583
-contracts, including 22 new PDF limit-response checks after the 65 picture/consent
-checks. The PDF follow-up also passes 25 private raster, 12 evaluation, 59 direct/
+PNG/JPEG covers to FLAC, Vorbis and Opus, and the
+[Ogg artwork source reader](ogg-artwork-conversion.md) for FLAC and cross-codec
+Vorbis/Opus outputs. The latest foundation run passes 2,626 contracts, including
+43 new Ogg picture/admission checks. The Ogg checkpoint also passes 85 focused
+private artwork, 51 existing preservation and 57 direct-worker checks on this
+stage. The preceding PDF follow-up passes 25 private raster, 12 evaluation, 59 direct/
 worker, 20 interruption and 19 payload checks. The earlier MP3 checkpoint passes
 91 focused private artwork, 100 preservation and 58 worker/direct checks on its
 own dated stage.

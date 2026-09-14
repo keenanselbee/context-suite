@@ -266,6 +266,11 @@ For the complete curated adapter suite:
   -IndependentDecoderDirectory '<pinned evaluation bin>'
 ```
 
+The focused `--ogg-artwork` private-host mode generates PNG/JPEG Vorbis/Opus
+fixtures and verifies conversion to FLAC and the other Ogg codec. The public
+`--ogg-artwork-direct` mode uses those fixtures with a freshly staged worker.
+See [commands, exact checks and limitations](../../docs/ogg-artwork-conversion.md).
+
 The independent decoder supplies artwork pixel comparisons;
 the candidate performs every production media operation. The latest run passes
 298 checks. `Test-AudioWorker.ps1` accepts `-CandidateDirectory` instead of

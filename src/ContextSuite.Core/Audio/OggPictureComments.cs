@@ -10,6 +10,30 @@ public static class OggPictureComments
 {
     public static bool IsPicture(string name) => name.Equals("METADATA_BLOCK_PICTURE", StringComparison.OrdinalIgnoreCase);
 
+    public static ImmutableArray<FlacMetadataBlock> Read(VorbisCommentList source)
+    {
+        if (source.Comments.IsDefault || source.Comments.Length > VorbisComments.MaximumComments)
+            throw new InvalidDataException("Expected a bounded Ogg comment inventory.");
+        var pictures = ImmutableArray.CreateBuilder<FlacMetadataBlock>(); var textBytes = 0;
+        foreach (var comment in source.Comments)
+        {
+            if (comment is null || comment.Name is null || comment.Value is null) throw new InvalidDataException("Invalid Ogg comment field.");
+            if (!IsPicture(comment.Name)) continue;
+            if (pictures.Count >= FlacDescriptiveMetadata.MaximumPictures || comment.Value.Length > VorbisComments.MaximumPictureTextBytes - textBytes - 23)
+                throw new InvalidDataException("Ogg pictures exceed their count or byte budget.");
+            textBytes += 23 + comment.Value.Length;
+            byte[] bytes;
+            try { bytes = Convert.FromBase64String(comment.Value); }
+            catch (FormatException error) { throw new InvalidDataException("Invalid base64 Ogg picture.", error); }
+            if (Convert.ToBase64String(bytes) != comment.Value)
+                throw new NotSupportedException("Noncanonical Ogg picture encoding needs a preservation policy.");
+            pictures.Add(new(6, bytes.ToImmutableArray()));
+        }
+        var result = pictures.ToImmutable();
+        RequireFits(result);
+        return result;
+    }
+
     public static byte[] AppendToPacket(ReadOnlySpan<byte> packet, ImmutableArray<FlacMetadataBlock> pictures)
     {
         var prefix = packet.StartsWith("OpusTags"u8) ? 8 : packet.StartsWith("\x03vorbis"u8) ? 7 :

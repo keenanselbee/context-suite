@@ -5,7 +5,9 @@ Status: bounded FLAC-to-Vorbis/Opus artwork transport implemented and tested in
 isolated production staging, 2026-09-13. Other cross-format artwork paths,
 human listening and player acceptance remain open. The later
 [MP3 artwork checkpoint](mp3-artwork-conversion.md) adds a separate ID3 picture
-handler; the counts and limitations below describe this FLAC-source checkpoint.
+handler. The [Ogg source checkpoint](ogg-artwork-conversion.md) adds the reverse
+path to FLAC and conversion between Vorbis/Opus. The counts and limitations below
+describe this FLAC-source checkpoint.
 
 Preservation boundary
 ---------------------

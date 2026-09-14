@@ -6,6 +6,7 @@ internal static class OggMetadataContracts
 {
     public static async Task RunAsync(Action<bool, string> check)
     {
+        OggPictureReaderContracts.Run(check);
         foreach (var opus in new[] { false, true })
         {
             var pictures = ImmutableArray.Create(new FlacMetadataBlock(6, ImmutableArray.Create(FlacDescriptionContracts.Picture("image/png", "Cover", new byte[900000]))));
@@ -15,6 +16,9 @@ internal static class OggMetadataContracts
             {
                 input.Position = 3;
                 var pictured = await OggMetadata.ReadAsync(input, default, true);
+                var readPictures = OggPictureComments.Read(pictured.Descriptions);
+                check(readPictures.Length == 1 && readPictures[0].Data.AsSpan().SequenceEqual(pictures[0].Data.AsSpan()),
+                    "Ogg artwork: source reader preserves complete large continued picture block: " + opus);
                 check(pictured.ConversionTags(pictures)["title"] == "Retained" && input.Position == 3 &&
                     pictured.FinalGranule == 96312, "Ogg artwork: large continued packet preserves title, extent and position: " + opus);
                 try { pictured.ConversionTags(); check(false, "Ogg artwork: requires an explicit original picture inventory"); }

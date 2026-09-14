@@ -41,6 +41,19 @@ internal static class AudioConversionContracts
         foreach (var target in new[] { AudioFormat.Wave, AudioFormat.M4a })
             Reject(() => AudioConversionPlan.Create(picturedMp3, target), "MP3 artwork requires target handler " + target);
         check(AudioConversionPlan.Create(picturedMp3, AudioFormat.Mp3).AlreadyTarget, "audio plan: MP3 artwork same-format no-op");
+        foreach (var (codec, format) in new[] { ("vorbis", AudioFormat.Vorbis), ("opus", AudioFormat.Opus) })
+        {
+            var source = Facts("ogg", codec); source = source with { Streams = source.Streams.Add(picturedMp3.Streams[1]) };
+            foreach (var target in new[] { AudioFormat.Flac, AudioFormat.Vorbis, AudioFormat.Opus })
+            {
+                var plan = AudioConversionPlan.Create(source, target);
+                check(plan.AlreadyTarget == (target == format) && plan.RequiredConsent == (target == format ? AudioConversionConsent.None :
+                    target == AudioFormat.Flac ? AudioConversionConsent.PrecisionReduction : AudioConversionConsent.LossyTranscoding),
+                    "audio plan: Ogg pictures preserve target-specific consent " + format + "/" + target);
+            }
+            foreach (var target in new[] { AudioFormat.Wave, AudioFormat.Mp3, AudioFormat.M4a })
+                Reject(() => AudioConversionPlan.Create(source, target), "Ogg picture target still requires a handler " + format + "/" + target);
+        }
         var decoded = AudioConversionPlan.Create(mp3, AudioFormat.Wave);
         check(decoded.OutputCodec == "pcm_f32le" && decoded.RequiresExactSamples && decoded.Notices.Any(text => text.Contains("cannot restore")),
             "audio plan: lossless output preserves decoded audio without restoration claim");

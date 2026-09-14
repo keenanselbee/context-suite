@@ -30,6 +30,8 @@ their container. FLAC embedded artwork can now convert to Vorbis/Opus through
 exact picture-block transport; see the [boundary and evidence](audio-artwork-conversion.md).
 MP3 PNG/JPEG artwork can convert to FLAC/Vorbis/Opus through the bounded
 [ID3 picture handler](mp3-artwork-conversion.md), retaining all quality decisions.
+Vorbis/Opus PNG/JPEG artwork can convert to FLAC or the other Ogg codec through
+the [bounded source-picture reader](ogg-artwork-conversion.md).
 Other cross-format artwork, additional streams and unknown multichannel layouts
 require preservation work before conversion. Native FLAC optimization has its
 separate raw-preservation path for embedded artwork, described below.
