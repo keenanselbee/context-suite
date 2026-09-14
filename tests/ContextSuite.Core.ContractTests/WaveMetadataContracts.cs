@@ -9,6 +9,15 @@ internal static partial class WaveMetadataContracts
         await Id3Async(check);
         var format = Format();
         var samples = new byte[192];
+        using (var stream = new MemoryStream(FileOf(("fmt ", format), ("data", samples), ("LIST", Info(("ILNG", Text("eng")))))))
+        {
+            var language = await WaveMetadata.ReadAsync(stream, default);
+            language.RequireConversionSupport(new Dictionary<string, string> { ["language"] = "eng" });
+            check(language.Tags.Single().Name == "language" && language.Tags.Single().Value == "eng" && language.UnsupportedChunks.IsEmpty,
+                "WAV inventory: ILNG preserves the explicit language value");
+            try { language.RequireConversionSupport(new Dictionary<string, string> { ["language"] = "und" }); check(false, "WAV language mismatch"); }
+            catch (InvalidDataException) { check(true, "WAV inventory: changed language cannot authorize conversion"); }
+        }
         var titled = FileOf(("fmt ", format), ("data", samples), ("LIST", Info(("INAM", Text("Title")), ("IART", Text("Artist")))));
         using (var stream = new MemoryStream(titled))
         {

@@ -32,35 +32,29 @@ internal static class AudioConversionContracts
         }
         var mp3 = Facts("mp3", "mp3");
         var picturedMp3 = mp3 with { Streams = mp3.Streams.Add(new(1, "video", "png", null, null, null, null, null, null, empty, true)) };
-        foreach (var target in new[] { AudioFormat.Flac, AudioFormat.Vorbis, AudioFormat.Opus })
-        {
-            var pictured = AudioConversionPlan.Create(picturedMp3, target);
-            check(pictured.RequiredConsent == (target == AudioFormat.Flac ? AudioConversionConsent.PrecisionReduction : AudioConversionConsent.LossyTranscoding),
-                "audio plan: MP3 artwork handler retains required quality consent " + target);
-        }
-        foreach (var target in new[] { AudioFormat.Wave, AudioFormat.M4a })
-            Reject(() => AudioConversionPlan.Create(picturedMp3, target), "MP3 artwork requires target handler " + target);
-        check(AudioConversionPlan.Create(picturedMp3, AudioFormat.Mp3).AlreadyTarget, "audio plan: MP3 artwork same-format no-op");
         var m4a = Facts("mov,mp4,m4a,3gp,3g2,mj2", "aac");
         m4a = m4a with { Streams = m4a.Streams.Add(picturedMp3.Streams[1]) };
-        foreach (var target in new[] { AudioFormat.Mp3, AudioFormat.Flac, AudioFormat.Vorbis, AudioFormat.Opus })
-            check(AudioConversionPlan.Create(m4a, target).RequiredConsent == (target == AudioFormat.Flac ? AudioConversionConsent.PrecisionReduction : AudioConversionConsent.LossyTranscoding),
-                "audio plan: M4A artwork retains quality consent " + target);
-        foreach (var target in new[] { AudioFormat.Wave })
-            Reject(() => AudioConversionPlan.Create(m4a, target), "M4A artwork requires target handler " + target);
-        check(AudioConversionPlan.Create(m4a, AudioFormat.M4a).AlreadyTarget, "audio plan: M4A artwork same-format no-op");
-        foreach (var (codec, format) in new[] { ("vorbis", AudioFormat.Vorbis), ("opus", AudioFormat.Opus) })
+        foreach (var (source, format) in new[] { (picturedMp3, AudioFormat.Mp3), (m4a, AudioFormat.M4a),
+                     (Facts("ogg", "vorbis") with { Streams = Facts("ogg", "vorbis").Streams.Add(picturedMp3.Streams[1]) }, AudioFormat.Vorbis),
+                     (Facts("ogg", "opus") with { Streams = Facts("ogg", "opus").Streams.Add(picturedMp3.Streams[1]) }, AudioFormat.Opus) })
+        foreach (var target in Enum.GetValues<AudioFormat>())
         {
-            var source = Facts("ogg", codec); source = source with { Streams = source.Streams.Add(picturedMp3.Streams[1]) };
-            foreach (var target in new[] { AudioFormat.Mp3, AudioFormat.Flac, AudioFormat.Vorbis, AudioFormat.Opus })
-            {
-                var plan = AudioConversionPlan.Create(source, target);
-                check(plan.AlreadyTarget == (target == format) && plan.RequiredConsent == (target == format ? AudioConversionConsent.None :
-                    target == AudioFormat.Flac ? AudioConversionConsent.PrecisionReduction : AudioConversionConsent.LossyTranscoding),
-                    "audio plan: Ogg pictures preserve target-specific consent " + format + "/" + target);
-            }
-            foreach (var target in new[] { AudioFormat.Wave, AudioFormat.M4a })
-                Reject(() => AudioConversionPlan.Create(source, target), "Ogg picture target still requires a handler " + format + "/" + target);
+            var plan = AudioConversionPlan.Create(source, target);
+            var consent = target == format || target == AudioFormat.Wave ? AudioConversionConsent.None :
+                target == AudioFormat.Flac ? AudioConversionConsent.PrecisionReduction : AudioConversionConsent.LossyTranscoding;
+            check(plan.AlreadyTarget == (target == format) && plan.RequiredConsent == consent,
+                "audio plan: artwork route retains target-specific quality policy " + format + "/" + target);
+            if (target == AudioFormat.Wave)
+                check(plan.OutputCodec == "pcm_f32le" && plan.RequiresExactSamples, "audio plan: artwork WAV retains decoded float samples " + format);
+        }
+        foreach (var format in new[] { AudioFormat.Wave, AudioFormat.Flac })
+        foreach (var target in Enum.GetValues<AudioFormat>())
+        {
+            var source = format == AudioFormat.Wave ? wave : Facts("flac", "flac", 16);
+            var pictured = source with { Streams = source.Streams.Add(picturedMp3.Streams[1]) };
+            var plan = AudioConversionPlan.Create(pictured, target);
+            check(plan.AlreadyTarget == (format == target) && plan.RequiredConsent == AudioConversionConsent.None,
+                "audio plan: lossless-source artwork route adds no metadata/quality prompt " + format + "/" + target);
         }
         var decoded = AudioConversionPlan.Create(mp3, AudioFormat.Wave);
         check(decoded.OutputCodec == "pcm_f32le" && decoded.RequiresExactSamples && decoded.Notices.Any(text => text.Contains("cannot restore")),
@@ -107,9 +101,10 @@ internal static class AudioConversionContracts
         Reject(() => flac.RequireConsent((AudioConversionConsent)128), "unknown consent flags rejected");
         void Reject(Action action, string name)
         {
-            try { action(); check(false, "audio plan: " + name); }
+            try { action(); }
             catch (Exception error) when (error is NotSupportedException or ArgumentException or InvalidOperationException or InvalidDataException)
-            { check(true, "audio plan: " + name); }
+            { check(true, "audio plan: " + name); return; }
+            check(false, "audio plan: " + name);
         }
     }
 }

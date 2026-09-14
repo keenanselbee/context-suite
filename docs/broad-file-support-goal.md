@@ -90,13 +90,25 @@ three effective downsampling controls and independently rendered patches. It
 advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
-The latest combined production stage is candidate 1.0.4 at
+The latest combined production stage is candidate 1.0.5 at
+`artifacts/production-staging/c2eca21b98aa42398081720617b6ec3f`.
+The [WAV output-artwork checkpoint](wave-output-artwork.md) preserves representable
+PNG/JPEG covers from the other five audio formats while retaining exact decoded
+samples and existing quality policies. It passes 103 private artwork checks across
+22 conversions, 37 direct-worker checks and 2,772 foundation contracts. The record
+also explains two corrected assertion helpers and the limits of earlier negative
+test evidence. The combined stage has 116 verified files. Broader metadata,
+listening/player compatibility, integrated acceptance and the required Office
+converter remain open; this does not establish commercial release clearance.
+
+The preceding combined production stage is candidate 1.0.4 at
 `artifacts/production-staging/424f0c8130054282a52a6545e0669689`.
 The [WAV ID3 artwork checkpoint](wave-id3-artwork.md) admits bounded WAV source
 tags/covers through existing FLAC, MP3, M4A and Ogg output handlers. It passes
 339 private artwork, 104 direct-worker and 2,754 foundation checks; the checkpoint
 records the scoped evidence and remaining work. The stage has 116 verified payload files.
-WAV artwork output, further metadata/fidelity, listening and integrated acceptance
+WAV output was still pending at that checkpoint and is covered by the later
+1.0.5 record. Further metadata/fidelity, listening and integrated acceptance
 remain open alongside the required Office converter and other release gates.
 
 The preceding combined production stage is candidate 1.0.3 at

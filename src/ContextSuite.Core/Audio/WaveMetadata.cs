@@ -29,7 +29,7 @@ public static class WaveMetadata
     private static readonly Dictionary<string, string> InfoNames = new(StringComparer.Ordinal)
     {
         ["INAM"] = "title", ["IART"] = "artist", ["IPRD"] = "album", ["ICMT"] = "comment",
-        ["ICRD"] = "date", ["IGNR"] = "genre", ["ITRK"] = "track", ["ICOP"] = "copyright", ["ISFT"] = "encoder"
+        ["ICRD"] = "date", ["IGNR"] = "genre", ["ILNG"] = "language", ["ITRK"] = "track", ["ICOP"] = "copyright", ["ISFT"] = "encoder"
     };
 
     public static async Task<WaveMetadataInventory> ReadAsync(Stream source, CancellationToken token, bool preserveId3 = false)

@@ -13,10 +13,10 @@ public static class Mp3PictureFrames
         if (pictures.IsDefault || pictures.Length > FlacDescriptiveMetadata.MaximumPictures ||
             pictures.Any(block => block.Type != 6 || block.Data.IsDefault) ||
             pictures.Sum(block => (long)block.Data.Length) > Mp3Metadata.MaximumTagBytes)
-            throw new NotSupportedException("MP3 artwork exceeds its count or byte budget.");
+            throw new NotSupportedException("ID3 artwork exceeds its count or byte budget.");
         var facts = FlacDescriptiveMetadata.ReadBlocks(pictures).Pictures;
         if (facts.Select(picture => picture.Description).Distinct(StringComparer.Ordinal).Count() != pictures.Length)
-            throw new NotSupportedException("MP3 needs a different description for each cover. Choose FLAC or Ogg to keep these pictures.");
+            throw new NotSupportedException("ID3 needs a different description for each cover. Choose FLAC or Ogg to keep these pictures.");
         var result = ImmutableArray.CreateBuilder<FlacMetadataBlock>();
         for (var index = 0; index < pictures.Length; index++)
         {
@@ -24,7 +24,7 @@ public static class Mp3PictureFrames
             var image = bytes[^picture.DataBytes..];
             if (picture.MediaType is not ("image/png" or "image/jpeg") || picture.Description.Length > 64 ||
                 picture.Description.Contains('\0') || picture.Description.Any(character => character < 32 && character is not ('\t' or '\r' or '\n')))
-                throw new NotSupportedException("This picture format or description needs an MP3 preservation handler.");
+                throw new NotSupportedException("This picture format or description needs an ID3 preservation handler.");
             AudioPictureGeometry.Require(picture, image);
             var normalized = bytes.ToArray();
             // Four geometry declarations precede the encoded image length.
@@ -63,7 +63,7 @@ public static class Mp3PictureFrames
             var mime = Encoding.ASCII.GetBytes(picture.MediaType); var description = Encoding.UTF8.GetBytes(picture.Description);
             var length = 4 + mime.Length + description.Length + picture.DataBytes;
             if (output.Length - 10 + 10 + length + tag.Length - offset > Mp3Metadata.MaximumTagBytes)
-                throw new NotSupportedException("Pictures and audio tags exceed the MP3 metadata budget.");
+                throw new NotSupportedException("Pictures and audio tags exceed the ID3 metadata budget.");
             output.Write("APIC"u8); output.Write(Size(length)); output.WriteByte(0); output.WriteByte(0);
             output.WriteByte(3); output.Write(mime); output.WriteByte(0); output.WriteByte((byte)picture.Type);
             output.Write(description); output.WriteByte(0); output.Write(normalized[index].Data.AsSpan()[^picture.DataBytes..]);

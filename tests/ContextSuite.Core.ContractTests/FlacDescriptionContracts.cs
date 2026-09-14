@@ -53,8 +53,8 @@ internal static class FlacDescriptionContracts
         var report = AudioAnalysis.AddProbe(HeaderAnalyzer.Analyze("cover.flac", new byte[100], 100), facts, 100);
         check(report.Facts.Any(fact => fact.Id == "audio.probe.stream.1.artwork" && fact.Text == "Embedded artwork") &&
             report.Facts.All(fact => fact.Id != "audio.probe.stream.1.rate"), "audio analysis: artwork is named clearly without irrelevant audio fields");
-        try { AudioConversionPlan.Create(facts, AudioFormat.Wave); check(false, "audio conversion: artwork cannot be silently discarded"); }
-        catch (NotSupportedException) { check(true, "audio conversion: artwork cannot be silently discarded"); }
+        check(AudioConversionPlan.Create(facts, AudioFormat.Wave) is { RequiresExactSamples: true, RequiredConsent: AudioConversionConsent.None },
+            "audio conversion: WAV artwork route retains exact decoded samples without extra consent");
         foreach (var target in new[] { AudioFormat.Vorbis, AudioFormat.Opus })
             check(AudioConversionPlan.Create(facts, target) is { AlreadyTarget: false, RequiredConsent: AudioConversionConsent.None },
                 "FLAC artwork: bounded Ogg target plan " + target);

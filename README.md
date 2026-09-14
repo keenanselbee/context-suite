@@ -44,7 +44,8 @@ quality changes. Production audio engine adoption and visible acceptance remain
 pending. [MP3 output cover preservation](docs/mp3-output-artwork.md) has isolated
 evidence for supported FLAC, Ogg and M4A inputs. [M4A output cover preservation](docs/m4a-output-artwork.md)
 also supports representable FLAC, MP3 and Ogg pictures. [WAV source artwork](docs/wave-id3-artwork.md)
-now uses the same preserved output paths. An explicit
+now uses the same preserved output paths. [WAV output artwork](docs/wave-output-artwork.md)
+also retains representable covers from the other five audio formats. An explicit
 [isolated production build option](docs/audio-distribution.md) packages the
 reviewed audio runtime and notices; default release packaging
 still excludes it. Broader analysis remains in progress. Selected document launch actions are

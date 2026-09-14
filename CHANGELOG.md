@@ -1,6 +1,16 @@
 Context Suite Changelog
 =======================
 
+1.0.5 - Local candidate, 2026-09-14
+---------------------------------
+
+- Preserve supported PNG/JPEG artwork when converting FLAC, MP3, M4A, Vorbis
+  and Opus to WAV. Keep image bytes, picture fields, descriptive tags and exact
+  decoded samples. Refuse picture metadata that ID3 cannot represent.
+- Preserve the encoder's WAV language field and validate the complete output
+  before publication. Copies and existing quality-consent policies remain unchanged.
+
+
 1.0.4 - Local candidate, 2026-09-14
 -----------------------------------
 

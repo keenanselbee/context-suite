@@ -45,7 +45,8 @@ or metadata that MP3 cannot represent. The [M4A output handler](m4a-output-artwo
 now transports PNG/JPEG covers from FLAC, MP3, Vorbis and Opus when their picture
 labels and descriptions are empty/Other. It preserves image bytes/order and
 verifies redundant geometry; unrepresentable fields remain blocked. WAV artwork
-output remains pending.
+output now uses a bounded ID3 picture writer for representable FLAC, MP3, M4A,
+Vorbis and Opus covers; see [WAV output evidence](wave-output-artwork.md).
 Rates are bounded to 8–192 kHz and
 channels to 1–8, with target-specific restrictions. This policy range is not a
 claim that every rate/layout pair has passed engine tests.
@@ -155,7 +156,7 @@ require further policy work. Native codec/rate/channel facts must agree with thi
 inventory, and same-rate decoded frame count must agree with the sample extent.
 
 Mapped INFO fields are title, artist, album, comment, date, genre, track, copyright
-and encoder software. Descriptive values must survive the source probe and actual
+language and encoder software. Descriptive values must survive the source probe and actual
 encoded output. The encoder label is technical provenance and may change on
 re-encoding. Text currently requires ASCII with proper NUL termination; carriage
 return, newline and tab are allowed. Non-ASCII/code-page interpretation, other control characters, duplicate values and

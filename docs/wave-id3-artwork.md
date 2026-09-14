@@ -3,7 +3,9 @@ WAV ID3 Artwork Conversion Verification
 
 Status: bounded embedded ID3 source handling implemented for WAV conversion,
 2026-09-14. Candidate 1.0.4 passes isolated worker acceptance. WAV artwork
-output and broader audio/document acceptance remain unfinished.
+output was unfinished at that checkpoint; the later
+[WAV output record](wave-output-artwork.md) adds that path. Broader audio/document
+acceptance remains unfinished.
 
 
 Format and preservation boundary

@@ -69,9 +69,10 @@ internal static class AudioBatchContracts
         catch (OperationCanceledException) { check(!File.Exists(untouched), "Audio access: pre-cancellation leaves trial unstarted"); }
         void Reject(Action action, string name)
         {
-            try { action(); check(false, "Audio batch rejects " + name); }
+            try { action(); }
             catch (Exception ex) when (ex is InvalidDataException or InvalidOperationException or NotSupportedException)
-            { check(true, "Audio batch rejects " + name); }
+            { check(true, "Audio batch rejects " + name); return; }
+            check(false, "Audio batch rejects " + name);
         }
     }
     private sealed class Clock : TimeProvider
