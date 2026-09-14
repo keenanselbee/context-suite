@@ -6,6 +6,15 @@ attempts reach observation deadlines rather than proven access denial, so the
 combined matrix fails. Profiles were removed. No production isolation claim or
 Office document execution in this probe, updated 2026-09-14.
 
+A [read-only event reader](../tools/office-engine/Read-OfficeNetworkEvents.ps1)
+is prepared for the unresolved loopback observations. Its dry run produces four
+fixed `netsh wfp show` queries scoped to the retained probe, TCP and IPv4/IPv6
+loopback. It verifies the probe hash and profile moniker and refuses reparse paths.
+Dry-run and non-administrator refusal checks leave the evidence directory unchanged.
+Actual administrator execution awaits separate approval; no event/filter results
+are claimed. It changes no tracing, firewall or exemption settings. The isolation
+probe itself must still run without elevation, with its existing profile permission.
+
 Purpose
 -------
 

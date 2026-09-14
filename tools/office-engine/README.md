@@ -253,3 +253,13 @@ AppContainer attempt failed at process creation with Windows error 2. The probe
 therefore does not fall back to unrestricted execution for an isolated case.
 Read the [isolation evidence](../../docs/office-isolation-evaluation.md) for exact
 scope, remaining tests and authorization requirements.
+
+`Read-OfficeNetworkEvents.ps1 -StagingId <scratch-guid> -PlanOnly` prepares four
+read-only WFP queries for the retained probe's IPv4/IPv6 loopback events and
+filters. It verifies the probe hash and profile name and rejects reparse paths.
+The dry run writes nothing. Actual queries require a separately authorized
+administrator window; run them promptly after a fresh non-elevated isolation
+test because the event window is ten minutes. Evidence stays in that case's
+new diagnostic directory. The reader neither enables tracing nor changes firewall
+rules or loopback exemptions. Empty events, matching filters alone and successful
+queries do not prove network denial.
