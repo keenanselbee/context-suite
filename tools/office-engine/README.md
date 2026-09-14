@@ -28,6 +28,9 @@ The separate native isolation preflight now checks reachable IPv4 and IPv6-only
 loopback listeners. Its default uses no AppContainer profile and makes no denial
 claim. The separately authorized disposable-profile mode requires actual denial
 on both endpoints; see [isolation scope and evidence](../../docs/office-isolation-evaluation.md).
+The current preflight compares actual fixture reads and distinct output bytes,
+preserves inputs during write-access checks, and records token capability counts.
+Profile-based content/access verification still needs its separate authorization.
 
 Run from the Context Suite repository with the .NET 10 SDK:
 

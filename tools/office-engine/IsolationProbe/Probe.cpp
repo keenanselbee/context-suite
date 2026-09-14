@@ -82,8 +82,24 @@ void Grant(const fs::path& path, PSID sid, DWORD access) {
 }
 DWORD OpenAttempt(const fs::path& path, bool write) {
     Handle file(CreateFileW(path.c_str(), write ? GENERIC_WRITE : GENERIC_READ,
-        FILE_SHARE_READ, nullptr, write ? CREATE_ALWAYS : OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+        FILE_SHARE_READ, nullptr, write ? OPEN_ALWAYS : OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
     return file.value == INVALID_HANDLE_VALUE ? GetLastError() : ERROR_SUCCESS;
+}
+DWORD ReadAttempt(const fs::path& path, const std::string& expected) {
+    Handle file(CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+    if (file.value == INVALID_HANDLE_VALUE) return GetLastError();
+    char content[128]{};
+    DWORD read = 0;
+    if (!ReadFile(file.value, content, sizeof(content), &read, nullptr)) return GetLastError();
+    return std::string(content, read) == expected ? ERROR_SUCCESS : ERROR_INVALID_DATA;
+}
+DWORD WriteAttempt(const fs::path& path, const std::string& content) {
+    Handle file(CreateFileW(path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr));
+    if (file.value == INVALID_HANDLE_VALUE) return GetLastError();
+    DWORD written = 0;
+    if (!WriteFile(file.value, content.data(), static_cast<DWORD>(content.size()), &written, nullptr)) return GetLastError();
+    if (written != content.size()) return ERROR_WRITE_FAULT;
+    return FlushFileBuffers(file.value) ? ERROR_SUCCESS : GetLastError();
 }
 int ConnectAttempt(unsigned short port, bool ipv6 = false) {
     Socket connection(socket(ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, IPPROTO_TCP));
@@ -112,21 +128,31 @@ int Child(const fs::path& root, unsigned short port, unsigned short port6, bool 
     Handle token(tokenValue);
     DWORD appContainer = 0, returned = 0;
     Require(GetTokenInformation(token.value, TokenIsAppContainer, &appContainer, sizeof(appContainer), &returned) != FALSE, "Read AppContainer flag");
-    const auto allowedRead = OpenAttempt(root / L"allowed" / L"input.txt", false);
-    const auto deniedRead = OpenAttempt(root / L"denied" / L"input.txt", false);
-    const auto allowedWrite = OpenAttempt(root / L"writable" / L"output.txt", true);
+    DWORD capabilityBytes = 0;
+    Require(!GetTokenInformation(token.value, TokenCapabilities, nullptr, 0, &capabilityBytes) &&
+        GetLastError() == ERROR_INSUFFICIENT_BUFFER && capabilityBytes >= sizeof(DWORD) && capabilityBytes <= 65536, "Size token capabilities");
+    std::vector<BYTE> capabilityBuffer(capabilityBytes);
+    Require(GetTokenInformation(token.value, TokenCapabilities, capabilityBuffer.data(), capabilityBytes, &returned) != FALSE &&
+        returned >= sizeof(DWORD) && returned <= capabilityBytes, "Read token capabilities");
+    const auto capabilityCount = reinterpret_cast<const TOKEN_GROUPS*>(capabilityBuffer.data())->GroupCount;
+    const auto allowedRead = ReadAttempt(root / L"allowed" / L"input.txt", "generated readable fixture");
+    const auto deniedRead = ReadAttempt(root / L"denied" / L"input.txt", "generated withheld fixture");
+    const auto outputText = isolated ? "isolated output fixture" : "control output fixture";
+    const auto allowedWrite = WriteAttempt(root / L"writable" / L"output.txt", outputText);
+    const auto outputReadback = ReadAttempt(root / L"writable" / L"output.txt", outputText);
     const auto deniedWrite = OpenAttempt(root / L"denied" / L"output.txt", true);
     const auto readOnlyWrite = OpenAttempt(root / L"allowed" / L"input.txt", true);
     const auto network = ConnectAttempt(port);
     const auto network6 = ConnectAttempt(port6, true);
     std::cout << "{\"appContainer\":" << appContainer << ",\"allowedRead\":" << allowedRead
+        << ",\"capabilityCount\":" << capabilityCount << ",\"outputReadback\":" << outputReadback
         << ",\"deniedRead\":" << deniedRead << ",\"allowedWrite\":" << allowedWrite
         << ",\"deniedWrite\":" << deniedWrite << ",\"readOnlyWrite\":" << readOnlyWrite
         << ",\"loopbackConnect\":" << network << ",\"ipv6LoopbackConnect\":" << network6 << "}\n";
-    if (isolated) return appContainer == 1 && allowedRead == 0 && allowedWrite == 0 &&
+    if (isolated) return appContainer == 1 && capabilityCount == 0 && allowedRead == 0 && allowedWrite == 0 && outputReadback == 0 &&
         deniedRead == ERROR_ACCESS_DENIED && deniedWrite == ERROR_ACCESS_DENIED &&
         readOnlyWrite == ERROR_ACCESS_DENIED && network == WSAEACCES && network6 == WSAEACCES ? 0 : 3;
-    return appContainer == 0 && allowedRead == 0 && deniedRead == 0 && allowedWrite == 0 &&
+    return appContainer == 0 && capabilityCount == 0 && allowedRead == 0 && deniedRead == 0 && allowedWrite == 0 && outputReadback == 0 &&
         deniedWrite == 0 && readOnlyWrite == 0 && network == 0 && network6 == 0 ? 0 : 4;
 }
 constexpr SIZE_T MiB = 1024ULL * 1024;
@@ -487,6 +513,9 @@ int wmain(int argc, wchar_t** argv) {
         std::ofstream(root / L"control.json") << control.output;
         std::cout << "Control: " << control.output;
         Require(control.exitCode == 0 && !control.timedOut && !control.outputLimit && !control.output.empty(), "Unrestricted control must demonstrate accessible fixtures/listener");
+        Require(ReadAttempt(root / L"allowed" / L"input.txt", "generated readable fixture") == 0 &&
+            ReadAttempt(root / L"denied" / L"input.txt", "generated withheld fixture") == 0 &&
+            ReadAttempt(root / L"writable" / L"output.txt", "control output fixture") == 0, "Control must preserve input bytes and write actual output");
         const auto orphan = Run(child, { L"--orphan", child.native() }, root, nullptr);
         std::ofstream(root / L"orphan.json") << "{\"exitCode\":" << orphan.exitCode << ",\"totalProcesses\":" << orphan.totalProcesses
             << ",\"activeBeforeStop\":" << orphan.activeBeforeStop << ",\"timedOut\":" << orphan.timedOut << ",\"outputLimit\":" << orphan.outputLimit << "}\n";
@@ -510,6 +539,9 @@ int wmain(int argc, wchar_t** argv) {
         std::ofstream(root / L"isolated.json") << isolated.output;
         std::cout << "Isolated: " << isolated.output;
         Require(isolated.exitCode == 0 && !isolated.timedOut && !isolated.outputLimit && !isolated.output.empty(), "AppContainer access matrix");
+        Require(ReadAttempt(root / L"allowed" / L"input.txt", "generated readable fixture") == 0 &&
+            ReadAttempt(root / L"denied" / L"input.txt", "generated withheld fixture") == 0 &&
+            ReadAttempt(root / L"writable" / L"output.txt", "isolated output fixture") == 0, "Isolated child must preserve input bytes and write distinct output");
         profile.Remove();
         std::cout << "PASS: explicit scratch read/write, withheld file and write denial, read-only source denial, IPv4/IPv6 loopback denial, actual AppContainer token.\n";
         return 0;

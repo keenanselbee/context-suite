@@ -3,7 +3,7 @@ Office Process Isolation Evaluation
 
 Status: native lifetime/control and resource-limit preflight passed; AppContainer file/network
 matrix prepared but not executed with a registered profile. No production
-isolation claim and no Office document execution in this probe, updated 2026-09-11.
+isolation claim and no Office document execution in this probe, updated 2026-09-14.
 
 Purpose
 -------
@@ -208,6 +208,45 @@ denial of withheld fixture access, denial of writes to read-only inputs, and
 WSAEACCES when connecting to known reachable IPv4 and IPv6 loopback listeners. Control success
 precedes denial assertions to avoid mistaking a missing file or dead listener for
 isolation. The isolated case never falls back to an unrestricted token.
+
+Actual fixture-content verification (2026-09-14)
+------------------------------------------------
+
+Review before the pending profile run found that the unrestricted write-access
+control opened its readable input with `CREATE_ALWAYS`, truncating it. The later
+read check only requested a handle, so it could not distinguish that empty input
+from the intended fixture. Earlier results establish handle-access behavior,
+not successful transfer of the original fixture contents.
+
+Write-access-only checks now use `OPEN_ALWAYS` and preserve existing inputs.
+The child reads and compares the known input bytes, writes and flushes a distinct
+control/isolated output marker, and reads that marker back. The parent independently
+checks both original inputs and the exact expected output after each successful
+child. A retained control output cannot substitute for the isolated child's marker.
+Withheld read and write attempts still require actual access denial in the prepared
+isolated mode; they never treat missing files or other errors as success.
+
+The child also queries `TokenCapabilities` through a bounded 64 KiB buffer and
+records its count alongside `TokenIsAppContainer`. Both control and prepared
+zero-capability isolated assertions require a zero count. The
+[Windows token information contract](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ne-winnt-token_information_class)
+defines this as the token's capability-group inventory, not a guarantee of total
+filesystem isolation or absence of ordinary shared system access.
+
+The revised default preflight passes with an x64 `/W4 /WX` build at
+`.codex-temp/office-isolation/85c4339bba634afbb65157afe3f4353a`.
+`case/control.json` records `capabilityCount: 0`, `outputReadback: 0`, all expected
+successful access codes and both successful loopback connections. Input bytes and
+the control output pass the parent's exact comparisons. Existing timeout,
+diagnostic, descendant, owner-crash and resource-enforcement controls also pass.
+`build.json` records the source/build/executable hashes; the log is
+`.codex-temp/office-access-content-preflight.log`.
+
+This run created no AppContainer profile. The isolated capability count, actual
+content transfers and access-denial assertions remain unexecuted until the
+separate profile authorization. No Office engine or document ran, no product
+payload changed and no image/audio/UI regression is claimed by this tools-only fix.
+
 
 Remaining gates
 ---------------

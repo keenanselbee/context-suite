@@ -90,6 +90,11 @@ using the same disposable profiles; bounded file-release waits handle a measured
 post-exit sharing violation. The separate access-matrix authorization,
 rendering policies and production integration remain pending.
 
+The [isolation preflight](office-isolation-evaluation.md) now verifies actual
+input/output bytes and token capability counts; it fixes a control that previously
+truncated the generated input while only testing handle access. The registered-profile
+access matrix still awaits its separate approval.
+
 The [Office embedded-image checkpoint](office-image-evaluation.md) verifies
 six passive modern exports, exact retained PNG resolution/visible samples/alpha,
 three effective downsampling controls and independently rendered patches. It
