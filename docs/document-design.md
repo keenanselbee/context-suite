@@ -204,6 +204,15 @@ is omitted. Explicitly hidden revisions exclude that marker in the tested export
 while retaining it in the source. Required Word conversion needs an explicit
 revision policy; successful export does not mean a clean accepted-text document.
 
+On 2026-09-14 the owner selected final text with tracked-change markup hidden
+for Word-to-PDF, regardless of the source's saved markup visibility. This is an
+export display policy: retain the original document and its stored revisions.
+Do not accept or remove revisions in the original. The candidate's explicit
+`ExportTrackedChanges=false` option passes the eight-export
+[final-text/control matrix](word-revision-evaluation.md), including exact
+clean-control pixels and preserved source bytes/write times. Customer integration,
+broader revision fidelity and required renderer isolation remain separate gates.
+
 The [PowerPoint slide/notes experiment](powerpoint-slide-evaluation.md) tests
 saved slide order, hidden first/last slides and speaker-note exclusion, with a
 positive notes-export control. Its observed results inform the export policy;

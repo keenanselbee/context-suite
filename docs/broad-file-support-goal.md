@@ -115,6 +115,13 @@ tables accompany different program bytes, so a simple name/hash lookup would
 not settle font fidelity. Production font resolution, isolation and required
 Office conversion remain unfinished; this inspection leaves the staged product unchanged.
 
+The owner subsequently selected final text with tracked-change markup hidden
+for Word-to-PDF. The [explicit Word export policy](word-revision-evaluation.md)
+passes eight real exports: four final-text pages match the clean control's pixels,
+and positive controls demonstrate the option's effect. Sources retain bytes,
+write times and revisions. The evaluation implements the default; customer
+integration, complex revision cases and isolation remain unfinished.
+
 The latest combined production stage is candidate 1.0.7 at
 `artifacts/production-staging/19e12a8a4db142e3bb73df3518c67243`.
 The [WAV Unicode-tag checkpoint](wave-text-conversion.md) preserves supported
@@ -297,8 +304,9 @@ Prioritize the remaining work in this order:
 2. Settle the concrete Office policies exposed by experiments:
    [Excel calculation](excel-calculation-evaluation.md),
    [early date systems](excel-date-system-evaluation.md),
-   [Word revisions](word-revision-evaluation.md) and
-   [missing fonts](office-font-substitution.md). Use the existing
+   [missing fonts](office-font-substitution.md). Word's final-text default is
+   owner-selected; extend its [verified inline-revision policy](word-revision-evaluation.md)
+   to the remaining revision cases before customer integration. Use the existing
    [print-layout](excel-print-layout-evaluation.md) and
    [slide/notes](powerpoint-slide-evaluation.md) fixtures as acceptance controls.
    Record exact supported variants and refusals; implement Word/Excel/PowerPoint

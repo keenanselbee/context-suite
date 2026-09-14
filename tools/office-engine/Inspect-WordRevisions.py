@@ -1,5 +1,7 @@
 """Cross-check retained passive Word revision fixtures and PDF observations."""
 import hashlib
+import calendar
+import datetime
 import io
 import json
 import pathlib
@@ -35,12 +37,17 @@ def require(condition, reason):
 def main():
     root = pathlib.Path(sys.argv[1]).absolute()
     report = json.loads(read(root / 'office-evaluation.json'))
-    require(report['Mode'] == 'WordRevisions' and len(report['Results']) == 4 and
-            {item['Source'] for item in report['Results']} == {f'Word revisions {name}.docx' for name in CASES}, 'Expected four revision cases')
+    final_text = report['Mode'] == 'WordFinalText'
+    styles = {'final-text', 'show-changes-control'} if final_text else {'default'}
+    expected = {(f'Word revisions {name}.docx', style) for name in CASES for style in styles}
+    require(report['Mode'] in ('WordRevisions', 'WordFinalText') and len(report['Results']) == len(expected) and
+            {(item['Source'], item['ProfileStyle']) for item in report['Results']} == expected, 'Expected exact revision case/profile set')
+    rendered_pages = {}
     for item in report['Results']:
         name = item['Source']
         key = name[len('Word revisions '):-5]
-        folder = root / name[:-5]
+        style = item['ProfileStyle']
+        folder = root / (name[:-5] + ('-' + style if final_text else ''))
         source = read(root / 'fixtures' / name)
         pdf = read(folder / (name[:-5] + '.pdf'))
         require(item['Completed'] and hashlib.sha256(source).hexdigest().upper() == item['SourceSha256'] and
@@ -69,10 +76,37 @@ def main():
         require('CONTROL_MARKER' in pages[0] and 'END_MARKER' in pages[0], 'Missing control text')
         observation = {'Case': key, 'ObservedPages': pages, 'InsertedTextPresent': 'INSERTED_MARKER' in pages[0], 'DeletedTextPresent': 'DELETED_MARKER' in pages[0]}
         require(observation == item['RevisionObservation'], 'Observation does not match retained text')
+        if final_text:
+            show = style == 'show-changes-control'
+            require(item['ExportOptions']['ExportTrackedChanges'] == {'type': 'boolean', 'value': 'true' if show else 'false'},
+                    'Changed explicit revision export option')
+            require(observation['InsertedTextPresent'] and observation['DeletedTextPresent'] == (show and key != 'clean'),
+                    'Final text or explicit show-changes control mismatch')
+            timestamp = re.fullmatch(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,7}))?Z', item['SourceWriteTimeUtc'])
+            require(timestamp is not None, 'Expected recorded UTC source write time')
+            seconds = calendar.timegm(datetime.datetime.fromisoformat(timestamp[1]).timetuple())
+            ticks = seconds * 10_000_000 + int((timestamp[2] or '').ljust(7, '0'))
+            require((root / 'fixtures' / name).stat().st_mtime_ns // 100 == ticks, 'Source write time changed')
+            conversion = json.loads(read(folder / 'conversion.json'))
+            require(conversion['JobActiveProcessesAfterCleanup'] == 0, 'Evaluation job did not finish cleanup')
         require(len(item['Render']['pages']) == 1 and item['Render']['pages'][0]['widthPoints'] == 612 and
                 item['Render']['pages'][0]['heightPoints'] == 792, 'Changed rendered page geometry')
-        print(json.dumps(observation))
-    print('Four source/PDF hash, declaration and text observations cross-checked; no Word baseline or export-policy acceptance implied.')
+        if final_text:
+            page = item['Render']['pages'][0]
+            require((page['width'], page['height'], page['stride']) == (816, 1056, 3264), 'Changed 96 DPI render extent')
+            pixels = read(folder / 'page-1.bgra')
+            require(len(pixels) == page['stride'] * page['height'], 'Changed rendered buffer extent')
+            rendered_pages[(key, style)] = pixels
+        print(json.dumps({'profile': style, **observation}))
+    if final_text:
+        baseline = rendered_pages[('clean', 'final-text')]
+        for key in CASES:
+            require(rendered_pages[(key, 'final-text')] == baseline, 'Final-text pixels differ from clean authored control')
+            require((rendered_pages[(key, 'show-changes-control')] == baseline) == (key == 'clean'),
+                    'Show-changes pixel control was ineffective')
+        print('Eight explicit revision-policy exports cross-checked; final pixels equal the clean authored control, with effective text/pixel controls. No broad revision or isolation acceptance implied.')
+    else:
+        print('Four source/PDF hash, declaration and text observations cross-checked; no Word baseline or export-policy acceptance implied.')
 
 
 if __name__ == '__main__':

@@ -24,6 +24,14 @@ a clean control. `Inspect-WordRevisions.py '<printed evaluation directory>'`
 cross-checks the retained source declarations, hashes and PDF text observations.
 See [results and export-policy implications](../../docs/word-revision-evaluation.md).
 
+`Test-OfficeEvaluation.ps1 -WordFinalText` verifies the owner's final-text default
+using the same four fixtures with explicit false/true `ExportTrackedChanges`
+options. The true variants are positive controls. The same inspector verifies
+all eight exports, source hashes/write times, recorded job cleanup and exact
+clean-control pixels. Ordinary Writer evaluation exports now explicitly hide
+tracked-change markup; the original `-WordRevisions` observation mode stays
+available. These remain passive fixtures, not arbitrary-document admission.
+
 The separate native isolation preflight now checks reachable IPv4 and IPv6-only
 loopback listeners. Its default uses no AppContainer profile and makes no denial
 claim. The separately authorized disposable-profile mode requires actual denial

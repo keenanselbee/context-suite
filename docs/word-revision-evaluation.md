@@ -1,10 +1,12 @@
 Word Tracked-Revision PDF Evaluation
 ===================================
 
-This test evaluates whether the pinned Office candidate carries tracked insertion
+The initial test evaluates whether the pinned Office candidate carries tracked insertion
 and deletion text into PDFs under different saved revision-display settings.
-It is a prerequisite for choosing the required Word-to-PDF export policy, not
+It supplied evidence for choosing the required Word-to-PDF export policy, not
 an implementation of that converter or a decision to accept/reject revisions.
+The later owner-selected final-text policy and its explicit-option verification
+are recorded below.
 
 
 Authored fixtures and evidence boundary
@@ -82,7 +84,7 @@ deletion, while that deletion's marker is absent from the extracted PDF text.
 The converter must not promise a clean final document based merely on successful
 export, nor silently accept revisions as a workaround. The setting-sensitive
 behavior is an observation from these fixtures, not a universal interoperability
-guarantee or an approved customer default.
+guarantee. The subsequent owner choice and explicit-option verification are below.
 
 Evidence is under
 `.codex-temp/office-engine/a56167ab9fb54686971491918ccd26f8/evaluation-a38705672ae340219531fb35fde37a7c`;
@@ -110,3 +112,60 @@ The final converter still needs explicit revision handling, isolation, engine
 packaging, font/layout acceptance and ordinary trial/paid publication integration.
 These observations cannot authorize silently accepting or rejecting revisions,
 modifying originals or claiming that all draft material is excluded from a PDF.
+
+
+Final-text export policy (2026-09-14)
+-----------------------------------
+
+The owner selected **final text with tracked-change markup hidden** for
+Word-to-PDF, independent of the document's saved visibility setting. Originals
+retain their stored revisions. This does not authorize accepting or deleting
+tracked changes in the source document.
+
+LibreOffice's [explicit export-option change](https://github.com/LibreOffice/core/commit/625fc73a5784fc5dec06df579a9951908f52a783)
+provides `ExportTrackedChanges` for command-line Writer PDF export. The ordinary
+Writer evaluation recipe now explicitly passes Boolean false. The historical
+`-WordRevisions` mode retains its original observation behavior. No upstream
+implementation or test document is copied; the existing authored fixtures are
+reused. The public PDF-parameter help did not list this option when consulted;
+its upstream change and the actual pinned-engine results support this choice.
+
+The new `-WordFinalText` mode exports each of the four original fixtures twice:
+once with the selected false value and once with true as a positive control.
+All eight exports pass on the pinned LibreOffice 26.2.6.3 candidate. They retain
+one Letter page, control/inserted text and unchanged source bytes/write times.
+The three revision documents exclude the deleted marker under false and include
+it under true, including when saved visibility is hidden or omitted. The clean
+document excludes it under both values.
+
+PDFium independently extracts text and renders 96-DPI opaque pages; qpdf checks
+structure. All four final-text BGRA buffers are byte-identical to the clean
+authored control. All three positive revision controls differ from that buffer;
+the clean positive control is unchanged. Thus the option has an observed effect,
+and merely ignoring it would fail this matrix. This is a simple inline-revision
+control, not a Microsoft Word rendering baseline or complete revision fidelity.
+
+`Inspect-WordRevisions.py` now checks either the original four observations or
+the exact eight-case policy matrix. It verifies source/PDF hashes, source revision
+declarations, export-option types/values, recorded write times, job cleanup, text,
+page extents and full pixel comparisons. Six changed-evidence guards refuse an
+incorrect mode, duplicate case, changed option, changed source, changed write
+time and changed final-text pixel. They alter only in-memory inspection inputs.
+The retained original four-case inspection also still passes. All 17 existing
+profile-declaration contracts pass during the new evaluation.
+
+Reproduce with the same three prepared-directory parameters above, replacing
+`-WordRevisions` with `-WordFinalText`, then run the same inspector on the printed
+directory. Final evidence is
+`.codex-temp/office-engine/a56167ab9fb54686971491918ccd26f8/evaluation-c94dccb9e2ee4d8f8aa5e1f4d3ce956c`.
+Logs: `.codex-temp/word-final-text-evaluation.log`,
+`.codex-temp/word-final-text-inspection.log` and
+`.codex-temp/word-final-text-legacy-inspection.log`.
+The six refusal checks are recorded in `.codex-temp/word-final-text-guards.json`.
+
+The selected default is settled, and the evaluation recipe implements it.
+Customer Word conversion, complex revision cases listed above, font/layout
+handling, engine packaging and AppContainer isolation remain unfinished. No
+source rewrite, font installation, AppContainer profile, Explorer registration
+or live commerce is performed. Candidate 1.0.7 remains unchanged; no new visible,
+keyboard, screen-reader or theme/DPI acceptance is claimed.

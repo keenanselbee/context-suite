@@ -53,17 +53,18 @@ if (args is ["--process-owner", var ownerRoot])
     await OfficeEvaluationProcess.RunAsync(Environment.ProcessPath!, ["--process-child", "orphan", ownerRoot], ownerRoot);
     return 0;
 }
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates" or "ExcelPrint" or "WordRevisions" or "PowerPointSlides" or "EmbeddedImages")) return 2;
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates" or "ExcelPrint" or "WordRevisions" or "WordFinalText" or "PowerPointSlides" or "EmbeddedImages")) return 2;
 var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths";
 var embeddedImages = args.Length == 4 && args[3] == "EmbeddedImages";
 var fontSubstitution = args.Length == 4 && args[3] == "FontSubstitution";
 var powerPointSlides = args.Length == 4 && args[3] == "PowerPointSlides";
-var wordRevisions = args.Length == 4 && args[3] == "WordRevisions";
+var wordFinalText = args.Length == 4 && args[3] == "WordFinalText";
+var wordRevisions = args.Length == 4 && args[3] is "WordRevisions" or "WordFinalText";
 var excelPrint = args.Length == 4 && args[3] == "ExcelPrint";
 var excelDates = args.Length == 4 && args[3] == "ExcelDates";
 var excelCalculation = args.Length == 4 && args[3] == "ExcelCalculation";
 var legacyPdf = args.Length == 4 && args[3] == "LegacyPdf";
-var profileStyles = excelCalculation ? new[] { "calc-default", "calc-always", "calc-never" } : legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "EnvironmentPaths"
+var profileStyles = wordFinalText ? new[] { "final-text", "show-changes-control" } : excelCalculation ? new[] { "calc-default", "calc-always", "calc-never" } : legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "EnvironmentPaths"
     ? new[] { "env-control", "env-all", "env-profile", "env-TEMP", "env-TMP", "env-APPDATA", "env-LOCALAPPDATA" } : args[3] == "ProfileLengths"
     ? new[] { "length-90", "length-110", "length-130", "length-150", "length-170" }
     : new[] { "short-ascii", "short-unicode", "long-ascii", "long-unicode" };
@@ -125,7 +126,8 @@ foreach (var (name, filter, expectedPages) in conversionCases)
         var source = legacyPdf && profileStyle == "legacy"
             ? Path.Combine(root, "legacy-" + extension, Path.ChangeExtension(name, extension)) : Path.Combine(fixtures, name);
         var hash = Hash(source);
-        var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name) + (legacyPdf || excelCalculation ? "-" + profileStyle : "")); Directory.CreateDirectory(folder);
+        var sourceWriteTime = File.GetLastWriteTimeUtc(source);
+        var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name) + (legacyPdf || excelCalculation || wordFinalText ? "-" + profileStyle : "")); Directory.CreateDirectory(folder);
         // Keep input and output paths identical across profile variants, then retain each result separately.
         var outputFolder = profileMatrix ? Path.Combine(root, "conversion") : folder; Directory.CreateDirectory(outputFolder);
         var options = new Dictionary<string, object>();
@@ -145,6 +147,10 @@ foreach (var (name, filter, expectedPages) in conversionCases)
             options["MaxImageResolution"] = new { type = "long", value = "150" };
         }
         options["SelectPdfVersion"] = new { type = "long", value = "17" };
+        // Owner-selected Word default. Preserve the original observation mode;
+        // the explicit true variant is only a positive control for this option.
+        if (filter == "writer_pdf_Export" && (!wordRevisions || wordFinalText))
+            options["ExportTrackedChanges"] = new { type = "boolean", value = profileStyle == "show-changes-control" ? "true" : "false" };
         var conversion = await RunOffice(Path.GetFileNameWithoutExtension(name), ["--convert-to", "pdf:" + filter + ":" + JsonSerializer.Serialize(options), "--outdir", outputFolder, source], profileStyle);
         File.WriteAllText(Path.Combine(folder, "conversion.json"), JsonSerializer.Serialize(conversion, new JsonSerializerOptions { WriteIndented = true }));
         var pdf = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(name) + ".pdf");
@@ -194,6 +200,9 @@ foreach (var (name, filter, expectedPages) in conversionCases)
         var calculationObservation = excelCalculation ? ExcelCalculationFixtures.Observe(name, text) : null;
         var slideObservation = powerPointSlides ? PowerPointSlideFixtures.Observe(name, text) : null;
         var revisionObservation = wordRevisions ? WordRevisionFixtures.Observe(name, text) : null;
+        if (wordFinalText && (revisionObservation is null || !revisionObservation.InsertedTextPresent ||
+            revisionObservation.DeletedTextPresent != (profileStyle == "show-changes-control" && revisionObservation.Case != "clean")))
+            throw new InvalidDataException("Explicit Word revision export policy did not match authored final/control text.");
         var printObservation = excelPrint ? ExcelPrintFixtures.Observe(name, text) : null;
         var dateObservations = excelDates ? ExcelDateFixtures.Observe(name, text) : null;
         if (!excelCalculation && !excelDates && !excelPrint && !wordRevisions && !powerPointSlides && !textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
@@ -203,8 +212,10 @@ foreach (var (name, filter, expectedPages) in conversionCases)
              !text[0].Contains("Page 1 of 2") || !text[1].Contains("Page 2 of 2") || text.Any(page => page.Contains("99"))))
             throw new InvalidDataException("Word first/default headers or PAGE/NUMPAGES field rendering did not match authored expectations.");
         if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
+        if (wordFinalText && File.GetLastWriteTimeUtc(source) != sourceWriteTime)
+            throw new InvalidDataException("Word revision source write time changed.");
         results.Add(new { Source = Path.GetFileName(source), SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile, conversion.EnvironmentPaths,
-            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds, CalculationObservation = calculationObservation, DateObservations = dateObservations, PrintObservation = printObservation, RevisionObservation = revisionObservation, SlideObservation = slideObservation, ExportOptions = powerPointSlides || embeddedImages ? options : null, PdfFontNames = pdfFonts,
+            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds, SourceWriteTimeUtc = wordFinalText ? (DateTime?)sourceWriteTime : null, CalculationObservation = calculationObservation, DateObservations = dateObservations, PrintObservation = printObservation, RevisionObservation = revisionObservation, SlideObservation = slideObservation, ExportOptions = powerPointSlides || embeddedImages || filter == "writer_pdf_Export" ? options : null, PdfFontNames = pdfFonts,
             RequestedFont = fontSubstitution ? (name.Contains("missing", StringComparison.Ordinal) ? OfficeFontFixtures.MissingFont : "Arial") : null,
             ConversionOutput = conversion.Output, Diagnostics = conversion.Error, Text = text, Render = rendered.RootElement.Clone() });
         if (slideObservation is not null) Console.WriteLine("OBSERVED: " + name + ": slide/notes policy matches=" + slideObservation.Matches);
@@ -214,7 +225,7 @@ foreach (var (name, filter, expectedPages) in conversionCases)
         if (calculationObservation is not null) Console.WriteLine("OBSERVED: " + name + ": " + calculationObservation);
         if (profileMatrix) File.Move(pdf, Path.Combine(folder, Path.GetFileName(pdf)));
         SaveResults();
-        var textScope = powerPointSlides ? "slide/notes observations retained (not a fidelity pass)" : wordRevisions ? "revision observations retained (not a fidelity pass)" : excelPrint ? "print observations retained (not a fidelity pass)" : excelDates ? "date observations retained (not a fidelity pass)" : "expected text";
+        var textScope = wordFinalText ? "explicit final-text/control policy matches" : powerPointSlides ? "slide/notes observations retained (not a fidelity pass)" : wordRevisions ? "revision observations retained (not a fidelity pass)" : excelPrint ? "print observations retained (not a fidelity pass)" : excelDates ? "date observations retained (not a fidelity pass)" : "expected text";
         Console.WriteLine($"PASS: {Path.GetFileName(source)} ({profileStyle}, {conversion.Profile!.Length} profile characters): {pages} independently parsed/rendered pages, {textScope}, expected geometry, original unchanged, {conversion.Milliseconds} ms.");
         if (legacyPdf)
         {
