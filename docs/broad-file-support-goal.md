@@ -47,6 +47,14 @@ pass. Candidate 1.0.9 remains unchanged. The prepared Office network-event reade
 is separate diagnostic work and awaits administrator approval; required Office
 conversion and its isolation gate remain incomplete.
 
+The subsequent [short-resampling check](short-resampling-verification.md) found
+two adapter-admitted shortened Opus outputs caused by a shared resampler defect.
+A source-rate duration check now refuses both before encoding. The full matrix
+still fails 28 of 56 cases; correcting native resampling is required, not replaced
+by the new refusal. The 222-case rate/layout regression and eight independent
+resampling-source cases pass their stated checks. Candidate 1.0.9 is unchanged
+and predates this guard; the next production candidate must use a new version.
+
 Current completion path (2026-09-12)
 ------------------------------------
 
