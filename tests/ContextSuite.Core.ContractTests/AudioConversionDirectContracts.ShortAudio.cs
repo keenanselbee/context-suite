@@ -40,18 +40,23 @@ internal static partial class AudioConversionDirectContracts
                 "Short FLAC direct: no-op avoids another admission for " + frames);
             reports.Add(new { frames, source, output, SourceSha256 = Convert.ToHexString(hash) });
         }
-        // The remaining MP3 encoder defect must not publish padded output;
-        // later valid work must still use the same worker successfully.
         var workerId = worker.ProcessId;
-        vm.Admit(new(Guid.NewGuid(), "convert", "mp3", [Path.Combine(scratch, "1-original.wav")]));
-        await vm.WaitForIdleAsync();
-        check(vm.Rows[^1].Result.State == OperationState.Failed && vm.Rows[^1].Result.Publication?.IsCommitted != true &&
-            !Directory.EnumerateFiles(scratch, "*.mp3").Any(),
-            "Short MP3 direct: rejects padded output without publication");
-        vm.Admit(new(Guid.NewGuid(), "convert", "mp3", [Path.Combine(scratch, "47-original.wav")]));
-        await vm.WaitForIdleAsync();
-        check(vm.Rows[^1].Result.State == OperationState.Succeeded && vm.Rows[^1].Result.Publication?.Outcome == PublicationOutcome.CopyCreated &&
-            worker.ProcessId == workerId, "Short MP3 direct: later valid work recovers on the same worker");
+        foreach (var frames in new[] { 1, 2, 15, 16, 46, 47 })
+        {
+            var source = Path.Combine(scratch, frames + "-mp3-source.wav");
+            File.Copy(Path.Combine(fixtures, frames + "-source.wav"), source);
+            var hash = SHA256.HashData(await File.ReadAllBytesAsync(source));
+            var time = File.GetLastWriteTimeUtc(source);
+            vm.Admit(new(Guid.NewGuid(), "convert", "mp3", [source]));
+            await vm.WaitForIdleAsync();
+            var row = vm.Rows[^1];
+            check(row.Result.State == OperationState.Succeeded && row.Result.Publication?.Outcome == PublicationOutcome.CopyCreated &&
+                File.Exists(row.OutputPath) && worker.ProcessId == workerId,
+                "Short MP3 direct: validated copy on the same worker for " + frames + " frames: " + row.Status);
+            check(SHA256.HashData(await File.ReadAllBytesAsync(source)).AsSpan().SequenceEqual(hash) &&
+                File.GetLastWriteTimeUtc(source) == time, "Short MP3 direct: unchanged original for " + frames);
+            reports.Add(new { frames, target = "mp3", source, output = row.OutputPath, SourceSha256 = Convert.ToHexString(hash) });
+        }
         await File.WriteAllTextAsync(Path.Combine(scratch, "short-audio-direct.json"), JsonSerializer.Serialize(reports,
             new JsonSerializerOptions { WriteIndented = true }));
     }

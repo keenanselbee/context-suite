@@ -1,6 +1,10 @@
 Short Audio Verification
 ========================
 
+Follow-up: [short MP3 padding verification](mp3-short-padding-verification.md)
+corrects the five MP3 failures below. This document retains candidate 1.0.8's
+original results; its failed matrix is not retroactively counted as passing.
+
 Candidate 1.0.8 fixes FLAC conversion of recordings shorter than sixteen samples.
 The 2026-09-14 matrix also exposes an unresolved MP3 padding defect. This closes
 a specific FLAC failure, not the broader [audio acceptance](audio-rate-layout-verification.md).

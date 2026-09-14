@@ -134,7 +134,17 @@ Moved text differs by 151 pixels and up to 0.07001 PDF points in horizontal
 character position, with identical embedded font bytes. The exact-pixel matrix
 remains failed; this is a recorded fidelity gap, not an accepted tolerance.
 
-The latest combined production stage is candidate 1.0.8 at
+The latest combined production stage is candidate 1.0.9 at
+`artifacts/production-staging/4798b0329381494f8db92a8441aa2ef0`.
+The [short-MP3 correction](mp3-short-padding-verification.md) restores exact
+duration without changing encoded audio bytes. The original 90-cell short-audio
+matrix, a separate 90-cell MP3 rate/length matrix, ten candidate guards, 30 direct
+worker checks and 2,813 foundation contracts pass. One tiny MP3 fails automatic
+format detection in the independent runtime while decoding correctly with MP3
+selected; player compatibility remains open. Required Office conversion and
+broader acceptance remain unfinished.
+
+The preceding combined production stage is candidate 1.0.8 at
 `artifacts/production-staging/056d900511c1404eab414951c4d49e0f`.
 The [short-audio checkpoint](short-audio-verification.md) fixes FLAC encoding below
 sixteen samples without padding. All fifteen tested FLAC lengths match the original

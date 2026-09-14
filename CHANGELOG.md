@@ -1,6 +1,15 @@
 Context Suite Changelog
 =======================
 
+1.0.9 - Local candidate, 2026-09-14
+---------------------------------
+
+- Correct short MP3 duration declarations without changing encoded audio data.
+  Keep exact decoded duration, metadata validation and safe copy publication.
+- Retain a tiny-file automatic-format-detection compatibility gap for further
+  player acceptance; this candidate does not close broad audio release gates.
+
+
 1.0.8 - Local candidate, 2026-09-14
 ---------------------------------
 
