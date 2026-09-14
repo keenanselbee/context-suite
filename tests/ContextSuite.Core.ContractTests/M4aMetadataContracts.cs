@@ -7,6 +7,7 @@ internal static partial class M4aMetadataContracts
     public static async Task RunAsync(Action<bool, string> check)
     {
         await PicturesAsync(check);
+        await OutputPicturesAsync(check);
         var basic = FileOf();
         using (var stream = new MemoryStream(basic))
         {

@@ -42,7 +42,8 @@ Audio conversion now has isolated worker/publication coverage for all 30
 cross-format pairs, direct Convert commands and a compact prompt for required
 quality changes. Production audio engine adoption and visible acceptance remain
 pending. [MP3 output cover preservation](docs/mp3-output-artwork.md) has isolated
-evidence for supported FLAC, Ogg and M4A inputs. An explicit
+evidence for supported FLAC, Ogg and M4A inputs. [M4A output cover preservation](docs/m4a-output-artwork.md)
+also supports representable FLAC, MP3 and Ogg pictures. An explicit
 [isolated production build option](docs/audio-distribution.md) packages the
 reviewed audio runtime and notices; default release packaging
 still excludes it. Broader analysis remains in progress. Selected document launch actions are

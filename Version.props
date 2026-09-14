@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <ContextSuiteVersion>1.0.2</ContextSuiteVersion>
+    <ContextSuiteVersion>1.0.3</ContextSuiteVersion>
     <Version>$(ContextSuiteVersion)</Version>
     <AssemblyVersion>$(ContextSuiteVersion).0</AssemblyVersion>
     <FileVersion>$(ContextSuiteVersion).0</FileVersion>

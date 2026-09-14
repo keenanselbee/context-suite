@@ -76,6 +76,14 @@ if (args.Length == 3 && args[0] == "--pdf-page-geometry")
     Console.WriteLine($"Passed {checks} isolated PDF page geometry checks.");
     return 0;
 }
+if (args.Length == 4 && args[0] == "--m4a-output-artwork-direct")
+{
+    var m4aOutputChecks = new List<string>();
+    await AudioConversionDirectContracts.M4aOutputPicturesAsync(args[1], args[2], args[3], (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); m4aOutputChecks.Add(message); });
+    Console.WriteLine($"Passed {m4aOutputChecks.Count} M4A output artwork direct checks.");
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--mp3-output-artwork-direct")
 {
     var mp3OutputChecks = new List<string>();

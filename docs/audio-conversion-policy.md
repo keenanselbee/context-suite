@@ -41,7 +41,11 @@ separate raw-preservation path for embedded artwork, described below.
 The later [MP3 output handler](mp3-output-artwork.md) adds bounded PNG/JPEG cover
 transport from FLAC, Vorbis, Opus and M4A. It retains represented picture fields
 and image bytes, verifies redundant geometry, and refuses duplicate descriptions
-or metadata that MP3 cannot represent. M4A/WAV artwork outputs remain pending.
+or metadata that MP3 cannot represent. The [M4A output handler](m4a-output-artwork.md)
+now transports PNG/JPEG covers from FLAC, MP3, Vorbis and Opus when their picture
+labels and descriptions are empty/Other. It preserves image bytes/order and
+verifies redundant geometry; unrepresentable fields remain blocked. WAV artwork
+output remains pending.
 Rates are bounded to 8–192 kHz and
 channels to 1–8, with target-specific restrictions. This policy range is not a
 claim that every rate/layout pair has passed engine tests.

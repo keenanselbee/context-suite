@@ -90,7 +90,16 @@ three effective downsampling controls and independently rendered patches. It
 advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
-The latest combined production stage is candidate 1.0.2 at
+The latest combined production stage is candidate 1.0.3 at
+`artifacts/production-staging/f1f21b2f1e63471b9f2b5a44442a90b5`.
+The [M4A output-artwork checkpoint](m4a-output-artwork.md) adds representable
+PNG/JPEG covers from FLAC, MP3, Vorbis and Opus, preserves movie placement and
+repairs audio chunk offsets. It passes 110 private, 59 direct-worker and 2,729 foundation
+checks; its scoped acceptance and remaining limits are recorded in that checkpoint.
+WAV artwork, further fidelity, listening/player and integrated acceptance remain
+open. This combined payload has 116 files and its own reserved version receipt.
+
+The preceding combined production stage is candidate 1.0.2 at
 `artifacts/production-staging/76ffc1a76c854a6896e4d5ab832f40bc`.
 The [PDF page-scale checkpoint](pdf-inherited-geometry.md) fixes UserUnit sizing,
 adds inherited geometry acceptance and verifies scaled limits during inspection
@@ -106,7 +115,7 @@ combined capabilities: FLAC, Vorbis, Opus and supported M4A covers retain image
 bytes and represented picture metadata. The current foundation run passes 2,696
 contracts; the new slice passes 94 focused private and 56 direct-worker checks.
 Existing artwork regressions pass 114 M4A, 81 Ogg-source and 31 FLAC-to-Ogg checks.
-These are separate suites, not an all-feature release run. M4A/WAV artwork outputs,
+These are separate suites, not an all-feature release run. WAV artwork outputs,
 further metadata variants and listening/player acceptance remain open.
 
 The preceding M4A combined production stage is

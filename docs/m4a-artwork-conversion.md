@@ -7,6 +7,11 @@ metadata variants, human listening/player acceptance and shipping adoption remai
 open.
 
 
+The later [MP3 output](mp3-output-artwork.md) and
+[M4A output](m4a-output-artwork.md) checkpoints extend cross-format coverage.
+The evidence below remains this source-reader checkpoint's dated run.
+
+
 Preservation boundary
 ---------------------
 

@@ -1,6 +1,16 @@
 Context Suite Changelog
 =======================
 
+1.0.3 - Local candidate, 2026-09-14
+-----------------------------------
+
+- Preserve supported PNG/JPEG artwork when converting FLAC, MP3, Vorbis and Opus
+  to M4A. Keep image bytes and order, descriptive tags and validated audio.
+  Refuse picture labels or descriptions that the M4A cover format cannot retain.
+- Retain fast-start placement and repair audio chunk offsets after adding covers.
+  Existing same-format no-op and required audio-quality prompts remain unchanged.
+
+
 1.0.2 - Local candidate, 2026-09-14
 -----------------------------------
 
