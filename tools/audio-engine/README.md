@@ -270,6 +270,9 @@ The focused `--ogg-artwork` private-host mode generates PNG/JPEG Vorbis/Opus
 fixtures and verifies conversion to FLAC and the other Ogg codec. The public
 `--ogg-artwork-direct` mode uses those fixtures with a freshly staged worker.
 See [commands, exact checks and limitations](../../docs/ogg-artwork-conversion.md).
+The corresponding `--m4a-artwork` and `--m4a-artwork-direct` modes cover AAC-LC
+M4A PNG/JPEG images, both movie-atom placements and multiple covers. See
+[M4A commands and evidence](../../docs/m4a-artwork-conversion.md).
 
 The independent decoder supplies artwork pixel comparisons;
 the candidate performs every production media operation. The latest run passes

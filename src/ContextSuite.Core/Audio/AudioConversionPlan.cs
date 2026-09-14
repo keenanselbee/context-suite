@@ -42,7 +42,7 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         var sourceFormat = SourceFormat(source.Container, audio.Codec);
         if (source.Streams.Any(stream => stream.AttachedPicture) && sourceFormat != target &&
             !(sourceFormat == AudioFormat.Flac && target is AudioFormat.Vorbis or AudioFormat.Opus) &&
-            !(sourceFormat is AudioFormat.Mp3 or AudioFormat.Vorbis or AudioFormat.Opus && target is AudioFormat.Flac or AudioFormat.Vorbis or AudioFormat.Opus))
+            !(sourceFormat is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus && target is AudioFormat.Flac or AudioFormat.Vorbis or AudioFormat.Opus))
             throw new NotSupportedException("Artwork needs a preservation handler for these formats. Originals were kept.");
         var sourceBits = audio.SampleBits ?? audio.Codec switch
         { "pcm_u8" => 8, "pcm_s16le" => 16, "pcm_s24le" => 24, "pcm_s32le" or "pcm_f32le" => 32, "pcm_f64le" => 64, _ => (int?)null };

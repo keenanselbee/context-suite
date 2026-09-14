@@ -2,10 +2,11 @@ using System.Buffers.Binary;
 using System.Text;
 using ContextSuite.Core.Audio;
 
-internal static class M4aMetadataContracts
+internal static partial class M4aMetadataContracts
 {
     public static async Task RunAsync(Action<bool, string> check)
     {
+        await PicturesAsync(check);
         var basic = FileOf();
         using (var stream = new MemoryStream(basic))
         {

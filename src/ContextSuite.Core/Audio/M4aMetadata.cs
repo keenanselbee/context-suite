@@ -5,14 +5,17 @@ using System.Text;
 namespace ContextSuite.Core.Audio;
 
 public sealed record M4aMetadataInventory(int SampleRate, int Channels, int PacketCount,
-    ImmutableDictionary<string, string> Tags);
+    ImmutableDictionary<string, string> Tags)
+{
+    public ImmutableArray<FlacMetadataBlock> Pictures { get; init; } = [];
+}
 
 // One local AAC-LC track. Inventory never decodes samples or resolves references.
 public static class M4aMetadata
 {
     public const int MaximumMovieBytes = 16 * 1024 * 1024;
 
-    public static async Task<M4aMetadataInventory> ReadAsync(Stream source, CancellationToken token)
+    public static async Task<M4aMetadataInventory> ReadAsync(Stream source, CancellationToken token, bool preservePictures = false)
     {
         if (!source.CanRead || !source.CanSeek || source.Length > AudioFileSource.MaximumFileBytes)
             throw new InvalidDataException("M4A inventory needs a bounded seekable input.");
@@ -68,14 +71,14 @@ public static class M4aMetadata
             }
             if (!fileType || movie is null || media.Count == 0) throw new InvalidDataException("M4A is missing file, movie or audio data.");
             token.ThrowIfCancellationRequested();
-            var result = ReadMovie(movie, media, token);
+            var result = ReadMovie(movie, media, token, preservePictures);
             token.ThrowIfCancellationRequested();
             return result;
         }
         finally { source.Position = position; }
     }
 
-    private static M4aMetadataInventory ReadMovie(ReadOnlyMemory<byte> movie, List<(long Start, long End)> media, CancellationToken token)
+    private static M4aMetadataInventory ReadMovie(ReadOnlyMemory<byte> movie, List<(long Start, long End)> media, CancellationToken token, bool preservePictures)
     {
         var boxes = new M4aBoxes(); var root = boxes.Read(movie, "mvhd", "trak", "udta");
         var mvhd = M4aBoxes.One(root, "mvhd").Span;
@@ -119,8 +122,10 @@ public static class M4aMetadata
             comments.Add(new("language", new string(letters.Select(value => (char)(value + 96)).ToArray())));
         }
         var userData = Optional(root, "udta");
-        if (userData is not null) comments.AddRange(M4aTags.Read(userData.Value, boxes));
-        return new(config.Rate, config.Channels, samples, AudioCommentConversion.Read(comments, mapVorbisAliases: false));
+        var pictures = preservePictures ? ImmutableArray.CreateBuilder<FlacMetadataBlock>() : null;
+        if (userData is not null) comments.AddRange(M4aTags.Read(userData.Value, boxes, pictures));
+        return new(config.Rate, config.Channels, samples, AudioCommentConversion.Read(comments, mapVorbisAliases: false))
+        { Pictures = pictures?.ToImmutable() ?? [] };
     }
 
     private static void LocalReference(M4aBoxes boxes, ReadOnlyMemory<byte> memory)

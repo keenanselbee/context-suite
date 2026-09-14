@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace ContextSuite.Core.Audio;
@@ -13,14 +14,25 @@ internal static class M4aTags
         ["\u00a9cmt"] = "comment", ["\u00a9day"] = "date", ["\u00a9gen"] = "genre", ["cprt"] = "copyright",
         ["\u00a9wrt"] = "composer", ["\u00a9too"] = "encoder", ["\u00a9grp"] = "grouping", ["desc"] = "description"
     };
-    public static List<AudioComment> Read(ReadOnlyMemory<byte> userData, M4aBoxes boxes)
+    public static List<AudioComment> Read(ReadOnlyMemory<byte> userData, M4aBoxes boxes, ImmutableArray<FlacMetadataBlock>.Builder? pictures = null)
     {
         var meta = M4aBoxes.One(boxes.Read(userData, "meta"), "meta"); M4aBoxes.FullBox(meta.Span, 4);
         var children = boxes.Read(meta[4..], "hdlr", "ilst");
         M4aMetadata.Handler(M4aBoxes.One(children, "hdlr").Span, "mdir"u8);
-        var comments = new List<AudioComment>(); var textBytes = 0;
+        var comments = new List<AudioComment>(); var textBytes = 0; var pictureTextBytes = 0;
         foreach (var item in boxes.Read(M4aBoxes.One(children, "ilst")))
         {
+            if (item.Type == "covr" && pictures is not null)
+            {
+                var covers = boxes.Read(item.Data, "data");
+                if (covers.Count == 0) throw new InvalidDataException("M4A artwork has no image data.");
+                foreach (var cover in covers)
+                {
+                    if (pictures.Count >= FlacDescriptiveMetadata.MaximumPictures) throw new InvalidDataException("M4A artwork exceeds its count budget.");
+                    pictures.Add(M4aPictures.Read(cover.Data.Span, ref pictureTextBytes));
+                }
+                continue;
+            }
             if (!Names.TryGetValue(item.Type, out var name) && item.Type is not ("trkn" or "disk"))
                 throw new NotSupportedException("M4A metadata needs a preservation handler: " + item.Type);
             var data = M4aBoxes.One(boxes.Read(item.Data, "data"), "data").Span;

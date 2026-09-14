@@ -80,7 +80,7 @@ advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
 The latest combined production stage is
-`artifacts/production-staging/b40f5ba06ef84842a2e7504d97cde70a`.
+`artifacts/production-staging/bcc65f0acd2f47258b2b165707dbb53f`.
 It includes catalog revision 2026-09-13.1, the prior Analyze and combined-PDF
 failure handling, corrected Opus surround mapping, separate trial-policy edits,
 the ID3v2.2 reader and bounded FLAC-to-Vorbis/Opus artwork transport, with the
@@ -90,10 +90,13 @@ classifies image, OLE/package and VBA relationships without reading their target
 It now also includes the [MP3 artwork handler](mp3-artwork-conversion.md) for
 PNG/JPEG covers to FLAC, Vorbis and Opus, and the
 [Ogg artwork source reader](ogg-artwork-conversion.md) for FLAC and cross-codec
-Vorbis/Opus outputs. The latest foundation run passes 2,626 contracts, including
-43 new Ogg picture/admission checks. The Ogg checkpoint also passes 85 focused
-private artwork, 51 existing preservation and 57 direct-worker checks on this
-stage. The preceding PDF follow-up passes 25 private raster, 12 evaluation, 59 direct/
+Vorbis/Opus outputs. It now includes the [M4A cover-data handler](m4a-artwork-conversion.md)
+for those three targets. The latest foundation run passes 2,663 contracts,
+including 37 new M4A picture/admission checks. The M4A checkpoint passes 116
+focused private artwork, 31 existing preservation and 115 direct-worker checks
+on this stage. The preceding Ogg checkpoint passes 85 focused private artwork,
+51 existing preservation and 57 direct-worker checks on its own stage.
+The preceding PDF follow-up passes 25 private raster, 12 evaluation, 59 direct/
 worker, 20 interruption and 19 payload checks. The earlier MP3 checkpoint passes
 91 focused private artwork, 100 preservation and 58 worker/direct checks on its
 own dated stage.

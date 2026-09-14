@@ -41,6 +41,14 @@ internal static class AudioConversionContracts
         foreach (var target in new[] { AudioFormat.Wave, AudioFormat.M4a })
             Reject(() => AudioConversionPlan.Create(picturedMp3, target), "MP3 artwork requires target handler " + target);
         check(AudioConversionPlan.Create(picturedMp3, AudioFormat.Mp3).AlreadyTarget, "audio plan: MP3 artwork same-format no-op");
+        var m4a = Facts("mov,mp4,m4a,3gp,3g2,mj2", "aac");
+        m4a = m4a with { Streams = m4a.Streams.Add(picturedMp3.Streams[1]) };
+        foreach (var target in new[] { AudioFormat.Flac, AudioFormat.Vorbis, AudioFormat.Opus })
+            check(AudioConversionPlan.Create(m4a, target).RequiredConsent == (target == AudioFormat.Flac ? AudioConversionConsent.PrecisionReduction : AudioConversionConsent.LossyTranscoding),
+                "audio plan: M4A artwork retains quality consent " + target);
+        foreach (var target in new[] { AudioFormat.Wave, AudioFormat.Mp3 })
+            Reject(() => AudioConversionPlan.Create(m4a, target), "M4A artwork requires target handler " + target);
+        check(AudioConversionPlan.Create(m4a, AudioFormat.M4a).AlreadyTarget, "audio plan: M4A artwork same-format no-op");
         foreach (var (codec, format) in new[] { ("vorbis", AudioFormat.Vorbis), ("opus", AudioFormat.Opus) })
         {
             var source = Facts("ogg", codec); source = source with { Streams = source.Streams.Add(picturedMp3.Streams[1]) };
