@@ -122,6 +122,12 @@ and positive controls demonstrate the option's effect. Sources retain bytes,
 write times and revisions. The evaluation implements the default; customer
 integration, complex revision cases and isolation remain unfinished.
 
+The [structural Word revision matrix](word-structural-revisions.md) adds twelve
+exports with passing text/source checks and exact formatting/table controls.
+Moved text differs by 151 pixels and up to 0.07001 PDF points in horizontal
+character position, with identical embedded font bytes. The exact-pixel matrix
+remains failed; this is a recorded fidelity gap, not an accepted tolerance.
+
 The latest combined production stage is candidate 1.0.7 at
 `artifacts/production-staging/19e12a8a4db142e3bb73df3518c67243`.
 The [WAV Unicode-tag checkpoint](wave-text-conversion.md) preserves supported

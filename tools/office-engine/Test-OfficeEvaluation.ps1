@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $PreparedDirectory, [Parameter(Mandatory)][string] $PdfPreparedDirectory,
-    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelPrint, [switch] $WordRevisions, [switch] $WordFinalText, [switch] $PowerPointSlides, [switch] $EmbeddedImages)
+    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelPrint, [switch] $WordRevisions, [switch] $WordFinalText, [switch] $WordRevisionStructures, [switch] $PowerPointSlides, [switch] $EmbeddedImages)
 $ErrorActionPreference = 'Stop'
-if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelPrint, $WordRevisions, $WordFinalText, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
+if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelPrint, $WordRevisions, $WordFinalText, $WordRevisionStructures, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $office = (Resolve-Path -LiteralPath $PreparedDirectory).Path
 $pdf = (Resolve-Path -LiteralPath $PdfPreparedDirectory).Path
@@ -46,6 +46,7 @@ if ($PowerPointSlides) { $probeArguments += 'PowerPointSlides' }
 if ($EmbeddedImages) { $probeArguments += 'EmbeddedImages' }
 if ($WordRevisions) { $probeArguments += 'WordRevisions' }
 if ($WordFinalText) { $probeArguments += 'WordFinalText' }
+if ($WordRevisionStructures) { $probeArguments += 'WordRevisionStructures' }
 & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- @probeArguments
 if ($LASTEXITCODE) { throw 'Office evaluation failed; inspect retained scratch evidence.' }
 Write-Output 'Authored passive Office fixtures and disposable exports only. No arbitrary-document isolation, installer or production acceptance implied.'
@@ -61,3 +62,5 @@ if ($WordFinalText) { Write-Output 'Final-text and explicit show-changes control
 if ($PowerPointSlides) { Write-Output 'Slide-policy completion records order, hidden-slide and note observations; inspect SlideObservation before claiming fidelity.' }
 
 if ($EmbeddedImages) { Write-Output 'Image export completion requires Inspect-OfficeImages.py before claiming pixel/resolution preservation.' }
+
+if ($WordRevisionStructures) { Write-Output 'Twelve structural revision exports require independent text/pixel inspection; all observations are retained, and text mismatches fail the run.' }

@@ -32,6 +32,13 @@ clean-control pixels. Ordinary Writer evaluation exports now explicitly hide
 tracked-change markup; the original `-WordRevisions` observation mode stays
 available. These remain passive fixtures, not arbitrary-document admission.
 
+`Test-OfficeEvaluation.ps1 -WordRevisionStructures` adds twelve exports across
+formatting, table-row and moved-text controls. Run
+`Inspect-WordRevisionStructures.py '<printed evaluation directory>'` for independent
+declaration/text/pixel reconciliation. The current move case fails its exact-pixel
+comparison; see [structural revision evidence](../../docs/word-structural-revisions.md).
+Keep that failure visible rather than treating successful export as acceptance.
+
 The separate native isolation preflight now checks reachable IPv4 and IPv6-only
 loopback listeners. Its default uses no AppContainer profile and makes no denial
 claim. The separately authorized disposable-profile mode requires actual denial

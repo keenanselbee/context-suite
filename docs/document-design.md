@@ -212,6 +212,10 @@ Do not accept or remove revisions in the original. The candidate's explicit
 [final-text/control matrix](word-revision-evaluation.md), including exact
 clean-control pixels and preserved source bytes/write times. Customer integration,
 broader revision fidelity and required renderer isolation remain separate gates.
+The [structural follow-up](word-structural-revisions.md) matches clean formatting
+and table-row controls but finds a small horizontal glyph-position difference
+for moved text. Its exact-pixel matrix remains failed; the chosen display default
+does not by itself clear arbitrary tracked-move fidelity.
 
 The [PowerPoint slide/notes experiment](powerpoint-slide-evaluation.md) tests
 saved slide order, hidden first/last slides and speaker-note exclusion, with a

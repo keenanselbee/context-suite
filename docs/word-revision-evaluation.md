@@ -169,3 +169,9 @@ handling, engine packaging and AppContainer isolation remain unfinished. No
 source rewrite, font installation, AppContainer profile, Explorer registration
 or live commerce is performed. Candidate 1.0.7 remains unchanged; no new visible,
 keyboard, screen-reader or theme/DPI acceptance is claimed.
+
+The [structural revision follow-up](word-structural-revisions.md) adds twelve
+exports for formatting, row changes and moved text. Text checks pass throughout;
+the move case differs from its clean control by 151 pixels despite identical
+font-program bytes. That exact-pixel matrix remains failed and is not folded
+into the eight passing inline-revision cases above.
