@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-13.1",
+  "revision": "2026-09-14.1",
   "types": [
     {
       "id": "3gp",
@@ -86,6 +86,16 @@
         ".aifc"
       ],
       "source": "https://developer.apple.com/library/archive/documentation/MusicAudio/Conceptual/CoreAudioOverview/SupportedAudioFormatsMacOSX/SupportedAudioFormatsMacOSX.html"
+    },
+    {
+      "id": "alpine-apk",
+      "name": "Alpine Linux package",
+      "family": "Archive or package",
+      "commonUses": "Software distributed for installation with the Alpine Linux package manager.",
+      "extensions": [
+        ".apk"
+      ],
+      "source": "https://wiki.alpinelinux.org/wiki/Architecture"
     },
     {
       "id": "ape",
@@ -1185,11 +1195,12 @@
       "id": "java-archive",
       "name": "Java archive",
       "family": "Archive or package",
-      "commonUses": "Java code and resources bundled as libraries, applications or web and enterprise deployments.",
+      "commonUses": "Java code and resources bundled as libraries, applications, web or enterprise deployments, or resource adapters.",
       "extensions": [
         ".jar",
         ".war",
-        ".ear"
+        ".ear",
+        ".rar"
       ],
       "source": "https://docs.oracle.com/javaee/7/tutorial/packaging001.htm"
     },

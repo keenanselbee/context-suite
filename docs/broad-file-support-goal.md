@@ -38,6 +38,15 @@ on 2026-09-09. The first checkpoint committed the accumulated work in four publi
 commits ending at `d5dff37` and four private commits ending at `82fb7e7`.
 Repeat this review/verification/commit workflow after each coherent milestone.
 
+On 2026-09-14, the [archive alias review](catalog-archive-alias-review.md) accounts
+for all 50 associations across 30 archive/package records. Analyze retains Android
+and Alpine alternatives for `.apk`, and RAR/Java resource-adapter alternatives for
+`.rar`. The catalog now contains 244 records; no content detector is added.
+The Release test host builds without warnings/errors and 2,822 foundation contracts
+pass. Candidate 1.0.9 remains unchanged. The prepared Office network-event reader
+is separate diagnostic work and awaits administrator approval; required Office
+conversion and its isolation gate remain incomplete.
+
 Current completion path (2026-09-12)
 ------------------------------------
 
@@ -50,7 +59,7 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Area | Implemented or measured | Work required to close the area |
 | --- | --- | --- |
 | Universal Analyze | Shared results, generic/header fallback, bounded family readers, per-row availability after admission, synchronous I/O cancellation and refreshed mixed-batch performance baseline | Finish the advertised regular-file acceptance matrix; test remaining driver/network and metadata-stall cases; accept the visible report |
-| Offline catalog | 243 records, schema/version validation, source references, reviewed current MIME claims, reconciled typical-use descriptions and current detector-route provenance | Finish wider alias/variant review and additional meaningful MIME coverage; preserve the distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
+| Offline catalog | 244 records, schema/version validation, source references, reviewed current MIME claims, reconciled typical-use descriptions and current detector-route provenance | Finish wider alias/variant review and additional meaningful MIME coverage; preserve the distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
 | Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker/interruption evidence and a rate/layout matrix with corrected Opus surround mapping | Close remaining input/metadata variants, independent decoding and human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
 | PDF | Optional structural optimization, all-page PNG conversion and combined image PDF with explicit order review | Close documented fidelity/unsupported-input and recovery gaps; accept the order dialog and outputs visibly; review redistribution and adopt the selected payload |
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments, owned evaluation jobs and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |

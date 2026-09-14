@@ -1,13 +1,13 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-13.1; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-14.1; expanded catalog and bounded structure analysis, not release acceptance
 
 Recognition and capabilities
 ----------------------------
 
 The embedded [catalog](../src/ContextSuite.Core/Analysis/file-types.json) currently
-contains 243 independently authored descriptions; aliases do not inflate this count.
+contains 244 independently authored descriptions; aliases do not inflate this count.
 The [inventory](file-type-inventory.md) lists each entry and its actual detector status.
 Catalog schema 1 has stable IDs, extension aliases, exact filenames,
 families, typical uses, optional MIME identifiers and source references. It contains no commands or
@@ -54,7 +54,9 @@ for `.jfif`, `.rgbe` and `.targa`, retaining shared names and grouped variants a
 qualified hints. The catalog and executable capabilities remain unchanged.
 The [archive/package purpose review](catalog-archive-review.md) checks 29 archive,
 compressed-stream, software-package and disk-image descriptions, updating sixteen
-records. Variant/alias and executable-capability acceptance remain separate.
+records. The [archive alias review](catalog-archive-alias-review.md) now accounts
+for 50 associations across 30 records, adding Alpine APK and Java resource-adapter
+RAR alternatives. Neither addition is a detector or an executable capability.
 The [source/configuration purpose review](catalog-source-code-review.md) checks
 49 records and improves twenty descriptions/references, distinguishing source,
 automation, declarations and settings. It adds no execution or syntax validation.
@@ -69,14 +71,15 @@ beyond the four earlier common-image entries and improves twelve descriptions or
 references. Grouped image variants are clearer; all recognition fields and
 executable capabilities remain unchanged.
 The [purpose reconciliation](catalog-purpose-review.md) reviews the remaining
-34 records and accounts for all 243 current descriptions without duplicate or
-missing IDs. Fifteen descriptions/references improve. This completes the
+34 records and accounts for all 243 descriptions present at that review without
+duplicate or missing IDs. Fifteen descriptions/references improve. This completes the
 typical-use review; exact aliases, variants and MIME identifiers remain separate
 acceptance obligations. The [detector provenance reconciliation](catalog-detector-review.md)
-now accounts for all 34 content-identifiable catalog IDs and 209 filename-hint
-records. It corrects the inventory's stale MP3 label and records the precise
-prefix, package and optional-probe distinctions, without adding runtime behavior
-or claiming complete format validation.
+accounts for the then-current 34 content-identifiable catalog IDs and 209 filename-hint
+records. It corrects the inventory's stale MP3 label and records the precise prefix,
+package and optional-probe distinctions, without adding runtime behavior or claiming
+complete format validation. The archive alias addition brings filename-hint records
+to 210.
 The [document font reference scan](document-font-references.md) adds optional
 literal names and unresolved theme references from selected OOXML XML parts,
 with declared scope and unavailable results on budget/format failure.

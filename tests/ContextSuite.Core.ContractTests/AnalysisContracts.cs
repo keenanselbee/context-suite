@@ -79,7 +79,8 @@ internal static class AnalysisContracts
             (".hdf", new[] { "hdf4", "hdf5" }), (".cdf", new[] { "cdf", "netcdf" }),
             (".res", new[] { "godot-resource", "windows-resource" }), (".ase", new[] { "adobe-swatches", "aseprite" }),
             (".heif", new[] { "avif", "heif" }), (".heifs", new[] { "avif", "heif" }),
-            (".hif", new[] { "avif", "heif" }) })
+            (".hif", new[] { "avif", "heif" }),
+            (".apk", new[] { "alpine-apk", "apk" }), (".rar", new[] { "java-archive", "rar" }) })
         {
             var name = "fixture" + extension.ToUpperInvariant();
             check(catalog.FindByName(name).Select(type => type.Id).Order().SequenceEqual(candidates),
@@ -92,6 +93,14 @@ internal static class AnalysisContracts
             check(identified.Identity is { FormatId: "pdf", Basis: IdentificationBasis.Content } &&
                 identified.Warnings.Any(warning => warning.Contains("different type")),
                 "analysis: content evidence overrides shared filename meanings for " + extension);
+        }
+        foreach (var name in new[] { "application.APK", "adapter.RAR" })
+        {
+            var container = Inspect("PK\x03\x04"u8.ToArray(), name);
+            check(container.Identity is { FormatId: "zip", Basis: IdentificationBasis.Content,
+                Confidence: IdentificationConfidence.Likely } && container.FilenameHints.Length == 2 &&
+                container.Warnings.Any(warning => warning.Contains("does not confirm")),
+                "analysis: ZIP signature does not certify the package meaning of " + name);
         }
         check(Inspect([0, 1, 2, 255], "sequence.HEICS").Identity is
             { FormatId: "heif", Basis: IdentificationBasis.Filename, Confidence: IdentificationConfidence.Likely },

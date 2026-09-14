@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-13.1; 243 records. This is a descriptive
+Catalog revision: 2026-09-14.1; 244 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -29,11 +29,11 @@ updates fifteen descriptions/references; it does not certify all format variants
 The [video purpose review](catalog-video-review.md) covers ten records and updates
 seven descriptions/references without adding video actions or codec guarantees.
 The [purpose reconciliation](catalog-purpose-review.md) reviews the remaining
-34 records and maps all 243 current IDs to their purpose reviews. Complete
+34 records and maps the then-current 243 IDs to their purpose reviews. Complete
 alias/variant provenance remains separate from this description review.
 The [detector reconciliation](catalog-detector-review.md) accounts for 34 IDs
-reachable through content evidence and 209 filename-hint records, including the
-optional MP3 probe. These are bounded identification routes, not complete decoders.
+reachable through content evidence and the then-current 209 filename-hint records,
+including the optional MP3 probe. These are bounded identification routes, not complete decoders.
 
 The [MIME review](catalog-mime-descriptions.md) lists 59 descriptive identifiers
 for 36 records; these do not determine the exact variant of a file.
@@ -55,6 +55,7 @@ for actual parsed facts and current resource limits.
 | access | Access database | `.mdb`, `.accdb` | Filename hint only |
 | adobe-swatches | Adobe Swatch Exchange | `.ase` | Filename hint only |
 | aiff | AIFF audio | `.aif`, `.aiff`, `.aifc` | FORM/AIFF or AIFC tag and bounded Common Chunk declarations; likely |
+| alpine-apk | Alpine Linux package | `.apk` | Filename hint only |
 | ape | Monkey's Audio | `.ape` | Filename hint only |
 | apk | Android package | `.apk` | Filename hint only |
 | arrow | Apache Arrow data | `.arrow`, `.feather` | Filename hint only |
@@ -142,7 +143,7 @@ for actual parsed facts and current resource limits.
 | ini | INI-style configuration | `.ini`, `.cfg`, `.conf` | Filename hint; text sampling |
 | iso | ISO disc image | `.iso` | Filename hint only |
 | java | Java source | `.java` | Filename hint; text sampling |
-| java-archive | Java archive | `.jar`, `.war`, `.ear` | Filename hint only |
+| java-archive | Java archive | `.jar`, `.war`, `.ear`, `.rar` | Filename hint only |
 | java-class | Java class file | `.class` | Filename hint only |
 | javascript | JavaScript source | `.js`, `.mjs`, `.cjs`, `.jsx` | Filename hint; text sampling |
 | jpeg | JPEG image | `.jpg`, `.jpeg`, `.jpe`, `.jfif` | JPEG signature and bounded SOF0-3 declarations |
@@ -295,3 +296,7 @@ The next coverage pass should add MIME identifiers where meaningful, independent
 tested content rules for additional families, and representative real files for
 unverified variants. Do not turn an extension hint into confirmed identity merely
 to increase the detector count.
+
+The [archive alias review](catalog-archive-alias-review.md) adds the Alpine Linux
+meaning of `.apk` and the Java resource-adapter meaning of `.rar`. Current totals
+are 34 content-identifiable IDs and 210 filename-hint records; no detector is added.
