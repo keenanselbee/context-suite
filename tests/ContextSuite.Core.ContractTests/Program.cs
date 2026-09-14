@@ -84,6 +84,14 @@ if (args.Length == 3 && args[0] == "--pdf-page-geometry")
     Console.WriteLine($"Passed {checks} isolated PDF page geometry checks.");
     return 0;
 }
+if (args.Length == 4 && args[0] == "--wave-text-direct")
+{
+    var waveTextChecks = new List<string>();
+    await AudioConversionDirectContracts.WaveTextAsync(args[1], args[2], args[3], (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); waveTextChecks.Add(message); });
+    Console.WriteLine($"Passed {waveTextChecks.Count} WAV text direct checks.");
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--wave-output-artwork-direct")
 {
     var waveOutputChecks = new List<string>();

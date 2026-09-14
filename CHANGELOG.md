@@ -1,6 +1,27 @@
 Context Suite Changelog
 =======================
 
+1.0.7 - Local candidate, 2026-09-14
+---------------------------------
+
+- Preserve literal track, disc, language and copyright values in custom ID3
+  text fields when they do not meet the corresponding typed frame's syntax.
+  Keep valid typed fields and all sample, artwork and publication safeguards.
+- Supersede candidate 1.0.6 while preserving its staged payload and receipt.
+
+
+1.0.6 - Local candidate, 2026-09-14
+---------------------------------
+
+- Preserve supported Unicode descriptive tags when converting FLAC, MP3, M4A,
+  Vorbis and Opus to WAV, including alongside artwork. Keep ordinary ASCII INFO
+  fields and use explicit ID3 encoding for other admitted values.
+- Validate the complete WAV output inventory even without artwork. Recognize
+  both track-number INFO conventions while refusing conflicting values.
+- Keep source files, exact decoded audio, copies by default and existing quality
+  decisions. Reject unrepresentable text during conversion inspection.
+
+
 1.0.5 - Local candidate, 2026-09-14
 ---------------------------------
 

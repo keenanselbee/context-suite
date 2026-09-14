@@ -9,6 +9,16 @@ internal static partial class WaveMetadataContracts
         await Id3Async(check);
         var format = Format();
         var samples = new byte[192];
+        foreach (var field in new[] { "IPRT", "ITRK" })
+        {
+            var track = await Read(FileOf(("fmt ", format), ("data", samples), ("LIST", Info((field, Text("2/9"))))));
+            track.RequireConversionSupport(new Dictionary<string, string> { ["track"] = "2/9" });
+            check(track.UnsupportedChunks.IsEmpty && track.Tags.Single().Name == "track" && track.Tags.Single().Value == "2/9",
+                "WAV inventory: track convention retains its exact value " + field);
+        }
+        var repeatedTrack = await Read(FileOf(("fmt ", format), ("data", samples), ("LIST", Info(("IPRT", Text("2")), ("ITRK", Text("3"))))));
+        check(repeatedTrack.Tags.Length == 2 && repeatedTrack.UnsupportedChunks.Any(item => item.Contains("duplicate")),
+            "WAV inventory: competing track conventions cannot silently override each other");
         using (var stream = new MemoryStream(FileOf(("fmt ", format), ("data", samples), ("LIST", Info(("ILNG", Text("eng")))))))
         {
             var language = await WaveMetadata.ReadAsync(stream, default);

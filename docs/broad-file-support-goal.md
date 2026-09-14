@@ -108,7 +108,18 @@ three effective downsampling controls and independently rendered patches. It
 advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
-The latest combined production stage is candidate 1.0.5 at
+The latest combined production stage is candidate 1.0.7 at
+`artifacts/production-staging/19e12a8a4db142e3bb73df3518c67243`.
+The [WAV Unicode-tag checkpoint](wave-text-conversion.md) preserves supported
+descriptive values from the other five audio formats using explicit ID3 encoding
+alongside representable ASCII INFO. It passes 155 focused checks, existing audio
+regressions, 2,812 foundation contracts and 66 staged-worker direct checks.
+The thirteen-case independent decode/probe matrix includes text with artwork;
+player/listening compatibility, broader variants and integrated acceptance remain
+open. Candidate 1.0.6 is retained but superseded by the corrected typed-frame
+syntax policy. The required Office converter remains unfinished.
+
+The earlier combined production stage is candidate 1.0.5 at
 `artifacts/production-staging/c2eca21b98aa42398081720617b6ec3f`.
 The [WAV output-artwork checkpoint](wave-output-artwork.md) preserves representable
 PNG/JPEG covers from the other five audio formats while retaining exact decoded

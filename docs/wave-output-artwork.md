@@ -31,9 +31,10 @@ application does not invent labels. Complete output metadata, audio properties,
 frame count and exact decoded samples are validated before publication. A lossless
 target does not restore detail lost in the source.
 
-WAV descriptive INFO text still requires ASCII. Unicode picture descriptions
-use ID3 and remain supported; this change does not add Unicode INFO or ID3 text
-output. The encoder's `ILNG` field is now inventoried as language, following
+WAV descriptive INFO text still requires ASCII. At this checkpoint Unicode picture
+descriptions used ID3, but descriptive ID3 output was unfinished. The subsequent
+[WAV text checkpoint](wave-text-conversion.md) adds that explicit encoding policy.
+The encoder's `ILNG` field is inventoried as language, following
 [FFmpeg's RIFF metadata mapping](https://www.ffmpeg.org/doxygen/trunk/riff_8c.html).
 Its exact value must agree with the native probe. Unknown INFO identifiers and
 duplicate stores remain refused. The [WAV ID3 source record](wave-id3-artwork.md)

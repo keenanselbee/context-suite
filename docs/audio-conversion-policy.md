@@ -47,6 +47,10 @@ labels and descriptions are empty/Other. It preserves image bytes/order and
 verifies redundant geometry; unrepresentable fields remain blocked. WAV artwork
 output now uses a bounded ID3 picture writer for representable FLAC, MP3, M4A,
 Vorbis and Opus covers; see [WAV output evidence](wave-output-artwork.md).
+The [WAV text policy](wave-text-conversion.md) retains supported Unicode and
+additional descriptive fields in explicit ID3v2.4 text frames, alongside ASCII
+INFO fields and pictures. Complete output inventory validation applies with or
+without artwork; unsupported input INFO encodings remain refused.
 Rates are bounded to 8–192 kHz and
 channels to 1–8, with target-specific restrictions. This policy range is not a
 claim that every rate/layout pair has passed engine tests.
@@ -206,9 +210,9 @@ NUL is refused. These limits supplement the bounded FLAC header parser.
 
 Unicode, multiline values, quotes and backslashes pass as literal quoted native
 arguments with no shell. NUL and command lines longer than 32,766 UTF-16 code
-units are rejected before process creation. FLAC-to-WAV currently requires ASCII
-values (including tab/newline/carriage return); Unicode WAV encoding remains
-undecided. Unsupported output tags fail validation instead of silently disappearing.
+units are rejected before process creation. WAV output keeps representable ASCII
+INFO values and uses the [explicit ID3 text policy](wave-text-conversion.md) for
+other admitted values. Unsupported output tags fail validation instead of silently disappearing.
 Same-format retention and raw-preserving FLAC optimization keep their separate
 policies; these conversion restrictions do not remove their richer metadata support.
 
@@ -241,8 +245,8 @@ conversion alias/value rules. Vorbis requires its comment framing byte; Opus
 trailing data is discardable only when its first low bit permits this. Preserved
 binary extensions, duplicate comments, artwork, chapter/loop/gain semantics and
 unmapped output values prevent conversion. All admitted descriptive values must
-match source and output probes. Unicode-to-WAV still requires an explicit text
-encoding policy. MP3 and M4A have the narrower inventories described below;
+match source and output probes. Unicode-to-WAV uses the explicit ID3 text policy.
+MP3 and M4A have the narrower inventories described below;
 their remaining metadata variants still need handlers.
 Raw comment admission and native probe filtering share the same technical-tag
 exclusions: encoder, major_brand, minor_version, compatible_brands, handler_name
@@ -327,8 +331,8 @@ the descriptive source of truth, disables inherited global/stream metadata,
 and writes each admitted value explicitly. Ogg targets also receive explicit
 stream tags. Actual output tags and decoded audio must still validate. This
 does not correct the separate read-only native Analyze probe's tag reporting;
-shared analysis integration remains open. Unicode-to-WAV stays unadmitted until
-its text-encoding policy is settled.
+shared analysis integration remains open. Unicode-to-WAV now uses the explicit
+ID3 text policy while preserving these source inventory checks.
 
 M4A conversion metadata admission
 ---------------------------------
