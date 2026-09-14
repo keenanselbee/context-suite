@@ -234,3 +234,41 @@ not establish a denied API or a viable renderer boundary. Further runs should
 test a specific new hypothesis or collect different evidence, rather than repeat
 the same startup flags. Network enforcement remains a separate unresolved gate;
 required customer Office conversion remains unavailable.
+
+
+Profile-copy hypotheses (2026-09-14)
+----------------------------------
+
+The retained ordinary profiles contain fifteen files and mark initial user setup
+complete; restricted fresh profiles contain only two files and lack that marker.
+The pinned [user-installation source](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/desktop/source/app/userinstall.cxx)
+copies preset user data before setting `ooSetupInstCompleted`. That difference
+motivated two bounded experiments, without broadening access:
+
+- `cas7`: an authored child performs a source read, manual write, `CopyFileW`,
+  copy readback and directory creation under the existing grants. Ordinary and
+  AppContainer controls return success for all five operations. This eliminates
+  a general inability to copy a permitted file, not every operation in Office's
+  recursive setup sequence.
+- `cas9`: ordinary startup succeeds in 1,937 ms. The parent copies that owned
+  completed profile to a fresh restricted profile, retaining the disabled-content
+  settings and setup-complete marker. Restricted startup still exits 1 naturally
+  after 6,625 ms with empty diagnostics and zero active job members after cleanup.
+  All fifteen final profile files match the control byte-for-byte. Pre-initializing
+  this profile therefore does not resolve the failure.
+
+The first seeded attempt, `cas8`, failed in test setup because its destination
+parent directory did not exist; no restricted Office launch occurred. That
+attempt's profile was removed. The corrected experiment creates its own parent
+before copying. All three disposable profiles report cleanup, and the Windows
+profile folder and registry mapping are independently verified absent.
+
+These are scratch-only variants of the authored probe, not shipping behavior or
+new supported invocation modes. Under the existing staging parent, their source,
+binary hashes and logs are retained in `copy-diagnostic-c602a8946992481a8286b26c4b1ffe0a`,
+`seeded-diagnostic-61d08e3e2cbf4edda704ddedc868a31b` (setup failure) and
+`seeded-diagnostic-e63b7ac8bff34d508ec1b396d87fcfca` (completed experiment).
+`.codex-temp/office-startup-hypotheses-verification.json` records profile identity,
+settings, outcomes and cleanup. Native x64 `/W4 /WX` builds pass. Further Office
+work needs a more specific failure diagnostic; neither hypothesis justifies
+widening permissions or admitting customer documents.

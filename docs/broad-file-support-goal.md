@@ -137,6 +137,13 @@ error text through the scoped accessibility inspection. Jobs and profiles are
 cleaned up. The cause is still unknown; further execution needs a new diagnostic
 hypothesis, and no customer Office capability or release pass is claimed.
 
+The subsequent [profile-copy experiments](office-isolated-startup.md#profile-copy-hypotheses-2026-09-14)
+eliminate two simple explanations: permitted file copying succeeds in the
+AppContainer, and seeding the completed ordinary profile still does not permit
+restricted startup. All fifteen seeded profile files and disabled-content settings
+match the control; owned profiles/jobs are cleaned up. The specific failure cause
+and network enforcement remain unresolved.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The
@@ -409,10 +416,12 @@ production payload or broad regression run is claimed for these test additions.
 Prioritize the remaining work in this order:
 
 1. Resolve the [Office isolation evaluation](office-isolation-evaluation.md).
-   The prepared disposable AppContainer profile still needs the already-requested
-   authorization for its named per-user filesystem/registry state. After that,
-   verify file/network denial and cleanup, then run the renderer inside the same
-   boundary. An unrestricted passive export does not clear this gate.
+   The owner authorized the disposable profile test; file restrictions, token,
+   explicit environment and cleanup have passed their recorded checks. Actual
+   renderer initialization and network-denial evidence remain unresolved. The
+   separate elevated read-only network-event query still awaits authorization.
+   Use targeted diagnostics for the restricted renderer failure before running
+   further document exports. An unrestricted passive export does not clear this gate.
 2. Settle the concrete Office policies exposed by experiments:
    [Excel calculation](excel-calculation-evaluation.md),
    [early date systems](excel-date-system-evaluation.md),
