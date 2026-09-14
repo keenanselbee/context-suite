@@ -190,6 +190,15 @@ to verify original print declarations, source/PDF hashes and recorded observatio
 See [print layout scope and results](../../docs/excel-print-layout-evaluation.md).
 Completion alone does not imply all five print policies matched.
 
+Retained `FontSubstitution` and `LegacyPdf` exports can be inspected without
+running Office using
+`python -B tools/office-engine/Inspect-OfficePdfComparison.py '<evaluation directory>' '<prepared qpdf directory>'`.
+The script verifies the pinned runtime and export hashes, then records embedded
+TrueType program/table hashes and selected internal names in fresh scratch.
+`python -B tools/office-engine/Test-OfficeFontInspection.py` exercises bounded
+in-memory name/directory cases without loading or installing fonts. Read the
+[font-program evidence and limits](../../docs/office-font-program-inspection.md).
+
 The separate native isolation experiment is:
 
 ```powershell

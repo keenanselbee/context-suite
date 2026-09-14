@@ -61,6 +61,11 @@ The detector and exact customer flow are still unimplemented.
 The subsequent [read-only declaration scan](document-font-references.md) reports
 requested names and unresolved themes within fixed limits; it does not establish
 installed availability or determine the fonts actually used by the renderer.
+The [embedded-program inspection](office-font-program-inspection.md) now verifies
+eight extracted font programs and their internal name declarations from these
+same PDFs. It also shows that identical Arial naming tables can accompany
+different program bytes; neither PDF names nor whole-file hashes alone close
+the production font-resolution gap.
 
 This finding adds to the unresolved calculation policy and isolated-engine gates;
 it does not enable customer Office conversion or replace that requirement with

@@ -108,6 +108,13 @@ three effective downsampling controls and independently rendered patches. It
 advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
+The [Office embedded-font inspection](office-font-program-inspection.md) adds
+internal name/table/hash evidence for eight programs in the six retained font
+exports, ten bounded parser tests and four workflow guards. Identical Arial name
+tables accompany different program bytes, so a simple name/hash lookup would
+not settle font fidelity. Production font resolution, isolation and required
+Office conversion remain unfinished; this inspection leaves the staged product unchanged.
+
 The latest combined production stage is candidate 1.0.7 at
 `artifacts/production-staging/19e12a8a4db142e3bb73df3518c67243`.
 The [WAV Unicode-tag checkpoint](wave-text-conversion.md) preserves supported
