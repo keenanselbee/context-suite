@@ -114,6 +114,13 @@ redirection, rejects three changed-environment controls and independently verifi
 disposable profile cleanup. Network enforcement and actual Office renderer
 compatibility remain open; the combined isolation matrix still fails.
 
+The [Office version-only follow-up](office-isolated-startup.md) now starts the
+pinned engine normally and inside an actual AppContainer, with matching build
+strings and zero remaining owned processes. A separate 19,332-file runtime copy
+keeps its access grants apart from the retained candidate. This establishes
+version reporting only; profile/document initialization, conversion and network
+enforcement remain unverified. The full isolation matrix still fails.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

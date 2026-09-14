@@ -5,6 +5,7 @@
 #include <userenv.h>
 #include <psapi.h>
 #include <netfw.h>
+#include <shlwapi.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -248,6 +249,26 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
     Handle process(info.hProcess), thread(info.hThread);
     struct ProcessGuard { HANDLE value; ~ProcessGuard() { TerminateProcess(value, 1); } } terminate{ process.value };
     Require(AssignProcessToJobObject(job.value, process.value) != FALSE, "Assign before execution");
+    if (sid) {
+        Handle token;
+        Require(OpenProcessToken(process.value, TOKEN_QUERY, &token.value) != FALSE, "Inspect created AppContainer token");
+        DWORD isolated = 0, returned = 0;
+        Require(GetTokenInformation(token.value, TokenIsAppContainer, &isolated, sizeof(isolated), &returned) != FALSE &&
+            isolated == 1, "Created process must actually be an AppContainer");
+        DWORD size = 0;
+        GetTokenInformation(token.value, TokenAppContainerSid, nullptr, 0, &size);
+        Require(size >= sizeof(TOKEN_APPCONTAINER_INFORMATION) && size <= 65536, "Bound created AppContainer SID");
+        std::vector<BYTE> buffer(size);
+        Require(GetTokenInformation(token.value, TokenAppContainerSid, buffer.data(), size, &returned) != FALSE &&
+            EqualSid(reinterpret_cast<TOKEN_APPCONTAINER_INFORMATION*>(buffer.data())->TokenAppContainer, sid),
+            "Created AppContainer SID must match the owned profile");
+        size = 0;
+        GetTokenInformation(token.value, TokenCapabilities, nullptr, 0, &size);
+        Require(size >= sizeof(DWORD) && size <= 65536, "Bound created token capabilities");
+        buffer.resize(size);
+        Require(GetTokenInformation(token.value, TokenCapabilities, buffer.data(), size, &returned) != FALSE &&
+            reinterpret_cast<TOKEN_GROUPS*>(buffer.data())->GroupCount == 0, "Created token must have no capabilities");
+    }
     Require(ResumeThread(thread.value) != MAXDWORD, "Resume contained child");
     CloseHandle(write.value); write.value = nullptr;
     std::string output;
@@ -292,6 +313,8 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
     Require(WaitForSingleObject(process.value, 1000) == WAIT_OBJECT_0 && GetExitCodeProcess(process.value, &exit) != FALSE, "Read stopped child result");
     return { exit, output, timedOut, outputLimit, total, active, observed.PeakProcessMemoryUsed, observed.PeakJobMemoryUsed };
 }
+
+#include "OfficeVersion.h"
 
 struct CommittedMemory {
     void* value;
@@ -511,7 +534,8 @@ int wmain(int argc, wchar_t** argv) {
             std::cout << "{\"exactEnvironment\":" << (matches ? "true" : "false") << "}\n";
             return matches ? 0 : 5;
         }
-        const bool createProfile = argc == 3 && std::wstring(argv[2]) == L"--create-disposable-profile";
+        const bool officeVersion = argc == 4 && std::wstring(argv[3]) == L"--office-version";
+        const bool createProfile = (argc == 3 || officeVersion) && std::wstring(argv[2]) == L"--create-disposable-profile";
         if (argc != 2 && !createProfile) return 2;
         const auto root = fs::absolute(argv[1]).lexically_normal();
         Require(root.native().find(L"\\.codex-temp\\office-isolation\\") != std::wstring::npos && !fs::exists(root), "Use fresh owned office-isolation scratch");
@@ -610,8 +634,10 @@ int wmain(int argc, wchar_t** argv) {
         Require(ReadAttempt(root / L"allowed" / L"input.txt", "generated readable fixture") == 0 &&
             ReadAttempt(root / L"denied" / L"input.txt", "generated withheld fixture") == 0 &&
             ReadAttempt(root / L"writable" / L"output.txt", "isolated output fixture") == 0, "Isolated child must preserve input bytes and write distinct output");
+        const bool officePassed = !officeVersion || OfficeVersion(root, sid.value, environment);
         profile.Remove();
         std::ofstream(root / L"profile-cleanup.json") << "{\"removed\":true}\n";
+        Require(officePassed, "Office version-only AppContainer viability");
         Require(isolated.exitCode == 0 && !isolated.timedOut && !isolated.outputLimit && !isolated.output.empty(), "AppContainer access matrix");
         std::cout << "PASS: explicit scratch read/write, withheld file and write denial, read-only source denial, IPv4/IPv6 loopback denial, actual AppContainer token.\n";
         return 0;

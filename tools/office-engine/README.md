@@ -263,6 +263,14 @@ are counted but their values are never logged. The build receipt includes
 the failed network-denial matrix. See the linked isolation record for retained
 observations and profile cleanup.
 
+Add `-PreparedOfficeDirectory '<verified Office evaluation directory>'` together
+with `-CreateDisposableProfile` for the fixed `--version` viability experiment.
+It creates and verifies a separate runtime copy, grants read/execute only on that
+copy, and compares ordinary/AppContainer startup under owned jobs and explicit
+environment paths. It opens no document. Read the
+[startup scope and results](../../docs/office-isolated-startup.md); neither
+version reporting nor successful cleanup resolves network enforcement.
+
 `Read-OfficeNetworkEvents.ps1 -StagingId <scratch-guid> -PlanOnly` prepares four
 read-only WFP queries for the retained probe's IPv4/IPv6 loopback events and
 filters. It verifies the probe hash and profile name and rejects reparse paths.

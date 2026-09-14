@@ -36,8 +36,11 @@ Implemented experiment
 
 [Test-OfficeIsolation.ps1](../tools/office-engine/Test-OfficeIsolation.ps1) uses the
 repository's existing Visual Studio/CMake discovery pattern and builds a static-CRT
-native probe into fresh `.codex-temp/office-isolation/<guid>` scratch. No external
-binary or document is accepted. All native code is independently authored.
+native probe into fresh `.codex-temp/office-isolation/<guid>` scratch. Default
+mode accepts no external binary or document. The later opt-in
+[Office version experiment](office-isolated-startup.md) uses a verified copy of
+the pinned evaluation runtime and opens no document. All native probe code is
+independently authored.
 
 The launcher creates its child suspended, allows inheritance only of empty input
 and the diagnostic pipe, assigns an owned job, then resumes it. The job sets an
