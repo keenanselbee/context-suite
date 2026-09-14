@@ -48,6 +48,10 @@ The [document alias review](catalog-document-alias-review.md) reconciles all 58
 existing extension associations for those records, distinguishing registered
 suffixes from implementation conventions and grouped document/template variants.
 No catalog data changes; other-family aliases and deeper variant coverage remain open.
+The [image alias review](catalog-image-alias-review.md) reconciles all 65 existing
+extension associations across the 30 Image records. It supplies separate evidence
+for `.jfif`, `.rgbe` and `.targa`, retaining shared names and grouped variants as
+qualified hints. The catalog and executable capabilities remain unchanged.
 The [archive/package purpose review](catalog-archive-review.md) checks 29 archive,
 compressed-stream, software-package and disk-image descriptions, updating sixteen
 records. Variant/alias and executable-capability acceptance remain separate.

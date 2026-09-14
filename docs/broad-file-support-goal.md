@@ -75,6 +75,12 @@ and clarifies template, macro-enabled and slideshow groupings. The catalog and
 reserved payload are unchanged; this does not satisfy required Office conversion
 or complete other-family alias and deeper variant review.
 
+The [image catalog alias review](catalog-image-alias-review.md) reconciles all 65
+current extension associations across 30 Image records. It closes the existing
+`.jfif`, `.rgbe` and `.targa` naming evidence gaps while retaining shared HEIF/AVIF
+and `.ase` alternatives. Catalog bytes and candidate 1.0.7 are unchanged; wider
+family aliases, competing meanings and exact-variant acceptance remain open.
+
 The [PDF page geometry matrix](pdf-page-geometry.md), extended by the
 [typed limit follow-up](pdf-page-limits.md), passes 59 actual worker/publication
 checks on its dated combined stage. It covers
