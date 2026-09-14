@@ -199,9 +199,11 @@ constexpr SIZE_T MiB = 1024ULL * 1024;
 struct JobBudget { DWORD processes = 8; SIZE_T processBytes = 512 * MiB; SIZE_T jobBytes = 1024 * MiB; };
 struct ChildResult { DWORD exitCode; std::string output; bool timedOut; bool outputLimit; DWORD totalProcesses; DWORD activeBeforeStop;
     SIZE_T peakProcessBytes; SIZE_T peakJobBytes; };
+#include "JobObservation.h"
 ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arguments,
     const fs::path& directory, PSID sid, ULONGLONG timeoutMilliseconds = 30000, JobBudget budget = {},
-    const std::vector<wchar_t>* environment = nullptr) {
+    const std::vector<wchar_t>* environment = nullptr, const fs::path* processEvidence = nullptr) {
+    JobObservation observation;
     Handle job(CreateJobObjectW(nullptr, nullptr));
     Require(job.value != nullptr, "Create owned job");
     JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};
@@ -275,6 +277,7 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
     bool timedOut = false, outputLimit = false;
     const auto start = GetTickCount64();
     for (;;) {
+        if (processEvidence) observation.Poll(job.value);
         if (GetTickCount64() - start > timeoutMilliseconds) { timedOut = true; break; }
         DWORD available = 0;
         if (PeekNamedPipe(read.value, nullptr, 0, nullptr, &available, nullptr) && available) {
@@ -301,6 +304,7 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
     Require(observed.BasicLimitInformation.LimitFlags == limits.BasicLimitInformation.LimitFlags &&
         observed.BasicLimitInformation.ActiveProcessLimit == budget.processes && observed.ProcessMemoryLimit == budget.processBytes &&
         observed.JobMemoryLimit == budget.jobBytes, "Job limits must retain the requested values");
+    if (processEvidence) observation.BeforeCleanup();
     Require(TerminateJobObject(job.value, 1) != FALSE, "Terminate remaining owned descendants");
     const auto stopTime = GetTickCount64();
     do {
@@ -311,11 +315,13 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
     } while (true);
     DWORD exit = 0;
     Require(WaitForSingleObject(process.value, 1000) == WAIT_OBJECT_0 && GetExitCodeProcess(process.value, &exit) != FALSE, "Read stopped child result");
+    if (processEvidence) observation.Save(*processEvidence);
     return { exit, output, timedOut, outputLimit, total, active, observed.PeakProcessMemoryUsed, observed.PeakJobMemoryUsed };
 }
 
 #include "OfficeVersion.h"
 #include "OfficeExports.h"
+#include "OfficeStartupDiagnostics.h"
 
 struct CommittedMemory {
     void* value;
@@ -541,9 +547,10 @@ int wmain(int argc, wchar_t** argv) {
                 root.filename() == L"case" && fs::is_regular_file(root / L"profile-cleanup.json"), "Use a completed owned export case");
             return OfficeRedirectedEnvironmentControl(root) ? 0 : 6;
         }
+        const bool startupDiagnostics = argc == 4 && std::wstring(argv[3]) == L"--office-startup-diagnostics";
         const bool officeExports = argc == 4 && std::wstring(argv[3]) == L"--office-exports";
         const bool officeVersion = officeExports || (argc == 4 && std::wstring(argv[3]) == L"--office-version");
-        const bool createProfile = (argc == 3 || officeVersion) && std::wstring(argv[2]) == L"--create-disposable-profile";
+        const bool createProfile = (argc == 3 || officeVersion || startupDiagnostics) && std::wstring(argv[2]) == L"--create-disposable-profile";
         if (argc != 2 && !createProfile) return 2;
         const auto root = fs::absolute(argv[1]).lexically_normal();
         Require(root.native().find(L"\\.codex-temp\\office-isolation\\") != std::wstring::npos && !fs::exists(root), "Use fresh owned office-isolation scratch");
@@ -572,6 +579,13 @@ int wmain(int argc, wchar_t** argv) {
         } else Require(SUCCEEDED(DeriveAppContainerSidFromAppContainerName(profile.name.c_str(), &sid.value)), "Derive disposable SID");
         Grant(root / L"allowed", sid.value, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
         Grant(root / L"writable", sid.value, FILE_GENERIC_READ | FILE_GENERIC_WRITE | FILE_GENERIC_EXECUTE | DELETE | FILE_DELETE_CHILD);
+        if (startupDiagnostics) {
+            const bool passed = OfficeStartupDiagnostics(root, sid.value);
+            profile.Remove();
+            std::ofstream(root / L"profile-cleanup.json") << "{\"removed\":true}\n";
+            Require(passed, "Restricted Office startup diagnostics");
+            return 0;
+        }
         Socket server(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
         Require(server.value != INVALID_SOCKET, "Create local listener");
         sockaddr_in address{};

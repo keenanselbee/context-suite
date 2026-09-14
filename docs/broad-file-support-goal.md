@@ -129,6 +129,14 @@ ordinary control using the same redirected environment initializes successfully,
 so those paths alone do not explain the failure. Job/profile cleanup passes;
 restricted initialization and network enforcement both remain unresolved.
 
+The [focused startup diagnostics](office-isolated-startup.md#owned-startup-diagnostics-2026-09-14)
+retain owned child exits and window observations. Ordinary initialization passes;
+restricted initialization alternates between natural exit 1 and a 60-second
+timeout, with empty engine logs. A visible LibreOffice window provides no useful
+error text through the scoped accessibility inspection. Jobs and profiles are
+cleaned up. The cause is still unknown; further execution needs a new diagnostic
+hypothesis, and no customer Office capability or release pass is claimed.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

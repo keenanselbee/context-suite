@@ -281,6 +281,13 @@ alone is not a fidelity pass. After the run removes its disposable profile, use
 the pinned independent engines and compare normal/isolated text and pixels.
 Missing exports and mismatches remain failures in the retained result.
 
+Use `-StartupDiagnostics` instead of `-PassiveExports` for a focused pair of
+empty-profile initialization attempts. This requests compiled engine logging,
+disables OpenCL and records observed owned-child exits and window captions under
+the same job bounds. It opens no document and skips the separate access/network
+matrix. The current ordinary control passes while restricted initialization
+fails; see the [diagnostic results and limits](../../docs/office-isolated-startup.md#owned-startup-diagnostics-2026-09-14).
+
 `Read-OfficeNetworkEvents.ps1 -StagingId <scratch-guid> -PlanOnly` prepares four
 read-only WFP queries for the retained probe's IPv4/IPv6 loopback events and
 filters. It verifies the probe hash and profile name and rejects reparse paths.

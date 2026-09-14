@@ -174,3 +174,63 @@ The next integration step is to diagnose actual restricted initialization and
 verify a working boundary before admitting customer documents. Network enforcement
 is independently unresolved. The successful ordinary exports do not substitute
 for isolated Word/Excel/PowerPoint conversion, and no production payload changed.
+
+
+Owned startup diagnostics (2026-09-14)
+------------------------------------
+
+The opt-in `-StartupDiagnostics` mode runs only empty-profile initialization,
+once normally and once in the AppContainer. It requires the prepared runtime and
+disposable-profile opt-in and cannot be combined with `-PassiveExports`. It skips
+the separate access/network matrix; that matrix's earlier failure remains open.
+The same job limits, 60-second deadline, disabled-content settings and profile
+cleanup apply. No document is opened and no capability is added.
+
+This mode requests `SAL_LOG=+INFO+WARN+TIMESTAMP` and disables OpenCL through
+`SAL_DISABLE_OPENCL=1`, in addition to the eight explicit environment variables.
+LibreOffice's [logging documentation](https://docs.libreoffice.org/sal/html/sal_log.html)
+explains that runtime filters can expose only logging compiled into the build.
+Empty diagnostic streams therefore do not identify or rule out a failure cause.
+
+The observer retains handles to observed job members and distinguishes natural
+exits from termination during cleanup. It reads window classes, captions and
+visibility only for those owned processes, with bounded text requests. It never
+clicks or changes windows. Short-lived children and later caption changes can be
+missed; these records are observations, not exhaustive process or UI coverage.
+
+Fresh `cas3` through `cas6` roots reuse the verified runtime in the staging parent
+above; each disposable profile is removed before the next run. Ordinary controls
+all initialize successfully. Restricted initialization remains unsuccessful:
+
+| Case | Ordinary duration | Restricted result | Diagnostic text |
+| --- | --- | --- | --- |
+| `cas3` | 2,031 ms | Natural exit 1 after 6,125 ms | Empty |
+| `cas4` | 1,969 ms | 60-second timeout; observed children still running before cleanup | Empty |
+| `cas5` | 2,063 ms | Natural root/engine exit 1 after 27,125 ms | Empty |
+| `cas6` | 2,187 ms | 60-second timeout; observed children still running before cleanup | Empty |
+
+In timeout cases, exit code 1 comes from owned-job termination and must not be
+reported as an independently observed engine crash. Every recorded job has zero
+active members after cleanup. `cas5` exposes a visible `SALFRAME` window titled
+`LibreOffice 26.2`, despite headless startup. The subsequent read-only UIAutomation
+inspection of the owned `cas6` engine exposes only that window title and no
+descendant error text. It does not establish the dialog's cause, usability or
+screen-reader delivery. No unrelated application was operated or closed.
+
+`window-build.json` binds the final `/W4 /WX` diagnostic binary to its sources.
+Earlier `startup-build.json` and `child-final-build.json` bind the preceding
+diagnostic revisions. The initial child-observer build failed on an implicit
+character conversion; it was corrected before execution. Each case retains
+`startup-*.json`, logs, child/window observations and `profile-cleanup.json`.
+The stage also retains `owned-window-accessibility.json` and its stderr file.
+Post-run `.codex-temp/office-startup-diagnostics-verification.json` verifies all
+19,332 source and copied runtime members, authored fixture hashes, final binary
+and source hashes, and absence of the Windows profile folder/registry mapping.
+No owned Office process remains. Wrapper syntax, public-source boundaries, theme
+policy and documentation checks pass; restricted startup itself still fails.
+
+These diagnostics narrow the failure to full restricted initialization, but do
+not establish a denied API or a viable renderer boundary. Further runs should
+test a specific new hypothesis or collect different evidence, rather than repeat
+the same startup flags. Network enforcement remains a separate unresolved gate;
+required customer Office conversion remains unavailable.
