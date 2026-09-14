@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Collections.Immutable;
+using ContextSuite.Core.Images;
 
 namespace ContextSuite.Core.Pdf;
 
@@ -81,8 +82,17 @@ public static class PdfRasterProtocol
 
     private static void Header(ReadOnlySpan<byte> bytes, int kind)
     {
-        if (bytes.Length < 32 || Integer(bytes, 0) != 0x31525043 || Integer(bytes, 4) != 1 || Integer(bytes, 8) != kind ||
+        if (bytes.Length < 32 || Integer(bytes, 0) != 0x31525043 || Integer(bytes, 4) != 1 ||
             Integer(bytes, 28) != bytes.Length - 32) throw new InvalidDataException("Invalid PDF renderer reply frame.");
+        if (Integer(bytes, 8) == 3)
+        {
+            // Kind 3 is a complete failure reply, never a partial inventory or
+            // bitmap. Only the reviewed size-limit code is currently defined.
+            if (bytes.Length != 32 || Integer(bytes, 12) != 1 || Integer(bytes, 16) != 0 || Integer(bytes, 20) != 0 || Integer(bytes, 24) != 0)
+                throw new InvalidDataException("Invalid PDF renderer failure frame.");
+            throw new ImageFailureException(ImageFailure.ResourceLimit);
+        }
+        if (Integer(bytes, 8) != kind) throw new InvalidDataException("Unexpected PDF renderer reply kind.");
     }
 
     private static int Integer(ReadOnlySpan<byte> bytes, int offset)

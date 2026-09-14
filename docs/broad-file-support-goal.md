@@ -56,11 +56,12 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments, owned evaluation jobs and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
-The [PDF page geometry matrix](pdf-page-geometry.md) passes 50 additional actual
-worker/publication checks on the latest unchanged combined stage. It covers
+The [PDF page geometry matrix](pdf-page-geometry.md), extended by the
+[typed limit follow-up](pdf-page-limits.md), passes 59 actual worker/publication
+checks on the latest combined stage. It covers
 crop/rotation pixels, 16-million-pixel pages, maximum width/height, out-of-bound
-refusal and later valid work. It also records a remaining UX gap: native page-size
-refusals currently use the generic invalid-input category. Native allocation
+refusal and later valid work. Native page-size refusals now use a typed limit
+category and clear guidance, distinct from malformed input. Native allocation
 failure, inherited/other page geometry and visible acceptance remain open.
 
 The [Office evaluation lifetime checkpoint](office-process-lifetime.md) passes
@@ -79,7 +80,7 @@ advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
 The latest combined production stage is
-`artifacts/production-staging/747958a4173e4bf4b16ad92e9fd9c7a2`.
+`artifacts/production-staging/14e7cec5306a4660a6fedeb7f5922c3c`.
 It includes catalog revision 2026-09-13.1, the prior Analyze and combined-PDF
 failure handling, corrected Opus surround mapping, separate trial-policy edits,
 the ID3v2.2 reader and bounded FLAC-to-Vorbis/Opus artwork transport, with the
@@ -87,9 +88,12 @@ native shell build included. It also includes the new
 [Office embedded-reference analysis](document-embedded-analysis.md), which
 classifies image, OLE/package and VBA relationships without reading their targets.
 It now also includes the [MP3 artwork handler](mp3-artwork-conversion.md) for
-PNG/JPEG covers to FLAC, Vorbis and Opus. The latest foundation run passes 2,561
-contracts, including 65 added picture/consent checks; 91 focused private artwork,
-100 existing MP3 preservation and 58 fresh worker/direct checks also pass.
+PNG/JPEG covers to FLAC, Vorbis and Opus. The latest foundation run passes 2,583
+contracts, including 22 new PDF limit-response checks after the 65 picture/consent
+checks. The PDF follow-up also passes 25 private raster, 12 evaluation, 59 direct/
+worker, 20 interruption and 19 payload checks. The earlier MP3 checkpoint passes
+91 focused private artwork, 100 preservation and 58 worker/direct checks on its
+own dated stage.
 Cover bytes, descriptions, order and independent image decoding are verified;
 quality decisions, copy defaults and original-file protection remain intact.
 The earlier [FLAC artwork checkpoint](audio-artwork-conversion.md) passes 33

@@ -5,8 +5,9 @@ Status: bounded package analysis and optional direct PDF optimization, PDF-to-PN
 
 The [PDF page geometry matrix](pdf-page-geometry.md) now verifies cropped and
 rotated page pixels and the current maximum output dimensions through actual
-copy publication. Native page-limit refusals still need clearer classification;
-the matrix does not close renderer allocation-failure or visible acceptance.
+copy publication. The [typed limit follow-up](pdf-page-limits.md) gives explicit
+size-limit guidance, retaining distinct malformed-input outcomes. Renderer
+allocation-failure and visible acceptance remain open.
 
 Boundary
 --------
@@ -327,6 +328,9 @@ pixel geometry. The managed protocol rejects malformed, truncated, reordered,
 over-budget or inconsistent replies. The adapter checks source length/hash before
 work and after rendering, then independently decodes each encoded PNG to verify
 pixels and color profile. The qpdf optimizer retains its separate 16 MiB limit.
+The later [limit-response extension](pdf-page-limits.md) maps explicit native
+size/count guards and the managed source-byte bound to typed resource limits,
+without changing successful pixel replies or the fixed policy.
 
 The native host builds with zero warnings/errors. Verification passes 1,535 public
 foundation contracts (28 new protocol checks), 24 private raster checks, 12 fresh

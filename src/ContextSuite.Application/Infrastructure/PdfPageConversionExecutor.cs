@@ -72,7 +72,9 @@ internal sealed class PdfPageConversionExecutor(WorkerClient worker, OutputPubli
                             (await publisher.AbandonAsync(reservation, false)).ToFileResult();
                         if (result.Publication?.IsCommitted != true)
                             result = result with { State = error is MediaWorkerException { Failure: ImageFailure.UnsupportedInput } ? OperationState.Unsupported : OperationState.Failed,
-                                Message = "Page conversion failed. The original PDF and completed page copies were kept." };
+                                Message = error is MediaWorkerException { Failure: ImageFailure.ResourceLimit }
+                                    ? "This PDF page exceeds the rendering size or processing limit. The original PDF and completed page copies were kept."
+                                    : "Page conversion failed. The original PDF and completed page copies were kept." };
                     }
                 }
                 if (result.State is OperationState.Failed or OperationState.Unsupported) failedSource = true;

@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using ContextSuite.Application;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Operations;
@@ -31,21 +32,54 @@ internal static class PdfPageGeometryContracts
         // ceil at 150 DPI produces exactly the admitted 16,384-pixel dimension.
         await Complete("maximum-width", "0 0 7864.319 0.48", "", "0 1 0 rg -1 -1 8000 8000 re f\n", 16384, 1, 0, true);
         await Complete("maximum-height", "0 0 0.48 7864.319", "", "0 1 0 rg -1 -1 8000 8000 re f\n", 1, 16384, 0, true);
-        foreach (var (name, box) in new[] { ("over-pixels", "0 0 1921 1920"), ("over-width", "0 0 7865 0.48"), ("over-height", "0 0 0.48 7865") })
+        foreach (var (name, box, count) in new[] { ("over-pixels", "0 0 1921 1920", 1), ("over-width", "0 0 7865 0.48", 1),
+            ("over-height", "0 0 0.48 7865", 1), ("over-page-count", "0 0 72 72", PdfRasterProtocol.MaximumPages + 1) })
         {
-            var path = WritePdf(name, box, "", "0 1 0 rg 0 0 1 1 re f\n");
+            var path = WritePdf(name, box, "", "0 1 0 rg 0 0 1 1 re f\n", count);
             var before = Directory.GetFiles(outputDirectory).Length;
             var watch = Stopwatch.StartNew();
             try { await worker.ProbePdfPagesAsync(new(Guid.NewGuid(), path), default); throw new Exception("Oversized page accepted: " + name); }
             catch (MediaWorkerException error)
             {
-                check(error.Failure == ImageFailure.InvalidInput, "PDF geometry: renderer refuses out-of-bound page " + name);
+                check(error.Failure == ImageFailure.ResourceLimit, "PDF geometry: renderer classifies out-of-bound page as a resource limit " + name);
                 observations.Add(new { Name = name, Failure = error.Failure.ToString(), ElapsedMs = watch.ElapsedMilliseconds });
             }
             check(Directory.GetFiles(outputDirectory).Length == before && !Directory.EnumerateFiles(records).Any(),
                 "PDF geometry: rejected inspection starts no publication " + name);
         }
         await Complete("after-refusals", "0 0 144 72", "", Quadrants(144, 72), 300, 150, 0, false);
+        var oversizedPath = Path.Combine(root, "over-pixels.pdf");
+        var validPath = Path.Combine(root, "after-refusals.pdf");
+        var validSource = await worker.ProbePdfPagesAsync(new(Guid.NewGuid(), validPath), default);
+        var untrustedSource = validSource with { Path = oversizedPath, FileBytes = new FileInfo(oversizedPath).Length, Sha256 = originals[oversizedPath].Hash };
+        var outputId = Guid.NewGuid();
+        var reservation = await publisher.ReserveAsync(new(outputId, oversizedPath, "png", new("convert", new()), PageNumber: 1));
+        try
+        {
+            try { await worker.RenderPdfPageAsync(new(untrustedSource, 0, outputId, reservation.TemporaryPath), default); throw new Exception("Native rendering trusted forged bounded page geometry."); }
+            catch (MediaWorkerException error)
+            { check(error.Failure == ImageFailure.ResourceLimit, "PDF geometry: render operation remeasures and returns typed limit before any pixels"); }
+        }
+        finally { if (!reservation.Finished) await publisher.AbandonAsync(reservation, false); }
+        check(!File.Exists(reservation.TemporaryPath) && !File.Exists(reservation.Record.OutputPath), "PDF geometry: render-limit refusal leaves no candidate or published page");
+        var failedRender = await executor.ExecuteAsync(PdfPageConversionPlan.Create(Guid.NewGuid(), [untrustedSource], new("convert", new())).Confirm(), null, default);
+        check(failedRender.Pages.Single().Result.State == OperationState.Failed && failedRender.Pages.Single().Result.Message.Contains("processing limit") &&
+            failedRender.Pages.Single().Result.Message.Contains("completed page copies were kept"), "PDF geometry: render-limit result retains specific guidance and preservation status");
+        await using (var model = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "direct-worker")), new() { PlayCompletionSound = false },
+            publisher, new LocalTrialStore(Path.Combine(root, "trial.json"))))
+        {
+            model.ConversionRequested += (_, _) => throw new InvalidOperationException("PDF page conversion must not open a planner.");
+            model.Admit(new(Guid.NewGuid(), "convert", "png", [oversizedPath, validPath])); await model.WaitForIdleAsync();
+            check(model.Rows[0].Result.State == OperationState.Failed && model.Rows[0].Status.Contains("limit", StringComparison.OrdinalIgnoreCase) &&
+                model.Rows[0].Status.Contains("smaller PDF") && !model.Rows[0].Status.Contains("damaged"), "PDF geometry: direct row gives size-limit guidance without implying damage");
+            check(model.Rows[1].Result.State == OperationState.Succeeded && model.Rows[1].Result.Publication?.IsCommitted == true,
+                "PDF geometry: later valid document still publishes after direct size-limit refusal");
+            var malformed = Path.Combine(root, "malformed.pdf"); await File.WriteAllTextAsync(malformed, "%PDF-1.4\nnot a document");
+            model.Admit(new(Guid.NewGuid(), "convert", "png", [malformed])); await model.WaitForIdleAsync();
+            check(model.Rows[^1].Result.State == OperationState.Failed && !model.Rows[^1].Status.Contains("size or page limit") &&
+                model.Rows[^1].Status.Contains("damaged"), "PDF geometry: malformed input retains distinct guidance");
+            observations.Add(new { Name = "direct-limit-guidance", Rows = model.Rows.Select(row => new { row.Status, row.Result.State }).ToArray() });
+        }
         foreach (var (path, expected) in originals)
             check(Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(path))) == expected.Hash && File.GetLastWriteTimeUtc(path) == expected.Written,
                 "PDF geometry: original hash and timestamp retained " + Path.GetFileName(path));
@@ -79,7 +113,7 @@ internal static class PdfPageGeometryContracts
                 WorkerPeakWorkingSet = process.PeakWorkingSet64 });
             Console.WriteLine("Verified PDF geometry " + name);
         }
-        string WritePdf(string name, string box, string extras, string content)
+        string WritePdf(string name, string box, string extras, string content, int pageCount = 1)
         {
             var path = Path.Combine(root, name + ".pdf");
             using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
@@ -87,12 +121,13 @@ internal static class PdfPageGeometryContracts
                 var offsets = new List<long> { 0 };
                 Write("%PDF-1.4\n");
                 Object(1, "<< /Type /Catalog /Pages 2 0 R >>");
-                Object(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
-                Object(3, "<< /Type /Page /Parent 2 0 R /MediaBox [" + box + "] " + extras + " /Resources << >> /Contents 4 0 R >>");
-                Object(4, "<< /Length " + content.Length + " >>\nstream\n" + content + "endstream");
-                var xref = file.Position; Write("xref\n0 5\n0000000000 65535 f \n");
+                Object(2, "<< /Type /Pages /Kids [" + string.Join(" ", Enumerable.Range(3, pageCount).Select(id => id + " 0 R")) + "] /Count " + pageCount + " >>");
+                for (var id = 3; id < pageCount + 3; id++)
+                    Object(id, "<< /Type /Page /Parent 2 0 R /MediaBox [" + box + "] " + extras + " /Resources << >> /Contents " + (pageCount + 3) + " 0 R >>");
+                Object(pageCount + 3, "<< /Length " + content.Length + " >>\nstream\n" + content + "endstream");
+                var xref = file.Position; Write("xref\n0 " + (pageCount + 4) + "\n0000000000 65535 f \n");
                 foreach (var offset in offsets.Skip(1)) Write(offset.ToString("D10", CultureInfo.InvariantCulture) + " 00000 n \n");
-                Write("trailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n" + xref.ToString(CultureInfo.InvariantCulture) + "\n%%EOF\n");
+                Write("trailer\n<< /Size " + (pageCount + 4) + " /Root 1 0 R >>\nstartxref\n" + xref.ToString(CultureInfo.InvariantCulture) + "\n%%EOF\n");
                 void Write(string text) => file.Write(Encoding.ASCII.GetBytes(text));
                 void Object(int id, string body) { offsets.Add(file.Position); Write(id + " 0 obj\n" + body + "\nendobj\n"); }
             }

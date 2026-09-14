@@ -20,12 +20,12 @@
       "name": "ContextSuite.PdfRenderer",
       "input": "pdfium",
       "path": "renderer-build/bin/Release/ContextSuite.PdfRenderer.exe",
-      "bytes": 20992,
-      "sha256": "61A25837F1BD9FA5B6DCCB903AA3478F31EEF50FA394CA0ED95E1E57EAE5C6E2",
+      "bytes": 21504,
+      "sha256": "C916AF8BDF3BAA2D6839D55F5DF6325A56D112AC0595D20CE61D4049C616991C",
       "sources": [
         {
           "path": "proprietary/src/ContextSuite.PdfRenderer.Native/Renderer.cpp",
-          "sha256": "8C5D075D14AC2081048038D3FACA7835570A2D5EF252A3990A4B8F7B74F2F53F"
+          "sha256": "ED8B26DE3282C641E18C4C21CFC0E4808379483BF4CF92F02D993E77E1AD5329"
         },
         {
           "path": "proprietary/src/ContextSuite.PdfRenderer.Native/CMakeLists.txt",
@@ -350,8 +350,8 @@
       "path": "pdf-renderer/ContextSuite.PdfRenderer.exe",
       "input": "host",
       "member": "ContextSuite.PdfRenderer",
-      "bytes": 20992,
-      "sha256": "61A25837F1BD9FA5B6DCCB903AA3478F31EEF50FA394CA0ED95E1E57EAE5C6E2"
+      "bytes": 21504,
+      "sha256": "C916AF8BDF3BAA2D6839D55F5DF6325A56D112AC0595D20CE61D4049C616991C"
     },
     {
       "path": "pdf-validator/ContextSuite.ImagePdfValidator.exe",

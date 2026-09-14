@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Collections.Immutable;
 using ContextSuite.Core.Pdf;
+using ContextSuite.Core.Images;
 
 internal static class PdfRasterContracts
 {
@@ -17,6 +18,28 @@ internal static class PdfRasterContracts
         Put(bitmap, 16, 3); Put(bitmap, 20, 5); Put(bitmap, 24, 12);
         bitmap[32] = 200; bitmap[35] = 128;
         check(PdfRasterProtocol.ReadPage(bitmap, page).AsSpan().SequenceEqual(bitmap.AsSpan(32)), "PDF raster: straight BGRA bytes retain alpha without reinterpretation");
+        var limit = new byte[32]; Header(limit, 3, 1);
+        foreach (var inspectionMode in new[] { true, false })
+        {
+            try
+            {
+                if (inspectionMode) PdfRasterProtocol.ReadInspection(limit); else PdfRasterProtocol.ReadPage(limit, page);
+                check(false, "PDF raster: size-limit reply cannot become successful data");
+            }
+            catch (ImageFailureException error)
+            { check(error.Failure == ImageFailure.ResourceLimit, "PDF raster: exact size-limit reply maps to resource limit " + inspectionMode); }
+            foreach (var offset in new[] { 0, 4, 8, 12, 16, 20, 24, 28 })
+            {
+                var invalid = limit.ToArray(); Put(invalid, offset, uint.MaxValue);
+                Reject(() => { if (inspectionMode) PdfRasterProtocol.ReadInspection(invalid); else PdfRasterProtocol.ReadPage(invalid, page); },
+                    "malformed limit reply stays invalid " + inspectionMode + "/" + offset);
+            }
+            Reject(() => { if (inspectionMode) PdfRasterProtocol.ReadInspection(limit[..31]); else PdfRasterProtocol.ReadPage(limit[..31], page); },
+                "truncated size-limit reply " + inspectionMode);
+            var extra = new byte[33]; limit.CopyTo(extra, 0); Put(extra, 28, 1);
+            Reject(() => { if (inspectionMode) PdfRasterProtocol.ReadInspection(extra); else PdfRasterProtocol.ReadPage(extra, page); },
+                "size-limit reply cannot carry pixels or trailing data " + inspectionMode);
+        }
         foreach (var offset in new[] { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44 })
         {
             var forged = inspection.ToArray(); Put(forged, offset, uint.MaxValue);

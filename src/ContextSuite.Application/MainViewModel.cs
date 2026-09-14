@@ -266,7 +266,9 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                 InvalidOperationException or System.ComponentModel.Win32Exception or System.Text.Json.JsonException)
             {
                 var message = directTarget == ImageFormat.Png && string.Equals(Path.GetExtension(row.Path), ".pdf", StringComparison.OrdinalIgnoreCase)
-                    ? "This PDF could not be converted. Check that it is available and unprotected; damaged or oversized PDFs may not be supported. The original was kept."
+                    ? error is MediaWorkerException { Failure: ImageFailure.ResourceLimit }
+                        ? "This PDF exceeds a size or page limit for PNG conversion. Try a smaller PDF or fewer pages. The original was kept."
+                        : "This PDF could not be converted. Check that it is available and unprotected; damaged PDFs may not be supported. The original was kept."
                     : error is MediaWorkerException ? error.Message : "Image could not be read. Check the file and retry.";
                 selection.Add(new(row.ItemId, row.Path, null, message));
                 row.ApplyResult(new(row.Path, error is MediaWorkerException { Failure: ImageFailure.UnsupportedInput }

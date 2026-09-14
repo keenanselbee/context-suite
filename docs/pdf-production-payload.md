@@ -5,6 +5,11 @@ Status: explicit isolated production packaging implemented; default release
 adoption, broader fidelity, native hardening and redistribution review pending.
 Updated: 2026-09-11.
 
+The later [PDF page-limit checkpoint](pdf-page-limits.md) repins the authored
+renderer after adding complete typed size-limit replies. It retains the same
+PDFium runtime and records fresh combined staging and 19 payload checks; the
+historical evidence below describes its original packaged hosts.
+
 The existing PDF Analyze/Optimize, PDF-to-PNG and combined image-to-PDF workflows
 can now share a fresh production stage with the image and audio engines. This
 does not implement the separately required Word/Excel/PowerPoint-to-PDF actions.
