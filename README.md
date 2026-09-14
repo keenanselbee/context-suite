@@ -41,8 +41,10 @@ See [exact coverage](docs/file-type-coverage.md), including remaining source rev
 Audio conversion now has isolated worker/publication coverage for all 30
 cross-format pairs, direct Convert commands and a compact prompt for required
 quality changes. Production audio engine adoption and visible acceptance remain
-pending. An explicit [isolated production build option](docs/audio-distribution.md)
-now packages the reviewed audio runtime and notices; default release packaging
+pending. [MP3 output cover preservation](docs/mp3-output-artwork.md) has isolated
+evidence for supported FLAC, Ogg and M4A inputs. An explicit
+[isolated production build option](docs/audio-distribution.md) packages the
+reviewed audio runtime and notices; default release packaging
 still excludes it. Broader analysis remains in progress. Selected document launch actions are
 images-to-PDF, PDF pages-to-images, PDF optimization and Word/Excel/PowerPoint-to-PDF.
 A structural PDF optimization candidate now passes isolated worker, paid-access

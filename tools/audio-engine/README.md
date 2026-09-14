@@ -273,6 +273,11 @@ See [commands, exact checks and limitations](../../docs/ogg-artwork-conversion.m
 The corresponding `--m4a-artwork` and `--m4a-artwork-direct` modes cover AAC-LC
 M4A PNG/JPEG images, both movie-atom placements and multiple covers. See
 [M4A commands and evidence](../../docs/m4a-artwork-conversion.md).
+The private host's `--mp3-output-artwork` mode accepts the same binary, fixture,
+new evidence and independent-decoder arguments, and tests covers from FLAC, Ogg
+and M4A in MP3 output. The public host's `--mp3-output-artwork-direct` mode takes
+a new evidence directory, staged worker and that generated-fixture directory.
+See [MP3 output evidence and limits](../../docs/mp3-output-artwork.md).
 
 The independent decoder supplies artwork pixel comparisons;
 the candidate performs every production media operation. The latest run passes

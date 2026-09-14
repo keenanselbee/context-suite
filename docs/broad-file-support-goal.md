@@ -84,7 +84,17 @@ three effective downsampling controls and independently rendered patches. It
 advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
-The latest combined production stage is
+The latest combined production stage is candidate 1.0.1 at
+`artifacts/production-staging/a932bd2a928c48d5b708d407d892693a`.
+It adds [MP3 output artwork preservation](mp3-output-artwork.md) to the preceding
+combined capabilities: FLAC, Vorbis, Opus and supported M4A covers retain image
+bytes and represented picture metadata. The current foundation run passes 2,696
+contracts; the new slice passes 94 focused private and 56 direct-worker checks.
+Existing artwork regressions pass 114 M4A, 81 Ogg-source and 31 FLAC-to-Ogg checks.
+These are separate suites, not an all-feature release run. M4A/WAV artwork outputs,
+further metadata variants and listening/player acceptance remain open.
+
+The preceding M4A combined production stage is
 `artifacts/production-staging/bcc65f0acd2f47258b2b165707dbb53f`.
 It includes catalog revision 2026-09-13.1, the prior Analyze and combined-PDF
 failure handling, corrected Opus surround mapping, separate trial-policy edits,
@@ -96,7 +106,7 @@ It now also includes the [MP3 artwork handler](mp3-artwork-conversion.md) for
 PNG/JPEG covers to FLAC, Vorbis and Opus, and the
 [Ogg artwork source reader](ogg-artwork-conversion.md) for FLAC and cross-codec
 Vorbis/Opus outputs. It now includes the [M4A cover-data handler](m4a-artwork-conversion.md)
-for those three targets. The latest foundation run passes 2,663 contracts,
+for those three targets. That checkpoint's foundation run passes 2,663 contracts,
 including 37 new M4A picture/admission checks. The M4A checkpoint passes 116
 focused private artwork, 31 existing preservation and 115 direct-worker checks
 on this stage. The preceding Ogg checkpoint passes 85 focused private artwork,
