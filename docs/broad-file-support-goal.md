@@ -70,7 +70,11 @@ Windows job ownership. It closes the evaluation launcher's descendant/diagnostic
 cleanup gap without establishing filesystem/network isolation or implementing
 the required customer converter. Two real engine startup-interruption cases also
 pass cancellation/owner-crash cleanup and reuse of the same disposable profiles;
-no document was open during those interruption tests. The separate access-matrix authorization,
+no document was open during those startup interruption tests. The later
+[Word export-interruption checkpoint](office-export-interruption.md) adds a
+96-page completed control and two interruptions after actual temporary PDF growth;
+both recover through a valid two-page export using the same disposable profile.
+Excel/PowerPoint interruption remains open. The separate access-matrix authorization,
 rendering policies and production integration remain pending.
 
 The [Office embedded-image checkpoint](office-image-evaluation.md) verifies

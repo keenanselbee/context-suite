@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.Json;
 
-internal static class OfficeEngineLifetimeContracts
+internal static partial class OfficeEngineLifetimeContracts
 {
     private sealed record Identity(int Id, long Created, string Path);
     private sealed record Observation(Identity Launcher, Identity Engine, int ControlMilliseconds);

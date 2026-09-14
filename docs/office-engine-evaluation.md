@@ -14,6 +14,12 @@ visible RGB samples and alpha; explicit 150-DPI controls reduce to 300-square.
 Independent PDFium rendered patches also pass. This closes that specific
 embedded PNG evidence gap without establishing broader image/document fidelity.
 
+The [Word export-interruption experiment](office-export-interruption.md) now
+passes cancellation and owner-crash checks triggered by a growing temporary PDF,
+plus same-profile recovery after each. It retains the larger complete control
+and independent qpdf checks. This does not establish the pending isolation
+boundary or implement the customer converter.
+
 Candidate and acquisition
 -------------------------
 

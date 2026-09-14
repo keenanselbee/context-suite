@@ -140,3 +140,10 @@ death, external-access denial, memory pressure or commercial release acceptance.
 The AppContainer authorization, rendering policies and required production Office
 converter remain open. Foundation/media suites and production staging were not
 rerun for these evaluation-only changes.
+
+The later [Word export-interruption experiment](office-export-interruption.md)
+adds a 96-page complete control plus cancellation and owner failure after actual
+temporary PDF growth. Both interrupted profiles subsequently export a valid
+two-page document. It also records an initial engine restart and follows only
+its replacement in the same owned job. The startup counts above remain separate
+evidence; Excel/PowerPoint interruption and isolation are still open.

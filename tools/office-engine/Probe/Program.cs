@@ -5,6 +5,16 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
+if (args is ["--engine-export-lifetime", var exportPrepared, var exportQpdf, var exportRoot])
+{
+    await OfficeEngineLifetimeContracts.ExportAsync(exportPrepared, exportQpdf, exportRoot);
+    return 0;
+}
+if (args is ["--engine-export-owner", var exportExecutable, var exportProfile, var exportFolder, var exportDocument])
+{
+    await OfficeEngineLifetimeContracts.ExportOwnerAsync(exportExecutable, exportProfile, exportFolder, exportDocument);
+    return 0;
+}
 if (args is ["--engine-lifetime", var enginePrepared, var engineRoot])
 {
     await OfficeEngineLifetimeContracts.RunAsync(enginePrepared, engineRoot);

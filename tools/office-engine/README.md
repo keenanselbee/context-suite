@@ -135,6 +135,10 @@ additionally verifies real engine startup cancellation, owner-crash cleanup and
 reuse of the same interrupted profiles. It opens no documents and verifies exact
 job membership before treating a process as the owned engine. Full evidence and
 remaining active-document/isolation gates are in the linked lifetime record.
+Add `-DuringExport -PdfPreparedDirectory '<retained qpdf directory>'` to test
+the generated 96-page Word export control, cancellation and owner failure after
+observed temporary PDF growth, and same-profile two-page recovery. See the
+[export-interruption evidence and limits](../../docs/office-export-interruption.md).
 Its profile disables macros, active content, Python
 runtime and automatic update checks. **It is not a filesystem/network sandbox**,
 and neither those settings nor hostile-content isolation have been accepted by
