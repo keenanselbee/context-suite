@@ -10,7 +10,9 @@ facts, limits and tests; broader catalog/family analysis remains in progress.
 The [file I/O cancellation scope](analyze-io-cancellation.md) now covers synchronous
 opening and metadata operations as well as the asynchronous read budget. Local
 blocked-open tests pass; driver-dependent completion and remote-storage acceptance
-remain explicit limitations.
+remain explicit limitations. The [mapped-file acceptance](analyze-mapped-files.md)
+also verifies local NTFS sharing behavior for read-only, copy-on-write and
+writable views after their original handles close.
 
 The [common image header reader](image-header-analysis.md) now adds content-based
 JPEG/GIF/BMP/WebP identification and declared dimensions within the same 64 KiB

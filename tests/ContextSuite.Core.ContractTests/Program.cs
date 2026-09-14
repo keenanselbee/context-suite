@@ -13,6 +13,14 @@ using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
 if (args.Length == 2 && args[0] == "--benchmark-analyze") return await AnalyzeBenchmark.RunAsync(args[1]);
+if (args.Length == 2 && args[0] == "--analysis-mapping")
+{
+    var checks = 0;
+    await AnalysisMappingContracts.RunAsync(args[1], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated analysis mapping checks.");
+    return 0;
+}
 if (args.Length == 2 && args[0] == "--analysis-io")
 {
     var checks = 0;

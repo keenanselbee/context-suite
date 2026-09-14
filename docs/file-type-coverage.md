@@ -146,9 +146,13 @@ The five-second read budget now starts before scheduling file inspection.
 opening and source-state queries, with tested local blocked-open cancellation and
 timeout. Driver-dependent completion still prevents a guaranteed wall-clock return
 bound. Network-filesystem stalls, real cloud-provider hydration
-behavior, mapped concurrent writers and reparse-point races need dedicated
+behavior and reparse-point races need dedicated
 acceptance before making stronger guarantees. These are not covered merely by
 testing an offline attribute on a generated local file.
+The later [mapped-file matrix](analyze-mapped-files.md) verifies local NTFS
+read-only/copy-on-write admission and writable-view refusal, including closed
+original file/mapping handles, continued mixed batches and successful reads
+after release. This is not remote-filesystem or editor-specific acceptance.
 
 The WAVE/FLAC header reader uses at most 256 chunk/block
 headers inside the same 64 KiB prefix. Length arithmetic never allocates from file

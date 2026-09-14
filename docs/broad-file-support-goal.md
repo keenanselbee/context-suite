@@ -56,6 +56,12 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments, owned evaluation jobs and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
+The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
+checks for read-only/copy-on-write admission and writable-view refusal after the
+original handles close, mixed-batch guidance and post-release recovery. The
+foundation suite passes 2,809 contracts. Product code and reserved candidate 1.0.5
+are unchanged; driver/network, metadata-stall and visible acceptance remain open.
+
 The [audio catalog alias review](catalog-audio-alias-review.md) supplies provenance
 for all 33 currently listed extension associations across eighteen Audio records.
 It resolves the `.kar` naming gap without changing recognition or expanding
