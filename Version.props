@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <ContextSuiteVersion>1.0.1</ContextSuiteVersion>
+    <Version>$(ContextSuiteVersion)</Version>
+    <AssemblyVersion>$(ContextSuiteVersion).0</AssemblyVersion>
+    <FileVersion>$(ContextSuiteVersion).0</FileVersion>
+  </PropertyGroup>
+</Project>

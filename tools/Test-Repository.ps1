@@ -9,7 +9,7 @@ if ($trackedPrivate.Count) { throw 'Private or reference files must not be track
 git -C $repositoryRoot diff --check
 if ($LASTEXITCODE -ne 0) { throw 'Git whitespace validation failed.' }
 $files = @(Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'docs') -Filter '*.md' -Recurse)
-$files += Get-Item -LiteralPath (Join-Path $repositoryRoot 'README.md'), (Join-Path $repositoryRoot 'AGENTS.md')
+$files += Get-Item -LiteralPath (Join-Path $repositoryRoot 'README.md'), (Join-Path $repositoryRoot 'AGENTS.md'), (Join-Path $repositoryRoot 'CHANGELOG.md')
 foreach ($file in $files) {
     $content = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
     if ($content -match '(?m)[\t ]+$') { throw "Trailing whitespace: $($file.Name)" }

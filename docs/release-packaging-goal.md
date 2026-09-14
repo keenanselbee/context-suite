@@ -5,6 +5,11 @@ Status: in progress; internal candidate tooling and Inno lifecycle integration
 implemented; signing, native upgrade/repair and isolated-machine acceptance pending.
 No commercial release approval.
 
+The [product versioning workflow](product-versioning.md) now gives local candidates
+one version source, matching managed/package metadata and a non-reusable staging
+reservation tied to the verified inventory. Historical stages remain unchanged;
+downstream installer/archive coverage and native lifecycle acceptance remain open.
+
 The [installer lifecycle integration](installer-recovery.md) passes 42 orchestration
 checks plus 52 recovery checks without Sandbox or a VM. Versioned extraction,
 active launch/uninstall and recovery are wired; native existing-install admission

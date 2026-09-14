@@ -5,6 +5,7 @@ param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Debug', [switc
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
+$productVersion = & (Join-Path $PSScriptRoot 'Test-ProductVersion.ps1')
 if ($AudioDistributionDirectory -and $StagingId -eq [guid]::Empty) {
     throw 'The audio candidate requires a new StagingId; development and installed payloads must not be changed.'
 }
@@ -21,6 +22,25 @@ if ($StagingId -ne [guid]::Empty -and (Test-Path -LiteralPath $output)) {
     throw 'Production staging already exists. Use a new StagingId; existing payloads are never overwritten.'
 }
 if ($StagingId -ne [guid]::Empty) {
+    $receipts = Join-Path $repositoryRoot 'artifacts\production-version-receipts'
+    New-Item -ItemType Directory -Path $receipts -Force | Out-Null
+    $versionReceipt = Join-Path $receipts ($productVersion + '.json')
+    if (Test-Path -LiteralPath $versionReceipt) { throw "Product version $productVersion is already reserved. Advance Version.props and the package templates; preserve the existing receipt." }
+    foreach ($previous in Get-ChildItem -LiteralPath $receipts -Filter '*.json' -File) {
+        if ([version]$productVersion -le [version]$previous.BaseName) { throw "Product version $productVersion must be newer than reserved version $($previous.BaseName)." }
+    }
+    $reservation = @{ version = $productVersion; stagingId = $StagingId.ToString('N'); state = 'reserved'; payload = $output }
+    # Reserve the version before creating any candidate files. Failed attempts
+    # retain this receipt; use the next version rather than replacing evidence.
+    try { $receiptStream = [IO.File]::Open($versionReceipt, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None) }
+    catch {
+        if (Test-Path -LiteralPath $versionReceipt) { throw "Product version $productVersion is already reserved. Advance Version.props and the package templates; preserve the existing receipt." }
+        throw
+    }
+    try {
+        $receiptBytes = [Text.UTF8Encoding]::new($false).GetBytes(($reservation | ConvertTo-Json))
+        $receiptStream.Write($receiptBytes, 0, $receiptBytes.Length)
+    } finally { $receiptStream.Dispose() }
     # Reserve before the build; concurrent requests for the same ID cannot both
     # pass the earlier existence check and then overwrite one another's output.
     New-Item -ItemType Directory -Path $output -ErrorAction Stop | Out-Null
@@ -83,8 +103,15 @@ if (-not $SkipShell) {
 }
 & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload $output `
     -AllowAudioCandidate:([bool]$AudioDistributionDirectory) -AllowPdfCandidate:$includePdf
+$verifiedVersion = & (Join-Path $PSScriptRoot 'Test-ProductVersion.ps1') -Payload $output
+if ($verifiedVersion -ne $productVersion) { throw 'Product version changed during staging.' }
 $inventory = @(Get-ChildItem -LiteralPath $output -Recurse -File | Where-Object Name -ne 'payload-inventory.json' | ForEach-Object {
     @{ path = $_.FullName.Substring($output.Length + 1); bytes = $_.Length; sha256 = (Get-FileHash -LiteralPath $_.FullName).Hash }
 })
 [IO.File]::WriteAllText((Join-Path $output 'payload-inventory.json'), ($inventory | ConvertTo-Json -Depth 4), [Text.UTF8Encoding]::new($false))
+if ($StagingId -ne [guid]::Empty) {
+    $reservation.state = 'verified'
+    $reservation.inventorySha256 = (Get-FileHash -LiteralPath (Join-Path $output 'payload-inventory.json')).Hash
+    [IO.File]::WriteAllText($versionReceipt, ($reservation | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
+}
 Write-Output "Built production foundation at $output with curated-engine verification and file inventory. No Explorer packages were installed."
