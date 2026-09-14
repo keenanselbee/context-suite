@@ -90,7 +90,16 @@ three effective downsampling controls and independently rendered patches. It
 advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
-The latest combined production stage is candidate 1.0.3 at
+The latest combined production stage is candidate 1.0.4 at
+`artifacts/production-staging/424f0c8130054282a52a6545e0669689`.
+The [WAV ID3 artwork checkpoint](wave-id3-artwork.md) admits bounded WAV source
+tags/covers through existing FLAC, MP3, M4A and Ogg output handlers. It passes
+339 private artwork, 104 direct-worker and 2,754 foundation checks; the checkpoint
+records the scoped evidence and remaining work. The stage has 116 verified payload files.
+WAV artwork output, further metadata/fidelity, listening and integrated acceptance
+remain open alongside the required Office converter and other release gates.
+
+The preceding combined production stage is candidate 1.0.3 at
 `artifacts/production-staging/f1f21b2f1e63471b9f2b5a44442a90b5`.
 The [M4A output-artwork checkpoint](m4a-output-artwork.md) adds representable
 PNG/JPEG covers from FLAC, MP3, Vorbis and Opus, preserves movie placement and

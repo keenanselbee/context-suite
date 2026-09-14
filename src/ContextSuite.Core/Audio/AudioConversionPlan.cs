@@ -41,7 +41,7 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
             throw new NotSupportedException("The channel layout must be known before multichannel conversion.");
         var sourceFormat = SourceFormat(source.Container, audio.Codec);
         if (source.Streams.Any(stream => stream.AttachedPicture) && sourceFormat != target &&
-            !(sourceFormat == AudioFormat.Flac && target is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus) &&
+            !(sourceFormat is AudioFormat.Wave or AudioFormat.Flac && target is AudioFormat.Flac or AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus) &&
             !(sourceFormat is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus && target is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Flac or AudioFormat.Vorbis or AudioFormat.Opus))
             throw new NotSupportedException("Artwork needs a preservation handler for these formats. Originals were kept.");
         var sourceBits = audio.SampleBits ?? audio.Codec switch

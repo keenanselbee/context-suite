@@ -109,7 +109,8 @@ dotnet artifacts/managed/bin/ContextSuite.Audio.ContractTests/Release/net10.0/Co
 dotnet artifacts/managed/bin/ContextSuite.Core.ContractTests/Release/net10.0-windows/ContextSuite.Core.ContractTests.dll --m4a-output-artwork-direct '<new direct evidence>' '<isolated worker executable>' '<artwork evidence>'
 ```
 
-WAV artwork input/output, further metadata and codec variants, listening and
+The later [WAV source handler](wave-id3-artwork.md) adds embedded ID3 artwork inputs.
+WAV artwork output, further metadata and codec variants, listening and
 player compatibility, and integrated acceptance remain open. Per-picture labels
 and descriptions have no mapping in the reviewed M4A cover convention; this
 checkpoint does not authorize silently dropping them. Visible UI, screen-reader

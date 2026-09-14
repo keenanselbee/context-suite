@@ -2,10 +2,11 @@ using System.Buffers.Binary;
 using System.Text;
 using ContextSuite.Core.Audio;
 
-internal static class WaveMetadataContracts
+internal static partial class WaveMetadataContracts
 {
     public static async Task RunAsync(Action<bool, string> check)
     {
+        await Id3Async(check);
         var format = Format();
         var samples = new byte[192];
         var titled = FileOf(("fmt ", format), ("data", samples), ("LIST", Info(("INAM", Text("Title")), ("IART", Text("Artist")))));

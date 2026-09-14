@@ -161,8 +161,15 @@ re-encoding. Text currently requires ASCII with proper NUL termination; carriage
 return, newline and tab are allowed. Non-ASCII/code-page interpretation, other control characters, duplicate values and
 unmapped fields need a preservation handler. Do not infer permission to drop them.
 
-Cue points, sampler loops, broadcast metadata, iXML, associated labels, embedded
-ID3 and unknown chunks stop conversion before encoding. Declared JUNK/PAD chunks
+The [WAV ID3 source handler](wave-id3-artwork.md) now admits one bounded embedded
+ID3v2.2/v2.3/v2.4 tag with supported text and PNG/JPEG pictures. Both `id3 ` and
+`ID3 ` chunks are inventoried before or after audio. Duplicate ID3 chunks and
+repeated INFO/ID3 fields remain blocked; declared ID3 text encodings do not relax
+INFO's ASCII-only policy. Pictures can reach FLAC, MP3, Vorbis, Opus and
+representable M4A under their existing preservation rules.
+
+Cue points, sampler loops, broadcast metadata, iXML, associated labels and unknown
+chunks stop conversion before encoding. Declared JUNK/PAD chunks
 are padding. Inventory covers metadata after the sample chunk too; appended data
 outside the RIFF extent is rejected. Same-format byte retention remains a no-op.
 

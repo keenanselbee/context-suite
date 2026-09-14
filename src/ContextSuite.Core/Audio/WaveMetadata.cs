@@ -8,6 +8,8 @@ public sealed record WaveInfoTag(string ChunkId, string Name, string Value);
 public sealed record WaveMetadataInventory(int SampleRate, int Channels, int SampleBits, bool FloatingPoint,
     long SampleFrames, ImmutableArray<WaveInfoTag> Tags, ImmutableArray<string> UnsupportedChunks)
 {
+    public ImmutableArray<FlacMetadataBlock> Pictures { get; init; } = [];
+
     public void RequireConversionSupport(IReadOnlyDictionary<string, string> probedTags)
     {
         if (!UnsupportedChunks.IsEmpty)
@@ -30,7 +32,7 @@ public static class WaveMetadata
         ["ICRD"] = "date", ["IGNR"] = "genre", ["ITRK"] = "track", ["ICOP"] = "copyright", ["ISFT"] = "encoder"
     };
 
-    public static async Task<WaveMetadataInventory> ReadAsync(Stream source, CancellationToken token)
+    public static async Task<WaveMetadataInventory> ReadAsync(Stream source, CancellationToken token, bool preserveId3 = false)
     {
         if (!source.CanRead || !source.CanSeek || source.Length is < 12 or > AudioFileSource.MaximumFileBytes)
             throw new InvalidDataException("WAV inventory requires a bounded seekable input.");
@@ -42,6 +44,7 @@ public static class WaveMetadata
         uint? factFrames = null;
         var chunks = 0;
         var metadataBytes = 0;
+        Id3TagInventory? id3 = null;
         try
         {
             token.ThrowIfCancellationRequested();
@@ -84,6 +87,12 @@ public static class WaveMetadata
                         metadataBytes += (int)size;
                         var info = new byte[size - 4]; await source.ReadExactlyAsync(info, token);
                         ReadInfo(info, tags, unsupported, ref chunks); break;
+                    case "id3 ": case "ID3 ":
+                        if (!preserveId3) { unsupported.Add(id); break; }
+                        if (id3 is not null || size is < 10 or > Mp3Metadata.MaximumTagBytes + 20)
+                            throw new InvalidDataException("WAV ID3 is duplicated or exceeds its tag budget.");
+                        var tag = new byte[size]; await source.ReadExactlyAsync(tag, token);
+                        id3 = Mp3Metadata.ReadId3Tag(tag, true); break;
                     case "JUNK": case "PAD ": break;
                     default: unsupported.Add(id); break;
                 }
@@ -121,7 +130,15 @@ public static class WaveMetadata
                 throw new InvalidDataException("WAV sample framing or fact count disagrees with its format.");
             foreach (var duplicate in tags.GroupBy(tag => tag.Name, StringComparer.OrdinalIgnoreCase).Where(group => group.Count() > 1))
                 unsupported.Add("LIST/INFO/duplicate " + duplicate.Key);
-            return new((int)rate, channels, bits, code == 3, dataBytes / align, tags.ToImmutable(), unsupported.Order(StringComparer.Ordinal).ToImmutableArray());
+            if (id3 is not null)
+                foreach (var tag in id3.Tags)
+                {
+                    if (tags.Any(info => info.Name.Equals(tag.Key, StringComparison.OrdinalIgnoreCase)))
+                        unsupported.Add("INFO/ID3/duplicate " + tag.Key);
+                    tags.Add(new("ID3", tag.Key, tag.Value));
+                }
+            return new((int)rate, channels, bits, code == 3, dataBytes / align, tags.ToImmutable(), unsupported.Order(StringComparer.Ordinal).ToImmutableArray())
+            { Pictures = id3?.Pictures ?? [] };
         }
         catch (EndOfStreamException error) { throw new InvalidDataException("WAV chunk data is truncated.", error); }
         finally { source.Position = originalPosition; }

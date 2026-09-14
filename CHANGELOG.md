@@ -1,6 +1,16 @@
 Context Suite Changelog
 =======================
 
+1.0.4 - Local candidate, 2026-09-14
+-----------------------------------
+
+- Preserve supported embedded ID3 tags and PNG/JPEG artwork when converting WAV
+  to FLAC, MP3, Vorbis, Opus and representable M4A. Retain picture bytes, labels,
+  descriptions and order, source samples and required quality decisions.
+- Keep duplicate metadata stores, unsupported chunks and malformed tags blocked.
+  This adds WAV source handling; WAV artwork output remains unfinished.
+
+
 1.0.3 - Local candidate, 2026-09-14
 -----------------------------------
 
