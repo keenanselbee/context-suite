@@ -130,7 +130,7 @@ internal static partial class OfficeEngineLifetimeContracts
         var launcher = Process.GetProcessById(pid);
         try
         {
-            if (!belongs(launcher) || !launcher.MainModule!.FileName.Equals(executable, StringComparison.OrdinalIgnoreCase))
+            if (!belongs(launcher) || !string.Equals(launcher.MainModule?.FileName, executable, StringComparison.OrdinalIgnoreCase))
                 throw new IOException("Launcher is not the requested owned engine.");
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token); deadline.CancelAfter(TimeSpan.FromSeconds(15));
             while (true)
@@ -141,7 +141,7 @@ internal static partial class OfficeEngineLifetimeContracts
                     var keep = false;
                     try
                     {
-                        if (!candidate.HasExited && belongs(candidate) && candidate.MainModule!.FileName.Equals(
+                        if (!candidate.HasExited && belongs(candidate) && string.Equals(candidate.MainModule?.FileName,
                             Path.Combine(Path.GetDirectoryName(executable)!, "soffice.bin"), StringComparison.OrdinalIgnoreCase))
                         { keep = true; return [launcher, candidate]; }
                     }
@@ -161,7 +161,8 @@ internal static partial class OfficeEngineLifetimeContracts
         if (processes.Any(process => process.HasExited)) throw new IOException("Engine did not remain live during the control interval.");
         return observation;
     }
-    private static Identity Identify(Process process) => new(process.Id, process.StartTime.ToUniversalTime().Ticks, process.MainModule!.FileName);
+    private static Identity Identify(Process process) => new(process.Id, process.StartTime.ToUniversalTime().Ticks,
+        process.MainModule?.FileName ?? throw new IOException("Engine executable identity is not available."));
     private static Process Open(Identity identity, string expected)
     {
         var process = Process.GetProcessById(identity.Id);

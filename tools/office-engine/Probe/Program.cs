@@ -5,6 +5,23 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
+if (args is ["--export-file-release", var releaseRoot])
+{
+    await OfficeEngineLifetimeContracts.FileReleaseContractsAsync(releaseRoot);
+    return 0;
+}
+if (args is ["--export-fixtures", var fixtureRoot, var fixtureFamily])
+{
+    if (Directory.Exists(fixtureRoot)) throw new IOException("Use a fresh fixture directory.");
+    Directory.CreateDirectory(fixtureRoot); OfficeFixtures.Create(fixtureRoot);
+    Console.WriteLine(OfficeExportFixture.Create(fixtureRoot, fixtureFamily));
+    return 0;
+}
+if (args is ["--engine-export-lifetime", var familyPrepared, var familyQpdf, var familyRoot, var exportFamily])
+{
+    await OfficeEngineLifetimeContracts.ExportAsync(familyPrepared, familyQpdf, familyRoot, exportFamily);
+    return 0;
+}
 if (args is ["--engine-export-lifetime", var exportPrepared, var exportQpdf, var exportRoot])
 {
     await OfficeEngineLifetimeContracts.ExportAsync(exportPrepared, exportQpdf, exportRoot);

@@ -6,8 +6,9 @@ internal static partial class OfficeEngineLifetimeContracts
 {
     private sealed record PartialPdf(string Path, long PreviousBytes, long Bytes, string PrefixSha256);
     private sealed record ExportObservation(Identity Launcher, Identity Engine, PartialPdf Pdf);
+    private sealed record FileRelease(long Milliseconds, int SharingViolations, string[] Files);
 
-    internal static async Task ExportAsync(string prepared, string qpdf, string root)
+    internal static async Task ExportAsync(string prepared, string qpdf, string root, string family = "Word")
     {
         prepared = Path.GetFullPath(prepared); root = Path.GetFullPath(root);
         if (Directory.Exists(root)) throw new IOException("Use fresh export-lifetime evidence.");
@@ -15,7 +16,8 @@ internal static partial class OfficeEngineLifetimeContracts
         var executable = Path.Combine(prepared, "unpacked", "program", "soffice.com");
         var scratch = Path.GetDirectoryName(Path.GetDirectoryName(prepared)!)!;
         var fixtures = Path.Combine(root, "fixtures"); Directory.CreateDirectory(fixtures);
-        OfficeFixtures.Create(fixtures); var document = OfficeExportFixture.Create(fixtures);
+        OfficeFixtures.Create(fixtures); var document = OfficeExportFixture.Create(fixtures, family);
+        var recoveryName = family + " \u00fc" + Path.GetExtension(document);
         var hash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(document))); var modified = File.GetLastWriteTimeUtc(document);
         var reports = new List<object>();
         foreach (var mode in new[] { "control", "cancel", "owner-crash" })
@@ -38,22 +40,38 @@ internal static partial class OfficeEngineLifetimeContracts
             {
                 if (mode == "cancel") await CancelExport(executable, profile, folder, document, environment);
                 else await CrashExport(executable, profile, folder, document);
-                using (File.Open(document, FileMode.Open, FileAccess.Read, FileShare.None)) { }
-                using (File.Open(settings, FileMode.Open, FileAccess.Read, FileShare.None)) { }
+                var released = await WaitForFileRelease(document, settings);
+                await File.WriteAllTextAsync(Path.Combine(folder, "file-release.json"), JsonSerializer.Serialize(released));
+                if (File.Exists(Path.Combine(folder, "Export interruption.pdf"))) throw new IOException("Interrupted export produced a final PDF.");
                 OfficeProfileSettings.Apply(settings);
                 var recoveryFolder = Path.Combine(folder, "recovery"); Directory.CreateDirectory(recoveryFolder);
-                var recovery = await OfficeEvaluationProcess.RunAsync(executable, ExportArguments(profile, recoveryFolder, Path.Combine(fixtures, "Word \u00fc.docx")),
+                var recovery = await OfficeEvaluationProcess.RunAsync(executable, ExportArguments(profile, recoveryFolder, Path.Combine(fixtures, recoveryName)),
                     recoveryFolder, environment);
-                await CheckPdf(qpdf, Path.Combine(recoveryFolder, "Word \u00fc.pdf"), 2, recoveryFolder);
+                await CheckPdf(qpdf, Path.Combine(recoveryFolder, Path.ChangeExtension(recoveryName, ".pdf")), family == "Excel" ? 1 : 2, recoveryFolder);
                 var stopped = JsonSerializer.Deserialize<JsonElement>(await File.ReadAllTextAsync(Path.Combine(folder, "stopped.json")));
-                reports.Add(new { Mode = mode, Profile = profile, Stop = stopped, Recovery = recovery });
+                reports.Add(new { Mode = mode, Profile = profile, Stop = stopped, FileRelease = released, Recovery = recovery });
             }
             OfficeProfileSettings.Verify(settings);
             if (Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(document))) != hash || File.GetLastWriteTimeUtc(document) != modified)
                 throw new IOException("Passive export source changed.");
-            await File.WriteAllTextAsync(Path.Combine(root, "export-lifetime.json"), JsonSerializer.Serialize(new { SourceSha256 = hash, Reports = reports }));
-            Console.WriteLine("PASS: actual Office PDF export " + mode + ", source preservation and independent PDF check.");
+            await File.WriteAllTextAsync(Path.Combine(root, "export-lifetime.json"), JsonSerializer.Serialize(new { Family = family, SourceSha256 = hash, Reports = reports }));
+            Console.WriteLine("PASS: actual " + family + " PDF export " + mode + ", source preservation and independent PDF check.");
         }
+    }
+
+    private static async Task<FileRelease> WaitForFileRelease(params string[] paths)
+    {
+        var timer = Stopwatch.StartNew(); var sharingViolations = 0;
+        foreach (var path in paths)
+        {
+            while (true)
+            {
+                try { using (File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None)) { } break; }
+                catch (IOException error) when ((error.HResult & 0xffff) is 32 or 33 && timer.Elapsed < TimeSpan.FromSeconds(5))
+                { sharingViolations++; await Task.Delay(10); }
+            }
+        }
+        return new(timer.ElapsedMilliseconds, sharingViolations, paths);
     }
 
     private static async Task CancelExport(string executable, string profile, string folder, string document, IReadOnlyDictionary<string, string> environment)
@@ -195,11 +213,19 @@ internal static partial class OfficeEngineLifetimeContracts
         catch (UnauthorizedAccessException) { return null; }
     }
 
-    private static IEnumerable<string> ExportArguments(string profile, string folder, string document) => Arguments(profile).Concat(new[]
+    private static IEnumerable<string> ExportArguments(string profile, string folder, string document)
     {
-        "--convert-to", "pdf:writer_pdf_Export:{\"UseLosslessCompression\":{\"type\":\"boolean\",\"value\":\"true\"},\"ReduceImageResolution\":{\"type\":\"boolean\",\"value\":\"false\"}}",
-        "--outdir", folder, document
-    });
+        var filter = Path.GetExtension(document) switch
+        {
+            ".docx" => "writer_pdf_Export", ".xlsx" => "calc_pdf_Export", ".pptx" => "impress_pdf_Export",
+            _ => throw new ArgumentException("Expected an authored Office export fixture.", nameof(document))
+        };
+        return Arguments(profile).Concat(new[]
+        {
+            "--convert-to", "pdf:" + filter + ":{\"UseLosslessCompression\":{\"type\":\"boolean\",\"value\":\"true\"},\"ReduceImageResolution\":{\"type\":\"boolean\",\"value\":\"false\"}}",
+            "--outdir", folder, document
+        });
+    }
 
     private static async Task CheckPdf(string qpdf, string pdf, int pages, string folder)
     {

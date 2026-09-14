@@ -1,5 +1,6 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $PreparedDirectory, [switch] $DuringExport, [string] $PdfPreparedDirectory)
+param([Parameter(Mandatory)][string] $PreparedDirectory, [switch] $DuringExport, [string] $PdfPreparedDirectory,
+    [ValidateSet('Word', 'Excel', 'PowerPoint')][string[]] $ExportFamily = @('Word'))
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $office = (Resolve-Path -LiteralPath $PreparedDirectory).Path
@@ -23,9 +24,18 @@ if ($DuringExport) {
         if ((Get-FileHash -LiteralPath (Join-Path $pdf ('unpacked\' + $entry.path))).Hash -ne $entry.sha256) { throw 'qpdf inventory changed.' }
     }
     $qpdf = Join-Path $pdf 'unpacked\qpdf-12.4.1-msvc64\bin\qpdf.exe'
-    & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --engine-export-lifetime $office $qpdf $scratch
-    if ($LASTEXITCODE) { throw 'Office export lifetime verification failed; retain its evidence.' }
-    Write-Output 'Generated passive Word export only. No AppContainer or customer-converter acceptance.'
+    foreach ($family in $ExportFamily) {
+        $familyScratch = $scratch + '-' + $family.ToLowerInvariant()
+        Write-Output "Testing generated $family export in $familyScratch"
+        $nativePreference = $ErrorActionPreference
+        try {
+            # Preserve the complete native diagnostic stream before checking exit status.
+            $ErrorActionPreference = 'Continue'
+            & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --engine-export-lifetime $office $qpdf $familyScratch $family
+        } finally { $ErrorActionPreference = $nativePreference }
+        if ($LASTEXITCODE) { throw "Office $family export lifetime verification failed; retain its evidence." }
+    }
+    Write-Output 'Generated passive Office exports only. No AppContainer or customer-converter acceptance.'
     return
 }
 & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --engine-lifetime $office $scratch

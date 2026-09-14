@@ -141,9 +141,11 @@ The AppContainer authorization, rendering policies and required production Offic
 converter remain open. Foundation/media suites and production staging were not
 rerun for these evaluation-only changes.
 
-The later [Word export-interruption experiment](office-export-interruption.md)
-adds a 96-page complete control plus cancellation and owner failure after actual
-temporary PDF growth. Both interrupted profiles subsequently export a valid
-two-page document. It also records an initial engine restart and follows only
-its replacement in the same owned job. The startup counts above remain separate
-evidence; Excel/PowerPoint interruption and isolation are still open.
+The later [Office export-interruption experiment](office-export-interruption.md)
+adds three 96-page complete controls plus cancellation and owner failure after
+actual temporary PDF growth in Word, Excel and PowerPoint. All six interrupted
+profiles subsequently export valid same-family documents. It also follows bounded
+engine restarts only within the same owned job, skips candidates with unavailable
+executable modules and waits for file release under a five-second limit. Both
+startup cases pass again with this observer. The startup counts above remain
+separate evidence; full descendant inventory and isolation are still open.

@@ -137,8 +137,18 @@ job membership before treating a process as the owned engine. Full evidence and
 remaining active-document/isolation gates are in the linked lifetime record.
 Add `-DuringExport -PdfPreparedDirectory '<retained qpdf directory>'` to test
 the generated 96-page Word export control, cancellation and owner failure after
-observed temporary PDF growth, and same-profile two-page recovery. See the
+observed temporary PDF growth, and same-profile two-page recovery. Select
+`-ExportFamily Excel,PowerPoint` for the equivalent 96-sheet/slide controls and
+same-family recovery (one Excel page or two PowerPoint pages). Several families
+run sequentially after one complete payload verification, each with fresh evidence
+and profiles. Word remains the default. See the
 [export-interruption evidence and limits](../../docs/office-export-interruption.md).
+The probe's `--export-fixtures <fresh directory> Excel` (or `PowerPoint`) mode
+only generates the large passive package. Its
+`--export-file-release <fresh directory>` mode checks delayed file release,
+a persistent lock and a missing file without starting Office. Use repository
+`.codex-temp` directories for both. Recovery waits at most five seconds for
+sharing violations to clear and records the wait; other file errors fail directly.
 Its profile disables macros, active content, Python
 runtime and automatic update checks. **It is not a filesystem/network sandbox**,
 and neither those settings nor hostile-content isolation have been accepted by

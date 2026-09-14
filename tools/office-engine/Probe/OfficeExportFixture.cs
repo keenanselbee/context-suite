@@ -4,9 +4,16 @@ using System.Text;
 
 // Passive authored pages with distinct uncompressed BMPs, so PDF export lasts
 // long enough to observe real output writing. No fields, scripts or references.
-internal static class OfficeExportFixture
+internal static partial class OfficeExportFixture
 {
     internal const int Pages = 96;
+    internal static string Create(string directory, string family) => family switch
+    {
+        "Word" => Create(directory),
+        "Excel" or "PowerPoint" => CreateVisual(directory, family),
+        _ => throw new ArgumentException("Choose Word, Excel or PowerPoint.", nameof(family))
+    };
+
     internal static string Create(string directory)
     {
         var path = Path.Combine(directory, "Export interruption.docx");
