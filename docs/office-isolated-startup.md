@@ -1,8 +1,9 @@
 Office AppContainer Startup Evaluation
 =====================================
 
-Status: pinned version reporting passes inside an actual AppContainer; network
-denial, document initialization and required customer conversion remain unverified.
+Status: pinned version reporting passes inside an actual AppContainer, but full
+initialization fails. Ordinary authored exports pass independent PDF checks.
+Network denial and required customer conversion remain unresolved.
 
 Purpose and boundary
 --------------------
@@ -92,3 +93,84 @@ Evaluate engine/profile initialization, fonts and runtime dependencies, document
 rendering policies, independent PDF validation and publication in the same
 boundary. Network enforcement evidence remains separately unresolved. Do not
 enable the required customer converter merely because version reporting works.
+
+
+Passive initialization and export experiment
+-------------------------------------------
+
+The opt-in `-PassiveExports` switch additionally initializes fresh profiles and
+exports the existing authored Word, Excel and PowerPoint fixtures in ordinary
+and AppContainer processes. No caller-supplied document or filter is accepted.
+Sources/settings have a before-run hash/write-time manifest and read-only access
+for the AppContainer. Each profile starts with disabled macros, active content,
+Python runtime and update checks; the requested settings are reapplied after
+initialization. Each initialization and export has a 60-second deadline under
+the same process/memory/diagnostic bounds. Profiles use short owned names.
+
+The fixed PDF recipe preserves image resolution, uses lossless image compression,
+excludes notes/hidden slides and hides Word tracked-change markup. The small
+Excel fixture's saved formula result agrees with its arithmetic; it cannot decide
+the separate saved-values/recalculation policy. Generated outputs stay in scratch,
+without customer publication, admission or recycling. Runtime/version controls
+still run first. Failure does not skip owned-profile cleanup or become a network
+enforcement pass.
+
+Independent inspection is separate so failed native runs retain all observations:
+
+```powershell
+.\tools\office-engine\Inspect-OfficeIsolationExports.ps1 -StagingId '<case-guid>' `
+  -PdfPreparedDirectory '<verified qpdf evaluation directory>' `
+  -PdfiumPreparedDirectory '<verified PDFium evaluation directory>'
+```
+
+The inspector verifies the fixed source/settings manifest, checks retained
+profile declarations, runs qpdf structure checks and independently extracts text
+and renders with PDFium. It requires the authored page counts/geometry and visible
+markers, including Word page fields and hidden-sheet/slide exclusions. Normal and
+isolated results must match normalized text and exact rendered pixels. Missing
+exports and per-case failures remain explicit. This is scoped evidence from tiny
+authored documents, not a Microsoft Office baseline or hostile-input certification.
+
+
+Initialization failure and environment control (2026-09-14)
+---------------------------------------------------------
+
+Evidence is `.codex-temp/office-isolation/f2f5447d26614e9f9b2f2e4e4c7c5e86`.
+The x64 `/W4 /WX` native build and managed evaluation compilation pass. Both
+version commands still match. Each ordinary initialization succeeds and its
+family exports a bounded PDF. Independent qpdf/PDFium checks pass on all three
+ordinary PDFs: two Word pages, one Excel page and two visible PowerPoint slides,
+with expected text, geometry, page fields, profile settings and original hashes.
+
+All three AppContainer initializations fail before document export. Word exits
+with code 1 without reaching the launcher deadline; Excel and PowerPoint reach
+the 60-second deadline and are terminated by the owned job. Their engine
+diagnostic streams are empty. Every completed launch reports zero active job
+members after cleanup, and the disposable AppContainer profile is removed.
+No isolated PDF exists, so no normal/isolated pixel comparison is counted as a
+pass. Both the native matrix and independent inspection remain failed.
+
+A separate ordinary-process control uses the exact redirected eight-variable
+environment from this case, a fresh short profile and the same fixed
+`--terminate_after_init` command. It succeeds in 1,984 ms and leaves no active
+job member. This rules out those redirected paths alone as the explanation;
+it does not identify a specific denied API, file or registry key. No access grant
+or capability was added to make initialization succeed.
+
+The diagnostic mode is `--office-redirected-control <completed case directory>`
+on the newly built native probe. Verify its runtime copy before running it; it
+refuses an existing `writable/ec` profile and opens no document or AppContainer
+profile. The case's `redirected-build.json` binds the diagnostic binary to its
+source hashes. `redirected-control.json` and `.log` retain the actual result.
+This is a targeted follow-up, not a replay of the six failed/successful cases.
+
+Native logs use `.codex-temp/office-isolated-exports`; independent inspection logs
+use `.codex-temp/office-isolated-export-inspection`. Its retained six-case report
+is `inspection-6d1634a352f74c98b023949fa21e5fb5/results.json` under the case's
+staging parent. Post-run runtime/source and cleanup reconciliation is
+`.codex-temp/office-isolated-exports-verification.json`.
+
+The next integration step is to diagnose actual restricted initialization and
+verify a working boundary before admitting customer documents. Network enforcement
+is independently unresolved. The successful ordinary exports do not substitute
+for isolated Word/Excel/PowerPoint conversion, and no production payload changed.

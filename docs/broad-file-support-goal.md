@@ -121,6 +121,14 @@ keeps its access grants apart from the retained candidate. This establishes
 version reporting only; profile/document initialization, conversion and network
 enforcement remain unverified. The full isolation matrix still fails.
 
+The subsequent [full initialization/export attempt](office-isolated-startup.md#initialization-failure-and-environment-control-2026-09-14)
+exposes a further integration blocker: ordinary Word/Excel/PowerPoint exports pass
+independent structure/text/page checks, but all AppContainer initializations fail
+before export. Word exits 1; Excel/PowerPoint reach the 60-second deadline. An
+ordinary control using the same redirected environment initializes successfully,
+so those paths alone do not explain the failure. Job/profile cleanup passes;
+restricted initialization and network enforcement both remain unresolved.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

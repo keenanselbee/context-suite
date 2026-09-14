@@ -315,6 +315,7 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
 }
 
 #include "OfficeVersion.h"
+#include "OfficeExports.h"
 
 struct CommittedMemory {
     void* value;
@@ -534,7 +535,14 @@ int wmain(int argc, wchar_t** argv) {
             std::cout << "{\"exactEnvironment\":" << (matches ? "true" : "false") << "}\n";
             return matches ? 0 : 5;
         }
-        const bool officeVersion = argc == 4 && std::wstring(argv[3]) == L"--office-version";
+        if (argc == 3 && std::wstring(argv[1]) == L"--office-redirected-control") {
+            const auto root = fs::absolute(argv[2]).lexically_normal();
+            Require(root.native().find(L"\\.codex-temp\\office-isolation\\") != std::wstring::npos &&
+                root.filename() == L"case" && fs::is_regular_file(root / L"profile-cleanup.json"), "Use a completed owned export case");
+            return OfficeRedirectedEnvironmentControl(root) ? 0 : 6;
+        }
+        const bool officeExports = argc == 4 && std::wstring(argv[3]) == L"--office-exports";
+        const bool officeVersion = officeExports || (argc == 4 && std::wstring(argv[3]) == L"--office-version");
         const bool createProfile = (argc == 3 || officeVersion) && std::wstring(argv[2]) == L"--create-disposable-profile";
         if (argc != 2 && !createProfile) return 2;
         const auto root = fs::absolute(argv[1]).lexically_normal();
@@ -634,10 +642,11 @@ int wmain(int argc, wchar_t** argv) {
         Require(ReadAttempt(root / L"allowed" / L"input.txt", "generated readable fixture") == 0 &&
             ReadAttempt(root / L"denied" / L"input.txt", "generated withheld fixture") == 0 &&
             ReadAttempt(root / L"writable" / L"output.txt", "isolated output fixture") == 0, "Isolated child must preserve input bytes and write distinct output");
-        const bool officePassed = !officeVersion || OfficeVersion(root, sid.value, environment);
+        bool officePassed = !officeVersion || OfficeVersion(root, sid.value, environment);
+        if (officePassed && officeExports) officePassed = OfficeExports(root, sid.value, environment);
         profile.Remove();
         std::ofstream(root / L"profile-cleanup.json") << "{\"removed\":true}\n";
-        Require(officePassed, "Office version-only AppContainer viability");
+        Require(officePassed, "Office AppContainer viability");
         Require(isolated.exitCode == 0 && !isolated.timedOut && !isolated.outputLimit && !isolated.output.empty(), "AppContainer access matrix");
         std::cout << "PASS: explicit scratch read/write, withheld file and write denial, read-only source denial, IPv4/IPv6 loopback denial, actual AppContainer token.\n";
         return 0;

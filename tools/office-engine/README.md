@@ -271,6 +271,16 @@ environment paths. It opens no document. Read the
 [startup scope and results](../../docs/office-isolated-startup.md); neither
 version reporting nor successful cleanup resolves network enforcement.
 
+Add `-PassiveExports` to that command to initialize six fresh profiles and export
+the existing authored Word/Excel/PowerPoint fixtures, once normally and once in
+the AppContainer. Macros/active content remain disabled; no arbitrary document is
+accepted. Initialization and export each have a 60-second bound. File creation
+alone is not a fidelity pass. After the run removes its disposable profile, use
+`Inspect-OfficeIsolationExports.ps1 -StagingId <case-guid>` with
+`-PdfPreparedDirectory` and `-PdfiumPreparedDirectory` to check retained PDFs with
+the pinned independent engines and compare normal/isolated text and pixels.
+Missing exports and mismatches remain failures in the retained result.
+
 `Read-OfficeNetworkEvents.ps1 -StagingId <scratch-guid> -PlanOnly` prepares four
 read-only WFP queries for the retained probe's IPv4/IPv6 loopback events and
 filters. It verifies the probe hash and profile name and rejects reparse paths.

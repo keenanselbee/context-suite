@@ -1,7 +1,8 @@
 [CmdletBinding()]
-param([switch] $CreateDisposableProfile, [string] $PreparedOfficeDirectory)
+param([switch] $CreateDisposableProfile, [string] $PreparedOfficeDirectory, [switch] $PassiveExports)
 $ErrorActionPreference = 'Stop'
-if ($PreparedOfficeDirectory -and -not $CreateDisposableProfile) { throw 'Office version-only isolation requires the authorized disposable profile test.' }
+if ($PreparedOfficeDirectory -and -not $CreateDisposableProfile) { throw 'Office isolation requires the authorized disposable profile test.' }
+if ($PassiveExports -and -not $PreparedOfficeDirectory) { throw 'Passive exports require the pinned Office runtime parameter.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $scratch = Join-Path $repository ('.codex-temp\office-isolation\' + [guid]::NewGuid().ToString('N'))
 $build = Join-Path $scratch 'build'
@@ -20,6 +21,7 @@ $executable = Join-Path $build 'bin\Release\ContextSuite.Office.IsolationProbe.e
     sourceSha256=(Get-FileHash -LiteralPath (Join-Path $source 'Probe.cpp')).Hash;
     environmentSha256=(Get-FileHash -LiteralPath (Join-Path $source 'Environment.h')).Hash;
     officeVersionSha256=(Get-FileHash -LiteralPath (Join-Path $source 'OfficeVersion.h')).Hash;
+    officeExportsSha256=(Get-FileHash -LiteralPath (Join-Path $source 'OfficeExports.h')).Hash;
     cmakeSha256=(Get-FileHash -LiteralPath (Join-Path $source 'CMakeLists.txt')).Hash } |
     ConvertTo-Json | Set-Content -LiteralPath (Join-Path $scratch 'build.json') -Encoding UTF8
 Write-Output "Isolation evidence: $scratch"
@@ -28,9 +30,13 @@ if ($CreateDisposableProfile) { $arguments += '--create-disposable-profile' }
 if ($PreparedOfficeDirectory) {
     & python -B (Join-Path $PSScriptRoot 'Prepare-OfficeIsolation.py') $PreparedOfficeDirectory (Join-Path $scratch 'office')
     if ($LASTEXITCODE) { throw 'Office isolation copy verification failed; no Office process launched.' }
-    $arguments += '--office-version'
+    if ($PassiveExports) {
+        & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --isolation-fixtures (Join-Path $scratch 'office-fixtures')
+        if ($LASTEXITCODE) { throw 'Authored isolation fixture generation failed; no Office process launched.' }
+        $arguments += '--office-exports'
+    } else { $arguments += '--office-version' }
 }
 & $executable @arguments
 if ($LASTEXITCODE) { throw "Isolation experiment failed; retain $scratch" }
-Write-Output 'Authored native fixture and optional Office version command only; document compatibility, hostile inputs and production isolation remain unverified.'
+Write-Output 'Authored native fixtures and optional fixed Office evaluation commands only; customer compatibility, hostile inputs and production isolation remain unverified.'
 if (-not $CreateDisposableProfile) { Write-Output 'Preflight only: no AppContainer profile created and no isolated file/network result claimed.' }

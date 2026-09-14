@@ -5,6 +5,22 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
+if (args is ["--inspect-isolation-exports", var isolatedStage, var isolatedQpdf, var isolatedPdfium])
+    return await OfficeIsolatedExportInspection.RunAsync(isolatedStage, isolatedQpdf, isolatedPdfium);
+if (args is ["--isolation-fixtures", var isolationFixtures])
+{
+    var folder = Path.GetFullPath(isolationFixtures);
+    if (!folder.Contains("\\.codex-temp\\office-isolation\\", StringComparison.OrdinalIgnoreCase) || Directory.Exists(folder))
+        throw new IOException("Use fresh owned isolation fixtures.");
+    Directory.CreateDirectory(folder);
+    OfficeFixtures.Create(folder);
+    OfficeProfileSettings.Apply(Path.Combine(folder, "settings.xcu"));
+    var receipt = Directory.GetFiles(folder).Select(path => new { Name = Path.GetFileName(path),
+        Sha256 = Hash(path), WriteTimeUtc = File.GetLastWriteTimeUtc(path) }).ToArray();
+    File.WriteAllText(Path.Combine(folder, "fixtures.json"), JsonSerializer.Serialize(receipt, new JsonSerializerOptions { WriteIndented = true }));
+    Console.WriteLine("Created three authored passive fixtures and disabled-active-content settings.");
+    return 0;
+}
 if (args is ["--export-file-release", var releaseRoot])
 {
     await OfficeEngineLifetimeContracts.FileReleaseContractsAsync(releaseRoot);
