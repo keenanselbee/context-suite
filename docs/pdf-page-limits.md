@@ -1,6 +1,11 @@
 PDF Page Limit Results
 =======================
 
+The later [page-scale checkpoint](pdf-inherited-geometry.md) applies these limits
+after UserUnit scaling and supplies inherited-box/rotation acceptance. Its
+206-check matrix and versioned 1.0.2 stage supersede those specific open geometry
+items below; the historical results here retain their original scope.
+
 PDF-to-PNG now distinguishes recognized size/page limits from malformed input.
 The direct result says:
 

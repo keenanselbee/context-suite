@@ -90,7 +90,16 @@ three effective downsampling controls and independently rendered patches. It
 advances document fidelity evidence while the required customer converter,
 isolation authorization and other rendering decisions remain outstanding.
 
-The latest combined production stage is candidate 1.0.1 at
+The latest combined production stage is candidate 1.0.2 at
+`artifacts/production-staging/76ffc1a76c854a6896e4d5ab832f40bc`.
+The [PDF page-scale checkpoint](pdf-inherited-geometry.md) fixes UserUnit sizing,
+adds inherited geometry acceptance and verifies scaled limits during inspection
+and rendering. It passes 206 geometry/publication, 29 private raster, 12 comparison,
+25 page workflow, 20 interruption, 18 direct-command and 21 payload checks, plus
+2,696 foundation contracts. Its combined payload has 116 verified files; these
+scoped runs do not establish final all-feature or visible acceptance.
+
+The preceding combined production stage is candidate 1.0.1 at
 `artifacts/production-staging/a932bd2a928c48d5b708d407d892693a`.
 It adds [MP3 output artwork preservation](mp3-output-artwork.md) to the preceding
 combined capabilities: FLAC, Vorbis, Opus and supported M4A covers retain image

@@ -11,7 +11,7 @@ using ContextSuite.Core.Images;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Pdf;
 
-internal static class PdfPageGeometryContracts
+internal static partial class PdfPageGeometryContracts
 {
     public static async Task RunAsync(string root, string executable, Action<bool, string> check)
     {
@@ -27,6 +27,49 @@ internal static class PdfPageGeometryContracts
         foreach (var rotation in new[] { 0, 90, 180, 270 })
             await Complete("cropped-rotate-" + rotation, "0 0 288 144", "/CropBox [72 36 216 108] /Rotate " + rotation,
                 Quadrants(288, 144), rotation % 180 == 0 ? 300 : 150, rotation % 180 == 0 ? 150 : 300, rotation / 90, false);
+        foreach (var fixture in InheritedGeometryFixtures())
+            await Complete(fixture.Name, "", "", "", fixture.Width, fixture.Height, fixture.Rotation, fixture.Solid, fixture.Bytes);
+        var mixedPath = WritePdf("mixed-page-units", "", "", "", authored: MixedUnitPdf());
+        var mixedSource = await worker.ProbePdfPagesAsync(new(Guid.NewGuid(), mixedPath), default);
+        (int Width, int Height, int Rotation)[] mixedGeometry = [(600, 300, 0), (600, 1200, 1), (300, 150, 0)];
+        check(mixedSource.Document.Pages.Length == mixedGeometry.Length, "PDF geometry: mixed-unit page count agrees");
+        var mixedResults = await executor.ExecuteAsync(PdfPageConversionPlan.Create(Guid.NewGuid(), [mixedSource],
+            new("convert", new(ReplaceOriginals: true))).Confirm(), null, default);
+        check(mixedResults.Pages.Count == mixedGeometry.Length, "PDF geometry: every mixed-unit page returns a result");
+        for (var index = 0; index < mixedGeometry.Length; index++)
+        {
+            var expected = mixedGeometry[index];
+            var actual = mixedSource.Document.Pages[index];
+            check(actual.Width == expected.Width && actual.Height == expected.Height && actual.Rotation == expected.Rotation,
+                "PDF geometry: scale follows page-tree order rather than object number " + index);
+            var result = mixedResults.Pages[index].Result;
+            check(result.State == OperationState.Succeeded && result.Publication?.Outcome == PublicationOutcome.CopyCreated,
+                "PDF geometry: mixed-unit page publishes a validated copy " + index);
+            var decoded = DecodePng(result.Publication!.OutputPath!);
+            check(decoded.Width == expected.Width && decoded.Height == expected.Height && decoded.Hash == ExpectedPixels(expected.Width, expected.Height, expected.Rotation, false),
+                "PDF geometry: mixed-unit page retains complete authored pixels " + index);
+            observations.Add(new { Name = "mixed-page-unit-" + index, Page = actual, DecodedPixels = decoded.Hash });
+        }
+        foreach (var (name, unit, failure) in new[]
+        {
+            ("zero", "0", ImageFailure.InvalidInput), ("negative", "-2", ImageFailure.InvalidInput),
+            ("text", "(2)", ImageFailure.InvalidInput), ("boolean", "true", ImageFailure.InvalidInput),
+            ("above-bound", "75001", ImageFailure.ResourceLimit),
+            ("over-pixels", "32", ImageFailure.ResourceLimit)
+        })
+        {
+            var path = WritePdf("user-unit-" + name, "", "", "", authored:
+                PageTree("/MediaBox [0 0 144 72]", "", "/UserUnit " + unit, Quadrants(144, 72)));
+            var before = Directory.GetFiles(outputDirectory).Length;
+            try { await worker.ProbePdfPagesAsync(new(Guid.NewGuid(), path), default); throw new Exception("Invalid user unit accepted: " + name); }
+            catch (MediaWorkerException error)
+            {
+                check(error.Failure == failure, "PDF geometry: malformed or excessive UserUnit has the correct failure category " + name);
+                observations.Add(new { Name = "user-unit-" + name, Failure = error.Failure.ToString() });
+            }
+            check(Directory.GetFiles(outputDirectory).Length == before && !Directory.EnumerateFiles(records).Any(),
+                "PDF geometry: UserUnit refusal starts no publication " + name);
+        }
         await Complete("maximum-pixels", "0 0 1920 1920", "", Quadrants(1920, 1920), 4000, 4000, 0, false);
         // Float page dimensions are deliberately just below the pixel edge;
         // ceil at 150 DPI produces exactly the admitted 16,384-pixel dimension.
@@ -51,20 +94,23 @@ internal static class PdfPageGeometryContracts
         var oversizedPath = Path.Combine(root, "over-pixels.pdf");
         var validPath = Path.Combine(root, "after-refusals.pdf");
         var validSource = await worker.ProbePdfPagesAsync(new(Guid.NewGuid(), validPath), default);
-        var untrustedSource = validSource with { Path = oversizedPath, FileBytes = new FileInfo(oversizedPath).Length, Sha256 = originals[oversizedPath].Hash };
-        var outputId = Guid.NewGuid();
-        var reservation = await publisher.ReserveAsync(new(outputId, oversizedPath, "png", new("convert", new()), PageNumber: 1));
-        try
+        foreach (var untrustedPath in new[] { oversizedPath, Path.Combine(root, "user-unit-over-pixels.pdf") })
         {
-            try { await worker.RenderPdfPageAsync(new(untrustedSource, 0, outputId, reservation.TemporaryPath), default); throw new Exception("Native rendering trusted forged bounded page geometry."); }
-            catch (MediaWorkerException error)
-            { check(error.Failure == ImageFailure.ResourceLimit, "PDF geometry: render operation remeasures and returns typed limit before any pixels"); }
+            var untrustedSource = validSource with { Path = untrustedPath, FileBytes = new FileInfo(untrustedPath).Length, Sha256 = originals[untrustedPath].Hash };
+            var outputId = Guid.NewGuid();
+            var reservation = await publisher.ReserveAsync(new(outputId, untrustedPath, "png", new("convert", new()), PageNumber: 1));
+            try
+            {
+                try { await worker.RenderPdfPageAsync(new(untrustedSource, 0, outputId, reservation.TemporaryPath), default); throw new Exception("Native rendering trusted forged bounded page geometry."); }
+                catch (MediaWorkerException error)
+                { check(error.Failure == ImageFailure.ResourceLimit, "PDF geometry: render operation remeasures and returns typed limit before any pixels"); }
+            }
+            finally { if (!reservation.Finished) await publisher.AbandonAsync(reservation, false); }
+            check(!File.Exists(reservation.TemporaryPath) && !File.Exists(reservation.Record.OutputPath), "PDF geometry: render-limit refusal leaves no candidate or published page");
+            var failedRender = await executor.ExecuteAsync(PdfPageConversionPlan.Create(Guid.NewGuid(), [untrustedSource], new("convert", new())).Confirm(), null, default);
+            check(failedRender.Pages.Single().Result.State == OperationState.Failed && failedRender.Pages.Single().Result.Message.Contains("processing limit") &&
+                failedRender.Pages.Single().Result.Message.Contains("completed page copies were kept"), "PDF geometry: render-limit result retains specific guidance and preservation status");
         }
-        finally { if (!reservation.Finished) await publisher.AbandonAsync(reservation, false); }
-        check(!File.Exists(reservation.TemporaryPath) && !File.Exists(reservation.Record.OutputPath), "PDF geometry: render-limit refusal leaves no candidate or published page");
-        var failedRender = await executor.ExecuteAsync(PdfPageConversionPlan.Create(Guid.NewGuid(), [untrustedSource], new("convert", new())).Confirm(), null, default);
-        check(failedRender.Pages.Single().Result.State == OperationState.Failed && failedRender.Pages.Single().Result.Message.Contains("processing limit") &&
-            failedRender.Pages.Single().Result.Message.Contains("completed page copies were kept"), "PDF geometry: render-limit result retains specific guidance and preservation status");
         await using (var model = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "direct-worker")), new() { PlayCompletionSound = false },
             publisher, new LocalTrialStore(Path.Combine(root, "trial.json"))))
         {
@@ -87,13 +133,16 @@ internal static class PdfPageGeometryContracts
             "PDF geometry: output reservations and journals cleaned");
         await File.WriteAllTextAsync(Path.Combine(root, "pdf-page-geometry.json"), JsonSerializer.Serialize(observations, new JsonSerializerOptions { WriteIndented = true }));
 
-        async Task Complete(string name, string box, string extras, string content, int width, int height, int rotation, bool solid)
+        async Task Complete(string name, string box, string extras, string content, int width, int height, int rotation, bool solid, byte[]? authored = null)
         {
-            var path = WritePdf(name, box, extras, content); var watch = Stopwatch.StartNew();
+            var path = WritePdf(name, box, extras, content, authored: authored); var watch = Stopwatch.StartNew();
             var source = await worker.ProbePdfPagesAsync(new(Guid.NewGuid(), path), default);
             var page = source.Document.Pages.Single();
             check(page.Width == width && page.Height == height && page.Rotation == rotation,
                 "PDF geometry: native crop/rotation/size agrees with authored page " + name);
+            if (authored is not null)
+                check(page.WidthPoints == width * 72d / PdfRasterProtocol.Dpi && page.HeightPoints == height * 72d / PdfRasterProtocol.Dpi,
+                    "PDF geometry: physical point dimensions include the actual page unit " + name);
             var expectedPixels = ExpectedPixels(width, height, rotation, solid);
             var settings = new ContextSuite.Core.Settings.BatchSettings("convert", new(ReplaceOriginals: true));
             var plan = PdfPageConversionPlan.Create(Guid.NewGuid(), [source], settings).Confirm();
@@ -113,23 +162,27 @@ internal static class PdfPageGeometryContracts
                 WorkerPeakWorkingSet = process.PeakWorkingSet64 });
             Console.WriteLine("Verified PDF geometry " + name);
         }
-        string WritePdf(string name, string box, string extras, string content, int pageCount = 1)
+        string WritePdf(string name, string box, string extras, string content, int pageCount = 1, byte[]? authored = null)
         {
             var path = Path.Combine(root, name + ".pdf");
             using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
-                var offsets = new List<long> { 0 };
-                Write("%PDF-1.4\n");
-                Object(1, "<< /Type /Catalog /Pages 2 0 R >>");
-                Object(2, "<< /Type /Pages /Kids [" + string.Join(" ", Enumerable.Range(3, pageCount).Select(id => id + " 0 R")) + "] /Count " + pageCount + " >>");
-                for (var id = 3; id < pageCount + 3; id++)
-                    Object(id, "<< /Type /Page /Parent 2 0 R /MediaBox [" + box + "] " + extras + " /Resources << >> /Contents " + (pageCount + 3) + " 0 R >>");
-                Object(pageCount + 3, "<< /Length " + content.Length + " >>\nstream\n" + content + "endstream");
-                var xref = file.Position; Write("xref\n0 " + (pageCount + 4) + "\n0000000000 65535 f \n");
-                foreach (var offset in offsets.Skip(1)) Write(offset.ToString("D10", CultureInfo.InvariantCulture) + " 00000 n \n");
-                Write("trailer\n<< /Size " + (pageCount + 4) + " /Root 1 0 R >>\nstartxref\n" + xref.ToString(CultureInfo.InvariantCulture) + "\n%%EOF\n");
-                void Write(string text) => file.Write(Encoding.ASCII.GetBytes(text));
-                void Object(int id, string body) { offsets.Add(file.Position); Write(id + " 0 obj\n" + body + "\nendobj\n"); }
+                if (authored is not null) file.Write(authored);
+                else
+                {
+                    var offsets = new List<long> { 0 };
+                    Write("%PDF-1.4\n");
+                    Object(1, "<< /Type /Catalog /Pages 2 0 R >>");
+                    Object(2, "<< /Type /Pages /Kids [" + string.Join(" ", Enumerable.Range(3, pageCount).Select(id => id + " 0 R")) + "] /Count " + pageCount + " >>");
+                    for (var id = 3; id < pageCount + 3; id++)
+                        Object(id, "<< /Type /Page /Parent 2 0 R /MediaBox [" + box + "] " + extras + " /Resources << >> /Contents " + (pageCount + 3) + " 0 R >>");
+                    Object(pageCount + 3, "<< /Length " + content.Length + " >>\nstream\n" + content + "endstream");
+                    var xref = file.Position; Write("xref\n0 " + (pageCount + 4) + "\n0000000000 65535 f \n");
+                    foreach (var offset in offsets.Skip(1)) Write(offset.ToString("D10", CultureInfo.InvariantCulture) + " 00000 n \n");
+                    Write("trailer\n<< /Size " + (pageCount + 4) + " /Root 1 0 R >>\nstartxref\n" + xref.ToString(CultureInfo.InvariantCulture) + "\n%%EOF\n");
+                    void Write(string text) => file.Write(Encoding.ASCII.GetBytes(text));
+                    void Object(int id, string body) { offsets.Add(file.Position); Write(id + " 0 obj\n" + body + "\nendobj\n"); }
+                }
             }
             originals.Add(path, (Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))), File.GetLastWriteTimeUtc(path)));
             return path;

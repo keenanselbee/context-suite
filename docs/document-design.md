@@ -8,6 +8,9 @@ rotated page pixels and the current maximum output dimensions through actual
 copy publication. The [typed limit follow-up](pdf-page-limits.md) gives explicit
 size-limit guidance, retaining distinct malformed-input outcomes. Renderer
 allocation-failure and visible acceptance remain open.
+The [inherited geometry and page-scale follow-up](pdf-inherited-geometry.md)
+corrects UserUnit sizing at the fixed 150 DPI and verifies inherited boxes and
+rotation. Limits apply to the scaled page before rendering or publication.
 
 Boundary
 --------

@@ -69,6 +69,8 @@ def main():
         ("changed-qpdf", "pdf-engine/qpdf.exe", b"changed"),
         ("changed-renderer", "pdf-renderer/ContextSuite.PdfRenderer.exe", b"changed"),
         ("changed-pdfium", "pdf-renderer/pdfium.dll", b"changed"),
+        ("changed-renderer-qpdf", "pdf-renderer/qpdf30.dll", b"changed"),
+        ("missing-renderer-qpdf", "pdf-renderer/qpdf30.dll", None),
         ("changed-validator", "pdf-validator/ContextSuite.ImagePdfValidator.exe", b"changed"),
         ("changed-qpdf-library", "pdf-validator/qpdf30.dll", b"changed"),
         ("missing-renderer-runtime", "pdf-renderer/vcruntime140_1.dll", None),

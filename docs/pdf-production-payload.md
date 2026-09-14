@@ -3,12 +3,14 @@ PDF Production Candidate Payload
 
 Status: explicit isolated production packaging implemented; default release
 adoption, broader fidelity, native hardening and redistribution review pending.
-Updated: 2026-09-11.
+Updated: 2026-09-14.
 
 The later [PDF page-limit checkpoint](pdf-page-limits.md) repins the authored
 renderer after adding complete typed size-limit replies. It retains the same
 PDFium runtime and records fresh combined staging and 19 payload checks; the
 historical evidence below describes its original packaged hosts.
+The [page-scale checkpoint](pdf-inherited-geometry.md) adds qpdf dictionary reading
+to the renderer and verifies the resulting 53-file PDF payload on candidate 1.0.2.
 
 The existing PDF Analyze/Optimize, PDF-to-PNG and combined image-to-PDF workflows
 can now share a fresh production stage with the image and audio engines. This
@@ -18,7 +20,7 @@ does not implement the separately required Word/Excel/PowerPoint-to-PDF actions.
 Selected inputs and layout
 -------------------------
 
-[payload-candidate.json](../tools/pdf-engine/payload-candidate.json) pins 45 files
+[payload-candidate.json](../tools/pdf-engine/payload-candidate.json) pins 53 files
 in three directories: `pdf-engine` for qpdf, `pdf-renderer` for the authored
 PDFium host and `pdf-validator` for the authored combined-image validator.
 Every runtime and notice has an exact byte length and SHA-256 identity.
@@ -36,7 +38,7 @@ The pinned qpdf 12.4.1 source archive is now retained at
 `F045AA277BE2356FF53A89A8622945958291177D2483AFC20EDE7C8A8CD3873C`.
 It was downloaded from the existing `sourceUrl` in
 [evaluation.json](../tools/pdf-engine/evaluation.json), without changing that pin.
-Its full original `LICENSE.txt` and `NOTICE.md` accompany both qpdf copies.
+Its full original `LICENSE.txt` and `NOTICE.md` accompany all three qpdf copies.
 The Windows ZIP's short manual license summary is insufficient by itself.
 
 PDFium's original root license and all 14 component-notice files accompany its
@@ -45,10 +47,11 @@ supplier's complete build/source provenance or linked-component review is done.
 The authored candidate notice records these limits and the separate Microsoft
 runtime redistribution review.
 
-The renderer imports `MSVCP140.dll`, `VCRUNTIME140.dll` and `VCRUNTIME140_1.dll`.
-Its earlier evaluation payload omitted these adjacent files. The new candidate
-includes exact copies from the pinned qpdf Windows archive. The qpdf and validator
-directories retain their eight pinned Microsoft runtime DLLs. Windows/UCRT imports
+The renderer now imports qpdf30.dll as well as PDFium and Microsoft runtime DLLs.
+All three native directories retain the eight pinned Microsoft runtime DLLs from
+the selected qpdf Windows archive. The renderer's earlier evaluation payload
+omitted adjacent runtime files; current dependency-closure checks cover them.
+Windows/UCRT imports
 remain operating-system dependencies; no runtime is installed or placed on PATH.
 
 

@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $PreparedDirectory, [switch] $Renderer)
+param([Parameter(Mandatory)][string] $PreparedDirectory, [switch] $Renderer, [string] $QpdfPreparedDirectory)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $prepared = (Resolve-Path -LiteralPath $PreparedDirectory).Path
@@ -27,7 +27,25 @@ $name = if ($Renderer) { 'renderer-build' } else { 'probe-build' }
 $target = if ($Renderer) { 'ContextSuite.PdfRenderer' } else { 'ContextSuite.Pdfium.Probe' }
 $sourceName = if ($Renderer) { 'Renderer.cpp' } else { 'Probe.cpp' }
 $build = Join-Path $prepared $name
-& $cmake -S $source -B $build -G 'Visual Studio 18 2026' -A x64 "-DPDFIUM_PAYLOAD=$payload" '-DCMAKE_SYSTEM_VERSION=10.0.26100.0'
+$geometryArguments = @()
+if ($Renderer) {
+    if (-not $QpdfPreparedDirectory) { throw 'Renderer page geometry requires the reviewed qpdf prepared directory.' }
+    $qpdf = (Resolve-Path -LiteralPath $QpdfPreparedDirectory).Path
+    if (-not $qpdf.StartsWith((Join-Path $repository '.codex-temp\pdf-engine\'), [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Use repository-local qpdf staging.'
+    }
+    $qpdfPin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'evaluation.json') -Raw | ConvertFrom-Json
+    if ((Get-FileHash -LiteralPath (Join-Path $qpdf 'upstream.zip')).Hash -ne $qpdfPin.archiveSha256) { throw 'qpdf archive identity changed.' }
+    $qpdfRoot = Join-Path $qpdf 'unpacked'
+    foreach ($item in (Get-Content -LiteralPath (Join-Path $qpdf 'inventory.json') -Raw | ConvertFrom-Json)) {
+        $path = [IO.Path]::GetFullPath((Join-Path $qpdfRoot $item.path))
+        if (-not $path.StartsWith($qpdfRoot + '\', [StringComparison]::OrdinalIgnoreCase) -or
+            (Get-FileHash -LiteralPath $path).Hash -ne $item.sha256) { throw 'qpdf SDK inventory changed.' }
+    }
+    $qpdfPayload = Join-Path $qpdfRoot 'qpdf-12.4.1-msvc64'
+    $geometryArguments = @("-DQPDF_PAYLOAD=$qpdfPayload")
+}
+& $cmake -S $source -B $build -G 'Visual Studio 18 2026' -A x64 "-DPDFIUM_PAYLOAD=$payload" @geometryArguments '-DCMAKE_SYSTEM_VERSION=10.0.26100.0'
 if ($LASTEXITCODE) { throw 'PDFium evaluation configuration failed.' }
 & $cmake --build $build --config Release --target $target -- /m /p:ImportDirectoryBuildProps=false /p:ImportDirectoryBuildTargets=false /verbosity:minimal
 if ($LASTEXITCODE) { throw 'PDFium evaluation probe build failed.' }

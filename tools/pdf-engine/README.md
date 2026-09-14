@@ -95,7 +95,7 @@ page geometry and both authored pages' rendered pixels. This does not establish
 broad document fidelity or native failure/sandbox acceptance.
 
 For the optional PDF-to-PNG adapter candidate, build the private native host with
-`Build-PdfiumEvaluation.ps1 -PreparedDirectory '<prepared PDFium directory>' -Renderer`,
+`Build-PdfiumEvaluation.ps1 -PreparedDirectory '<prepared PDFium directory>' -Renderer -QpdfPreparedDirectory '<prepared qpdf directory>'`,
 then run `Test-PdfRasterAdapter.ps1 -PreparedDirectory '<prepared PDFium directory>'
 -FixtureDirectory '<generated qpdf matrix>'`. The existing evaluation probe must
 also be built. The wrapper verifies host/source/runtime identities, generates

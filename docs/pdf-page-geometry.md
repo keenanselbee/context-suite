@@ -4,6 +4,10 @@ PDF Page Geometry And Size Acceptance
 The later [typed page-limit checkpoint](pdf-page-limits.md) closes the generic
 invalid-input wording gap identified here and expands this suite to 59 checks.
 The original 50-check results below retain their own stage and scope.
+The subsequent [inherited geometry and page-scale checkpoint](pdf-inherited-geometry.md)
+fixes UserUnit sizing and extends the complete suite to 206 checks on candidate
+1.0.2. It supplies the inherited-box/rotation evidence missing from this original
+matrix; broader fidelity and visible acceptance remain separate.
 
 The isolated staged PDF-to-PNG path passes **50 checks** against independently
 authored page geometry and pixel expectations. This verifies a previously open

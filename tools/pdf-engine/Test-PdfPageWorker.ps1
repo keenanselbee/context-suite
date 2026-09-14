@@ -26,7 +26,8 @@ New-Item -ItemType Directory -Path $payload | Out-Null
 Get-ChildItem -LiteralPath $stage -File | Where-Object Name -ne 'payload-inventory.json' | Copy-Item -Destination $payload
 $renderer = Join-Path $payload 'pdf-renderer'
 New-Item -ItemType Directory -Path $renderer | Out-Null
-foreach ($name in @('ContextSuite.PdfRenderer.exe', 'pdfium.dll')) {
+foreach ($name in @('ContextSuite.PdfRenderer.exe', 'pdfium.dll', 'qpdf30.dll', 'concrt140.dll', 'msvcp140.dll',
+    'msvcp140_1.dll', 'msvcp140_2.dll', 'msvcp140_atomic_wait.dll', 'msvcp140_codecvt_ids.dll', 'vcruntime140.dll', 'vcruntime140_1.dll')) {
     Copy-Item -LiteralPath (Join-Path $binary $name) -Destination $renderer
 }
 Copy-Item -LiteralPath (Join-Path $prepared 'renderer-build.json') -Destination $renderer

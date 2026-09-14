@@ -1,6 +1,16 @@
 Context Suite Changelog
 =======================
 
+1.0.2 - Local candidate, 2026-09-14
+-----------------------------------
+
+- Apply PDF page scaling when converting to PNG at the fixed 150 DPI. Read each
+  page's UserUnit through the selected qpdf parser and apply size limits to the
+  scaled dimensions. Keep inherited crop/rotation behavior and original files.
+- Package and verify qpdf's existing runtime dependencies with the PDF renderer.
+  These remain optional local candidates; release adoption is separate.
+
+
 1.0.1 - Local candidate, 2026-09-14
 -----------------------------------
 
