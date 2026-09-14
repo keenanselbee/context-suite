@@ -55,6 +55,14 @@ by the new refusal. The 222-case rate/layout regression and eight independent
 resampling-source cases pass their stated checks. Candidate 1.0.9 is unchanged
 and predates this guard; the next production candidate must use a new version.
 
+The subsequent [finite-input resampling repair](finite-audio-resampling.md)
+resolves the original 28 short cases through a bounded working extension and
+encoding only the original time interval. It retains filter quality and metadata
+validation. Boundary testing also corrects the duration guard to permit neighboring
+whole-sample counts for fractional ratios, corroborated by independent SoX
+resampling. Updated production staging, worker acceptance and wider audio gates
+remain separate; candidate 1.0.9 still predates these changes.
+
 Current completion path (2026-09-12)
 ------------------------------------
 

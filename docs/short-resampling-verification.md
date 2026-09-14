@@ -1,8 +1,10 @@
 Short Audio Resampling Verification
 ==================================
 
-Status: duration validation repaired; short resampling remains incomplete.
-Updated 2026-09-14. This is an implementation checkpoint, not audio acceptance.
+Historical checkpoint: duration validation repaired while short resampling
+remained incomplete. The later [finite-input repair](finite-audio-resampling.md)
+resolves the original 28 failures and corrects the ceiling-only rounding policy.
+Updated 2026-09-14. Neither checkpoint is complete audio/release acceptance.
 
 The generated matrix exposed a shared-resampler failure: both the reference and
 the encoded output could omit the same final samples and pass their comparison.

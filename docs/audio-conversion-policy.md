@@ -63,13 +63,14 @@ quad, 5.0, 5.1, 6.1 and 7.1. These target restrictions apply to conversion,
 retaining the existing same-format no-op behavior. Unsupported speaker layouts
 receive early WAV/FLAC guidance, without automatic downmixing or relabeling.
 
-Resampled conversion now counts decoded frames at the source rate and requires
-the planned-rate reference to contain `ceil(sourceFrames * outputRate / sourceRate)`
-frames before encoding. This prevents a shared resampler defect from shortening
-both output and reference and passing validation. It adds one bounded decode for
-rate-changing operations. The [short-resampling matrix](short-resampling-verification.md)
-exposes 28 remaining refused tiny-input cases; this duration guard prevents
-incorrect acceptance but does not complete resampling support.
+Resampled conversion counts decoded frames at the source rate and requires the
+planned-rate reference to match the rate ratio, allowing only its neighboring
+whole-sample counts for fractional duration. Integral ratios require exact counts;
+nonempty source cannot become empty output. The [duration investigation](short-resampling-verification.md)
+prevented shared resampler truncation. The later [finite-input repair](finite-audio-resampling.md)
+uses an internal reflected boundary for at most 256 source frames and encodes only
+the original interval, choosing the ceiling count. It retains the same filter
+quality and metadata checks. Rate changes add one bounded source decode.
 
 Lossy-to-lossy conversion, resampling and floating-to-integer precision reduction
 have independent typed acknowledgement flags. Accepting one does not authorize
