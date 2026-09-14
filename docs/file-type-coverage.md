@@ -44,6 +44,10 @@ other-family aliases, competing meanings and wider variants remain separate.
 The [document purpose review](catalog-document-review.md) checks 31 document,
 spreadsheet and presentation records and clarifies fourteen descriptions/references.
 It preserves recognition fields and does not imply Office conversion is available.
+The [document alias review](catalog-document-alias-review.md) reconciles all 58
+existing extension associations for those records, distinguishing registered
+suffixes from implementation conventions and grouped document/template variants.
+No catalog data changes; other-family aliases and deeper variant coverage remain open.
 The [archive/package purpose review](catalog-archive-review.md) checks 29 archive,
 compressed-stream, software-package and disk-image descriptions, updating sixteen
 records. Variant/alias and executable-capability acceptance remain separate.

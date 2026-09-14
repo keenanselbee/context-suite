@@ -68,6 +68,13 @@ It resolves the `.kar` naming gap without changing recognition or expanding
 conversion claims. Other-family aliases, competing meanings, wider variants and
 additional meaningful MIME coverage remain open.
 
+The [document catalog alias review](catalog-document-alias-review.md) reconciles
+all 58 current extension associations across 31 document, spreadsheet and
+presentation records. It supplies separate evidence for the `.ical` convention
+and clarifies template, macro-enabled and slideshow groupings. The catalog and
+reserved payload are unchanged; this does not satisfy required Office conversion
+or complete other-family alias and deeper variant review.
+
 The [PDF page geometry matrix](pdf-page-geometry.md), extended by the
 [typed limit follow-up](pdf-page-limits.md), passes 59 actual worker/publication
 checks on its dated combined stage. It covers
