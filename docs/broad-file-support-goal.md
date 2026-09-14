@@ -56,6 +56,12 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments, owned evaluation jobs and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
+The [audio catalog alias review](catalog-audio-alias-review.md) supplies provenance
+for all 33 currently listed extension associations across eighteen Audio records.
+It resolves the `.kar` naming gap without changing recognition or expanding
+conversion claims. Other-family aliases, competing meanings, wider variants and
+additional meaningful MIME coverage remain open.
+
 The [PDF page geometry matrix](pdf-page-geometry.md), extended by the
 [typed limit follow-up](pdf-page-limits.md), passes 59 actual worker/publication
 checks on its dated combined stage. It covers

@@ -62,10 +62,11 @@ Boundaries and remaining review
 
 This review covers purpose descriptions and their references. It does not claim
 exhaustive extension/variant evidence, binary validity, recognition fixtures or
-complete MIME aliases. In particular, the existing MIDI `.kar` alias still needs
-separate variant provenance; the MIDI page establishes timed-event semantics but
-does not by itself document that suffix. Keep this gap visible rather than
-counting it as verified by the purpose review. Other catalog families and formats
+complete MIME aliases. The later [audio alias review](catalog-audio-alias-review.md)
+supplies separate evidence for all 33 existing Audio extension associations,
+including the previously unresolved MIDI `.kar` suffix. That evidence comes from
+explicit naming documentation, not the timed-event purpose description.
+Other catalog families and formats
 grouped outside Audio, including the Ogg container, retain their own review scope.
 
 The source/reference changes are additive factual maintenance under catalog

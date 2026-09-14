@@ -37,6 +37,10 @@ The [audio purpose review](catalog-audio-review.md) checks all eighteen Audio
 descriptions and updates fourteen records' wording/references. It separates
 playlists, projects, musical instructions and audio containers; full alias and
 variant provenance remains a separate review scope.
+The [audio alias review](catalog-audio-alias-review.md) reconciles all 33 existing
+extension associations across those eighteen Audio records, resolving the MIDI
+karaoke suffix evidence gap. No catalog data or runtime capabilities change;
+other-family aliases, competing meanings and wider variants remain separate.
 The [document purpose review](catalog-document-review.md) checks 31 document,
 spreadsheet and presentation records and clarifies fourteen descriptions/references.
 It preserves recognition fields and does not imply Office conversion is available.
