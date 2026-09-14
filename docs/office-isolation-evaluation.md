@@ -1,9 +1,10 @@
 Office Process Isolation Evaluation
 ===================================
 
-Status: native lifetime/control and resource-limit preflight passed; AppContainer file/network
-matrix prepared but not executed with a registered profile. No production
-isolation claim and no Office document execution in this probe, updated 2026-09-14.
+Status: authorized AppContainer file/token/content checks passed; IPv4/IPv6
+attempts reach observation deadlines rather than proven access denial, so the
+combined matrix fails. Profiles were removed. No production isolation claim or
+Office document execution in this probe, updated 2026-09-14.
 
 Purpose
 -------
@@ -40,7 +41,7 @@ commit-memory and process-count enforcement. This native experiment has not
 replaced a shipping process launcher. The later, separate
 [Office evaluation launcher](office-process-lifetime.md) now uses creation-time
 job assignment and has its own lifetime contracts plus passive export evidence.
-Neither launcher establishes the pending AppContainer access boundary.
+Neither launcher establishes complete Office renderer isolation.
 
 Passed preflight tests:
 
@@ -193,14 +194,15 @@ that SID, and deletes only the profile it successfully created after job cleanup
 A destructor also attempts cleanup on failure; cleanup failures report the
 retained name for recovery. The name is recorded before creation.
 
-This opt-in is **not yet authorized or executed**. Windows places profile data
+At this checkpoint the opt-in was **not yet authorized or executed**. The owner
+subsequently authorized it; see the registered-profile results below. Windows places profile data
 under `C:\Users\Keenan\AppData\Local\Packages` and creates per-user AppContainer
 profile registry metadata. At preparation time, the repository's [AGENTS.md](../AGENTS.md) said:
 "Do not create, edit, move, delete, or overwrite files outside the repository
 unless the user explicitly asks for a specific external path." Specific
-authorization for the disposable profile was requested and remains unanswered.
+authorization for the disposable profile was requested and was then unanswered.
 The quotation records that earlier rule, not the current file's text. The prepared
-opt-in remains pending. It does not require installing
+opt-in was then pending. It does not require installing
 a package, changing Explorer registration or modifying another application's profile.
 
 The prepared child checks its actual AppContainer token, allowed reads/writes,
@@ -248,11 +250,69 @@ separate profile authorization. No Office engine or document ran, no product
 payload changed and no image/audio/UI regression is claimed by this tools-only fix.
 
 
+Authorized registered-profile results (2026-09-14)
+-------------------------------------------------
+
+The owner explicitly authorized the prepared disposable-profile test, including
+its profile files and registry metadata. This resolves the earlier permission
+blocker for that test; it does not authorize installation or firewall changes.
+
+The first authorized run at
+`.codex-temp/office-isolation/fa11a48443ca423ebe8ed70bd2d2a5ad` launches an actual
+AppContainer child. Allowed content reads/writes pass and withheld reads/writes
+and writes to the read-only input return Windows error 5. Both loopback attempts
+return 10060 rather than the required WSAEACCES. The matrix exits nonzero and
+remains failed; the profile is removed during failure cleanup.
+
+The diagnostic follow-up distinguishes a two-second observation expiry from a
+socket-reported error. It also preserves actual select errors rather than
+misreporting them as timeouts, queries Windows' network capability diagnosis,
+rechecks both listeners after the isolated child and records profile removal
+before reporting a failed matrix. The system diagnostic DLL is loaded only from
+System32. No network exemptions, firewall rules or trace settings are changed.
+
+Final evidence is
+`.codex-temp/office-isolation/bd2e1f51691d4f32a9ed91f963890573`:
+
+| Observation | Result |
+| --- | --- |
+| Actual AppContainer / capability count | 1 / 0 |
+| Allowed read, write and exact output readback | All succeed |
+| Withheld read/write and read-only-source write | All return ERROR_ACCESS_DENIED |
+| Original and isolated output bytes | Parent independently verifies exact contents |
+| IPv4/IPv6 controls before and after isolated attempts | Both connect successfully |
+| Isolated IPv4/IPv6 | Both hit the two-second observation deadline; denial remains unverified |
+| Windows network capability diagnosis | API succeeds but reports no missing capability for either loopback address |
+| Profile cleanup | DeleteAppContainerProfile succeeds; profile folder and mapping are subsequently absent |
+
+The [network diagnosis API](https://learn.microsoft.com/en-us/windows/win32/api/networkisolation/nf-networkisolation-networkisolationdiagnoseconnectfailureandgetinfo)
+reports missing-capability information. Its no-error result is not proof that a
+loopback connection is permitted. Microsoft's
+[network-isolation troubleshooting guide](https://learn.microsoft.com/en-us/windows/security/operating-system-security/network-security/windows-firewall/troubleshooting-uwp-firewall)
+describes packet-drop evidence in Windows Filtering Platform events. A read-only
+event query scoped to this test executable was refused with ERROR_ACCESS_DENIED
+and an elevation requirement. No elevated query or capture was started. A timeout
+alone is not accepted as proof of enforcement, and the WSAEACCES assertion remains.
+
+The x64 /W4 /WX build and existing lifetime/resource/control checks pass; the
+combined registered-profile test **fails**. Logs use the
+`.codex-temp/office-authorized-isolation` and `office-network-diagnosis-final`
+prefixes. `case/listener-after.json` and `case/profile-cleanup.json` retain the
+new observations. `.codex-temp/office-profile-cleanup-verification.json` records
+absence of both created profile folders and registry mappings. The first
+diagnostic build could not find an import library and never launched; that
+failed build remains at `97715175ff1545f3861834140ee7d4ea`.
+
+No Office renderer, hostile document, installed app, Explorer registration or
+customer file was exercised. No product payload changed. This is progress on
+the required boundary, not Office-to-PDF implementation or release acceptance.
+
+
 Remaining gates
 ---------------
 
-Run and verify that access matrix after authorization, including profile cleanup
-and retained scratch ACL scope. Then evaluate Office engine startup, font/runtime
+Resolve the loopback observations with enforcement evidence and review retained
+scratch ACL scope. Then evaluate Office engine startup, font/runtime
 access, profile paths, explicit environment, output validation, and independent
 rendering inside the same boundary. Carry the verified resource tests into that
 boundary, including owner-crash cleanup. Execute the prepared IPv6 denial check

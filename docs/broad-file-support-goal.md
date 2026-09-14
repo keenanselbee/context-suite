@@ -56,6 +56,15 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments, owned evaluation jobs and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
+The owner authorized the disposable Office isolation profile test on 2026-09-14.
+The [registered-profile results](office-isolation-evaluation.md) verify actual
+AppContainer execution, exact permitted content, withheld-file/write denial and
+profile cleanup. IPv4/IPv6 attempts reach observation deadlines while adjacent
+controls connect; the combined test remains failed. Network capability diagnosis
+does not explain the result, and reading scoped filtering events requires
+elevation. Authorization for this test is resolved; enforcement evidence and
+Office execution inside the boundary remain unfinished.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

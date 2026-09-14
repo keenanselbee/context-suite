@@ -45,7 +45,10 @@ claim. The separately authorized disposable-profile mode requires actual denial
 on both endpoints; see [isolation scope and evidence](../../docs/office-isolation-evaluation.md).
 The current preflight compares actual fixture reads and distinct output bytes,
 preserves inputs during write-access checks, and records token capability counts.
-Profile-based content/access verification still needs its separate authorization.
+The owner authorized the disposable profile test on 2026-09-14. File/token/content
+checks and profile cleanup pass; loopback attempts hit observation deadlines, so
+the combined matrix remains failed. Capability diagnostics and before/after
+listener controls are recorded without treating timeouts as access denial.
 
 Run from the Context Suite repository with the .NET 10 SDK:
 
@@ -244,7 +247,8 @@ output directory, and removes only the profile it successfully created. Failed
 cleanup prints a recovery warning; preserve the recorded profile name. It never
 installs/registers a Context Suite package or changes Explorer registration.
 
-The opt-in path is prepared but has not been executed. The earlier unregistered
+The opt-in path has been executed after authorization; the file checks pass but
+network denial remains unverified. The earlier unregistered
 AppContainer attempt failed at process creation with Windows error 2. The probe
 therefore does not fall back to unrestricted execution for an isolated case.
 Read the [isolation evidence](../../docs/office-isolation-evaluation.md) for exact

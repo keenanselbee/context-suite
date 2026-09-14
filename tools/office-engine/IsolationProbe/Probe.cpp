@@ -4,12 +4,14 @@
 #include <aclapi.h>
 #include <userenv.h>
 #include <psapi.h>
+#include <netfw.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <cstring>
 
 namespace fs = std::filesystem;
 
@@ -101,7 +103,8 @@ DWORD WriteAttempt(const fs::path& path, const std::string& content) {
     if (written != content.size()) return ERROR_WRITE_FAULT;
     return FlushFileBuffers(file.value) ? ERROR_SUCCESS : GetLastError();
 }
-int ConnectAttempt(unsigned short port, bool ipv6 = false) {
+int ConnectAttempt(unsigned short port, bool ipv6 = false, bool* observationExpired = nullptr) {
+    if (observationExpired) *observationExpired = false;
     Socket connection(socket(ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, IPPROTO_TCP));
     if (connection.value == INVALID_SOCKET) return WSAGetLastError();
     u_long nonblocking = 1;
@@ -117,7 +120,12 @@ int ConnectAttempt(unsigned short port, bool ipv6 = false) {
     fd_set writeSet, errorSet; FD_ZERO(&writeSet); FD_ZERO(&errorSet);
     FD_SET(connection.value, &writeSet); FD_SET(connection.value, &errorSet);
     timeval timeout{ 2, 0 };
-    if (select(0, nullptr, &writeSet, &errorSet, &timeout) <= 0) return WSAETIMEDOUT;
+    const auto ready = select(0, nullptr, &writeSet, &errorSet, &timeout);
+    if (ready == SOCKET_ERROR) return WSAGetLastError();
+    if (ready == 0) {
+        if (observationExpired) *observationExpired = true;
+        return WSAETIMEDOUT;
+    }
     int result = 0, length = sizeof(result);
     if (getsockopt(connection.value, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&result), &length) != 0) return WSAGetLastError();
     return result;
@@ -142,13 +150,29 @@ int Child(const fs::path& root, unsigned short port, unsigned short port6, bool 
     const auto outputReadback = ReadAttempt(root / L"writable" / L"output.txt", outputText);
     const auto deniedWrite = OpenAttempt(root / L"denied" / L"output.txt", true);
     const auto readOnlyWrite = OpenAttempt(root / L"allowed" / L"input.txt", true);
-    const auto network = ConnectAttempt(port);
-    const auto network6 = ConnectAttempt(port6, true);
+    bool expired = false, expired6 = false;
+    const auto network = ConnectAttempt(port, false, &expired);
+    const auto network6 = ConnectAttempt(port6, true, &expired6);
+    const auto firewall = LoadLibraryExW(L"FirewallAPI.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+    Require(firewall != nullptr, "Load system network diagnosis API");
+    struct ModuleGuard { HMODULE value; ~ModuleGuard() { FreeLibrary(value); } } moduleGuard{ firewall };
+    const auto address = GetProcAddress(firewall, "NetworkIsolationDiagnoseConnectFailureAndGetInfo");
+    Require(address != nullptr, "Resolve network diagnosis API");
+    decltype(&NetworkIsolationDiagnoseConnectFailureAndGetInfo) diagnose = nullptr;
+    static_assert(sizeof(diagnose) == sizeof(address));
+    std::memcpy(&diagnose, &address, sizeof(diagnose));
+    NETISO_ERROR_TYPE reason = NETISO_ERROR_TYPE_NONE, reason6 = NETISO_ERROR_TYPE_NONE;
+    const auto diagnosis = diagnose(L"127.0.0.1", &reason);
+    const auto diagnosis6 = diagnose(L"::1", &reason6);
     std::cout << "{\"appContainer\":" << appContainer << ",\"allowedRead\":" << allowedRead
         << ",\"capabilityCount\":" << capabilityCount << ",\"outputReadback\":" << outputReadback
         << ",\"deniedRead\":" << deniedRead << ",\"allowedWrite\":" << allowedWrite
         << ",\"deniedWrite\":" << deniedWrite << ",\"readOnlyWrite\":" << readOnlyWrite
-        << ",\"loopbackConnect\":" << network << ",\"ipv6LoopbackConnect\":" << network6 << "}\n";
+        << ",\"loopbackConnect\":" << network << ",\"ipv6LoopbackConnect\":" << network6
+        << ",\"loopbackObservationExpired\":" << (expired ? "true" : "false")
+        << ",\"ipv6ObservationExpired\":" << (expired6 ? "true" : "false")
+        << ",\"networkDiagnosis\":" << diagnosis << ",\"networkReason\":" << reason
+        << ",\"ipv6Diagnosis\":" << diagnosis6 << ",\"ipv6Reason\":" << reason6 << "}\n";
     if (isolated) return appContainer == 1 && capabilityCount == 0 && allowedRead == 0 && allowedWrite == 0 && outputReadback == 0 &&
         deniedRead == ERROR_ACCESS_DENIED && deniedWrite == ERROR_ACCESS_DENIED &&
         readOnlyWrite == ERROR_ACCESS_DENIED && network == WSAEACCES && network6 == WSAEACCES ? 0 : 3;
@@ -538,11 +562,18 @@ int wmain(int argc, wchar_t** argv) {
         const auto isolated = Run(child, { L"--child", root.native(), port, port6, L"isolated" }, root, sid.value);
         std::ofstream(root / L"isolated.json") << isolated.output;
         std::cout << "Isolated: " << isolated.output;
-        Require(isolated.exitCode == 0 && !isolated.timedOut && !isolated.outputLimit && !isolated.output.empty(), "AppContainer access matrix");
+        // A failed connection observation must not prevent checking listener
+        // liveness and recording successful profile cleanup.
+        const auto after4 = ConnectAttempt(static_cast<unsigned short>(std::stoul(port)));
+        const auto after6 = ConnectAttempt(static_cast<unsigned short>(std::stoul(port6)), true);
+        std::ofstream(root / L"listener-after.json") << "{\"ipv4\":" << after4 << ",\"ipv6\":" << after6 << "}\n";
+        Require(after4 == 0 && after6 == 0, "Both listeners must remain reachable after isolated attempts");
         Require(ReadAttempt(root / L"allowed" / L"input.txt", "generated readable fixture") == 0 &&
             ReadAttempt(root / L"denied" / L"input.txt", "generated withheld fixture") == 0 &&
             ReadAttempt(root / L"writable" / L"output.txt", "isolated output fixture") == 0, "Isolated child must preserve input bytes and write distinct output");
         profile.Remove();
+        std::ofstream(root / L"profile-cleanup.json") << "{\"removed\":true}\n";
+        Require(isolated.exitCode == 0 && !isolated.timedOut && !isolated.outputLimit && !isolated.output.empty(), "AppContainer access matrix");
         std::cout << "PASS: explicit scratch read/write, withheld file and write denial, read-only source denial, IPv4/IPv6 loopback denial, actual AppContainer token.\n";
         return 0;
     } catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }
