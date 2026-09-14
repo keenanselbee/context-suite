@@ -1,6 +1,15 @@
 Context Suite Changelog
 =======================
 
+1.0.8 - Local candidate, 2026-09-14
+---------------------------------
+
+- Convert recordings shorter than sixteen samples to FLAC without adding padding.
+  Retain exact decoded samples and the existing metadata/publication safeguards.
+- Report extra decoded output as a length-validation failure. Short MP3 padding
+  remains an open defect; invalid output is not published.
+
+
 1.0.7 - Local candidate, 2026-09-14
 ---------------------------------
 

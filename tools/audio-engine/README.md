@@ -1,6 +1,11 @@
 Isolated Audio Engine Evaluation
 ===============================
 
+The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
+cover tiny recordings, codec-frame boundaries and safe publication/recovery.
+See [commands and exact results](../../docs/short-audio-verification.md): the
+FLAC correction passes, while five short-MP3 cases still fail the matrix.
+
 `Test-AudioWorker.ps1 -Packaged -IncludeOptimizationInterruptions` tests live
 FLAC recompression cancellation, client timeout and worker termination, then
 validated smaller-copy retries. It uses generated padded FLAC inputs and a

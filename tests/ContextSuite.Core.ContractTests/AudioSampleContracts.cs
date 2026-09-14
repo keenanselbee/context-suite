@@ -33,6 +33,16 @@ internal static class AudioSampleContracts
         await Reject(() => AudioSampleValidation.CaptureAsync(new MemoryStream(), Stream.Null, 1, 8, default), "empty decode");
         await Reject(() => AudioSampleValidation.CompareAsync(new MemoryStream(bytes), new MemoryStream(bytes[..^16]), 2, bytes.Length, default), "shorter output");
         await Reject(() => AudioSampleValidation.CompareAsync(new MemoryStream(bytes[..^16]), new MemoryStream(bytes), 2, bytes.Length, default), "longer output");
+        try
+        {
+            await AudioSampleValidation.CompareAsync(new ShortReads(new byte[16]), new ShortReads(new byte[47 * 16]), 2, 47 * 16, default);
+            check(false, "audio samples: extra padding has an explicit length-validation failure");
+        }
+        catch (InvalidDataException exception)
+        {
+            check(exception.Message == "Encoded audio has more decoded samples than its reference.",
+                "audio samples: extra padding has an explicit length-validation failure");
+        }
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         try { await AudioSampleValidation.CaptureAsync(new MemoryStream(bytes), Stream.Null, 2, bytes.Length, cancelled.Token); check(false, "audio samples: cancellation"); }
         catch (OperationCanceledException) { check(true, "audio samples: cancellation"); }

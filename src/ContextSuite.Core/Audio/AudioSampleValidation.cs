@@ -51,7 +51,8 @@ public static class AudioSampleValidation
         {
             if (count > maximumBytes - bytes || count % sizeof(double) != 0)
                 throw new InvalidDataException("Decoded audio exceeds its limit or ends inside a sample.");
-            await reference.ReadExactlyAsync(before.AsMemory(0, count), token);
+            if (await reference.ReadAtLeastAsync(before.AsMemory(0, count), count, false, token) != count)
+                throw new InvalidDataException("Encoded audio has more decoded samples than its reference.");
             for (var offset = 0; offset < count; offset += sizeof(double))
             {
                 var expected = BitConverter.Int64BitsToDouble(System.Buffers.Binary.BinaryPrimitives.ReadInt64LittleEndian(before.AsSpan(offset)));
