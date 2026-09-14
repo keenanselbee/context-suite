@@ -1,6 +1,17 @@
 Context Suite Changelog
 =======================
 
+1.1.0 - Local candidate, 2026-09-14
+---------------------------------
+
+- Preserve short resampled audio using a bounded working extension and the
+  original output interval. Validate duration independently of resampling.
+- Retain ambiguous APK and RAR filename meanings in the reviewed 244-record
+  catalog, without treating recognition as a conversion capability.
+- Continue local audio/PDF evaluation. Required Office conversion, listening,
+  visible acceptance and commercial release gates remain incomplete.
+
+
 1.0.9 - Local candidate, 2026-09-14
 ---------------------------------
 

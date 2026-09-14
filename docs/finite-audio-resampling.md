@@ -5,8 +5,8 @@ The 2026-09-14 implementation repairs the original 28 short-input failures in
 the [duration investigation](short-resampling-verification.md). It retains the
 source-duration guard and the existing native filter, encoding presets, signal
 comparison, metadata validation and application-owned publication boundary.
-This is local adapter evidence; updated staging and direct-worker acceptance
-remain required.
+The adapter and newly staged worker have the bounded evidence recorded below;
+broader audio and release acceptance remain separate.
 
 
 Boundary policy and resource limits
@@ -90,7 +90,44 @@ The reconciled counts and evidence hashes are in
 `.codex-temp/finite-resampling-verification.json`.
 
 Candidate 1.0.9 remains unchanged and predates both the guard and this repair.
-The next staged payload must use version 1.1.0 or later. Broader input/metadata
-variants, short surround encoding, representative listening/player acceptance,
-direct-worker recovery, visible UI, required Office conversion and commercial
-release gates remain open.
+Broader input/metadata variants, short surround encoding, representative
+listening/player acceptance, interrupted-worker recovery, visible UI, required
+Office conversion and commercial release gates remain open.
+
+
+Candidate 1.1.0 and publication
+-------------------------------
+
+Candidate **1.1.0** is staged at
+`artifacts/production-staging/169f27e246ce43c4808afa9f99e044a3`, with 116 verified
+files and inventory SHA-256
+`160B80B502C99E225408D114450E524BE68C817A37719E3B8BD8E75737E652D2`.
+Its reservation is `artifacts/production-version-receipts/1.1.0.json`. Version
+1.0.9's inventory and every payload file retain their previous hashes.
+
+The new direct-command harness passes **40 isolated checks**. Declining the
+resampling prompt publishes nothing and consumes no admission. Accepting a mixed
+eleven-file batch requests resampling and lossy-transcoding consent as needed,
+uses one admission and the same real worker, and creates validated named copies.
+The inputs include previously failing tiny WAV files, the 256/257-frame boundary,
+and tagged FLAC, MP3, M4A and Vorbis. Source bytes/write times and titles remain
+unchanged. Repeating a conversion creates a new name and preserves the first copy.
+A refusing recycler ensures copy-only scope.
+
+All twelve published files independently decode to finite samples within the
+source-derived duration bounds; finite-path outputs use the exact ceiling count.
+All **2,822 foundation contracts** pass. Release production and public test-host
+builds report zero warnings/errors. No app installation, Explorer registration,
+native recycling, live commerce or visible UI acceptance was performed. The test
+access service is isolated from customer licensing; the harness closes its worker.
+
+```powershell
+dotnet '<public contract DLL>' --resampling-direct '<new evidence>' '<staged worker>' '<short matrix fixtures>' '<tagged source fixtures>'
+```
+
+`.codex-temp/resampling-production-session.json` records staging and final test
+locations. The final direct report is `resampling-direct.json` in that recorded
+directory. `.codex-temp/resampling-direct-final-independent.json` records all
+twelve decoded outputs; `.codex-temp/resampling-payload-verification.json`
+reconciles both candidates. Build and test logs use `resampling-production`,
+`resampling-direct-final` and `resampling-foundation` prefixes.

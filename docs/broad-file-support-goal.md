@@ -63,6 +63,15 @@ whole-sample counts for fractional ratios, corroborated by independent SoX
 resampling. Updated production staging, worker acceptance and wider audio gates
 remain separate; candidate 1.0.9 still predates these changes.
 
+Candidate **1.1.0** now includes the finite-resampling repair and 244-record
+catalog. Its 116-file payload verifies, 40 isolated real-worker resampling checks
+pass, and all twelve published copies independently decode within their expected
+extents. All 2,822 foundation contracts pass; Release builds have zero warnings
+or errors. Candidate 1.0.9 is preserved unchanged. See the
+[candidate receipt and exact acceptance scope](finite-audio-resampling.md).
+This does not close listening, interrupted-worker recovery, visible acceptance,
+required Office conversion or the separate release gates.
+
 Current completion path (2026-09-12)
 ------------------------------------
 

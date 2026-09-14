@@ -156,6 +156,14 @@ if (args.Length is 4 or 5 && args[0] == "--audio-conversion-direct")
     Console.WriteLine($"Passed {checks} isolated direct audio conversion checks.");
     return 0;
 }
+if (args.Length == 5 && args[0] == "--resampling-direct")
+{
+    var checks = 0;
+    await AudioConversionDirectContracts.ResamplingAsync(args[1], args[2], args[3], args[4], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated resampling direct checks.");
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--short-audio-direct")
 {
     var checks = 0;

@@ -12,7 +12,7 @@
   <Identity
     Name="Keenan.ContextSuite.Analyze.ShellPrototype"
     Publisher="CN=Keenan"
-    Version="1.0.9.0"
+    Version="1.1.0.0"
     ProcessorArchitecture="x64" />
 
   <Properties>
