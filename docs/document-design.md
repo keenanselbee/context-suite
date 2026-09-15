@@ -319,6 +319,13 @@ crashed owners. Owner loss, cancellation or a missing terminal reply must remain
 failed even when a child exits zero or leaves a parseable candidate. Keep final
 publication under application ownership after all completion checks.
 
+The [private Office host candidate](office-host-candidate.md) now implements a
+fixed export process and strict public completion protocol, with three isolated
+exports independently checked against retained controls. Its verified path/file
+identities, source preservation and refusal cases are component evidence. The
+production launcher, worker adapter, candidate validation and app publication
+remain to be connected; customer Office conversion is still unavailable.
+
 
 Output and acceptance
 ---------------------

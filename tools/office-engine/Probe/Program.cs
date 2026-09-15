@@ -5,12 +5,16 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
+if (args is ["--inspect-host-completions", var hostStage, var hostCase])
+    return await OfficeHostInspection.RunAsync(hostStage, hostCase);
 if (args is ["--preflight-isolation-fixtures", var preflightFixtures])
     return await OfficeFixturePreflight.RunAsync(preflightFixtures);
 if (args is ["--inspect-isolation-exports", var isolatedStage, var isolatedQpdf, var isolatedPdfium])
     return await OfficeIsolatedExportInspection.RunAsync(isolatedStage, isolatedQpdf, isolatedPdfium);
 if (args is ["--inspect-isolation-exports", var namedStage, var namedQpdf, var namedPdfium, var caseName])
     return await OfficeIsolatedExportInspection.RunAsync(namedStage, namedQpdf, namedPdfium, caseName);
+if (args is ["--inspect-isolation-exports", var hostExportStage, var hostQpdf, var hostPdfium, var exportCase, var controlCase])
+    return await OfficeIsolatedExportInspection.RunAsync(hostExportStage, hostQpdf, hostPdfium, exportCase, controlCase);
 if (args is ["--isolation-fixtures", var isolationFixtures])
 {
     var folder = Path.GetFullPath(isolationFixtures);

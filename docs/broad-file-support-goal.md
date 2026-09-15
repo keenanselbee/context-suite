@@ -215,6 +215,13 @@ must require an explicit successful owner reply and validated output. Context Su
 application/worker crash recovery, same-profile retries and publication remain
 unimplemented/unverified for Office.
 
+The [private Office host candidate](office-host-candidate.md) adds a fixed-purpose
+isolated export process and strict completion protocol. Three actual host exports
+pass independent PDF/text/layout/pixel checks; six malformed/context/path refusal
+cases and ordinary-token refusal pass. The foundation suite now passes 2,986
+contracts. Production launcher/worker/publication integration remains next;
+this component checkpoint does not enable customer Office conversion.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

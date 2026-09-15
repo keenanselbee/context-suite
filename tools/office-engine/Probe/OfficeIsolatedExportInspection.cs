@@ -3,7 +3,7 @@ using System.Text.Json;
 
 internal static class OfficeIsolatedExportInspection
 {
-    internal static async Task<int> RunAsync(string stage, string qpdf, string pdfium, string caseName = "case")
+    internal static async Task<int> RunAsync(string stage, string qpdf, string pdfium, string caseName = "case", string? controlCaseName = null)
     {
         stage = Path.GetFullPath(stage);
         if (!stage.Contains("\\.codex-temp\\office-isolation\\", StringComparison.OrdinalIgnoreCase))
@@ -13,6 +13,10 @@ internal static class OfficeIsolatedExportInspection
             throw new IOException("Use a retained named isolation case.");
         var root = Path.Combine(stage, caseName);
         if (!File.Exists(Path.Combine(root, "profile-cleanup.json"))) throw new IOException("Wait for the isolation test to finish cleanup.");
+        if (controlCaseName is not null && (controlCaseName.Length is < 3 or > 10 || !controlCaseName.StartsWith("cs", StringComparison.Ordinal) ||
+            controlCaseName.AsSpan(2).ContainsAnyExceptInRange('0', '9') ||
+            !File.Exists(Path.Combine(stage, controlCaseName, "profile-cleanup.json"))))
+            throw new IOException("Use a completed retained control case.");
         var output = Path.Combine(stage, "inspection-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         Console.WriteLine("Isolated export inspection: " + output);
@@ -34,11 +38,12 @@ internal static class OfficeIsolatedExportInspection
             (string Folder, JsonElement Render, string[] Text)? baseline = null;
             foreach (var kind in new[] { "control", "isolated" })
             {
+                var caseRoot = kind == "control" && controlCaseName is not null ? Path.Combine(stage, controlCaseName) : root;
                 var name = family + "-" + kind;
                 var folder = Path.Combine(output, name); Directory.CreateDirectory(folder);
                 try
                 {
-                    var statePath = Path.Combine(root, name + "-export.json");
+                    var statePath = Path.Combine(caseRoot, name + "-export.json");
                     if (!File.Exists(statePath)) throw new InvalidDataException("No completed export record; inspect retained initialization diagnostic.");
                     using var state = JsonDocument.Parse(File.ReadAllText(statePath));
                     if (!state.RootElement.GetProperty("completed").GetBoolean()) throw new InvalidDataException("Engine did not complete a bounded export.");
@@ -46,9 +51,9 @@ internal static class OfficeIsolatedExportInspection
                     {
                         var extension = family == "Word" ? "docx" : family == "Excel" ? "xlsx" : "pptx";
                         var inputName = family + " \u00fc." + extension;
-                        var inputFolder = Path.Combine(root, "allowed", name);
+                        var inputFolder = Path.Combine(caseRoot, "allowed", name);
                         var input = Path.Combine(inputFolder, inputName);
-                        using var receipt = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, name + "-input.json")));
+                        using var receipt = JsonDocument.Parse(File.ReadAllText(Path.Combine(caseRoot, name + "-input.json")));
                         if (!state.RootElement.GetProperty("loopReady").GetBoolean() ||
                             Hash(input) != Hash(Path.Combine(stage, "office-fixtures", inputName)) ||
                             File.GetLastWriteTimeUtc(input).ToFileTimeUtc() != receipt.RootElement.GetProperty("lastWriteTime").GetInt64() ||
@@ -57,8 +62,8 @@ internal static class OfficeIsolatedExportInspection
                             throw new InvalidDataException("Owned read-only input changed, acquired an extra file, or lacked loop readiness.");
                     }
                     var profile = (family == "Word" ? "w" : family == "Excel" ? "x" : "p") + (kind == "control" ? "c" : "i");
-                    OfficeProfileSettings.Verify(Path.Combine(root, "writable", profile, "user", "registrymodifications.xcu"));
-                    var pdf = Path.Combine(root, "writable", name, family + " \u00fc.pdf"); var hash = Hash(pdf);
+                    OfficeProfileSettings.Verify(Path.Combine(caseRoot, "writable", profile, "user", "registrymodifications.xcu"));
+                    var pdf = Path.Combine(caseRoot, "writable", name, family + " \u00fc.pdf"); var hash = Hash(pdf);
                     await OfficeEvaluationProcess.RunAsync(qpdf, ["--check", pdf], folder);
                     var inspection = await OfficeEvaluationProcess.RunAsync(pdfium, ["inspect", pdf], folder);
                     using var facts = JsonDocument.Parse(inspection.Output);
@@ -102,7 +107,7 @@ internal static class OfficeIsolatedExportInspection
                 }
             }
         }
-        File.WriteAllText(Path.Combine(output, "results.json"), JsonSerializer.Serialize(new { passed, caseRoot = root, results, comparisons }, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(Path.Combine(output, "results.json"), JsonSerializer.Serialize(new { passed, caseRoot = root, controlCaseName, results, comparisons }, new JsonSerializerOptions { WriteIndented = true }));
         return passed ? 0 : 1;
     }
 
