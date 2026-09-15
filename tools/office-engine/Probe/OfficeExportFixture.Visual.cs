@@ -6,8 +6,9 @@ internal static partial class OfficeExportFixture
     // Clone only our passive authored template, with one distinct bitmap per sheet/slide.
     // Explicit print areas and slide order make the full-export page count independent
     // of the interruption observer. There are no formulas, links or hidden pages here.
-    private static string CreateVisual(string directory, string family)
+    private static string CreateVisual(string directory, string family, int pages)
     {
+        if (pages is < 1 or > Pages) throw new ArgumentOutOfRangeException(nameof(pages));
         var excel = family == "Excel";
         var extension = excel ? "xlsx" : "pptx";
         var path = Path.Combine(directory, "Export interruption." + extension);
@@ -31,7 +32,7 @@ internal static partial class OfficeExportFixture
         types.Root!.Elements().Where(element => ((string?)element.Attribute("PartName"))?.StartsWith("/" + pagesPrefix, StringComparison.Ordinal) == true).Remove();
         types.Root.Add(new XElement(types.Root.Name.Namespace + "Default", new XAttribute("Extension", "bmp"), new XAttribute("ContentType", "image/bmp")));
         foreach (var entry in zip.Entries.Where(entry => entry.FullName.StartsWith(pagesPrefix, StringComparison.Ordinal)).ToArray()) entry.Delete();
-        for (var page = 1; page <= Pages; page++)
+        for (var page = 1; page <= pages; page++)
         {
             var pageName = (excel ? "sheet" : "slide") + page + ".xml";
             var imageName = "image" + page + ".bmp";

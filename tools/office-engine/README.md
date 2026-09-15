@@ -342,3 +342,11 @@ the application worker client and profile owner. The opt-in is required before
 preparation or Windows profile creation. `Inspect-OfficeWorkerExports.ps1` then
 checks the retained candidates with independent PDF tooling and retained controls.
 See [worker evidence, failures and remaining integration](../../docs/office-worker-export.md).
+
+`Test-OfficeWorkerStop.py --create-disposable-profile --worker <retained-worker>
+--build-receipt <matching-build.json> --fixtures <ordinary-fixtures>
+--large-fixtures <interruption-fixtures>` prepares the active stop/recovery matrix
+without recopying the runtime. The probe's `--worker-stop-fixtures <fresh-directory>`
+creates twelve passive pages per family. The matrix has not passed: startup
+failures precede its first stop point. See the [investigation and diagnostic
+controls](../../docs/office-worker-interruption.md) before retrying.

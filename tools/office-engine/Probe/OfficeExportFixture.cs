@@ -7,15 +7,16 @@ using System.Text;
 internal static partial class OfficeExportFixture
 {
     internal const int Pages = 96;
-    internal static string Create(string directory, string family) => family switch
+    internal static string Create(string directory, string family, int pages = Pages) => family switch
     {
-        "Word" => Create(directory),
-        "Excel" or "PowerPoint" => CreateVisual(directory, family),
+        "Word" => Create(directory, pages),
+        "Excel" or "PowerPoint" => CreateVisual(directory, family, pages),
         _ => throw new ArgumentException("Choose Word, Excel or PowerPoint.", nameof(family))
     };
 
-    internal static string Create(string directory)
+    internal static string Create(string directory, int pages = Pages)
     {
+        if (pages is < 1 or > Pages) throw new ArgumentOutOfRangeException(nameof(pages));
         var path = Path.Combine(directory, "Export interruption.docx");
         using var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
         using var zip = new ZipArchive(file, ZipArchiveMode.Create);
@@ -28,7 +29,7 @@ internal static partial class OfficeExportFixture
         Text("_rels/.rels", $"<Relationships xmlns=\"{relationships}\"><Relationship Id=\"document\" Type=\"{rel}/officeDocument\" Target=\"word/document.xml\"/></Relationships>");
         var links = new StringBuilder($"<Relationships xmlns=\"{relationships}\">");
         var body = new StringBuilder($"<w:document xmlns:w=\"{w}\" xmlns:r=\"{rel}\"><w:body>");
-        for (var page = 1; page <= Pages; page++)
+        for (var page = 1; page <= pages; page++)
         {
             var id = "image" + page;
             links.Append($"<Relationship Id=\"{id}\" Type=\"{rel}/image\" Target=\"media/{id}.bmp\"/>");

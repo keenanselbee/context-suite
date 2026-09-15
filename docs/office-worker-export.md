@@ -27,6 +27,9 @@ The worker never publishes it. Production document admission, independent PDF
 validation and application-owned transactional copy publication remain separate.
 The client allows 180 seconds for the request, including runtime verification;
 the native process retains its separate two-minute deadline.
+The later [interruption investigation](office-worker-interruption.md) replays
+ordinary exports successfully but retains startup failures before its active
+stop points. Cancellation/loss acceptance is still incomplete.
 
 
 Actual isolated evidence

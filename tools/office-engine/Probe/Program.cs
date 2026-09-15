@@ -5,6 +5,23 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
+if (args is ["--worker-stop-fixtures", var stopFixtureRoot])
+{
+    var folder = Path.GetFullPath(stopFixtureRoot);
+    if (!folder.Contains("\\.codex-temp\\office-isolation\\", StringComparison.OrdinalIgnoreCase) || Directory.Exists(folder))
+        throw new IOException("Use fresh owned isolation fixtures.");
+    Directory.CreateDirectory(folder); OfficeFixtures.Create(folder);
+    foreach (var (family, extension) in new[] { ("Word", "docx"), ("Excel", "xlsx"), ("PowerPoint", "pptx") })
+        File.Move(OfficeExportFixture.Create(folder, family, 12), Path.Combine(folder, family + " \u00fc." + extension), true);
+    File.WriteAllText(Path.Combine(folder, "fixtures.json"), JsonSerializer.Serialize(new
+    {
+        PagesPerDocument = 12,
+        Files = Directory.GetFiles(folder).Select(path => new { Name = Path.GetFileName(path), Sha256 = Hash(path) }).ToArray()
+    }, new JsonSerializerOptions { WriteIndented = true }));
+    Console.WriteLine("Created three passive twelve-page Office interruption fixtures.");
+    return 0;
+}
+
 if (args is ["--inspect-host-completions", var hostStage, var hostCase])
     return await OfficeHostInspection.RunAsync(hostStage, hostCase);
 if (args is ["--preflight-isolation-fixtures", var preflightFixtures])

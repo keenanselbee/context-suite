@@ -5,6 +5,11 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The latest [Office interruption investigation](office-worker-interruption.md)
+passes 39 ordinary-export checks, independent three-PDF inspection and 30 runtime
+checks with a diagnostic host. Its active interruption attempts fail before PDF
+growth; the startup exception remains unresolved. No active-stop cell is accepted.
+
 Objective
 ---------
 
