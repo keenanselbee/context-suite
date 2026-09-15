@@ -5,13 +5,22 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [journal-based profile recovery](office-ownership-journal.md#profile-recovery-from-a-reopened-journal)
+The latest [actual Office owner-loss acceptance](office-ownership-journal.md#application-loss-during-office-rendering)
+passes 81 checks across Word, Excel and PowerPoint. Killing only the owner during
+live rendering permits journal-based process/profile recovery; three following
+exports pass independent PDF inspection. All six profiles and named jobs are
+absent, with original snapshots and interrupted output evidence retained.
+Production context construction, restart orchestration, validated publication and
+the customer Office command remain unfinished.
+
+The preceding [journal-based profile recovery](office-ownership-journal.md#profile-recovery-from-a-reopened-journal)
 reconstructs cleanup only after original-owner death and live profile/grant/job
 verification. All 138 native ownership checks and 3,173 foundation contracts pass.
 Five disposable crash cases cover partial setup, process lifetime, pending
 revocation and replacement refusal. All test profiles and grants are removed,
 including the retained profile from the failed first fixture attempt. Actual
-Office rendering crashes and the remaining production integration gates are open.
+Office rendering crashes were still untested at that checkpoint; the acceptance
+above covers them through the private harness. Production integration remains open.
 
 The preceding [Office worker dispatch binding](office-ownership-journal.md#worker-lifetime-binding-before-dispatch)
 records the assigned named job in version-three journals before any request bytes

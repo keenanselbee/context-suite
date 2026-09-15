@@ -332,3 +332,57 @@ replacement still require acceptance. Missing or changed profile objects remain
 reviewable rather than being silently treated as deleted. Production context
 construction, independent PDF publication and the customer command remain open.
 The earlier real-Office export suite was not rerun for this recovery-only slice.
+
+
+Application loss during Office rendering
+---------------------------------------
+
+The private `OfficeOwnerLossContracts` harness now starts a disposable application
+owner for each generated DOCX/XLSX/PPTX fixture. It observes two increasing PDF
+sizes while the exact AppContainer host is live, retains worker/host process
+handles with matching creation times, then terminates only the owner. A separate
+process reopens the persisted journal and uses `OfficeSandboxOwner.RecoverAsync`.
+Both worker and renderer must have exited before recovered ownership permits
+permission/profile cleanup. Recovery retries only sharing/lock failures within
+the harness's existing five-second bound.
+
+All **81 checks** pass at
+`.codex-temp/office-worker/4e5ea25a4f1a4eceada9613cf14e0d28`: 27 owner-loss checks
+across three live renderers, followed by the existing 54 ordinary export checks.
+The original fixtures and six read-only snapshots remain unchanged. Three
+interrupted PDFs are retained as evidence, without being accepted or published.
+The six journals each finish with 27 frames and confirmed profile deletion.
+The Release harness build has zero warnings/errors.
+
+Independent inspection at
+`contracts/inspection-8b7c36be607a4c4fb35aee41cfda51f2` verifies qpdf structure,
+authored text, page geometry and exact PDFium control pixels for all three
+following exports. The first inspection invocation used the aggregate report;
+the inspector correctly refused its nested candidate paths. Inspecting the
+existing `contracts/following/results.json` passes without changing the report,
+candidate files or inspector. That initial refusal remains at
+`inspection-787897159b0241c2b89e415df9775997`.
+
+`.codex-temp/office-owner-loss-verification.json` reconciles current test sources,
+managed/worker binaries, source fixtures, candidate hashes, all 162 journal
+frames and 30 live grant-directory identities. All six profile folders/mappings
+and named jobs are absent; 23,059 runtime/context ACL entries contain none of
+their test SIDs. The earlier 3,173-contract foundation receipt still matches its
+sources; that suite was not rerun for these harness-only changes.
+
+Use `tools/office-engine/Test-OfficeWorkerStop.py --mode owner-loss` with its
+required retained worker, build receipt and generated fixture arguments, plus
+explicit disposable-profile authorization. The existing `all` mode still covers
+cancel, worker loss and deadline; owner loss is a separate explicit mode. The
+runner checks retained worker implementation sources independently of the
+current application/harness source snapshot, allowing test-only evolution while
+preserving the binary identity check.
+
+This verifies actual Office rendering with the application infrastructure in a
+private test owner. It does not provide customer startup recovery, production
+context construction, independent PDF publication or a customer Office command.
+Creation/deletion confirmation failures, ambiguous native deletion, hostile
+descendant recovery, concurrent replacement and the other documented integration
+gates remain open. Excel uses explicit cached values in these fixtures; the
+customer calculation default remains undecided. The reserved production payload
+is unchanged, and no visual or installed-shell acceptance is implied.

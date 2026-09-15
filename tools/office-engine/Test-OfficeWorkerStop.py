@@ -20,7 +20,7 @@ def main():
     parser.add_argument("--build-receipt", type=Path, required=True)
     parser.add_argument("--large-fixtures", type=Path, required=True)
     parser.add_argument("--fixtures", type=Path, required=True)
-    parser.add_argument("--mode", choices=("all", "cancel", "worker-loss", "deadline"), default="all")
+    parser.add_argument("--mode", choices=("all", "cancel", "worker-loss", "deadline", "owner-loss"), default="all")
     args = parser.parse_args()
     if not args.create_disposable_profile:
         parser.error("Explicit disposable profile authorization is required before preparation or execution.")
@@ -35,7 +35,7 @@ def main():
     for name, expected in recorded_sources.items():
         # Tests may evolve independently; the prepared worker implementation must match.
         normalized = name.replace("\\", "/")
-        if normalized.startswith(("src/", "proprietary/src/")) and digest(root / name) != expected:
+        if normalized.startswith(("src/ContextSuite.Core/", "src/ContextSuite.Worker/", "src/Shared/", "proprietary/src/")) and digest(root / name) != expected:
             raise RuntimeError(f"Retained worker implementation source changed: {name}")
     actual = {path.name: digest(path) for path in worker.parent.iterdir() if path.is_file()}
     if actual != worker_files:
@@ -79,7 +79,8 @@ def main():
         raise RuntimeError(f"Office interruption check failed; inspect logs and owned profile receipts before retrying: {scratch}")
     report = json.loads((scratch / "contracts/results.json").read_text(encoding="utf-8"))
     modes = ["cancel", "worker-loss", "deadline"] if args.mode == "all" else [args.mode]
-    if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != 30 * len(modes):
+    expected_checks = 81 if args.mode == "owner-loss" else 30 * len(modes)
+    if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != expected_checks:
         raise RuntimeError("Missing complete interruption evidence.")
     if any(digest(Path(name)) != expected for name, expected in fixtures.items()):
         raise RuntimeError("An original fixture changed during interruption checks.")

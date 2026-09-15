@@ -184,3 +184,15 @@ remains unfinished. These component tests use generated process trees; they crea
 profiles and run no Office engine. AppContainer access denial to the named job,
 cross-session recovery and hostile same-user object substitution are not verified.
 The older real-Office and broad media regressions were not rerun for this component.
+
+
+Actual Office owner-loss acceptance
+----------------------------------
+
+The [journal recovery acceptance](office-ownership-journal.md#application-loss-during-office-rendering)
+now kills only a disposable application owner while its DOCX/XLSX/PPTX renderer
+is live and its PDF is growing. Reopened journal recovery confirms worker/host
+exit before permission cleanup. All 81 checks pass, including three subsequent
+ordinary exports with independent PDF inspection. Six recorded named jobs and
+six profiles are absent after recovery and following exports. This uses the
+private test owner; production restart orchestration and publication remain open.
