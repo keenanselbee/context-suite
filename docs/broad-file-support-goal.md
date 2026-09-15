@@ -206,6 +206,15 @@ and settings, release files and remove their disposable profiles. Application
 cancellation, owner crashes, same-profile recovery, publication and content/network
 isolation are still separate requirements.
 
+The [separate embedded owner-crash experiment](office-embedded-recovery.md#owner-crash-during-export)
+verifies three abrupt job-owner exits during PDF growth, retained engine handles
+signaling exit, all six recorded job members no longer live, profile cleanup and
+27 exclusive file opens. Six following normal exports pass independent checks.
+Stopped engines report exit zero despite incomplete PDFs, so future orchestration
+must require an explicit successful owner reply and validated output. Context Suite
+application/worker crash recovery, same-profile retries and publication remain
+unimplemented/unverified for Office.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

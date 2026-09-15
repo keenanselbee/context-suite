@@ -311,6 +311,14 @@ under retained source read leases. Its exact ordinary DOCX/XLSX/PPTX scope is
 incremental, not a final supported-format list. Complete document admission,
 legacy/other variants and customer conversion remain unimplemented.
 
+Office completion also requires an explicit successful terminal reply from the
+owning operation and independent candidate validation. In the
+[embedded owner-crash experiment](office-embedded-recovery.md#owner-crash-during-export),
+all three stopped engine processes report exit zero despite incomplete PDFs and
+crashed owners. Owner loss, cancellation or a missing terminal reply must remain
+failed even when a child exits zero or leaves a parseable candidate. Keep final
+publication under application ownership after all completion checks.
+
 
 Output and acceptance
 ---------------------

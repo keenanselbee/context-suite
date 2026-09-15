@@ -4,9 +4,10 @@ Office Embedded Failure And Recovery Evaluation
 Status: passive malformed-input and forced-stop observations are complete for
 the three authored OOXML fixtures. All 24 following normal exports pass independent
 checks. A later large-fixture experiment verifies three stops during actual PDF
-growth and six passing normal exports afterward. Zero-byte inputs are accepted
-by the renderer and require application admission checks. Production cancellation,
-owner-crash recovery, hostile-content denial and Office conversion remain open.
+growth and six passing normal exports afterward. A separate owner-crash experiment
+also verifies engine termination and six following exports. Zero-byte inputs are
+accepted by the renderer and require application admission checks. Production
+cancellation/crash recovery, hostile-content denial and Office conversion remain open.
 
 
 Scope and method
@@ -199,6 +200,67 @@ resource exhaustion, disk failure, hostile-content/network denial or customer
 Office conversion. Those gates remain separate.
 
 
+Owner crash during export
+-------------------------
+
+The next experiment separates the disposable engine-job owner from the supervisor
+that creates and removes the Windows profile. The supervisor launches the owner
+without an outer test job or inherited handles. Before the owner resumes its
+suspended Office process, a bounded identity handshake lets the supervisor open
+and retain that exact process handle, checking its creation time and executable.
+The supervisor holds no handle to the owner's job. There is no barrier during
+rendering.
+
+When the owner observes two increasing incomplete-PDF samples using the preceding
+method, it records its live job members, diagnostics and growth observation, then
+calls `TerminateProcess` on itself with code 83. This deliberately bypasses stack
+unwinding and the normal `TerminateJobObject` cleanup call. The supervisor waits
+for the retained engine handle to signal exit before proceeding. Profile ownership
+survives the crash and cleanup remains explicit.
+
+All three restricted `cs40` cases reach that crash point. Their retained partial
+PDF sizes are 30,932,992 bytes for Word, 31,490,048 for Excel and 31,916,032 for
+PowerPoint. All lack the final EOF marker and fail qpdf checks with exit 2. Every
+owner exits 83 without export/shutdown success markers. Each engine handle signals
+exit, with 46–63 ms remaining wait measured after the supervisor observes owner
+exit. The two recorded live job members per case (engine and console host) are no
+longer live under their recorded identities afterward. Counts agree with the
+pre-crash job accounting; this is separate from querying an extant job after its
+last handle has closed.
+
+Windows reports **exit code 0 for all three stopped engine processes**. This is
+not successful rendering: their owners crashed and outputs are incomplete.
+Customer orchestration must require the owning operation's explicit successful
+reply and independent output validation, in addition to normal process completion.
+An owner crash or lost terminal reply remains failed even if a child reports zero
+or a candidate file exists.
+
+All six `cs41` following normal exports pass independent structure, authored text,
+page count/geometry and exact ordinary/restricted rendered-pixel comparisons.
+These use fresh profiles; same-profile recovery is not established. Across the
+nine attempts, original/copy bytes and write times, read-only copy attributes and
+seven required profile settings are unchanged. Twenty-seven exclusive read opens
+confirm file release. Both native invocations remove their Windows profile, whose
+folder and registry mapping are absent afterward. All 19,332 runtime members in
+source and copy and exact copied membership remain unchanged. Observed peak engine
+memory is about 346–404 MB, within the existing 512 MiB process limit; this is not
+resource-exhaustion acceptance.
+
+Evidence beneath the staging directory named above is
+`embedded-owner-crash-a46a4fda3e8e4ee988030f0e1d89d32d`, containing the source/build
+bound to public base `6086ada6ccbfb0aa6676cb7dd60a4cce766f66cd`, source preflight,
+input hashes, matrix and partial-PDF checks. `cs40` retains identity handshakes,
+owner/job accounting, growth samples and crash results.
+`inspection-ac34164db7c641769254371fe1a4ad9f/results.json` verifies `cs41` outputs.
+The final reconciliation, including verifier-source hashes, is
+`.codex-temp/office-embedded-owner-crash-final.json`.
+
+This verifies abrupt loss of an evaluation job owner during active export.
+It does not implement or accept Context Suite application/worker crash recovery,
+same-profile retry, transactional publication, UI cancellation, hostile-content
+or network enforcement. The crash instrumentation remains in owned scratch.
+
+
 Required next work
 ------------------
 
@@ -210,7 +272,7 @@ The initial preflight above is necessary identification, not complete production
 admission. No customer Office conversion path is implemented by this experiment.
 
 Connect the observed active-export termination behavior to application/worker
-cancellation and test owner crashes, resource/disk failures, broader format/fidelity
+cancellation and crash recovery; test resource/disk failures, broader format/fidelity
 coverage and application-owned publication. Resolve calculation/font policies and
 network/content isolation
 before customer conversion. No visible UI, screen-reader, theme/DPI, installed
