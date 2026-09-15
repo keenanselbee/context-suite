@@ -300,6 +300,7 @@ try
     OfficeWorkContracts.Run(Check);
     await OfficeJournalContracts.RunAsync(args[0], Check);
     await DocumentAnalysisContracts.OfficeContextContractsAsync(args[0], Check);
+    await OfficeRecoveryCoordinatorContracts.RunAsync(args[0], Check);
     await WorkerLifetimeContracts.RunAsync(args[0], Check);
     await LegacyDocumentAnalysisContracts.RunAsync(args[0], Check);
     PdfProbeContracts.Run(Check);

@@ -35,6 +35,7 @@ def main():
         (source / name).write_bytes((root / "tools/office-engine/ProcessProbe" / name).read_bytes())
     names = ["src/ContextSuite.Application/Infrastructure/OfficeSandboxOwner.cs",
              "src/ContextSuite.Application/Infrastructure/OfficeOwnershipJournal.cs",
+             "src/ContextSuite.Application/Infrastructure/OfficeRecoveryCoordinator.cs",
              "src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs",
              "src/ContextSuite.Application/Infrastructure/PublicationFiles.cs",
              "proprietary/src/ContextSuite.Private/Office/OfficeJob.cs",

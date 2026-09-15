@@ -20,7 +20,7 @@ def main():
     parser.add_argument("--build-receipt", type=Path, required=True)
     parser.add_argument("--large-fixtures", type=Path, required=True)
     parser.add_argument("--fixtures", type=Path, required=True)
-    parser.add_argument("--mode", choices=("all", "cancel", "worker-loss", "deadline", "owner-loss"), default="all")
+    parser.add_argument("--mode", choices=("all", "cancel", "worker-loss", "deadline", "owner-loss", "startup-recovery"), default="all")
     args = parser.parse_args()
     if not args.create_disposable_profile:
         parser.error("Explicit disposable profile authorization is required before preparation or execution.")
@@ -46,6 +46,7 @@ def main():
                root / "src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs",
                root / "src/ContextSuite.Application/Infrastructure/OfficeSandboxOwner.cs", Path(__file__)]
     inputs += [root / "src/ContextSuite.Application/Infrastructure/OfficeContextPreparation.cs"]
+    inputs += [root / "src/ContextSuite.Application/Infrastructure/OfficeRecoveryCoordinator.cs"]
     inputs += [root / "src/ContextSuite.Application/Infrastructure/OfficeOwnershipJournal.cs",
                root / "src/ContextSuite.Application/Infrastructure/PublicationFiles.cs"]
     sources = {str(path.relative_to(root)): digest(path) for path in inputs}
@@ -80,7 +81,7 @@ def main():
         raise RuntimeError(f"Office interruption check failed; inspect logs and owned profile receipts before retrying: {scratch}")
     report = json.loads((scratch / "contracts/results.json").read_text(encoding="utf-8"))
     modes = ["cancel", "worker-loss", "deadline"] if args.mode == "all" else [args.mode]
-    expected_checks = 90 if args.mode == "owner-loss" else 30 * len(modes)
+    expected_checks = 99 if args.mode == "startup-recovery" else 93 if args.mode == "owner-loss" else 30 * len(modes)
     if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != expected_checks:
         raise RuntimeError("Missing complete interruption evidence.")
     if any(digest(Path(name)) != expected for name, expected in fixtures.items()):

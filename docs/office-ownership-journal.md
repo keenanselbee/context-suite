@@ -2,15 +2,17 @@ Office Ownership Journal
 ========================
 
 Status: bounded persistence and native profile/grant integration verified;
-production context construction and restart recovery remain incomplete
+customer execution and publication integration remain incomplete
 
 The application now has an `OfficeOwnershipJournal` for the
 [Office profile/grant owner](office-profile-ownership.md). It records intended
 changes separately from reported completion. The journaled owner now uses those
 records around native profile and permission changes. Actual typed worker exports
-use it in the isolated harness. Production context construction, restart recovery
-and the customer conversion coordinator remain incomplete. The journal itself
-does not execute Office or publish outputs.
+use it in the isolated harness. Subsequent [context preparation](office-context-preparation.md)
+and [startup recovery](office-startup-recovery.md) add protected source snapshots
+and automatic journal discovery. Full application lifecycle acceptance and the
+customer conversion coordinator remain incomplete. The journal itself does not
+execute Office or publish outputs.
 
 
 Recorded identity and ordering

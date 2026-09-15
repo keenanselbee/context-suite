@@ -30,7 +30,15 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     public ObservableCollection<FileRow> Rows { get; } = [];
     public SuiteSettings Settings { get; set; } = settings ?? new();
     internal OutputPublisher? Publisher { get; } = publisher;
-    public string RecoveryNotice { get; } = RecoveryMessage(publisher);
+    private readonly string _publicationRecoveryNotice = RecoveryMessage(publisher);
+    private string _officeRecoveryNotice = "";
+    public string RecoveryNotice => string.Join(Environment.NewLine,
+        new[] { _publicationRecoveryNotice, _officeRecoveryNotice }.Where(text => !string.IsNullOrEmpty(text)));
+    internal void SetOfficeRecoveryReport(OfficeRecoveryReport report)
+    {
+        _officeRecoveryNotice = report.Notice;
+        Changed(nameof(RecoveryNotice));
+    }
     public bool IsBusy => _busy;
     public bool HasResults => Rows.Count != 0;
     public bool IsLanding => Rows.Count == 0;

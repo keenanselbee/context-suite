@@ -39,6 +39,21 @@ internal static class ViewContracts
                     window.GetType().Name + ": minimum-size layout completes");
             }
             var main = windows[0]; var convert = windows[1]; var optimize = windows[2]; var settings = windows[3]; var license = windows[4];
+            var recoveryModel = new MainViewModel(new WorkerClient(Path.Combine(Path.GetTempPath(), "unused-office-view-worker.exe")));
+            main.DataContext = recoveryModel;
+            main.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+            var recoveryReport = new OfficeRecoveryReport("Retained Office files", [new("record", OfficeRecoveryState.ReviewRequired)]);
+            recoveryModel.SetOfficeRecoveryReport(recoveryReport);
+            main.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+            ((FrameworkElement)main.Content).UpdateLayout();
+            Check(Find<StatusTextBlock>(main, "RecoveryNotice").Text == recoveryReport.Notice && !main.IsVisible,
+                "Office restart notice updates the existing hidden results view");
+            recoveryModel.SetOfficeRecoveryReport(new("Retained Office files", []));
+            main.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+            ((FrameworkElement)main.Content).UpdateLayout();
+            Check(Find<StatusTextBlock>(main, "RecoveryNotice").Text.Length == 0 && !main.IsVisible,
+                "Office empty restart report adds no visible status or window");
+            recoveryModel.DisposeAsync().AsTask().GetAwaiter().GetResult();
             var audio = windows[5];
             passed += ImagePdfOrderViewContracts.Run(windows[6]);
             Check(!Find<Expander>(audio, "AudioConversionFiles").IsExpanded && Find<Button>(audio, "CancelAudioConversion").IsCancel &&

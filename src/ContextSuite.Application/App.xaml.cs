@@ -34,6 +34,8 @@ public partial class App : System.Windows.Application
     private LicenseWindow? _licenseWindow;
     private Task? _licenseRefresh;
     private bool _licenseValidating;
+    private Task _officeRecovery = Task.CompletedTask;
+    private readonly CancellationTokenSource _officeRecoveryLifetime = new();
 
     private static partial ILicenseService? CreateProductionLicensing();
     public App() : this(ApplicationPaths.Production, CreateProductionLicensing()) { }
@@ -123,6 +125,7 @@ public partial class App : System.Windows.Application
                 }
                 return reply;
             }).Task);
+            _officeRecovery = RecoverOfficeAsync(window);
             var accepted = _viewModel.Admit(request);
             if (!accepted.Accepted) throw new InvalidDataException(accepted.Message);
             _userOpened = (request is not null && request.IsQuickAction != true && request.IsSettingsRequest != true) ||
@@ -137,12 +140,26 @@ public partial class App : System.Windows.Application
             ArgumentException or OperationCanceledException or System.ComponentModel.Win32Exception)
         {
             Console.Error.WriteLine($"Activation failed: {error.GetType().Name}, HRESULT 0x{error.HResult:X8}, method {error.TargetSite?.Name}.");
+            _officeRecoveryLifetime.Cancel();
+            await _officeRecovery;
             MessageBox.Show("Context Suite could not receive this selection. Check that the files still exist and try again.",
                 "Context Suite", MessageBoxButton.OK, MessageBoxImage.Warning);
             if (_router is not null) await _router.DisposeAsync();
             if (_viewModel is not null) await _viewModel.DisposeAsync();
             Shutdown(1);
         }
+    }
+
+    private async Task RecoverOfficeAsync(MainWindow window)
+    {
+        var runtime = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(_paths.Worker))!, "office-engine");
+        var report = await Task.Run(() => OfficeRecoveryCoordinator.RecoverAsync(_paths.OfficeContexts, runtime, _officeRecoveryLifetime.Token));
+        if (_closing || report.Cancelled) return;
+        _viewModel!.SetOfficeRecoveryReport(report);
+        if (!report.NeedsAttention) return;
+        _userOpened = true;
+        window.ShowActivated = true;
+        window.Show();
     }
 
     private static async Task PlayAfterAsync(Task previous, bool warning = false)
@@ -188,6 +205,7 @@ public partial class App : System.Windows.Application
     protected override void OnExit(ExitEventArgs e)
     {
         _licenseLifetime.Cancel();
+        _officeRecoveryLifetime.Cancel();
         if (_licenseService is IDisposable disposable) disposable.Dispose();
         base.OnExit(e);
     }
@@ -200,12 +218,14 @@ public partial class App : System.Windows.Application
         MainWindow.Hide();
         // A bounded refresh may finish quietly before exit so short image jobs do
         // not repeatedly cancel the daily validation and exhaust offline grace.
-        if (!_sounds.IsCompleted || _licenseValidating || _router!.HasConnectedClient) return;
+        if (!_sounds.IsCompleted || _licenseValidating || !_officeRecovery.IsCompleted || _router!.HasConnectedClient) return;
         using var handoff = new ActivationGate();
         if (!handoff.TryEnter()) return;
         _closing = true;
         _quietTimer.Stop();
         _licenseLifetime.Cancel();
+        _officeRecoveryLifetime.Cancel();
+        await _officeRecovery;
         if (_licenseRefresh is not null) await _licenseRefresh;
         _router.StopAccepting();
         await _viewModel.DisposeAsync();
@@ -307,6 +327,8 @@ public partial class App : System.Windows.Application
         _closing = true;
         _quietTimer.Stop();
         _licenseLifetime.Cancel();
+        _officeRecoveryLifetime.Cancel();
+        await _officeRecovery;
         if (_licenseRefresh is not null) await _licenseRefresh;
         _router!.StopAccepting();
         await _viewModel.DisposeAsync();

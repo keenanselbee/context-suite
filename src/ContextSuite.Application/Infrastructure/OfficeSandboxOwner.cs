@@ -22,7 +22,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     private readonly SecurityIdentifier _sid;
     private readonly List<Grant> _grants = [];
     private bool _created;
-    private bool _cleaning, _deleteRecorded;
+    private bool _cleaning, _deleteRecorded, _reconstructed;
     private OfficeOwnershipJournal? _journal;
 
     private OfficeSandboxOwner(string name, SecurityIdentifier sid) { Name = name; _sid = sid; _created = true; }
@@ -135,6 +135,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
         var owner = new OfficeSandboxOwner(journal.Owner.Work.ProfileName, new SecurityIdentifier(created.Sid!))
         {
             _journal = journal,
+            _reconstructed = true,
             _cleaning = journal.Changes.Any(change => change.Step == OfficeOwnershipStep.CleanupIntent),
             _deleteRecorded = journal.Changes.Any(change => change.Step == OfficeOwnershipStep.DeleteIntent)
         };
@@ -234,6 +235,18 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
             if (result < 0) throw new IOException("Retain and retry cleanup of Office profile " + Name + ".", Marshal.GetExceptionForHR(result));
             _created = false;
             _journal?.Record(new(OfficeOwnershipStep.ProfileDeleted));
+        }
+    }
+
+    // A failed restart cleanup may be retried from its durable journal. Release
+    // only reconstruction leases; do not revoke more permissions or delete a profile.
+    internal void ReleaseRecoveryLeases()
+    {
+        lock (_sync)
+        {
+            if (!_reconstructed) throw new InvalidOperationException("Only reconstructed Office ownership may release recovery leases.");
+            foreach (var grant in _grants) grant.Dispose();
+            _grants.Clear(); _created = false;
         }
     }
 

@@ -5,7 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [Office context preparation](office-context-preparation.md) moves
+The latest [Office startup recovery](office-startup-recovery.md) adds bounded
+journal discovery and background application integration. All 3,238 foundation,
+140 native ownership and 104 hidden view contracts pass. The isolated coordinator
+passes 99 actual worker checks across three rendering crashes and following
+exports; three PDFs pass independent inspection. All seven profiles/jobs,
+including the earlier timed-out attempt, are removed. Full application lifecycle
+acceptance, Office admission, PDF validation and copy publication remain open.
+
+The preceding [Office context preparation](office-context-preparation.md) moves
 source copying into application code. It holds the original and read-only
 snapshot, verifies content and file identity, and records durable intent before
 the caller creates a native profile. All 3,221 foundation contracts pass,
