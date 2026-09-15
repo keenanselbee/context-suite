@@ -5,7 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [Office worker dispatch binding](office-ownership-journal.md#worker-lifetime-binding-before-dispatch)
+The latest [journal-based profile recovery](office-ownership-journal.md#profile-recovery-from-a-reopened-journal)
+reconstructs cleanup only after original-owner death and live profile/grant/job
+verification. All 138 native ownership checks and 3,173 foundation contracts pass.
+Five disposable crash cases cover partial setup, process lifetime, pending
+revocation and replacement refusal. All test profiles and grants are removed,
+including the retained profile from the failed first fixture attempt. Actual
+Office rendering crashes and the remaining production integration gates are open.
+
+The preceding [Office worker dispatch binding](office-ownership-journal.md#worker-lifetime-binding-before-dispatch)
 records the assigned named job in version-three journals before any request bytes
 are sent. All 3,169 foundation contracts, 97 ownership checks and 54 actual worker
 checks pass, including recorder-failure refusal and transition from an ordinary

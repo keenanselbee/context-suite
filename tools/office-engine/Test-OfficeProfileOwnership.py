@@ -40,6 +40,7 @@ def main():
              "proprietary/src/ContextSuite.Private/Office/OfficeJob.cs",
              "proprietary/src/ContextSuite.Private/Office/OfficeSandboxProcess.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeOwnerContracts.cs",
+             "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeRecoveryContracts.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/Program.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"]
     inputs = {name: digest(root / name) for name in names}

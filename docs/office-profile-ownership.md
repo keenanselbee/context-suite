@@ -248,3 +248,10 @@ the retained original, mapping or grants. All 97 ownership checks, 42 actual wor
 checks and three independent PDF inspections pass; the test profiles and grants
 are removed. Earlier version-one records remain readable for review only. This
 does not supply recoverable engine-process evidence or automatic restart cleanup.
+
+The later [reopened-journal recovery](office-ownership-journal.md#profile-recovery-from-a-reopened-journal)
+now reconstructs a cleanup-only owner after creator death, profile/job verification
+and held grant-directory identity checks. Five disposable owner crashes pass
+within 138 native ownership checks; all profiles and grants are removed, including
+the retained case from an initial fixture failure. These are generated ownership
+fixtures; recovery during actual Office rendering remains unverified.

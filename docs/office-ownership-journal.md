@@ -278,3 +278,57 @@ These tests verify dispatch ordering and ordinary export cleanup. They do not
 establish actual Office application-loss recovery, native profile adoption,
 AppContainer access denial to the named job, validated publication, customer
 commands or expanded-release acceptance. The reserved production payload is unchanged.
+
+
+Profile recovery from a reopened journal
+---------------------------------------
+
+`OfficeSandboxOwner.RecoverAsync` now reconstructs cleanup ownership from an open
+version-three journal. It refuses a live original creator, unconfirmed creation,
+completed deletion, legacy records or a faulted writer. An unlocked journal alone
+does not establish that the original app has exited.
+
+Recovery verifies and holds the recorded profile directory, stops the recorded
+worker job when an engine intent exists, then records confirmed shutdown if needed.
+Before changing permissions it reopens every recorded grant directory, compares
+its native identity and checks its descendants. Unexpected root entries for the
+profile SID are refused. Previously revoked grants must still be free of that SID,
+including in descendants. Outstanding grants retain their original order and any
+existing revoke intent. Only after reconstruction succeeds does recovery record
+cleanup intent and return an owner that permits cleanup, never new grants.
+Failure releases the newly acquired leases without invoking permission cleanup.
+
+All **138 native ownership checks** pass at
+`.codex-temp/office-owner/4e0e4f59d3fc4444998c2b69b40fc0ff`, with matching fixture
+results under `.codex-temp/office-isolation`. Five actual disposable owner crashes
+cover confirmed creation with no grants, partial grant setup, an active named
+process group, pending revocation and a substituted grant directory. Each first
+refuses recovery while the creator is still live despite its released journal.
+After owner death, recovery removes its profile and recorded grants while keeping
+the source snapshot. The substitution case refuses the changed object without
+revoking the retained original, then completes after the fixture restores it.
+The process-group case uses an authored waiting process, not the Office renderer.
+
+The first run at `.codex-temp/office-owner/22b05c6fa5064526aefbcfbc8c40b734`
+recovered four cases, then failed to rename the final fixture's grant directory
+with a sharing error. The corrected fixture substitutes between journal sessions
+and retries only sharing/lock failures for up to five seconds. The exact retained
+profile was recovered through the new API using the harness's explicit
+`--office-recovery-cleanup` mode. The failed run remains failed evidence.
+
+`.codex-temp/office-recovery-verification.json` reconciles both runs: all 12 distinct
+profile folders/mappings are absent, 244 frames across 12 journals verify with
+confirmed deletion at each journal's end, 44 grant-directory identities match live handles, both recorded test
+jobs are absent, ten source snapshots are unchanged, and 213 checked ACL entries
+contain none of the test SIDs. Source hashes match the successful native receipt.
+All **3,173 foundation contracts** pass, including **121 journal checks**, at
+`.codex-temp/office-recovery-foundation-2a46a680de424d03add69201f43b4042`.
+Application and private-harness Release builds have zero warnings/errors.
+
+This verifies recovery of generated native ownership fixtures. Actual Office
+application loss during rendering, creation/deletion confirmation failures,
+partially completed native deletion, hostile descendant recovery and concurrent
+replacement still require acceptance. Missing or changed profile objects remain
+reviewable rather than being silently treated as deleted. Production context
+construction, independent PDF publication and the customer command remain open.
+The earlier real-Office export suite was not rerun for this recovery-only slice.

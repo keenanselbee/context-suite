@@ -88,6 +88,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
         lock (_sync)
         {
             ObjectDisposedException.ThrowIf(!_created, this);
+            if (_cleaning) throw new IOException("An Office profile being cleaned up cannot receive new grants.");
             var full = ValidatePath(path);
             if (_grants.Any(grant => Within(full, grant.Path) || Within(grant.Path, full)))
                 throw new IOException("Office grant directories must not overlap.");
@@ -116,6 +117,66 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                 if (!_grants.Contains(grant)) grant.Dispose();
                 throw;
             }
+        }
+    }
+
+    internal static async Task<OfficeSandboxOwner> RecoverAsync(OfficeOwnershipJournal journal)
+    {
+        journal.RequireRecoveryOwner();
+        using var profile = VerifyProfile(journal);
+        var engine = journal.Changes.SingleOrDefault(change => change.Step == OfficeOwnershipStep.EngineIntent);
+        if (engine is not null)
+        {
+            await WorkerProcessJob.StopRecordedAsync(engine.Lifetime!).ConfigureAwait(false);
+            if (!journal.Changes.Any(change => change.Step == OfficeOwnershipStep.ProcessesStopped))
+                journal.Record(new(OfficeOwnershipStep.ProcessesStopped));
+        }
+        var created = journal.Changes.Single(change => change.Step == OfficeOwnershipStep.ProfileCreated);
+        var owner = new OfficeSandboxOwner(journal.Owner.Work.ProfileName, new SecurityIdentifier(created.Sid!))
+        {
+            _journal = journal,
+            _cleaning = journal.Changes.Any(change => change.Step == OfficeOwnershipStep.CleanupIntent),
+            _deleteRecorded = journal.Changes.Any(change => change.Step == OfficeOwnershipStep.DeleteIntent)
+        };
+        try
+        {
+            // Reopen and verify every recorded object before any ACL mutation.
+            // Even completed revocations must still be free of this profile SID.
+            foreach (var intent in journal.Changes.Where(change => change.Step == OfficeOwnershipStep.GrantIntent))
+            {
+                var grant = new Grant(ValidatePath(intent.Path!), intent.Writable == true ? WriteAccess : ReadAccess);
+                try
+                {
+                    grant.Open();
+                    if (grant.Identity() != intent.DirectoryIdentity)
+                        throw new IOException("An Office grant directory differs from its recorded identity. Retain it for review.");
+                    grant.CheckChildren();
+                    var entries = ReadAcl(grant.Handle).Cast<GenericAce>().OfType<KnownAce>().Where(ace => ace.SecurityIdentifier == owner._sid).ToArray();
+                    var revoked = journal.Changes.Any(change => change.Step == OfficeOwnershipStep.GrantRevoked && change.Path == intent.Path);
+                    if (entries.Length > 1 || entries.Any(ace => !owner.IsGrant(ace, grant.Access)) || revoked && entries.Length != 0)
+                        throw new IOException("Office profile permissions differ from the recorded grant. Retain them for review.");
+                    if (revoked) grant.VerifyNoChildAccess(owner._sid);
+                    else
+                    {
+                        grant.RevokeRecorded = journal.Changes.Any(change => change.Step == OfficeOwnershipStep.RevokeIntent && change.Path == intent.Path);
+                        owner._grants.Add(grant);
+                    }
+                }
+                finally { if (!owner._grants.Contains(grant)) grant.Dispose(); }
+            }
+            if (!owner._cleaning)
+            {
+                journal.Record(new(OfficeOwnershipStep.CleanupIntent));
+                owner._cleaning = true;
+            }
+            return owner;
+        }
+        catch
+        {
+            // Failed reconstruction must release leases without invoking cleanup.
+            foreach (var grant in owner._grants) grant.Dispose();
+            owner._grants.Clear(); owner._created = false;
+            throw;
         }
     }
 

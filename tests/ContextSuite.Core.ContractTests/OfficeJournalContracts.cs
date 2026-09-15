@@ -43,6 +43,7 @@ internal static class OfficeJournalContracts
         {
             identity = journal.Owner; first = Read(path);
             journal.RequireCreationOwner();
+            Refuses(journal.RequireRecoveryOwner, "Office unconfirmed profile intent cannot authorize recovery");
             check(true, "Office journal permits profile creation only from its fresh original owner");
             check(journal.Changes.Count == 1 && journal.Changes[0].Step == OfficeOwnershipStep.ProfileIntent,
                 "Office journal persists creation intent before profile work");
@@ -59,6 +60,7 @@ internal static class OfficeJournalContracts
             Reject(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName), stage, new string('A', 48)),
                 "Office journal refuses an unrelated profile storage path");
             journal.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName), OfficeOwnershipJournal.ExpectedProfileDirectory(work.ProfileName), new string('A', 48)));
+            Refuses(journal.RequireRecoveryOwner, "Office profile recovery refuses its live original owner");
             var lifetime = WorkerLifetimeIdentity.Create(Guid.NewGuid());
             string[] paths = [runtime, Path.Combine(work.DirectoryPath, "input"), Path.Combine(work.DirectoryPath, "output"),
                 Path.Combine(work.DirectoryPath, "profile"), Path.Combine(work.DirectoryPath, "temp")];
@@ -184,6 +186,7 @@ internal static class OfficeJournalContracts
             File.WriteAllBytes(legacyCompletePath, pendingEngine);
             using (var legacy = OfficeOwnershipJournal.Open(legacyCompletePath, contextRoot, runtime))
             {
+                Refuses(legacy.RequireRecoveryOwner, "Office legacy journal cannot authorize profile recovery: " + version);
                 Refuses(() => legacy.Record(new(OfficeOwnershipStep.ProcessesStopped)),
                     "Office legacy pending-engine record refuses appended mutation: " + version);
                 Refuses(() => legacy.RecordEngineIntent(WorkerLifetimeIdentity.Create(Guid.NewGuid())),

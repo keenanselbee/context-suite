@@ -31,13 +31,18 @@ internal sealed record WorkerLifetimeIdentity(string Name, int OwnerProcessId, l
         using var current = Process.GetCurrentProcess();
         if (current.SessionId != SessionId)
             throw new InvalidDataException("Worker lifetime recovery requires the original Windows session.");
+        RequireExitedProcess(OwnerProcessId, OwnerStartUtcTicks);
+    }
+
+    internal static void RequireExitedProcess(int processId, long startUtcTicks)
+    {
         Process owner;
-        try { owner = Process.GetProcessById(OwnerProcessId); }
+        try { owner = Process.GetProcessById(processId); }
         catch (ArgumentException) { return; } // The original PID no longer exists.
         using (owner)
         {
             // Query failures remain failures; they do not establish owner death.
-            if (!owner.HasExited && owner.StartTime.ToUniversalTime().Ticks == OwnerStartUtcTicks)
+            if (!owner.HasExited && owner.StartTime.ToUniversalTime().Ticks == startUtcTicks)
                 throw new IOException("The worker lifetime owner is still running.");
         }
     }

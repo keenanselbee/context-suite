@@ -134,6 +134,15 @@ internal sealed class OfficeOwnershipJournal : IDisposable
             throw new InvalidDataException("This Office context is already bound to a different worker lifetime.");
     }
 
+    internal void RequireRecoveryOwner()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_version != 3 || _faulted || !_changes.Any(change => change.Step == OfficeOwnershipStep.ProfileCreated) ||
+            _changes.Any(change => change.Step == OfficeOwnershipStep.ProfileDeleted))
+            throw new InvalidDataException("The Office ownership record cannot authorize profile recovery.");
+        WorkerLifetimeIdentity.RequireExitedProcess(Owner.OwnerProcessId, Owner.OwnerStartUtcTicks);
+    }
+
     private void ValidateNext(OfficeOwnershipChange next)
     {
         var created = false; var engine = false; var stopped = false; var cleanup = false; var deleting = false; var deleted = false;
