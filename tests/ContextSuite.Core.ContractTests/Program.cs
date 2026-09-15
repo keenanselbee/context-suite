@@ -12,6 +12,18 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--office-execution-cleanup", var cleanupWorker, var cleanupFixtures, var cleanupEvidence])
+{
+    await OfficeExecutionContracts.RunCleanupAsync(cleanupWorker, cleanupFixtures, cleanupEvidence);
+    return 0;
+}
+
+if (args is ["--office-execution", var executionWorker, var executionFixtures, var executionEvidence])
+{
+    await OfficeExecutionContracts.RunAsync(executionWorker, executionFixtures, executionEvidence);
+    return 0;
+}
+
 if (args is ["--worker-lifetime-hold", var lifetimeStage, var lifetimeMode])
 {
     await WorkerLifetimeContracts.HoldAsync(lifetimeStage, lifetimeMode);

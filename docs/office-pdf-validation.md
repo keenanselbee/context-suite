@@ -1,8 +1,8 @@
 Office PDF Validation
 =====================
 
-Status: batch admission, independent validation and worker dispatch verified; customer Office execution and
-publication integration remain unfinished.
+Status: isolated application export/validation/publication transaction verified;
+customer command integration and completed-context retirement remain unfinished.
 
 An Office host completion acknowledges an export; it does not authorize final
 publication. `OfficePdfWork` binds that completed candidate to its source context,
@@ -175,13 +175,85 @@ test host builds with zero warnings/errors. Earlier 71-worker/57-reader evidence
 above was not rerun for this admission-only change.
 
 
+Application transaction
+-----------------------
+
+`OfficeConversionExecutor` now joins the admitted batch to context preparation,
+native export, independent worker validation and application-owned copy
+publication. It checks the prepared original's identity against the admitted
+source and the publication reservation, retains its read lease through publication,
+and removes the Office profile before independent validation starts. Native profile
+creation, grants and cleanup run off the UI thread. It uses the existing
+sequential worker and always requests copies.
+
+Cleanup failures retain the original owner, context leases and journal in the
+executor. Subsequent Office items are declined while cleanup is pending. Disposal
+retries cleanup; a still-failing owner remains available for restart recovery
+after application exit. The caller must retain this executor while it owns pending
+cleanup and surface its recovery records. The customer view model is not connected
+yet, so these ownership/shutdown responsibilities remain an integration gate.
+
+Successful native cleanup currently leaves completed context snapshots and
+journals for inspection. Preparation failures can likewise leave retained partial
+contexts. Before customer enablement, add verified retirement of completed
+contexts and a policy for unresolved preparation records; do not let historical
+successes accumulate until they exceed the startup recovery scan bounds. Final
+reservation cleanup uses the existing publisher and never deletes the original.
+
+`tools/office-engine/Test-OfficeExecution.py` requires explicit
+disposable-profile authorization and creates a matching repository-local worker
+with the independently selected Office and PDF runtimes. It exercises real
+DOCX/XLSX/PPTX exports, a collision, publication failure and cancellation before
+publication. It records source/binary/fixture hashes and native profile cleanup.
+The transaction passes 35 checks in
+`.codex-temp/office-execution/3cb47085881548c79e110b1ac066baa0`.
+The first batch publishes Word, Excel and PowerPoint copies; Word's pre-existing
+output remains unchanged and the new PDF receives a collision suffix. A subsequent
+publication failure leaves no PDF or reservation. Cancellation at the publisher's
+validated stage cancels the current and remaining documents without publication.
+All original bytes/modification times remain unchanged. All five profile folders
+and Windows mappings are absent, with durable stop/cleanup journals and retained
+source snapshots/candidates. No worker scratch files remain after client disposal.
+
+The three published PDFs additionally pass independent structure, authored text,
+page geometry and exact control-pixel comparisons in
+`inspection-339cc37f3c154828b05bf5c3b86e247b` under that stage. Use
+`Inspect-OfficeWorkerExports.ps1 -ApplicationOutputs` with the application report
+and the existing independent PDF evaluation runtimes/controls for this check.
+This compares the actual named outputs, not just the renderer's candidates.
+
+The separate `--cleanup-only` run passes ten checks in
+`.codex-temp/office-execution/b2f70eb4e5774beeb3d6ad43c5fdbd08`.
+An exclusively held, caller-authored temp file makes the context non-fresh and
+obstructs cleanup after the worker refuses export. No Office renderer starts in
+this case. The executor retains its original-file lease and ownership record,
+declines the remaining document, and issues no publication. After the obstruction
+is released, disposal retries cleanup, removes the sixth profile/mapping and
+releases the original lease. This verifies the pending-owner branch without
+claiming every native cleanup failure is recoverable.
+
+Both execution wrappers record exit zero and unchanged source, fixture and binary
+hashes. The first preparation attempt,
+`.codex-temp/office-execution/557890287d394531a2ad3e786e28a37b`, stopped before
+profile creation because the runner initially selected `net10.0` instead of the
+test host's `net10.0-windows` directory. The corrected run reused its copied worker
+only after matching every top-level file to a fresh build. `--retained-worker`
+now supports that explicit scratch reuse; private adapters still verify their
+complete pinned runtimes. No reserved production payload was changed.
+
+All 3,342 foundation contracts pass in
+`.codex-temp/office-preparation-foundation-da4da45f8a904fdfaa442701eda64dfa`,
+including four new executor refusal checks for missing engines, denied access,
+foreign admission and pre-cancellation. The Release application test host builds
+with zero warnings/errors. Visible/keyboard acceptance was not performed.
+
+
 Remaining work
 --------------
 
-Connect the admitted plan to Office context preparation, execution, worker
-validation, safe copy publication, cancellation and recovery. Exercise cancellation during copying,
-caller reservation cleanup, publication failure and resource limits through that
-integrated path. Broader Office fidelity,
+Connect customer command dispatch and long-lived cleanup ownership, and retire
+completed contexts safely. Extend cancellation coverage to the reservation-copy
+phase, abrupt application loss and additional resource-limit failures. Broader Office fidelity,
 the owner's Excel calculation default, fresh combined packaging and actual
 visible/keyboard acceptance remain open. This component changes no installed app
 or reserved 1.1.0 payload and does not clear the expanded release goal.

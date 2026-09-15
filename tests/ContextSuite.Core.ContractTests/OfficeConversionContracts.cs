@@ -51,6 +51,21 @@ internal static class OfficeConversionContracts
         check(!denied.IsAllowed && denied.BatchId == plan.BatchId && denied.Status.Message.Contains("expired", StringComparison.OrdinalIgnoreCase),
             "Office access: expiry blocks new admission with readable status");
         check(admitted.IsAllowed, "Office access: admitted batch survives later trial expiry");
+        await using var absent = new WorkerClient(Path.Combine(root, "absent", "ContextSuite.Worker.exe"));
+        var contextRoot = Path.Combine(root, "must-not-create-contexts");
+        var publications = Path.Combine(root, "must-not-create-publications");
+        await using var executor = new OfficeConversionExecutor(absent, new OutputPublisher(publications, null!), null!, contextRoot);
+        var unavailable = await executor.ExecuteAsync(confirmed, null, default);
+        check(unavailable.Results.All(result => result.State == OperationState.Unsupported) && absent.ProcessId is null &&
+            !Directory.Exists(contextRoot) && !Directory.Exists(publications), "Office execution: missing engines refuse before access, preparation or publication");
+        var blocked = await executor.ExecuteAdmittedAsync(confirmed, new(new(false, "Activate a license."), plan.BatchId), null, default);
+        check(blocked.Results.Count == 3 && blocked.Results.All(result => result.State == OperationState.Failed && result.Message == "Activate a license.") &&
+            !Directory.Exists(contextRoot), "Office execution: denied batch reports every document without native preparation");
+        try { await executor.ExecuteAdmittedAsync(confirmed, new(new(true, "foreign"), Guid.NewGuid()), null, default); check(false, "Office foreign admission"); }
+        catch (InvalidDataException) { check(absent.ProcessId is null, "Office execution: foreign admission cannot start a worker"); }
+        var notStarted = await executor.ExecuteAdmittedAsync(confirmed, admitted, null, cancelled.Token);
+        check(notStarted.Results.All(result => result.State == OperationState.Cancelled) && !Directory.Exists(contextRoot),
+            "Office execution: cancellation before the first item creates no context");
 
         void Reject(Action action, string label)
         {

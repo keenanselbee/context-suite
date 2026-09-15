@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office application transaction](office-pdf-validation.md#application-transaction)
+now joins admission, preparation, export, validation and copy publication. It
+passes 35 isolated execution checks and ten obstructed-cleanup/retry checks; all
+six profiles are removed and originals remain unchanged. Three named PDFs pass
+independent text, geometry and exact control-pixel inspection. All 3,342 foundation
+contracts pass. Customer command wiring and safe completed-context retirement
+remain open, along with broader packaging and launch acceptance.
+
 The [Office batch admission](office-pdf-validation.md#office-batch-admission)
 now preserves one settings snapshot and explicit calculation policy for one PDF
 copy per document. All 3,338 foundation contracts pass, including 28 new bounded

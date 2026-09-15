@@ -1,13 +1,15 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $WorkerResults, [Parameter(Mandatory)][string] $ControlDirectory,
-    [Parameter(Mandatory)][string] $PdfPreparedDirectory, [Parameter(Mandatory)][string] $PdfiumPreparedDirectory)
+    [Parameter(Mandatory)][string] $PdfPreparedDirectory, [Parameter(Mandatory)][string] $PdfiumPreparedDirectory,
+    [switch] $ApplicationOutputs)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $report = (Resolve-Path -LiteralPath $WorkerResults).Path
 $control = (Resolve-Path -LiteralPath $ControlDirectory).Path
 $pdf = (Resolve-Path -LiteralPath $PdfPreparedDirectory).Path
 $pdfium = (Resolve-Path -LiteralPath $PdfiumPreparedDirectory).Path
-if (-not $report.StartsWith((Join-Path $repository '.codex-temp\office-worker\'), [StringComparison]::OrdinalIgnoreCase) -or
+$evidenceDirectory = if ($ApplicationOutputs) { '.codex-temp\office-execution\' } else { '.codex-temp\office-worker\' }
+if (-not $report.StartsWith((Join-Path $repository $evidenceDirectory), [StringComparison]::OrdinalIgnoreCase) -or
     -not $control.StartsWith((Join-Path $repository '.codex-temp\office-isolation\'), [StringComparison]::OrdinalIgnoreCase) -or
     -not $pdf.StartsWith((Join-Path $repository '.codex-temp\pdf-engine\'), [StringComparison]::OrdinalIgnoreCase) -or
     -not $pdfium.StartsWith((Join-Path $repository '.codex-temp\pdfium-engine\'), [StringComparison]::OrdinalIgnoreCase)) {
@@ -34,5 +36,6 @@ if ((Get-FileHash -LiteralPath $probe).Hash -ne $build.sha256 -or
     throw 'PDFium evaluation probe changed.'
 }
 $qpdf = Join-Path $pdf 'unpacked\qpdf-12.4.1-msvc64\bin\qpdf.exe'
-& dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --inspect-worker-exports $report $qpdf $probe $control
+$inspectionCommand = if ($ApplicationOutputs) { '--inspect-office-publications' } else { '--inspect-worker-exports' }
+& dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- $inspectionCommand $report $qpdf $probe $control
 if ($LASTEXITCODE) { throw 'Worker PDF inspection failed; retain the evidence.' }

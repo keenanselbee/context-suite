@@ -27,6 +27,9 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     public bool HasPdfRenderer => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-renderer", "ContextSuite.PdfRenderer.exe"));
     public bool HasImagePdfConverter => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-validator", "ContextSuite.ImagePdfValidator.exe"));
     public bool HasOfficePdfValidator => HasPdfProbe && HasPdfRenderer;
+    public string OfficeEngineDirectory => Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "office-engine");
+    public bool HasOfficeConverter => HasOfficePdfValidator && File.Exists(Path.Combine(OfficeEngineDirectory, "ContextSuite.OfficeHost.exe")) &&
+        File.Exists(Path.Combine(OfficeEngineDirectory, "runtime-files.txt"));
 
     public async Task<OfficePdfResult> ValidateOfficePdfAsync(OfficePdfWork work, CancellationToken token)
     {
