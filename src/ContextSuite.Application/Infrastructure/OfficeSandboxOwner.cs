@@ -29,6 +29,14 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     internal string Name { get; }
     internal string Sid => _sid.Value;
 
+    internal (string Path, string Identity) ReadProfileIdentity()
+    {
+        var path = ProfileDirectory(Name, Sid);
+        using var profile = new Grant(path, ReadAccess);
+        profile.Open();
+        return (path, profile.Identity());
+    }
+
     // Also used to keep a journal's ordinary parent chain stable without granting access.
     internal static IDisposable LeaseDirectory(string path)
     {
@@ -61,7 +69,12 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
         journal.RequireCreationOwner(); // No native creation on stale, closed or uncertain records.
         var owner = Create(journal.Owner.Work.ProfileName);
         owner._journal = journal;
-        try { journal.Record(new(OfficeOwnershipStep.ProfileCreated, owner.Sid)); return owner; }
+        try
+        {
+            var profile = owner.ReadProfileIdentity();
+            journal.Record(new(OfficeOwnershipStep.ProfileCreated, owner.Sid, profile.Path, profile.Identity));
+            return owner;
+        }
         catch (Exception error)
         {
             // Creation succeeded, but its confirmation may not be durable. Keep
@@ -116,6 +129,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                 _journal?.Record(new(OfficeOwnershipStep.CleanupIntent));
                 _cleaning = true;
             }
+            using var profile = _journal is null ? null : VerifyProfile(_journal);
             var errors = new List<Exception>();
             for (var index = _grants.Count - 1; index >= 0; index--)
             {
@@ -153,6 +167,8 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                 _journal?.Record(new(OfficeOwnershipStep.DeleteIntent));
                 _deleteRecorded = true;
             }
+            // Windows profile deletion must run without open storage handles.
+            profile?.Dispose();
             var result = DeleteAppContainerProfile(Name);
             if (result < 0) throw new IOException("Retain and retry cleanup of Office profile " + Name + ".", Marshal.GetExceptionForHR(result));
             _created = false;
@@ -177,6 +193,36 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     }
 
     private int CountGrant(RawAcl acl, int access) => acl.Cast<GenericAce>().Count(ace => IsGrant(ace, access));
+    internal static IDisposable VerifyProfile(OfficeOwnershipJournal journal)
+    {
+        if (journal.Version != 2) throw new InvalidDataException("Profile recovery requires a recorded directory identity.");
+        var created = journal.Changes.SingleOrDefault(change => change.Step == OfficeOwnershipStep.ProfileCreated)
+            ?? throw new InvalidDataException("The Office profile has no confirmed creation record.");
+        var path = ProfileDirectory(journal.Owner.Work.ProfileName, created.Sid!);
+        var profile = new Grant(path, ReadAccess);
+        try
+        {
+            profile.Open();
+            if (!string.Equals(path, created.Path, StringComparison.OrdinalIgnoreCase) || profile.Identity() != created.DirectoryIdentity)
+                throw new InvalidDataException("The Office profile directory differs from its recorded identity. Retain it for review.");
+            return profile;
+        }
+        catch { profile.Dispose(); throw; }
+    }
+    private static string ProfileDirectory(string name, string sid)
+    {
+        var result = GetAppContainerFolderPath(sid, out var native);
+        if (result < 0) Marshal.ThrowExceptionForHR(result);
+        try
+        {
+            var path = Marshal.PtrToStringUni(native) ?? throw new IOException("Windows returned no Office profile directory.");
+            var expected = OfficeOwnershipJournal.ExpectedProfileDirectory(name);
+            if (!Within(path.TrimEnd(Path.DirectorySeparatorChar), expected))
+                throw new IOException("Windows returned an unexpected Office profile storage location.");
+            return ValidatePath(expected);
+        }
+        finally { Marshal.FreeCoTaskMem(native); }
+    }
     private bool IsGrant(GenericAce ace, int access) => ace is CommonAce common && common.AceFlags == Inherit &&
         common.AceQualifier == AceQualifier.AccessAllowed && common.AccessMask == access && common.SecurityIdentifier == _sid && !common.IsCallback;
     private static bool Within(string path, string parent) => string.Equals(path, parent, StringComparison.OrdinalIgnoreCase) ||
@@ -319,6 +365,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     [DllImport("userenv.dll", CharSet = CharSet.Unicode)]
     private static extern int CreateAppContainerProfile(string name, string display, string description, IntPtr capabilities, uint count, out IntPtr sid);
     [DllImport("userenv.dll", CharSet = CharSet.Unicode)] private static extern int DeleteAppContainerProfile(string name);
+    [DllImport("userenv.dll", CharSet = CharSet.Unicode)] private static extern int GetAppContainerFolderPath(string sid, out IntPtr path);
     [DllImport("advapi32.dll")] private static extern IntPtr FreeSid(IntPtr sid);
     [DllImport("advapi32.dll", SetLastError = true)]
     private static extern uint GetSecurityInfo(SafeFileHandle handle, int type, uint information, IntPtr owner, IntPtr group, out IntPtr dacl, IntPtr sacl, out IntPtr descriptor);

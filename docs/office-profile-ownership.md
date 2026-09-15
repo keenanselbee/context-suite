@@ -240,3 +240,11 @@ implements bounded persistence and transition checks, including actual writer-lo
 tests. Its journaled owner now records native profile/grant mutations and actual
 worker-export cleanup, with 93 ownership checks and 42 worker checks. Safely
 reclaiming the recorded profile after restart remains unfinished.
+
+The subsequent [version-two profile binding](office-ownership-journal.md#profile-directory-binding)
+records the actual Windows profile-directory identity and checks it before grant
+revocation. A disposable replacement-folder test verifies refusal without changing
+the retained original, mapping or grants. All 97 ownership checks, 42 actual worker
+checks and three independent PDF inspections pass; the test profiles and grants
+are removed. Earlier version-one records remain readable for review only. This
+does not supply recoverable engine-process evidence or automatic restart cleanup.

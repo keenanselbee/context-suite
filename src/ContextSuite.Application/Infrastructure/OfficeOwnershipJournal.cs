@@ -37,23 +37,25 @@ internal sealed class OfficeOwnershipJournal : IDisposable
     private sealed record Entry(int Version, int Sequence, OfficeOwnershipIdentity Owner, OfficeOwnershipChange Change);
     private readonly FileStream _file;
     private readonly IDisposable _directory;
+    private readonly int _version;
     private readonly List<OfficeOwnershipChange> _changes = [];
     private byte[] _digest = new byte[32];
     private bool _faulted, _disposed;
     internal OfficeOwnershipIdentity Owner { get; }
+    internal int Version => _version;
     internal IReadOnlyList<OfficeOwnershipChange> Changes => _changes.AsReadOnly();
 
     internal void RequireCreationOwner()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         using var process = Process.GetCurrentProcess();
-        if (_faulted || _changes.Count != 1 || _changes[0].Step != OfficeOwnershipStep.ProfileIntent ||
+        if (_version != 2 || _faulted || _changes.Count != 1 || _changes[0].Step != OfficeOwnershipStep.ProfileIntent ||
             Owner.OwnerProcessId != process.Id || Owner.OwnerStartUtcTicks != process.StartTime.ToUniversalTime().Ticks)
             throw new InvalidDataException("Only the original fresh journal owner may create this Office profile.");
     }
 
-    private OfficeOwnershipJournal(FileStream file, IDisposable directory, OfficeOwnershipIdentity owner)
-    { _file = file; _directory = directory; Owner = owner; }
+    private OfficeOwnershipJournal(FileStream file, IDisposable directory, OfficeOwnershipIdentity owner, int version = 2)
+    { _file = file; _directory = directory; Owner = owner; _version = version; }
 
     internal static OfficeOwnershipJournal Create(string path, OfficeExportWork work, string runtimeDirectory)
     {
@@ -87,8 +89,9 @@ internal sealed class OfficeOwnershipJournal : IDisposable
                 using (var document = JsonDocument.Parse(payload, new() { MaxDepth = 8 })) RejectDuplicateProperties(document.RootElement);
                 var entry = JsonSerializer.Deserialize<Entry>(payload, Options) ?? throw new InvalidDataException("Missing Office ownership entry.");
                 ValidateIdentity(path, entry.Owner, contextRoot, runtimeDirectory);
-                journal ??= new(file, directory, entry.Owner);
-                if (entry.Version != 1 || entry.Sequence != journal._changes.Count || entry.Owner != journal.Owner ||
+                if (entry.Version is not (1 or 2)) throw new InvalidDataException("Unsupported Office ownership journal version.");
+                journal ??= new(file, directory, entry.Owner, entry.Version);
+                if (entry.Version != journal._version || entry.Sequence != journal._changes.Count || entry.Owner != journal.Owner ||
                     journal._changes.Count >= MaximumRecords)
                     throw new InvalidDataException("Office ownership journal sequence differs.");
                 journal.ValidateNext(entry.Change);
@@ -102,9 +105,10 @@ internal sealed class OfficeOwnershipJournal : IDisposable
     internal void Record(OfficeOwnershipChange change)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_version != 2) throw new InvalidDataException("Legacy Office ownership records are read-only. Retain them for review.");
         if (_faulted || _changes.Count >= MaximumRecords) throw new IOException("Retain the Office ownership journal for recovery.");
         ValidateNext(change);
-        var payload = JsonSerializer.SerializeToUtf8Bytes(new Entry(1, _changes.Count, Owner, change), Options);
+        var payload = JsonSerializer.SerializeToUtf8Bytes(new Entry(_version, _changes.Count, Owner, change), Options);
         if (payload.Length > MaximumFrameBytes) throw new InvalidDataException("Office ownership entry exceeds its limit.");
         var header = new byte[4]; BinaryPrimitives.WriteInt32LittleEndian(header, payload.Length);
         var digest = Hash(_digest, header, payload);
@@ -130,7 +134,9 @@ internal sealed class OfficeOwnershipJournal : IDisposable
             var valid = change.Step switch
             {
                 OfficeOwnershipStep.ProfileIntent => index == 0,
-                OfficeOwnershipStep.ProfileCreated => index == 1 && change.Sid == ProfileSid(Owner.Work.ProfileName),
+                OfficeOwnershipStep.ProfileCreated => index == 1 && change.Sid == ProfileSid(Owner.Work.ProfileName) &&
+                    (_version == 1 || (string.Equals(change.Path, ExpectedProfileDirectory(Owner.Work.ProfileName), StringComparison.OrdinalIgnoreCase) &&
+                        change.DirectoryIdentity is { Length: 48 } profileId && profileId.All(char.IsAsciiHexDigit))),
                 OfficeOwnershipStep.GrantIntent => created && !engine && !cleanup && applied && grants.Count < paths.Length &&
                     change.Path == paths[grants.Count] && change.Writable == (grants.Count >= 2) &&
                     change.DirectoryIdentity is { Length: 48 } id && id.All(char.IsAsciiHexDigit),
@@ -145,9 +151,11 @@ internal sealed class OfficeOwnershipJournal : IDisposable
                 _ => false
             };
             var grantIntent = change.Step == OfficeOwnershipStep.GrantIntent;
-            var hasPath = grantIntent || change.Step is OfficeOwnershipStep.GrantApplied or OfficeOwnershipStep.RevokeIntent or OfficeOwnershipStep.GrantRevoked;
+            var profileCreated = _version == 2 && change.Step == OfficeOwnershipStep.ProfileCreated;
+            var hasPath = grantIntent || profileCreated || change.Step is OfficeOwnershipStep.GrantApplied or OfficeOwnershipStep.RevokeIntent or OfficeOwnershipStep.GrantRevoked;
             if (!valid || (change.Step != OfficeOwnershipStep.ProfileCreated && change.Sid is not null) ||
-                (!hasPath && change.Path is not null) || (!grantIntent && (change.DirectoryIdentity is not null || change.Writable is not null)))
+                (!hasPath && change.Path is not null) || (!grantIntent && !profileCreated && change.DirectoryIdentity is not null) ||
+                (!grantIntent && change.Writable is not null))
                 throw new InvalidDataException("Invalid Office ownership transition or fields.");
             switch (change.Step)
             {
@@ -229,6 +237,8 @@ internal sealed class OfficeOwnershipJournal : IDisposable
         try { return new SecurityIdentifier(sid).Value; }
         finally { FreeSid(sid); }
     }
+    internal static string ExpectedProfileDirectory(string name) => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", name);
     public void Dispose()
     {
         if (_disposed) return;

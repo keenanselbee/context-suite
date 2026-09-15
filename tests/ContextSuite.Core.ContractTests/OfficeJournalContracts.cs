@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Nodes;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Office;
 
@@ -52,8 +53,12 @@ internal static class OfficeJournalContracts
                 "Office journal rename fixture remains within its owned scratch directory");
             Refuses(() => Directory.Move(stage, moved), "Office journal lease prevents parent replacement");
             Reject(new(OfficeOwnershipStep.DeleteIntent), "Office journal rejects deletion without confirmed creation and cleanup");
-            Reject(new(OfficeOwnershipStep.ProfileCreated, "S-1-15-2-1"), "Office journal rejects a profile SID from another identity");
-            journal.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName)));
+            Reject(new(OfficeOwnershipStep.ProfileCreated, "S-1-15-2-1", OfficeOwnershipJournal.ExpectedProfileDirectory(work.ProfileName), new string('A', 48)), "Office journal rejects a profile SID from another identity");
+            Reject(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName)),
+                "Office version two requires a profile directory identity before confirming ownership");
+            Reject(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName), stage, new string('A', 48)),
+                "Office version two refuses an unrelated profile storage path");
+            journal.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName), OfficeOwnershipJournal.ExpectedProfileDirectory(work.ProfileName), new string('A', 48)));
             string[] paths = [runtime, Path.Combine(work.DirectoryPath, "input"), Path.Combine(work.DirectoryPath, "output"),
                 Path.Combine(work.DirectoryPath, "profile"), Path.Combine(work.DirectoryPath, "temp")];
             for (var index = 0; index < paths.Length; index++)
@@ -109,7 +114,7 @@ internal static class OfficeJournalContracts
         var pendingPath = Path.Combine(stage, pendingId.ToString("N") + ".ownership");
         using (var pending = OfficeOwnershipJournal.Create(pendingPath, pendingWork, runtime))
         {
-            pending.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(pendingWork.ProfileName)));
+            pending.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(pendingWork.ProfileName), OfficeOwnershipJournal.ExpectedProfileDirectory(pendingWork.ProfileName), new string('B', 48)));
             pending.Record(new(OfficeOwnershipStep.GrantIntent, Path: runtime, DirectoryIdentity: new string('B', 48), Writable: false));
         }
         using (var pending = OfficeOwnershipJournal.Open(pendingPath, contextRoot, runtime))
@@ -125,12 +130,47 @@ internal static class OfficeJournalContracts
 
         var length = BinaryPrimitives.ReadInt32LittleEndian(first);
         var json = Encoding.UTF8.GetString(first, 4, length);
+        var legacyFolder = Path.Combine(stage, "legacy"); Directory.CreateDirectory(legacyFolder);
+        var legacyPath = Path.Combine(legacyFolder, id.ToString("N") + ".ownership");
+        var legacyBytes = Frame(Encoding.UTF8.GetBytes(json.Replace("\"Version\":2", "\"Version\":1", StringComparison.Ordinal)));
+        File.WriteAllBytes(legacyPath, legacyBytes);
+        using (var legacy = OfficeOwnershipJournal.Open(legacyPath, contextRoot, runtime))
+        {
+            check(legacy.Version == 1 && legacy.Changes.Count == 1, "Office version one records remain readable for review");
+            Refuses(legacy.RequireCreationOwner, "Office version one records cannot authorize a new native profile");
+            Refuses(() => legacy.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName))),
+                "Office version one records refuse appended mutations");
+        }
+        check(File.ReadAllBytes(legacyPath).SequenceEqual(legacyBytes), "Office legacy review preserves the original version and bytes");
+        var legacyCompleteFolder = Path.Combine(stage, "legacy-complete"); Directory.CreateDirectory(legacyCompleteFolder);
+        var legacyCompletePath = Path.Combine(legacyCompleteFolder, id.ToString("N") + ".ownership");
+        using (var converted = new MemoryStream())
+        {
+            var cursor = 0; var previous = new byte[32];
+            while (cursor < complete.Length)
+            {
+                var size = BinaryPrimitives.ReadInt32LittleEndian(complete.AsSpan(cursor, 4));
+                var entry = JsonNode.Parse(complete.AsSpan(cursor + 4, size))!.AsObject(); entry["Version"] = 1;
+                var change = entry["Change"]!.AsObject();
+                if (change["Step"]!.GetValue<string>() == "ProfileCreated")
+                { change["Path"] = null; change["DirectoryIdentity"] = null; }
+                var frame = Frame(Encoding.UTF8.GetBytes(entry.ToJsonString()), previous);
+                converted.Write(frame); previous = frame[^32..]; cursor += size + 36;
+            }
+            File.WriteAllBytes(legacyCompletePath, converted.ToArray());
+        }
+        using (var legacy = OfficeOwnershipJournal.Open(legacyCompletePath, contextRoot, runtime))
+        {
+            check(legacy.Version == 1 && legacy.Changes.Count == 27 && legacy.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted,
+                "Office version one complete lifecycles remain readable without invented profile directory identity");
+            Refuses(() => OfficeSandboxOwner.VerifyProfile(legacy).Dispose(), "Office version one evidence cannot authorize native profile verification or recovery");
+        }
         foreach (var (label, payload) in new[]
         {
-            ("duplicate fields", json.Replace("\"Version\":1", "\"Version\":1,\"Version\":1", StringComparison.Ordinal)),
-            ("unknown fields", json.Replace("\"Version\":1", "\"Unknown\":1,\"Version\":1", StringComparison.Ordinal)),
-            ("unsupported version", json.Replace("\"Version\":1", "\"Version\":2", StringComparison.Ordinal)),
-            ("missing required field", json.Replace("\"Version\":1,", "", StringComparison.Ordinal)),
+            ("duplicate fields", json.Replace("\"Version\":2", "\"Version\":2,\"Version\":2", StringComparison.Ordinal)),
+            ("unknown fields", json.Replace("\"Version\":2", "\"Unknown\":1,\"Version\":2", StringComparison.Ordinal)),
+            ("unsupported version", json.Replace("\"Version\":2", "\"Version\":3", StringComparison.Ordinal)),
+            ("missing required field", json.Replace("\"Version\":2,", "", StringComparison.Ordinal)),
             ("wrong sequence", json.Replace("\"Sequence\":0", "\"Sequence\":1", StringComparison.Ordinal)),
             ("numeric action", json.Replace("\"ProfileIntent\"", "0", StringComparison.Ordinal)),
             ("unknown action", json.Replace("\"ProfileIntent\"", "\"Erase\"", StringComparison.Ordinal))
@@ -215,12 +255,12 @@ internal static class OfficeJournalContracts
         using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var output = new MemoryStream(); input.CopyTo(output); return output.ToArray();
     }
-    private static byte[] Frame(byte[] payload)
+    private static byte[] Frame(byte[] payload, byte[]? previous = null)
     {
         var bytes = new byte[4 + payload.Length + 32]; BinaryPrimitives.WriteInt32LittleEndian(bytes, payload.Length);
         payload.CopyTo(bytes, 4);
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        hash.AppendData(new byte[32]); hash.AppendData(bytes, 0, 4 + payload.Length); hash.GetHashAndReset().CopyTo(bytes, 4 + payload.Length);
+        hash.AppendData(previous ?? new byte[32]); hash.AppendData(bytes, 0, 4 + payload.Length); hash.GetHashAndReset().CopyTo(bytes, 4 + payload.Length);
         return bytes;
     }
     [DllImport("kernel32.dll", EntryPoint = "CreateHardLinkW", CharSet = CharSet.Unicode, SetLastError = true)]

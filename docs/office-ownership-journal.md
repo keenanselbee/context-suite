@@ -16,7 +16,7 @@ does not execute Office or publish outputs.
 Recorded identity and ordering
 ------------------------------
 
-The version-one record binds a validated `OfficeExportWork`, expected runtime
+The version-two record binds a validated `OfficeExportWork`, expected runtime
 directory, creator process ID and creator start time. Its filename is the item
 GUID followed by `.ownership`. The context must be a direct child of the expected
 context root. The runtime and context cannot overlap, and the journal must remain
@@ -27,19 +27,25 @@ The allowed sequence is:
 
 | Step | Required evidence represented by the record |
 | --- | --- |
-| Profile intent, then profile created | A fresh creation attempt, followed by its matching derived AppContainer SID |
+| Profile intent, then profile created | A fresh creation attempt, followed by its matching derived AppContainer SID, expected profile path and live directory identity |
 | Grant intent, then grant applied | Runtime/input read access and output/profile/temp write access, in that fixed order |
 | Engine intent, then processes stopped | All five grants completed before work; confirmed shutdown before subsequent cleanup |
 | Cleanup intent, then revoke intent/revoked | Revoke every intended grant in reverse order, including a grant with uncertain completion |
 | Delete intent, then profile deleted | All intended grants revoked before recording profile deletion |
 
-Grant intents carry a 48-hex-character directory identity field for the volume
+Profile creation and grant intents carry a 48-hex-character directory identity field for the volume
 and file ID. Its syntax is checked; reading the journal does not verify the live
 directory object. The coordinator must obtain these facts from held handles and
 verify them again during recovery. Similarly, recorded process shutdown or a
 profile-created entry is a report from the writer, not independent proof of the
 current Windows state. An unconfirmed creation intent cannot be promoted to
 confirmed ownership by replay.
+
+Version-one records remain readable under their original schema, including
+complete lifecycles. They cannot authorize new creation, native profile verification
+or appended mutations. They remain unchanged for review; the reader never invents
+the profile-directory identity that the earlier schema did not record. Mixed-version
+chains and unsupported versions are refused.
 
 
 Persistence and refusal behavior
@@ -151,13 +157,58 @@ using the journaled owner. Bind restart recovery to the actual profile, director
 terminated processes before revocation. An incomplete creation, replaced object,
 hostile journal/tree or unresolved process must remain reviewable.
 
-Before automatic reclamation, add the profile directory's live object identity
-and recoverable evidence for the engine processes. The creator PID/start time
-alone does not identify surviving engine children or a replaced profile folder.
-Version any additional persisted fields explicitly and preserve earlier records.
+The version-two profile binding below supplies the profile directory's live object
+identity. Before automatic reclamation, add recoverable evidence for the engine
+processes. The creator PID/start time alone does not identify surviving engine
+children. Version additional persisted fields explicitly and preserve earlier records.
 
 Test actual application loss at those mutation boundaries, including interruption
 during grant application/revocation and profile deletion. Add hostile leaf-link
 and concurrent replacement acceptance. Finally connect independent PDF validation
 and transactional copy publication, followed by the direct customer Office command.
 The journal does not authorize publishing a candidate PDF or complete these gates.
+
+
+Profile directory binding
+-------------------------
+
+New journals use version two. After native creation, the owner resolves Windows'
+AppContainer storage location and verifies that it belongs to the expected profile
+folder. It records that folder's volume/file identity from a held ordinary-directory
+handle along with the actual SID. Before revoking any grant, cleanup resolves the
+location again and compares the live object with the creation record. An absent,
+unconfirmed or replaced object is retained for review rather than adopted.
+
+The verified directory and its parents remain held during permission cleanup.
+The handle is released immediately before native profile deletion because
+[Windows requires profile-storage handles to be closed](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-deleteappcontainerprofile).
+This does not prove protection against concurrent replacement in that final gap,
+or establish recovery after partially successful native deletion.
+
+All **97 native ownership checks** pass at
+`.codex-temp/office-owner/b0f4e017622149e7987dec24e1ca3c50`, with the matching
+fixture/result stage under `.codex-temp/office-isolation`. The native test compares
+the recorded profile identity with an independent held Windows handle. It then
+moves only its disposable profile folder to a checked fresh sibling and creates
+an empty replacement. Cleanup refuses before revoking grants, retaining the
+original folder, mapping and all five grants. The test restores the original
+folder and verifies successful cleanup after the existing sharing-failure cases.
+No replacement sibling remains.
+
+All **42 actual worker checks** pass at
+`.codex-temp/office-worker/19bf203a5c114e1392c42f2e6c6a2423`. Its three DOCX/XLSX/PPTX
+exports complete version-two ownership journals. Independent inspection at
+`inspection-3df7407f16f444cd8bf7dc740b24fe2f` verifies qpdf structure, authored text,
+page geometry and exact PDFium control pixels. These are ordinary exports; the
+earlier active interruption matrix was not rerun for this profile-binding change.
+
+`.codex-temp/office-profile-identity-verification.json` reconciles current source,
+worker and candidate identities, all 108 frames, 20 live grant-directory identities,
+four absent profile folders/mappings and 22,059 ACL entries without the test SIDs.
+The deleted profile folders cannot be compared live afterward; the focused native
+test performs that comparison before cleanup. All **3,123 foundation contracts**
+pass, including **100 journal checks**, with matching source hashes at
+`.codex-temp/office-profile-identity-foundation-a720943e8d2846628ef9e3505bd77cfb`.
+The added journal checks cover required profile identity/path and read-only review
+of both incomplete and complete version-one records. Production context creation,
+restart recovery, independent publication and the customer command remain open.

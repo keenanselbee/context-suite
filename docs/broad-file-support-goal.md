@@ -5,13 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [journaled Office owner](office-ownership-journal.md#native-owner-and-actual-exports)
-records native profile/grant mutations and actual typed-worker export cleanup.
-All 93 ownership checks, 42 real-worker checks and three independent PDF inspections
-pass. Four journals contain 108 verified frames and 20 checked directory identities;
-all test profiles and grants are removed. All 3,113 foundation contracts pass,
-including 90 journal checks. Production context construction, restart recovery,
-validated publication and customer Office conversion remain incomplete.
+The latest [Office profile directory binding](office-ownership-journal.md#profile-directory-binding)
+records the actual profile folder's identity in version-two journals and refuses
+cleanup of a replaced folder before revoking grants. Version-one records remain
+readable for review without mutations. All 97 ownership checks, 42 real-worker
+checks and three independent PDF inspections pass. Four journals contain 108
+verified frames and 20 checked grant-directory identities; all test profiles and
+grants are removed. All 3,123 foundation contracts pass, including 100 journal
+checks. Production context construction, restart recovery, validated publication
+and customer Office conversion remain incomplete.
 
 The preceding [Office child-access recovery checks](office-profile-ownership.md#residual-child-access-recovery)
 close a cleanup gap below granted directories. The owner now refuses pre-existing
