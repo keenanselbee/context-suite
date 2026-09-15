@@ -222,6 +222,13 @@ cases and ordinary-token refusal pass. The foundation suite now passes 2,986
 contracts. Production launcher/worker/publication integration remains next;
 this component checkpoint does not enable customer Office conversion.
 
+The [managed Office launcher](office-managed-launcher.md) connects that native
+host to a capability-free suspended launch, verified job limits, bounded pipes,
+deadline/cancellation and descendant cleanup. Clean-environment testing also
+corrects the host's CRT environment initialization. App-owned profile/grant
+composition, worker requests, independent validation and publication remain to
+be integrated before enabling the customer command.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The
@@ -500,9 +507,11 @@ Prioritize the remaining work in this order:
    pass in both controls. Broader fidelity, hostile-content/recovery and network
    enforcement remain open. The
    separate elevated read-only network-event query still awaits authorization.
-   Add source admission that rejects empty/unidentified Office inputs, then extend
-   interruption tests to active rendering and owner crashes through the verified
-   Windows main-loop lifecycle. The small authored matrix does not clear the remaining isolation or adoption gates.
+   Initial source preflight, active-render interruption and evaluation-owner
+   crash tests now have component evidence. Connect those policies and the
+   managed launcher to production app/worker ownership, complete source
+   admission, independent PDF validation and transactional publication. The
+   small authored matrix does not clear the remaining isolation or adoption gates.
 2. Settle the concrete Office policies exposed by experiments:
    [Excel calculation](excel-calculation-evaluation.md),
    [early date systems](excel-date-system-evaluation.md),

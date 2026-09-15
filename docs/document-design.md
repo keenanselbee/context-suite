@@ -326,6 +326,12 @@ identities, source preservation and refusal cases are component evidence. The
 production launcher, worker adapter, candidate validation and app publication
 remain to be connected; customer Office conversion is still unavailable.
 
+The [managed launcher checkpoint](office-managed-launcher.md) supplies the
+suspended capability-free process launch, actual token/job checks and bounded
+cancellation/cleanup boundary. The application must own Windows profile cleanup
+separately from the worker's process job. Production payload/path/grant leases,
+worker requests and publication are still pending.
+
 
 Output and acceptance
 ---------------------

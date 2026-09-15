@@ -122,3 +122,8 @@ Resolve spreadsheet calculation and missing-font behavior; verify the selected
 Word policy and broader fidelity through the new host. Content/network isolation
 and engine redistribution/adoption remain separate gates. No desktop, screen-reader,
 theme/DPI, installed lifecycle or commercial-release acceptance is claimed.
+
+The next [managed launcher checkpoint](office-managed-launcher.md) implements the
+contained process boundary and corrects CRT environment initialization exposed
+by a clean launch environment. It retains production profile/grant ownership,
+worker/publication and broader acceptance as separate remaining work.
