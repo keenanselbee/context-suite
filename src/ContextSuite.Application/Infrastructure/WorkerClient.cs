@@ -27,10 +27,11 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     public bool HasPdfRenderer => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-renderer", "ContextSuite.PdfRenderer.exe"));
     public bool HasImagePdfConverter => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-validator", "ContextSuite.ImagePdfValidator.exe"));
 
-    public async Task<OfficeExportCandidate> ExportOfficeAsync(OfficeExportWork work, CancellationToken token)
+    public async Task<OfficeExportCandidate> ExportOfficeAsync(OfficeExportWork work, CancellationToken token,
+        Action<WorkerLifetimeIdentity>? beforeRequest = null)
     {
         var command = new WorkerCommand(1, Guid.NewGuid(), "office-export", OfficeWork: work);
-        var reply = await SendAsync(command, token);
+        var reply = await SendAsync(command, token, beforeRequest);
         var candidate = reply.OfficeCandidate ?? throw new InvalidDataException("Missing Office export candidate.");
         candidate.Validate(work, command.RequestId);
         return candidate;
@@ -217,7 +218,8 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         return preview;
     }
 
-    private async Task<WorkerReply> SendAsync(WorkerCommand command, CancellationToken cancellationToken)
+    private async Task<WorkerReply> SendAsync(WorkerCommand command, CancellationToken cancellationToken,
+        Action<WorkerLifetimeIdentity>? beforeOfficeRequest = null)
     {
         command.Validate();
         await _gate.WaitAsync(cancellationToken);
@@ -226,6 +228,10 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
         try
         {
+            // A journaled Office request needs a reopenable job. Finish an older
+            // unnamed worker before creating the new sequential lifetime.
+            if (beforeOfficeRequest is not null && _process is not null && _job?.RecoveryIdentity is null)
+                await StopAsync(true);
             if (_process is null)
             {
                 var name = $"ContextSuite-Worker-{Guid.NewGuid():N}";
@@ -240,7 +246,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ContextSuite", "WorkerScratch")),
                     "worker-" + Guid.NewGuid().ToString("N"));
                 start.ArgumentList.Add(_scratchDirectory);
-                _job = new WorkerProcessJob();
+                _job = beforeOfficeRequest is null ? new WorkerProcessJob() : WorkerProcessJob.CreateRecoverable(Guid.NewGuid());
                 _process = Process.Start(start) ?? throw new IOException("The media worker could not start.");
                 // The worker waits for a command before loading any engine.
                 // Assign its lifetime job before sending the first request.
@@ -248,6 +254,10 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
                 await _pipe.WaitForConnectionAsync(timeout.Token);
                 LocalPipe.VerifyPeer(_pipe, true, _process.Id, Path.GetFullPath(executable));
             }
+            // The peer is verified and assigned before durable intent is recorded.
+            // No request bytes are sent if recording fails.
+            if (beforeOfficeRequest is not null)
+                beforeOfficeRequest(_job?.RecoveryIdentity ?? throw new IOException("The Office worker has no recoverable lifetime."));
             await JsonFrames.WriteAsync(_pipe!, command, timeout.Token);
             var reply = await JsonFrames.ReadAsync<WorkerReply>(_pipe!, timeout.Token);
             if (reply.Version != 1 || reply.RequestId != command.RequestId || reply.Capabilities is null)

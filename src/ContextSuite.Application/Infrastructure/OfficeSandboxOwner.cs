@@ -195,7 +195,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     private int CountGrant(RawAcl acl, int access) => acl.Cast<GenericAce>().Count(ace => IsGrant(ace, access));
     internal static IDisposable VerifyProfile(OfficeOwnershipJournal journal)
     {
-        if (journal.Version != 2) throw new InvalidDataException("Profile recovery requires a recorded directory identity.");
+        if (journal.Version < 2) throw new InvalidDataException("Profile recovery requires a recorded directory identity.");
         var created = journal.Changes.SingleOrDefault(change => change.Step == OfficeOwnershipStep.ProfileCreated)
             ?? throw new InvalidDataException("The Office profile has no confirmed creation record.");
         var path = ProfileDirectory(journal.Owner.Work.ProfileName, created.Sid!);

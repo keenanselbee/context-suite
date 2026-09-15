@@ -5,14 +5,22 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [recoverable worker job component](office-worker-lifetime.md#recoverable-named-job-component)
+The latest [Office worker dispatch binding](office-ownership-journal.md#worker-lifetime-binding-before-dispatch)
+records the assigned named job in version-three journals before any request bytes
+are sent. All 3,169 foundation contracts, 97 ownership checks and 54 actual worker
+checks pass, including recorder-failure refusal and transition from an ordinary
+worker. Three PDFs pass independent inspection; all recorded jobs and test profiles
+are removed. Actual Office application-loss recovery, production context creation,
+validated publication and the customer command remain unfinished.
+
+The preceding [recoverable worker job component](office-worker-lifetime.md#recoverable-named-job-component)
 passes 29 native lifetime checks within 3,152 foundation contracts. Actual
 owner-only crashes verify worker/descendant termination, including explicit
 recovery when another handle keeps the job alive. Connecting this identity to
-the Office journal before request dispatch and testing actual Office owner loss
-remain the next steps; automatic profile recovery is not yet implemented.
+the Office journal was still pending at that checkpoint. The binding above closes
+that step; actual Office owner-loss and automatic profile recovery remain unfinished.
 
-The latest [Office profile directory binding](office-ownership-journal.md#profile-directory-binding)
+The earlier [Office profile directory binding](office-ownership-journal.md#profile-directory-binding)
 records the actual profile folder's identity in version-two journals and refuses
 cleanup of a replaced folder before revoking grants. Version-one records remain
 readable for review without mutations. All 97 ownership checks, 42 real-worker

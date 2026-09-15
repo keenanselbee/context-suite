@@ -55,10 +55,11 @@ internal static class OfficeJournalContracts
             Reject(new(OfficeOwnershipStep.DeleteIntent), "Office journal rejects deletion without confirmed creation and cleanup");
             Reject(new(OfficeOwnershipStep.ProfileCreated, "S-1-15-2-1", OfficeOwnershipJournal.ExpectedProfileDirectory(work.ProfileName), new string('A', 48)), "Office journal rejects a profile SID from another identity");
             Reject(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName)),
-                "Office version two requires a profile directory identity before confirming ownership");
+                "Office journal requires a profile directory identity before confirming ownership");
             Reject(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName), stage, new string('A', 48)),
-                "Office version two refuses an unrelated profile storage path");
+                "Office journal refuses an unrelated profile storage path");
             journal.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName), OfficeOwnershipJournal.ExpectedProfileDirectory(work.ProfileName), new string('A', 48)));
+            var lifetime = WorkerLifetimeIdentity.Create(Guid.NewGuid());
             string[] paths = [runtime, Path.Combine(work.DirectoryPath, "input"), Path.Combine(work.DirectoryPath, "output"),
                 Path.Combine(work.DirectoryPath, "profile"), Path.Combine(work.DirectoryPath, "temp")];
             for (var index = 0; index < paths.Length; index++)
@@ -66,12 +67,25 @@ internal static class OfficeJournalContracts
                 Reject(new(OfficeOwnershipStep.GrantIntent, Path: stage, DirectoryIdentity: new string('A', 48), Writable: index >= 2),
                     "Office journal refuses an unrelated grant path " + index);
                 journal.Record(new(OfficeOwnershipStep.GrantIntent, Path: paths[index], DirectoryIdentity: new string('A', 48), Writable: index >= 2));
-                Reject(new(OfficeOwnershipStep.EngineIntent), "Office journal does not run before all grants are confirmed " + index);
+                Reject(new(OfficeOwnershipStep.EngineIntent, Lifetime: lifetime), "Office journal does not run before all grants are confirmed " + index);
                 journal.Record(new(OfficeOwnershipStep.GrantApplied, Path: paths[index]));
             }
-            journal.Record(new(OfficeOwnershipStep.EngineIntent));
+            Reject(new(OfficeOwnershipStep.EngineIntent), "Office version three requires a recorded worker lifetime");
+            Reject(new(OfficeOwnershipStep.EngineIntent, Lifetime: lifetime with { OwnerProcessId = lifetime.OwnerProcessId + 1 }),
+                "Office worker lifetime must match the journal creator");
+            Reject(new(OfficeOwnershipStep.EngineIntent, Lifetime: lifetime with { Name = "unrelated" }),
+                "Office worker lifetime refuses an unrelated object name");
+            journal.RecordEngineIntent(lifetime);
+            var enteredBytes = Read(path);
+            journal.RecordEngineIntent(lifetime);
+            check(Read(path).SequenceEqual(enteredBytes), "Office repeated requests on the same lifetime do not append another intent");
+            Refuses(() => journal.RecordEngineIntent(WorkerLifetimeIdentity.Create(Guid.NewGuid())),
+                "Office context cannot switch to another worker lifetime");
+            check(Read(path).SequenceEqual(enteredBytes), "Office different-lifetime refusal preserves the journal");
             Reject(new(OfficeOwnershipStep.CleanupIntent), "Office journal refuses cleanup until process shutdown is recorded");
-            journal.Record(new(OfficeOwnershipStep.ProcessesStopped)); journal.Record(new(OfficeOwnershipStep.CleanupIntent));
+            journal.Record(new(OfficeOwnershipStep.ProcessesStopped));
+            Refuses(() => journal.RecordEngineIntent(lifetime), "Office completed process lifetime cannot dispatch another request");
+            journal.Record(new(OfficeOwnershipStep.CleanupIntent));
             Reject(new(OfficeOwnershipStep.DeleteIntent), "Office journal retains the profile until every grant is revoked");
             for (var index = paths.Length - 1; index >= 0; index--)
             {
@@ -132,7 +146,7 @@ internal static class OfficeJournalContracts
         var json = Encoding.UTF8.GetString(first, 4, length);
         var legacyFolder = Path.Combine(stage, "legacy"); Directory.CreateDirectory(legacyFolder);
         var legacyPath = Path.Combine(legacyFolder, id.ToString("N") + ".ownership");
-        var legacyBytes = Frame(Encoding.UTF8.GetBytes(json.Replace("\"Version\":2", "\"Version\":1", StringComparison.Ordinal)));
+        var legacyBytes = Frame(Encoding.UTF8.GetBytes(json.Replace("\"Version\":3", "\"Version\":1", StringComparison.Ordinal)));
         File.WriteAllBytes(legacyPath, legacyBytes);
         using (var legacy = OfficeOwnershipJournal.Open(legacyPath, contextRoot, runtime))
         {
@@ -142,35 +156,47 @@ internal static class OfficeJournalContracts
                 "Office version one records refuse appended mutations");
         }
         check(File.ReadAllBytes(legacyPath).SequenceEqual(legacyBytes), "Office legacy review preserves the original version and bytes");
-        var legacyCompleteFolder = Path.Combine(stage, "legacy-complete"); Directory.CreateDirectory(legacyCompleteFolder);
-        var legacyCompletePath = Path.Combine(legacyCompleteFolder, id.ToString("N") + ".ownership");
-        using (var converted = new MemoryStream())
+        foreach (var version in new[] { 1, 2 })
         {
-            var cursor = 0; var previous = new byte[32];
+            var legacyCompleteFolder = Path.Combine(stage, "legacy-complete-" + version); Directory.CreateDirectory(legacyCompleteFolder);
+            var legacyCompletePath = Path.Combine(legacyCompleteFolder, id.ToString("N") + ".ownership");
+            using var converted = new MemoryStream();
+            var cursor = 0; var previous = new byte[32]; byte[] pendingEngine = [];
             while (cursor < complete.Length)
             {
                 var size = BinaryPrimitives.ReadInt32LittleEndian(complete.AsSpan(cursor, 4));
-                var entry = JsonNode.Parse(complete.AsSpan(cursor + 4, size))!.AsObject(); entry["Version"] = 1;
-                var change = entry["Change"]!.AsObject();
-                if (change["Step"]!.GetValue<string>() == "ProfileCreated")
+                var entry = JsonNode.Parse(complete.AsSpan(cursor + 4, size))!.AsObject(); entry["Version"] = version;
+                var change = entry["Change"]!.AsObject(); change.Remove("Lifetime");
+                if (version == 1 && change["Step"]!.GetValue<string>() == "ProfileCreated")
                 { change["Path"] = null; change["DirectoryIdentity"] = null; }
                 var frame = Frame(Encoding.UTF8.GetBytes(entry.ToJsonString()), previous);
                 converted.Write(frame); previous = frame[^32..]; cursor += size + 36;
+                if (change["Step"]!.GetValue<string>() == "EngineIntent") pendingEngine = converted.ToArray();
             }
             File.WriteAllBytes(legacyCompletePath, converted.ToArray());
-        }
-        using (var legacy = OfficeOwnershipJournal.Open(legacyCompletePath, contextRoot, runtime))
-        {
-            check(legacy.Version == 1 && legacy.Changes.Count == 27 && legacy.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted,
-                "Office version one complete lifecycles remain readable without invented profile directory identity");
-            Refuses(() => OfficeSandboxOwner.VerifyProfile(legacy).Dispose(), "Office version one evidence cannot authorize native profile verification or recovery");
+            using (var legacy = OfficeOwnershipJournal.Open(legacyCompletePath, contextRoot, runtime))
+            {
+                check(legacy.Version == version && legacy.Changes.Count == 27 && legacy.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted,
+                    "Office legacy complete lifecycles remain readable without invented lifetime identity: " + version);
+                if (version == 1) Refuses(() => OfficeSandboxOwner.VerifyProfile(legacy).Dispose(),
+                    "Office version one evidence cannot authorize native profile verification or recovery");
+            }
+            File.WriteAllBytes(legacyCompletePath, pendingEngine);
+            using (var legacy = OfficeOwnershipJournal.Open(legacyCompletePath, contextRoot, runtime))
+            {
+                Refuses(() => legacy.Record(new(OfficeOwnershipStep.ProcessesStopped)),
+                    "Office legacy pending-engine record refuses appended mutation: " + version);
+                Refuses(() => legacy.RecordEngineIntent(WorkerLifetimeIdentity.Create(Guid.NewGuid())),
+                    "Office legacy pending-engine record cannot dispatch a worker request: " + version);
+            }
+            check(File.ReadAllBytes(legacyCompletePath).SequenceEqual(pendingEngine), "Office legacy pending-engine review preserves exact bytes: " + version);
         }
         foreach (var (label, payload) in new[]
         {
-            ("duplicate fields", json.Replace("\"Version\":2", "\"Version\":2,\"Version\":2", StringComparison.Ordinal)),
-            ("unknown fields", json.Replace("\"Version\":2", "\"Unknown\":1,\"Version\":2", StringComparison.Ordinal)),
-            ("unsupported version", json.Replace("\"Version\":2", "\"Version\":3", StringComparison.Ordinal)),
-            ("missing required field", json.Replace("\"Version\":2,", "", StringComparison.Ordinal)),
+            ("duplicate fields", json.Replace("\"Version\":3", "\"Version\":3,\"Version\":3", StringComparison.Ordinal)),
+            ("unknown fields", json.Replace("\"Version\":3", "\"Unknown\":1,\"Version\":3", StringComparison.Ordinal)),
+            ("unsupported version", json.Replace("\"Version\":3", "\"Version\":4", StringComparison.Ordinal)),
+            ("missing required field", json.Replace("\"Version\":3,", "", StringComparison.Ordinal)),
             ("wrong sequence", json.Replace("\"Sequence\":0", "\"Sequence\":1", StringComparison.Ordinal)),
             ("numeric action", json.Replace("\"ProfileIntent\"", "0", StringComparison.Ordinal)),
             ("unknown action", json.Replace("\"ProfileIntent\"", "\"Erase\"", StringComparison.Ordinal))

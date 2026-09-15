@@ -16,7 +16,7 @@ does not execute Office or publish outputs.
 Recorded identity and ordering
 ------------------------------
 
-The version-two record binds a validated `OfficeExportWork`, expected runtime
+The version-three record binds a validated `OfficeExportWork`, expected runtime
 directory, creator process ID and creator start time. Its filename is the item
 GUID followed by `.ownership`. The context must be a direct child of the expected
 context root. The runtime and context cannot overlap, and the journal must remain
@@ -29,7 +29,7 @@ The allowed sequence is:
 | --- | --- |
 | Profile intent, then profile created | A fresh creation attempt, followed by its matching derived AppContainer SID, expected profile path and live directory identity |
 | Grant intent, then grant applied | Runtime/input read access and output/profile/temp write access, in that fixed order |
-| Engine intent, then processes stopped | All five grants completed before work; confirmed shutdown before subsequent cleanup |
+| Engine intent, then processes stopped | All five grants completed; the assigned worker's named lifetime and creator/session identity recorded before dispatch; confirmed shutdown before cleanup |
 | Cleanup intent, then revoke intent/revoked | Revoke every intended grant in reverse order, including a grant with uncertain completion |
 | Delete intent, then profile deleted | All intended grants revoked before recording profile deletion |
 
@@ -41,11 +41,12 @@ profile-created entry is a report from the writer, not independent proof of the
 current Windows state. An unconfirmed creation intent cannot be promoted to
 confirmed ownership by replay.
 
-Version-one records remain readable under their original schema, including
-complete lifecycles. They cannot authorize new creation, native profile verification
-or appended mutations. They remain unchanged for review; the reader never invents
-the profile-directory identity that the earlier schema did not record. Mixed-version
-chains and unsupported versions are refused.
+Version-one and version-two records remain readable under their original schemas,
+including complete lifecycles and pending engine intents. They cannot authorize
+new creation, worker dispatch or appended mutations. They remain unchanged for
+review; the reader never invents missing profile-directory or worker identities.
+Version one also cannot authorize native profile verification because it lacks
+the directory identity. Mixed-version chains and unsupported versions are refused.
 
 
 Persistence and refusal behavior
@@ -157,10 +158,11 @@ using the journaled owner. Bind restart recovery to the actual profile, director
 terminated processes before revocation. An incomplete creation, replaced object,
 hostile journal/tree or unresolved process must remain reviewable.
 
-The version-two profile binding below supplies the profile directory's live object
-identity. Before automatic reclamation, add recoverable evidence for the engine
-processes. The creator PID/start time alone does not identify surviving engine
-children. Version additional persisted fields explicitly and preserve earlier records.
+The profile binding below supplies the profile directory's live object identity.
+The subsequent version-three dispatch binding supplies the assigned worker's named
+job identity. Before automatic reclamation, verify actual application-loss recovery
+using both identities. The creator PID/start time alone does not identify surviving
+engine children. Preserve earlier records without inventing missing evidence.
 
 Test actual application loss at those mutation boundaries, including interruption
 during grant application/revocation and profile deletion. Add hostile leaf-link
@@ -215,5 +217,64 @@ restart recovery, independent publication and the customer command remain open.
 
 The subsequent [named worker lifetime component](office-worker-lifetime.md#recoverable-named-job-component)
 now verifies native owner-loss and retained-handle process shutdown independently.
-It is not yet recorded in these version-two journals or connected to Office
-requests. Add that durable binding before using it to authorize profile recovery.
+That component checkpoint did not record its identity in version-two journals.
+The version-three binding below connects it to request dispatch; profile recovery
+still requires actual application-loss acceptance.
+
+
+Worker lifetime binding before dispatch
+--------------------------------------
+
+The application client now accepts a synchronous pre-dispatch recorder for Office
+requests. It creates and assigns a recoverable named job, connects to and verifies
+the worker, then calls the recorder before sending any request bytes. An existing
+unnamed worker is stopped before the new sequential worker is created. Calls
+without this recorder retain their previous behavior; customer Office orchestration
+is not yet enabled.
+
+`RecordEngineIntent` requires the original journal creator and records the actual
+named job identity in a version-three engine-intent frame. The job creator must
+match the journal creator. Repeated requests may use the same recorded lifetime
+without appending another frame; a different lifetime or a completed/cleaning
+context is refused. A failed write leaves the journal faulted and prevents
+dispatch. Recovery must revalidate both the journal and the current Windows job
+state rather than treating the recorded intent as proof that an engine is running
+or stopped.
+
+All **3,169 foundation contracts** pass, including **117 journal checks** and the
+29 native lifetime checks, at
+`.codex-temp/office-lifetime-binding-foundation-844b83584ac048708825403262b60c2b`.
+The added journal cases require the lifetime, reject another creator/object name,
+permit repeated intent only for the same lifetime, refuse dispatch after shutdown,
+and preserve version-one/two complete and pending-engine records without mutation.
+
+All **97 native ownership checks** pass at
+`.codex-temp/office-owner/b5617c33bea64d199f5f3f7272400f1f`; its fixture/results use
+the matching identity under `.codex-temp/office-isolation`. Its engine lifetime
+is a synthetic schema fixture, not evidence of native engine execution.
+
+The actual Office harness passes **54 worker checks** at
+`.codex-temp/office-worker/100f8a9d38de41cfafa7687564954ad2`. For each DOCX/XLSX/PPTX
+fixture, it first starts an ordinary worker and verifies that process exits before
+the journaled request. A simulated recorder exception then prevents dispatch,
+stops the idle replacement worker and leaves the engine profile, PDF and journal
+intent absent. The next attempt verifies native membership in the named job,
+records its identity, exercises existing input refusals and completes the export.
+The same lifetime remains bound across those requests. This injects a recorder
+exception; it does not simulate disk-full or physical write/flush failure.
+
+Independent inspection at `inspection-89ebd0f557964c44a7cb21ea3aed923d` verifies
+qpdf structure, authored text, page geometry and exact PDFium control pixels for
+all three outputs. `.codex-temp/office-lifetime-binding-verification.json` verifies
+current source/worker/candidate identities, 108 journal frames, 20 live grant
+directory identities, absence of the three actual named jobs and four profile
+folders/mappings, and 22,059 ACL entries without their test SIDs. Application and
+private-harness Release builds have zero warnings/errors.
+
+The preceding 51-check run, before the ordinary-worker transition case was added,
+is retained at `.codex-temp/office-worker/59c0395ce8da4031a56104935fa915f7`, with
+independent inspection at `inspection-2f5bb7cc28c24a8896efd6b5d626e438`.
+These tests verify dispatch ordering and ordinary export cleanup. They do not
+establish actual Office application-loss recovery, native profile adoption,
+AppContainer access denial to the named job, validated publication, customer
+commands or expanded-release acceptance. The reserved production payload is unchanged.

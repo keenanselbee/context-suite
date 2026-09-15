@@ -140,8 +140,9 @@ job with kill-on-close and no breakaway. Its non-inherited handle uses an explic
 DACL granting access only to the current user and SYSTEM. Creation refuses an
 existing job or another kernel object with the same name before changing limits.
 The identity records the random job name, creator PID/start time and Windows
-session. Ordinary `WorkerClient` calls still use the existing unnamed constructor;
-the named component is not yet connected to Office requests or journals.
+session. At this component checkpoint, ordinary `WorkerClient` calls still used
+the existing unnamed constructor; the named component was not yet connected to
+Office requests or journals. The subsequent dispatch binding is described below.
 
 `StopRecordedAsync` requires a validated identity in the original session and
 refuses while the recorded creator is alive. Failure to query the creator remains
@@ -176,10 +177,10 @@ are stopped. The Release application builds with zero warnings/errors. The
 earlier 25-check run is retained separately at
 `.codex-temp/worker-lifetime-foundation-8795009ddd8c4b3d9074b29ad2332dc7`.
 
-Next, persist the confirmed job identity before sending any Office request, with
-an explicitly versioned journal schema. Verify actual Office owner-loss recovery
-using that record, including refusal before request dispatch when persistence
-fails. These component tests use generated process trees; they create no Windows
+The subsequent [version-three dispatch binding](office-ownership-journal.md#worker-lifetime-binding-before-dispatch)
+records the assigned job identity before Office request bytes are sent and checks
+failure before dispatch. Actual Office owner-loss recovery using that record
+remains unfinished. These component tests use generated process trees; they create no Windows
 profiles and run no Office engine. AppContainer access denial to the named job,
 cross-session recovery and hostile same-user object substitution are not verified.
 The older real-Office and broad media regressions were not rerun for this component.
