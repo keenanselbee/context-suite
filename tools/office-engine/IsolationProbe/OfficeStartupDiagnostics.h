@@ -2,9 +2,8 @@
 
 // Fixed empty-profile initialization, without document loading or wider access.
 bool OfficeStartupDiagnostics(const fs::path& root, PSID sid) {
-    const auto runtime = root.parent_path() / L"office";
+    const auto runtime = OfficeRuntime(root, sid);
     const auto fixtures = root.parent_path() / L"office-fixtures";
-    Grant(runtime, sid, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
     Grant(fixtures, sid, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
     auto values = AccessEnvironmentValues(root);
     values[L"SAL_LOG"] = L"+INFO+WARN+TIMESTAMP";

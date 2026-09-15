@@ -4,7 +4,7 @@
 // Successful output creation is an observation, not independent PDF validation.
 bool OfficeExports(const fs::path& root, PSID sid, const std::vector<wchar_t>& environment) {
     const auto fixtures = root.parent_path() / L"office-fixtures";
-    const auto executable = root.parent_path() / L"office" / L"program" / L"soffice.com";
+    const auto executable = OfficeRuntime(root, sid) / L"program" / L"soffice.com";
     Grant(fixtures, sid, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
     const auto previousMode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
     struct ErrorModeGuard { UINT value; ~ErrorModeGuard() { SetErrorMode(value); } } errorMode{ previousMode };
@@ -73,7 +73,7 @@ bool OfficeRedirectedEnvironmentControl(const fs::path& root) {
     const auto previousMode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
     struct ErrorModeGuard { UINT value; ~ErrorModeGuard() { SetErrorMode(value); } } errorMode{ previousMode };
     const auto started = GetTickCount64();
-    const auto result = Run(root.parent_path() / L"office" / L"program" / L"soffice.com",
+    const auto result = Run(root.parent_path() / L"runtime" / L"office" / L"program" / L"soffice.com",
         { std::wstring(L"-env:UserInstallation=") + uri, L"--headless", L"--nologo", L"--nodefault",
           L"--norestore", L"--unaccept=all", L"--terminate_after_init" }, root, nullptr, 60000, {}, &environment);
     const bool passed = result.exitCode == 0 && !result.timedOut && !result.outputLimit;

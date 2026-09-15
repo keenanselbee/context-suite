@@ -1,12 +1,26 @@
 #pragma once
 
+fs::path OfficeRuntime(const fs::path& root, PSID sid) {
+    const auto boundary = root.parent_path() / L"runtime";
+    const auto runtime = boundary / L"office";
+    Require(fs::is_regular_file(runtime / L"program" / L"soffice.com"), "Prepared Office runtime copy required");
+    size_t entries = 0;
+    for (const auto& entry : fs::directory_iterator(boundary)) {
+        Require(entry.path() == runtime, "Runtime boundary must contain only the copied engine");
+        ++entries;
+    }
+    Require(entries == 1, "Use the dedicated runtime boundary");
+    // FindFirstFile(runtime) enumerates its parent. Permit that lookup only in
+    // the dedicated engine boundary, never in the surrounding staging directory.
+    Grant(boundary, sid, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
+    return runtime;
+}
+
 // Fixed version-only viability check. No document path or arbitrary engine
 // argument is accepted, and no source/runtime ACL outside this copy is changed.
 bool OfficeVersion(const fs::path& root, PSID sid, const std::vector<wchar_t>& environment) {
-    const auto runtime = root.parent_path() / L"office";
+    const auto runtime = OfficeRuntime(root, sid);
     const auto executable = runtime / L"program" / L"soffice.com";
-    Require(fs::is_regular_file(executable), "Prepared Office runtime copy required");
-    Grant(runtime, sid, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
     const auto previousMode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
     struct ErrorModeGuard { UINT value; ~ErrorModeGuard() { SetErrorMode(value); } } errorMode{ previousMode };
     bool passed = true;

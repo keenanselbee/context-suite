@@ -31,7 +31,7 @@ Write-Output "Isolation evidence: $scratch"
 $arguments = @((Join-Path $scratch 'case'))
 if ($CreateDisposableProfile) { $arguments += '--create-disposable-profile' }
 if ($PreparedOfficeDirectory) {
-    & python -B (Join-Path $PSScriptRoot 'Prepare-OfficeIsolation.py') $PreparedOfficeDirectory (Join-Path $scratch 'office')
+    & python -B (Join-Path $PSScriptRoot 'Prepare-OfficeIsolation.py') $PreparedOfficeDirectory (Join-Path $scratch 'runtime\office')
     if ($LASTEXITCODE) { throw 'Office isolation copy verification failed; no Office process launched.' }
     if ($PassiveExports -or $StartupDiagnostics) {
         & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --isolation-fixtures (Join-Path $scratch 'office-fixtures')

@@ -144,6 +144,16 @@ restricted startup. All fifteen seeded profile files and disabled-content settin
 match the control; owned profiles/jobs are cleaned up. The specific failure cause
 and network enforcement remain unresolved.
 
+The [runtime lookup and IPC investigation](office-isolated-startup.md#runtime-lookup-and-ipc-diagnosis-2026-09-14)
+now identifies a directory-parent access defect and corrects the evaluation layout
+to `runtime/office`. Scoped directory lookup passes while surrounding/withheld
+lookups remain denied. The earlier UNO path exception disappears, but startup
+still stalls. The stock engine's standard pipe namespace conflicts with the
+AppContainer requirement, reproduced by a bounded standard/LOCAL pipe comparison.
+Evaluate a compatible embedded/source integration next; additional profile flags
+cannot resolve that demonstrated namespace mismatch. No customer converter or
+production payload is changed.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

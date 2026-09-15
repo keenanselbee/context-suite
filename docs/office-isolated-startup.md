@@ -1,8 +1,9 @@
 Office AppContainer Startup Evaluation
 =====================================
 
-Status: pinned version reporting passes inside an actual AppContainer, but full
-initialization fails. Ordinary authored exports pass independent PDF checks.
+Status: the runtime-parent lookup defect is corrected. Full AppContainer
+initialization still stalls, with a reproduced named-pipe namespace incompatibility.
+Pinned version reporting and ordinary authored exports have passed their checks.
 Network denial and required customer conversion remain unresolved.
 
 Purpose and boundary
@@ -10,10 +11,10 @@ Purpose and boundary
 
 The required Office converter needs both an enforced process boundary and an
 engine that works inside it. The [native isolation experiment](office-isolation-evaluation.md)
-tests file/token/environment behavior with an authored helper. This follow-up
-tries only the pinned Office engine's `--version` command in the same boundary.
-It opens no document and does not establish font discovery, import, export,
-hostile-content handling or customer conversion.
+tests file/token/environment behavior with an authored helper. This record starts
+with version reporting, then records passive exports and targeted initialization
+diagnostics. Each experiment's actual scope is stated below; none establishes
+hostile-content handling or required customer conversion.
 
 Preparation and execution
 -------------------------
@@ -28,15 +29,17 @@ the version option cannot run without that profile opt-in. It does not install
 Office, register a package or alter Explorer. Do not run this test elevated.
 
 `Prepare-OfficeIsolation.py` verifies the pinned MSI and the complete retained
-runtime inventory, then copies only its members into a fresh case's `office`
-directory. It verifies source and copied bytes/hashes, rejects reparse paths and
+runtime inventory, then copies only its members into a fresh case's `runtime/office`
+directory. The dedicated `runtime` parent contains only that engine and receives
+read/execute access, allowing the engine's parent-directory lookup without granting
+access to the surrounding staging directory. It verifies source and copied bytes/hashes, rejects reparse paths and
 noncanonical/ambiguous inventory names, and rejects existing or out-of-scope
 destinations. Earlier generated GUID-named crash dumps beside `soffice` are
 recorded and excluded from the copy; they remain untouched in the source.
 Missing members and other unlisted files are refused before engine launch.
 The copy receipt retains the archive/inventory identity and every expected file.
 
-Only the copied runtime receives read/execute access for the disposable profile.
+Only the dedicated runtime boundary receives read/execute access for the disposable profile.
 The retained original runtime's ACLs are untouched. Ordinary and AppContainer
 controls run the same fixed version command with separate owned UserInstallation
 paths, headless flags and the explicit environment. Native critical-error dialog
@@ -272,3 +275,72 @@ binary hashes and logs are retained in `copy-diagnostic-c602a8946992481a8286b26c
 settings, outcomes and cleanup. Native x64 `/W4 /WX` builds pass. Further Office
 work needs a more specific failure diagnostic; neither hypothesis justifies
 widening permissions or admitting customer documents.
+
+
+Runtime lookup and IPC diagnosis (2026-09-14)
+-------------------------------------------
+
+A scratch-only debugger launches the owned process with `DEBUG_PROCESS` and
+observes its descendants under the existing job, token and environment limits.
+It never attaches to an existing application, changes memory/registers or opens
+documents. It continues the initial loader breakpoints and passes other exceptions
+to the program's handlers. Debug events affect execution timing; they are
+diagnostic evidence, not ordinary performance or UI acceptance.
+
+The original layout produces two caught UNO exceptions absent from the ordinary
+control: `Exception` reports "Extension Manager: Could not obtain path for
+UserInstallation." A later `IllegalArgumentException` concerns an invalid UI
+module. Exception types are identified from MSVC metadata; a follow-up reads the
+bounded Message field using the pinned generated UNO exception/string layout.
+The first debug record included trailing data after debug-string terminators;
+the corrected observer stops at the first terminator and drains process-exit
+events before moving to the next launch. These scratch diagnostics do not ship.
+
+The pinned [bootstrap implementation](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/unotools/source/config/bootstrap.cxx)
+checks installation directories through the OSL directory API. Its
+[Windows implementation](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/sal/osl/w32/file_dirvol.cxx)
+uses `FindFirstFileW`. An authored restricted probe finds that the old runtime
+root returns error 5 from that API while `GetFileAttributesW` succeeds. Its
+children are accessible. Granting only the runtime root leaves the parent lookup
+outside the allowed directory.
+
+The preparer now creates `runtime/office` and grants read/execute on the dedicated
+`runtime` directory, which must contain only the copied engine. It refuses an
+existing boundary, malformed layouts and linked paths. The staging directory
+receives no new grant. A post-change probe verifies successful lookup of the
+engine root, its program directory and the writable profile, while lookup through
+the surrounding stage and the withheld fixture remains denied. Five destination
+guard checks pass. Runtime contents and originals remain unchanged.
+
+The corrected layout is staged at
+`.codex-temp/office-isolation/1a880d93be994b9a9a3467bb77aa1ba3`.
+Ordinary startup succeeds; restricted startup still reaches its 60-second deadline.
+A subsequent debug run (`cs13`) no longer observes either C++ exception, but
+still times out. This fixes a demonstrated directory-lookup defect, not all
+initialization requirements.
+
+The pinned [Office IPC loop](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/desktop/source/app/officeipcthread.cxx)
+retries pipe creation/opening, and the [Windows pipe implementation](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/sal/osl/w32/pipe.cxx)
+uses the standard `\\.\pipe\` namespace. In a separate authored test (`cs14`),
+ordinary creation succeeds with both standard and `LOCAL` names; AppContainer
+creation returns error 5 for the standard name and succeeds with `\\.\pipe\LOCAL\`.
+Only unique disposable servers are created and closed; no client connects.
+This agrees with Microsoft's [AppContainer pipe requirement](https://learn.microsoft.com/en-us/windows/win32/api/namedpipeapi/nf-namedpipeapi-connectnamedpipe).
+The source and API observations identify an IPC incompatibility consistent with
+the later stall; this is not a captured call stack proving its sole cause.
+
+Original-layout debug/path evidence is `cs10` through `cs12` under the preceding
+`f2f5447d26614e9f9b2f2e4e4c7c5e86` stage. Corrected-layout startup is `case`, debug
+is `cs13`, pipe creation is `cs14`, and directory-boundary verification is `cs15`
+under the new stage. Each scratch diagnostic directory retains its authored
+source, binary/source hashes and logs. All jobs and disposable profiles are
+cleaned up. Reconciliation receipts are `.codex-temp/office-runtime-diagnosis-verification.json`
+and `.codex-temp/office-runtime-boundary-verification.json`; destination checks
+are `.codex-temp/office-runtime-boundary-guards.json`.
+
+Next evaluate a supported embedded-engine path or a separately reviewed source
+integration with compatible IPC. The pinned `mergedlo.dll` exports
+`libreofficekit_hook` and `libreofficekit_hook_2`; their presence alone proves
+neither usable Windows embedding nor sandbox compatibility. Do not patch vendor
+binaries, weaken the process boundary or claim customer conversion from these
+results. Network enforcement remains independently unresolved.

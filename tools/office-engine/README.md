@@ -265,8 +265,9 @@ observations and profile cleanup.
 
 Add `-PreparedOfficeDirectory '<verified Office evaluation directory>'` together
 with `-CreateDisposableProfile` for the fixed `--version` viability experiment.
-It creates and verifies a separate runtime copy, grants read/execute only on that
-copy, and compares ordinary/AppContainer startup under owned jobs and explicit
+It creates and verifies a separate `runtime/office` copy, grants read/execute on
+its dedicated `runtime` parent (which contains only that copy), and compares
+ordinary/AppContainer startup under owned jobs and explicit
 environment paths. It opens no document. Read the
 [startup scope and results](../../docs/office-isolated-startup.md); neither
 version reporting nor successful cleanup resolves network enforcement.
