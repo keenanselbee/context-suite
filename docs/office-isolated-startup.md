@@ -1,11 +1,11 @@
 Office AppContainer Startup Evaluation
 =====================================
 
-Status: embedded-engine initialization and shutdown pass inside the AppContainer.
-The desktop command still stalls at the reproduced IPC incompatibility.
-Authored Word exports pass independent checks in both controls; embedded Excel
-and PowerPoint loading times out in both. Network denial and required customer
-conversion remain unresolved.
+Status: embedded Word, Excel and PowerPoint exports pass the authored ordinary /
+AppContainer matrix and independent PDF checks. The Windows main-loop lifecycle
+and fresh read-only input copies resolve the recorded loading failures. Broader
+fidelity, hostile-content/recovery checks, network enforcement and required
+customer conversion remain open.
 
 Purpose and boundary
 --------------------
@@ -478,3 +478,81 @@ so additional AppContainer permissions are not justified by these observations.
 Network enforcement, hostile/active-content cases, broad fidelity, recovery and
 production integration remain separate open gates. No visible UI, screen-reader,
 installed-shell or customer-conversion acceptance is claimed.
+
+
+Windows main-loop and input-copy correction (2026-09-14)
+--------------------------------------------------------
+
+The focused `cs22` Excel diagnosis samples only the owned root process with
+[thread-context snapshots](https://learn.microsoft.com/en-us/windows/win32/api/processsnapshot/nf-processsnapshot-psscapturesnapshot)
+and [stack walking](https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-stackwalk64).
+No debugger attaches to an existing application, no live registers/memory are
+written, and no symbol server or inherited symbol path is used. Two samples,
+at approximately 20 and 40 seconds, each take about 140 ms. Both place the
+restricted loading thread in `NtUserSetWindowPos`, with VCL window sizing,
+widget construction and document loading below it. Another thread runs the Office
+main loop through a condition wait. Contexts are snapshots but stack memory is
+read live; exported-symbol displacements are retained and are not exact private
+function names. These observations identify a Windows UI/thread interaction,
+not a proven lock-ownership cycle.
+
+`SAL_LOK_OPTIONS=unipoll` alone (`cs23`) is insufficient: all six processes crash
+with access violation `0xC0000005` before loading returns. That experiment never
+enters the API's `runLoop`. Calling `runLoop` on the initializing thread and
+scheduling document work there (`cs24`) permits all three restricted exports.
+Word's ordinary control also passes, while ordinary Excel/PowerPoint return empty
+references. Inspection then finds lock files left beside the shared authored
+fixtures by `cs21` timeouts. Those files are retained as evidence, not deleted.
+
+`cs25` gives every format/control a fresh read-only input copy under its owned
+`allowed` directory. All six exports pass independent qpdf/PDFium structure,
+expected text, page count/geometry and exact ordinary/restricted rendered pixels.
+The initial two-second scheduling delay is experimental, not a readiness protocol.
+
+The final public mode (`cs26`) replaces that delay with a 100-ms timer that waits
+for `Application::IsInExecute`, then verifies `Application::IsMainThread` before
+loading. These two independently declared Boolean functions are resolved by exact
+export name from the pinned Windows runtime. They are VCL C++ exports, outside the
+stable LibreOfficeKit C ABI; missing exports fail closed. The pinned
+[implementation](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/vcl/source/app/svapp.cxx)
+checks actual main-loop state and thread identity. Runtime upgrades must review
+this dependency. Document load/export/destruction execute on that thread; engine
+shutdown runs on a separate owned thread so the main loop can return. The helper
+joins shutdown before reporting completion and remains bounded by its parent job.
+`-EmbeddedStartup` retains its separate initialization-only behavior.
+
+| Final authored fixture | Ordinary | AppContainer | Independent comparison |
+| --- | --- | --- | --- |
+| Word DOCX | 7,594 ms | 6,781 ms | Two pages; expected text and exact pixels |
+| Excel XLSX | 6,875 ms | 6,828 ms | One page; expected text and exact pixels |
+| PowerPoint PPTX | 6,563 ms | 6,437 ms | Two pages; expected text and exact pixels |
+
+All six initialize, observe loop readiness, load, export, destroy and exit zero.
+The inspector additionally verifies each fresh input's hash against the authored
+original, its recorded modification time, read-only attribute and absence of
+extra files in its input directory. Profile settings, original hashes/timestamps
+and output preservation also pass. No declaration here establishes macro/link
+blocking or broader document fidelity beyond the specific checks performed.
+
+All cases remain under
+`.codex-temp/office-isolation/1a880d93be994b9a9a3467bb77aa1ba3`.
+Source/build bindings, in case order `cs22` through `cs26`, are:
+
+- `embedded-load-stacks-822dc756bc544b00b04423a19d79eabf/build.json`
+- `embedded-unipoll-ba384ccddd8b4b039b652996fd536f93/build.json`
+- `embedded-main-loop-8f81663b92e14cbbb825487102811755/build.json`
+- `embedded-fresh-inputs-52e3448dcc3f4266be6391b4afef7f2d/build.json`
+- `embedded-loop-final-202990d5e1be45edb058fa36f0ed731d/build.json`
+
+The final independent result is
+`inspection-00c46289e4114f98bfcf5bc732cacf37/results.json`; the preceding successful
+timing experiment is `inspection-aed19dd762e040999eb5348a3ad87958/results.json`.
+`.codex-temp/office-embedded-loop-verification.json` reconciles all five builds,
+the final public source, exact runtime membership/hashes, six read-only inputs,
+profile settings and removal of all owned Windows profiles/processes. No production
+payload changes, installed integration or visible acceptance are implied.
+
+Next exercise broader Word/Excel/PowerPoint fidelity, malformed/active-content
+refusal, cancellation/crash recovery and larger-resource bounds through this
+lifecycle. Resolve calculation/font policies and the separate network-denial gate
+before adopting customer Office conversion. Preserve the earlier failed evidence.

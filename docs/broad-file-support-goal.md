@@ -169,6 +169,14 @@ Excel and PowerPoint initialize but time out while loading in both controls. The
 full matrix remains failed; investigate the embedded loader/main-loop interaction
 before expanding the document matrix or enabling customer conversion.
 
+The [Windows embedded lifecycle correction](office-isolated-startup.md#windows-main-loop-and-input-copy-correction-2026-09-14)
+now passes all six authored Word/Excel/PowerPoint exports, ordinary and restricted,
+with independent structure/text/geometry and exact rendered-pixel comparisons.
+It waits for the actual main loop on the initializing thread and gives each case
+a fresh read-only input copy. Earlier ordinary failures were also affected by
+retained lock files from interrupted tests. Broader fidelity, hostile-content and
+recovery checks, network enforcement and customer conversion remain open.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The
@@ -443,11 +451,12 @@ Prioritize the remaining work in this order:
 1. Resolve the [Office isolation evaluation](office-isolation-evaluation.md).
    The owner authorized the disposable profile test; file restrictions, token,
    explicit environment and cleanup have passed their recorded checks. Actual
-   embedded renderer initialization and shutdown now pass, as do the authored Word
-   exports. Excel/PowerPoint loading and network-denial evidence remain unresolved. The
+   embedded initialization/shutdown and authored Word/Excel/PowerPoint exports now
+   pass in both controls. Broader fidelity, hostile-content/recovery and network
+   enforcement remain open. The
    separate elevated read-only network-event query still awaits authorization.
-   Investigate the Excel/PowerPoint embedded loading stalls, reproduced in both
-   ordinary and restricted controls. An unrestricted passive export does not clear this gate.
+   Expand the document and interruption matrix through the verified Windows main-loop
+   lifecycle. The small authored matrix does not clear the remaining isolation or adoption gates.
 2. Settle the concrete Office policies exposed by experiments:
    [Excel calculation](excel-calculation-evaluation.md),
    [early date systems](excel-date-system-evaluation.md),

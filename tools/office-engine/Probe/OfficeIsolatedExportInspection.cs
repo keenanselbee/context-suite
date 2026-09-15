@@ -42,6 +42,20 @@ internal static class OfficeIsolatedExportInspection
                     if (!File.Exists(statePath)) throw new InvalidDataException("No completed export record; inspect retained initialization diagnostic.");
                     using var state = JsonDocument.Parse(File.ReadAllText(statePath));
                     if (!state.RootElement.GetProperty("completed").GetBoolean()) throw new InvalidDataException("Engine did not complete a bounded export.");
+                    if (state.RootElement.TryGetProperty("inputCopy", out var inputCopy) && inputCopy.GetBoolean())
+                    {
+                        var extension = family == "Word" ? "docx" : family == "Excel" ? "xlsx" : "pptx";
+                        var inputName = family + " \u00fc." + extension;
+                        var inputFolder = Path.Combine(root, "allowed", name);
+                        var input = Path.Combine(inputFolder, inputName);
+                        using var receipt = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, name + "-input.json")));
+                        if (!state.RootElement.GetProperty("loopReady").GetBoolean() ||
+                            Hash(input) != Hash(Path.Combine(stage, "office-fixtures", inputName)) ||
+                            File.GetLastWriteTimeUtc(input).ToFileTimeUtc() != receipt.RootElement.GetProperty("lastWriteTime").GetInt64() ||
+                            !File.GetAttributes(input).HasFlag(FileAttributes.ReadOnly) ||
+                            Directory.EnumerateFileSystemEntries(inputFolder).Count() != 1)
+                            throw new InvalidDataException("Owned read-only input changed, acquired an extra file, or lacked loop readiness.");
+                    }
                     var profile = (family == "Word" ? "w" : family == "Excel" ? "x" : "p") + (kind == "control" ? "c" : "i");
                     OfficeProfileSettings.Verify(Path.Combine(root, "writable", profile, "user", "registrymodifications.xcu"));
                     var pdf = Path.Combine(root, "writable", name, family + " \u00fc.pdf"); var hash = Hash(pdf);

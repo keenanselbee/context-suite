@@ -300,10 +300,13 @@ that API, each in a fresh ordinary and restricted process/profile. Load settings
 explicitly disable macros, retain security level 3 and request silent batch
 handling; PDF settings remain fixed. Unicode file URLs use UTF-8 escapes. Each
 initialization/load/export/shutdown sequence has one combined 60-second bound.
+On Windows, exports enter the embedded main loop on the initializing thread and
+wait for its checked loop-state exports before loading. Each process receives a
+fresh read-only input copy, preventing stale lock files from affecting later tests.
 Inspect the retained results with the same PDF inspector. For a named retained
-follow-up case, supply `-CaseName cs21`; the default remains `case`. The result
+follow-up case, supply `-CaseName cs26`; the default remains `case`. The result
 records the exact case root and retains failures alongside completed outputs.
-See the [embedded export results](../../docs/office-isolated-startup.md#authored-embedded-exports-2026-09-14).
+See the [Windows lifecycle and final export results](../../docs/office-isolated-startup.md#windows-main-loop-and-input-copy-correction-2026-09-14).
 
 `Read-OfficeNetworkEvents.ps1 -StagingId <scratch-guid> -PlanOnly` prepares four
 read-only WFP queries for the retained probe's IPv4/IPv6 loopback events and
