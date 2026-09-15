@@ -1,9 +1,13 @@
 [CmdletBinding()]
-param([switch] $CreateDisposableProfile, [string] $PreparedOfficeDirectory, [switch] $PassiveExports, [switch] $StartupDiagnostics)
+param([switch] $CreateDisposableProfile, [string] $PreparedOfficeDirectory, [switch] $PassiveExports,
+    [switch] $StartupDiagnostics, [switch] $EmbeddedStartup)
 $ErrorActionPreference = 'Stop'
 if ($PreparedOfficeDirectory -and -not $CreateDisposableProfile) { throw 'Office isolation requires the authorized disposable profile test.' }
 if ($PassiveExports -and -not $PreparedOfficeDirectory) { throw 'Passive exports require the pinned Office runtime parameter.' }
 if ($StartupDiagnostics -and (-not $PreparedOfficeDirectory -or $PassiveExports)) { throw 'Choose startup diagnostics with the pinned runtime and without passive exports.' }
+if ($EmbeddedStartup -and (-not $PreparedOfficeDirectory -or $PassiveExports -or $StartupDiagnostics)) {
+    throw 'Choose embedded startup with the pinned runtime and without the other startup/export modes.'
+}
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $scratch = Join-Path $repository ('.codex-temp\office-isolation\' + [guid]::NewGuid().ToString('N'))
 $build = Join-Path $scratch 'build'
@@ -24,6 +28,7 @@ $executable = Join-Path $build 'bin\Release\ContextSuite.Office.IsolationProbe.e
     officeVersionSha256=(Get-FileHash -LiteralPath (Join-Path $source 'OfficeVersion.h')).Hash;
     officeExportsSha256=(Get-FileHash -LiteralPath (Join-Path $source 'OfficeExports.h')).Hash;
     startupDiagnosticsSha256=(Get-FileHash -LiteralPath (Join-Path $source 'OfficeStartupDiagnostics.h')).Hash;
+    embeddedStartupSha256=(Get-FileHash -LiteralPath (Join-Path $source 'OfficeEmbeddedStartup.h')).Hash;
     jobObservationSha256=(Get-FileHash -LiteralPath (Join-Path $source 'JobObservation.h')).Hash;
     cmakeSha256=(Get-FileHash -LiteralPath (Join-Path $source 'CMakeLists.txt')).Hash } |
     ConvertTo-Json | Set-Content -LiteralPath (Join-Path $scratch 'build.json') -Encoding UTF8
@@ -33,10 +38,11 @@ if ($CreateDisposableProfile) { $arguments += '--create-disposable-profile' }
 if ($PreparedOfficeDirectory) {
     & python -B (Join-Path $PSScriptRoot 'Prepare-OfficeIsolation.py') $PreparedOfficeDirectory (Join-Path $scratch 'runtime\office')
     if ($LASTEXITCODE) { throw 'Office isolation copy verification failed; no Office process launched.' }
-    if ($PassiveExports -or $StartupDiagnostics) {
+    if ($PassiveExports -or $StartupDiagnostics -or $EmbeddedStartup) {
         & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --isolation-fixtures (Join-Path $scratch 'office-fixtures')
         if ($LASTEXITCODE) { throw 'Authored isolation fixture generation failed; no Office process launched.' }
-        $arguments += $(if ($StartupDiagnostics) { '--office-startup-diagnostics' } else { '--office-exports' })
+        $arguments += $(if ($EmbeddedStartup) { '--office-embedded-startup' }
+            elseif ($StartupDiagnostics) { '--office-startup-diagnostics' } else { '--office-exports' })
     } else { $arguments += '--office-version' }
 }
 & $executable @arguments

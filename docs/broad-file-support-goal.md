@@ -154,6 +154,14 @@ Evaluate a compatible embedded/source integration next; additional profile flags
 cannot resolve that demonstrated namespace mismatch. No customer converter or
 production payload is changed.
 
+The subsequent [embedded startup check](office-isolated-startup.md#embedded-startup-2026-09-14)
+successfully initializes and destroys the pinned engine inside the AppContainer,
+using its API path that omits desktop IPC. Ordinary and restricted controls exit
+zero, and owned jobs/profiles are cleaned up. This clears an initialization
+obstacle; the next step is authored Word/Excel/PowerPoint export through that API,
+with independent fidelity and recovery checks. Network enforcement and required
+customer conversion remain incomplete.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The
@@ -428,10 +436,11 @@ Prioritize the remaining work in this order:
 1. Resolve the [Office isolation evaluation](office-isolation-evaluation.md).
    The owner authorized the disposable profile test; file restrictions, token,
    explicit environment and cleanup have passed their recorded checks. Actual
-   renderer initialization and network-denial evidence remain unresolved. The
+   embedded renderer initialization and shutdown now pass; document exports and
+   network-denial evidence remain unresolved. The
    separate elevated read-only network-event query still awaits authorization.
-   Use targeted diagnostics for the restricted renderer failure before running
-   further document exports. An unrestricted passive export does not clear this gate.
+   Next run authored Word, Excel and PowerPoint exports through the embedded API
+   inside AppContainer. An unrestricted passive export does not clear this gate.
 2. Settle the concrete Office policies exposed by experiments:
    [Excel calculation](excel-calculation-evaluation.md),
    [early date systems](excel-date-system-evaluation.md),

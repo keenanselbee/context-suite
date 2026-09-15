@@ -1,9 +1,9 @@
 Office AppContainer Startup Evaluation
 =====================================
 
-Status: the runtime-parent lookup defect is corrected. Full AppContainer
-initialization still stalls, with a reproduced named-pipe namespace incompatibility.
-Pinned version reporting and ordinary authored exports have passed their checks.
+Status: embedded-engine initialization and shutdown pass inside the AppContainer.
+The desktop command still stalls at the reproduced IPC incompatibility.
+Embedded document exports and required customer conversion remain unverified.
 Network denial and required customer conversion remain unresolved.
 
 Purpose and boundary
@@ -344,3 +344,70 @@ integration with compatible IPC. The pinned `mergedlo.dll` exports
 neither usable Windows embedding nor sandbox compatibility. Do not patch vendor
 binaries, weaken the process boundary or claim customer conversion from these
 results. Network enforcement remains independently unresolved.
+
+
+Embedded startup (2026-09-14)
+-----------------------------
+
+The pinned [embedded initialization implementation](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/desktop/source/lib/init.cxx)
+enables request handling without creating the desktop IPC thread. This is a
+different supported entry point in the same verified runtime, not an edit to a
+vendor binary or a weaker process boundary. The independently declared ABI prefix
+uses only its size and destroy callback; no document, macro or network method is
+invoked. See the pinned [public API declaration](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/include/LibreOfficeKit/LibreOfficeKit.h).
+
+```powershell
+.\tools\office-engine\Test-OfficeIsolation.ps1 -CreateDisposableProfile `
+  -PreparedOfficeDirectory '<verified repository-local Office evaluation directory>' `
+  -EmbeddedStartup
+```
+
+The mode is mutually exclusive with desktop startup diagnostics and passive
+exports. It requires the authorized disposable profile and verified runtime
+preparation. It launches two independently built helper aliases with no command
+arguments, one ordinary and one restricted. Each receives its own fresh profile
+with the existing disabled-content settings. DLL search is restricted to System32
+and the copied engine directory. The process calls `libreofficekit_hook_2`, checks
+the returned instance/ABI prefix, and invokes its destroy callback. Initialization
+and destruction markers, process results and job cleanup are retained. Engine
+DLLs stay loaded until that owned child exits.
+
+The original harness (`cs16`) called the internal `osl_setCommandArgs` API and
+launched the child with probe-specific switches. Both controls crashed before
+returning an engine instance. The debug follow-up (`cs17`) locates the fatal
+access violation in `sal3.dll` at offset `0x312ed` in each control. The pinned
+[process header](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/include/osl/process.h)
+marks the argument-reset API internal/deprecated and ineffective on Windows.
+The corrected harness omits that call and launches without arguments. These two
+changes remove the failed harness behavior together; the individual contribution
+of each is not claimed.
+
+The corrected experiment (`cs18`) initializes and destroys both instances:
+ordinary 11,219 ms and AppContainer 7,079 ms. Both exit zero within the same
+60-second, memory, process and diagnostic limits. Each job has zero remaining
+members, and its disposable profile is removed. No document is opened and no
+isolated PDF exists from this experiment. This establishes embedded startup and
+shutdown only; it does not validate import, rendering, fonts or output fidelity.
+
+These cases are under
+`.codex-temp/office-isolation/1a880d93be994b9a9a3467bb77aa1ba3`.
+Retained build directories are `kit-diagnostic-a8e68f5d22504b5a9a1247951478e365`,
+`kit-debug-8d4dcdc52bd944cc84aebdd4e0e236a1` and
+`kit-diagnostic-bad1eb22e22741c587bcfa50a70d47d4` respectively. Their source/binary
+hashes bind each observed revision. Failed observations remain retained separately.
+
+The promoted public mode is independently rebuilt and rerun as `cs19`, bound by
+`embedded-final-987253c470e44379afd6406f23530b4e/build.json`. Ordinary initialization
+and destruction finish in 6,203 ms; restricted initialization and destruction
+finish in 5,984 ms. Both exit zero and leave zero active job members. The final
+restricted root's AppContainer identity and zero-capability token are checked
+before execution. Wrapper syntax and three invalid/conflicting mode checks pass.
+`.codex-temp/office-embedded-startup-verification.json` reconciles runtime/source
+integrity, retained disabled-content settings, fixture hashes, source/build
+identity and removal of the disposable Windows profile and registry mapping.
+
+Next extend this entry point to the existing authored Word, Excel and PowerPoint
+fixtures, with explicit load/export policies and independent qpdf/PDFium checks.
+Recheck disabled-content settings after initialization and loading, source/output
+preservation, resource limits and recovery. Successful embedding does not resolve
+the independent network-enforcement gate or enable customer conversion.

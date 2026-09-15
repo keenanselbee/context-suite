@@ -289,6 +289,12 @@ the same job bounds. It opens no document and skips the separate access/network
 matrix. The current ordinary control passes while restricted initialization
 fails; see the [diagnostic results and limits](../../docs/office-isolated-startup.md#owned-startup-diagnostics-2026-09-14).
 
+Use `-EmbeddedStartup` instead to initialize and destroy an embedded engine
+instance through `libreofficekit_hook_2`, in ordinary and AppContainer children.
+It uses the same prepared runtime/profile opt-in and job limits, with no document
+load or export. Children launch without command arguments so Office does not
+interpret the probe's switches. See the [embedded startup evidence](../../docs/office-isolated-startup.md#embedded-startup-2026-09-14).
+
 `Read-OfficeNetworkEvents.ps1 -StagingId <scratch-guid> -PlanOnly` prepares four
 read-only WFP queries for the retained probe's IPv4/IPv6 loopback events and
 filters. It verifies the probe hash and profile name and rejects reparse paths.

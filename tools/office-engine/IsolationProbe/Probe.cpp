@@ -322,6 +322,7 @@ ChildResult Run(const fs::path& executable, const std::vector<std::wstring>& arg
 #include "OfficeVersion.h"
 #include "OfficeExports.h"
 #include "OfficeStartupDiagnostics.h"
+#include "OfficeEmbeddedStartup.h"
 
 struct CommittedMemory {
     void* value;
@@ -500,6 +501,21 @@ void OwnerCrashContract(const fs::path& executable, const fs::path& root) {
 }
 int wmain(int argc, wchar_t** argv) {
     try {
+        // Embedded clients launch without arguments. Engine command-line parsing
+        // must not see the parent probe's control switches or selected paths.
+        if (argc == 1) {
+            wchar_t module[32768]{};
+            const auto size = GetModuleFileNameW(nullptr, module, static_cast<DWORD>(std::size(module)));
+            Require(size > 0 && size < std::size(module), "Locate owned embedded child");
+            const fs::path image(module);
+            if (image.filename() == L"kit-control.exe" || image.filename() == L"kit-isolated.exe") {
+                Require(image.parent_path().filename() == L"allowed" &&
+                    image.native().find(L"\\.codex-temp\\office-isolation\\") != std::wstring::npos,
+                    "Use an owned embedded test executable");
+                return OfficeKitChild(image.parent_path().parent_path(), image.filename() == L"kit-isolated.exe");
+            }
+            return 2;
+        }
         WSADATA winsock{};
         Require(WSAStartup(MAKEWORD(2, 2), &winsock) == 0, "Initialize local network fixture");
         struct WinsockGuard { ~WinsockGuard() { WSACleanup(); } } winsockGuard;
@@ -548,9 +564,10 @@ int wmain(int argc, wchar_t** argv) {
             return OfficeRedirectedEnvironmentControl(root) ? 0 : 6;
         }
         const bool startupDiagnostics = argc == 4 && std::wstring(argv[3]) == L"--office-startup-diagnostics";
+        const bool embeddedStartup = argc == 4 && std::wstring(argv[3]) == L"--office-embedded-startup";
         const bool officeExports = argc == 4 && std::wstring(argv[3]) == L"--office-exports";
         const bool officeVersion = officeExports || (argc == 4 && std::wstring(argv[3]) == L"--office-version");
-        const bool createProfile = (argc == 3 || officeVersion || startupDiagnostics) && std::wstring(argv[2]) == L"--create-disposable-profile";
+        const bool createProfile = (argc == 3 || officeVersion || startupDiagnostics || embeddedStartup) && std::wstring(argv[2]) == L"--create-disposable-profile";
         if (argc != 2 && !createProfile) return 2;
         const auto root = fs::absolute(argv[1]).lexically_normal();
         Require(root.native().find(L"\\.codex-temp\\office-isolation\\") != std::wstring::npos && !fs::exists(root), "Use fresh owned office-isolation scratch");
@@ -579,11 +596,11 @@ int wmain(int argc, wchar_t** argv) {
         } else Require(SUCCEEDED(DeriveAppContainerSidFromAppContainerName(profile.name.c_str(), &sid.value)), "Derive disposable SID");
         Grant(root / L"allowed", sid.value, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
         Grant(root / L"writable", sid.value, FILE_GENERIC_READ | FILE_GENERIC_WRITE | FILE_GENERIC_EXECUTE | DELETE | FILE_DELETE_CHILD);
-        if (startupDiagnostics) {
-            const bool passed = OfficeStartupDiagnostics(root, sid.value);
+        if (startupDiagnostics || embeddedStartup) {
+            const bool passed = embeddedStartup ? OfficeEmbeddedStartup(root, sid.value) : OfficeStartupDiagnostics(root, sid.value);
             profile.Remove();
             std::ofstream(root / L"profile-cleanup.json") << "{\"removed\":true}\n";
-            Require(passed, "Restricted Office startup diagnostics");
+            Require(passed, "Restricted Office startup evaluation");
             return 0;
         }
         Socket server(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
