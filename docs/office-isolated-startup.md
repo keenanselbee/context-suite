@@ -3,8 +3,9 @@ Office AppContainer Startup Evaluation
 
 Status: embedded-engine initialization and shutdown pass inside the AppContainer.
 The desktop command still stalls at the reproduced IPC incompatibility.
-Embedded document exports and required customer conversion remain unverified.
-Network denial and required customer conversion remain unresolved.
+Authored Word exports pass independent checks in both controls; embedded Excel
+and PowerPoint loading times out in both. Network denial and required customer
+conversion remain unresolved.
 
 Purpose and boundary
 --------------------
@@ -411,3 +412,69 @@ fixtures, with explicit load/export policies and independent qpdf/PDFium checks.
 Recheck disabled-content settings after initialization and loading, source/output
 preservation, resource limits and recovery. Successful embedding does not resolve
 the independent network-enforcement gate or enable customer conversion.
+
+
+Authored embedded exports (2026-09-14)
+--------------------------------------
+
+`-EmbeddedExports` extends the API check to the existing three passive authored
+fixtures. Each format/control receives its own process, profile and output
+folder. The combined initialize/load/export/destroy operation has a 60-second
+bound with the same memory, process and diagnostic limits. AppContainer processes
+retain the verified zero-capability identity, dedicated runtime read boundary,
+read-only fixture directory and owned writable scratch. No arbitrary customer
+file is accepted, and no output is published or recycled.
+
+The independently declared stable API prefixes validate their size and required
+callbacks. Loading uses `Batch=true,EnableMacrosExecution=false,MacroSecurityLevel=3`.
+The pinned [loader implementation](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.6.3/desktop/source/lib/init.cxx)
+otherwise sets macro security to 1. Batch requests silent loading and macros use
+`NEVER_EXECUTE`; these settings are not proof of external-resource isolation.
+The loader's `UpdateDocMode` assignment is commented out in that source. Do not
+claim this API explicitly enforces a no-refresh policy. PDF export uses the
+existing fixed JSON settings, including hidden notes/slides and tracked-change
+markup exclusions. The pinned export implementation accepts JSON filter options.
+
+The first attempt, `cs20`, initializes all six processes but fails input type
+detection. Its Windows-generated file URLs encode the fixture's U+00FC as `%FC`.
+The corrected helper encodes UTF-8 bytes (`%C3%BC`), including percent, query and
+fragment characters, for its absolute local file URLs. Retained failures are not
+overwritten. The corrected `cs21` results are:
+
+| Fixture | Ordinary | AppContainer | Independent output checks |
+| --- | --- | --- | --- |
+| Word DOCX | Pass, 7,953 ms | Pass, 7,407 ms | Both two-page PDFs pass qpdf, authored text and 612 x 792 point geometry; text and both rendered pages match exactly at 96 DPI |
+| Excel XLSX | Loading timeout, 60,125 ms | Loading timeout, 60,110 ms | No output; failure retained |
+| PowerPoint PPTX | Loading timeout, 60,125 ms | Loading timeout, 60,125 ms | No output; failure retained |
+
+All four timeout logs reach engine initialization but never return a loaded
+document. Each job contains the helper and its console host and has zero members
+after cleanup. Both attempts remove their disposable Windows profile. The full
+six-case export and inspection commands deliberately return failure. Word's
+passing result does not clear the other formats or the required customer action.
+
+Evidence is retained under
+`.codex-temp/office-isolation/1a880d93be994b9a9a3467bb77aa1ba3`:
+`embedded-exports-d1b11bdd818c4896807de58be29e955e/build.json` binds the first
+attempt; `embedded-exports-3db73024406e4672a7fd0a89605002bb/build.json` binds the
+corrected native source/build. The independent inspector's
+`inspection-8ff9fc922f7642b5b6adc300916d53f2/results.json` records `cs21` explicitly,
+including all six outcomes and Word's exact text/pixel comparison. Invoke the
+inspector with `-CaseName cs21` for this retained case; its default remains `case`.
+
+`.codex-temp/office-embedded-exports-verification.json` confirms all 19,332
+runtime members remain unchanged in both source and copy, exact copied membership,
+authored fixture hashes, native source/build identity, all seven disabled-content
+profile settings and absence of the disposable Windows profile folder/mapping.
+The independent inspector also verifies original fixture timestamps and unchanged
+PDFs. Native and managed builds pass with zero warnings/errors; both wrapper
+syntax checks, four conflicting/missing-mode refusals and the repository's
+138-document/public-boundary/theme checks pass. These infrastructure checks do
+not turn the four document-loading failures into passing exports.
+
+The next focused investigation is the embedded loader/main-loop interaction for
+Excel and PowerPoint. Both ordinary controls reproduce their restricted failures,
+so additional AppContainer permissions are not justified by these observations.
+Network enforcement, hostile/active-content cases, broad fidelity, recovery and
+production integration remain separate open gates. No visible UI, screen-reader,
+installed-shell or customer-conversion acceptance is claimed.

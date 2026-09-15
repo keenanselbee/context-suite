@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][guid] $StagingId, [Parameter(Mandatory)][string] $PdfPreparedDirectory,
-    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory)
+    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [ValidatePattern('^(case|cs[0-9]{1,8})$')][string] $CaseName = 'case')
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $stage = Join-Path $repository ('.codex-temp\office-isolation\' + $StagingId.ToString('N'))
@@ -31,5 +31,5 @@ if ((Get-FileHash -LiteralPath $probe).Hash -ne $build.sha256 -or
     throw 'PDFium evaluation probe changed.'
 }
 $qpdf = Join-Path $pdf 'unpacked\qpdf-12.4.1-msvc64\bin\qpdf.exe'
-& dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --inspect-isolation-exports $stage $qpdf $probe
+& dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --inspect-isolation-exports $stage $qpdf $probe $CaseName
 if ($LASTEXITCODE) { throw 'Isolated export inspection failed; retain all per-case results.' }

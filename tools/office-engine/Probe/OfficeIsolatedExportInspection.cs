@@ -3,12 +3,15 @@ using System.Text.Json;
 
 internal static class OfficeIsolatedExportInspection
 {
-    internal static async Task<int> RunAsync(string stage, string qpdf, string pdfium)
+    internal static async Task<int> RunAsync(string stage, string qpdf, string pdfium, string caseName = "case")
     {
         stage = Path.GetFullPath(stage);
         if (!stage.Contains("\\.codex-temp\\office-isolation\\", StringComparison.OrdinalIgnoreCase))
             throw new IOException("Use retained isolated export evidence.");
-        var root = Path.Combine(stage, "case");
+        if (caseName != "case" && (caseName.Length is < 3 or > 10 || !caseName.StartsWith("cs", StringComparison.Ordinal) ||
+            caseName.AsSpan(2).ContainsAnyExceptInRange('0', '9')))
+            throw new IOException("Use a retained named isolation case.");
+        var root = Path.Combine(stage, caseName);
         if (!File.Exists(Path.Combine(root, "profile-cleanup.json"))) throw new IOException("Wait for the isolation test to finish cleanup.");
         var output = Path.Combine(stage, "inspection-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
@@ -85,7 +88,7 @@ internal static class OfficeIsolatedExportInspection
                 }
             }
         }
-        File.WriteAllText(Path.Combine(output, "results.json"), JsonSerializer.Serialize(new { passed, results, comparisons }, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(Path.Combine(output, "results.json"), JsonSerializer.Serialize(new { passed, caseRoot = root, results, comparisons }, new JsonSerializerOptions { WriteIndented = true }));
         return passed ? 0 : 1;
     }
 

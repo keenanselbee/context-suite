@@ -295,6 +295,16 @@ It uses the same prepared runtime/profile opt-in and job limits, with no documen
 load or export. Children launch without command arguments so Office does not
 interpret the probe's switches. See the [embedded startup evidence](../../docs/office-isolated-startup.md#embedded-startup-2026-09-14).
 
+Use `-EmbeddedExports` to load and export the three authored documents through
+that API, each in a fresh ordinary and restricted process/profile. Load settings
+explicitly disable macros, retain security level 3 and request silent batch
+handling; PDF settings remain fixed. Unicode file URLs use UTF-8 escapes. Each
+initialization/load/export/shutdown sequence has one combined 60-second bound.
+Inspect the retained results with the same PDF inspector. For a named retained
+follow-up case, supply `-CaseName cs21`; the default remains `case`. The result
+records the exact case root and retains failures alongside completed outputs.
+See the [embedded export results](../../docs/office-isolated-startup.md#authored-embedded-exports-2026-09-14).
+
 `Read-OfficeNetworkEvents.ps1 -StagingId <scratch-guid> -PlanOnly` prepares four
 read-only WFP queries for the retained probe's IPv4/IPv6 loopback events and
 filters. It verifies the probe hash and profile name and rejects reparse paths.

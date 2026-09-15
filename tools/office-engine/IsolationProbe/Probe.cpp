@@ -508,11 +508,18 @@ int wmain(int argc, wchar_t** argv) {
             const auto size = GetModuleFileNameW(nullptr, module, static_cast<DWORD>(std::size(module)));
             Require(size > 0 && size < std::size(module), "Locate owned embedded child");
             const fs::path image(module);
-            if (image.filename() == L"kit-control.exe" || image.filename() == L"kit-isolated.exe") {
+            int fixtureIndex = -1;
+            bool isolated = image.filename() == L"kit-isolated.exe";
+            bool recognized = isolated || image.filename() == L"kit-control.exe";
+            for (int index = 0; index < 3; ++index) for (const bool restricted : {false, true}) {
+                const auto name = std::wstring(L"kit-") + kitFixtures[index].family + (restricted ? L"-isolated.exe" : L"-control.exe");
+                if (image.filename() == name) { fixtureIndex = index; isolated = restricted; recognized = true; }
+            }
+            if (recognized) {
                 Require(image.parent_path().filename() == L"allowed" &&
                     image.native().find(L"\\.codex-temp\\office-isolation\\") != std::wstring::npos,
                     "Use an owned embedded test executable");
-                return OfficeKitChild(image.parent_path().parent_path(), image.filename() == L"kit-isolated.exe");
+                return OfficeKitChild(image.parent_path().parent_path(), isolated, fixtureIndex);
             }
             return 2;
         }
@@ -564,7 +571,8 @@ int wmain(int argc, wchar_t** argv) {
             return OfficeRedirectedEnvironmentControl(root) ? 0 : 6;
         }
         const bool startupDiagnostics = argc == 4 && std::wstring(argv[3]) == L"--office-startup-diagnostics";
-        const bool embeddedStartup = argc == 4 && std::wstring(argv[3]) == L"--office-embedded-startup";
+        const bool embeddedExports = argc == 4 && std::wstring(argv[3]) == L"--office-embedded-exports";
+        const bool embeddedStartup = embeddedExports || (argc == 4 && std::wstring(argv[3]) == L"--office-embedded-startup");
         const bool officeExports = argc == 4 && std::wstring(argv[3]) == L"--office-exports";
         const bool officeVersion = officeExports || (argc == 4 && std::wstring(argv[3]) == L"--office-version");
         const bool createProfile = (argc == 3 || officeVersion || startupDiagnostics || embeddedStartup) && std::wstring(argv[2]) == L"--create-disposable-profile";
@@ -597,7 +605,7 @@ int wmain(int argc, wchar_t** argv) {
         Grant(root / L"allowed", sid.value, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
         Grant(root / L"writable", sid.value, FILE_GENERIC_READ | FILE_GENERIC_WRITE | FILE_GENERIC_EXECUTE | DELETE | FILE_DELETE_CHILD);
         if (startupDiagnostics || embeddedStartup) {
-            const bool passed = embeddedStartup ? OfficeEmbeddedStartup(root, sid.value) : OfficeStartupDiagnostics(root, sid.value);
+            const bool passed = embeddedStartup ? OfficeEmbeddedStartup(root, sid.value, embeddedExports) : OfficeStartupDiagnostics(root, sid.value);
             profile.Remove();
             std::ofstream(root / L"profile-cleanup.json") << "{\"removed\":true}\n";
             Require(passed, "Restricted Office startup evaluation");

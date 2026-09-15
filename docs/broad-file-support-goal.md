@@ -162,6 +162,13 @@ obstacle; the next step is authored Word/Excel/PowerPoint export through that AP
 with independent fidelity and recovery checks. Network enforcement and required
 customer conversion remain incomplete.
 
+The [authored embedded export check](office-isolated-startup.md#authored-embedded-exports-2026-09-14)
+now passes the Word fixture in both ordinary and AppContainer processes, including
+independent PDF structure, text, page geometry and exact rendered-pixel comparison.
+Excel and PowerPoint initialize but time out while loading in both controls. The
+full matrix remains failed; investigate the embedded loader/main-loop interaction
+before expanding the document matrix or enabling customer conversion.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The
@@ -436,11 +443,11 @@ Prioritize the remaining work in this order:
 1. Resolve the [Office isolation evaluation](office-isolation-evaluation.md).
    The owner authorized the disposable profile test; file restrictions, token,
    explicit environment and cleanup have passed their recorded checks. Actual
-   embedded renderer initialization and shutdown now pass; document exports and
-   network-denial evidence remain unresolved. The
+   embedded renderer initialization and shutdown now pass, as do the authored Word
+   exports. Excel/PowerPoint loading and network-denial evidence remain unresolved. The
    separate elevated read-only network-event query still awaits authorization.
-   Next run authored Word, Excel and PowerPoint exports through the embedded API
-   inside AppContainer. An unrestricted passive export does not clear this gate.
+   Investigate the Excel/PowerPoint embedded loading stalls, reproduced in both
+   ordinary and restricted controls. An unrestricted passive export does not clear this gate.
 2. Settle the concrete Office policies exposed by experiments:
    [Excel calculation](excel-calculation-evaluation.md),
    [early date systems](excel-date-system-evaluation.md),

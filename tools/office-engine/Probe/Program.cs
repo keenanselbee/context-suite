@@ -7,6 +7,8 @@ using ContextSuite.Core.Analysis;
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
 if (args is ["--inspect-isolation-exports", var isolatedStage, var isolatedQpdf, var isolatedPdfium])
     return await OfficeIsolatedExportInspection.RunAsync(isolatedStage, isolatedQpdf, isolatedPdfium);
+if (args is ["--inspect-isolation-exports", var namedStage, var namedQpdf, var namedPdfium, var caseName])
+    return await OfficeIsolatedExportInspection.RunAsync(namedStage, namedQpdf, namedPdfium, caseName);
 if (args is ["--isolation-fixtures", var isolationFixtures])
 {
     var folder = Path.GetFullPath(isolationFixtures);

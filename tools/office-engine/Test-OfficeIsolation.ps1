@@ -1,12 +1,15 @@
 [CmdletBinding()]
 param([switch] $CreateDisposableProfile, [string] $PreparedOfficeDirectory, [switch] $PassiveExports,
-    [switch] $StartupDiagnostics, [switch] $EmbeddedStartup)
+    [switch] $StartupDiagnostics, [switch] $EmbeddedStartup, [switch] $EmbeddedExports)
 $ErrorActionPreference = 'Stop'
 if ($PreparedOfficeDirectory -and -not $CreateDisposableProfile) { throw 'Office isolation requires the authorized disposable profile test.' }
 if ($PassiveExports -and -not $PreparedOfficeDirectory) { throw 'Passive exports require the pinned Office runtime parameter.' }
 if ($StartupDiagnostics -and (-not $PreparedOfficeDirectory -or $PassiveExports)) { throw 'Choose startup diagnostics with the pinned runtime and without passive exports.' }
-if ($EmbeddedStartup -and (-not $PreparedOfficeDirectory -or $PassiveExports -or $StartupDiagnostics)) {
+if ($EmbeddedStartup -and (-not $PreparedOfficeDirectory -or $PassiveExports -or $StartupDiagnostics -or $EmbeddedExports)) {
     throw 'Choose embedded startup with the pinned runtime and without the other startup/export modes.'
+}
+if ($EmbeddedExports -and (-not $PreparedOfficeDirectory -or $PassiveExports -or $StartupDiagnostics -or $EmbeddedStartup)) {
+    throw 'Choose embedded exports with the pinned runtime and without other startup/export modes.'
 }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $scratch = Join-Path $repository ('.codex-temp\office-isolation\' + [guid]::NewGuid().ToString('N'))
@@ -38,10 +41,11 @@ if ($CreateDisposableProfile) { $arguments += '--create-disposable-profile' }
 if ($PreparedOfficeDirectory) {
     & python -B (Join-Path $PSScriptRoot 'Prepare-OfficeIsolation.py') $PreparedOfficeDirectory (Join-Path $scratch 'runtime\office')
     if ($LASTEXITCODE) { throw 'Office isolation copy verification failed; no Office process launched.' }
-    if ($PassiveExports -or $StartupDiagnostics -or $EmbeddedStartup) {
+    if ($PassiveExports -or $StartupDiagnostics -or $EmbeddedStartup -or $EmbeddedExports) {
         & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --isolation-fixtures (Join-Path $scratch 'office-fixtures')
         if ($LASTEXITCODE) { throw 'Authored isolation fixture generation failed; no Office process launched.' }
-        $arguments += $(if ($EmbeddedStartup) { '--office-embedded-startup' }
+        $arguments += $(if ($EmbeddedExports) { '--office-embedded-exports' }
+            elseif ($EmbeddedStartup) { '--office-embedded-startup' }
             elseif ($StartupDiagnostics) { '--office-startup-diagnostics' } else { '--office-exports' })
     } else { $arguments += '--office-version' }
 }
