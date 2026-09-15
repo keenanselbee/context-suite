@@ -343,6 +343,12 @@ host/inventory checks and read leases over the complete candidate payload. Thirt
 contracts cover membership, sharing and failure cleanup. Connecting that lease
 to the application-owned context and actual worker execution remains pending.
 
+The subsequent [worker export checkpoint](office-worker-export.md) connects that
+runtime lease and the launcher to typed application/worker requests. Actual
+DOCX/XLSX/PPTX exports and independent candidate inspection pass. Context creation
+still belongs to the isolated harness; production admission, context journals and
+validated copy publication are not yet connected or enabled for customers.
+
 
 Output and acceptance
 ---------------------

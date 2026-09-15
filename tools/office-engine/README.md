@@ -334,3 +334,11 @@ The underlying `Write-OfficeRuntimeInventory.py <office-copy.json> <new-output>`
 only writes the exact pinned inventory inside repository scratch; it does not
 verify or stage the payload itself. See the [runtime verification boundary and
 evidence](../../docs/office-runtime-verification.md).
+
+`Test-OfficeWorker.py --create-disposable-profile --copy-receipt <office-copy.json>
+--host-receipt <build.json> --fixtures <authored-fixtures>` builds a scratch worker,
+copies the pinned runtime and runs real typed DOCX/XLSX/PPTX export checks through
+the application worker client and profile owner. The opt-in is required before
+preparation or Windows profile creation. `Inspect-OfficeWorkerExports.ps1` then
+checks the retained candidates with independent PDF tooling and retained controls.
+See [worker evidence, failures and remaining integration](../../docs/office-worker-export.md).

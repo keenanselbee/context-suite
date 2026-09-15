@@ -124,6 +124,12 @@ exit, all 19,332 runtime source/copy hashes and exact copied membership.
 Next integration work
 ---------------------
 
+The later [worker integration](office-worker-export.md) tests this owner around
+actual Office exports. It fixes cleanup of engine-created cache paths exceeding
+260 characters and expands the ownership matrix from 45 to 50 checks. Current
+worker exports clean their profiles successfully; production persisted recovery
+is still required.
+
 Construct the production profile/grant/path context around the pinned Office
 runtime, pass it to the worker, and connect completion to independent PDF
 validation and app-owned transactional copy publication. Add persisted recovery

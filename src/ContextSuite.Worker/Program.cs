@@ -6,6 +6,7 @@ using ContextSuite.Private;
 using ContextSuite.Private.Images;
 using ContextSuite.Private.Audio;
 using ContextSuite.Private.Pdf;
+using ContextSuite.Private.Office;
 using ContextSuite.Runtime;
 
 if (args.Length != 6 || args[0] != "--pipe" || args[2] != "--parent" || args[4] != "--scratch" || !Path.IsPathFullyQualified(args[5]) ||
@@ -53,6 +54,9 @@ try
         try
         {
             if (command.Command == "capabilities") reply = new(1, command.RequestId, catalog.Capabilities.ToArray());
+            else if (command.Command == "office-export")
+                reply = new(1, command.RequestId, [], OfficeCandidate: await OfficeFileAdapter.ExportAsync(
+                    Path.Combine(AppContext.BaseDirectory, "office-engine"), command.OfficeWork!, command.RequestId, lifetime.Token));
             else if (command.Command == "images-to-pdf")
             {
                 adapter ??= new ImageAdapter(args[5]);

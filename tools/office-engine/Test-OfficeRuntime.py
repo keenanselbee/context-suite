@@ -27,6 +27,7 @@ def main():
     host = json.loads(args.host_receipt.read_text(encoding="utf-8-sig"))
     project = root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
     names = ["proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
+             "proprietary/src/ContextSuite.Private/Office/OfficeDirectoryLeases.cs",
              "proprietary/src/ContextSuite.Private/IO/MediaFiles.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeRuntimeContracts.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/Program.cs",

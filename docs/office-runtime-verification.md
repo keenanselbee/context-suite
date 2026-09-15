@@ -72,3 +72,8 @@ independent PDF validation, transactional copy publication, application-crash
 recovery, calculation/font decisions, content/network enforcement and runtime
 adoption remain open. Reserved candidate 1.1.0 is unchanged. No visible UI,
 installed lifecycle, screen-reader, theme/DPI or commerce acceptance is claimed.
+
+The subsequent [typed worker integration](office-worker-export.md) consumes this
+lease during actual exports and shares its directory-handle implementation with
+operation-path identity checks. Its context/publication and acceptance limits are
+recorded separately from this original verifier checkpoint.

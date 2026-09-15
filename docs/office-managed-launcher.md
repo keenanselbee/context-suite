@@ -139,3 +139,10 @@ The subsequent [profile/grant ownership checkpoint](office-profile-ownership.md)
 adds the application component and a native worker-crash/access matrix. It also
 corrects the earlier attributes-only directory-lease assumption. Production
 context construction and worker/publication routing remain pending.
+
+The subsequent [typed worker export checkpoint](office-worker-export.md) connects
+the launcher to real application-worker requests with pinned runtime and source
+leases. Host failures retain bounded diagnostics inside the private exception;
+the worker continues to return only its sanitized failure enum over IPC.
+Production context journals, independent validation/publication and complete
+cancellation/loss acceptance remain separate work.

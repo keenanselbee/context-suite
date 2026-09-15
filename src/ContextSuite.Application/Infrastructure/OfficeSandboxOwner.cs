@@ -171,7 +171,8 @@ internal sealed class OfficeSandboxOwner : IDisposable
             {
                 // FILE_LIST_DIRECTORY participates in sharing checks; an
                 // attributes-only handle does not prevent directory renaming.
-                var handle = CreateFile(current, current == Path ? 0x60081U : 0x81U, 3, IntPtr.Zero, 3, 0x02200000, IntPtr.Zero);
+                var native = current.Length < 260 ? current : @"\\?\" + current;
+                var handle = CreateFile(native, current == Path ? 0x60081U : 0x81U, 3, IntPtr.Zero, 3, 0x02200000, IntPtr.Zero);
                 if (handle.IsInvalid) { var error = Marshal.GetLastWin32Error(); handle.Dispose(); throw new Win32Exception(error); }
                 _handles.Add(handle);
                 if (!GetFileInformationByHandleEx(handle, 9, out var attributes, (uint)Marshal.SizeOf<AttributeTag>()) ||
@@ -195,7 +196,8 @@ internal sealed class OfficeSandboxOwner : IDisposable
                     foreach (var entry in Directory.EnumerateFileSystemEntries(directory))
                     {
                         if (checkedHandles.Count >= 65536) throw new IOException("Office grant tree exceeds its entry budget.");
-                        var handle = CreateFile(entry, 0x80000000, 3, IntPtr.Zero, 3, 0x02200000, IntPtr.Zero);
+                        var native = entry.Length < 260 ? entry : @"\\?\" + entry;
+                        var handle = CreateFile(native, 0x80000000, 3, IntPtr.Zero, 3, 0x02200000, IntPtr.Zero);
                         if (handle.IsInvalid) { var error = Marshal.GetLastWin32Error(); handle.Dispose(); throw new Win32Exception(error); }
                         checkedHandles.Add(handle);
                         if (!GetFileInformationByHandleEx(handle, 9, out var attributes, (uint)Marshal.SizeOf<AttributeTag>()) ||

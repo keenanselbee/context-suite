@@ -243,6 +243,14 @@ membership. Thirty checks pass for altered/missing/extra entries, write/rename
 sharing and cleanup. This supplies the payload lease needed for worker integration;
 it does not yet add worker routing, PDF validation or customer Office conversion.
 
+The following [Office worker export checkpoint](office-worker-export.md) now
+connects typed requests, pinned runtime leases and the sandbox launcher. Three
+actual worker exports pass 39 checks and independent PDF/text/geometry/pixel
+inspection; the foundation suite passes 3,023 contracts. Real Office cache paths
+exposed a cleanup limit, now covered by 50 ownership checks and successful actual
+cleanup. Production context journals, PDF validation/publication, cancellation and
+loss acceptance through the complete workflow, and customer enablement remain open.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

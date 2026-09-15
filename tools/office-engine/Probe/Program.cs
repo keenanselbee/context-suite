@@ -9,6 +9,8 @@ if (args is ["--inspect-host-completions", var hostStage, var hostCase])
     return await OfficeHostInspection.RunAsync(hostStage, hostCase);
 if (args is ["--preflight-isolation-fixtures", var preflightFixtures])
     return await OfficeFixturePreflight.RunAsync(preflightFixtures);
+if (args is ["--inspect-worker-exports", var workerReport, var workerQpdf, var workerPdfium, var workerControl])
+    return await OfficeWorkerInspection.RunAsync(workerReport, workerQpdf, workerPdfium, workerControl);
 if (args is ["--inspect-isolation-exports", var isolatedStage, var isolatedQpdf, var isolatedPdfium])
     return await OfficeIsolatedExportInspection.RunAsync(isolatedStage, isolatedQpdf, isolatedPdfium);
 if (args is ["--inspect-isolation-exports", var namedStage, var namedQpdf, var namedPdfium, var caseName])
