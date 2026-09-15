@@ -10,8 +10,11 @@ journal discovery and background application integration. All 3,238 foundation,
 140 native ownership and 104 hidden view contracts pass. The isolated coordinator
 passes 99 actual worker checks across three rendering crashes and following
 exports; three PDFs pass independent inspection. All seven profiles/jobs,
-including the earlier timed-out attempt, are removed. Full application lifecycle
-acceptance, Office admission, PDF validation and copy publication remain open.
+including the earlier timed-out attempt, are removed. A subsequent actual-app
+lifecycle run passes 42 checks across absent/completed/uncertain records,
+forwarded Analyze during recovery and explicit shutdown waiting. This uses
+authored journals; full app recovery of an abandoned native profile, Office
+admission, PDF validation and copy publication remain open.
 
 The preceding [Office context preparation](office-context-preparation.md) moves
 source copying into application code. It holds the original and read-only

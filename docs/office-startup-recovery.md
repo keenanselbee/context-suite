@@ -1,8 +1,8 @@
 Office Startup Recovery
 =======================
 
-Status: background startup integration implemented; actual application lifecycle
-and visible acceptance remain separate from isolated coordinator acceptance.
+Status: background startup integration implemented; bounded application lifecycle
+cases verified separately from native recovery and visible acceptance.
 
 The application starts `OfficeRecoveryCoordinator` after it owns the activation
 router. It runs off the dispatcher, so recovery does not hold up activation or
@@ -104,6 +104,66 @@ both native ownership replays: twelve absent profiles, 244 journal frames and
 44 grant-directory identities. The application Release build passes with zero
 warnings/errors; its log is `.codex-temp/office-startup-application-build.log`.
 
-Full application startup/forwarding/shutdown acceptance with retained
-Office work, additional themes/DPI, cross-session recovery, production PDF
+Full application startup/forwarding/shutdown with a genuinely abandoned native
+Office profile, additional themes/DPI, cross-session recovery, production PDF
 validation/publication and remaining commerce/installer gates remain open.
+
+
+Application lifecycle checks
+----------------------------
+
+`tools/Test-OfficeAppLifecycle.ps1` now drives the actual application dispatcher,
+startup code, activation router and shutdown in separate test-host processes.
+It uses generated BMP files, fresh local-trial/settings storage and authored
+ownership journals under `.codex-temp`. It creates no native Office profiles or
+permissions, invokes no licensing provider and performs no installation or
+Explorer registration. Only its owned test processes are closed.
+
+The five cases pass **42 checks**:
+
+- Missing storage: a direct TGA conversion publishes a named copy, preserves its
+  original and exits without showing a window, creating Office storage or adding
+  a recovery notice.
+- Completed journal: ordinary conversion and exit succeed, with no window or
+  recovery notice and unchanged journal bytes.
+- Unconfirmed ownership: the application shows the retained-work notice. A
+  second test application forwards Analyze through the actual router and exits;
+  analysis succeeds without losing the notice.
+- Locked journal during forwarding: Analyze completes while startup recovery is
+  still pending. Recovery subsequently reports the retained work.
+- Locked journal during close: the real window close handler awaits the active
+  bounded sharing retry. Exit occurs about five seconds after close was requested,
+  with the journal and original fixture unchanged.
+
+Final results are under
+`.codex-temp/office-app-lifecycle/4c892015c2a54e35b4b18781378ccb33`.
+The matching runner receipt is
+`.codex-temp/office-app-lifecycle-run-d114e1d03df44988a5d57ea05029408e/verification.json`;
+it verifies source, worker and retained build-receipt hashes before and after the
+run. The test host builds with zero warnings/errors, and all 104 hidden view
+contracts pass again after the entry-point addition. Earlier successful fixture
+runs are retained separately and are not added to the final check count.
+
+The first runner attempt omitted optional audio/PDF payload switches and stopped
+at allowlist verification before launching an app. Its corrected invocation then
+exposed a wrapper bug: launching a GUI executable did not wait for its exit. That
+wrapper's success message was invalid. The final wrapper explicitly awaits the
+process and captures its exit code, stdout and stderr. The first child attempt
+left no completed lifecycle receipt; a later captured run reports that direct
+conversion failed with the old 1.1.0 worker. The current protocol has added Office
+fields, and its strict JSON
+reader rejects unknown fields; the test host must use a matching worker build.
+
+The final runs use the retained worker at
+`.codex-temp/office-worker/ce6f4c03432d41cb836192e492ac22d2/worker`, verified against
+its `retry-38ae46bcbcd440dcab4630b47454dbe5/build.json` receipt. Supply
+`-RetainedBuildReceipt` with `-WorkerPath` for that mode. Production-staged workers
+instead use the normal payload verifier, with explicit `-AllowAudioCandidate`
+and `-AllowPdfCandidate` switches when needed. Candidate 1.1.0 remains unchanged;
+this is current-source test-host evidence, not a new packaged candidate.
+
+These tests observe window visibility and programmatically request close, but do
+not inspect rendered layout, keyboard behavior, screen-reader delivery or other
+themes/DPI. Locked authored journals test application waiting/forwarding, not
+native profile cleanup through the full application. The separate 99-check crash
+run above proves coordinator/native recovery; combining the two remains a gate.

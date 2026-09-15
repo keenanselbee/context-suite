@@ -11,6 +11,7 @@ internal static class Program
     {
         if (args is ["--direct-command-contracts", var stagedWorker]) return DirectCommandContracts.RunAsync(stagedWorker).GetAwaiter().GetResult();
         if (args is ["--view-contracts"]) return ViewContracts.Run();
+        if (args is ["--office-app-lifecycle", var lifecycleWorker]) return OfficeAppLifecycleContracts.RunAsync(lifecycleWorker).GetAwaiter().GetResult();
         if (args is ["--license-workflow-contracts"]) return LicenseWorkflowContracts.RunAsync().GetAwaiter().GetResult();
         var licenseWorkflow = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_LICENSE_WORKFLOW") == "1";
         if (!(licenseWorkflow && args.Length == 0) && (args.Length != 2 || args[0] != "--activation-file")) return 2;
@@ -19,6 +20,9 @@ internal static class Program
         if (configuredRoot is null || worker is null) return 2;
         var root = Path.GetFullPath(configuredRoot);
         if (!Directory.Exists(root) || !root.Contains(Path.DirectorySeparatorChar + ".codex-temp" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) return 2;
+        using var lifecycle = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_OFFICE_LIFECYCLE") is { } lifecycleMode
+            ? new OfficeAppLifecycleContracts(root, lifecycleMode) : null;
+        lifecycle?.Prepare(Path.GetFullPath(worker));
         if (licenseWorkflow)
         {
             LicenseWorkflowFixture.Prepare(root);
@@ -47,6 +51,7 @@ internal static class Program
                 return request;
             });
         app.InitializeComponent();
+        lifecycle?.Attach(app);
         if (licenseWorkflow)
             System.Windows.EventManager.RegisterClassHandler(typeof(System.Windows.Window), System.Windows.FrameworkElement.LoadedEvent,
                 new System.Windows.RoutedEventHandler((sender, _) =>
