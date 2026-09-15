@@ -3,9 +3,10 @@ Office Embedded Failure And Recovery Evaluation
 
 Status: passive malformed-input and forced-stop observations are complete for
 the three authored OOXML fixtures. All 24 following normal exports pass independent
-checks. Zero-byte inputs are accepted by the renderer and require application
-admission checks. Production cancellation, hostile-content denial and Office
-conversion remain unverified/unimplemented.
+checks. A later large-fixture experiment verifies three stops during actual PDF
+growth and six passing normal exports afterward. Zero-byte inputs are accepted
+by the renderer and require application admission checks. Production cancellation,
+owner-crash recovery, hostile-content denial and Office conversion remain open.
 
 
 Scope and method
@@ -130,6 +131,74 @@ expected malformed-client stderr; the completed rerun captures stdout/stderr
 outside PowerShell and preserves the real exit status.
 
 
+Active export interruption
+-------------------------
+
+The next experiment uses the existing authored 96-page/sheet/slide fixtures with
+distinct uncompressed bitmap images. They contain no executable macros, formulas
+or external references. The pinned runtime, macro settings, AppContainer token and
+job limits stay the same. Each process receives a fresh read-only source copy.
+The large evaluation-only output bound is 128 MiB, with the existing 60-second
+process sequence and 512 MiB process/1 GiB job memory limits. This does not define
+customer document limits or change the existing small-fixture inspector's limits.
+
+The first observer requests a 20 ms wait between checks of the actual output PDF.
+It misses all three stop windows: Word and Excel provide only one observed
+incomplete PDF before finishing; PowerPoint provides none. These are failed
+interruption attempts, despite successful exports. The follow-up requests a 1 ms
+wait and uses the high-resolution monotonic counter. This is a sampling request,
+not a guarantee of 1 ms scheduling. It stops only after two increasing PDF sizes,
+a `%PDF-` prefix, no `%%EOF` in the sampled tail, a confirmed loaded document and
+no exported marker, while the exact owned process handle remains unsignaled.
+There is no child sleep barrier or engine modification.
+
+| Case | Actual outcome |
+| --- | --- |
+| `cs35` | Six complete ordinary/restricted exports; each PDF has 96 pages and about 42.6 MB |
+| `cs36` | Three missed stops with the slower observer; all exports complete |
+| `cs37` | Six following normal exports pass independent checks |
+| `cs38` | All three restricted engines stop during observed incomplete PDF growth; each attempt exits nonzero without export/shutdown success markers |
+| `cs39` | Six following normal exports pass independent checks |
+
+For Word, the two samples grow from 10,780,672 to 27,656,192 bytes; the stopped
+file contains 27,820,032 bytes. Excel grows from 16,908,288 to 37,879,808 bytes and
+stops at 38,010,880. PowerPoint grows from 18,415,616 to 40,402,944 bytes and stops
+at 40,566,784. All three retained partial PDFs lack their final EOF marker and
+fail qpdf checks with exit 2. They remain diagnostic artifacts in owned scratch,
+never completed or published results.
+
+The six large controls pass independent qpdf structure/page-count and PDFium
+ordered-text checks across all 576 pages; ordinary/restricted text matches for
+each family. Raster/image fidelity was not compared for these large fixtures.
+The 12 small following outputs pass structure, authored text, page geometry and
+exact ordinary/restricted rendered-pixel comparisons. Across all 24 attempts,
+source bytes/write times, read-only copy attributes and seven required profile
+settings are preserved. All jobs empty, all five disposable-profile invocations
+remove their profile, and 72 exclusive read opens verify file release. Full
+runtime source/copy hashes and exact 19,332-member copied membership are unchanged.
+
+Evidence remains beneath the staging directory named above:
+
+- `embedded-growing-ab389674f3634d1796994c4de5786503`: first source/build, large
+  input hashes/preflight, `cs35`–`cs37` results and `controls-inspected.json`.
+- `embedded-growing-fast-6e1a2e91defe4e96a895077c2d958ddc`: faster observer's
+  source/build, `cs38`/`cs39` results and `partial-checks.json`.
+- `inspection-73957075a6a245e490e33c42a16cc657/results.json`: `cs37` verification.
+- `inspection-333ae0a3fcc64105ada7f2602e31d680/results.json`: `cs39` verification.
+
+Both variants bind public base commit `5860ef3849601287cd2fc76a19dd884621509cff`;
+their changes are confined to owned diagnostic sources. The larger text oracle
+is bound by `.codex-temp/office-growing-inspection/build-proof.json` and retains
+fixed 128 MiB/128-page limits. The complete reconciliation is
+`.codex-temp/office-embedded-growing-verification.json`.
+
+This verifies termination during active embedded export and subsequent fresh
+profile exports for these passive cases. It does not test an application/worker
+owner crash, same-profile recovery, UI cancellation, publication recovery,
+resource exhaustion, disk failure, hostile-content/network denial or customer
+Office conversion. Those gates remain separate.
+
+
 Required next work
 ------------------
 
@@ -140,8 +209,9 @@ package identity must not be presented as complete validation or a safety verdic
 The initial preflight above is necessary identification, not complete production
 admission. No customer Office conversion path is implemented by this experiment.
 
-Continue with actual mid-render cancellation, owner/worker crash recovery, larger
-resource/disk-failure cases, broader format/fidelity coverage and application-owned
-publication. Resolve calculation/font policies and network/content isolation
+Connect the observed active-export termination behavior to application/worker
+cancellation and test owner crashes, resource/disk failures, broader format/fidelity
+coverage and application-owned publication. Resolve calculation/font policies and
+network/content isolation
 before customer conversion. No visible UI, screen-reader, theme/DPI, installed
 shell, live licensing or commercial-release acceptance is claimed here.

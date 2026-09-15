@@ -196,6 +196,16 @@ identification for the experiment, not complete document validation or customer
 conversion admission; legacy/other variants, content/network isolation and
 application integration remain required.
 
+The [active embedded export interruption experiment](office-embedded-recovery.md#active-export-interruption)
+now verifies three stops while PDFs are growing, with failed operations and
+incomplete outputs retained only in scratch. Six large 96-page controls pass
+independent structure/text checks; six normal exports after the confirmed stops
+pass independent structure/text/geometry/pixel checks. Three earlier missed stops
+and their following controls remain recorded. All 24 attempts preserve sources
+and settings, release files and remove their disposable profiles. Application
+cancellation, owner crashes, same-profile recovery, publication and content/network
+isolation are still separate requirements.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The
