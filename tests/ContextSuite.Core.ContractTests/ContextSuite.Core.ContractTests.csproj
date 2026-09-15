@@ -24,6 +24,7 @@
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ActivationRouter.cs" Link="Runtime\ActivationRouter.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ActivationGate.cs" Link="Runtime\ActivationGate.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\WorkerClient.cs" Link="Runtime\WorkerClient.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\WorkerProcessJob.cs" Link="Runtime\WorkerProcessJob.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\SettingsStore.cs" Link="Runtime\SettingsStore.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\LocalTrialStore.cs" Link="Runtime\LocalTrialStore.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ImageBatchExecutor.cs" Link="Runtime\ImageBatchExecutor.cs" />

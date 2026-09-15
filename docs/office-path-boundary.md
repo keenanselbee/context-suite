@@ -100,6 +100,43 @@ PowerPoint lock holder or add automatic retry to the application.
 The new host pin separately passes **30 runtime contracts** at
 `.codex-temp/office-runtime/4274f9799486426ea2c2f52d6ca185f8/contracts`.
 
+The diagnostic replay at `76e29f79508642e589dfff14645ce425` then completes Word
+cancellation/recovery and records Excel cancellation before another sharing-error
+cleanup failure. Its retained observation confirms the native handle was signaled
+at client return. The failing path is a generated Office temporary file beneath
+the isolated profile's redirected `Packages/.../AC/Temp` directory. A later
+extended-path Windows attribute query reports file-not-found while its parent
+still exists; the lock holder remains unknown. Scoped recovery removes the exact
+recorded Excel profile and verifies 332 ACLs and 116 file hashes, retaining the
+failed receipt beside `3bd9e463c0d84a97a61d31cd924c9010-recovery.json`.
+
+The owner now supports [bounded asynchronous sharing-conflict retries](office-profile-ownership.md#asynchronous-sharing-conflict-recovery).
+Its focused 56-check suite covers persistent-lock exhaustion, retained ownership
+and successful cleanup after lock release. The real-worker harness awaits that
+cleanup. Replay `556f332dfd514885bd3e00575a710fa4` passes all three cancellation
+and following-export cells. Independent inspection at
+`contracts/inspection-f07ed84c8bea43eaa13afdc534f49bba` passes qpdf structure,
+authored text, geometry and exact PDFium control pixels for the three recovery
+PDFs. The run then fails before its first worker-loss stop because the test
+observer dereferenced unavailable process main-module information. All seven
+profiles are verified absent; the failed overall run is preserved.
+
+The observer now waits for that information without accepting a process whose
+executable identity is unknown. The runner also accepts `--mode cancel`,
+`--mode worker-loss` or `--mode deadline`, each requiring all three families and
+30 checks. Its default remains the whole nine-cell, 90-check matrix. Selecting
+remaining modes does not promote a partial run to a full pass. Worker-loss
+replay `ccfb22fe4f7047cd86f8fdfeaec8b3c2` and the subsequent deadline replay are
+reconciled in the follow-up below.
+
+The later [worker-lifetime reconciliation](office-worker-lifetime.md) completes
+the mode replays and PDF inspection, but rejects all three worker-crash return
+boundaries: the client returned before the host exited. Application-owned job
+tracking now addresses that separate lifecycle gap. The follow-up records all
+nine corrected return-boundary cases, independent recovery-PDF inspection and
+broader image/audio/PDF regressions. Earlier per-mode passes must not be read as
+full acceptance; use the corrected source-bound evidence in that follow-up.
+
 
 Remaining platform and workflow scope
 -------------------------------------

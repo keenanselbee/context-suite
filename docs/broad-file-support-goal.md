@@ -5,13 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [Office directory-boundary investigation](office-path-boundary.md)
-identifies the startup failure and corrects the host manifest. Native path probes
-pass 24 assertions and the updated host pin passes 30 runtime contracts. The
-active interruption replay completes Word and Excel cancellation/recovery, then
-fails during PowerPoint profile cleanup. Its retained profile was recovered with
-file bytes and unrelated ACL entries preserved. The nine-cell matrix and
-independent recovery-PDF acceptance remain incomplete.
+The latest [Office worker-lifetime verification](office-worker-lifetime.md)
+corrects early client return after worker crashes. All 90 checks across nine
+Office stop/recovery cells pass; every host exits before client return, all nine
+recovery PDFs pass independent inspection, and all 18 profiles and their grants
+are removed. Broader image-worker, audio, FLAC and PDF regressions also pass.
+Profile cleanup has 56 focused ownership checks. Production Office contexts,
+application-loss recovery, validation/publication and customer commands remain
+incomplete; this is not expanded-release acceptance.
 
 Objective
 ---------

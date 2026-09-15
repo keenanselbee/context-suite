@@ -44,6 +44,42 @@ hostile linked trees, concurrent external ACL/tree tampering, cleanup failure
 recovery and full-runtime grant costs still need dedicated acceptance.
 
 
+Asynchronous sharing-conflict recovery
+--------------------------------------
+
+The [active worker interruption tests](office-path-boundary.md) exposed a
+temporary Office cache file that could not be opened during cleanup after its
+native process handle was signaled. The file was subsequently absent. The
+specific remaining lock holder was not established.
+
+`DisposeAsync` now retries only aggregate cleanup failures whose underlying
+native errors are sharing or lock violations (32 or 33). It permits at most 50
+attempts, separated by 100 ms asynchronous delays. This bounds retry count and
+added delay, not the duration of individual Windows filesystem calls. Each
+attempt retains the same owner and repeats its existing checks; it does not
+relax sharing, bypass linked-file checks or replace unrelated ACLs. Other errors
+propagate immediately. Exhausted retries preserve unresolved grants and the
+Windows profile for later recovery. Synchronous `Dispose` remains available.
+
+The focused suite passes **56 checks** at
+`.codex-temp/office-owner/1f72e692322145479812de30b70d9618`, with its matching
+fixture/result stage beneath `.codex-temp/office-isolation`. A held exclusive
+cache-file handle verifies exact diagnostics, retry exhaustion and retained
+ownership. Releasing that handle lets the same pending asynchronous cleanup
+complete; source bytes and unrelated ACL entries remain preserved.
+
+The real interruption harness now awaits profile-owner disposal after worker
+exit. Replay `.codex-temp/office-worker/556f332dfd514885bd3e00575a710fa4`
+passes all three cancellation/recovery cells and independent inspection of the
+three recovery PDFs. It then fails in the test's process-identification observer,
+before its first worker-loss stop. All seven profiles are removed. The observer
+now tolerates unavailable main-module information while a process starts.
+The [worker-lifetime follow-up](office-worker-lifetime.md) subsequently corrects
+early client return after worker crashes and verifies all nine stop/recovery
+cases. Production context journals and Office application-crash recovery remain
+separate.
+
+
 Directory sharing correction
 ----------------------------
 

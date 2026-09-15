@@ -347,9 +347,14 @@ See [worker evidence, failures and remaining integration](../../docs/office-work
 --build-receipt <matching-build.json> --fixtures <ordinary-fixtures>
 --large-fixtures <interruption-fixtures>` prepares the active stop/recovery matrix
 without recopying the runtime. The probe's `--worker-stop-fixtures <fresh-directory>`
-creates twelve passive pages per family. The matrix has not passed: startup
-failures precede its first stop point. See the [investigation and diagnostic
-controls](../../docs/office-worker-interruption.md) before retrying.
+creates twelve passive pages per family. The corrected matrix uses the retained
+96-page fixtures and passes all nine cases across three focused runs. See the
+[worker-lifetime evidence](../../docs/office-worker-lifetime.md) for exact source
+receipts, independent PDF inspection and remaining application-loss recovery.
+Use `--mode cancel`, `--mode worker-loss` or `--mode deadline` for a focused
+three-family, 30-check replay after inspecting a failed run. The default `all`
+still requires nine cells and 90 checks. Keep each mode's source/build receipts
+and independent recovery-PDF results; one passed mode is not the complete matrix.
 
 `Test-OfficePathBoundary.py` compares plain and extended Windows directory paths
 at 247, 248, 249, 260, 261 and 320 characters, using native probes with and without

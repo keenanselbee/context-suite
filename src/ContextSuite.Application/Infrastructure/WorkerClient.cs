@@ -15,6 +15,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
     private Process? _process;
+    private WorkerProcessJob? _job;
     private NamedPipeServerStream? _pipe;
     private string? _scratchDirectory;
     public int? ProcessId => _process?.Id;
@@ -239,7 +240,11 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ContextSuite", "WorkerScratch")),
                     "worker-" + Guid.NewGuid().ToString("N"));
                 start.ArgumentList.Add(_scratchDirectory);
+                _job = new WorkerProcessJob();
                 _process = Process.Start(start) ?? throw new IOException("The media worker could not start.");
+                // The worker waits for a command before loading any engine.
+                // Assign its lifetime job before sending the first request.
+                _job.Assign(_process);
                 await _pipe.WaitForConnectionAsync(timeout.Token);
                 LocalPipe.VerifyPeer(_pipe, true, _process.Id, Path.GetFullPath(executable));
             }
@@ -320,11 +325,27 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         }
         finally
         {
-            if (_pipe is not null) await _pipe.DisposeAsync();
-            if (_process is null || _process.HasExited) await CleanScratchAsync();
-            _process?.Dispose();
-            _pipe = null;
-            _process = null;
+            var stopped = false;
+            try
+            {
+                if (_job is not null) await _job.StopAsync();
+                stopped = _process is null || _process.HasExited;
+            }
+            finally
+            {
+                _job?.Dispose(); _job = null;
+                try
+                {
+                    if (_pipe is not null) await _pipe.DisposeAsync();
+                    if (stopped) await CleanScratchAsync();
+                }
+                finally
+                {
+                    _process?.Dispose();
+                    _pipe = null;
+                    _process = null;
+                }
+            }
         }
     }
 

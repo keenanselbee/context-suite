@@ -12,7 +12,7 @@ namespace ContextSuite.Application.Infrastructure;
 // Stop and await all using workers before cleanup. No customer paths are granted:
 // callers supply only owned snapshot/output folders and the verified runtime.
 [SupportedOSPlatform("windows")]
-internal sealed class OfficeSandboxOwner : IDisposable
+internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
 {
     private const int ReadAccess = 0x1200a9;
     private const int WriteAccess = 0x1301ff;
@@ -108,6 +108,22 @@ internal sealed class OfficeSandboxOwner : IDisposable
             var result = DeleteAppContainerProfile(Name);
             if (result < 0) throw new IOException("Retain and retry cleanup of Office profile " + Name + ".", Marshal.GetExceptionForHR(result));
             _created = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            try { Dispose(); return; }
+            catch (AggregateException error) when (attempt < 49 && error.InnerExceptions.Count > 0 &&
+                error.InnerExceptions.All(item => item is IOException && item.InnerException is Win32Exception native &&
+                    native.NativeErrorCode is 32 or 33))
+            {
+                // A stopped process can leave a transient file-sharing conflict.
+                // Retain ownership and rerun every safety check; never widen sharing.
+                await Task.Delay(100).ConfigureAwait(false);
+            }
         }
     }
 

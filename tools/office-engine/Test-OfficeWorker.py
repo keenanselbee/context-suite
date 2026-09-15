@@ -34,6 +34,7 @@ def main():
     copied = json.loads(args.copy_receipt.read_text(encoding="utf-8"))
     host = json.loads(args.host_receipt.read_text(encoding="utf-8-sig"))
     inputs = [root / "src/ContextSuite.Application/Infrastructure/WorkerClient.cs",
+              root / "src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs",
               root / "src/ContextSuite.Application/Infrastructure/OfficeSandboxOwner.cs", root / "src/Shared/LocalPipe.cs",
               root / "src/ContextSuite.Core/Transport/Messages.cs", root / "src/ContextSuite.Worker/Program.cs",
               root / "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeWorkerContracts.cs",

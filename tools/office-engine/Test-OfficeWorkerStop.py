@@ -20,6 +20,7 @@ def main():
     parser.add_argument("--build-receipt", type=Path, required=True)
     parser.add_argument("--large-fixtures", type=Path, required=True)
     parser.add_argument("--fixtures", type=Path, required=True)
+    parser.add_argument("--mode", choices=("all", "cancel", "worker-loss", "deadline"), default="all")
     args = parser.parse_args()
     if not args.create_disposable_profile:
         parser.error("Explicit disposable profile authorization is required before preparation or execution.")
@@ -42,6 +43,7 @@ def main():
     inputs = list((root / "proprietary/tests/ContextSuite.Pdf.ContractTests").glob("*.cs"))
     inputs += [root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj",
                root / "src/ContextSuite.Application/Infrastructure/WorkerClient.cs",
+               root / "src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs",
                root / "src/ContextSuite.Application/Infrastructure/OfficeSandboxOwner.cs", Path(__file__)]
     sources = {str(path.relative_to(root)): digest(path) for path in inputs}
     fixtures = {str(folder.resolve() / name): digest(folder / name)
@@ -57,7 +59,7 @@ def main():
     if result.returncode:
         raise RuntimeError("Interruption harness build failed before profile creation.")
     managed = root / "artifacts/managed/bin/ContextSuite.Pdf.ContractTests/Release/net10.0/ContextSuite.Pdf.ContractTests.exe"
-    receipt = {"sources": sources, "worker": str(worker), "workerFiles": actual,
+    receipt = {"sources": sources, "worker": str(worker), "workerFiles": actual, "mode": args.mode,
                "previousBuildReceipt": str(args.build_receipt.resolve()),
                "previousBuildReceiptSha256": digest(args.build_receipt), "fixtures": fixtures,
                "managedFiles": {path.name: digest(path) for path in managed.parent.iterdir() if path.is_file()}}
@@ -68,13 +70,14 @@ def main():
     # Preserve the owner process until its bounded operations and profile cleanup finish.
     with (scratch / "stdout.log").open("wb") as output, (scratch / "stderr.log").open("wb") as error:
         result = subprocess.run([str(managed), "--office-worker-stop", str(worker),
-            str(args.large_fixtures.resolve()), str(args.fixtures.resolve()), str(scratch / "contracts")],
+            str(args.large_fixtures.resolve()), str(args.fixtures.resolve()), str(scratch / "contracts"), args.mode],
             cwd=root, stdout=output, stderr=error)
     print((scratch / "stdout.log").read_text(encoding="utf-8", errors="replace"), end="", flush=True)
     if result.returncode:
         raise RuntimeError(f"Office interruption check failed; inspect logs and owned profile receipts before retrying: {scratch}")
     report = json.loads((scratch / "contracts/results.json").read_text(encoding="utf-8"))
-    if not report["Passed"] or len(report["Checks"]) != 90:
+    modes = ["cancel", "worker-loss", "deadline"] if args.mode == "all" else [args.mode]
+    if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != 30 * len(modes):
         raise RuntimeError("Missing complete interruption evidence.")
     if any(digest(Path(name)) != expected for name, expected in fixtures.items()):
         raise RuntimeError("An original fixture changed during interruption checks.")

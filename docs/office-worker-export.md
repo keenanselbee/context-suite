@@ -27,9 +27,12 @@ The worker never publishes it. Production document admission, independent PDF
 validation and application-owned transactional copy publication remain separate.
 The client allows 180 seconds for the request, including runtime verification;
 the native process retains its separate two-minute deadline.
-The later [interruption investigation](office-worker-interruption.md) replays
-ordinary exports successfully but retains startup failures before its active
-stop points. Cancellation/loss acceptance is still incomplete.
+The later [worker-lifetime verification](office-worker-lifetime.md) completes
+the active stop/recovery experiments and identifies early client return after
+worker-only crashes. The corrected application-owned job now passes all nine
+stop/recovery cases and independent inspection of their recovery PDFs. Production
+Office contexts, validation/publication and application-loss recovery remain
+incomplete.
 
 
 Actual isolated evidence
