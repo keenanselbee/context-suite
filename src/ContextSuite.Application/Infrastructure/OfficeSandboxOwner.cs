@@ -61,6 +61,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                 var acl = ReadAcl(grant.Handle);
                 if (acl.Cast<GenericAce>().OfType<KnownAce>().Any(ace => ace.SecurityIdentifier == _sid))
                     throw new IOException("The Office profile already has unowned access on this directory.");
+                grant.VerifyNoChildAccess(_sid);
                 var position = 0;
                 while (position < acl.Count && (acl[position].AceFlags & AceFlags.Inherited) == 0) position++;
                 acl.InsertAce(position, new CommonAce(Inherit, AceQualifier.AccessAllowed, grant.Access, _sid, false, null));
@@ -98,6 +99,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                     WriteAcl(grant.Handle, acl);
                     if (ReadAcl(grant.Handle).Cast<GenericAce>().OfType<KnownAce>().Any(ace => ace.SecurityIdentifier == _sid))
                         throw new IOException("Office directory access could not be removed.");
+                    grant.VerifyNoChildAccess(_sid);
                     grant.Dispose(); _grants.RemoveAt(index);
                 }
                 catch (Exception error) when (error is IOException or Win32Exception or UnauthorizedAccessException)
@@ -174,7 +176,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     private sealed class Grant(string path, int access) : IDisposable
     {
         private readonly List<SafeFileHandle> _handles = [];
-        private readonly List<SafeFileHandle> _children = [];
+        private readonly List<(string Path, SafeFileHandle Handle)> _children = [];
         private SafeFileHandle? _root;
         internal string Path { get; } = path;
         internal int Access { get; } = access;
@@ -205,7 +207,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
         internal void CheckChildren()
         {
             var pending = new Stack<string>(); pending.Push(Path);
-            var checkedHandles = new List<SafeFileHandle>();
+            var checkedHandles = new List<(string Path, SafeFileHandle Handle)>();
             try
             {
                 while (pending.TryPop(out var directory))
@@ -219,7 +221,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                             var error = Marshal.GetLastWin32Error(); handle.Dispose();
                             throw new Win32Exception(error, "Could not verify Office grant entry: " + entry);
                         }
-                        checkedHandles.Add(handle);
+                        checkedHandles.Add((entry, handle));
                         if (!GetFileInformationByHandleEx(handle, 9, out var attributes, (uint)Marshal.SizeOf<AttributeTag>()) ||
                             (attributes.Attributes & 0x400) != 0) throw new IOException("Linked entries are not permitted in Office grant trees.");
                         if ((attributes.Attributes & 0x10) != 0) pending.Push(entry);
@@ -227,14 +229,20 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                             file.Links != 1 || file.DeletePending || file.Directory)
                             throw new IOException("Office grant files must be single-link regular files.");
                     }
-                foreach (var handle in _children) handle.Dispose();
+                foreach (var child in _children) child.Handle.Dispose();
                 _children.Clear(); _children.AddRange(checkedHandles); checkedHandles.Clear();
             }
-            finally { foreach (var handle in checkedHandles) handle.Dispose(); }
+            finally { foreach (var child in checkedHandles) child.Handle.Dispose(); }
+        }
+        internal void VerifyNoChildAccess(SecurityIdentifier sid)
+        {
+            foreach (var child in _children)
+                if (ReadAcl(child.Handle).Cast<GenericAce>().OfType<KnownAce>().Any(ace => ace.SecurityIdentifier == sid))
+                    throw new IOException("Unresolved Office profile access on child: " + child.Path);
         }
         public void Dispose()
         {
-            foreach (var handle in _children) handle.Dispose(); _children.Clear();
+            foreach (var child in _children) child.Handle.Dispose(); _children.Clear();
             foreach (var handle in _handles) handle.Dispose(); _handles.Clear(); _root = null;
         }
     }

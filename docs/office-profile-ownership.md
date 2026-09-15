@@ -4,8 +4,9 @@ Office Profile And Grant Ownership
 The application now contains an `OfficeSandboxOwner` component that owns a fresh
 Windows AppContainer profile and explicitly granted directories. It is separate
 from the private worker's [managed process job](office-managed-launcher.md).
-The component has native file-access and worker-crash evidence, but is not yet
-connected to a customer Office command or production worker request.
+The component has native file-access, worker-crash and typed worker-export
+evidence. Context construction still belongs to the isolated harness; the
+customer Office command remains incomplete.
 
 
 Lifetime and access policy
@@ -35,6 +36,12 @@ whole-ACL snapshot over intervening unrelated entries. Microsoft's
 [inheritance documentation](https://learn.microsoft.com/en-us/windows/win32/secauthz/automatic-propagation-of-inheritable-aces)
 and [SetSecurityInfo contract](https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-setsecurityinfo)
 describe propagation and inherited-entry removal.
+
+Before granting access, the owner also verifies that none of the held children
+already contains an entry for the profile SID. After root revocation, it checks
+every held child again before releasing the grant or deleting the profile. Root
+revocation alone does not establish removal below protected or explicitly
+permissioned children. The child-access follow-up below records that boundary.
 
 Workers must stop before profile cleanup. If tree/access cleanup cannot be
 verified, the owner retains its remaining grants and profile and reports their
@@ -78,6 +85,49 @@ The [worker-lifetime follow-up](office-worker-lifetime.md) subsequently corrects
 early client return after worker crashes and verifies all nine stop/recovery
 cases. Production context journals and Office application-crash recovery remain
 separate.
+
+
+Residual child-access recovery
+------------------------------
+
+The restart-recovery review found that the previous owner verified revocation
+only at each grant root. A child's explicit profile entry or protected inheritance
+could therefore survive root revocation without preventing profile deletion.
+The owner now checks the bounded, held child handles for any entry naming its SID
+before applying a grant and after removing it. A residual entry retains the
+profile and unresolved grant; it is reported with the affected child path. The
+owner does not remove an unexpected child entry or restore a prior whole ACL.
+
+The expanded ownership suite passes **72 checks** at
+`.codex-temp/office-owner/ffe221767f7e4299b239c51612065024`; the matching stage
+under `.codex-temp/office-isolation` contains the actual Windows access evidence.
+Two new cases cover an explicit file entry and a protected child directory:
+
+- Pre-existing child access refuses before root or child ACL mutation.
+- Removing root access leaves the unexpected child entry intact and prevents
+  profile removal. Unrelated permissions and authored file bytes are preserved.
+- After the test resolves only its injected child entry, the same retained owner
+  completes cleanup and removes the profile folder and registry mapping.
+
+This is verified in-memory recovery. It does not establish concurrent tree/ACL
+tampering resistance, power-loss durability or persisted restart recovery. The
+earlier 90 interruption checks across nine cases are not a new run of this changed
+owner.
+
+The changed owner also passes **39 real-worker export checks** at
+`.codex-temp/office-worker/34310b1d93a0439cb320d8984812535f`. All three generated
+Word/Excel/PowerPoint documents export and clean up successfully. Independent
+inspection at `inspection-5d5ccd76d31147a983df8cb8eb8ba0a6` passes qpdf structure,
+authored text, page geometry and exact PDFium control pixels for all three PDFs.
+The application and private-harness Release builds have zero warnings/errors.
+
+`.codex-temp/office-child-access-verification.json` reconciles current source and
+worker identities, source/candidate hashes and independent inspection. All four
+distinct test profile identities are absent from Windows folders/mappings and
+22,050 checked runtime/context ACLs. The ownership suite intentionally recreates
+its one identity several times; four is a distinct-identity count, not a count
+of profile-creation calls. Production candidate 1.1.0 was not modified. The
+broader image/audio/PDF suites were not rerun for this Office-only owner change.
 
 
 Directory sharing correction
@@ -174,3 +224,13 @@ calculation/font policies, broader document fidelity, content/network enforcemen
 and runtime adoption before enabling customer Office conversion. Prior foundation
 counts are unchanged evidence, not a new run. No visible UI, installed lifecycle,
 screen-reader, theme/DPI, live commerce or release acceptance is claimed here.
+
+The durable ownership record must precede grant mutation and distinguish intended
+changes from verified completion. Keep it outside directories writable by Office.
+Bind recovery to the recorded directory objects and successfully created profile,
+not only a reusable profile name or paths supplied by a journal. Verify process
+termination again before revocation, and retain uncertain creation, identity or
+cleanup states for review. Profile/grant cleanup records remain separate from
+output publication records; neither an export completion nor a recovered profile
+authorizes publishing an unvalidated PDF. These are requirements for the next
+implementation slice, not an implemented journal or recovery API.

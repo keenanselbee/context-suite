@@ -5,12 +5,20 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [Office worker-lifetime verification](office-worker-lifetime.md)
+The latest [Office child-access recovery checks](office-profile-ownership.md#residual-child-access-recovery)
+close a cleanup gap below granted directories. The owner now refuses pre-existing
+child permissions and retains ownership if a child still names the profile after
+root revocation. All 72 ownership checks and 39 real-worker export checks pass;
+three PDFs pass independent inspection and all test profile identities and grants
+are removed. Persisted restart recovery and customer Office conversion remain
+incomplete.
+
+The preceding [Office worker-lifetime verification](office-worker-lifetime.md)
 corrects early client return after worker crashes. All 90 checks across nine
 Office stop/recovery cells pass; every host exits before client return, all nine
 recovery PDFs pass independent inspection, and all 18 profiles and their grants
 are removed. Broader image-worker, audio, FLAC and PDF regressions also pass.
-Profile cleanup has 56 focused ownership checks. Production Office contexts,
+That checkpoint had 56 focused ownership checks. Production Office contexts,
 application-loss recovery, validation/publication and customer commands remain
 incomplete; this is not expanded-release acceptance.
 

@@ -4,6 +4,11 @@ Office Worker Lifetime Verification
 Status: application-owned worker job and corrected interruption boundary verified;
 Office context recovery, publication and customer command remain incomplete
 
+The later [child-access recovery follow-up](office-profile-ownership.md#residual-child-access-recovery)
+adds descendant permission checks to the profile owner, with 72 ownership checks
+and 39 real-worker export checks. The interruption evidence below belongs to this
+earlier checkpoint and was not rerun for that Office-only cleanup change.
+
 The [profile cleanup follow-up](office-profile-ownership.md) passes 56 focused
 ownership checks, including bounded sharing-conflict retries and retained
 ownership after exhaustion. Real Office interruption tests subsequently completed
