@@ -13,11 +13,22 @@ namespace ContextSuite.Application.Infrastructure;
 internal enum OfficeOwnershipStep
 {
     ProfileIntent, ProfileCreated, GrantIntent, GrantApplied, EngineIntent,
-    ProcessesStopped, CleanupIntent, RevokeIntent, GrantRevoked, DeleteIntent, ProfileDeleted
+    ProcessesStopped, CleanupIntent, RevokeIntent, GrantRevoked, DeleteIntent, ProfileDeleted, RetirementIntent
 }
 
 internal sealed record OfficeOwnershipIdentity(OfficeExportWork Work, string RuntimeDirectory,
-    int OwnerProcessId, long OwnerStartUtcTicks);
+    int OwnerProcessId, long OwnerStartUtcTicks,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] OfficeContextDirectories? ContextDirectories = null);
+internal sealed record OfficeContextDirectories(string Context, string Input, string Output, string Profile, string Temp)
+{
+    internal void Validate()
+    {
+        string[] values = [Context, Input, Output, Profile, Temp];
+        if (values.Any(value => value is not { Length: 24 } || !value.All(char.IsAsciiHexDigit)) ||
+            values.Distinct(StringComparer.OrdinalIgnoreCase).Count() != values.Length)
+            throw new InvalidDataException("Office context directory identities are missing, repeated or invalid.");
+    }
+}
 internal sealed record OfficeOwnershipChange(OfficeOwnershipStep Step, string? Sid = null,
     string? Path = null, string? DirectoryIdentity = null, bool? Writable = null, WorkerLifetimeIdentity? Lifetime = null);
 
@@ -49,7 +60,7 @@ internal sealed class OfficeOwnershipJournal : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         using var process = Process.GetCurrentProcess();
-        if (_version != 3 || _faulted || _changes.Count != 1 || _changes[0].Step != OfficeOwnershipStep.ProfileIntent ||
+        if (_version is not (3 or 4) || _faulted || _changes.Count != 1 || _changes[0].Step != OfficeOwnershipStep.ProfileIntent ||
             Owner.OwnerProcessId != process.Id || Owner.OwnerStartUtcTicks != process.StartTime.ToUniversalTime().Ticks)
             throw new InvalidDataException("Only the original fresh journal owner may create this Office profile.");
     }
@@ -57,13 +68,14 @@ internal sealed class OfficeOwnershipJournal : IDisposable
     private OfficeOwnershipJournal(FileStream file, IDisposable directory, OfficeOwnershipIdentity owner, int version = 3)
     { _file = file; _directory = directory; Owner = owner; _version = version; }
 
-    internal static OfficeOwnershipJournal Create(string path, OfficeExportWork work, string runtimeDirectory)
+    internal static OfficeOwnershipJournal Create(string path, OfficeExportWork work, string runtimeDirectory,
+        OfficeContextDirectories? contextDirectories = null)
     {
         using var process = Process.GetCurrentProcess();
-        var owner = new OfficeOwnershipIdentity(work, runtimeDirectory, process.Id, process.StartTime.ToUniversalTime().Ticks);
+        var owner = new OfficeOwnershipIdentity(work, runtimeDirectory, process.Id, process.StartTime.ToUniversalTime().Ticks, contextDirectories);
         ValidateIdentity(path, owner, Path.GetDirectoryName(work.DirectoryPath)!, runtimeDirectory);
         var (file, directory) = OpenFile(path, FileMode.CreateNew);
-        var journal = new OfficeOwnershipJournal(file, directory, owner);
+        var journal = new OfficeOwnershipJournal(file, directory, owner, contextDirectories is null ? 3 : 4);
         try { journal.Record(new(OfficeOwnershipStep.ProfileIntent)); return journal; }
         catch { journal.Dispose(); throw; } // Preserve a possibly incomplete file for review.
     }
@@ -89,7 +101,8 @@ internal sealed class OfficeOwnershipJournal : IDisposable
                 using (var document = JsonDocument.Parse(payload, new() { MaxDepth = 8 })) RejectDuplicateProperties(document.RootElement);
                 var entry = JsonSerializer.Deserialize<Entry>(payload, Options) ?? throw new InvalidDataException("Missing Office ownership entry.");
                 ValidateIdentity(path, entry.Owner, contextRoot, runtimeDirectory);
-                if (entry.Version is not (1 or 2 or 3)) throw new InvalidDataException("Unsupported Office ownership journal version.");
+                if (entry.Version is not (1 or 2 or 3 or 4) || (entry.Version == 4) != (entry.Owner.ContextDirectories is not null))
+                    throw new InvalidDataException("Office ownership journal version differs from its directory bindings.");
                 journal ??= new(file, directory, entry.Owner, entry.Version);
                 if (entry.Version != journal._version || entry.Sequence != journal._changes.Count || entry.Owner != journal.Owner ||
                     journal._changes.Count >= MaximumRecords)
@@ -105,7 +118,7 @@ internal sealed class OfficeOwnershipJournal : IDisposable
     internal void Record(OfficeOwnershipChange change)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_version != 3) throw new InvalidDataException("Legacy Office ownership records are read-only. Retain them for review.");
+        if (_version is not (3 or 4)) throw new InvalidDataException("Legacy Office ownership records are read-only. Retain them for review.");
         if (_faulted || _changes.Count >= MaximumRecords) throw new IOException("Retain the Office ownership journal for recovery.");
         ValidateNext(change);
         var payload = JsonSerializer.SerializeToUtf8Bytes(new Entry(_version, _changes.Count, Owner, change), Options);
@@ -123,7 +136,7 @@ internal sealed class OfficeOwnershipJournal : IDisposable
     internal void RecordEngineIntent(WorkerLifetimeIdentity lifetime)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_version != 3 || _faulted || _changes.Any(change => change.Step is OfficeOwnershipStep.ProcessesStopped or OfficeOwnershipStep.CleanupIntent))
+        if (_version is not (3 or 4) || _faulted || _changes.Any(change => change.Step is OfficeOwnershipStep.ProcessesStopped or OfficeOwnershipStep.CleanupIntent))
             throw new InvalidDataException("The Office ownership record cannot admit another worker request.");
         using var process = Process.GetCurrentProcess();
         if (Owner.OwnerProcessId != process.Id || Owner.OwnerStartUtcTicks != process.StartTime.ToUniversalTime().Ticks)
@@ -137,15 +150,23 @@ internal sealed class OfficeOwnershipJournal : IDisposable
     internal void RequireRecoveryOwner()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_version != 3 || _faulted || !_changes.Any(change => change.Step == OfficeOwnershipStep.ProfileCreated) ||
+        if (_version is not (3 or 4) || _faulted || !_changes.Any(change => change.Step == OfficeOwnershipStep.ProfileCreated) ||
             _changes.Any(change => change.Step == OfficeOwnershipStep.ProfileDeleted))
             throw new InvalidDataException("The Office ownership record cannot authorize profile recovery.");
         WorkerLifetimeIdentity.RequireExitedProcess(Owner.OwnerProcessId, Owner.OwnerStartUtcTicks);
     }
 
+    internal void RequireRetirementOwner()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_version != 4 || _faulted || _changes[^1].Step != OfficeOwnershipStep.RetirementIntent)
+            throw new InvalidDataException("Office temporary retirement requires a completed version-four cleanup intent.");
+        WorkerLifetimeIdentity.RequireExitedProcess(Owner.OwnerProcessId, Owner.OwnerStartUtcTicks);
+    }
+
     private void ValidateNext(OfficeOwnershipChange next)
     {
-        var created = false; var engine = false; var stopped = false; var cleanup = false; var deleting = false; var deleted = false;
+        var created = false; var engine = false; var stopped = false; var cleanup = false; var deleting = false; var deleted = false; var retiring = false;
         var grants = new List<OfficeOwnershipChange>();
         var applied = true; var revoking = false;
         string[] paths = [Owner.RuntimeDirectory, Path.Combine(Owner.Work.DirectoryPath, "input"),
@@ -153,7 +174,8 @@ internal sealed class OfficeOwnershipJournal : IDisposable
         var index = 0;
         foreach (var change in _changes.Append(next))
         {
-            if (change is null || deleted) throw new InvalidDataException("Invalid Office ownership transition.");
+            if (change is null || retiring || deleted && change.Step != OfficeOwnershipStep.RetirementIntent)
+                throw new InvalidDataException("Invalid Office ownership transition.");
             var valid = change.Step switch
             {
                 OfficeOwnershipStep.ProfileIntent => index == 0,
@@ -173,11 +195,12 @@ internal sealed class OfficeOwnershipJournal : IDisposable
                 OfficeOwnershipStep.GrantRevoked => revoking && change.Path == grants[^1].Path,
                 OfficeOwnershipStep.DeleteIntent => cleanup && grants.Count == 0 && !deleting,
                 OfficeOwnershipStep.ProfileDeleted => deleting,
+                OfficeOwnershipStep.RetirementIntent => _version == 4 && deleted,
                 _ => false
             };
             var grantIntent = change.Step == OfficeOwnershipStep.GrantIntent;
             var profileCreated = _version >= 2 && change.Step == OfficeOwnershipStep.ProfileCreated;
-            var engineIntent = _version == 3 && change.Step == OfficeOwnershipStep.EngineIntent;
+            var engineIntent = _version >= 3 && change.Step == OfficeOwnershipStep.EngineIntent;
             var hasPath = grantIntent || profileCreated || change.Step is OfficeOwnershipStep.GrantApplied or OfficeOwnershipStep.RevokeIntent or OfficeOwnershipStep.GrantRevoked;
             if (!valid || (change.Step != OfficeOwnershipStep.ProfileCreated && change.Sid is not null) ||
                 (!hasPath && change.Path is not null) || (!grantIntent && !profileCreated && change.DirectoryIdentity is not null) ||
@@ -196,6 +219,7 @@ internal sealed class OfficeOwnershipJournal : IDisposable
                 case OfficeOwnershipStep.GrantRevoked: grants.RemoveAt(grants.Count - 1); revoking = false; break;
                 case OfficeOwnershipStep.DeleteIntent: deleting = true; break;
                 case OfficeOwnershipStep.ProfileDeleted: deleted = true; break;
+                case OfficeOwnershipStep.RetirementIntent: retiring = true; break;
             }
             index++;
         }
@@ -204,6 +228,7 @@ internal sealed class OfficeOwnershipJournal : IDisposable
     private static void ValidateIdentity(string path, OfficeOwnershipIdentity owner, string contextRoot, string runtimeDirectory)
     {
         if (owner?.Work is null) throw new InvalidDataException("Missing Office ownership identity.");
+        owner.ContextDirectories?.Validate();
         owner.Work.Validate();
         if (owner.OwnerProcessId <= 0 || owner.OwnerStartUtcTicks <= 0 || owner.OwnerStartUtcTicks > DateTime.MaxValue.Ticks ||
             Path.GetFileName(path) != owner.Work.ItemId.ToString("N") + ".ownership" ||

@@ -23,8 +23,8 @@ internal sealed record OfficeRecoveryReport(string Directory, IReadOnlyList<Offi
     }
 }
 
-// Profile/job cleanup only. Never resumes rendering, publishes a PDF or deletes
-// retained documents. The caller runs this off the UI thread before admitting Office work.
+// Native recovery and explicitly recorded temporary retirement. Never resumes
+// rendering or publishes a PDF. Run off the UI thread before admitting Office work.
 internal static class OfficeRecoveryCoordinator
 {
     internal const int MaximumDirectoryEntries = 512;
@@ -82,7 +82,12 @@ internal static class OfficeRecoveryCoordinator
             try
             {
                 using var journal = OfficeOwnershipJournal.Open(path, root, runtime);
-                if (journal.Version != 3) throw new InvalidDataException("Legacy Office ownership requires review.");
+                if (journal.Version is not (3 or 4)) throw new InvalidDataException("Legacy Office ownership requires review.");
+                if (journal.Changes[^1].Step == OfficeOwnershipStep.RetirementIntent)
+                {
+                    await OfficeContextPreparation.RetireRecoveredAsync(journal, path);
+                    return new(path, OfficeRecoveryState.AlreadyClean);
+                }
                 if (journal.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted)
                     return new(path, OfficeRecoveryState.AlreadyClean);
                 var owner = await OfficeSandboxOwner.RecoverAsync(journal);

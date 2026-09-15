@@ -5,6 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [recorded Office retirement after restart](office-startup-recovery.md#completed-context-retirement)
+now passes all 3,434 foundation contracts and 40 native-profile recovery checks.
+Version-four journals bind the generated directories and record terminal cleanup
+intent. Recovery verifies owner death and native state, resumes partial temporary
+cleanup, and preserves substituted paths and reappeared profiles. All seven final
+fixture profiles are gone. Actual-app restart acceptance for this new record,
+incomplete-preparation retention, customer Office wiring and expanded release
+acceptance remain open. Earlier real-export/PDF evidence was not rerun here.
+
 The [Office live-context retirement](office-pdf-validation.md#live-context-retirement-verification)
 follow-up passes 43 actual execution checks, ten native cleanup/retry checks and
 all 3,379 foundation contracts. All seven profiles and generated contexts are removed.

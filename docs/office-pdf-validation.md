@@ -193,11 +193,13 @@ after application exit. The caller must retain this executor while it owns pendi
 cleanup and surface its recovery records. The customer view model is not connected
 yet, so these ownership/shutdown responsibilities remain an integration gate.
 
-Completed contexts now have live-owner retirement, described below. Preparation
-failures and restart-recovered contexts still retain evidence. Before customer
-enablement, complete their retirement policy so retained historical records cannot
-exhaust the startup scan bounds. Final reservation cleanup uses the existing
-publisher and never deletes the original.
+Completed contexts now have live-owner retirement and
+[resumption after restart](office-startup-recovery.md#completed-context-retirement)
+when a version-four retirement intent was recorded. Preparation failures and
+interrupted exports without that intent still retain evidence. Before customer
+enablement, complete their retention policy so historical records cannot exhaust
+the startup scan bounds. Final reservation cleanup uses the existing publisher
+and never deletes the original.
 
 `tools/office-engine/Test-OfficeExecution.py` requires explicit
 disposable-profile authorization and creates a matching repository-local worker
@@ -300,8 +302,9 @@ both stopped earlier attempts before native profile creation. Reserved payload
 Remaining work
 --------------
 
-Connect customer command dispatch and long-lived cleanup ownership, and complete
-retirement after restart or incomplete preparation. Extend cancellation coverage to the reservation-copy
+Connect customer command dispatch and long-lived cleanup ownership, and resolve
+retention for incomplete preparation and interrupted exports without retirement
+intent. Extend cancellation coverage to the reservation-copy
 phase, abrupt application loss and additional resource-limit failures. Broader Office fidelity,
 the owner's Excel calculation default, fresh combined packaging and actual
 visible/keyboard acceptance remain open. This component changes no installed app

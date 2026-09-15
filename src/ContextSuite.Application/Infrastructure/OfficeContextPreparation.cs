@@ -80,7 +80,8 @@ internal sealed class OfficeContextPreparation : IDisposable
             result._snapshot = OpenFile(result.Work.SourcePath, create: false);
             await result.VerifyAsync(token);
             token.ThrowIfCancellationRequested();
-            result.Journal = OfficeOwnershipJournal.Create(Path.Combine(root, id.ToString("N") + ".ownership"), result.Work, runtime);
+            result.Journal = OfficeOwnershipJournal.Create(Path.Combine(root, id.ToString("N") + ".ownership"), result.Work, runtime,
+                Retirement.ReadDirectories(result.Work));
             return result;
         }
         catch (Exception error)
@@ -142,21 +143,23 @@ internal sealed class OfficeContextPreparation : IDisposable
     private static bool Within(string path, string parent) => string.Equals(path, parent, StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith(parent + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
 
-    // Live-owner retirement only. Restart recovery still retains evidence until it
-    // has durable context-directory identities, not just profile/grant identities.
+    // Live-owner retirement. Durable directory bindings are also available for
+    // restart recovery, which must verify owner death and native cleanup first.
     internal void Retire()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_retirement is null)
         {
-            if (Journal.Changes[^1].Step != OfficeOwnershipStep.ProfileDeleted ||
+            if (Journal.Changes[^1].Step is not (OfficeOwnershipStep.ProfileDeleted or OfficeOwnershipStep.RetirementIntent) ||
                 Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.EngineIntent) &&
                 !Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.ProcessesStopped))
                 throw new IOException("Complete Office worker and profile cleanup before removing temporary files.");
-            var retirement = new Retirement(Work);
+            var retirement = new Retirement(Work, Journal.Owner.ContextDirectories);
             // Capture identities while the original preparation leases still hold
             // every generated directory and the journal against replacement.
             retirement.Capture();
+            if (Journal.Version == 4 && Journal.Changes[^1].Step != OfficeOwnershipStep.RetirementIntent)
+                Journal.Record(new(OfficeOwnershipStep.RetirementIntent));
             _retirement = retirement;
             Journal.Dispose(); _snapshot?.Dispose(); _snapshot = null;
             for (var index = _leases.Count - 1; index >= 3; index--) _leases[index].Dispose();
@@ -166,7 +169,24 @@ internal sealed class OfficeContextPreparation : IDisposable
         Release();
     }
 
-    private sealed class Retirement(OfficeExportWork work)
+    internal static async Task RetireRecoveredAsync(OfficeOwnershipJournal journal, string recordPath)
+    {
+        journal.RequireRetirementOwner();
+        var work = journal.Owner.Work;
+        var root = Path.GetDirectoryName(work.DirectoryPath)!;
+        if (recordPath != Path.Combine(root, work.ItemId.ToString("N") + ".ownership"))
+            throw new InvalidDataException("Office retirement record is outside its owned context root.");
+        using var lease = OfficeSandboxOwner.LeaseDirectory(root);
+        OfficeSandboxOwner.RequireProfileAbsent(work.ProfileName);
+        var engine = journal.Changes.SingleOrDefault(change => change.Step == OfficeOwnershipStep.EngineIntent);
+        if (engine is not null) await WorkerProcessJob.StopRecordedAsync(engine.Lifetime!);
+        var retirement = new Retirement(work, journal.Owner.ContextDirectories);
+        retirement.Capture(recovering: true);
+        journal.Dispose();
+        retirement.Run();
+    }
+
+    private sealed class Retirement(OfficeExportWork work, OfficeContextDirectories? expectedDirectories)
     {
         private const int MaximumEntries = 4096;
         private readonly Dictionary<string, string> _directories = new(StringComparer.OrdinalIgnoreCase);
@@ -175,18 +195,39 @@ internal sealed class OfficeContextPreparation : IDisposable
         private string _recordIdentity = "";
         private bool _recordRemoved;
 
-        internal void Capture()
+        internal void Capture(bool recovering = false)
         {
-            foreach (var path in new[] { work.DirectoryPath }.Concat(new[] { "input", "output", "profile", "temp" }
-                .Select(name => Path.Combine(work.DirectoryPath, name))))
+            var actual = recovering ? expectedDirectories ?? throw new InvalidDataException("Missing durable Office directory bindings.") : ReadDirectories(work);
+            actual.Validate();
+            if (expectedDirectories is not null && actual != expectedDirectories)
+                throw new IOException("Office temporary directories differ from their durable identities.");
+            string[] identities = [actual.Context, actual.Input, actual.Output, actual.Profile, actual.Temp];
+            var paths = new[] { work.DirectoryPath }.Concat(new[] { "input", "output", "profile", "temp" }
+                .Select(name => Path.Combine(work.DirectoryPath, name))).ToArray();
+            for (var index = 0; index < paths.Length; index++)
             {
-                using var handle = Open(path, delete: false);
-                if (!Information(handle).Attributes.HasFlag(FileAttributes.Directory)) throw new IOException("Office context directory changed.");
-                _directories.Add(path, Identity(handle));
+                _directories.Add(paths[index], identities[index]);
+                // A crash can occur after any child deletion. Missing paths confer
+                // no authority over replacements: Run verifies every present ID.
+                if (recovering && IsAbsent(paths[index])) _removed.Add(paths[index]);
             }
             using var record = Open(_record, delete: false);
             if (Information(record).Attributes.HasFlag(FileAttributes.Directory)) throw new IOException("Office ownership record changed.");
             _recordIdentity = Identity(record);
+        }
+
+        internal static OfficeContextDirectories ReadDirectories(OfficeExportWork work)
+        {
+            return new(Read(work.DirectoryPath), Read(Path.Combine(work.DirectoryPath, "input")),
+                Read(Path.Combine(work.DirectoryPath, "output")), Read(Path.Combine(work.DirectoryPath, "profile")),
+                Read(Path.Combine(work.DirectoryPath, "temp")));
+
+            static string Read(string path)
+            {
+                using var handle = Open(path, delete: false);
+                if (!Information(handle).Attributes.HasFlag(FileAttributes.Directory)) throw new IOException("Office context directory changed.");
+                return Identity(handle);
+            }
         }
 
         internal void Run()
@@ -275,9 +316,15 @@ internal sealed class OfficeContextPreparation : IDisposable
 
         private static void RequireAbsent(string path)
         {
-            try { _ = File.GetAttributes(path); }
-            catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException) { return; }
+            if (IsAbsent(path)) return;
             throw new IOException("Office temporary cleanup did not remove the owned path.");
+        }
+
+        private static bool IsAbsent(string path)
+        {
+            try { _ = File.GetAttributes(path); }
+            catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException) { return true; }
+            return false;
         }
 
         [DllImport("kernel32.dll", EntryPoint = "SetFileInformationByHandle", SetLastError = true)]
@@ -289,7 +336,7 @@ internal sealed class OfficeContextPreparation : IDisposable
     {
         if (_disposed) return;
         if (Journal is not null && Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.ProfileCreated) &&
-            Journal.Changes[^1].Step != OfficeOwnershipStep.ProfileDeleted)
+            Journal.Changes[^1].Step is not (OfficeOwnershipStep.ProfileDeleted or OfficeOwnershipStep.RetirementIntent))
             throw new IOException("Clean up the Office profile before releasing its prepared source and journal.");
         Release();
     }

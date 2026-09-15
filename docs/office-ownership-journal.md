@@ -18,7 +18,7 @@ execute Office or publish outputs.
 Recorded identity and ordering
 ------------------------------
 
-The version-three record binds a validated `OfficeExportWork`, expected runtime
+Version-three and version-four records bind a validated `OfficeExportWork`, expected runtime
 directory, creator process ID and creator start time. Its filename is the item
 GUID followed by `.ownership`. The context must be a direct child of the expected
 context root. The runtime and context cannot overlap, and the journal must remain
@@ -34,6 +34,28 @@ The allowed sequence is:
 | Engine intent, then processes stopped | All five grants completed; the assigned worker's named lifetime and creator/session identity recorded before dispatch; confirmed shutdown before cleanup |
 | Cleanup intent, then revoke intent/revoked | Revoke every intended grant in reverse order, including a grant with uncertain completion |
 | Delete intent, then profile deleted | All intended grants revoked before recording profile deletion |
+| Retirement intent (version four only) | The live owner has finished using the context and durably permits temporary-file retirement after native cleanup |
+
+Application-prepared contexts now use version four. Its immutable identity also
+contains the five measured local NTFS directory identities: the context itself,
+input, output, engine profile and temp. Each value is the 24-hex-character volume
+serial/file index returned by the held ordinary directory handle. Missing,
+malformed and repeated values are rejected. They cannot change between frames.
+Version four requires these fields; earlier versions cannot contain them.
+
+Live retirement verifies the recorded directory identities and flushes a terminal
+retirement intent before releasing preparation leases or deleting generated files.
+Restart retirement requires that intent, original-owner death, absence of the
+native profile folder/mapping and stopping any recorded worker lifetime. Every
+remaining owned directory must match its recorded identity. Missing generated
+directories are allowed during this resumed cleanup because deletion may have
+finished before the owner exited. The journal is deleted last.
+
+Version-three profile cleanup remains supported. No directory bindings or
+retirement intent are invented for older records. A profile-deleted record without
+retirement intent is retained; it does not prove that PDF validation/publication
+finished or that the owner no longer needed its files. See the
+[restart-retirement evidence](office-startup-recovery.md#completed-context-retirement).
 
 Profile creation and grant intents carry a 48-hex-character directory identity field for the volume
 and file ID. Its syntax is checked; reading the journal does not verify the live

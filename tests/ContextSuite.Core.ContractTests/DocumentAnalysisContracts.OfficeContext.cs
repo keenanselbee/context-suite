@@ -20,6 +20,8 @@ internal static partial class DocumentAnalysisContracts
             var calculation = format == "xlsx" ? "cached" : "none";
             var context = await OfficeContextPreparation.CreateAsync(root, runtime, original, format, calculation, default);
             var work = context.Work;
+            check(context.Journal.Version == 4 && context.Journal.Owner.ContextDirectories is not null,
+                "Office preparation binds generated directories in its version-four journal: " + format);
             using (context)
             {
                 check(File.ReadAllBytes(work.SourcePath).SequenceEqual(bytes) && context.OriginalIdentity.Sha256 == work.SourceSha256 &&
@@ -155,6 +157,8 @@ internal static partial class DocumentAnalysisContracts
             check(File.ReadAllBytes(source).SequenceEqual(bytes) && File.GetLastWriteTimeUtc(source) == written && Directory.Exists(runtime),
                 "Office retirement preserves original bytes/time and the runtime: " + scenario);
         }
+
+        await OfficeRetirementContracts.RunAsync(Path.GetFullPath(scratch), OpenXml("docx"), check);
 
         void Refuses(Action action, string name)
         {

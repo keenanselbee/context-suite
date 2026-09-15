@@ -1,8 +1,8 @@
 Office Context Preparation
 ==========================
 
-Status: application preparation and live retirement implemented; customer Office
-conversion and retirement after restart remain incomplete.
+Status: preparation, live retirement and recorded retirement after restart are
+implemented; incomplete preparation and customer Office integration remain open.
 
 `OfficeContextPreparation.CreateAsync` now constructs the source context used by
 the Office worker. It takes an existing context root, the runtime directory, an
@@ -27,7 +27,7 @@ readers can still open both files. Pure directory leases now request read/list
 access, while actual permission grants retain their required ACL access.
 
 Only after source/snapshot verification succeeds does preparation create the
-version-three [ownership journal](office-ownership-journal.md), outside all grant
+version-four [ownership journal](office-ownership-journal.md), outside all grant
 directories. At this point its only entry is profile intent: preparation creates
 no native profile, grants no permissions and starts no worker. The original file
 is never copied into a directory granted write access to the renderer.
@@ -82,11 +82,12 @@ No original, published PDF, runtime file or Windows profile directory is part of
 this file-deletion tree. Native profile cleanup remains the owner's separate
 responsibility and precedes retirement.
 
-This is live-owner cleanup. Restart recovery cannot yet retire these directories:
-existing version-three journals do not durably bind the top context directory's
-identity. Interrupted retirement and incomplete preparation remain review work;
-the implementation does not infer deletion authority from a directory name or
-silently sweep old scratch folders. This remains a customer-enablement gate.
+Live cleanup now records terminal retirement intent in the version-four journal
+before deletion. [Restart recovery](office-startup-recovery.md#completed-context-retirement)
+can finish that intent after original-owner death and native-state verification.
+Earlier version-three records, incomplete preparation and interrupted work without
+retirement intent retain their existing review behavior. The implementation does
+not infer deletion authority from a directory name or sweep old scratch folders.
 
 
 Verification

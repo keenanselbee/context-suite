@@ -96,7 +96,7 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
                 try
                 {
                     await CleanNativeAsync(context);
-                    if (context.Prepared.Journal.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted)
+                    if (context.Prepared.Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.ProfileDeleted))
                     {
                         report?.Invoke(new(source.Path, OperationState.Running, "Removing temporary files"));
                         await Task.Run(context.Prepared.Retire);
@@ -154,7 +154,7 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
             foreach (var context in _pending.ToArray())
             {
                 await CleanNativeAsync(context);
-                if (context.Prepared.Journal.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted)
+                if (context.Prepared.Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.ProfileDeleted))
                     await Task.Run(context.Prepared.Retire);
                 else context.Prepared.Dispose();
                 _pending.Remove(context);

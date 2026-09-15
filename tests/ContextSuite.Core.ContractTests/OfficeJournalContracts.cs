@@ -146,6 +146,58 @@ internal static class OfficeJournalContracts
 
         var length = BinaryPrimitives.ReadInt32LittleEndian(first);
         var json = Encoding.UTF8.GetString(first, 4, length);
+        check(!JsonNode.Parse(json)!["Owner"]!.AsObject().ContainsKey("ContextDirectories"),
+            "Office version-three writes preserve their original schema without new null fields");
+        var bindings = new OfficeContextDirectories(new string('A', 24), new string('B', 24), new string('C', 24), new string('D', 24), new string('E', 24));
+        Refuses(() => (bindings with { Context = "" }).Validate(), "Office directory bindings refuse missing identities");
+        Refuses(() => (bindings with { Input = bindings.Context }).Validate(), "Office directory bindings refuse repeated objects");
+        Refuses(() => (bindings with { Temp = new string('Z', 24) }).Validate(), "Office directory bindings require hexadecimal volume/file IDs");
+        var boundFolder = Path.Combine(stage, "bound"); Directory.CreateDirectory(boundFolder);
+        var boundPath = Path.Combine(boundFolder, id.ToString("N") + ".ownership");
+        byte[] boundFirst;
+        using (var bound = OfficeOwnershipJournal.Create(boundPath, work, runtime, bindings))
+        {
+            boundFirst = Read(boundPath);
+            check(bound.Version == 4 && bound.Owner.ContextDirectories == bindings, "Office version four records immutable context identities");
+            Refuses(() => bound.Record(new(OfficeOwnershipStep.RetirementIntent)), "Office retirement intent requires completed native cleanup");
+            bound.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName),
+                OfficeOwnershipJournal.ExpectedProfileDirectory(work.ProfileName), new string('A', 48)));
+            var grantPaths = new[] { runtime, Path.Combine(work.DirectoryPath, "input"), Path.Combine(work.DirectoryPath, "output"),
+                Path.Combine(work.DirectoryPath, "profile"), Path.Combine(work.DirectoryPath, "temp") };
+            for (var index = 0; index < grantPaths.Length; index++)
+            {
+                bound.Record(new(OfficeOwnershipStep.GrantIntent, Path: grantPaths[index], DirectoryIdentity: new string('A', 48), Writable: index >= 2));
+                bound.Record(new(OfficeOwnershipStep.GrantApplied, Path: grantPaths[index]));
+            }
+            var boundLifetime = WorkerLifetimeIdentity.Create(Guid.NewGuid());
+            bound.RecordEngineIntent(boundLifetime);
+            check(bound.Changes.Single(change => change.Step == OfficeOwnershipStep.EngineIntent).Lifetime == boundLifetime,
+                "Office version four retains its required worker lifetime with directory bindings");
+            bound.Record(new(OfficeOwnershipStep.ProcessesStopped));
+            bound.Record(new(OfficeOwnershipStep.CleanupIntent));
+            foreach (var grant in grantPaths.Reverse())
+            {
+                bound.Record(new(OfficeOwnershipStep.RevokeIntent, Path: grant));
+                bound.Record(new(OfficeOwnershipStep.GrantRevoked, Path: grant));
+            }
+            bound.Record(new(OfficeOwnershipStep.DeleteIntent)); bound.Record(new(OfficeOwnershipStep.ProfileDeleted));
+            bound.Record(new(OfficeOwnershipStep.RetirementIntent));
+            Refuses(bound.RequireRetirementOwner, "Office retirement recovery refuses its live original writer");
+            Refuses(() => bound.Record(new(OfficeOwnershipStep.RetirementIntent)), "Office retirement intent is terminal and cannot be repeated");
+        }
+        using (var bound = OfficeOwnershipJournal.Open(boundPath, contextRoot, runtime))
+            check(bound.Version == 4 && bound.Owner.ContextDirectories == bindings && bound.Changes[^1].Step == OfficeOwnershipStep.RetirementIntent,
+                "Office version four reopens bindings and terminal retirement intent without losing fields");
+        foreach (var variant in new[] { "missing", "legacy", "unknown", "repeated" })
+        {
+            var entry = JsonNode.Parse(boundFirst.AsSpan(4, BinaryPrimitives.ReadInt32LittleEndian(boundFirst)))!.AsObject();
+            var owner = entry["Owner"]!.AsObject(); var directories = owner["ContextDirectories"]!.AsObject();
+            if (variant == "missing") owner.Remove("ContextDirectories");
+            else if (variant == "legacy") entry["Version"] = 3;
+            else if (variant == "unknown") directories["Other"] = "unrecognized";
+            else directories["Input"] = bindings.Context;
+            RefuseBytes(Frame(Encoding.UTF8.GetBytes(entry.ToJsonString())), "invalid version-four directory binding: " + variant);
+        }
         var legacyFolder = Path.Combine(stage, "legacy"); Directory.CreateDirectory(legacyFolder);
         var legacyPath = Path.Combine(legacyFolder, id.ToString("N") + ".ownership");
         var legacyBytes = Frame(Encoding.UTF8.GetBytes(json.Replace("\"Version\":3", "\"Version\":1", StringComparison.Ordinal)));

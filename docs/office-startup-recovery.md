@@ -16,12 +16,13 @@ and checks a 30-second elapsed budget between records. These are scan bounds,
 not a hard deadline that interrupts a native cleanup call. Existing per-record
 journal, directory-tree, job-stop and sharing-retry bounds still apply.
 
-Each version-three record must match the expected root/runtime and pass the full
+Each version-three or version-four record must match the expected root/runtime and pass the full
 [journal validation](office-ownership-journal.md). A completed profile-deletion
 record is left unchanged. Pending records use the existing recovery API, which
 requires original-owner death, verifies the native profile and grant identities,
 stops the recorded worker job, and then permits permission/profile cleanup.
-The scanner does not resume rendering or publish/delete document files.
+The scanner does not resume rendering or publish outputs. Version-four retirement
+intent permits the completed temporary-file cleanup described below.
 
 Legacy, corrupt, torn, live-owner, aliased or changed records remain for review.
 An `office-<identity>` preparation directory without its corresponding journal
@@ -43,11 +44,81 @@ recovery information or batch state. Recovered interruptions offer Convert again
 unresolved records give their retained location. Missing/completed-only storage
 does not open a window.
 
-A completed ownership journal proves native profile cleanup only, not that its
-PDF was validated or published. Publication reconciliation and retention cleanup
-must remain part of the unfinished Office execution/publication integration.
+A profile-deleted entry proves native profile cleanup only, not that its PDF was
+validated or published. Only the later version-four retirement intent permits
+removing generated context files. Publication reconciliation remains separate.
 Office admission must await recovery before new Office work shares the runtime;
 the customer Office command is not enabled by this change.
+
+
+Completed-context retirement
+-----------------------------
+
+New application-prepared contexts use a version-four journal with the measured
+identities of all five generated directories. `RetirementIntent` is a terminal
+record written only after native profile cleanup and after the caller has
+finished using the context. This separates interrupted temporary cleanup from an
+interrupted export whose source snapshot and partial result should remain for
+review.
+
+The coordinator can now resume that recorded retirement after the exact writer
+has exited. It verifies native profile folder/mapping absence, stops any recorded
+worker job, and reuses bounded handle-based tree inspection/deletion. Remaining
+directories must match their durable identities. It accepts missing owned
+directories and a journal whose whole tree is already absent, permitting retry
+after deletion was interrupted. Replacements, hard links, live owners and newly
+present profiles stop cleanup with the evidence retained. Completed retirement
+leaves the context root empty and the next scan quiet.
+
+This does not delete version-three retained contexts, unconfirmed preparation,
+or version-four contexts lacking retirement intent. Those records keep their
+existing review/profile-recovery behavior. It does not resume conversion or
+reconcile publication records. Physical power-loss durability, preparation that
+failed before its journal, and visible application acceptance remain separate.
+
+`tools/office-engine/Test-OfficeRetirement.py --create-disposable-profiles`
+accepts one generated DOCX fixture under repository scratch. It exercises the
+actual native profile/grant owner and kills only its disposable writer after
+durable retirement intent, then invokes the same coordinator used by startup.
+The ordinary foundation variant uses authored native-lifecycle records and
+creates no Windows profile. No Office renderer is needed for either variant.
+
+All **3,434 foundation contracts** pass in
+`.codex-temp/office-preparation-foundation-58b8a886029945c8850becc935f666bf`.
+The additions cover version-four binding validation and round-trip persistence,
+worker-lifetime retention, terminal intent ordering, six killed-writer recovery
+cases and ordinary preparation. Repeated/missing/unknown binding fields and
+legacy records with invented bindings are refused. Version-three writes omit the
+new optional field entirely, preserving their original schema for older readers.
+The six recovery cases use
+complete, partly deleted, replaced child/root, linked-file and journal-only states.
+The partial deletion and journal-only boundaries are constructed fixture states;
+the writer is actually killed after intent and before file deletion.
+
+All **40 native retirement checks** pass in
+`.codex-temp/office-retirement/fb8a8fe708e341cda9baada87c938720`.
+Seven cases create and clean real Windows profiles/grants. The additional case
+recreates one profile after recorded cleanup and verifies that recovery leaves it
+and the context untouched until its actual new owner removes it. Thus the final
+run makes eight profile creations across seven names. It starts no Office renderer
+and performs no conversion. All original bytes/times and the runtime sentinel
+remain unchanged. The wrapper records exit zero and unchanged inputs; the contract
+and application test hosts build in Release without warnings/errors.
+
+The preceding native runs `7a669b4a4def45f8bdfbb2ecb70960b4`,
+`a8e87324e34c4345bc38b32601209a1f` and `f186d1e06cd949efac4db80e6919cbbf`
+also passed 40 checks before the final journal regression and version-three
+serialization compatibility correction. Final verification in
+`.codex-temp/office-restart-retirement-verification.json` checks the final sources
+and confirms all 28 distinct profile folders/mappings and context trees from the
+four runs are absent, with no test owner, worker or Office host remaining.
+
+The earlier 43 real-export checks, independent PDF comparisons and actual WPF
+startup lifecycle runs were not rerun for this change. The new tests invoke the
+same recovery coordinator from disposable test processes. Actual-app restart
+acceptance with version-four contexts and customer Office command integration
+remain open, along with incomplete-preparation retention and broader packaging.
+No reserved production payload, installed state or visible acceptance changed.
 
 
 Verification

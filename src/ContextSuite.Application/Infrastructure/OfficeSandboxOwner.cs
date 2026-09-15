@@ -45,6 +45,17 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
         catch { directory.Dispose(); throw; }
     }
 
+    internal static void RequireProfileAbsent(string name)
+    {
+        var path = OfficeOwnershipJournal.ExpectedProfileDirectory(name);
+        var absent = false;
+        try { _ = File.GetAttributes(path); }
+        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException) { absent = true; }
+        using var mapping = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+            @"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Mappings\" + OfficeOwnershipJournal.ProfileSid(name));
+        if (!absent || mapping is not null) throw new IOException("The Office profile still exists; retain temporary files for review.");
+    }
+
     internal static OfficeSandboxOwner Create(string name)
     {
         var suffix = name.StartsWith("ContextSuite.Office.Evaluation.", StringComparison.Ordinal)

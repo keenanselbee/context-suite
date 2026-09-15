@@ -12,6 +12,20 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--office-retirement-hold", var retirementStage, var retirementMode] && retirementMode is "native" or "authored")
+{
+    await OfficeRetirementContracts.HoldAsync(retirementStage, retirementMode == "native");
+    return 0;
+}
+if (args is ["--office-retirement-native", var retirementEvidence, var retirementFixture])
+{
+    var checks = 0;
+    await OfficeRetirementContracts.RunAsync(retirementEvidence, File.ReadAllBytes(retirementFixture), (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); }, native: true);
+    Console.WriteLine($"Passed {checks} native Office retirement checks.");
+    return 0;
+}
+
 if (args is ["--office-execution-cleanup", var cleanupWorker, var cleanupFixtures, var cleanupEvidence])
 {
     await OfficeExecutionContracts.RunCleanupAsync(cleanupWorker, cleanupFixtures, cleanupEvidence);
