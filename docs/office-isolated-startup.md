@@ -7,6 +7,11 @@ and fresh read-only input copies resolve the recorded loading failures. Broader
 fidelity, hostile-content/recovery checks, network enforcement and required
 customer conversion remain open.
 
+The subsequent [passive failure/recovery evaluation](office-embedded-recovery.md)
+records 24 passing normal exports after malformed-input and marker-confirmed
+forced stops. It also finds that the renderer accepts zero-byte Office files as
+new documents, so application source admission remains necessary.
+
 Purpose and boundary
 --------------------
 

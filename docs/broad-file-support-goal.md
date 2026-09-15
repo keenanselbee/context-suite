@@ -177,6 +177,15 @@ a fresh read-only input copy. Earlier ordinary failures were also affected by
 retained lock files from interrupted tests. Broader fidelity, hostile-content and
 recovery checks, network enforcement and customer conversion remain open.
 
+The [passive Office failure/recovery matrix](office-embedded-recovery.md) records
+three truncated-input refusals, six marker-confirmed forced stops and 24 passing
+normal exports afterward, with independent output checks and file release.
+The renderer accepts all three zero-byte Office inputs as new documents; this
+keeps source admission explicitly open. Existing analysis distinguishes those
+inputs from content-identified packages, but is not complete rendering or safety
+validation. Mid-render cancellation, owner crashes and customer integration remain
+separate work.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The
@@ -455,8 +464,9 @@ Prioritize the remaining work in this order:
    pass in both controls. Broader fidelity, hostile-content/recovery and network
    enforcement remain open. The
    separate elevated read-only network-event query still awaits authorization.
-   Expand the document and interruption matrix through the verified Windows main-loop
-   lifecycle. The small authored matrix does not clear the remaining isolation or adoption gates.
+   Add source admission that rejects empty/unidentified Office inputs, then extend
+   interruption tests to active rendering and owner crashes through the verified
+   Windows main-loop lifecycle. The small authored matrix does not clear the remaining isolation or adoption gates.
 2. Settle the concrete Office policies exposed by experiments:
    [Excel calculation](excel-calculation-evaluation.md),
    [early date systems](excel-date-system-evaluation.md),

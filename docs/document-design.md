@@ -298,6 +298,15 @@ document-preserving optimization. Reject or explain unsupported signed/encrypted
 inputs; do not silently remove protections or alter signed content under a
 preservation claim.
 
+Office conversion must determine an explicitly supported source variant from
+content before rendering. Reject zero-byte or structurally unidentified Office
+inputs; neither a filename hint nor renderer success establishes a valid source.
+The [passive embedded evaluation](office-embedded-recovery.md) demonstrates that
+the engine creates PDFs from zero-byte DOCX/XLSX/PPTX inputs. Bounded Analyze
+identity remains useful preflight evidence, not complete document or safety
+validation. Keep its read-only fallback available when conversion is refused.
+
+
 Output and acceptance
 ---------------------
 
