@@ -45,6 +45,7 @@ def main():
                root / "src/ContextSuite.Application/Infrastructure/WorkerClient.cs",
                root / "src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs",
                root / "src/ContextSuite.Application/Infrastructure/OfficeSandboxOwner.cs", Path(__file__)]
+    inputs += [root / "src/ContextSuite.Application/Infrastructure/OfficeContextPreparation.cs"]
     inputs += [root / "src/ContextSuite.Application/Infrastructure/OfficeOwnershipJournal.cs",
                root / "src/ContextSuite.Application/Infrastructure/PublicationFiles.cs"]
     sources = {str(path.relative_to(root)): digest(path) for path in inputs}
@@ -79,7 +80,7 @@ def main():
         raise RuntimeError(f"Office interruption check failed; inspect logs and owned profile receipts before retrying: {scratch}")
     report = json.loads((scratch / "contracts/results.json").read_text(encoding="utf-8"))
     modes = ["cancel", "worker-loss", "deadline"] if args.mode == "all" else [args.mode]
-    expected_checks = 81 if args.mode == "owner-loss" else 30 * len(modes)
+    expected_checks = 90 if args.mode == "owner-loss" else 30 * len(modes)
     if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != expected_checks:
         raise RuntimeError("Missing complete interruption evidence.")
     if any(digest(Path(name)) != expected for name, expected in fixtures.items()):

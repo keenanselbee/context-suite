@@ -37,6 +37,7 @@ def main():
               root / "src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs",
               root / "src/ContextSuite.Application/Infrastructure/OfficeSandboxOwner.cs", root / "src/Shared/LocalPipe.cs",
               root / "src/ContextSuite.Application/Infrastructure/OfficeOwnershipJournal.cs",
+              root / "src/ContextSuite.Application/Infrastructure/OfficeContextPreparation.cs",
               root / "src/ContextSuite.Application/Infrastructure/PublicationFiles.cs",
               root / "src/ContextSuite.Core/Transport/Messages.cs", root / "src/ContextSuite.Worker/Program.cs",
               root / "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeWorkerContracts.cs",

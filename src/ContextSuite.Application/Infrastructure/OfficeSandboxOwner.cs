@@ -41,7 +41,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     internal static IDisposable LeaseDirectory(string path)
     {
         var directory = new Grant(ValidatePath(path), ReadAccess);
-        try { directory.Open(); return directory; }
+        try { directory.Open(requireAclWrite: false); return directory; }
         catch { directory.Dispose(); throw; }
     }
 
@@ -345,7 +345,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
             BinaryPrimitives.WriteUInt64LittleEndian(identifier[8..], value.High);
             return FormattableString.Invariant($"{value.Volume:X16}") + Convert.ToHexString(identifier);
         }
-        internal void Open()
+        internal void Open(bool requireAclWrite = true)
         {
             var chain = new Stack<string>();
             for (var current = Path; current is not null; current = System.IO.Path.GetDirectoryName(current)) chain.Push(current);
@@ -354,7 +354,7 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                 // FILE_LIST_DIRECTORY participates in sharing checks; an
                 // attributes-only handle does not prevent directory renaming.
                 var native = current.Length < 260 ? current : @"\\?\" + current;
-                var handle = CreateFile(native, current == Path ? 0x60081U : 0x81U, 3, IntPtr.Zero, 3, 0x02200000, IntPtr.Zero);
+                var handle = CreateFile(native, current == Path && requireAclWrite ? 0x60081U : 0x81U, 3, IntPtr.Zero, 3, 0x02200000, IntPtr.Zero);
                 if (handle.IsInvalid) { var error = Marshal.GetLastWin32Error(); handle.Dispose(); throw new Win32Exception(error); }
                 _handles.Add(handle);
                 if (!GetFileInformationByHandleEx(handle, 9, out var attributes, (uint)Marshal.SizeOf<AttributeTag>()) ||

@@ -5,7 +5,17 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [actual Office owner-loss acceptance](office-ownership-journal.md#application-loss-during-office-rendering)
+The latest [Office context preparation](office-context-preparation.md) moves
+source copying into application code. It holds the original and read-only
+snapshot, verifies content and file identity, and records durable intent before
+the caller creates a native profile. All 3,221 foundation contracts pass,
+including 48 new preparation checks. All 90 actual worker checks also pass using
+application-created contexts for owner crashes and following exports. Three PDFs
+pass independent inspection and all six profiles/jobs are removed. Customer
+orchestration, startup recovery, production PDF validation and copy publication
+remain unfinished.
+
+The preceding [actual Office owner-loss acceptance](office-ownership-journal.md#application-loss-during-office-rendering)
 passes 81 checks across Word, Excel and PowerPoint. Killing only the owner during
 live rendering permits journal-based process/profile recovery; three following
 exports pass independent PDF inspection. All six profiles and named jobs are

@@ -27,6 +27,7 @@
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\WorkerProcessJob.cs" Link="Runtime\WorkerProcessJob.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OfficeSandboxOwner.cs" Link="Runtime\OfficeSandboxOwner.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OfficeOwnershipJournal.cs" Link="Runtime\OfficeOwnershipJournal.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OfficeContextPreparation.cs" Link="Runtime\OfficeContextPreparation.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\SettingsStore.cs" Link="Runtime\SettingsStore.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\LocalTrialStore.cs" Link="Runtime\LocalTrialStore.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ImageBatchExecutor.cs" Link="Runtime\ImageBatchExecutor.cs" />

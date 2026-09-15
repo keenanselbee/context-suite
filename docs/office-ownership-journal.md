@@ -386,3 +386,9 @@ descendant recovery, concurrent replacement and the other documented integration
 gates remain open. Excel uses explicit cached values in these fixtures; the
 customer calculation default remains undecided. The reserved production payload
 is unchanged, and no visual or installed-shell acceptance is implied.
+
+The subsequent [application context preparation](office-context-preparation.md)
+now creates and verifies the original/snapshot leases and durable intent before
+native profile creation. Both actual crash fixtures and following exports use
+that factory in a new 90-check replay. Production startup recovery, independent
+PDF validation/publication and the customer command remain open.
