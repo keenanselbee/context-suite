@@ -338,6 +338,11 @@ only caller-supplied owned directories, preserves unrelated ACL entries and
 retains failed cleanup for retry. Persisted recovery, runtime context construction
 and the customer workflow remain unfinished.
 
+The [runtime verification checkpoint](office-runtime-verification.md) adds pinned
+host/inventory checks and read leases over the complete candidate payload. Thirty
+contracts cover membership, sharing and failure cleanup. Connecting that lease
+to the application-owned context and actual worker execution remains pending.
+
 
 Output and acceptance
 ---------------------

@@ -325,3 +325,12 @@ test because the event window is ten minutes. Evidence stays in that case's
 new diagnostic directory. The reader neither enables tracing nor changes firewall
 rules or loopback exemptions. Empty events, matching filters alone and successful
 queries do not prove network denial.
+
+`Test-OfficeRuntime.py --copy-receipt <office-copy.json> --host-receipt <build.json>`
+verifies the complete pinned candidate without executing Office or creating a
+Windows profile. It writes a new scratch inventory, builds the private contracts
+and records source/build hashes plus runtime membership and lease assertions.
+The underlying `Write-OfficeRuntimeInventory.py <office-copy.json> <new-output>`
+only writes the exact pinned inventory inside repository scratch; it does not
+verify or stage the payload itself. See the [runtime verification boundary and
+evidence](../../docs/office-runtime-verification.md).

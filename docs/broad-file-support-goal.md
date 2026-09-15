@@ -237,6 +237,12 @@ three Office export regressions pass with the stronger native handle. Production
 context construction, worker routing, validation/publication and persisted
 application-crash recovery remain open.
 
+The [Office runtime verifier](office-runtime-verification.md) pins and holds the
+host and all 19,332 candidate runtime files, with explicit empty-directory
+membership. Thirty checks pass for altered/missing/extra entries, write/rename
+sharing and cleanup. This supplies the payload lease needed for worker integration;
+it does not yet add worker routing, PDF validation or customer Office conversion.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The
