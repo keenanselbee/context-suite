@@ -1,8 +1,8 @@
 Office Startup Recovery
 =======================
 
-Status: background startup integration implemented; bounded application lifecycle
-cases verified separately from native recovery and visible acceptance.
+Status: background startup integration and actual-app recovery of abandoned
+native work verified; customer Office execution and visible acceptance remain open.
 
 The application starts `OfficeRecoveryCoordinator` after it owns the activation
 router. It runs off the dispatcher, so recovery does not hold up activation or
@@ -104,9 +104,10 @@ both native ownership replays: twelve absent profiles, 244 journal frames and
 44 grant-directory identities. The application Release build passes with zero
 warnings/errors; its log is `.codex-temp/office-startup-application-build.log`.
 
-Full application startup/forwarding/shutdown with a genuinely abandoned native
-Office profile, additional themes/DPI, cross-session recovery, production PDF
-validation/publication and remaining commerce/installer gates remain open.
+The actual-app recovery follow-up below now covers abandoned native profiles.
+Additional themes/DPI, cross-session recovery, customer Office execution,
+production PDF validation/publication and remaining commerce/installer gates
+remain open.
 
 
 Application lifecycle checks
@@ -165,5 +166,55 @@ this is current-source test-host evidence, not a new packaged candidate.
 These tests observe window visibility and programmatically request close, but do
 not inspect rendered layout, keyboard behavior, screen-reader delivery or other
 themes/DPI. Locked authored journals test application waiting/forwarding, not
-native profile cleanup through the full application. The separate 99-check crash
-run above proves coordinator/native recovery; combining the two remains a gate.
+native profile cleanup through the full application. The subsequent run below
+connects the actual application to the native crash fixture.
+
+
+Actual application recovery of native work
+-----------------------------------------
+
+The opt-in `app-recovery` mode of `tools/office-engine/Test-OfficeWorkerStop.py`
+now prepares its contexts under the application's actual
+`WorkerScratch/OfficeContexts` layout. The harness owner uses application source
+preparation, grants a disposable native profile and dispatches the real renderer.
+Only after observing PDF growth and the exact live worker/host identities does
+the harness kill that owner. A fresh WPF test application then uses ordinary
+`App.OnStartup` recovery, shows the retained-work guidance and closes through the
+real close handler. It does not resume rendering or publish the interrupted PDF.
+
+All **99 worker checks** and **18 application lifecycle checks** pass at
+`.codex-temp/office-worker/0573faec0473408693fdf7123b27156a`. Word, Excel and
+PowerPoint each pass six actual-app checks. The 99-check harness total includes
+the subsequent 66 ordinary export checks; do not count those twice. Three
+completed PDFs pass independent structure, authored text, geometry and exact
+control-pixel checks under
+`contracts/inspection-39e45cdc13974ca0bab82a1db3e8f04f`.
+
+The first run at `0ff27f4e804848ef8f0156f386d39966` passed Word but exceeded the
+two-minute application observation deadline on Excel. It is a failed run, even
+though fallback cleanup succeeded. The test now records dispatcher heartbeat,
+journal byte count, CPU/memory and recovery task status, with a three-minute
+observation bound. No production deadline changed. The successful replay's app
+cases finish in 5.7-6.2 seconds and show journal progress; this does not establish
+the cause of the first delay or worst-case recovery latency. That performance
+uncertainty remains open.
+
+`.codex-temp/office-native-app-verification.json` reconciles the final source and
+application/worker binaries, all eight profiles/jobs across both attempts, 216
+journal frames, 40 grant-directory identities and eight unchanged source
+snapshots. Its 23,729-entry ACL scan finds no test SIDs. The three final interrupted
+PDFs are retained with checked hashes. The earlier failed run also has a separate
+`.codex-temp/office-native-app-failure-cleanup.json` receipt; cleanup is explicitly
+distinguished from test success. Both test hosts build with zero warnings/errors.
+All 42 existing application lifecycle checks also pass again at
+`.codex-temp/office-app-lifecycle/b6bd4cee86d64fb2a0ca2ab6cea3e512`, with the input
+receipt under `.codex-temp/office-app-lifecycle-run-58a8ddc3fbcf42dd8560ab8505f0b2a3`.
+The 3,238 foundation contracts were not rerun; their recorded source hashes still
+match the unchanged product implementation.
+
+The recovering app is real, but the original crashing owner is the isolated
+renderer harness. Customer Office admission/execution/publication is still absent,
+so this is not an end-to-end customer conversion or new packaged release. The
+existing candidate remains unchanged. Rendered layout, keyboard behavior,
+screen-reader delivery, other themes/DPI and installed-shell acceptance were not
+tested by these programmatic lifecycle checks.

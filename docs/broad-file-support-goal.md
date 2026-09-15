@@ -13,8 +13,12 @@ exports; three PDFs pass independent inspection. All seven profiles/jobs,
 including the earlier timed-out attempt, are removed. A subsequent actual-app
 lifecycle run passes 42 checks across absent/completed/uncertain records,
 forwarded Analyze during recovery and explicit shutdown waiting. This uses
-authored journals; full app recovery of an abandoned native profile, Office
-admission, PDF validation and copy publication remain open.
+authored journals. The subsequent native `app-recovery` run passes 99 worker and
+18 actual-app checks, with three independently inspected following PDFs. All
+eight profiles/jobs across the final and failed attempts are gone. The final app
+cases take 5.7-6.2 seconds; the earlier Excel observation timeout remains an
+unexplained latency case. Customer Office admission, PDF validation and copy
+publication remain open.
 
 The preceding [Office context preparation](office-context-preparation.md) moves
 source copying into application code. It holds the original and read-only
