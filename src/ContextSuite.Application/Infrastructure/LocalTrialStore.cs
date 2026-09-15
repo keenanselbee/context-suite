@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Pdf;
+using ContextSuite.Core.Office;
 
 namespace ContextSuite.Application.Infrastructure;
 
@@ -17,6 +18,14 @@ internal sealed record TrialAdmission(LocalTrialStatus Status, Guid BatchId, Dat
 // Local trial bookkeeping only. No key validation, hidden copies, reset switch or permissive fallback.
 internal sealed class LocalTrialStore : IOperationAccess
 {
+    async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedOfficeConversion confirmed, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm();
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
     async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedImagePdf confirmed, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(confirmed);

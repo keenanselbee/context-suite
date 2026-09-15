@@ -2,6 +2,7 @@ using ContextSuite.Core.Images;
 using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Pdf;
+using ContextSuite.Core.Office;
 
 namespace ContextSuite.Application.Infrastructure;
 
@@ -14,6 +15,8 @@ internal interface IOperationAccess
 {
     Task<OperationAccessStatus> ReadAccessAsync(CancellationToken cancellationToken = default);
     Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken cancellationToken);
+    Task<OperationAdmission> AdmitConversionAsync(ConfirmedOfficeConversion confirmed, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("This access implementation does not admit Office conversions.");
     Task<OperationAdmission> AdmitConversionAsync(ConfirmedImagePdf confirmed, CancellationToken cancellationToken) =>
         throw new NotSupportedException("This access implementation does not admit combined PDF conversion.");
     Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfPageConversion confirmed, CancellationToken cancellationToken) =>
@@ -31,6 +34,15 @@ internal interface IOperationAccess
 // bookkeeping entirely; only an unactivated installation may use its trial.
 internal sealed class OperationAccess(LocalTrialStore trial, PaidLicenseManager paid) : IOperationAccess
 {
+    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedOfficeConversion confirmed, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm();
+        var status = await paid.ReadStatusAsync(cancellationToken);
+        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
+        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+    }
+
     public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedImagePdf confirmed, CancellationToken cancellationToken)
     {
         _ = confirmed.Plan.Confirm(true);

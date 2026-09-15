@@ -44,6 +44,11 @@ internal static class LicenseStorageContracts
         var pageAdmission = await access.AdmitConversionAsync(pdfPages, default);
         var imagePdf = ContextSuite.Core.Pdf.ImagePdfPlan.Create(Guid.NewGuid(), [facts], new("convert", new())).Confirm(false);
         var imagePdfAdmission = await access.AdmitConversionAsync(imagePdf, default);
+        var office = ContextSuite.Core.Office.OfficeConversionPlan.Create(Guid.NewGuid(),
+            [new(Guid.NewGuid(), Path.Combine(root, "document.docx"), "docx", "none", 100, new string('E', 64))], new("convert", new())).Confirm();
+        var officeAdmission = await access.AdmitConversionAsync(office, default);
+        check(officeAdmission.IsAllowed && officeAdmission.BatchId == office.Plan.BatchId && !File.Exists(trialPath),
+            "license: paid Office conversion admits without starting trial");
         check(imagePdfAdmission.IsAllowed && imagePdfAdmission.BatchId == imagePdf.Plan.BatchId && !File.Exists(trialPath),
             "license: paid combined PDF admission does not start trial");
         check(pageAdmission.IsAllowed && pageAdmission.BatchId == pdfPages.Plan.BatchId && !File.Exists(trialPath),
@@ -87,6 +92,8 @@ internal static class LicenseStorageContracts
             "license: paid PDF page expiry preserves admission and cannot fall back to trial");
         check(imagePdfAdmission.IsAllowed && !(await access.AdmitConversionAsync(imagePdf, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid combined PDF expiry preserves admission and cannot fall back to trial");
+        check(officeAdmission.IsAllowed && !(await access.AdmitConversionAsync(office, default)).IsAllowed && !File.Exists(trialPath),
+            "license: paid Office expiry preserves admission and cannot fall back to trial");
         check(audioAdmission.IsAllowed && !(await access.AdmitConversionAsync(audioConversion, default)).IsAllowed && !File.Exists(trialPath),
             "license: paid audio conversion expiry preserves admission and cannot fall back to trial");
         clock.Now = clock.Now.AddDays(-2);

@@ -5,6 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office batch admission](office-pdf-validation.md#office-batch-admission)
+now preserves one settings snapshot and explicit calculation policy for one PDF
+copy per document. All 3,338 foundation contracts pass, including 28 new bounded
+selection, trial and paid-admission checks. The Release application test host
+builds without warnings/errors. Customer command dispatch and the complete
+export/validation/publication transaction remain unfinished.
+
 The [Office PDF worker dispatch](office-pdf-validation.md#worker-dispatch-and-interruption)
 now passes 71 actual-worker checks, including active cancellation, deliberate
 worker termination, scratch cleanup and successful following work. All 3,310

@@ -1,7 +1,7 @@
 Office PDF Validation
 =====================
 
-Status: independent validation and worker dispatch verified; customer Office execution and
+Status: batch admission, independent validation and worker dispatch verified; customer Office execution and
 publication integration remain unfinished.
 
 An Office host completion acknowledges an export; it does not authorize final
@@ -140,11 +140,46 @@ have zero warnings/errors. No Office export or native profile is created by thes
 runs. Existing native Office recovery evidence remains separate.
 
 
+Office batch admission
+----------------------
+
+The application now has an immutable `OfficeConversionPlan` and the matching
+paid/trial admission path. It represents one PDF per selected DOCX, XLSX or PPTX,
+retains selection order and the settings snapshot, and rejects duplicate IDs,
+duplicate normalized paths, invalid format/policy combinations and over-budget
+selections. Bounds are 4,096 files, one million total path characters and the
+existing 64 MiB per-document source limit. Execution remains sequential.
+
+Excel requires either `cached` or `recalculate`; neither is inferred by this
+component. Word and PowerPoint require `none`. The owner's customer Excel default
+is still pending. These are internal policy values, not new user-facing controls.
+Confirmation creates no files or profile and is not a rendering admission proof:
+the eventual executor must match each source's preflight identity when preparing
+the isolated context. The plan always requests copies, including with the saved
+overwrite preference. Office replacement is not enabled; this limitation is
+recorded in the [capability table](file-type-coverage.md).
+
+Only a valid confirmed batch reaches access admission. The selected paid state
+is authoritative; expired paid access cannot start a new trial. A previously
+unactivated installation uses the ordinary trial record. Once admitted, the batch
+keeps that admission through later expiry. This adds no licensing transport or
+customer UI and does not launch the Office engine.
+
+All 3,338 foundation contracts pass in
+`.codex-temp/office-preparation-foundation-ba91ec9d8a10422f9d1bf3284d690ea1`,
+including 28 new plan/admission checks. They cover the selection and policy
+bounds, cancellation before trial creation, trial expiry, paid admission without
+trial creation, and paid expiry without trial fallback. Licensing uses the
+existing synthetic service, without live Polar calls. The Release application
+test host builds with zero warnings/errors. Earlier 71-worker/57-reader evidence
+above was not rerun for this admission-only change.
+
+
 Remaining work
 --------------
 
-Connect worker validation to application Office admission, execution, safe copy
-publication, cancellation and recovery. Exercise cancellation during copying,
+Connect the admitted plan to Office context preparation, execution, worker
+validation, safe copy publication, cancellation and recovery. Exercise cancellation during copying,
 caller reservation cleanup, publication failure and resource limits through that
 integrated path. Broader Office fidelity,
 the owner's Excel calculation default, fresh combined packaging and actual
