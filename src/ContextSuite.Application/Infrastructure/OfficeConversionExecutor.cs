@@ -96,7 +96,12 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
                 try
                 {
                     await CleanNativeAsync(context);
-                    context.Prepared.Dispose();
+                    if (context.Prepared.Journal.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted)
+                    {
+                        report?.Invoke(new(source.Path, OperationState.Running, "Removing temporary files"));
+                        await Task.Run(context.Prepared.Retire);
+                    }
+                    else context.Prepared.Dispose();
                 }
                 catch (Exception error) when (Expected(error))
                 {
@@ -111,7 +116,12 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
             }
         }
         if (failure is null) return result ?? throw new InvalidOperationException("Office conversion produced no outcome.");
-        if (result?.Publication?.IsCommitted == true) return result;
+        if (result?.Publication?.IsCommitted == true)
+        {
+            const string cleanupMessage = "PDF saved. Temporary files still need cleanup. Close Context Suite and reopen it before converting more Office files.";
+            return result with { Message = cleanupMessage, Publication = result.Publication with
+                { Message = cleanupMessage, CleanupWarning = true, RecoveryRecordPath = context?.RecordPath } };
+        }
         if (context is not null && _pending.Contains(context))
             return new(source.Path, OperationState.Failed, "Office cleanup needs attention. Original and recovery records were kept. Close Context Suite and reopen it before retrying.",
                 new(source.Path, PublicationOutcome.Failed, "Office cleanup needs attention.", RecoveryRecordPath: context.RecordPath));
@@ -144,7 +154,9 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
             foreach (var context in _pending.ToArray())
             {
                 await CleanNativeAsync(context);
-                context.Prepared.Dispose();
+                if (context.Prepared.Journal.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted)
+                    await Task.Run(context.Prepared.Retire);
+                else context.Prepared.Dispose();
                 _pending.Remove(context);
             }
         }

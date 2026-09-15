@@ -11,7 +11,8 @@ internal static class OfficeWorkerInspection
             !control.Contains("\\.codex-temp\\office-isolation\\", StringComparison.OrdinalIgnoreCase))
             throw new IOException("Use completed worker evidence and retained isolated controls.");
         using var report = JsonDocument.Parse(File.ReadAllText(reportPath));
-        if (!report.RootElement.GetProperty("Passed").GetBoolean() || report.RootElement.GetProperty("Reports").GetArrayLength() != 3)
+        var reportCount = report.RootElement.GetProperty("Reports").GetArrayLength();
+        if (!report.RootElement.GetProperty("Passed").GetBoolean() || (applicationOutputs ? reportCount is not (3 or 4) : reportCount != 3))
             throw new IOException("Worker export and cleanup must pass before PDF inspection.");
         PdfTextReader.Initialize(Path.Combine(Path.GetDirectoryName(pdfium)!, "pdfium.dll"));
         var folder = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(reportPath))!, "inspection-" + Guid.NewGuid().ToString("N"));

@@ -82,6 +82,80 @@ internal static partial class DocumentAnalysisContracts
         check(Directory.GetFileSystemEntries(root).Length == countBefore,
             "Office preparation refusals create neither contexts nor ownership records");
 
+        // Authored completed journals exercise file retirement only. No Windows
+        // profile is created here; actual profile removal is tested separately.
+        foreach (var scenario in new[] { "complete", "locked", "linked", "unexpected", "replaced", "deep" })
+        {
+            var source = Path.Combine(originals, "retire-" + scenario + ".docx");
+            var bytes = OpenXml("docx"); File.WriteAllBytes(source, bytes);
+            var written = File.GetLastWriteTimeUtc(source);
+            using var prepared = await OfficeContextPreparation.CreateAsync(root, runtime, source, "docx", "none", default);
+            var work = prepared.Work;
+            var record = Path.Combine(root, work.ItemId.ToString("N") + ".ownership");
+            Refuses(prepared.Retire, "Office retirement refuses incomplete profile intent: " + scenario);
+            prepared.Journal.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName),
+                OfficeOwnershipJournal.ExpectedProfileDirectory(work.ProfileName), new string('A', 48)));
+            prepared.Journal.Record(new(OfficeOwnershipStep.CleanupIntent));
+            prepared.Journal.Record(new(OfficeOwnershipStep.DeleteIntent));
+            prepared.Journal.Record(new(OfficeOwnershipStep.ProfileDeleted));
+            var cache = Path.Combine(work.DirectoryPath, "temp", "cache.bin"); File.WriteAllText(cache, "owned temporary bytes");
+            if (scenario is "locked" or "replaced")
+            {
+                using (var locked = new FileStream(cache, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                {
+                    Refuses(prepared.Retire, "Office retirement refuses a locked child before deleting: " + scenario);
+                    check(File.Exists(work.SourcePath) && File.Exists(record), "Office locked retirement keeps snapshot and journal: " + scenario);
+                    Refuses(() => { using var writer = new FileStream(source, FileMode.Open, FileAccess.Write, FileShare.Read); },
+                        "Office retirement failure retains the original lease: " + scenario);
+                }
+            }
+            if (scenario == "replaced")
+            {
+                var input = Path.Combine(work.DirectoryPath, "input"); var moved = Path.Combine(root, "held-" + work.ItemId.ToString("N"));
+                check(Path.GetDirectoryName(input) == work.DirectoryPath && Path.GetDirectoryName(moved) == root &&
+                    work.DirectoryPath.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase),
+                    "Office directory-substitution fixture stays in its owned context");
+                Directory.Move(input, moved); Directory.CreateDirectory(input);
+                try { prepared.Retire(); check(false, "Office retirement refuses a replaced owned directory"); }
+                catch (IOException error) { check(error.Message.Contains("directory identity changed", StringComparison.Ordinal),
+                    "Office retirement identifies the replaced directory before deletion"); }
+                check(File.Exists(Path.Combine(moved, "source.docx")) && File.Exists(cache) && File.Exists(record),
+                    "Office directory substitution preserves all existing evidence");
+                Directory.Delete(input); Directory.Move(moved, input);
+            }
+            if (scenario == "linked")
+            {
+                var linked = Path.Combine(work.DirectoryPath, "temp", "source-alias.docx");
+                if (!CreateHardLink(linked, source, IntPtr.Zero)) throw new Win32Exception(Marshal.GetLastWin32Error());
+                Refuses(prepared.Retire, "Office retirement refuses a hard-linked child before deletion");
+                check(File.Exists(work.SourcePath) && File.Exists(cache) && File.Exists(record), "Office hard-link refusal keeps all context evidence");
+                File.Delete(linked);
+            }
+            if (scenario == "unexpected")
+            {
+                var unrelated = Path.Combine(work.DirectoryPath, "unrelated.txt"); File.WriteAllText(unrelated, "keep");
+                Refuses(prepared.Retire, "Office retirement refuses an unexpected context-root file");
+                check(File.ReadAllText(unrelated) == "keep" && File.Exists(work.SourcePath), "Office unexpected file is preserved");
+                File.Delete(unrelated);
+            }
+            if (scenario == "deep")
+            {
+                var child = Path.Combine(work.DirectoryPath, "temp");
+                for (var index = 0; index < 33; index++) { child = Path.Combine(child, "d"); Directory.CreateDirectory(child); }
+                Refuses(prepared.Retire, "Office retirement bounds directory depth before deletion");
+                check(File.Exists(work.SourcePath) && File.Exists(cache) && File.Exists(record), "Office over-depth retirement retains evidence");
+            }
+            else
+            {
+                prepared.Retire();
+                check(!Directory.Exists(work.DirectoryPath) && !File.Exists(record), "Office retirement removes generated context and journal: " + scenario);
+                using var exclusive = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.None);
+                check(true, "Office retirement releases the original lease after cleanup: " + scenario);
+            }
+            check(File.ReadAllBytes(source).SequenceEqual(bytes) && File.GetLastWriteTimeUtc(source) == written && Directory.Exists(runtime),
+                "Office retirement preserves original bytes/time and the runtime: " + scenario);
+        }
+
         void Refuses(Action action, string name)
         {
             try { action(); check(false, name); }

@@ -89,7 +89,7 @@ def main():
     if any(digest(root / name) != expected for name, expected in sources.items()):
         raise RuntimeError("Source drift before execution.")
     print("Starting one disposable profile cleanup/retry check." if args.cleanup_only else
-          "Starting five disposable Office exports and application publication checks.", flush=True)
+          "Starting six disposable Office exports and application publication checks.", flush=True)
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
         run = subprocess.run([str(host), "--office-execution-cleanup" if args.cleanup_only else "--office-execution", str(worker_root / "ContextSuite.Worker.exe"), str(fixtures), str(stage / "contracts")],
                              cwd=root, stdout=output, stderr=error)
@@ -100,7 +100,7 @@ def main():
     if run.returncode or not unchanged:
         raise RuntimeError("Office execution failed; inspect retained context journals and profile cleanup before retrying: " + str(stage))
     report = json.loads((stage / "contracts/results.json").read_text(encoding="utf-8"))
-    if not report.get("Passed") or len(report.get("Profiles", [])) != (1 if args.cleanup_only else 5) or not all(profile["Removed"] for profile in report["Profiles"]):
+    if not report.get("Passed") or len(report.get("Profiles", [])) != (1 if args.cleanup_only else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
         raise RuntimeError("Missing complete execution and cleanup evidence.")
 
 

@@ -5,6 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office live-context retirement](office-pdf-validation.md#live-context-retirement-verification)
+follow-up passes 43 actual execution checks, ten native cleanup/retry checks and
+all 3,379 foundation contracts. All seven profiles and generated contexts are removed.
+Completed conversions remove their generated contexts; cleanup failure after
+publication keeps the PDF, reports a warning and supports cleanup retry without
+duplicate output. Three named PDFs pass independent text, geometry and pixel
+inspection. Retirement after restart/incomplete preparation, customer command
+wiring and broader expanded-release acceptance remain open.
+
 The [Office application transaction](office-pdf-validation.md#application-transaction)
 now joins admission, preparation, export, validation and copy publication. It
 passes 35 isolated execution checks and ten obstructed-cleanup/retry checks; all

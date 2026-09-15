@@ -54,17 +54,19 @@ internal static class OfficeExecutionContracts
             Check(held, "pending owner retains the original read lease while cleanup is uncertain");
         }
         finally { obstruction?.Dispose(); }
-        await executor.DisposeAsync();
-        Check(executor.PendingRecoveryRecords.Count == 0, "same executor completes cleanup after the obstruction is released");
-        var record = Directory.EnumerateFiles(contexts, "*.ownership").Single();
+        var record = executor.PendingRecoveryRecords.Single();
+        var retained = Path.Combine(root, "retained-journals"); Directory.CreateDirectory(retained);
+        var evidenceRecord = Path.Combine(retained, Path.GetFileName(record)); File.Copy(record, evidenceRecord);
         string profileName, sid;
-        using (var journal = OfficeOwnershipJournal.Open(record, contexts, worker.OfficeEngineDirectory))
+        using (var journal = OfficeOwnershipJournal.Open(evidenceRecord, contexts, worker.OfficeEngineDirectory))
         {
             profileName = journal.Owner.Work.ProfileName;
             sid = journal.Changes.Single(change => change.Step == OfficeOwnershipStep.ProfileCreated).Sid!;
-            Check(journal.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted,
-                "cleanup retry durably completes the original profile journal");
         }
+        await executor.DisposeAsync();
+        Check(executor.PendingRecoveryRecords.Count == 0, "same executor completes cleanup after the obstruction is released");
+        Check(!File.Exists(record) && !Directory.EnumerateFileSystemEntries(contexts).Any(),
+            "cleanup retry retires the completed profile journal and all generated context files");
         using var mapping = Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Mappings\" + sid);
         Check(mapping is null && !Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", profileName)),
             "retried profile folder and Windows mapping are absent");
@@ -74,7 +76,7 @@ internal static class OfficeExecutionContracts
         await worker.DisposeAsync();
         Check(worker.ProcessId is null, "cleanup retry leaves no worker running");
         File.WriteAllText(Path.Combine(root, "results.json"), JsonSerializer.Serialize(new { Passed = true, Checks = checks,
-            Reports = new[] { execution }, Profiles = new[] { new { ProfileName = profileName, Sid = sid, Removed = true, Journal = record } } },
+            Reports = new[] { execution }, Profiles = new[] { new { ProfileName = profileName, Sid = sid, Removed = true, Journal = evidenceRecord, ContextRetired = true } } },
             new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"Passed {checks.Count} Office pending-cleanup checks.");
         void Check(bool condition, string message)
@@ -88,6 +90,7 @@ internal static class OfficeExecutionContracts
             throw new InvalidDataException("Use a new repository Office execution evidence directory.");
         var originals = Path.Combine(root, "originals"); Directory.CreateDirectory(originals);
         var contexts = Path.Combine(root, "contexts");
+        var retained = Path.Combine(root, "retained-journals"); Directory.CreateDirectory(retained);
         var records = Path.Combine(root, "publications");
         var sources = new List<OfficeConversionSource>();
         var before = new Dictionary<string, (string Hash, DateTime Written)>();
@@ -106,7 +109,7 @@ internal static class OfficeExecutionContracts
         var plan = OfficeConversionPlan.Create(Guid.NewGuid(), sources, new("convert", new(ReplaceOriginals: true))).Confirm();
         var collision = Path.Combine(originals, OutputNames.Create(sources[0].Path, "convert", "pdf"));
         File.WriteAllText(collision, "existing unrelated output");
-        var first = await executor.ExecuteAsync(plan, result => Console.WriteLine(result.State + ": " + Path.GetFileName(result.Path) + ": " + result.Message), default);
+        var first = await executor.ExecuteAsync(plan, Capture, default);
         Check(first.Admission.IsAllowed && first.Results.Count == 3, "one admitted batch returns all three Office outcomes");
         foreach (var (result, source) in first.Results.Zip(sources))
         {
@@ -127,7 +130,7 @@ internal static class OfficeExecutionContracts
         await using (var failedExecutor = new OfficeConversionExecutor(worker, failedPublisher, access, contexts))
         {
             var failurePlan = OfficeConversionPlan.Create(Guid.NewGuid(), [sources[0]], new("convert", new(OutputDirectory: failedOutput))).Confirm();
-            var failed = await failedExecutor.ExecuteAsync(failurePlan, null, default);
+            var failed = await failedExecutor.ExecuteAsync(failurePlan, Capture, default);
             Check(failed.Results.Single().State == OperationState.Failed && !Directory.EnumerateFiles(failedOutput, "*.pdf").Any(),
                 "publication failure cannot report a PDF copy");
             Check(failedExecutor.PendingRecoveryRecords.Count == 0, "publication failure occurs after verified native cleanup");
@@ -139,7 +142,7 @@ internal static class OfficeExecutionContracts
         await using (var cancelledExecutor = new OfficeConversionExecutor(worker, cancelledPublisher, access, contexts))
         {
             var cancelPlan = OfficeConversionPlan.Create(Guid.NewGuid(), [sources[0], sources[1]], new("convert", new(OutputDirectory: cancelledOutput))).Confirm();
-            var cancelled = await cancelledExecutor.ExecuteAsync(cancelPlan, null, cancellation.Token);
+            var cancelled = await cancelledExecutor.ExecuteAsync(cancelPlan, Capture, cancellation.Token);
             Check(cancelled.Results.Count == 2 && cancelled.Results.All(result => result.State == OperationState.Cancelled),
                 "cancellation before publication cancels current and remaining documents");
             Check(!Directory.EnumerateFiles(cancelledOutput).Any() && cancelledExecutor.PendingRecoveryRecords.Count == 0,
@@ -148,8 +151,36 @@ internal static class OfficeExecutionContracts
         }
         Check(before.All(pair => Hash(pair.Key) == pair.Value.Hash && File.GetLastWriteTimeUtc(pair.Key) == pair.Value.Written),
             "all original bytes and modification times remain unchanged");
-        var journals = Directory.EnumerateFiles(contexts, "*.ownership").ToArray();
-        Check(journals.Length == 5, "only admitted started documents create five isolated contexts");
+        var warningOutput = Path.Combine(root, "warning-output"); Directory.CreateDirectory(warningOutput);
+        await using (var warningExecutor = new OfficeConversionExecutor(worker, publisher, access, contexts))
+        {
+            FileStream? obstruction = null;
+            try
+            {
+                var warningPlan = OfficeConversionPlan.Create(Guid.NewGuid(), [sources[0]], new("convert", new(OutputDirectory: warningOutput))).Confirm();
+                var warning = await warningExecutor.ExecuteAsync(warningPlan, result =>
+                {
+                    Capture(result);
+                    if (result.State != OperationState.Running || result.Message != "Removing temporary files") return;
+                    var context = Directory.EnumerateDirectories(contexts, "office-*").Single();
+                    obstruction = new FileStream(Path.Combine(context, "temp", "locked-cache.txt"), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
+                }, default);
+                Check(warning.Results.Single() is { State: OperationState.Succeeded, Publication: { IsCommitted: true, CleanupWarning: true } } &&
+                    File.Exists(warning.Results.Single().Publication!.OutputPath), "temporary cleanup failure preserves the published PDF and reports a warning");
+                Check(warningExecutor.PendingRecoveryRecords.Count == 1 && File.Exists(warningExecutor.PendingRecoveryRecords.Single()),
+                    "post-publication cleanup warning retains its journal for retry");
+                results.Add(warning);
+            }
+            finally { obstruction?.Dispose(); }
+            await warningExecutor.DisposeAsync();
+            Check(warningExecutor.PendingRecoveryRecords.Count == 0 && !Directory.EnumerateFileSystemEntries(contexts).Any(),
+                "post-publication cleanup retries without publishing another PDF");
+            Check(Directory.EnumerateFiles(warningOutput, "*.pdf").Count() == 1 && before.All(pair => Hash(pair.Key) == pair.Value.Hash &&
+                File.GetLastWriteTimeUtc(pair.Key) == pair.Value.Written), "cleanup retry preserves the one output and all original bytes/times");
+        }
+        var journals = Directory.EnumerateFiles(retained, "*.ownership").ToArray();
+        Check(journals.Length == 6, "only admitted started documents create six isolated contexts");
+        Check(!Directory.EnumerateFileSystemEntries(contexts).Any(), "all six completed contexts and journals are retired");
         var cleanup = new List<object>();
         foreach (var path in journals)
         {
@@ -161,8 +192,9 @@ internal static class OfficeExecutionContracts
             using var mapping = Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Mappings\" + sid);
             Check(mapping is null && !Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", work.ProfileName)),
                 work.Format + ": Windows profile folder and mapping are absent");
-            Check(Hash(work.SourcePath) == work.SourceSha256 && File.Exists(work.CandidatePath), work.Format + ": retained context source and candidate remain intact");
-            cleanup.Add(new { work.ProfileName, Sid = sid, Removed = true, Journal = path, work.CandidatePath });
+            Check(!Directory.Exists(work.DirectoryPath) && !File.Exists(work.SourcePath) && !File.Exists(work.CandidatePath),
+                work.Format + ": generated snapshot and candidate are removed after completion");
+            cleanup.Add(new { work.ProfileName, Sid = sid, Removed = true, Journal = path, work.CandidatePath, ContextRetired = true });
         }
         await worker.DisposeAsync();
         Check(worker.ProcessId is null && !Directory.EnumerateFiles(Path.Combine(root, "workers"), "*", SearchOption.AllDirectories).Any(),
@@ -170,6 +202,16 @@ internal static class OfficeExecutionContracts
         File.WriteAllText(Path.Combine(root, "results.json"), JsonSerializer.Serialize(new { Passed = true, Checks = checks, Reports = results, Profiles = cleanup },
             new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"Passed {checks.Count} Office execution checks.");
+
+        void Capture(FileResult result)
+        {
+            Console.WriteLine(result.State + ": " + Path.GetFileName(result.Path) + ": " + result.Message);
+            if (result.State == OperationState.Running && result.Message == "Removing temporary files")
+            {
+                var record = Directory.EnumerateFiles(contexts, "*.ownership").Single();
+                File.Copy(record, Path.Combine(retained, Path.GetFileName(record)));
+            }
+        }
 
         void Check(bool condition, string message)
         { if (!condition) throw new InvalidDataException(message); checks.Add(message); Console.WriteLine("PASS: " + message); }

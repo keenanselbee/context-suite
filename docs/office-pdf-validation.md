@@ -193,12 +193,11 @@ after application exit. The caller must retain this executor while it owns pendi
 cleanup and surface its recovery records. The customer view model is not connected
 yet, so these ownership/shutdown responsibilities remain an integration gate.
 
-Successful native cleanup currently leaves completed context snapshots and
-journals for inspection. Preparation failures can likewise leave retained partial
-contexts. Before customer enablement, add verified retirement of completed
-contexts and a policy for unresolved preparation records; do not let historical
-successes accumulate until they exceed the startup recovery scan bounds. Final
-reservation cleanup uses the existing publisher and never deletes the original.
+Completed contexts now have live-owner retirement, described below. Preparation
+failures and restart-recovered contexts still retain evidence. Before customer
+enablement, complete their retirement policy so retained historical records cannot
+exhaust the startup scan bounds. Final reservation cleanup uses the existing
+publisher and never deletes the original.
 
 `tools/office-engine/Test-OfficeExecution.py` requires explicit
 disposable-profile authorization and creates a matching repository-local worker
@@ -248,11 +247,61 @@ foreign admission and pre-cancellation. The Release application test host builds
 with zero warnings/errors. Visible/keyboard acceptance was not performed.
 
 
+Live-context retirement verification
+-------------------------------------
+
+The executor now retires completed generated contexts through
+[`OfficeContextPreparation.Retire`](office-context-preparation.md#completed-live-context-retirement).
+Failed retirement remains in its pending cleanup list. If publication already
+succeeded, the result keeps the actual PDF and reports a cleanup warning, so it
+remains visible without becoming a request to publish a duplicate. Disposal
+retries file cleanup independently of completed export/publication.
+
+The updated workflow passes **43 actual Office checks** in
+`.codex-temp/office-execution/5619ba678499496eb0e4e7860364775e`.
+Six exports cover all three families, collision naming, publication failure,
+cancellation and an exclusively held cache file introduced after publication.
+All six generated contexts and ownership records are removed, along with their
+Windows profiles/mappings. The post-publication warning retains exactly one PDF;
+releasing the lock and disposing the executor completes retirement without
+another export. Original bytes and modification times remain unchanged.
+The harness copies completed journals into a separate evidence directory before
+retirement; the application's context root is empty. The wrapper records exit
+zero and unchanged inputs.
+
+The separate `--cleanup-only` run passes **ten checks** in
+`.codex-temp/office-execution/0656aeca57604e7791166a3ae7ddadb8`.
+The obstructed native cleanup retains its owner and original lease, then completes
+profile removal and context retirement after the lock is released. It exports no
+PDF and starts no Office renderer. Final verification at
+`.codex-temp/office-retirement-verification.json` confirms all seven profile
+folders/mappings are absent, both context roots are empty, no worker/OfficeHost remains,
+and the tested production sources still match. The stricter directory-substitution
+foundation fixture was finalized after the six-export run; production code did
+not change, and the cleanup-only run binds the final test sources.
+
+The three normal published PDFs pass independent structure, authored text,
+geometry and exact control-pixel inspection at
+`inspection-f6730d517d0c48dc844c12d9442d515d` under that stage. The inspector now
+accepts the additional cleanup-warning batch in application reports while still
+requiring the three named outputs. Its initial attempt rejected the new report
+shape before inspecting any PDF; the corrected inspection passes.
+
+All **3,379 foundation contracts** pass in
+`.codex-temp/office-preparation-foundation-975874f186df4b918f1cdb1bb3c0b395`,
+including the focused retirement boundaries described in the preparation record.
+The application test host builds in Release with zero warnings/errors. The
+existing scratch worker no longer matched rebuilt binaries, so a fresh isolated
+worker was prepared. That mismatch and a corrected C# local-name build error
+both stopped earlier attempts before native profile creation. Reserved payload
+1.1.0 remains unchanged. This adds no visible/keyboard or installed acceptance.
+
+
 Remaining work
 --------------
 
-Connect customer command dispatch and long-lived cleanup ownership, and retire
-completed contexts safely. Extend cancellation coverage to the reservation-copy
+Connect customer command dispatch and long-lived cleanup ownership, and complete
+retirement after restart or incomplete preparation. Extend cancellation coverage to the reservation-copy
 phase, abrupt application loss and additional resource-limit failures. Broader Office fidelity,
 the owner's Excel calculation default, fresh combined packaging and actual
 visible/keyboard acceptance remain open. This component changes no installed app

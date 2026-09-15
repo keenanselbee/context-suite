@@ -14,6 +14,7 @@ internal sealed class OfficeContextPreparation : IDisposable
     private readonly List<IDisposable> _leases = [];
     private FileStream? _original, _snapshot;
     private FileFingerprint? _snapshotIdentity;
+    private Retirement? _retirement;
     private bool _disposed;
     internal OfficeExportWork Work { get; private set; } = null!;
     internal OfficeOwnershipJournal Journal { get; private set; } = null!;
@@ -95,6 +96,7 @@ internal sealed class OfficeContextPreparation : IDisposable
     internal async Task VerifyAsync(CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_retirement is not null) throw new InvalidOperationException("Office context retirement has started.");
         VerifyFile(_original!); VerifyFile(_snapshot!, readOnly: true);
         if (await PublicationFiles.FingerprintAsync(_original!, token) != OriginalIdentity ||
             await PublicationFiles.FingerprintAsync(_snapshot!, token) != _snapshotIdentity)
@@ -139,6 +141,149 @@ internal sealed class OfficeContextPreparation : IDisposable
 
     private static bool Within(string path, string parent) => string.Equals(path, parent, StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith(parent + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+
+    // Live-owner retirement only. Restart recovery still retains evidence until it
+    // has durable context-directory identities, not just profile/grant identities.
+    internal void Retire()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_retirement is null)
+        {
+            if (Journal.Changes[^1].Step != OfficeOwnershipStep.ProfileDeleted ||
+                Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.EngineIntent) &&
+                !Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.ProcessesStopped))
+                throw new IOException("Complete Office worker and profile cleanup before removing temporary files.");
+            var retirement = new Retirement(Work);
+            // Capture identities while the original preparation leases still hold
+            // every generated directory and the journal against replacement.
+            retirement.Capture();
+            _retirement = retirement;
+            Journal.Dispose(); _snapshot?.Dispose(); _snapshot = null;
+            for (var index = _leases.Count - 1; index >= 3; index--) _leases[index].Dispose();
+            _leases.RemoveRange(3, _leases.Count - 3);
+        }
+        _retirement.Run();
+        Release();
+    }
+
+    private sealed class Retirement(OfficeExportWork work)
+    {
+        private const int MaximumEntries = 4096;
+        private readonly Dictionary<string, string> _directories = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _removed = new(StringComparer.OrdinalIgnoreCase);
+        private readonly string _record = Path.Combine(Path.GetDirectoryName(work.DirectoryPath)!, work.ItemId.ToString("N") + ".ownership");
+        private string _recordIdentity = "";
+        private bool _recordRemoved;
+
+        internal void Capture()
+        {
+            foreach (var path in new[] { work.DirectoryPath }.Concat(new[] { "input", "output", "profile", "temp" }
+                .Select(name => Path.Combine(work.DirectoryPath, name))))
+            {
+                using var handle = Open(path, delete: false);
+                if (!Information(handle).Attributes.HasFlag(FileAttributes.Directory)) throw new IOException("Office context directory changed.");
+                _directories.Add(path, Identity(handle));
+            }
+            using var record = Open(_record, delete: false);
+            if (Information(record).Attributes.HasFlag(FileAttributes.Directory)) throw new IOException("Office ownership record changed.");
+            _recordIdentity = Identity(record);
+        }
+
+        internal void Run()
+        {
+            var entries = new List<(string Path, SafeFileHandle Handle, bool Directory)>();
+            try
+            {
+                using var record = _recordRemoved ? null : Open(_record, delete: true);
+                if (record is not null && (Identity(record) != _recordIdentity || Information(record).Attributes.HasFlag(FileAttributes.Directory)))
+                    throw new IOException("Office ownership record identity changed.");
+                var pending = new Stack<(string Path, int Depth)>();
+                if (!_removed.Contains(work.DirectoryPath)) pending.Push((work.DirectoryPath, 0));
+                long pathCharacters = 0;
+                while (pending.TryPop(out var next))
+                {
+                    if (entries.Count == MaximumEntries || next.Depth > 32 || (pathCharacters += next.Path.Length) > 1_048_576)
+                        throw new IOException("Office temporary cleanup exceeds its inspection limit.");
+                    var handle = Open(next.Path, delete: true);
+                    entries.Add((next.Path, handle, false));
+                    var directory = Information(handle).Attributes.HasFlag(FileAttributes.Directory);
+                    entries[^1] = (next.Path, handle, directory);
+                    if (_directories.TryGetValue(next.Path, out var expected) && (!directory || Identity(handle) != expected) || _removed.Contains(next.Path))
+                        throw new IOException("Office temporary directory identity changed.");
+                    if (!directory) continue;
+                    var children = Directory.EnumerateFileSystemEntries(next.Path).Take(MaximumEntries + 1).ToArray();
+                    if (children.Length > MaximumEntries - entries.Count - pending.Count)
+                        throw new IOException("Office temporary cleanup exceeds its inspection limit.");
+                    if (next.Depth == 0 && children.Any(path => !_directories.ContainsKey(path)))
+                        throw new IOException("Unexpected file beside the owned Office context directories.");
+                    foreach (var child in children) pending.Push((child, next.Depth + 1));
+                }
+                foreach (var path in _directories.Keys)
+                {
+                    if (_removed.Contains(path)) RequireAbsent(path);
+                    else if (!entries.Any(entry => entry.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
+                        throw new IOException("An owned Office context directory is missing.");
+                }
+                // Inspect the entire bounded tree before deleting anything. Handles
+                // deny writes/renames; parents remain open until their children go.
+                for (var index = entries.Count - 1; index >= 0; index--)
+                {
+                    var entry = entries[index];
+                    Delete(entry.Handle); entry.Handle.Dispose();
+                    if (entry.Directory && _directories.ContainsKey(entry.Path)) _removed.Add(entry.Path);
+                    RequireAbsent(entry.Path);
+                }
+                RequireAbsent(work.DirectoryPath);
+                if (record is not null) { Delete(record); record.Dispose(); _recordRemoved = true; }
+                RequireAbsent(_record);
+            }
+            finally { foreach (var entry in entries) entry.Handle.Dispose(); }
+        }
+
+        private static SafeFileHandle Open(string path, bool delete)
+        {
+            var native = path.Length < 260 ? path : @"\\?\" + path;
+            var handle = CreateFile(native, delete ? 0x10081U : 0x81U, delete ? 1U : 3U, IntPtr.Zero, 3, 0x02200000, IntPtr.Zero);
+            if (handle.IsInvalid) { var error = Marshal.GetLastWin32Error(); handle.Dispose(); throw new Win32Exception(error); }
+            try { _ = Information(handle); return handle; }
+            catch { handle.Dispose(); throw; }
+        }
+
+        private static (FileAttributes Attributes, FileInformation Native) Information(SafeFileHandle handle)
+        {
+            if (!GetFileInformationByHandle(handle, out var info)) throw new Win32Exception(Marshal.GetLastWin32Error());
+            var attributes = (FileAttributes)info.Attributes;
+            if (attributes.HasFlag(FileAttributes.ReparsePoint) || !attributes.HasFlag(FileAttributes.Directory) && info.Links != 1)
+                throw new IOException("Office temporary cleanup requires ordinary directories and single-link files.");
+            return (attributes, info);
+        }
+
+        private static string Identity(SafeFileHandle handle)
+        {
+            var info = Information(handle).Native;
+            return FormattableString.Invariant($"{info.Volume:X8}{info.IdHigh:X8}{info.IdLow:X8}");
+        }
+
+        private static void Delete(SafeFileHandle handle)
+        {
+            _ = Information(handle);
+            // FileDispositionInfoEx: DELETE | FORCE_IMAGE_SECTION_CHECK |
+            // IGNORE_READONLY_ATTRIBUTE. Never clear attributes through a path.
+            uint flags = 0x15;
+            if (!SetDisposition(handle, 21, ref flags, sizeof(uint))) throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
+        private static void RequireAbsent(string path)
+        {
+            try { _ = File.GetAttributes(path); }
+            catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException) { return; }
+            throw new IOException("Office temporary cleanup did not remove the owned path.");
+        }
+
+        [DllImport("kernel32.dll", EntryPoint = "SetFileInformationByHandle", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetDisposition(SafeFileHandle file, int kind, ref uint flags, uint size);
+    }
 
     public void Dispose()
     {
