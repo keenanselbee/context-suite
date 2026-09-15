@@ -130,3 +130,56 @@ recovery through those actual boundaries. Broader admission, fonts, calculation,
 network enforcement, policy-disabled Windows and runtime adoption remain open.
 No new UI, installed lifecycle, screen-reader, theme/DPI or commerce acceptance is
 implied by these automated checks.
+
+
+Recoverable named job component
+------------------------------
+
+`WorkerProcessJob.CreateRecoverable` now creates a fresh, session-local named
+job with kill-on-close and no breakaway. Its non-inherited handle uses an explicit
+DACL granting access only to the current user and SYSTEM. Creation refuses an
+existing job or another kernel object with the same name before changing limits.
+The identity records the random job name, creator PID/start time and Windows
+session. Ordinary `WorkerClient` calls still use the existing unnamed constructor;
+the named component is not yet connected to Office requests or journals.
+
+`StopRecordedAsync` requires a validated identity in the original session and
+refuses while the recorded creator is alive. Failure to query the creator remains
+a failure. Once the creator has exited, it opens only the named job with query
+and terminate access, verifies the expected lifetime flags, terminates the job
+and observes zero active processes before returning. Only the specific
+file-not-found result reports that the object is absent. The caller must establish
+confirmed job creation and assignment from trusted durable evidence before using
+that absence to authorize any cleanup.
+
+Opening a job keeps a handle alive, so recovery cannot rely solely on the
+kill-on-last-close flag after opening it. Windows documents the
+[job lifetime and nested process behavior](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects),
+[creation collision result](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-createjobobjectw)
+and [query/terminate access rights](https://learn.microsoft.com/en-us/windows/win32/procthread/job-object-security-and-access-rights).
+The random name and restricted DACL do not authenticate a journal against another
+full-trust process acting as the same user.
+
+All **29 new lifetime checks** pass within **3,152 foundation contracts** at
+`.codex-temp/worker-lifetime-foundation-da44dca806ef4aa1817ba8d04e938ed5`, with
+matching source hashes. Two actual disposable owner/worker/descendant trees test
+owner-only crashes. Without another job handle, both descendants exit. With a
+retained observer handle, both remain live until recorded recovery explicitly
+terminates them; both have exited when recovery returns. The named object is
+then absent. Native membership queries verify the worker and descendant belong
+to the expected job before each crash.
+
+Additional checks verify the actual DACL, live-owner and session refusals, job
+and event-name collisions, and refusal of an unexpected-limit job without
+terminating its disposable process or changing its limits. All owned processes
+are stopped. The Release application builds with zero warnings/errors. The
+earlier 25-check run is retained separately at
+`.codex-temp/worker-lifetime-foundation-8795009ddd8c4b3d9074b29ad2332dc7`.
+
+Next, persist the confirmed job identity before sending any Office request, with
+an explicitly versioned journal schema. Verify actual Office owner-loss recovery
+using that record, including refusal before request dispatch when persistence
+fails. These component tests use generated process trees; they create no Windows
+profiles and run no Office engine. AppContainer access denial to the named job,
+cross-session recovery and hostile same-user object substitution are not verified.
+The older real-Office and broad media regressions were not rerun for this component.

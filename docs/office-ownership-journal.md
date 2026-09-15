@@ -212,3 +212,8 @@ pass, including **100 journal checks**, with matching source hashes at
 The added journal checks cover required profile identity/path and read-only review
 of both incomplete and complete version-one records. Production context creation,
 restart recovery, independent publication and the customer command remain open.
+
+The subsequent [named worker lifetime component](office-worker-lifetime.md#recoverable-named-job-component)
+now verifies native owner-loss and retained-handle process shutdown independently.
+It is not yet recorded in these version-two journals or connected to Office
+requests. Add that durable binding before using it to authorize profile recovery.

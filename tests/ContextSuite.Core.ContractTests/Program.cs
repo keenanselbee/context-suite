@@ -12,6 +12,12 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--worker-lifetime-hold", var lifetimeStage, var lifetimeMode])
+{
+    await WorkerLifetimeContracts.HoldAsync(lifetimeStage, lifetimeMode);
+    return 0;
+}
+
 if (args is ["--office-journal-hold", var journalStage, var journalId, var journalMode])
 {
     await OfficeJournalContracts.HoldAsync(journalStage, Guid.ParseExact(journalId, "N"), journalMode);
@@ -293,6 +299,7 @@ try
     OfficeHostContracts.Run(Check);
     OfficeWorkContracts.Run(Check);
     await OfficeJournalContracts.RunAsync(args[0], Check);
+    await WorkerLifetimeContracts.RunAsync(args[0], Check);
     await LegacyDocumentAnalysisContracts.RunAsync(args[0], Check);
     PdfProbeContracts.Run(Check);
     await PdfAnalysisContracts.RunAsync(args[0], Check);
