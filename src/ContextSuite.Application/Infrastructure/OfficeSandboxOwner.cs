@@ -198,7 +198,11 @@ internal sealed class OfficeSandboxOwner : IDisposable
                         if (checkedHandles.Count >= 65536) throw new IOException("Office grant tree exceeds its entry budget.");
                         var native = entry.Length < 260 ? entry : @"\\?\" + entry;
                         var handle = CreateFile(native, 0x80000000, 3, IntPtr.Zero, 3, 0x02200000, IntPtr.Zero);
-                        if (handle.IsInvalid) { var error = Marshal.GetLastWin32Error(); handle.Dispose(); throw new Win32Exception(error); }
+                        if (handle.IsInvalid)
+                        {
+                            var error = Marshal.GetLastWin32Error(); handle.Dispose();
+                            throw new Win32Exception(error, "Could not verify Office grant entry: " + entry);
+                        }
                         checkedHandles.Add(handle);
                         if (!GetFileInformationByHandleEx(handle, 9, out var attributes, (uint)Marshal.SizeOf<AttributeTag>()) ||
                             (attributes.Attributes & 0x400) != 0) throw new IOException("Linked entries are not permitted in Office grant trees.");

@@ -9,7 +9,7 @@ $build = Join-Path $scratch 'build'
 New-Item -ItemType Directory -Path $build | Out-Null
 $snapshot = Join-Path $scratch 'source'
 New-Item -ItemType Directory -Path $snapshot | Out-Null
-foreach ($name in @('CMakeLists.txt', 'Host.cpp', 'EmbeddedOffice.h')) {
+foreach ($name in @('CMakeLists.txt', 'Host.cpp', 'EmbeddedOffice.h', 'app.manifest')) {
     Copy-Item -LiteralPath (Join-Path $source $name) -Destination (Join-Path $snapshot $name)
 }
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'

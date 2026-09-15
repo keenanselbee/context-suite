@@ -4,6 +4,11 @@ Office Worker Interruption Investigation
 Status: interruption acceptance incomplete; ordinary exports and diagnostic host
 verified, startup failures retained for investigation
 
+The subsequent [directory-boundary investigation](office-path-boundary.md)
+identifies the startup cause and corrects the native host manifest. The failures
+below remain historical evidence; see that follow-up for current replay status
+and the remaining Windows policy limitation.
+
 The new opt-in harness prepares cancellation, worker-only termination and a
 controlled application-deadline expiry for DOCX, XLSX and PPTX. Each stop requires
 two increasing nonzero PDF lengths and a live native host whose executable,

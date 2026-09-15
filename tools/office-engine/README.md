@@ -350,3 +350,8 @@ without recopying the runtime. The probe's `--worker-stop-fixtures <fresh-direct
 creates twelve passive pages per family. The matrix has not passed: startup
 failures precede its first stop point. See the [investigation and diagnostic
 controls](../../docs/office-worker-interruption.md) before retrying.
+
+`Test-OfficePathBoundary.py` compares plain and extended Windows directory paths
+at 247, 248, 249, 260, 261 and 320 characters, using native probes with and without
+the Office host's manifest. It reads the existing system long-path policy and
+never changes it. See the [boundary diagnosis and platform scope](../../docs/office-path-boundary.md).

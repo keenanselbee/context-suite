@@ -5,10 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [Office interruption investigation](office-worker-interruption.md)
-passes 39 ordinary-export checks, independent three-PDF inspection and 30 runtime
-checks with a diagnostic host. Its active interruption attempts fail before PDF
-growth; the startup exception remains unresolved. No active-stop cell is accepted.
+The latest [Office directory-boundary investigation](office-path-boundary.md)
+identifies the startup failure and corrects the host manifest. Native path probes
+pass 24 assertions and the updated host pin passes 30 runtime contracts. The
+active interruption replay completes Word and Excel cancellation/recovery, then
+fails during PowerPoint profile cleanup. Its retained profile was recovered with
+file bytes and unrelated ACL entries preserved. The nine-cell matrix and
+independent recovery-PDF acceptance remain incomplete.
 
 Objective
 ---------

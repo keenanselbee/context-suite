@@ -10,12 +10,13 @@ all 19,332 runtime files (1,517,294,910 bytes), checks exact membership includin
 the three expected empty package-cache directories, and rejects linked entries.
 The source is the independently prepared candidate, never `reference/`.
 
-The current diagnostic host is 104,448 bytes with SHA-256
-`720ACB008C24C4AB7CB60BCF13790338F9E0093D5604B4BD973ABC3438AB1ED2`.
+The current long-path-aware host is 104,960 bytes with SHA-256
+`6C2300992201F054E28E7B72715304CA63E0AABEFA909CF7D356D3F275D77677`.
 The original verifier evidence below used the preceding 103,936-byte host,
 `8DFF459F2F10F82B5DD82EA887FC4FD07F15DDAB45372C38202B6E4A4508E060`.
 See the [interruption investigation](office-worker-interruption.md) for the
-diagnostic change, ordinary-export replay and retained startup failures.
+intermediate diagnostic host and the [directory-boundary correction](office-path-boundary.md)
+for the current manifest, evidence and remaining platform limitation.
 The canonical UTF-8 inventory is 2,276,994 bytes with SHA-256
 `70DAF53038F8B4E8B5FDF74B6877393616094762C0E0BDC5245D657C16DBCD2D`.
 Each line is relative path, byte count and uppercase SHA-256, separated by tabs;
