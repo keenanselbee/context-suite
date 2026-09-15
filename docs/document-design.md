@@ -332,6 +332,12 @@ cancellation/cleanup boundary. The application must own Windows profile cleanup
 separately from the worker's process job. Production payload/path/grant leases,
 worker requests and publication are still pending.
 
+The [application profile/grant owner](office-profile-ownership.md) adds the
+separate lifecycle component and real file-access/worker-crash checks. It grants
+only caller-supplied owned directories, preserves unrelated ACL entries and
+retains failed cleanup for retry. Persisted recovery, runtime context construction
+and the customer workflow remain unfinished.
+
 
 Output and acceptance
 ---------------------

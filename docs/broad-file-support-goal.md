@@ -229,6 +229,14 @@ corrects the host's CRT environment initialization. App-owned profile/grant
 composition, worker requests, independent validation and publication remain to
 be integrated before enabling the customer command.
 
+The [application profile/grant owner](office-profile-ownership.md) now passes
+45 native ownership/access checks, including worker loss, actual grant revocation,
+preserved unrelated ACL changes and link/collision refusals. The test exposed and
+corrected an attributes-only directory handle that failed to prevent renaming;
+three Office export regressions pass with the stronger native handle. Production
+context construction, worker routing, validation/publication and persisted
+application-crash recovery remain open.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

@@ -134,3 +134,8 @@ publication. Test active-render cancellation and worker/application loss through
 those actual boundaries. Resolve calculation/font policies, broader fidelity,
 content/network enforcement and runtime adoption. No installed or visible UI,
 screen-reader, theme/DPI, live commerce or release acceptance is claimed here.
+
+The subsequent [profile/grant ownership checkpoint](office-profile-ownership.md)
+adds the application component and a native worker-crash/access matrix. It also
+corrects the earlier attributes-only directory-lease assumption. Production
+context construction and worker/publication routing remain pending.
