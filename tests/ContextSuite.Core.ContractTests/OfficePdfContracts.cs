@@ -1,6 +1,8 @@
 using System.Text;
 using System.Text.Json.Nodes;
 using ContextSuite.Core.Office;
+using ContextSuite.Core.Transport;
+using System.Text.Json;
 
 internal static class OfficePdfContracts
 {
@@ -48,6 +50,32 @@ internal static class OfficePdfContracts
         var candidate = new OfficeExportCandidate(id, new(Guid.NewGuid(), "docx", "none", 8, 16, work.SourceSha256, new string('B', 64)), work.Policy);
         var request = new OfficePdfWork(work, candidate, Path.Combine(Path.GetTempPath(), ".context-suite-" + id.ToString("N") + ".tmp"));
         request.Validate(); check(true, "Office PDF: request binds completed export and external reservation");
+        var command = new WorkerCommand(1, Guid.NewGuid(), "office-pdf-validate", OfficePdf: request);
+        var restored = JsonSerializer.Deserialize<WorkerCommand>(JsonSerializer.Serialize(command))!;
+        restored.Validate(); check(restored == command, "Office PDF: typed worker request round trip");
+        foreach (var invalid in new[] { command with { OfficePdf = null }, command with { Command = "office-export" },
+            command with { Command = "capabilities" }, command with { OfficeWork = work }, command with { AudioBytes = [1] },
+            command with { PdfBytes = [1] }, command with { PdfFile = new(id, request.TemporaryPath) },
+            command with { AudioTarget = ContextSuite.Core.Audio.AudioFormat.Flac } })
+        {
+            try { invalid.Validate(); check(false, "Office PDF mixed worker command"); }
+            catch (InvalidDataException) { check(true, "Office PDF: missing or mixed worker payload refused"); }
+        }
+        var result = new OfficePdfResult(new(id, candidate.Completion.OutputSha256, true), work.SourceBytes, work.SourceSha256,
+            candidate.Completion.OutputBytes, 1, request.Policy, "pinned readers");
+        var reply = new WorkerReply(1, command.RequestId, [], OfficePdfResult: result);
+        var restoredReply = JsonSerializer.Deserialize<WorkerReply>(JsonSerializer.Serialize(reply))!;
+        restoredReply.OfficePdfResult!.Validate(request);
+        check(restoredReply.OfficePdfResult == result, "Office PDF: typed validation reply round trip");
+        foreach (var invalid in new[] { result with { Validation = null! }, result with { Validation = result.Validation with { ItemId = Guid.NewGuid() } },
+            result with { Validation = result.Validation with { MatchesPlan = false } }, result with { Validation = result.Validation with { Sha256 = new string('0', 64) } },
+            result with { SourceBytes = 7 }, result with { SourceSha256 = new string('0', 64) }, result with { OutputBytes = 1 },
+            result with { PageCount = 0 }, result with { PageCount = OfficePdfPolicy.MaximumPages + 1 }, result with { Policy = "other" },
+            result with { EngineIdentity = "" }, result with { EngineIdentity = new string('x', 257) }, result with { EngineIdentity = "engine\nextra" } })
+        {
+            try { invalid.Validate(request); check(false, "Office PDF invalid validation reply"); }
+            catch (InvalidDataException) { check(true, "Office PDF: mismatched validation reply refused"); }
+        }
         foreach (var invalid in new[] { request with { Policy = "unknown" }, request with { Candidate = candidate with { ItemId = Guid.NewGuid() } },
             request with { TemporaryPath = Path.Combine(work.DirectoryPath, Path.GetFileName(request.TemporaryPath)) },
             request with { TemporaryPath = Path.Combine(Path.GetTempPath(), "unreserved.tmp") } })

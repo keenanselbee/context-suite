@@ -26,6 +26,15 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     public bool HasPdfOptimizer => HasPdfProbe;
     public bool HasPdfRenderer => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-renderer", "ContextSuite.PdfRenderer.exe"));
     public bool HasImagePdfConverter => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-validator", "ContextSuite.ImagePdfValidator.exe"));
+    public bool HasOfficePdfValidator => HasPdfProbe && HasPdfRenderer;
+
+    public async Task<OfficePdfResult> ValidateOfficePdfAsync(OfficePdfWork work, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "office-pdf-validate", OfficePdf: work), token);
+        var result = reply.OfficePdfResult ?? throw new InvalidDataException("Missing Office PDF validation response.");
+        result.Validate(work);
+        return result;
+    }
 
     public async Task<OfficeExportCandidate> ExportOfficeAsync(OfficeExportWork work, CancellationToken token,
         Action<WorkerLifetimeIdentity>? beforeRequest = null)
@@ -223,7 +232,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     {
         command.Validate();
         await _gate.WaitAsync(cancellationToken);
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command is "images-to-pdf" or "office-export" ? 180 : command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" ? 120 : 30),
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command is "images-to-pdf" or "office-export" ? 180 : command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" or "office-pdf-validate" ? 120 : 30),
             timeProvider ?? TimeProvider.System);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
         try
@@ -262,6 +271,9 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             var reply = await JsonFrames.ReadAsync<WorkerReply>(_pipe!, timeout.Token);
             if (reply.Version != 1 || reply.RequestId != command.RequestId || reply.Capabilities is null)
                 throw new InvalidDataException("The media worker returned an invalid response.");
+            if (command.Command != "office-pdf-validate" && reply.OfficePdfResult is not null || command.Command == "office-pdf-validate" &&
+                (reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0))
+                throw new InvalidDataException("The media worker returned contradictory Office PDF validation data.");
             if (command.Command != "office-export" && reply.OfficeCandidate is not null || command.Command == "office-export" &&
                 (reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0))
                 throw new InvalidDataException("The media worker returned contradictory Office export data.");
@@ -285,7 +297,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
                 throw new InvalidDataException("The media worker returned unexpected file-audio data.");
             if (reply.Failure is { } failure)
             {
-                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null || reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null || reply.ImagePdfResult is not null || reply.OfficeCandidate is not null || reply.Capabilities.Length != 0)
+                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null || reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null || reply.ImagePdfResult is not null || reply.OfficeCandidate is not null || reply.OfficePdfResult is not null || reply.Capabilities.Length != 0)
                     throw new InvalidDataException("Worker failure response contains invalid or contradictory data.");
                 throw new MediaWorkerException(failure);
             }

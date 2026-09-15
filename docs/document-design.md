@@ -5,9 +5,11 @@ Status: bounded package analysis and optional direct PDF optimization, PDF-to-PN
 
 The independent [Office PDF validation component](office-pdf-validation.md)
 checks acknowledged exports with pinned structural and page readers before
-filling an existing reservation. It has 57 actual-reader checks and 49 new public
-contracts. Office worker dispatch, customer admission and final publication are
-still pending; host completion alone is insufficient.
+filling an existing reservation. It now has typed worker dispatch, 71 actual-worker
+checks, 57 direct-reader checks and 72 public policy/transport contracts. Customer
+admission and final publication are still pending; host completion alone is
+insufficient. Worker interruption evidence covers snapshot preparation and
+following work, with reservation-copy interruption still open.
 
 The [PDF page geometry matrix](pdf-page-geometry.md) now verifies cropped and
 rotated page pixels and the current maximum output dimensions through actual

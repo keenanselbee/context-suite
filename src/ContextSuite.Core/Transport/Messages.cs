@@ -14,7 +14,7 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     ImageProbe? Probe = null, ImageWork? Work = null, ImagePreviewRequest? Preview = null, PngOptimizationWork? Optimization = null,
     byte[]? AudioBytes = null, byte[]? PdfBytes = null, AudioFileProbe? AudioFile = null, FlacOptimizationWork? FlacWork = null,
     AudioFormat? AudioTarget = null, AudioConversionWork? AudioWork = null, PdfFileProbe? PdfFile = null, PdfOptimizationWork? PdfWork = null,
-    PdfPageWork? PdfPage = null, ImagePdfWork? ImagePdf = null, OfficeExportWork? OfficeWork = null)
+    PdfPageWork? PdfPage = null, ImagePdfWork? ImagePdf = null, OfficeExportWork? OfficeWork = null, OfficePdfWork? OfficePdf = null)
 {
     public const int MaximumAudioProbeBytes = 1024 * 1024;
     // A complete seekable PDF snapshot is required; base64 stays below the IPC frame limit.
@@ -22,6 +22,16 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     public void Validate()
     {
         if (Version != 1 || RequestId == Guid.Empty) throw new InvalidDataException("Invalid worker request identity.");
+        if (Command == "office-pdf-validate")
+        {
+            if (OfficePdf is null || OfficeWork is not null || Probe is not null || Work is not null || Preview is not null || Optimization is not null ||
+                AudioBytes is not null || PdfBytes is not null || AudioFile is not null || FlacWork is not null || AudioTarget is not null ||
+                AudioWork is not null || PdfFile is not null || PdfWork is not null || PdfPage is not null || ImagePdf is not null)
+                throw new InvalidDataException("Unexpected data in Office PDF validation request.");
+            OfficePdf.Validate();
+            return;
+        }
+        if (OfficePdf is not null) throw new InvalidDataException("Unexpected Office PDF validation payload.");
         if (Command == "office-export")
         {
             if (OfficeWork is null || Probe is not null || Work is not null || Preview is not null || Optimization is not null ||
@@ -150,4 +160,4 @@ public sealed record WorkerReply(int Version, Guid RequestId, MediaCapability[] 
     AudioProbeFacts? Audio = null, PdfProbeFacts? Pdf = null, AudioFileSource? AudioSource = null, AudioWorkResult? AudioResult = null,
     PdfFileSource? PdfSource = null, PdfWorkResult? PdfResult = null,
     PdfRasterSource? PdfRaster = null, PdfPageResult? PdfPageResult = null, ImagePdfResult? ImagePdfResult = null,
-    OfficeExportCandidate? OfficeCandidate = null);
+    OfficeExportCandidate? OfficeCandidate = null, OfficePdfResult? OfficePdfResult = null);

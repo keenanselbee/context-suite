@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import shutil
 import uuid
 
 
@@ -18,6 +19,7 @@ def main():
     parser.add_argument("--pdf-engine", type=Path, required=True)
     parser.add_argument("--pdf-renderer", type=Path, required=True)
     parser.add_argument("--exports", type=Path, required=True)
+    parser.add_argument("--worker", action="store_true", help="Build a matching scratch worker and test actual client dispatch and cancellation.")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     exports = args.exports.resolve(strict=True)
@@ -40,11 +42,11 @@ def main():
     stage.mkdir(parents=True)
     print("Office PDF validation evidence:", stage, flush=True)
     inputs = {Path(__file__).resolve()}
-    for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/Shared", "proprietary/src/ContextSuite.Private",
+    for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/ContextSuite.Worker", "src/Shared", "proprietary/src/ContextSuite.Private",
                       "proprietary/tests/ContextSuite.Pdf.ContractTests", "proprietary/tests/ContextSuite.Image.ContractTests"):
         inputs.update(path for path in (root / directory).rglob("*") if path.suffix in (".cs", ".csproj")
                       and not {"bin", "obj"}.intersection(path.parts))
-    inputs.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json")
+    inputs.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json", "tools/Require-Private.targets")
                   if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(inputs)}
     engines = {str(path): digest(path) for folder in (args.pdf_engine.resolve(strict=True), args.pdf_renderer.resolve(strict=True))
@@ -55,12 +57,30 @@ def main():
     (stage / "build.log").write_bytes(build.stdout + build.stderr)
     if build.returncode:
         raise RuntimeError("Validator harness build failed; see build.log.")
+    worker = None
+    if args.worker:
+        build = subprocess.run(["dotnet", "build", str(root / "src/ContextSuite.Worker/ContextSuite.Worker.csproj"),
+                                "-c", "Release", "--no-restore", "--verbosity", "quiet"], cwd=root, capture_output=True)
+        (stage / "worker-build.log").write_bytes(build.stdout + build.stderr)
+        if build.returncode:
+            raise RuntimeError("Matching scratch worker build failed; see worker-build.log.")
+        directory = stage / "worker"
+        directory.mkdir()
+        for path in (root / "artifacts/managed/bin/ContextSuite.Worker/Release/net10.0-windows").iterdir():
+            if path.is_file():
+                shutil.copy2(path, directory / path.name)
+        shutil.copytree(args.pdf_engine, directory / "pdf-engine")
+        shutil.copytree(args.pdf_renderer, directory / "pdf-renderer")
+        worker = directory / "ContextSuite.Worker.exe"
     host = root / "artifacts/managed/bin/ContextSuite.Pdf.ContractTests/Release/net10.0/ContextSuite.Pdf.ContractTests.exe"
     binaries = {str(path): digest(path) for path in host.parent.iterdir() if path.is_file()}
+    if worker is not None:
+        binaries.update({str(path): digest(path) for path in worker.parent.rglob("*") if path.is_file()})
     (stage / "binaries.json").write_text(json.dumps(binaries, indent=2), encoding="utf-8")
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
-        run = subprocess.run([str(host), "--office-pdf-validation", str(args.pdf_engine.resolve()), str(args.pdf_renderer.resolve()),
-                              str(exports), str(stage / "contracts")], cwd=root, stdout=output, stderr=error)
+        command = [str(host), "--office-pdf-worker-validation", str(worker)] if worker is not None else [
+            str(host), "--office-pdf-validation", str(args.pdf_engine.resolve()), str(args.pdf_renderer.resolve())]
+        run = subprocess.run(command + [str(exports), str(stage / "contracts")], cwd=root, stdout=output, stderr=error)
     unchanged = all(digest(root / name) == expected for name, expected in sources.items()) and all(
         digest(Path(name)) == expected for group in (fixtures, engines, binaries) for name, expected in group.items())
     (stage / "exit.json").write_text(json.dumps({"ExitCode": run.returncode, "InputsUnchanged": unchanged}), encoding="utf-8")

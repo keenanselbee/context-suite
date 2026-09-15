@@ -5,6 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office PDF worker dispatch](office-pdf-validation.md#worker-dispatch-and-interruption)
+now passes 71 actual-worker checks, including active cancellation, deliberate
+worker termination, scratch cleanup and successful following work. All 3,310
+foundation contracts and the 57-check direct reader regression pass. This uses
+retained completed exports without creating new Office profiles. Customer Office
+admission, end-to-end orchestration and final publication remain incomplete.
+
 The [Office PDF validation component](office-pdf-validation.md) now passes all
 3,287 foundation contracts and 57 actual-reader checks. Pinned independent readers
 accept retained Word/Excel/PowerPoint exports and refuse damaged, unexpected

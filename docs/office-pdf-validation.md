@@ -1,7 +1,7 @@
 Office PDF Validation
 =====================
 
-Status: independent validation component verified; customer Office execution and
+Status: independent validation and worker dispatch verified; customer Office execution and
 publication integration remain unfinished.
 
 An Office host completion acknowledges an export; it does not authorize final
@@ -98,13 +98,55 @@ It reads the selected retained exports and verifies their receipt hashes before
 building/running. Reader constructors verify their complete pinned runtime sets.
 
 
+Worker dispatch and interruption
+--------------------------------
+
+`office-pdf-validate` now carries the typed request through the existing sequential
+worker. The command rejects missing or mixed payloads. The client rejects
+contradictory replies and validates the returned item, policy, source/output
+identity, page-count bounds and engine description against the request. The
+worker loads the pinned PDF readers lazily; it needs no Office runtime or profile
+to validate an already completed candidate.
+
+The client uses a 120-second outer deadline around the adapter's 60-second
+validation deadline. Caller cancellation stops the worker/job and removes only
+that client's checked scratch directory after process exit. Ordinary validation
+refusals leave the sequential worker available for later work.
+
+Run the same command above with `--worker` to build a matching worker into a new
+repository scratch directory and exercise the actual `WorkerClient`. The runner
+records sources, fixture identities and both worker/harness binaries, and checks
+that they remain unchanged. This is a scratch component build, not a revised
+production payload. The added strict JSON fields require matching application and
+worker builds; do not mix this client with the reserved 1.1.0 worker.
+
+All 3,310 foundation contracts pass, including 23 new typed request/result checks,
+in `.codex-temp/office-preparation-foundation-51965309d7eb44d4824d467b6a5c6d62`.
+The actual worker run passes 71 checks in
+`.codex-temp/office-pdf/8b054e948cb2478396b05f285e015f85`.
+It repeats the retained exports and fourteen refusal cases, verifies worker reuse,
+then interrupts two 32 MiB authored candidates after observing the live worker's
+owned inspection snapshot. One case cancels the caller; another terminates the
+worker. Both verify the expected client outcome, worker exit before return,
+unchanged source/candidate, empty reservation and cleared scratch. A fresh worker
+successfully validates a following candidate after each interruption. These cases
+observe snapshot preparation, not cancellation during the final reservation copy
+or every native reader phase.
+
+The direct adapter regression also passes all 57 checks in
+`.codex-temp/office-pdf/9719312b57b74acd9a55e52d5fc39a41`.
+Both runs record exit zero and unchanged inputs; worker and harness Release builds
+have zero warnings/errors. No Office export or native profile is created by these
+runs. Existing native Office recovery evidence remains separate.
+
+
 Remaining work
 --------------
 
-Connect typed worker validation dispatch to application Office admission,
-execution, safe copy publication, cancellation and recovery. Exercise cancellation
-during actual inspection/copying, caller cleanup, publication failure, resource
-limits and worker loss through that integrated path. Broader Office fidelity,
+Connect worker validation to application Office admission, execution, safe copy
+publication, cancellation and recovery. Exercise cancellation during copying,
+caller reservation cleanup, publication failure and resource limits through that
+integrated path. Broader Office fidelity,
 the owner's Excel calculation default, fresh combined packaging and actual
 visible/keyboard acceptance remain open. This component changes no installed app
 or reserved 1.1.0 payload and does not clear the expanded release goal.

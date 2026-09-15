@@ -57,6 +57,13 @@ try
             else if (command.Command == "office-export")
                 reply = new(1, command.RequestId, [], OfficeCandidate: await OfficeFileAdapter.ExportAsync(
                     Path.Combine(AppContext.BaseDirectory, "office-engine"), command.OfficeWork!, command.RequestId, lifetime.Token));
+            else if (command.Command == "office-pdf-validate")
+            {
+                pdf ??= new PdfProbeAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-engine"), args[5]);
+                pdfRaster ??= new PdfRasterAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-renderer"), args[5]);
+                reply = new(1, command.RequestId, [], OfficePdfResult: await new OfficePdfFileAdapter(pdf, pdfRaster)
+                    .ValidateAsync(command.OfficePdf!, lifetime.Token));
+            }
             else if (command.Command == "images-to-pdf")
             {
                 adapter ??= new ImageAdapter(args[5]);
