@@ -12,6 +12,12 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--office-journal-hold", var journalStage, var journalId, var journalMode])
+{
+    await OfficeJournalContracts.HoldAsync(journalStage, Guid.ParseExact(journalId, "N"), journalMode);
+    return 0;
+}
+
 if (args.Length == 2 && args[0] == "--benchmark-analyze") return await AnalyzeBenchmark.RunAsync(args[1]);
 if (args.Length == 4 && args[0] == "--finite-resampling-interruptions")
 {
@@ -286,6 +292,7 @@ try
     await DocumentAnalysisContracts.RunAsync(args[0], Check);
     OfficeHostContracts.Run(Check);
     OfficeWorkContracts.Run(Check);
+    await OfficeJournalContracts.RunAsync(args[0], Check);
     await LegacyDocumentAnalysisContracts.RunAsync(args[0], Check);
     PdfProbeContracts.Run(Check);
     await PdfAnalysisContracts.RunAsync(args[0], Check);

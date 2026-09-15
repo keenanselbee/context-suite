@@ -5,7 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The latest [Office child-access recovery checks](office-profile-ownership.md#residual-child-access-recovery)
+The latest [Office ownership journal](office-ownership-journal.md) adds bounded
+intent/completion records and actual writer-loss checks. All 3,110 foundation
+contracts pass, including 87 journal checks. Profile/ACL mutation integration,
+restart recovery and customer Office conversion remain incomplete; this persistence
+component does not yet perform those operations.
+
+The preceding [Office child-access recovery checks](office-profile-ownership.md#residual-child-access-recovery)
 close a cleanup gap below granted directories. The owner now refuses pre-existing
 child permissions and retains ownership if a child still names the profile after
 root revocation. All 72 ownership checks and 39 real-worker export checks pass;

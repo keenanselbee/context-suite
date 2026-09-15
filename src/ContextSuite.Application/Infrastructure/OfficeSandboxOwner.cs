@@ -26,6 +26,14 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     internal string Name { get; }
     internal string Sid => _sid.Value;
 
+    // Also used to keep a journal's ordinary parent chain stable without granting access.
+    internal static IDisposable LeaseDirectory(string path)
+    {
+        var directory = new Grant(ValidatePath(path), ReadAccess);
+        try { directory.Open(); return directory; }
+        catch { directory.Dispose(); throw; }
+    }
+
     internal static OfficeSandboxOwner Create(string name)
     {
         var suffix = name.StartsWith("ContextSuite.Office.Evaluation.", StringComparison.Ordinal)

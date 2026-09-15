@@ -232,5 +232,10 @@ not only a reusable profile name or paths supplied by a journal. Verify process
 termination again before revocation, and retain uncertain creation, identity or
 cleanup states for review. Profile/grant cleanup records remain separate from
 output publication records; neither an export completion nor a recovered profile
-authorizes publishing an unvalidated PDF. These are requirements for the next
-implementation slice, not an implemented journal or recovery API.
+authorizes publishing an unvalidated PDF. Native integration and restart recovery
+must establish these requirements.
+
+The subsequent [ownership journal component](office-ownership-journal.md) now
+implements bounded persistence and transition checks, including actual writer-loss
+tests. Wiring these records around native owner mutations and safely reclaiming
+the recorded profile after restart remain unfinished.
