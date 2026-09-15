@@ -186,6 +186,16 @@ inputs from content-identified packages, but is not complete rendering or safety
 validation. Mid-render cancellation, owner crashes and customer integration remain
 separate work.
 
+The [initial Office source preflight](office-embedded-recovery.md#initial-source-preflight)
+now rejects empty/unidentified inputs and distinguishes ordinary Open XML main
+types from templates, slide shows and macro-enabled variants. The isolated export
+wrapper retains source read locks through its native test. Verification passes
+2,866 foundation contracts and eight wrapper cases, including seven refusals
+before a launch sentinel and all source handles released. This is bounded source
+identification for the experiment, not complete document validation or customer
+conversion admission; legacy/other variants, content/network isolation and
+application integration remain required.
+
 The [Analyze mapped-file checkpoint](analyze-mapped-files.md) adds 37 local NTFS
 checks for read-only/copy-on-write admission and writable-view refusal after the
 original handles close, mixed-batch guidance and post-release recovery. The

@@ -49,7 +49,23 @@ if ($PreparedOfficeDirectory) {
             elseif ($StartupDiagnostics) { '--office-startup-diagnostics' } else { '--office-exports' })
     } else { $arguments += '--office-version' }
 }
-& $executable @arguments
-if ($LASTEXITCODE) { throw "Isolation experiment failed; retain $scratch" }
+$sourceLeases = @()
+try {
+    if ($EmbeddedExports) {
+        $fixtures = Join-Path $scratch 'office-fixtures'
+        foreach ($fixture in @(@('Word', 'docx'), @('Excel', 'xlsx'), @('PowerPoint', 'pptx'))) {
+            $name = '{0} {1}.{2}' -f $fixture[0], [char]0x00fc, $fixture[1]
+            $sourceLeases += [System.IO.File]::Open((Join-Path $fixtures $name), [System.IO.FileMode]::Open,
+                [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
+        }
+        & dotnet run --no-build --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --preflight-isolation-fixtures $fixtures |
+            Set-Content -LiteralPath (Join-Path $scratch 'source-preflight.json') -Encoding UTF8
+        if ($LASTEXITCODE) { throw 'Office source preflight refused an input; no isolated test process launched.' }
+    }
+    & $executable @arguments
+    if ($LASTEXITCODE) { throw "Isolation experiment failed; retain $scratch" }
+} finally {
+    foreach ($lease in $sourceLeases) { $lease.Dispose() }
+}
 Write-Output 'Authored native fixtures and optional fixed Office evaluation commands only; customer compatibility, hostile inputs and production isolation remain unverified.'
 if (-not $CreateDisposableProfile) { Write-Output 'Preflight only: no AppContainer profile created and no isolated file/network result claimed.' }

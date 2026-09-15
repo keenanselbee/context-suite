@@ -94,6 +94,42 @@ and the 24 successful following exports. It explicitly leaves the renderer's
 malformed-input-refusal gate failed because of empty-file acceptance.
 
 
+Initial source preflight
+------------------------
+
+The follow-up adds a separate bounded Open XML source preflight and connects it
+to `Test-OfficeIsolation.ps1 -EmbeddedExports`. Before launching the native test,
+the wrapper locks all three authored sources for reading, checks their contents
+and exact main content types, and retains those locks until the test finishes.
+Empty or unidentified files, another document family in the expected fixture
+slot, and unsupported variants stop the launch. Analyze retains its existing
+read-only identity and fallback behavior.
+
+This initial preflight recognizes ordinary DOCX/XLSX/PPTX package declarations,
+including strict/transitional namespaces. It distinguishes templates, slide shows
+and macro-enabled types from those ordinary variants. It does not inspect every
+part, prove absence of active content or authorize arbitrary rendering. Legacy
+Office/OpenDocument and additional variants still need an explicit policy; this
+initial scope does not remove them from the broader evaluation requirements.
+Direct native diagnostic invocations remain separate from this managed preflight.
+
+Verification passes 2,866 foundation contracts, including 44 new source-preflight
+checks. Eight tests of the wrapper's actual preflight/lease block use a launch
+sentinel: three empty and three truncated sources plus one mismatched family
+prevent invocation; the valid case invokes once with three confirmed write-denying
+source locks. All eight preserve input bytes/write times and release all 24 read
+handles. No Office process or Windows profile was created by these wrapper tests,
+and earlier real-engine results were not rerun or reclassified.
+
+The wrapper evidence is retained under
+`.codex-temp/office-isolation/preflight-bfbd734e96834152b533df86cdea1f03/verification.json`,
+with per-case `source-preflight.json` records. The Release evaluation build has
+zero warnings/errors. `.codex-temp/office-source-foundation.log` retains the
+passing foundation run. Its earlier redirected PowerShell invocation stopped on
+expected malformed-client stderr; the completed rerun captures stdout/stderr
+outside PowerShell and preserves the real exit status.
+
+
 Required next work
 ------------------
 
@@ -101,7 +137,8 @@ Office conversion admission must reject zero-byte or structurally unidentified
 Office inputs before invoking the renderer. A filename hint or successful engine
 exit is insufficient. Keep useful read-only Analyze fallback separate; its bounded
 package identity must not be presented as complete validation or a safety verdict.
-No production admission path is implemented by this experiment.
+The initial preflight above is necessary identification, not complete production
+admission. No customer Office conversion path is implemented by this experiment.
 
 Continue with actual mid-render cancellation, owner/worker crash recovery, larger
 resource/disk-failure cases, broader format/fidelity coverage and application-owned

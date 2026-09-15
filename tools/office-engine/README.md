@@ -303,6 +303,14 @@ initialization/load/export/shutdown sequence has one combined 60-second bound.
 On Windows, exports enter the embedded main loop on the initializing thread and
 wait for its checked loop-state exports before loading. Each process receives a
 fresh read-only input copy, preventing stale lock files from affecting later tests.
+Before the native launch, the wrapper holds read leases on the three authored
+sources and runs `--preflight-isolation-fixtures`. Empty or unidentified content,
+unexpected families and nonordinary main content types stop the launch; the
+source hashes and decisions are retained in `source-preflight.json`. Leases stay
+open through the native experiment and close on success or failure. This bounded
+identity check does not validate the complete document or prove it safe; raw
+native diagnostic invocations are outside this wrapper check. See the
+[preflight evidence and remaining admission work](../../docs/office-embedded-recovery.md#initial-source-preflight).
 Inspect the retained results with the same PDF inspector. For a named retained
 follow-up case, supply `-CaseName cs26`; the default remains `case`. The result
 records the exact case root and retains failures alongside completed outputs.

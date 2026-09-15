@@ -305,6 +305,11 @@ The [passive embedded evaluation](office-embedded-recovery.md) demonstrates that
 the engine creates PDFs from zero-byte DOCX/XLSX/PPTX inputs. Bounded Analyze
 identity remains useful preflight evidence, not complete document or safety
 validation. Keep its read-only fallback available when conversion is refused.
+The [initial Open XML preflight](office-embedded-recovery.md#initial-source-preflight)
+implements that necessary identification check for the isolated export wrapper,
+under retained source read leases. Its exact ordinary DOCX/XLSX/PPTX scope is
+incremental, not a final supported-format list. Complete document admission,
+legacy/other variants and customer conversion remain unimplemented.
 
 
 Output and acceptance

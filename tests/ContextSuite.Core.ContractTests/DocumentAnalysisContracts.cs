@@ -12,6 +12,7 @@ internal static partial class DocumentAnalysisContracts
 
     public static async Task RunAsync(string scratch, Action<bool, string> check)
     {
+        await OfficeSourcePreflightContractsAsync(check);
         foreach (var id in new[] { "docx", "xlsx", "pptx" })
         foreach (var strict in new[] { false, true })
         {
@@ -104,6 +105,10 @@ internal static partial class DocumentAnalysisContracts
             var result = await AnalyzeAsync(item.Bytes);
             check(result.Identity.FormatId == "zip" && result.Warnings.Any(warning => warning.Contains("details are unavailable")),
                 "documents: safe header fallback for " + item.Name);
+            using var input = new MemoryStream(item.Bytes, writable: false);
+            var preflight = await OfficeSourcePreflight.InspectOpenXmlAsync("fixture.docx", input, default);
+            check(preflight.FormatId is null && preflight.Refusal is not null && preflight.Analysis.Identity.FormatId == "zip",
+                "Office preflight: refuses " + item.Name + " while preserving Analyze fallback");
         }
 
         using (var canceled = new CancellationTokenSource())
