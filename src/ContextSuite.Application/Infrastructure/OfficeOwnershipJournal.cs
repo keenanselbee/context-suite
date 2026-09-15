@@ -43,6 +43,15 @@ internal sealed class OfficeOwnershipJournal : IDisposable
     internal OfficeOwnershipIdentity Owner { get; }
     internal IReadOnlyList<OfficeOwnershipChange> Changes => _changes.AsReadOnly();
 
+    internal void RequireCreationOwner()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        using var process = Process.GetCurrentProcess();
+        if (_faulted || _changes.Count != 1 || _changes[0].Step != OfficeOwnershipStep.ProfileIntent ||
+            Owner.OwnerProcessId != process.Id || Owner.OwnerStartUtcTicks != process.StartTime.ToUniversalTime().Ticks)
+            throw new InvalidDataException("Only the original fresh journal owner may create this Office profile.");
+    }
+
     private OfficeOwnershipJournal(FileStream file, IDisposable directory, OfficeOwnershipIdentity owner)
     { _file = file; _directory = directory; Owner = owner; }
 

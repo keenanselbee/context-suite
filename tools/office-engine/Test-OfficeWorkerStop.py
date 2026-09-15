@@ -45,6 +45,8 @@ def main():
                root / "src/ContextSuite.Application/Infrastructure/WorkerClient.cs",
                root / "src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs",
                root / "src/ContextSuite.Application/Infrastructure/OfficeSandboxOwner.cs", Path(__file__)]
+    inputs += [root / "src/ContextSuite.Application/Infrastructure/OfficeOwnershipJournal.cs",
+               root / "src/ContextSuite.Application/Infrastructure/PublicationFiles.cs"]
     sources = {str(path.relative_to(root)): digest(path) for path in inputs}
     fixtures = {str(folder.resolve() / name): digest(folder / name)
                 for folder in (args.fixtures, args.large_fixtures)

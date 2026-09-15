@@ -237,5 +237,6 @@ must establish these requirements.
 
 The subsequent [ownership journal component](office-ownership-journal.md) now
 implements bounded persistence and transition checks, including actual writer-loss
-tests. Wiring these records around native owner mutations and safely reclaiming
-the recorded profile after restart remain unfinished.
+tests. Its journaled owner now records native profile/grant mutations and actual
+worker-export cleanup, with 93 ownership checks and 42 worker checks. Safely
+reclaiming the recorded profile after restart remains unfinished.

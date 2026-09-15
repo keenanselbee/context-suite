@@ -1,14 +1,16 @@
 Office Ownership Journal
 ========================
 
-Status: bounded persistence component and isolated writer-loss checks implemented;
-profile mutation integration and restart recovery remain incomplete
+Status: bounded persistence and native profile/grant integration verified;
+production context construction and restart recovery remain incomplete
 
 The application now has an `OfficeOwnershipJournal` for the
 [Office profile/grant owner](office-profile-ownership.md). It records intended
-changes separately from reported completion. This component does not create or
-delete Windows profiles, change permissions, execute Office or publish outputs.
-The owner and conversion coordinator must still be connected to it.
+changes separately from reported completion. The journaled owner now uses those
+records around native profile and permission changes. Actual typed worker exports
+use it in the isolated harness. Production context construction, restart recovery
+and the customer conversion coordinator remain incomplete. The journal itself
+does not execute Office or publish outputs.
 
 
 Recorded identity and ordering
@@ -66,8 +68,8 @@ These checks cover process interruption, not physical power-loss durability or
 storage hardware behavior.
 
 
-Verification
-------------
+Initial persistence verification
+--------------------------------
 
 All **3,110 foundation contracts** pass, including **87 journal checks**. Evidence
 and matching source hashes are retained under
@@ -87,19 +89,72 @@ The failed run is retained at
 `.codex-temp/office-journal-foundation-b7d465ff151f477d9b1e4f5c342b48cd`.
 
 The earlier ownership, real-Office and broader media-engine suites were not rerun
-for this journal-only slice. Their dated evidence remains separate. No new
+for that initial journal-only slice. Their dated evidence remains separate. No new
 packaged payload, visible UI, installed lifecycle or commerce acceptance is claimed.
+
+
+Native owner and actual exports
+-------------------------------
+
+`OfficeSandboxOwner.Create(journal)` requires the original creator process ID and
+start time, an open unfaulted journal and only its initial creation-intent entry.
+It confirms the actual new SID after successful creation. Existing profile
+collisions remain refused. An error appending the successful-creation confirmation
+retains the owner in an `OfficeOwnershipCreationException` for caller recovery;
+that failure path still needs injected I/O and process-loss acceptance.
+
+Each grant intent now obtains its directory identity from the held Windows handle,
+then flushes before ACL mutation. Successful native root verification precedes
+the applied record. Cleanup records intent before revocation, verifies root and
+child access removal, then records completion. A journaled cleanup stops at its
+first failure, retaining reverse order and the same intent for retries. Profile
+deletion is recorded only after all grants have completed revocation. Once native
+deletion succeeds, the old owner cannot delete a later profile even if writing
+the final journal record fails.
+
+The native ownership suite passes **93 checks** at
+`.codex-temp/office-owner/5864a910dc2f4c569248ba30cf17267b`, with its matching
+fixture/result stage under `.codex-temp/office-isolation`. The added cases compare
+all five recorded directory identities with independent held Windows handles,
+refuse an unplanned grant before mutation, preserve real permissions when shutdown
+is unrecorded, retain ordered cleanup across repeated sharing failures, and
+complete native profile deletion after the test releases its lock. The recorded
+engine-lifetime gate in this focused case is synthetic; it launches no Office engine.
+
+The actual Office harness separately passes **42 worker checks** at
+`.codex-temp/office-worker/3d7660c88a6d43adbb5c1e74da593700`. Each DOCX/XLSX/PPTX
+export uses the journaled owner. The harness records shutdown only after successful
+client disposal, then awaits journaled cleanup. All three complete 27-record
+lifecycles. Independent inspection at
+`inspection-a8a1750fb1ae4fdf9206be95d9355216` verifies qpdf structure, authored text,
+page geometry and exact PDFium control pixels for the three candidate PDFs.
+
+`.codex-temp/office-journal-owner-verification.json` independently checks all
+108 frames across four journals, all 20 live directory identities, current
+worker/source identities and candidate/source hashes. All four distinct profile
+identities are absent from Windows folders/mappings and 22,059 checked
+runtime/context ACLs. These are ordinary exports and focused cleanup failures;
+the earlier 90 active interruption checks were not rerun with journaled ownership.
+
+All **3,113 foundation contracts** pass, including **90 journal checks**, at
+`.codex-temp/office-journal-owner-foundation-6312d81b779740dd883af9aaae11829a`.
+The extra persistence cases refuse creating a profile from a completed journal
+or another process's unconfirmed intent. Application and private-harness Release
+builds have zero warnings/errors. No packaged payload or installed state changes.
 
 
 Next integration
 ----------------
 
-Construct the application-owned source/context and journal together. Write intent
-before profile creation or ACL mutation, and completion only after successful
-native verification. Persist unresolved cleanup and refuse an existing profile
-collision. Bind restart recovery to the actual profile, directory objects and
+Construct the production application-owned source/context and journal together
+using the journaled owner. Bind restart recovery to the actual profile, directory objects and
 terminated processes before revocation. An incomplete creation, replaced object,
 hostile journal/tree or unresolved process must remain reviewable.
+
+Before automatic reclamation, add the profile directory's live object identity
+and recoverable evidence for the engine processes. The creator PID/start time
+alone does not identify surviving engine children or a replaced profile folder.
+Version any additional persisted fields explicitly and preserve earlier records.
 
 Test actual application loss at those mutation boundaries, including interruption
 during grant application/revocation and profile deletion. Add hostile leaf-link

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
@@ -21,6 +22,8 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     private readonly SecurityIdentifier _sid;
     private readonly List<Grant> _grants = [];
     private bool _created;
+    private bool _cleaning, _deleteRecorded;
+    private OfficeOwnershipJournal? _journal;
 
     private OfficeSandboxOwner(string name, SecurityIdentifier sid) { Name = name; _sid = sid; _created = true; }
     internal string Name { get; }
@@ -53,6 +56,20 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
         finally { FreeSid(nativeSid); }
     }
 
+    internal static OfficeSandboxOwner Create(OfficeOwnershipJournal journal)
+    {
+        journal.RequireCreationOwner(); // No native creation on stale, closed or uncertain records.
+        var owner = Create(journal.Owner.Work.ProfileName);
+        owner._journal = journal;
+        try { journal.Record(new(OfficeOwnershipStep.ProfileCreated, owner.Sid)); return owner; }
+        catch (Exception error)
+        {
+            // Creation succeeded, but its confirmation may not be durable. Keep
+            // the real owner reachable; do not perform an unjournaled deletion.
+            throw new OfficeOwnershipCreationException(owner, error);
+        }
+    }
+
     internal void GrantDirectory(string path, bool writable)
     {
         lock (_sync)
@@ -73,11 +90,13 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                 var position = 0;
                 while (position < acl.Count && (acl[position].AceFlags & AceFlags.Inherited) == 0) position++;
                 acl.InsertAce(position, new CommonAce(Inherit, AceQualifier.AccessAllowed, grant.Access, _sid, false, null));
+                _journal?.Record(new(OfficeOwnershipStep.GrantIntent, Path: full, DirectoryIdentity: grant.Identity(), Writable: writable));
                 // Track before applying: an uncertain ACL failure must remain recoverable.
                 _grants.Add(grant);
                 WriteAcl(grant.Handle, acl);
                 if (CountGrant(ReadAcl(grant.Handle), grant.Access) != 1)
                     throw new IOException("Office directory access was not applied as requested.");
+                _journal?.Record(new(OfficeOwnershipStep.GrantApplied, Path: full));
             }
             catch
             {
@@ -92,12 +111,22 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
         lock (_sync)
         {
             if (!_created) return;
+            if (!_cleaning)
+            {
+                _journal?.Record(new(OfficeOwnershipStep.CleanupIntent));
+                _cleaning = true;
+            }
             var errors = new List<Exception>();
             for (var index = _grants.Count - 1; index >= 0; index--)
             {
                 var grant = _grants[index];
                 try
                 {
+                    if (!grant.RevokeRecorded)
+                    {
+                        _journal?.Record(new(OfficeOwnershipStep.RevokeIntent, Path: grant.Path));
+                        grant.RevokeRecorded = true;
+                    }
                     // Inheritance must never follow a linked/aliased child into
                     // another tree. Retain ownership if cleanup cannot verify it.
                     grant.CheckChildren();
@@ -108,16 +137,26 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
                     if (ReadAcl(grant.Handle).Cast<GenericAce>().OfType<KnownAce>().Any(ace => ace.SecurityIdentifier == _sid))
                         throw new IOException("Office directory access could not be removed.");
                     grant.VerifyNoChildAccess(_sid);
+                    _journal?.Record(new(OfficeOwnershipStep.GrantRevoked, Path: grant.Path));
                     grant.Dispose(); _grants.RemoveAt(index);
                 }
                 catch (Exception error) when (error is IOException or Win32Exception or UnauthorizedAccessException)
-                { errors.Add(new IOException("Office access cleanup failed for " + grant.Path, error)); }
+                {
+                    errors.Add(new IOException("Office access cleanup failed for " + grant.Path, error));
+                    if (_journal is not null) break; // Preserve strict reverse order for a retry.
+                }
             }
             if (errors.Count != 0)
                 throw new AggregateException("Retain and retry cleanup of Office profile " + Name + ".", errors);
+            if (!_deleteRecorded)
+            {
+                _journal?.Record(new(OfficeOwnershipStep.DeleteIntent));
+                _deleteRecorded = true;
+            }
             var result = DeleteAppContainerProfile(Name);
             if (result < 0) throw new IOException("Retain and retry cleanup of Office profile " + Name + ".", Marshal.GetExceptionForHR(result));
             _created = false;
+            _journal?.Record(new(OfficeOwnershipStep.ProfileDeleted));
         }
     }
 
@@ -188,7 +227,17 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
         private SafeFileHandle? _root;
         internal string Path { get; } = path;
         internal int Access { get; } = access;
+        internal bool RevokeRecorded { get; set; }
         internal SafeFileHandle Handle => _root ?? throw new InvalidOperationException("Grant directory is not open.");
+        internal string Identity()
+        {
+            if (!ReadDirectoryIdentity(Handle, 18, out var value, (uint)Marshal.SizeOf<DirectoryIdentity>()))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            Span<byte> identifier = stackalloc byte[16];
+            BinaryPrimitives.WriteUInt64LittleEndian(identifier, value.Low);
+            BinaryPrimitives.WriteUInt64LittleEndian(identifier[8..], value.High);
+            return FormattableString.Invariant($"{value.Volume:X16}") + Convert.ToHexString(identifier);
+        }
         internal void Open()
         {
             var chain = new Stack<string>();
@@ -258,6 +307,8 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     [StructLayout(LayoutKind.Sequential)]
     private struct AttributeTag { public uint Attributes, Tag; }
     [StructLayout(LayoutKind.Sequential)]
+    private struct DirectoryIdentity { public ulong Volume, Low, High; }
+    [StructLayout(LayoutKind.Sequential)]
     private struct StandardInformation
     {
         public long Allocation, Bytes;
@@ -281,6 +332,14 @@ internal sealed class OfficeSandboxOwner : IDisposable, IAsyncDisposable
     private static extern bool GetFileInformationByHandleEx(SafeFileHandle handle, int kind, out AttributeTag information, uint bytes);
     [DllImport("kernel32.dll", EntryPoint = "GetFileInformationByHandleEx", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetStandardInformation(SafeFileHandle handle, int kind, out StandardInformation information, uint bytes);
+    [DllImport("kernel32.dll", EntryPoint = "GetFileInformationByHandleEx", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool ReadDirectoryIdentity(SafeFileHandle handle, int kind, out DirectoryIdentity information, uint bytes);
     [DllImport("kernel32.dll", EntryPoint = "GetFinalPathNameByHandleW", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern uint GetFinalPathNameByHandle(SafeFileHandle handle, StringBuilder path, uint length, uint flags);
+}
+
+internal sealed class OfficeOwnershipCreationException(OfficeSandboxOwner owner, Exception inner)
+    : IOException("Office profile creation completed but its ownership record failed. Retain profile " + owner.Name + ".", inner)
+{
+    internal OfficeSandboxOwner Owner { get; } = owner;
 }

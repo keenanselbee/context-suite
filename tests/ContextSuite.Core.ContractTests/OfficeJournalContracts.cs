@@ -41,6 +41,8 @@ internal static class OfficeJournalContracts
         using (var journal = OfficeOwnershipJournal.Create(path, work, runtime))
         {
             identity = journal.Owner; first = Read(path);
+            journal.RequireCreationOwner();
+            check(true, "Office journal permits profile creation only from its fresh original owner");
             check(journal.Changes.Count == 1 && journal.Changes[0].Step == OfficeOwnershipStep.ProfileIntent,
                 "Office journal persists creation intent before profile work");
             Refuses(() => OfficeOwnershipJournal.Open(path, contextRoot, runtime).Dispose(), "Office journal permits only one owner");
@@ -81,8 +83,11 @@ internal static class OfficeJournalContracts
             }
         }
         using (var reopened = OfficeOwnershipJournal.Open(path, contextRoot, runtime))
+        {
             check(reopened.Owner == identity && reopened.Changes.Count == 27 && reopened.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted,
                 "Office journal reopens all 27 completed ownership transitions with the original owner identity");
+            Refuses(reopened.RequireCreationOwner, "Office journal refuses profile creation from a completed lifecycle");
+        }
         var complete = File.ReadAllBytes(path);
         Refuses(() => OfficeOwnershipJournal.Create(path, work, runtime).Dispose(), "Office journal creation cannot overwrite an existing record");
         Refuses(() => OfficeOwnershipJournal.Open(path, stage, runtime).Dispose(), "Office journal rejects an unrelated expected context root");
@@ -173,6 +178,7 @@ internal static class OfficeJournalContracts
                     check(reopened.Owner.OwnerProcessId == child.Id && reopened.Owner.OwnerStartUtcTicks == started && reopened.Changes.Count == 1 &&
                         reopened.Changes[0].Step == OfficeOwnershipStep.ProfileIntent,
                         "Office journal preserves unconfirmed creation intent after owner loss without promoting it to ownership");
+                    Refuses(reopened.RequireCreationOwner, "Office journal cannot create a profile from another process's unconfirmed intent");
                 }
                 else Refuses(() => OfficeOwnershipJournal.Open(childPath, Path.Combine(childStage, "contexts"), Path.Combine(childStage, "runtime")).Dispose(),
                     "Office journal refuses a torn record after writer loss");
