@@ -298,6 +298,7 @@ try
     await DocumentAnalysisContracts.RunAsync(args[0], Check);
     OfficeHostContracts.Run(Check);
     OfficeWorkContracts.Run(Check);
+    OfficePdfContracts.Run(Check);
     await OfficeJournalContracts.RunAsync(args[0], Check);
     await DocumentAnalysisContracts.OfficeContextContractsAsync(args[0], Check);
     await OfficeRecoveryCoordinatorContracts.RunAsync(args[0], Check);

@@ -3,6 +3,12 @@ Document Support Design
 
 Status: bounded package analysis and optional direct PDF optimization, PDF-to-PNG and combined image-to-PDF implemented with automated evidence; engine adoption, Office transformations and launch acceptance pending
 
+The independent [Office PDF validation component](office-pdf-validation.md)
+checks acknowledged exports with pinned structural and page readers before
+filling an existing reservation. It has 57 actual-reader checks and 49 new public
+contracts. Office worker dispatch, customer admission and final publication are
+still pending; host completion alone is insufficient.
+
 The [PDF page geometry matrix](pdf-page-geometry.md) now verifies cropped and
 rotated page pixels and the current maximum output dimensions through actual
 copy publication. The [typed limit follow-up](pdf-page-limits.md) gives explicit

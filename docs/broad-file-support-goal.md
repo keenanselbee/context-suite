@@ -5,6 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office PDF validation component](office-pdf-validation.md) now passes all
+3,287 foundation contracts and 57 actual-reader checks. Pinned independent readers
+accept retained Word/Excel/PowerPoint exports and refuse damaged, unexpected
+interactive, mismatched and over-limit candidates before filling a reservation.
+Inputs remain unchanged. Worker dispatch, customer Office orchestration and final
+copy publication remain unfinished; this does not enable the Office command.
+
 The latest [Office startup recovery](office-startup-recovery.md) adds bounded
 journal discovery and background application integration. All 3,238 foundation,
 140 native ownership and 104 hidden view contracts pass. The isolated coordinator
