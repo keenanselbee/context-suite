@@ -30,28 +30,34 @@ if (args is ["--inspect-word-publications", var wordReport, var wordQpdf, var wo
     return await OfficeWordRevisionInspection.RunAsync(wordReport, wordQpdf, wordPdfium);
 if (args is ["--preflight-isolation-fixtures", var preflightFixtures])
     return await OfficeFixturePreflight.RunAsync(preflightFixtures);
+if (args is ["--preflight-isolation-font-fixtures", var preflightFonts])
+    return await OfficeFixturePreflight.RunAsync(preflightFonts, true);
 if (args is ["--inspect-worker-exports", var workerReport, var workerQpdf, var workerPdfium, var workerControl])
     return await OfficeWorkerInspection.RunAsync(workerReport, workerQpdf, workerPdfium, workerControl);
 if (args is ["--inspect-office-publications", var publicationReport, var publicationQpdf, var publicationPdfium, var publicationControl])
     return await OfficeWorkerInspection.RunAsync(publicationReport, publicationQpdf, publicationPdfium, publicationControl, true);
 if (args is ["--inspect-isolation-exports", var isolatedStage, var isolatedQpdf, var isolatedPdfium])
     return await OfficeIsolatedExportInspection.RunAsync(isolatedStage, isolatedQpdf, isolatedPdfium);
+if (args is ["--inspect-font-callbacks", var fontStage, var fontQpdf, var fontPdfium])
+    return await OfficeIsolatedExportInspection.RunAsync(fontStage, fontQpdf, fontPdfium, fontComparison: true);
 if (args is ["--inspect-isolation-exports", var namedStage, var namedQpdf, var namedPdfium, var caseName])
     return await OfficeIsolatedExportInspection.RunAsync(namedStage, namedQpdf, namedPdfium, caseName);
 if (args is ["--inspect-isolation-exports", var hostExportStage, var hostQpdf, var hostPdfium, var exportCase, var controlCase])
     return await OfficeIsolatedExportInspection.RunAsync(hostExportStage, hostQpdf, hostPdfium, exportCase, controlCase);
-if (args is ["--isolation-fixtures", var isolationFixtures])
+if (args is ["--isolation-fixtures" or "--isolation-font-fixtures", var isolationFixtures])
 {
     var folder = Path.GetFullPath(isolationFixtures);
     if (!folder.Contains("\\.codex-temp\\office-isolation\\", StringComparison.OrdinalIgnoreCase) || Directory.Exists(folder))
         throw new IOException("Use fresh owned isolation fixtures.");
     Directory.CreateDirectory(folder);
     OfficeFixtures.Create(folder);
+    if (args[0] == "--isolation-font-fixtures") OfficeFontFixtures.Create(folder);
     OfficeProfileSettings.Apply(Path.Combine(folder, "settings.xcu"));
     var receipt = Directory.GetFiles(folder).Select(path => new { Name = Path.GetFileName(path),
         Sha256 = Hash(path), WriteTimeUtc = File.GetLastWriteTimeUtc(path) }).ToArray();
     File.WriteAllText(Path.Combine(folder, "fixtures.json"), JsonSerializer.Serialize(receipt, new JsonSerializerOptions { WriteIndented = true }));
-    Console.WriteLine("Created three authored passive fixtures and disabled-active-content settings.");
+    Console.WriteLine(args[0] == "--isolation-font-fixtures" ? "Created six authored font controls plus passive fixtures and disabled-active-content settings." :
+        "Created three authored passive fixtures and disabled-active-content settings.");
     return 0;
 }
 if (args is ["--export-file-release", var releaseRoot])

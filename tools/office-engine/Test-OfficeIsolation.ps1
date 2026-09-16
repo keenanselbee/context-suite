@@ -1,7 +1,13 @@
 [CmdletBinding()]
 param([switch] $CreateDisposableProfile, [string] $PreparedOfficeDirectory, [switch] $PassiveExports,
-    [switch] $StartupDiagnostics, [switch] $EmbeddedStartup, [switch] $EmbeddedExports)
+    [switch] $StartupDiagnostics, [switch] $EmbeddedStartup, [switch] $EmbeddedExports, [switch] $FontCallbacks)
 $ErrorActionPreference = 'Stop'
+if ($FontCallbacks) {
+    if (-not $PreparedOfficeDirectory -or $PassiveExports -or $StartupDiagnostics -or $EmbeddedStartup -or $EmbeddedExports) {
+        throw 'Choose font callbacks with the pinned runtime and without other startup/export modes.'
+    }
+    $EmbeddedExports = $true
+}
 if ($PreparedOfficeDirectory -and -not $CreateDisposableProfile) { throw 'Office isolation requires the authorized disposable profile test.' }
 if ($PassiveExports -and -not $PreparedOfficeDirectory) { throw 'Passive exports require the pinned Office runtime parameter.' }
 if ($StartupDiagnostics -and (-not $PreparedOfficeDirectory -or $PassiveExports)) { throw 'Choose startup diagnostics with the pinned runtime and without passive exports.' }
@@ -42,9 +48,10 @@ if ($PreparedOfficeDirectory) {
     & python -B (Join-Path $PSScriptRoot 'Prepare-OfficeIsolation.py') $PreparedOfficeDirectory (Join-Path $scratch 'runtime\office')
     if ($LASTEXITCODE) { throw 'Office isolation copy verification failed; no Office process launched.' }
     if ($PassiveExports -or $StartupDiagnostics -or $EmbeddedStartup -or $EmbeddedExports) {
-        & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --isolation-fixtures (Join-Path $scratch 'office-fixtures')
+        $fixtureMode = if ($FontCallbacks) { '--isolation-font-fixtures' } else { '--isolation-fixtures' }
+        & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- $fixtureMode (Join-Path $scratch 'office-fixtures')
         if ($LASTEXITCODE) { throw 'Authored isolation fixture generation failed; no Office process launched.' }
-        $arguments += $(if ($EmbeddedExports) { '--office-embedded-exports' }
+        $arguments += $(if ($FontCallbacks) { '--office-font-callbacks' } elseif ($EmbeddedExports) { '--office-embedded-exports' }
             elseif ($EmbeddedStartup) { '--office-embedded-startup' }
             elseif ($StartupDiagnostics) { '--office-startup-diagnostics' } else { '--office-exports' })
     } else { $arguments += '--office-version' }
@@ -54,11 +61,15 @@ try {
     if ($EmbeddedExports) {
         $fixtures = Join-Path $scratch 'office-fixtures'
         foreach ($fixture in @(@('Word', 'docx'), @('Excel', 'xlsx'), @('PowerPoint', 'pptx'))) {
-            $name = '{0} {1}.{2}' -f $fixture[0], [char]0x00fc, $fixture[1]
-            $sourceLeases += [System.IO.File]::Open((Join-Path $fixtures $name), [System.IO.FileMode]::Open,
-                [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
+            $names = if ($FontCallbacks) { @('{0} font control.{1}' -f $fixture[0], $fixture[1]); @('{0} font missing.{1}' -f $fixture[0], $fixture[1]) }
+                else { '{0} {1}.{2}' -f $fixture[0], [char]0x00fc, $fixture[1] }
+            foreach ($name in $names) {
+                $sourceLeases += [System.IO.File]::Open((Join-Path $fixtures $name), [System.IO.FileMode]::Open,
+                    [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
+            }
         }
-        & dotnet run --no-build --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- --preflight-isolation-fixtures $fixtures |
+        $preflightMode = if ($FontCallbacks) { '--preflight-isolation-font-fixtures' } else { '--preflight-isolation-fixtures' }
+        & dotnet run --no-build --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- $preflightMode $fixtures |
             Set-Content -LiteralPath (Join-Path $scratch 'source-preflight.json') -Encoding UTF8
         if ($LASTEXITCODE) { throw 'Office source preflight refused an input; no isolated test process launched.' }
     }
@@ -66,6 +77,11 @@ try {
     if ($LASTEXITCODE) { throw "Isolation experiment failed; retain $scratch" }
 } finally {
     foreach ($lease in $sourceLeases) { $lease.Dispose() }
+}
+if ($FontCallbacks) {
+    & python -B (Join-Path $PSScriptRoot 'Verify-OfficeIsolationCopy.py') $scratch |
+        Set-Content -LiteralPath (Join-Path $scratch 'runtime-after.json') -Encoding UTF8
+    if ($LASTEXITCODE) { throw 'Office runtime changed during the font callback evaluation.' }
 }
 Write-Output 'Authored native fixtures and optional fixed Office evaluation commands only; customer compatibility, hostile inputs and production isolation remain unverified.'
 if (-not $CreateDisposableProfile) { Write-Output 'Preflight only: no AppContainer profile created and no isolated file/network result claimed.' }

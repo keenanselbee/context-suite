@@ -2,6 +2,7 @@
 #include <functional>
 #include <thread>
 #include <exception>
+#include <shlobj.h>
 
 // Independently declared stable ABI prefixes from the pinned public API.
 struct OfficeKit;
@@ -21,11 +22,35 @@ struct OfficeKitDocumentMethods {
     void (*destroy)(OfficeKitDocument*);
     int (*saveAs)(OfficeKitDocument*, const char*, const char*, const char*);
     int (*type)(OfficeKitDocument*);
+    void (*unusedRenderingMembers[10])();
+    void (*registerCallback)(OfficeKitDocument*, void (*)(int, const char*, void*), void*);
 };
 struct OfficeKitDocument { OfficeKitDocumentMethods* methods; };
 struct OfficeKitFixture { const wchar_t* family; const wchar_t* extension; const wchar_t* profile; };
 const OfficeKitFixture kitFixtures[] = {{L"Word", L"docx", L"w"}, {L"Excel", L"xlsx", L"x"}, {L"PowerPoint", L"pptx", L"p"}};
 struct OfficeKit { OfficeKitMethods* methods; };
+
+std::wstring KitCaseName(int index, bool isolated, bool fonts, bool missing) {
+    return std::wstring(kitFixtures[index].family) + (fonts ? (missing ? L"-font-missing" : L"-font-control") : L"") +
+        (isolated ? L"-isolated" : L"-control");
+}
+
+std::wstring KitFileStem(int index, bool fonts, bool missing) {
+    return std::wstring(kitFixtures[index].family) + (fonts ? (missing ? L" font missing" : L" font control") : L" \u00fc");
+}
+
+struct FontCallbackObservation { unsigned count = 0; bool limited = false; };
+void FontCallback(int type, const char* payload, void* context) noexcept {
+    if (type != 57) return; // LOK_CALLBACK_FONTS_MISSING in the pinned 26.2.6.3 ABI.
+    auto& observation = *static_cast<FontCallbackObservation*>(context);
+    const auto length = payload ? strnlen_s(payload, 32769) : 0;
+    if (++observation.count > 4 || length == 0 || length > 32768) { observation.limited = true; return; }
+    // Authored evaluation fixtures only. Retain bounded raw callback data for
+    // independent JSON inspection; it is not customer-facing text or a permit.
+    std::cout << "{\"missingFontsCallback\":";
+    std::cout.write(payload, static_cast<std::streamsize>(length));
+    std::cout << "}\n" << std::flush;
+}
 
 std::string KitUtf8(const std::wstring& text) {
     const auto length = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.c_str(), -1, nullptr, 0, nullptr, nullptr);
@@ -65,11 +90,11 @@ void CALLBACK KitTimer(HWND, UINT, UINT_PTR timer, DWORD) {
     KillTimer(nullptr, timer);
     kitWork();
 }
-int OfficeKitChild(const fs::path& root, bool isolated, int fixtureIndex = -1) {
+int OfficeKitChild(const fs::path& root, bool isolated, int fixtureIndex = -1, bool fonts = false, bool missing = false) {
     Require(fixtureIndex >= -1 && fixtureIndex < 3, "Use an authored embedded fixture");
     const auto program = root.parent_path() / L"runtime" / L"office" / L"program";
     const auto profileName = fixtureIndex < 0 ? std::wstring(isolated ? L"ki" : L"kc") :
-        std::wstring(kitFixtures[fixtureIndex].profile) + (isolated ? L"i" : L"c");
+        std::wstring(kitFixtures[fixtureIndex].profile) + (fonts ? (missing ? L"m" : L"a") : L"") + (isolated ? L"i" : L"c");
     const auto profile = root / L"writable" / profileName;
     Require(SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_USER_DIRS) != FALSE,
         "Restrict owned embedded DLL search");
@@ -110,9 +135,10 @@ int OfficeKitChild(const fs::path& root, bool isolated, int fixtureIndex = -1) {
             Require(kit->methods->loadWithOptions && kit->methods->error && kit->methods->freeError,
                 "Embedded document API callbacks");
             const auto& fixture = kitFixtures[fixtureIndex];
-            const auto source = root / L"allowed" / (std::wstring(fixture.family) + (isolated ? L"-isolated" : L"-control")) / (std::wstring(fixture.family) + L" \u00fc." + fixture.extension);
-            const auto name = std::wstring(fixture.family) + (isolated ? L"-isolated" : L"-control");
-            const auto pdf = root / L"writable" / name / (std::wstring(fixture.family) + L" \u00fc.pdf");
+            const auto name = KitCaseName(fixtureIndex, isolated, fonts, missing);
+            const auto stem = KitFileStem(fixtureIndex, fonts, missing);
+            const auto source = root / L"allowed" / name / (stem + L"." + fixture.extension);
+            const auto pdf = root / L"writable" / name / (stem + L".pdf");
             Require(!fs::exists(pdf), "Keep embedded output fresh");
             const auto sourceUri = KitFileUri(source);
             // The pinned loader otherwise resets MacroSecurityLevel to 1.
@@ -124,9 +150,16 @@ int OfficeKitChild(const fs::path& root, bool isolated, int fixtureIndex = -1) {
             }
             Require(document && document->methods && document->methods->bytes >= sizeof(OfficeKitDocumentMethods) &&
                 document->methods->destroy && document->methods->saveAs && document->methods->type, "Load authored document and verify ABI");
+            FontCallbackObservation fontObservation;
             struct DocumentGuard { OfficeKitDocument* document; ~DocumentGuard() { document->methods->destroy(document); } } documentGuard{document};
             Require(document->methods->type(document) == fixtureIndex, "Match authored document family");
             std::cout << "{\"documentLoaded\":true}\n" << std::flush;
+            if (fonts) {
+                Require(document->methods->registerCallback != nullptr, "Pinned document font callback API");
+                document->methods->registerCallback(document, FontCallback, &fontObservation);
+                Require(!fontObservation.limited, "Bound font callback evidence");
+                std::cout << "{\"fontCallbackRegistered\":true}\n" << std::flush;
+            }
             const auto pdfUri = KitFileUri(pdf);
             const char* options = R"({"UseLosslessCompression":{"type":"boolean","value":"true"},"ReduceImageResolution":{"type":"boolean","value":"false"},"UseTaggedPDF":{"type":"boolean","value":"true"},"ExportBookmarks":{"type":"boolean","value":"true"},"ExportNotes":{"type":"boolean","value":"false"},"ExportNotesPages":{"type":"boolean","value":"false"},"ExportOnlyNotesPages":{"type":"boolean","value":"false"},"ExportHiddenSlides":{"type":"boolean","value":"false"},"SinglePageSheets":{"type":"boolean","value":"false"},"ExportFormFields":{"type":"boolean","value":"false"},"IsAddStream":{"type":"boolean","value":"false"},"EncryptFile":{"type":"boolean","value":"false"},"ExportTrackedChanges":{"type":"boolean","value":"false"},"SelectPdfVersion":{"type":"long","value":"17"}})";
             const auto saved = document->methods->saveAs(document, pdfUri.c_str(), "pdf", options);
@@ -135,6 +168,11 @@ int OfficeKitChild(const fs::path& root, bool isolated, int fixtureIndex = -1) {
                 if (error) { std::cout << std::string(error, strnlen_s(error, 4096)) << std::endl; kit->methods->freeError(error); }
             }
             Require(saved != 0, "Export authored PDF");
+            if (fonts) {
+                document->methods->registerCallback(document, nullptr, nullptr);
+                Require(!fontObservation.limited, "Bound font callback evidence through PDF export");
+                std::cout << "{\"fontCallbackCount\":" << fontObservation.count << "}\n" << std::flush;
+            }
             std::cout << "{\"documentExported\":true}\n" << std::flush;
         } catch (...) { failure = std::current_exception(); }
         destroyer = std::thread([&] {
@@ -154,10 +192,19 @@ int OfficeKitChild(const fs::path& root, bool isolated, int fixtureIndex = -1) {
     return 0;
 }
 
-bool OfficeEmbeddedStartup(const fs::path& root, PSID sid, bool exports = false) {
+bool OfficeEmbeddedStartup(const fs::path& root, PSID sid, bool exports = false, bool fonts = false) {
     (void)OfficeRuntime(root, sid);
     if (exports) Grant(root.parent_path() / L"office-fixtures", sid, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
     auto values = AccessEnvironmentValues(root);
+    if (fonts) {
+        // Match the production native-profile base, not the older access probe's
+        // redirected LOCALAPPDATA experiment. No caller search paths are inherited.
+        PWSTR local = nullptr;
+        Require(SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &local)) && local,
+            "Locate real native-profile base for font comparison");
+        values[L"LOCALAPPDATA"] = local;
+        CoTaskMemFree(local);
+    }
     values[L"SAL_DISABLE_OPENCL"] = L"1";
     if (exports) values[L"SAL_LOK_OPTIONS"] = L"unipoll";
     values[L"SAL_LOG"] = L"+INFO+WARN+TIMESTAMP";
@@ -165,20 +212,22 @@ bool OfficeEmbeddedStartup(const fs::path& root, PSID sid, bool exports = false)
     const auto previous = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
     struct ErrorModeGuard { UINT value; ~ErrorModeGuard() { SetErrorMode(value); } } guard{previous};
     bool passed = true;
+    for (int variant = 0; variant < (fonts ? 2 : 1); ++variant)
     for (int index = exports ? 0 : -1; index < (exports ? 3 : 0); ++index) for (const bool isolated : {false, true}) {
-        const auto profileName = exports ? std::wstring(kitFixtures[index].profile) + (isolated ? L"i" : L"c") :
+        const bool missing = variant == 1;
+        const auto profileName = exports ? std::wstring(kitFixtures[index].profile) + (fonts ? (missing ? L"m" : L"a") : L"") + (isolated ? L"i" : L"c") :
             std::wstring(isolated ? L"ki" : L"kc");
         const auto profile = root / L"writable" / profileName;
         fs::create_directories(profile / L"user");
         fs::copy_file(root.parent_path() / L"office-fixtures" / L"settings.xcu", profile / L"user" / L"registrymodifications.xcu");
-        const auto name = exports ? std::wstring(kitFixtures[index].family) + (isolated ? L"-isolated" : L"-control") :
+        const auto name = exports ? KitCaseName(index, isolated, fonts, missing) :
             std::wstring(isolated ? L"kit-isolated" : L"kit-control");
         const auto alias = exports ? L"kit-" + name : name;
         if (exports) {
             fs::create_directory(root / L"writable" / name);
             const auto input = root / L"allowed" / name;
             fs::create_directory(input);
-            const auto filename = std::wstring(kitFixtures[index].family) + L" \u00fc." + kitFixtures[index].extension;
+            const auto filename = KitFileStem(index, fonts, missing) + L"." + kitFixtures[index].extension;
             fs::copy_file(root.parent_path() / L"office-fixtures" / filename, input / filename);
             Require(SetFileAttributesW((input / filename).c_str(), FILE_ATTRIBUTE_READONLY) != FALSE,
                 "Make the owned input copy read-only");
@@ -197,12 +246,13 @@ bool OfficeEmbeddedStartup(const fs::path& root, PSID sid, bool exports = false)
         std::ofstream(root / (std::wstring(name) + L".log")) << result.output;
         const bool initialized = result.output.find("{\"kitInitialized\":true}") != std::string::npos;
         const bool destroyed = result.output.find("{\"kitDestroyed\":true}") != std::string::npos;
-        const auto pdf = exports ? root / L"writable" / name / (std::wstring(kitFixtures[index].family) + L" \u00fc.pdf") : fs::path{};
+        const auto pdf = exports ? root / L"writable" / name / (KitFileStem(index, fonts, missing) + L".pdf") : fs::path{};
         const auto bytes = exports && fs::is_regular_file(pdf) ? fs::file_size(pdf) : 0;
         const bool exported = exports && result.output.find("{\"documentExported\":true}") != std::string::npos;
         const bool loopReady = result.output.find("{\"loopReady\":true}") != std::string::npos;
         const bool completed = result.exitCode == 0 && !result.timedOut && !result.outputLimit && initialized && destroyed &&
-            (!exports || (loopReady && exported && bytes > 0 && bytes <= 16 * MiB));
+            (!exports || (loopReady && exported && bytes > 0 && bytes <= 16 * MiB)) &&
+            (!fonts || result.output.find("{\"fontCallbackRegistered\":true}") != std::string::npos);
         std::ofstream(root / (name + (exports ? L"-export.json" : L".json"))) << "{\"completed\":" << (completed ? "true" : "false")
             << ",\"inputCopy\":" << (exports ? "true" : "false") << ",\"loopReady\":" << (loopReady ? "true" : "false")
             << ",\"initialized\":" << (initialized ? "true" : "false") << ",\"destroyed\":" << (destroyed ? "true" : "false")
@@ -211,6 +261,7 @@ bool OfficeEmbeddedStartup(const fs::path& root, PSID sid, bool exports = false)
             << ",\"outputLimit\":" << (result.outputLimit ? "true" : "false") << ",\"milliseconds\":" << GetTickCount64() - started
             << ",\"totalProcesses\":" << result.totalProcesses << ",\"activeAfterCleanup\":0,\"rootAppContainerTokenVerified\":" << (isolated ? "true" : "false") << "}\n";
         passed &= completed;
+        if (fonts) std::cout << "Font callback case " << KitUtf8(name) << ": " << (completed ? "completed" : "failed") << '\n' << std::flush;
     }
     return passed;
 }

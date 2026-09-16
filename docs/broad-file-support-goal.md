@@ -5,6 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [renderer font callback evaluation](office-font-callback-evaluation.md)
+passes twelve native exports and independent callback/PDF checks. Normal and
+restricted processes agree on missing-family signals and all six pixel pairs;
+the full runtime and originals remain unchanged, and the native profile is gone.
+This establishes a positive warning mechanism for the next host/worker and
+compact consent flow, not complete font fidelity or implemented customer UI.
+
 The [known Excel date refusal](excel-date-system-evaluation.md#known-date-conversion-refusal)
 now stops positively identified early-1900 date risks in the application,
 preparation and private exporter before native execution. All 3,656 foundation

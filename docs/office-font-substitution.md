@@ -58,6 +58,12 @@ Comparing PDF BaseFont strings alone is not an adequate production detector.
 Preserve copies and use a compact necessary decision when fidelity cannot be
 maintained, within the existing context-menu UX; a general planner is unnecessary.
 The detector and exact customer flow are still unimplemented.
+The subsequent [renderer callback evaluation](office-font-callback-evaluation.md)
+finds a viable positive warning signal: all twelve normal/restricted exports
+distinguish the synthetic missing family from Arial, with independently checked
+PDFs and matching isolation pixels. The callback filters some substitutions and
+cannot prove complete font/style/glyph fidelity. Customer warning transport and
+the consent flow still need implementation.
 The subsequent [read-only declaration scan](document-font-references.md) reports
 requested names and unresolved themes within fixed limits; it does not establish
 installed availability or determine the fonts actually used by the renderer.

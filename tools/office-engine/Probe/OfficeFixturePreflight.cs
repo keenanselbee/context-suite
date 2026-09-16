@@ -6,7 +6,7 @@ using ContextSuite.Core.Analysis;
 // through the native experiment so the checked sources cannot be replaced.
 internal static class OfficeFixturePreflight
 {
-    internal static async Task<int> RunAsync(string directory)
+    internal static async Task<int> RunAsync(string directory, bool fonts = false)
     {
         var folder = Path.GetFullPath(directory);
         if (!folder.Contains("\\.codex-temp\\office-isolation\\", StringComparison.OrdinalIgnoreCase) ||
@@ -15,8 +15,9 @@ internal static class OfficeFixturePreflight
         var results = new List<object>();
         var passed = true;
         foreach (var (family, format) in new[] { ("Word", "docx"), ("Excel", "xlsx"), ("PowerPoint", "pptx") })
+        foreach (var suffix in fonts ? new[] { " font control.", " font missing." } : new[] { " \u00fc." })
         {
-            var path = Path.Combine(folder, family + " ü." + format);
+            var path = Path.Combine(folder, family + suffix + format);
             using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var result = await OfficeSourcePreflight.InspectOpenXmlAsync(path, input, deadline.Token);

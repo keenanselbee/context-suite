@@ -511,15 +511,20 @@ int wmain(int argc, wchar_t** argv) {
             int fixtureIndex = -1;
             bool isolated = image.filename() == L"kit-isolated.exe";
             bool recognized = isolated || image.filename() == L"kit-control.exe";
+            bool fonts = false, missing = false;
             for (int index = 0; index < 3; ++index) for (const bool restricted : {false, true}) {
                 const auto name = std::wstring(L"kit-") + kitFixtures[index].family + (restricted ? L"-isolated.exe" : L"-control.exe");
                 if (image.filename() == name) { fixtureIndex = index; isolated = restricted; recognized = true; }
+            }
+            for (int index = 0; index < 3; ++index) for (const bool restricted : {false, true}) for (const bool absent : {false, true}) {
+                const auto name = L"kit-" + KitCaseName(index, restricted, true, absent) + L".exe";
+                if (image.filename() == name) { fixtureIndex = index; isolated = restricted; recognized = true; fonts = true; missing = absent; }
             }
             if (recognized) {
                 Require(image.parent_path().filename() == L"allowed" &&
                     image.native().find(L"\\.codex-temp\\office-isolation\\") != std::wstring::npos,
                     "Use an owned embedded test executable");
-                return OfficeKitChild(image.parent_path().parent_path(), isolated, fixtureIndex);
+                return OfficeKitChild(image.parent_path().parent_path(), isolated, fixtureIndex, fonts, missing);
             }
             return 2;
         }
@@ -571,7 +576,8 @@ int wmain(int argc, wchar_t** argv) {
             return OfficeRedirectedEnvironmentControl(root) ? 0 : 6;
         }
         const bool startupDiagnostics = argc == 4 && std::wstring(argv[3]) == L"--office-startup-diagnostics";
-        const bool embeddedExports = argc == 4 && std::wstring(argv[3]) == L"--office-embedded-exports";
+        const bool fontComparison = argc == 4 && std::wstring(argv[3]) == L"--office-font-callbacks";
+        const bool embeddedExports = fontComparison || (argc == 4 && std::wstring(argv[3]) == L"--office-embedded-exports");
         const bool embeddedStartup = embeddedExports || (argc == 4 && std::wstring(argv[3]) == L"--office-embedded-startup");
         const bool officeExports = argc == 4 && std::wstring(argv[3]) == L"--office-exports";
         const bool officeVersion = officeExports || (argc == 4 && std::wstring(argv[3]) == L"--office-version");
@@ -605,7 +611,7 @@ int wmain(int argc, wchar_t** argv) {
         Grant(root / L"allowed", sid.value, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE);
         Grant(root / L"writable", sid.value, FILE_GENERIC_READ | FILE_GENERIC_WRITE | FILE_GENERIC_EXECUTE | DELETE | FILE_DELETE_CHILD);
         if (startupDiagnostics || embeddedStartup) {
-            const bool passed = embeddedStartup ? OfficeEmbeddedStartup(root, sid.value, embeddedExports) : OfficeStartupDiagnostics(root, sid.value);
+            const bool passed = embeddedStartup ? OfficeEmbeddedStartup(root, sid.value, embeddedExports, fontComparison) : OfficeStartupDiagnostics(root, sid.value);
             profile.Remove();
             std::ofstream(root / L"profile-cleanup.json") << "{\"removed\":true}\n";
             Require(passed, "Restricted Office startup evaluation");
