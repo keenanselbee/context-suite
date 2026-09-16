@@ -27,7 +27,9 @@ document copies, sharing one admission with combined-image PDF work. Spreadsheet
 calculation requires a focused choice; retention, fidelity and integrated
 acceptance remain open. Retain the simple customer surfaces above. Shared Analyze/fallback,
 bounded JSON/XML structure analysis and a 244-entry catalog are implemented with automated
-evidence; see [current coverage](file-type-coverage.md). Signing is deferred.
+evidence; see [current coverage](file-type-coverage.md). The
+[launch capability matrix](launch-capability-matrix.md) separates recognition,
+analysis, executable pairs, packaged engines and remaining acceptance. Signing is deferred.
 
 Status: shell/process and output-safety foundations implemented; PNG/JPEG/WebP/BMP/TGA
 conversion and bounded DDS analysis/conversion have passed local acceptance.

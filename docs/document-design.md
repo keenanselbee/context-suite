@@ -12,10 +12,12 @@ admission now has a tested internal immutable plan and paid/trial path. The
 application executor also passes isolated export/validation/copy-publication and
 pending-cleanup tests. [Direct PDF dispatch](office-direct-command.md) now connects
 Office documents and combined images through one batch admission. Completed
-contexts and recorded unstarted preparation support retirement; torn or missing
-preparation records and
-integrated acceptance remain open. Host completion alone is insufficient. Worker interruption evidence covers snapshot preparation and
-following work, with reservation-copy interruption still open.
+contexts and recorded unstarted preparation support retirement. The
+[actual-app preparation follow-up](office-app-preparation.md) verifies recovery
+of interrupted preparation, forwarded Analyze, following Word export and retained
+blocked-cleanup guidance. Broader fidelity and integrated acceptance remain open.
+The [launch matrix](launch-capability-matrix.md) records the exact implemented
+variants and current packaging gap. Host completion alone is insufficient.
 
 The [PDF page geometry matrix](pdf-page-geometry.md) now verifies cropped and
 rotated page pixels and the current maximum output dimensions through actual

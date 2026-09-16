@@ -5,6 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [launch capability matrix, revision 2026-09-16.1](launch-capability-matrix.md)
+now reconciles the implemented input/output pairs, analysis coverage, original-file
+rules and engine availability against current source. The retained 1.1.0 stage
+still verifies all 116 files, but contains no Office engine. Early-1900 Excel
+date fidelity, exact legacy/template/macro scope, Office isolation/adoption and
+fresh integrated packaging remain open; analysis does not satisfy those actions.
+
 The [paragraph-mark revision controls](word-revision-application.md#paragraph-mark-controls)
 pass 16 application checks and six independent PDF text, line-layout and exact
 pixel checks. Deleted paragraph breaks join content and inserted breaks retain
@@ -271,7 +278,7 @@ worker. All four committed copies independently decode to 1,536 finite stereo
 frames. See the [scoped recovery evidence](finite-audio-resampling.md#finite-path-interruption-and-retry).
 This adds no product payload change or visible acceptance claim.
 
-Current completion path (2026-09-12)
+Current completion path (2026-09-16)
 ------------------------------------
 
 Use this summary for current priority; the dated evidence below records individual
@@ -286,7 +293,7 @@ checkpoint; rerun it for relevant changes, a failure or the final integrated bui
 | Offline catalog | 244 records, schema/version validation, source references, reviewed current MIME claims, reconciled typical-use descriptions and current detector-route provenance | Finish wider alias/variant review and additional meaningful MIME coverage; preserve the distinction between descriptive and detected coverage. More records are not a substitute for finishing that review |
 | Audio | Six conversion targets, lossless FLAC optimization, optional curated payload, real-worker/interruption evidence and a rate/layout matrix with corrected Opus surround mapping | Close remaining input/metadata variants, independent decoding and human listening/player checks, redistribution/adoption review and integrated UI/recovery acceptance |
 | PDF | Optional structural optimization, all-page PNG conversion and combined image PDF with explicit order review | Close documented fidelity/unsupported-input and recovery gaps; accept the order dialog and outputs visibly; review redistribution and adopt the selected payload |
-| Office to PDF | Independently sourced uninstalled candidate; generated Word/Excel/PowerPoint experiments, owned evaluation jobs and prepared isolation probe | Verify the isolation boundary, settle rendering policies, implement the required converter, then pass fidelity, hostile-input, cancellation and publication acceptance |
+| Office to PDF | Exact DOCX/XLSX/PPTX commands, native isolated export, independent PDF validation, copy publication and application recovery; Word final-text policy and explicit spreadsheet choice | Resolve known early-1900 date errors and broader fidelity; settle legacy/template/macro variants; close network-isolation and visible acceptance; implement verified Office staging and adoption |
 | Integration | Isolated combined staging and dated contract runs | Build and verify the final selected payload, run relevant regression suites together, update customer capability claims and record actual manual acceptance separately |
 
 The owner authorized the disposable Office isolation profile test on 2026-09-14.
@@ -1521,8 +1528,10 @@ Milestone 0: scope and evidence contracts
 ---------------------------------------
 
 - [x] Record the broader launch direction and preserve the completed image scope.
-- [ ] Produce a versioned capability matrix distinguishing catalog recognition,
+- [x] Produce a versioned capability matrix distinguishing catalog recognition,
   signature identification, detailed analysis, conversion and optimization.
+  See [revision 2026-09-16.1](launch-capability-matrix.md); it preserves open
+  implementation/acceptance cells and does not declare release readiness.
 - [ ] Freeze the first audio input/output pairs and metadata/fidelity policies.
 - [x] Resolve the document transformation decision below with concrete options.
 - [ ] Define fixture ownership/provenance and parser resource budgets before

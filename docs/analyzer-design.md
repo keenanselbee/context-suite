@@ -3,9 +3,11 @@ Context Analyzer Design
 
 Status: generic Analyze fallback, initial header identification, DDS details,
 bounded JSON/XML structure analysis, WAVE/FLAC/AIFF/AU header facts, document package and
-legacy compound analysis, and a 243-entry descriptive catalog are
+legacy compound analysis, and a 244-entry descriptive catalog are
 implemented. The [coverage inventory](file-type-coverage.md) records exact
 facts, limits and tests; broader catalog/family analysis remains in progress.
+The [launch matrix](launch-capability-matrix.md) separates these analysis facts
+from current conversion/optimization and packaged-engine availability.
 
 The [file I/O cancellation scope](analyze-io-cancellation.md) now covers synchronous
 opening and metadata operations as well as the asynchronous read budget. Local

@@ -1,8 +1,10 @@
-Context Suite: Image Quick Start
-===============================
+Context Suite Quick Start
+=========================
 
-Draft for the internal candidate. Do not distribute the unsigned test installer
-as a customer release. Signed installation and live license acceptance are pending.
+Draft for the expanded internal candidate. The retained 1.1.0 package includes
+images, audio and PDF tools; Office conversion is tested in separate isolated
+builds. Default release packaging has not adopted the optional engines. Signed
+installation and live license acceptance are pending.
 
 Everyday use
 ------------
@@ -10,14 +12,17 @@ Everyday use
 Select one or more files in File Explorer, then right-click:
 
 - **Analyze** shows information without modifying files.
-- **Convert** creates a different image format. Choose the target from the menu.
+- **Convert** creates the selected image, audio or PDF format when the build and
+  source support it. Choose the target from the menu.
   If the conversion needs a decision, such as a background color for a transparent
   image, Context Suite asks before proceeding.
-- **Optimize** reduces PNG file size while keeping the PNG format. Start with
+- **Optimize** reduces supported PNG, FLAC or PDF file size while keeping its
+  format. For PNG, start with
   **Auto**; it aims for a useful size reduction with gentle quality changes.
   **Lossless** keeps pixels identical, **Balanced** permits modest changes, and
   **Smallest** permits more changes to reduce size further. No preset guarantees
-  a particular file size. Already efficient files can remain unchanged.
+  a particular file size. FLAC and PDF use Auto or Lossless. Already efficient
+  files can remain unchanged.
 
 Routine menu actions create copies by default. Original filenames are retained, with new
 names such as `Photo - Converted.webp` or `Photo - Optimized.png`. Existing output
@@ -57,11 +62,10 @@ fallback. Keep your own backups of important originals.
 Supported scope
 ---------------
 
-This candidate focuses on PNG, JPEG, WebP, BMP, TGA and bounded DDS texture
-conversion. Not every variant is supported: animation, oversized files and
+Image conversion includes PNG, JPEG, WebP, BMP, TGA and bounded DDS textures.
+Not every variant is supported: animation, oversized files and
 unsupported color/texture structures may need another workflow. Read the
-file's explanation; renaming its extension does not convert it. Optimize currently
-targets PNG, not every format that Convert supports. Analyze also gives basic
+file's explanation; renaming its extension does not convert it. Analyze also gives basic
 identification and common-use descriptions for other readable regular files;
 recognition does not mean conversion is available.
 
@@ -76,20 +80,26 @@ files while preserving decoded audio and admitted metadata. They share the same
 copy settings, batch progress and retry behavior. Balanced and Smallest are PNG
 presets. If the extension does not match the identified content, the app asks you
 to correct the name before optimizing. Normal packaging does not yet include the
-audio engine; audio conversion and video processing are not available in this
-packaged candidate.
+audio engine, although the retained combined 1.1.0 candidate includes it. Raw AAC,
+ALAC and other audio codecs can be recognized without being convertible. Video
+processing is not available.
 
 In isolated PDF testing, **Convert > PNG** saves each PDF page as a numbered image,
 such as `Document - Page 001.png`. It always keeps the PDF, even with Overwrite
 originals selected. Page images retain visible content; they do not carry editable
 forms, attachments or verifiable digital signatures. Protected or oversized PDFs
-can be declined. The normal packaged candidate does not yet include this renderer.
+can be declined. The retained combined candidate includes this renderer; default
+release packaging has not adopted it.
 
 The result shows how many page copies were saved. Expand file details to see their
 locations. If work stops partway through, completed copies stay in place. **Try
 again** converts only unfinished pages, using current settings for those new copies.
 If the source PDF changed, start a new Convert command. Page retry information is
 kept for the current results session; restarting the app does not resume that list.
+
+PDF **Auto** and **Lossless** optimize supported document structure without
+downsampling page images. They always keep the original PDF and publish only a
+validated smaller copy. Encrypted, signed and unsupported PDFs can be declined.
 
 The optional **Convert > PDF** workflow combines selected supported images into
 one PDF copy. With several images, review their page order before converting.
@@ -102,8 +112,11 @@ the workbook, or **Recalculate** to evaluate supported formulas locally before
 exporting. Saved values may be out of date; recalculation may change results.
 External data is not refreshed. **Try again** keeps this choice for a failed
 document. These optional Office paths are undergoing isolated acceptance and
-are not included in the reserved packaged candidate. Other Office variants may
-be declined; Analyze remains available.
+are not included in the reserved packaged candidate. Only ordinary DOCX, XLSX
+and PPTX variants are currently admitted; legacy files, templates and macro-enabled
+documents have no current conversion path. A known early-1900 spreadsheet date
+display issue remains under development, so general spreadsheet fidelity is not
+accepted yet. Analyze remains available.
 
 License and transfer
 --------------------
@@ -140,6 +153,7 @@ problem text. Do not include a license key or private image unless you intention
 choose to share it. A small non-private sample is preferable when reporting a format
 problem. Preserve any original or recovery backup named in a warning.
 
+For exact format/build boundaries, see the [launch matrix](launch-capability-matrix.md).
 For detailed internal acceptance status, see
 [licensing verification](licensing-verification.md) and the
 [commercial-release goal](commercial-release-candidate-goal.md).

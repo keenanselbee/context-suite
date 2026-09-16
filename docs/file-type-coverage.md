@@ -3,6 +3,11 @@ File Type Coverage
 
 Revision: 2026-09-14.1; expanded catalog and bounded structure analysis, not release acceptance
 
+Transformation status reconciled 2026-09-16. The
+[launch capability matrix](launch-capability-matrix.md) distinguishes the current
+source implementation from the retained 1.1.0 image/audio/PDF package and the
+separate isolated Office builds. This document owns detailed Analyze coverage.
+
 Recognition and capabilities
 ----------------------------
 
@@ -103,7 +108,7 @@ Current implementation and remaining work are separate:
 | PDF | Initial PDF signature; optional bounded complete-snapshot worker probe | Header version; with the candidate engine, reported pages/encryption/forms/attachments/bookmarks; locked content remains unavailable | Optional PDF-to-PNG and structural optimization implemented; default release adoption pending |
 | ZIP | Initial record signature plus bounded ZIP32 directory when available | Directory count; selected document declarations only; no extraction | None |
 | Compound file | Signature and bounded CFB directory/allocation inspection | Container version, sector size and reachable/root stream counts; container alone does not identify an Office family | None |
-| DOC / XLS / PPT | Root-level stream names agreeing with supported binary headers | Bounded legacy version/size/encryption declarations; rendered pages and active content unavailable; identity likely | PDF conversion selected; implementation pending |
+| DOC / XLS / PPT | Root-level stream names agreeing with supported binary headers | Bounded legacy version/size/encryption declarations; rendered pages and active content unavailable; identity likely | No implemented conversion; required Word/Excel/PowerPoint scope still needs an exact legacy-variant decision or implementation and fidelity evidence |
 | DOS/Windows executables | MZ; PE signature/COFF header at a bounded declared offset | Raw PE machine and section count where present; no execution | None |
 | Text | Strict UTF-8/UTF-16/UTF-32 sampling with recognized BOMs where present | Possible encoding, explicitly derived; no application-purpose inference | None |
 | JSON | Whole-file object/array parsing within 64 KiB and depth 32 | Root kind and top-level count; no application semantics | None |
@@ -113,7 +118,7 @@ Current implementation and remaining work are separate:
 | AU | Signature and fixed header | Declared encoding/channels/rate/extent; interpreted PCM precision and aligned derived timing | None added |
 | FLAC | Marker and first STREAMINFO declaration | Channels/rate/precision/sample count and derived duration, declared checksum presence, observed comment/picture block counts and metadata-list completeness; no frame or metadata-content validation | Fixed audio conversion and lossless recompression implemented with the optional reviewed engine |
 | Ogg | Ogg page marker | Container only; does not imply Vorbis or Opus | Optional audio conversion requires separately probed supported codec; recognition alone is insufficient |
-| DOCX / XLSX / PPTX | Agreeing package relationship, main content type and main XML root within fixed limits | Declared sheet/slide counts, bounded slide visibility and macro-enabled type; scoped Word revision markers; rendered pages unavailable; identity likely | Isolated application PDF export/validation/copy publication tested; customer command and completed-context cleanup pending. One PDF copy per document; overwrite unavailable |
+| DOCX / XLSX / PPTX | Agreeing package relationship, main content type and main XML root within fixed limits | Declared sheet/slide counts, bounded slide visibility and macro-enabled type; scoped Word revision markers; rendered pages unavailable; identity likely | Exact ordinary DOCX/XLSX/PPTX command, validated copy publication and recovery implemented/tested in isolation. Templates/macros are not admitted. Office packaging, wider fidelity and visible acceptance remain open |
 | ODT / ODS / ODP | Agreeing MIME, manifest and supported unencrypted content family | Sheet/slide elements, declared content encryption; encrypted content remains unavailable; identity likely | Analysis only selected |
 | Other readable regular files | Generic fallback regardless of extension | Size, inspected-byte count, unknown identity or qualified filename hint | No new operation |
 | TrueType / OpenType / font collections / WOFF / WOFF2 | Font tags and available fixed headers; additional plausibility checks for numeric TrueType tag | Declared flavor, table/font counts and packaged-size references; table contents, glyphs, names and rights unavailable | None |

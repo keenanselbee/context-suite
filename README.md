@@ -36,8 +36,11 @@ catalog, common audio, and PDF/document support. The first Analyze source slice
 now handles unknown/empty files, initial header identification and existing DDS
 details, bounded JSON/XML structure analysis, WAVE/FLAC header facts,
 bounded OOXML/OpenDocument package and legacy DOC/XLS/PPT analysis, and a
-243-entry offline catalog.
-See [exact coverage](docs/file-type-coverage.md), including remaining source review.
+244-entry offline catalog.
+The [versioned launch matrix](docs/launch-capability-matrix.md) separates current
+analysis, exact conversion pairs, optimization, packaged engines and remaining
+acceptance. See [analysis coverage](docs/file-type-coverage.md) for individual
+facts and source-review limits.
 Audio conversion now has isolated worker/publication coverage for all 30
 cross-format pairs, direct Convert commands and a compact prompt for required
 quality changes. Production audio engine adoption and visible acceptance remain
@@ -64,7 +67,8 @@ images into one validated copy when the optional validator is present. Several
 images require page-order review; retries keep that order and preserve originals.
 An explicit [combined production candidate](docs/pdf-production-payload.md) now
 packages these PDF engines and notices alongside images/audio. Default release
-adoption, broader document fidelity and Office conversion remain pending.
+adoption and broader document fidelity remain pending. Office conversion is
+implemented separately in isolated builds and is absent from that package.
 Normal packaging still excludes this validator. [Optional Office PDF commands](docs/office-direct-command.md)
 now connect DOCX/XLSX/PPTX documents to separate validated copies, with a focused
 spreadsheet calculation choice. Integrated acceptance and Office packaging remain
