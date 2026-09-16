@@ -76,6 +76,55 @@ internal static partial class DocumentAnalysisContracts
         using (var file = new FileStream(oversized, FileMode.CreateNew, FileAccess.Write)) file.SetLength(OfficeHostProtocol.MaximumSourceBytes + 1);
         await RejectAsync(async () => { using var unused = await OfficeContextPreparation.CreateAsync(root, runtime, oversized, "docx", "none", default); },
             "Office preparation checks its source budget before parsing or copying");
+        var unopened = Path.Combine(stage, "unopened");
+        foreach (var scenario in new[] { "relative", "noncanonical", "runtime-child", "policy", "format", "content", "size", "missing-runtime", "path-budget", "cancelled" })
+        {
+            var requestedRoot = Path.Combine(unopened, scenario);
+            var actualRoot = requestedRoot;
+            var selectedRuntime = runtime; var selectedSource = good;
+            var selectedFormat = "docx"; var selectedCalculation = "none";
+            switch (scenario)
+            {
+                case "relative": requestedRoot = Path.GetRelativePath(Environment.CurrentDirectory, requestedRoot); break;
+                case "noncanonical": requestedRoot = Path.Combine(unopened, "unused", "..", scenario); break;
+                case "runtime-child": requestedRoot = actualRoot = Path.Combine(runtime, "unopened"); break;
+                case "policy": selectedCalculation = "cached"; break;
+                case "format": selectedFormat = "pptx"; break;
+                case "content": selectedSource = invalid; break;
+                case "size": selectedSource = oversized; break;
+                case "missing-runtime": selectedRuntime = Path.Combine(stage, "missing-runtime"); break;
+                case "path-budget": requestedRoot = actualRoot = Path.Combine(unopened, new string('x', 160)); break;
+            }
+            try
+            {
+                using var unused = await OfficeContextPreparation.CreateAsync(requestedRoot, selectedRuntime, selectedSource,
+                    selectedFormat, selectedCalculation, scenario == "cancelled" ? canceled.Token : default, createContextRoot: true);
+                check(false, "Office root creation rejects invalid preparation: " + scenario);
+            }
+            catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or Win32Exception ||
+                scenario == "cancelled" && error is OperationCanceledException)
+            { check(true, "Office root creation rejects invalid preparation: " + scenario); }
+            check(!Directory.Exists(actualRoot) && !Directory.Exists(unopened),
+                "Office rejected preparation does not create a root or ancestors: " + scenario);
+        }
+        var freshRoot = Path.Combine(stage, "fresh", "nested", "contexts");
+        await RejectAsync(async () => { using var unused = await OfficeContextPreparation.CreateAsync(freshRoot, runtime, good, "docx", "none", default); },
+            "Office existing-root mode still refuses a missing root");
+        check(!Directory.Exists(Path.Combine(stage, "fresh")), "Office existing-root refusal creates no ancestors");
+        var freshBytes = File.ReadAllBytes(good); var freshTime = File.GetLastWriteTimeUtc(good);
+        using (var prepared = await OfficeContextPreparation.CreateAsync(freshRoot, runtime, good, "docx", "none", default, createContextRoot: true))
+        {
+            check(prepared.Journal.Version == 4 && File.ReadAllBytes(prepared.Work.SourcePath).SequenceEqual(freshBytes),
+                "Office preparation creates a validated missing root and exact snapshot");
+            Refuses(() => Directory.Move(Path.Combine(stage, "fresh"), Path.Combine(stage, "fresh-moved")),
+                "Office newly created root ancestors remain leased during preparation");
+            check(!Directory.Exists(OfficeOwnershipJournal.ExpectedProfileDirectory(prepared.Work.ProfileName)),
+                "Office root creation does not create a native profile");
+        }
+        check(File.ReadAllBytes(good).SequenceEqual(freshBytes) && File.GetLastWriteTimeUtc(good) == freshTime,
+            "Office fresh-root preparation preserves original bytes and timestamp");
+        using (var exclusive = new FileStream(good, FileMode.Open, FileAccess.Read, FileShare.None))
+            check(true, "Office fresh-root preparation releases its original lease");
         var alias = Path.Combine(originals, "alias.docx");
         if (!CreateHardLink(alias, good, IntPtr.Zero)) throw new Win32Exception(Marshal.GetLastWin32Error());
         await RejectAsync(async () => { using var unused = await OfficeContextPreparation.CreateAsync(root, runtime, alias, "docx", "none", default); },

@@ -5,10 +5,19 @@ Status: preparation, live retirement and recorded retirement after restart are
 implemented; incomplete preparation and customer Office integration remain open.
 
 `OfficeContextPreparation.CreateAsync` now constructs the source context used by
-the Office worker. It takes an existing context root, the runtime directory, an
+the Office worker. It takes a context root, the runtime directory, an
 original path, an explicit DOCX/XLSX/PPTX format and the explicit calculation
 policy. Excel requires `cached` or `recalculate`; this does not select a customer
 default. The original, runtime and context locations must remain separate.
+
+Callers normally supply an existing root. The application executor explicitly
+allows preparation to create a missing root, after location, fixed-policy,
+path-budget and source checks succeed. Creation walks missing ancestors from a
+leased existing parent and retains each new directory before creating its child.
+The executor does not create an unchecked root ahead of preparation. Rejected
+locations, unsupported policies, invalid sources and pre-cancelled requests leave
+missing roots absent. A later copy or journal failure may still retain a partial
+context under the failure policy below.
 
 Preparation holds ordinary local directory ancestors and opens the original leaf
 without following a reparse point. It refuses multiple filesystem links, empty or
@@ -92,6 +101,15 @@ not infer deletion authority from a directory name or sweep old scratch folders.
 
 Verification
 ------------
+
+The root-creation follow-up passes all **3,461 foundation contracts** in
+`.codex-temp/office-preparation-foundation-d1c13d1093af4615a32c04db435add91`.
+Its 27 additional checks cover relative and noncanonical roots, runtime overlap,
+unsupported policy, mismatched/invalid/oversized input, missing runtime, path
+limits, cancellation, explicit existing-root behavior and successful nested-root
+creation. They verify absent directories after refusal, retained ancestor leases,
+unchanged original bytes/timestamp and released source handles. These tests create
+no native profiles and do not rerun real Office rendering or visible acceptance.
 
 The retirement follow-up passes all **3,379 foundation contracts** in
 `.codex-temp/office-preparation-foundation-975874f186df4b918f1cdb1bb3c0b395`.

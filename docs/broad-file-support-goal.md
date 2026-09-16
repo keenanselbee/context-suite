@@ -5,6 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office root-creation check](office-context-preparation.md) now validates the
+location, policy and original before creating temporary root directories. All
+3,461 foundation contracts pass, including 27 new filesystem/refusal checks.
+Customer Office command wiring, incomplete-preparation retention, the owner's
+Excel calculation default and integrated acceptance remain open. This follow-up
+does not add native-profile, renderer, packaging or visible acceptance evidence.
+
 The [recorded Office retirement after restart](office-startup-recovery.md#completed-context-retirement)
 now passes all 3,434 foundation contracts and 40 native-profile recovery checks.
 Version-four journals bind the generated directories and record terminal cleanup

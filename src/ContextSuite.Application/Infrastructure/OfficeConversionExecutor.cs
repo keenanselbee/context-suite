@@ -64,10 +64,8 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
         try
         {
             report?.Invoke(new(source.Path, OperationState.Running, "Preparing document for PDF conversion"));
-            PublicationFiles.RejectLinks(contextRoot);
-            Directory.CreateDirectory(contextRoot);
             var prepared = await OfficeContextPreparation.CreateAsync(contextRoot, worker.OfficeEngineDirectory, source.Path,
-                source.Format, source.Calculation, token);
+                source.Format, source.Calculation, token, createContextRoot: true);
             context = new(prepared);
             if (prepared.OriginalIdentity.Length != source.FileBytes ||
                 !string.Equals(prepared.OriginalIdentity.Sha256, source.Sha256, StringComparison.OrdinalIgnoreCase))

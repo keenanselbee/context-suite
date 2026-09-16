@@ -22,7 +22,7 @@ internal sealed class OfficeContextPreparation : IDisposable
     internal FileFingerprint OriginalIdentity { get; private set; } = null!;
 
     internal static async Task<OfficeContextPreparation> CreateAsync(string contextRoot, string runtimeDirectory,
-        string sourcePath, string format, string calculation, CancellationToken token)
+        string sourcePath, string format, string calculation, CancellationToken token, bool createContextRoot = false)
     {
         token.ThrowIfCancellationRequested();
         var root = PublicationFiles.Normalize(contextRoot);
@@ -40,7 +40,6 @@ internal sealed class OfficeContextPreparation : IDisposable
         var result = new OfficeContextPreparation { OriginalPath = source };
         try
         {
-            result._leases.Add(OfficeSandboxOwner.LeaseDirectory(root));
             result._leases.Add(OfficeSandboxOwner.LeaseDirectory(runtime));
             result._leases.Add(OfficeSandboxOwner.LeaseDirectory(Path.GetDirectoryName(source)!));
             result._original = OpenFile(source, create: false);
@@ -53,6 +52,9 @@ internal sealed class OfficeContextPreparation : IDisposable
             result.Work = work with { SourceBytes = result.OriginalIdentity.Length, SourceSha256 = result.OriginalIdentity.Sha256 };
             result.Work.Validate();
             token.ThrowIfCancellationRequested();
+            // Keep the root/runtime/original lease order used by retirement.
+            // Location, policy and source refusals must precede root creation.
+            result._leases.Insert(0, OpenRoot(root, createContextRoot));
             result.CreateDirectory(directory);
             foreach (var name in new[] { "input", "output", "profile", "temp" })
                 result.CreateDirectory(Path.Combine(directory, name));
@@ -92,6 +94,32 @@ internal sealed class OfficeContextPreparation : IDisposable
             result.Release();
             throw;
         }
+    }
+
+    private static IDisposable OpenRoot(string root, bool create)
+    {
+        if (!create) return OfficeSandboxOwner.LeaseDirectory(root);
+        var missing = new Stack<string>();
+        var existing = root;
+        while (!Directory.Exists(existing))
+        {
+            missing.Push(existing);
+            existing = Path.GetDirectoryName(existing) ?? throw new IOException("Office context drive is unavailable.");
+        }
+        var lease = OfficeSandboxOwner.LeaseDirectory(existing);
+        try
+        {
+            while (missing.TryPop(out var child))
+            {
+                // Hold each parent against replacement before creating its child.
+                Directory.CreateDirectory(child);
+                var next = OfficeSandboxOwner.LeaseDirectory(child);
+                lease.Dispose();
+                lease = next;
+            }
+            return lease;
+        }
+        catch { lease.Dispose(); throw; }
     }
 
     internal async Task VerifyAsync(CancellationToken token)
