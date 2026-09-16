@@ -18,14 +18,14 @@ public static class PdfRewriteInventory
     private static readonly HashSet<string> XrefStorage = new(StringComparer.Ordinal) { "/Type", "/W", "/Index", "/Length", "/Filter", "/DecodeParms" };
 
     public static PdfRewriteFacts Read(ReadOnlyMemory<byte> bytes, CancellationToken token = default)
-        => ReadCore(bytes, true, token);
+        => ReadCore(bytes, true, token)!;
 
     public static void CheckAdmission(ReadOnlyMemory<byte> bytes, CancellationToken token = default)
     {
         _ = ReadCore(bytes, false, token);
     }
 
-    private static PdfRewriteFacts ReadCore(ReadOnlyMemory<byte> bytes, bool requireData, CancellationToken token)
+    private static PdfRewriteFacts? ReadCore(ReadOnlyMemory<byte> bytes, bool requireData, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         if (bytes.Length == 0 || bytes.Length > MaximumBytes) throw new InvalidDataException("PDF structural inventory exceeds its byte budget.");
@@ -86,6 +86,27 @@ public static class PdfRewriteInventory
                 if (ids.ValueKind != JsonValueKind.Array || ids.GetArrayLength() != 2 || ids[0].ValueKind != JsonValueKind.String || ids[1].ValueKind != JsonValueKind.String)
                     throw new InvalidDataException("Invalid PDF document identifiers.");
                 originalId = ids[0].GetString();
+            }
+            if (!requireData)
+            {
+                // Admission needs complete object validation and resolvable
+                // references, not the rewrite oracle's recursive expansion.
+                // Long ordinary outline chains must not consume graph depth.
+                var names = objects.EnumerateObject().Select(entry => entry.Name).ToHashSet(StringComparer.Ordinal);
+                CheckReferences(objects);
+                return null;
+
+                void CheckReferences(JsonElement element)
+                {
+                    token.ThrowIfCancellationRequested();
+                    if (element.ValueKind == JsonValueKind.String && IsReference(element.GetString()!) &&
+                        !names.Contains("obj:" + element.GetString()))
+                        throw new InvalidDataException("PDF graph has an unresolved reference.");
+                    if (element.ValueKind == JsonValueKind.Object)
+                        foreach (var property in element.EnumerateObject()) CheckReferences(property.Value);
+                    else if (element.ValueKind == JsonValueKind.Array)
+                        foreach (var item in element.EnumerateArray()) CheckReferences(item);
+                }
             }
             var xref = trailer.TryGetProperty("/Type", out var type) && type.ValueKind == JsonValueKind.String && type.GetString() == "/XRef";
             var visited = new Dictionary<string, int>(StringComparer.Ordinal);

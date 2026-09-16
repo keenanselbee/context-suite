@@ -37,12 +37,21 @@ does not render every page or establish typography, accessibility, full visual
 fidelity or general PDF safety. The earlier authored-content and pixel comparisons
 in [startup recovery](office-startup-recovery.md) remain separate evidence.
 
-The fixed bounds include 128 MiB output, 4,096 pages, 32 MiB object JSON, the shared
-graph depth/object budgets, the page reader's geometry/allocation limits and a
+The fixed bounds include 128 MiB output, 4,096 pages, 32 MiB object JSON, JSON
+nesting depth 64, 32,768 objects, one million JSON nodes, the page reader's geometry/allocation limits and a
 60-second cancellation deadline. The page reader currently applies its raster
 geometry limits during inspection, so an unusually large printable page can be
 refused even when its PDF structure is valid. The document-specific customer
 message for this condition still belongs to pending application integration.
+
+Admission scans the complete bounded object inventory and resolves reference
+names against a set of its object keys. It does not recursively expand links:
+ordinary long outline or tagged-content chains are not deeply nested JSON.
+The full PDF rewrite preservation oracle retains its separate recursive graph
+and canonical-byte limits. Ten additional contracts cover 48-, 128- and
+512-entry outline chains, unchanged rewrite limits and unresolved references,
+including an unreachable object. See the
+[48-sheet application investigation](excel-calculated-date-guard.md#workbook-capacity-and-pdf-admission).
 
 Request cancellation propagates; the component removes its owned inspection
 snapshot. The caller must abandon a partial reservation after failure or

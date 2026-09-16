@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json.Nodes;
 using ContextSuite.Core.Office;
+using ContextSuite.Core.Pdf;
 using ContextSuite.Core.Transport;
 using System.Text.Json;
 
@@ -21,6 +22,28 @@ internal static class OfficePdfContracts
         Accept("""{"/Type":"/StructElem","/S":"/P","/A":{"/O":"/Layout","/BBox":[0,0,1,1]}}""", "tagged layout attributes are not mistaken for actions");
         Accept("""{"/Type":"/Annot","/Subtype":"/Link","/A":{"/S":"/URI","/URI":"u:https://example.invalid/"}}""", "ordinary URI links remain data");
         Accept("""{"/Type":"/Annot","/Subtype":"/Link","/A":{"/S":"/GoToR","/F":"u:related.pdf","/D":[0,"/Fit"]}}""", "manual related-PDF links remain data");
+        foreach (var count in new[] { 48, 128, 512 })
+        {
+            var node = JsonNode.Parse(Fixture)!; var objects = Objects(node);
+            objects["obj:1 0 R"]!["value"]!["/Outlines"] = "4 0 R";
+            objects["obj:4 0 R"] = new JsonObject { ["value"] = new JsonObject { ["/Type"] = "/Outlines", ["/First"] = "5 0 R", ["/Last"] = $"{count + 4} 0 R", ["/Count"] = count } };
+            for (var index = 0; index < count; index++)
+            {
+                var item = new JsonObject { ["/Title"] = "u:Sheet " + (index + 1), ["/Parent"] = "4 0 R", ["/Dest"] = JsonNode.Parse("[\"3 0 R\",\"/Fit\"]") };
+                if (index > 0) item["/Prev"] = $"{index + 4} 0 R";
+                if (index + 1 < count) item["/Next"] = $"{index + 6} 0 R";
+                objects[$"obj:{index + 5} 0 R"] = new JsonObject { ["value"] = item };
+            }
+            var bytes = Encoding.UTF8.GetBytes(node.ToJsonString());
+            OfficePdfPolicy.CheckObjects(bytes);
+            check(true, $"Office PDF: {count} linked outlines pass bounded admission");
+            try { PdfRewriteInventory.Read(bytes); check(false, "PDF rewrite graph limit"); }
+            catch (InvalidDataException) { check(true, "Office PDF: admission does not relax rewrite hashing limits"); }
+            objects[$"obj:{count + 4} 0 R"]!["value"]!["/Next"] = "999999 0 R";
+            try { OfficePdfPolicy.CheckObjects(Encoding.UTF8.GetBytes(node.ToJsonString())); check(false, "PDF dangling outline reference"); }
+            catch (InvalidDataException) { check(true, "Office PDF: long outlines retain reference validation"); }
+        }
+        Reject(node => Objects(node)["obj:4 0 R"] = JsonNode.Parse("""{"value":{"/Unused":"999999 0 R"}}"""), "unreachable unresolved references are refused");
         foreach (var key in new[] { "/AcroForm", "/XFA", "/JavaScript", "/J#53", "/AA", "/EmbeddedFiles", "/EF", "/RichMediaContent", "/RichMediaSettings", "/Collection" })
             Reject(node => Objects(node)["obj:4 0 R"] = new JsonObject { ["value"] = new JsonObject { [key] = new JsonObject() } }, "unexpected " + key);
         foreach (var type in new[] { "/EmbeddedFile", "/Widget", "/FileAttachment", "/3D", "/RichMedia", "/Screen" })
