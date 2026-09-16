@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [workbook-growth stop checks](excel-calculated-date-guard.md#stops-after-observed-workbook-growth)
+pass 36 cancellation, worker-termination and deadline checks. Six disposable
+profiles/mappings are removed, originals remain unchanged, and three following
+exports retain exact control text, geometry and pixels. The stopped workbook
+archives are already complete: interruption before ZIP completion, managed
+validation and application-owner recovery remain open. This test checkpoint
+does not change production code or clear the Office fidelity/release gates.
+
 The [calculated-date guard](excel-calculated-date-guard.md) now binds a native
 workbook copy to the PDF completion and inspects it before publication. Four
 cached/1904 controls publish; two recalculated early-date cases are withheld

@@ -1,10 +1,11 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $WorkerResults, [string] $ControlDirectory,
     [Parameter(Mandatory)][string] $PdfPreparedDirectory, [Parameter(Mandatory)][string] $PdfiumPreparedDirectory,
-    [switch] $ApplicationOutputs, [switch] $WordRevisions)
+    [switch] $ApplicationOutputs, [switch] $WordRevisions, [switch] $WorkbookCopy)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $report = (Resolve-Path -LiteralPath $WorkerResults).Path
+if ($WorkbookCopy -and ($ApplicationOutputs -or $WordRevisions)) { throw 'Workbook follow-up inspection uses worker results only.' }
 if ($WordRevisions -and ($ApplicationOutputs -or $ControlDirectory)) { throw 'Word revision inspection uses its own published clean controls.' }
 if (-not $WordRevisions -and -not $ControlDirectory) { throw 'A retained control directory is required.' }
 $control = if ($WordRevisions) { $null } else { (Resolve-Path -LiteralPath $ControlDirectory).Path }
@@ -38,7 +39,7 @@ if ((Get-FileHash -LiteralPath $probe).Hash -ne $build.sha256 -or
     throw 'PDFium evaluation probe changed.'
 }
 $qpdf = Join-Path $pdf 'unpacked\qpdf-12.4.1-msvc64\bin\qpdf.exe'
-$inspectionCommand = if ($WordRevisions) { '--inspect-word-publications' } elseif ($ApplicationOutputs) { '--inspect-office-publications' } else { '--inspect-worker-exports' }
+$inspectionCommand = if ($WorkbookCopy) { '--inspect-workbook-following' } elseif ($WordRevisions) { '--inspect-word-publications' } elseif ($ApplicationOutputs) { '--inspect-office-publications' } else { '--inspect-worker-exports' }
 $inspectionArguments = @($inspectionCommand, $report, $qpdf, $probe)
 if ($control) { $inspectionArguments += $control }
 & dotnet run --project (Join-Path $PSScriptRoot 'Probe\Office.Evaluation.csproj') -c Release -- @inspectionArguments

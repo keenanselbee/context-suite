@@ -4,7 +4,7 @@ using ContextSuite.Core.Office;
 
 internal static class OfficeWorkerInspection
 {
-    internal static async Task<int> RunAsync(string reportPath, string qpdf, string pdfium, string control, bool applicationOutputs = false)
+    internal static async Task<int> RunAsync(string reportPath, string qpdf, string pdfium, string control, bool applicationOutputs = false, bool workbookCopy = false)
     {
         reportPath = Path.GetFullPath(reportPath); control = Path.GetFullPath(control);
         if (!reportPath.Contains(applicationOutputs ? "\\.codex-temp\\office-execution\\" : "\\.codex-temp\\office-worker\\", StringComparison.OrdinalIgnoreCase) ||
@@ -12,15 +12,17 @@ internal static class OfficeWorkerInspection
             throw new IOException("Use completed worker evidence and retained isolated controls.");
         using var report = JsonDocument.Parse(File.ReadAllText(reportPath));
         var reportCount = report.RootElement.GetProperty("Reports").GetArrayLength();
-        if (!report.RootElement.GetProperty("Passed").GetBoolean() || (applicationOutputs ? reportCount is not (3 or 4) : reportCount != 3))
+        if (applicationOutputs && workbookCopy ||
+            !report.RootElement.GetProperty("Passed").GetBoolean() ||
+            (workbookCopy ? reportCount != 1 || !report.RootElement.GetProperty("WorkbookCopy").GetBoolean() : applicationOutputs ? reportCount is not (3 or 4) : reportCount != 3))
             throw new IOException("Worker export and cleanup must pass before PDF inspection.");
         PdfTextReader.Initialize(Path.Combine(Path.GetDirectoryName(pdfium)!, "pdfium.dll"));
         var folder = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(reportPath))!, "inspection-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(folder); Console.WriteLine("Office worker PDF inspection: " + folder);
-        var remaining = new HashSet<string>(["docx", "xlsx", "pptx"], StringComparer.Ordinal);
+        var remaining = new HashSet<string>(workbookCopy ? ["xlsx"] : ["docx", "xlsx", "pptx"], StringComparer.Ordinal);
         var results = new List<object>();
         var entries = applicationOutputs ? report.RootElement.GetProperty("Reports")[0].GetProperty("Results") : report.RootElement.GetProperty("Reports");
-        if (entries.GetArrayLength() != 3) throw new IOException("Expected three complete Office outputs.");
+        if (entries.GetArrayLength() != remaining.Count) throw new IOException("Expected complete Office outputs for the selected inspection scope.");
         foreach (var entry in entries.EnumerateArray())
         {
             string format, sourcePath, outputPath, sourceHash;
@@ -48,7 +50,9 @@ internal static class OfficeWorkerInspection
                 candidate.Validate(work, candidate.Completion.RequestId);
                 if (Path.GetDirectoryName(work.DirectoryPath) != Path.GetDirectoryName(reportPath) ||
                     entry.GetProperty("Output").GetString() != work.CandidatePath || Hash(work.SourcePath) != work.SourceSha256 ||
-                    Hash(work.CandidatePath) != candidate.Completion.OutputSha256)
+                    Hash(work.CandidatePath) != candidate.Completion.OutputSha256 ||
+                    workbookCopy && (new FileInfo(work.WorkbookPath).Length != candidate.Completion.WorkbookBytes ||
+                        Hash(work.WorkbookPath) != candidate.Completion.WorkbookSha256))
                     throw new IOException("Worker report does not match its owned source and candidate.");
                 OfficeProfileSettings.Verify(Path.Combine(work.EngineProfilePath, "user", "registrymodifications.xcu"), work.Format == "xlsx" ? 1 : null);
                 format = work.Format; sourcePath = work.SourcePath; outputPath = work.CandidatePath; sourceHash = work.SourceSha256;
@@ -82,9 +86,9 @@ internal static class OfficeWorkerInspection
             results.Add(new { Format = format, SourceSha256 = sourceHash, OutputSha256 = outputHash,
                 ControlSha256 = Hash(baseline), Text = text, Comparison = comparison });
         }
-        File.WriteAllText(Path.Combine(folder, "results.json"), JsonSerializer.Serialize(new { Passed = remaining.Count == 0, Results = results },
+        File.WriteAllText(Path.Combine(folder, "results.json"), JsonSerializer.Serialize(new { Passed = remaining.Count == 0, WorkbookCopy = workbookCopy, Results = results },
             new JsonSerializerOptions { WriteIndented = true }));
-        Console.WriteLine("Three Office PDFs pass independent structure, authored text, geometry and exact control-pixel checks.");
+        Console.WriteLine(results.Count + " Office PDFs pass independent structure, authored text, geometry and exact control-pixel checks.");
         return remaining.Count == 0 ? 0 : 1;
 
         async Task<(string Folder, JsonElement Render, string[] Text)> Inspect(string pdf, string directory)

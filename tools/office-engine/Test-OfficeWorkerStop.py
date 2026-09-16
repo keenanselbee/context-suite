@@ -20,10 +20,13 @@ def main():
     parser.add_argument("--build-receipt", type=Path, required=True)
     parser.add_argument("--large-fixtures", type=Path, required=True)
     parser.add_argument("--fixtures", type=Path, required=True)
+    parser.add_argument("--workbook-copy", action="store_true", help="Stop XLSX exports only after observing the calculated workbook grow.")
     parser.add_argument("--mode", choices=("all", "cancel", "worker-loss", "deadline", "owner-loss", "startup-recovery", "app-recovery"), default="all")
     args = parser.parse_args()
     if not args.create_disposable_profile:
         parser.error("Explicit disposable profile authorization is required before preparation or execution.")
+    if args.workbook_copy and args.mode not in ("all", "cancel", "worker-loss", "deadline"):
+        parser.error("Workbook-copy observation supports cancellation, worker loss and application deadline modes.")
     root = Path(__file__).resolve().parents[2]
     if args.mode == "app-recovery":
         available = subprocess.run(["powershell", "-NoProfile", "-Command",
@@ -32,10 +35,13 @@ def main():
         if available.returncode:
             raise RuntimeError("Close Context Suite first; actual application recovery uses the per-user router.")
     worker = args.worker.resolve(strict=True)
-    worker.relative_to(root / ".codex-temp/office-worker")
+    if not any(worker.is_relative_to(root / ".codex-temp" / name) for name in ("office-worker", "office-execution")):
+        raise RuntimeError("Use a retained repository Office worker.")
     previous = json.loads(args.build_receipt.read_text(encoding="utf-8-sig"))
-    recorded_sources = previous.get("sources", previous.get("source", {}))
+    recorded_sources = previous.get("sources", previous.get("source", previous.get("Sources", {})))
     worker_files = previous.get("worker", previous.get("workerFiles", {}))
+    if not worker_files and "Binaries" in previous:
+        worker_files = {Path(name).name: expected for name, expected in previous["Binaries"].items() if Path(name).parent == worker.parent}
     if not recorded_sources or not worker_files or "ContextSuite.Worker.exe" not in worker_files:
         raise RuntimeError("Missing retained worker source/binary receipt.")
     for name, expected in recorded_sources.items():
@@ -81,7 +87,7 @@ def main():
         if result.returncode:
             raise RuntimeError("Application recovery host build failed before profile creation.")
     managed = root / "artifacts/managed/bin/ContextSuite.Pdf.ContractTests/Release/net10.0/ContextSuite.Pdf.ContractTests.exe"
-    receipt = {"sources": sources, "worker": str(worker), "workerFiles": actual, "mode": args.mode,
+    receipt = {"sources": sources, "worker": str(worker), "workerFiles": actual, "mode": args.mode, "workbookCopy": args.workbook_copy,
                "previousBuildReceipt": str(args.build_receipt.resolve()),
                "previousBuildReceiptSha256": digest(args.build_receipt), "fixtures": fixtures,
                "managedFiles": {path.name: digest(path) for path in managed.parent.iterdir() if path.is_file()}}
@@ -94,7 +100,7 @@ def main():
     # The private adapter validates the complete pinned Office runtime before each launch.
     # Preserve the owner process until its bounded operations and profile cleanup finish.
     with (scratch / "stdout.log").open("wb") as output, (scratch / "stderr.log").open("wb") as error:
-        command = [str(managed), "--office-app-recovery" if args.mode == "app-recovery" else "--office-worker-stop", str(worker),
+        command = [str(managed), "--office-workbook-stop" if args.workbook_copy else "--office-app-recovery" if args.mode == "app-recovery" else "--office-worker-stop", str(worker),
             str(args.large_fixtures.resolve()), str(args.fixtures.resolve()), str(scratch / "contracts"),
             str(application) if args.mode == "app-recovery" else args.mode]
         result = subprocess.run(command, cwd=root, stdout=output, stderr=error)
@@ -103,8 +109,8 @@ def main():
         raise RuntimeError(f"Office interruption check failed; inspect logs and owned profile receipts before retrying: {scratch}")
     report = json.loads((scratch / "contracts/results.json").read_text(encoding="utf-8"))
     modes = ["cancel", "worker-loss", "deadline"] if args.mode == "all" else [args.mode]
-    expected_checks = 99 if args.mode in ("startup-recovery", "app-recovery") else 93 if args.mode == "owner-loss" else 30 * len(modes)
-    if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != expected_checks:
+    expected_checks = 12 * len(modes) if args.workbook_copy else 99 if args.mode in ("startup-recovery", "app-recovery") else 93 if args.mode == "owner-loss" else 30 * len(modes)
+    if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != expected_checks or report.get("WorkbookCopy", False) != args.workbook_copy:
         raise RuntimeError("Missing complete interruption evidence.")
     if any(digest(Path(name)) != expected for name, expected in fixtures.items()):
         raise RuntimeError("An original fixture changed during interruption checks.")

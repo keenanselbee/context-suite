@@ -118,10 +118,49 @@ current combined production release.
 Remaining work
 --------------
 
-Exercise active interruption during workbook-copy writing and the following
-validation, including retry and recovery. Resolve the underlying early-date
+Exercise interruption before workbook-copy writing finishes and during the
+following validation, including application-owner recovery. Resolve the underlying early-date
 fidelity and unsupported formatting policy. Preserve useful failure behavior
 while completing that required conversion scope. Native network-denial evidence,
 fresh combined production packaging, redistribution/adoption and manual
 accessibility/theme/DPI acceptance remain separate. No installation, Explorer
 registration, live Polar request or formal release is part of this checkpoint.
+
+
+Stops after observed workbook growth
+------------------------------------
+
+The worker interruption harness now accepts `--workbook-copy` for cancellation,
+worker termination and application-deadline expiry. It requires a live native
+host with the owned AppContainer identity, a ZIP header and two increasing
+workbook sizes while the export remains incomplete. A missed observation fails
+explicitly. The existing PDF-growth modes keep their three-family scope.
+
+All **36 checks pass** in
+`.codex-temp/office-worker/6abf0f32b81142449e402ea9c303aaa1`. The generated workbook
+is 5,332,659 bytes. Observed size pairs are 2,097,152 to 5,344,869 bytes for
+cancellation, 5,111,808 to 5,344,869 for worker termination, and 4,194,304 to
+5,344,869 for deadline expiry. Each request rejects the unfinished export, waits
+for the worker and host to exit, releases input/PDF/workbook handles and permits
+a fresh ordinary XLSX export through the same client. Stops return in 66-82 ms
+on this machine. Deadline expiry is injected into the existing clock; this does
+not measure a real 180-second elapsed timeout.
+
+All six disposable profiles and registry mappings are absent after cleanup.
+Original hashes/timestamps remain unchanged. Worker, harness, fixture and source
+identities match the recorded inputs. Context files are deliberately retained as
+evidence; profile removal does not imply deletion of those repository folders.
+
+The three following PDFs pass independent qpdf/PDFium checks for authored text,
+page geometry and exact retained control pixels. The inspection command adds
+`-WorkbookCopy` for this explicit one-XLSX scope and verifies the companion
+workbook hash and length. Two negative controls reject a missing scope flag and
+an altered workbook hash. The run's `verification.json` identifies all three
+inspection receipts and the source identities used.
+
+**Timing limit:** all three stopped workbook files are complete readable ZIP
+archives. These results prove cleanup and retry after observed workbook growth,
+before an export result is accepted. They do not establish that termination
+landed before the ZIP writer finished, or during the later managed date
+inspection. Those narrower interruption points remain open. No production
+implementation, payload pin or release version changes in this checkpoint.

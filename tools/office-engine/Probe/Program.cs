@@ -44,6 +44,8 @@ if (args is ["--preflight-isolation-font-fixtures", var preflightFonts])
     return await OfficeFixturePreflight.RunAsync(preflightFonts, true);
 if (args is ["--inspect-worker-exports", var workerReport, var workerQpdf, var workerPdfium, var workerControl])
     return await OfficeWorkerInspection.RunAsync(workerReport, workerQpdf, workerPdfium, workerControl);
+if (args is ["--inspect-workbook-following", var workbookReport, var workbookQpdf, var workbookPdfium, var workbookControl])
+    return await OfficeWorkerInspection.RunAsync(workbookReport, workbookQpdf, workbookPdfium, workbookControl, workbookCopy: true);
 if (args is ["--inspect-office-publications", var publicationReport, var publicationQpdf, var publicationPdfium, var publicationControl])
     return await OfficeWorkerInspection.RunAsync(publicationReport, publicationQpdf, publicationPdfium, publicationControl, true);
 if (args is ["--inspect-isolation-exports", var isolatedStage, var isolatedQpdf, var isolatedPdfium])
