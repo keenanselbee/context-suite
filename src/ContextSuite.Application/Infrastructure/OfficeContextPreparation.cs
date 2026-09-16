@@ -16,13 +16,15 @@ internal sealed class OfficeContextPreparation : IDisposable
     private FileFingerprint? _snapshotIdentity;
     private Retirement? _retirement;
     private bool _disposed;
+    private bool _contextCreated;
     internal OfficeExportWork Work { get; private set; } = null!;
     internal OfficeOwnershipJournal Journal { get; private set; } = null!;
     internal string OriginalPath { get; private set; } = null!;
     internal FileFingerprint OriginalIdentity { get; private set; } = null!;
 
     internal static async Task<OfficeContextPreparation> CreateAsync(string contextRoot, string runtimeDirectory,
-        string sourcePath, string format, string calculation, CancellationToken token, bool createContextRoot = false)
+        string sourcePath, string format, string calculation, CancellationToken token, bool createContextRoot = false,
+        Action<OfficeExportWork, long>? copyProgress = null)
     {
         token.ThrowIfCancellationRequested();
         var root = PublicationFiles.Normalize(contextRoot);
@@ -55,9 +57,23 @@ internal sealed class OfficeContextPreparation : IDisposable
             // Keep the root/runtime/original lease order used by retirement.
             // Location, policy and source refusals must precede root creation.
             result._leases.Insert(0, OpenRoot(root, createContextRoot));
+            var children = Directory.EnumerateFileSystemEntries(root).Take(OfficeRecoveryCoordinator.MaximumDirectoryEntries + 1).ToArray();
+            if (children.Length > OfficeRecoveryCoordinator.MaximumDirectoryEntries - 2 ||
+                children.Count(path => path.EndsWith(".ownership", StringComparison.OrdinalIgnoreCase)) >= OfficeRecoveryCoordinator.MaximumRecords)
+            {
+                var capacity = new IOException("Review retained Office work before creating more temporary files.");
+                capacity.Data["OfficeRetainedDirectory"] = root;
+                throw capacity;
+            }
             result.CreateDirectory(directory);
             foreach (var name in new[] { "input", "output", "profile", "temp" })
                 result.CreateDirectory(Path.Combine(directory, name));
+            // Bind every owned directory before copying. A crash or cancellation
+            // can now leave a recoverable empty or partial snapshot.
+            result.Journal = OfficeOwnershipJournal.Create(Path.Combine(root, id.ToString("N") + ".ownership"), result.Work, runtime,
+                Retirement.ReadDirectories(result.Work));
+            copyProgress?.Invoke(result.Work, 0);
+            token.ThrowIfCancellationRequested();
             using (var output = OpenFile(result.Work.SourcePath, create: true))
             {
                 result._original.Position = 0;
@@ -69,6 +85,7 @@ internal sealed class OfficeContextPreparation : IDisposable
                     copied += count;
                     if (copied > result.Work.SourceBytes) throw new IOException("The original document changed during preparation.");
                     await output.WriteAsync(buffer.AsMemory(0, count), token);
+                    copyProgress?.Invoke(result.Work, copied);
                 }
                 await output.FlushAsync(token); output.Flush(flushToDisk: true);
                 result._snapshotIdentity = await PublicationFiles.FingerprintAsync(output, token);
@@ -82,15 +99,18 @@ internal sealed class OfficeContextPreparation : IDisposable
             result._snapshot = OpenFile(result.Work.SourcePath, create: false);
             await result.VerifyAsync(token);
             token.ThrowIfCancellationRequested();
-            result.Journal = OfficeOwnershipJournal.Create(Path.Combine(root, id.ToString("N") + ".ownership"), result.Work, runtime,
-                Retirement.ReadDirectories(result.Work));
             return result;
         }
         catch (Exception error)
         {
-            // No profile exists at this stage. Preserve partial files as evidence;
-            // never recursively delete paths after an uncertain preparation failure.
             error.Data["OfficeContextDirectory"] = directory;
+            if (result.Journal is not null)
+            {
+                try { result.RetireUnstarted(); }
+                catch (Exception cleanup)
+                { throw new OfficePreparationCleanupException(result, error, cleanup); }
+            }
+            else if (result._contextCreated) error.Data["OfficeRetainedDirectory"] = directory;
             result.Release();
             throw;
         }
@@ -141,6 +161,7 @@ internal sealed class OfficeContextPreparation : IDisposable
     private void CreateDirectory(string path)
     {
         if (!CreateDirectoryNative(path, IntPtr.Zero)) throw new Win32Exception(Marshal.GetLastWin32Error());
+        if (path == Work.DirectoryPath) _contextCreated = true;
         _leases.Add(OfficeSandboxOwner.LeaseDirectory(path));
     }
 
@@ -174,11 +195,25 @@ internal sealed class OfficeContextPreparation : IDisposable
     // Live-owner retirement. Durable directory bindings are also available for
     // restart recovery, which must verify owner death and native cleanup first.
     internal void Retire()
+        => RetireCore(unstarted: false);
+
+    internal void RetireUnstarted()
+    {
+        if (_retirement is null)
+        {
+            Journal.RequireCreationOwner();
+            if (Journal.Version != 4) throw new InvalidDataException("Unstarted retirement requires bound directories.");
+            OfficeSandboxOwner.RequireProfileAbsent(Work.ProfileName);
+        }
+        RetireCore(unstarted: true);
+    }
+
+    private void RetireCore(bool unstarted)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_retirement is null)
         {
-            if (Journal.Changes[^1].Step is not (OfficeOwnershipStep.ProfileDeleted or OfficeOwnershipStep.RetirementIntent) ||
+            if (!unstarted && Journal.Changes[^1].Step is not (OfficeOwnershipStep.ProfileDeleted or OfficeOwnershipStep.RetirementIntent) ||
                 Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.EngineIntent) &&
                 !Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.ProcessesStopped))
                 throw new IOException("Complete Office worker and profile cleanup before removing temporary files.");
@@ -197,9 +232,10 @@ internal sealed class OfficeContextPreparation : IDisposable
         Release();
     }
 
-    internal static async Task RetireRecoveredAsync(OfficeOwnershipJournal journal, string recordPath)
+    internal static async Task RetireRecoveredAsync(OfficeOwnershipJournal journal, string recordPath, bool unstarted = false)
     {
-        journal.RequireRetirementOwner();
+        if (unstarted) journal.RequirePreparationRecoveryOwner();
+        else journal.RequireRetirementOwner();
         var work = journal.Owner.Work;
         var root = Path.GetDirectoryName(work.DirectoryPath)!;
         if (recordPath != Path.Combine(root, work.ItemId.ToString("N") + ".ownership"))
@@ -209,7 +245,8 @@ internal sealed class OfficeContextPreparation : IDisposable
         var engine = journal.Changes.SingleOrDefault(change => change.Step == OfficeOwnershipStep.EngineIntent);
         if (engine is not null) await WorkerProcessJob.StopRecordedAsync(engine.Lifetime!);
         var retirement = new Retirement(work, journal.Owner.ContextDirectories);
-        retirement.Capture(recovering: true);
+        retirement.Capture(recovering: !unstarted);
+        if (unstarted) journal.Record(new(OfficeOwnershipStep.RetirementIntent));
         journal.Dispose();
         retirement.Run();
     }
@@ -399,4 +436,11 @@ internal sealed class OfficeContextPreparation : IDisposable
     private static extern bool GetFileInformationByHandle(SafeFileHandle file, out FileInformation information);
     [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetFileInformationByHandle(SafeFileHandle file, int kind, ref BasicInformation information, uint size);
+}
+
+internal sealed class OfficePreparationCleanupException(OfficeContextPreparation preparation, Exception failure, Exception cleanup)
+    : IOException("Office preparation cleanup remains pending.", new AggregateException(failure, cleanup))
+{
+    internal OfficeContextPreparation Preparation { get; } = preparation;
+    internal Exception Failure { get; } = failure;
 }

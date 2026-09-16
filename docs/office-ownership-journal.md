@@ -34,7 +34,7 @@ The allowed sequence is:
 | Engine intent, then processes stopped | All five grants completed; the assigned worker's named lifetime and creator/session identity recorded before dispatch; confirmed shutdown before cleanup |
 | Cleanup intent, then revoke intent/revoked | Revoke every intended grant in reverse order, including a grant with uncertain completion |
 | Delete intent, then profile deleted | All intended grants revoked before recording profile deletion |
-| Retirement intent (version four only) | The live owner has finished using the context and durably permits temporary-file retirement after native cleanup |
+| Retirement intent (version four only) | Native cleanup has completed, or the only preceding frame is unstarted profile intent; the coordinator verifies directory bindings and native profile absence before authorizing temporary-file retirement |
 
 Application-prepared contexts now use version four. Its immutable identity also
 contains the five measured local NTFS directory identities: the context itself,
@@ -45,11 +45,19 @@ Version four requires these fields; earlier versions cannot contain them.
 
 Live retirement verifies the recorded directory identities and flushes a terminal
 retirement intent before releasing preparation leases or deleting generated files.
-Restart retirement requires that intent, original-owner death, absence of the
+Restart retirement normally requires that intent, original-owner death, absence of the
 native profile folder/mapping and stopping any recorded worker lifetime. Every
 remaining owned directory must match its recorded identity. Missing generated
 directories are allowed during this resumed cleanup because deletion may have
 finished before the owner exited. The journal is deleted last.
+
+A version-four record containing only profile intent also permits preparation
+recovery after owner death and verified native profile absence. All five original
+directory identities must still be present and match before recovery records
+terminal intent. This covers interruption before or during snapshot copying and
+never claims that a Windows profile was created. Earlier version-four readers
+reject this new intent-only retirement sequence for review; no older schema is
+rewritten or supplied with invented bindings.
 
 Version-three profile cleanup remains supported. No directory bindings or
 retirement intent are invented for older records. A profile-deleted record without

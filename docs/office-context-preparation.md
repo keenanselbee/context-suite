@@ -2,7 +2,8 @@ Office Context Preparation
 ==========================
 
 Status: preparation, live retirement and recorded retirement after restart are
-implemented; incomplete preparation remains open. The
+implemented, including cleanup of recorded but unstarted preparation. Torn or
+missing preparation records still require review. The
 [direct Office command](office-direct-command.md) now owns preparation through
 the application view model's lifetime.
 
@@ -37,9 +38,10 @@ replacement; parent directory leases prevent ancestor replacement. Ordinary
 readers can still open both files. Pure directory leases now request read/list
 access, while actual permission grants retain their required ACL access.
 
-Only after source/snapshot verification succeeds does preparation create the
-version-four [ownership journal](office-ownership-journal.md), outside all grant
-directories. At this point its only entry is profile intent: preparation creates
+After creating and binding the five generated directories, preparation creates
+the version-four [ownership journal](office-ownership-journal.md) before copying
+source bytes, outside all grant directories. Its only entry is profile intent:
+preparation creates
 no native profile, grants no permissions and starts no worker. The original file
 is never copied into a directory granted write access to the renderer.
 
@@ -50,12 +52,18 @@ completed deletion record, retaining its journal and file leases for retry.
 `VerifyAsync` checks original and snapshot identities, bytes and snapshot
 protection again before future publication. It does not authorize publication.
 
-Preparation failures release their handles and retain any partial files; the
-exception includes the exact context directory for diagnosis. They never sweep
-directories or create a Windows profile. Power-loss recovery of an incomplete
-copy, confirmation-write failures and automatic retention cleanup remain
-separate acceptance work. The existing journal recovery handles profiles only
-after durable confirmation and live identity verification.
+Cancellation or copying failure retires the recorded unstarted context after
+verifying native profile absence and the bound directory identities. If cleanup
+fails, the exception retains preparation and its leases for the executor's retry;
+further Office work is blocked while cleanup remains pending. Failures before a
+complete journal exists retain the exact location for review. No directory sweep
+or native profile creation is part of this cleanup. Physical power-loss durability
+and torn-record recovery remain separate acceptance work.
+
+Before creating a context, preparation also reserves room within recovery's
+512-entry and 256-record limits: at most 510 existing entries and 255 ownership
+records are accepted. A full root is retained with an actionable review result,
+and the executor blocks subsequent documents instead of accumulating more files.
 
 Windows documents the relevant
 [sharing, new-file and reparse-point behavior](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew).
@@ -96,13 +104,36 @@ responsibility and precedes retirement.
 Live cleanup now records terminal retirement intent in the version-four journal
 before deletion. [Restart recovery](office-startup-recovery.md#completed-context-retirement)
 can finish that intent after original-owner death and native-state verification.
-Earlier version-three records, incomplete preparation and interrupted work without
+An unstarted version-four context can also retire after verified owner death,
+native profile absence and inspection of all five bound directories. Recovery
+records terminal intent before deletion; later attempts can resume that intent.
+Earlier version-three records, missing/torn journals and interrupted exports without
 retirement intent retain their existing review behavior. The implementation does
 not infer deletion authority from a directory name or sweep old scratch folders.
 
 
 Verification
 ------------
+
+The interrupted-preparation follow-up passes all **3,532 foundation contracts**
+in `.codex-temp/office-preparation-foundation-f783e13187544accaf6adf576c9c6a8a`.
+The 60 added checks interrupt actual copying before the first write and after a
+partial write, exercise cleanup failure and executor retry, enforce both storage
+limits, and kill disposable writers for restart recovery. Live owners, locked
+files and substituted directories are refused; retries remove owned temporary
+files while preserving original bytes and timestamps. These foundation checks
+create no native profiles. The crash observer retries bounded Windows sharing
+errors after process exit; an earlier immediate-open attempt failed at that
+boundary, before recovery could run.
+
+All **40 native retirement checks** also pass at
+`.codex-temp/office-retirement/51de183d43ea4a9a91f1b15dc54b178b`, with unchanged
+source/fixture receipts and all seven final profile names and contexts removed.
+This regression creates eight disposable profiles across those names and runs
+no Office renderer. The Release application test host builds with zero warnings
+or errors. Real document exports, visible acceptance and production packaging
+were not rerun for this follow-up. Actual-app startup acceptance of the new
+unstarted recovery path remains open, as do torn records and physical power loss.
 
 The root-creation follow-up passes all **3,461 foundation contracts** in
 `.codex-temp/office-preparation-foundation-d1c13d1093af4615a32c04db435add91`.
@@ -161,7 +192,8 @@ also passes 90 checks and independent PDF inspection. It uses application
 preparation only for the following exports; its crash fixture still makes its
 own snapshot. The final replay above replaces that remaining fixture preparation.
 
-The customer command, startup recovery coordinator, production PDF validation,
-transactional copy publication, mid-copy interruption and the remaining engine
-adoption/fidelity gates remain open. This adds no visible, keyboard, screen-reader,
+At the time of the preceding worker replay, the customer command, startup recovery
+coordinator, production PDF validation, transactional copy publication and mid-copy
+interruption remained open; the follow-ups above and the direct-command document
+record subsequent work. Engine adoption/fidelity gates remain open. This adds no visible, keyboard, screen-reader,
 theme/DPI or installed-shell acceptance.

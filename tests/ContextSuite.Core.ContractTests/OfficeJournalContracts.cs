@@ -159,9 +159,9 @@ internal static class OfficeJournalContracts
         {
             boundFirst = Read(boundPath);
             check(bound.Version == 4 && bound.Owner.ContextDirectories == bindings, "Office version four records immutable context identities");
-            Refuses(() => bound.Record(new(OfficeOwnershipStep.RetirementIntent)), "Office retirement intent requires completed native cleanup");
             bound.Record(new(OfficeOwnershipStep.ProfileCreated, OfficeOwnershipJournal.ProfileSid(work.ProfileName),
                 OfficeOwnershipJournal.ExpectedProfileDirectory(work.ProfileName), new string('A', 48)));
+            Refuses(() => bound.Record(new(OfficeOwnershipStep.RetirementIntent)), "Office retirement after profile creation requires completed native cleanup");
             var grantPaths = new[] { runtime, Path.Combine(work.DirectoryPath, "input"), Path.Combine(work.DirectoryPath, "output"),
                 Path.Combine(work.DirectoryPath, "profile"), Path.Combine(work.DirectoryPath, "temp") };
             for (var index = 0; index < grantPaths.Length; index++)

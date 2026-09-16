@@ -164,6 +164,14 @@ internal sealed class OfficeOwnershipJournal : IDisposable
         WorkerLifetimeIdentity.RequireExitedProcess(Owner.OwnerProcessId, Owner.OwnerStartUtcTicks);
     }
 
+    internal void RequirePreparationRecoveryOwner()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_version != 4 || _faulted || _changes.Count != 1 || _changes[0].Step != OfficeOwnershipStep.ProfileIntent)
+            throw new InvalidDataException("Office preparation recovery requires an unstarted bound context.");
+        WorkerLifetimeIdentity.RequireExitedProcess(Owner.OwnerProcessId, Owner.OwnerStartUtcTicks);
+    }
+
     private void ValidateNext(OfficeOwnershipChange next)
     {
         var created = false; var engine = false; var stopped = false; var cleanup = false; var deleting = false; var deleted = false; var retiring = false;
@@ -195,7 +203,7 @@ internal sealed class OfficeOwnershipJournal : IDisposable
                 OfficeOwnershipStep.GrantRevoked => revoking && change.Path == grants[^1].Path,
                 OfficeOwnershipStep.DeleteIntent => cleanup && grants.Count == 0 && !deleting,
                 OfficeOwnershipStep.ProfileDeleted => deleting,
-                OfficeOwnershipStep.RetirementIntent => _version == 4 && deleted,
+                OfficeOwnershipStep.RetirementIntent => _version == 4 && (deleted || index == 1 && !created),
                 _ => false
             };
             var grantIntent = change.Step == OfficeOwnershipStep.GrantIntent;

@@ -18,7 +18,7 @@ internal sealed record OfficeRecoveryReport(string Directory, IReadOnlyList<Offi
             var review = Entries.Count(entry => entry.State == OfficeRecoveryState.ReviewRequired);
             var text = recovered == 0 ? "" : $"Cleaned up {recovered} interrupted Office conversion(s). Run Convert again for those files. ";
             if (review != 0 || Incomplete) text += "Some interrupted Office work still needs review. ";
-            return text + "Files and recovery records were kept at " + Directory + ".";
+            return text + "Recovery folder: " + Directory + ".";
         }
     }
 }
@@ -85,8 +85,14 @@ internal static class OfficeRecoveryCoordinator
                 if (journal.Version is not (3 or 4)) throw new InvalidDataException("Legacy Office ownership requires review.");
                 if (journal.Changes[^1].Step == OfficeOwnershipStep.RetirementIntent)
                 {
+                    var preparation = !journal.Changes.Any(change => change.Step == OfficeOwnershipStep.ProfileCreated);
                     await OfficeContextPreparation.RetireRecoveredAsync(journal, path);
-                    return new(path, OfficeRecoveryState.AlreadyClean);
+                    return new(path, preparation ? OfficeRecoveryState.Recovered : OfficeRecoveryState.AlreadyClean);
+                }
+                if (journal.Version == 4 && journal.Changes.Count == 1)
+                {
+                    await OfficeContextPreparation.RetireRecoveredAsync(journal, path, unstarted: true);
+                    return new(path, OfficeRecoveryState.Recovered);
                 }
                 if (journal.Changes[^1].Step == OfficeOwnershipStep.ProfileDeleted)
                     return new(path, OfficeRecoveryState.AlreadyClean);

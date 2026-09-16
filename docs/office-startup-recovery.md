@@ -56,7 +56,7 @@ Completed-context retirement
 
 New application-prepared contexts use a version-four journal with the measured
 identities of all five generated directories. `RetirementIntent` is a terminal
-record written only after native profile cleanup and after the caller has
+record written after native profile cleanup and after the caller has
 finished using the context. This separates interrupted temporary cleanup from an
 interrupted export whose source snapshot and partial result should remain for
 review.
@@ -70,8 +70,14 @@ after deletion was interrupted. Replacements, hard links, live owners and newly
 present profiles stop cleanup with the evidence retained. Completed retirement
 leaves the context root empty and the next scan quiet.
 
-This does not delete version-three retained contexts, unconfirmed preparation,
-or version-four contexts lacking retirement intent. Those records keep their
+Unstarted version-four preparation is a separate supported path: a sole profile
+intent, verified owner death, absent native profile folder/mapping and all five
+matching generated directories permit recording retirement intent before cleanup.
+This removes empty or partially copied snapshots and reports interrupted work.
+Locked files and substituted directories remain for retry or review.
+
+This does not delete version-three retained contexts, preparation without a
+complete record, or interrupted exports lacking retirement intent. Those records keep their
 existing review/profile-recovery behavior. It does not resume conversion or
 reconcile publication records. Physical power-loss durability, preparation that
 failed before its journal, and visible application acceptance remain separate.

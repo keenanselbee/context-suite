@@ -5,6 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [interrupted Office preparation follow-up](office-context-preparation.md)
+now cleans up recorded empty and partial copies after cancellation or verified
+owner death. Blocked cleanup retains ownership for retry; full recovery storage
+blocks further documents. All 3,532 foundation and 40 native retirement checks
+pass, with all disposable profiles removed and a clean Release test-host build.
+Torn or missing journals, actual-app acceptance of this new recovery path,
+broader fidelity and integrated release acceptance remain open. This run adds no
+renderer, packaging or visible acceptance evidence.
+
 The [direct Office PDF command](office-direct-command.md) now dispatches
 DOCX/XLSX/PPTX documents to separate PDF copies and combines the image subset
 into one reviewed PDF. One admission covers a mixed command. Spreadsheet

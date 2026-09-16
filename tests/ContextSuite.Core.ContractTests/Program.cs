@@ -12,6 +12,12 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--office-preparation-hold", var preparationStage, var preparationMode])
+{
+    await OfficePreparationCrashContracts.HoldAsync(preparationStage, preparationMode);
+    return 0;
+}
+
 if (args is ["--office-retirement-hold", var retirementStage, var retirementMode] && retirementMode is "native" or "authored")
 {
     await OfficeRetirementContracts.HoldAsync(retirementStage, retirementMode == "native");

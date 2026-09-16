@@ -10,10 +10,11 @@ internal sealed record OfficeConversionExecution(OperationAdmission Admission, I
 // Keep this executor alive while cleanup is pending. Its leases and journal must
 // survive a failed native cleanup; restart recovery may act only after owner death.
 internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublisher publisher, IOperationAccess access,
-    string contextRoot) : IAsyncDisposable
+    string contextRoot, Action<OfficeExportWork, long>? copyProgress = null) : IAsyncDisposable
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly List<Context> _pending = [];
+    internal string? PendingPreparationDirectory { get; private set; }
     internal IReadOnlyList<string> PendingRecoveryRecords => _pending.Select(context => context.RecordPath).ToArray();
 
     public async Task<OfficeConversionExecution> ExecuteAsync(ConfirmedOfficeConversion confirmed, Action<FileResult>? report, CancellationToken token)
@@ -45,7 +46,7 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
                 FileResult result;
                 if (!admission.IsAllowed) result = new(source.Path, OperationState.Failed, admission.Status.Message);
                 else if (token.IsCancellationRequested) result = new(source.Path, OperationState.Cancelled, "Office conversion cancelled. Original kept.");
-                else if (_pending.Count != 0) result = new(source.Path, OperationState.Failed,
+                else if (_pending.Count != 0 || PendingPreparationDirectory is not null) result = new(source.Path, OperationState.Failed,
                     "Earlier Office work still needs cleanup. Close Context Suite and reopen it to recover before retrying. Original kept.");
                 else result = await ConvertAsync(source, confirmed.Plan, report, token);
                 results.Add(result); report?.Invoke(result);
@@ -65,7 +66,7 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
         {
             report?.Invoke(new(source.Path, OperationState.Running, "Preparing document for PDF conversion"));
             var prepared = await OfficeContextPreparation.CreateAsync(contextRoot, worker.OfficeEngineDirectory, source.Path,
-                source.Format, source.Calculation, token, createContextRoot: true);
+                source.Format, source.Calculation, token, createContextRoot: true, copyProgress: copyProgress);
             context = new(prepared);
             if (prepared.OriginalIdentity.Length != source.FileBytes ||
                 !string.Equals(prepared.OriginalIdentity.Sha256, source.Sha256, StringComparison.OrdinalIgnoreCase))
@@ -86,7 +87,16 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
             await prepared.VerifyAsync(token);
             result = (await publisher.PublishAsync(reservation, validated.Validation, token)).ToFileResult() with { EngineIdentity = validated.EngineIdentity };
         }
-        catch (Exception error) when (Expected(error)) { failure = error; }
+        catch (Exception error) when (Expected(error))
+        {
+            failure = error;
+            if (error is OfficePreparationCleanupException pending)
+            {
+                context = new(pending.Preparation);
+                failure = pending.Failure;
+            }
+            else if (error.Data["OfficeRetainedDirectory"] is string directory) PendingPreparationDirectory = directory;
+        }
         finally
         {
             if (context is not null)
@@ -99,6 +109,7 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
                         report?.Invoke(new(source.Path, OperationState.Running, "Removing temporary files"));
                         await Task.Run(context.Prepared.Retire);
                     }
+                    else if (context.Owner is null) context.Prepared.RetireUnstarted();
                     else context.Prepared.Dispose();
                 }
                 catch (Exception error) when (Expected(error))
@@ -114,6 +125,10 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
             }
         }
         if (failure is null) return result ?? throw new InvalidOperationException("Office conversion produced no outcome.");
+        if (PendingPreparationDirectory is not null)
+            return new(source.Path, OperationState.Failed,
+                "Office temporary files need review before more documents can be converted. Original kept. See the retained location in file details.",
+                new(source.Path, PublicationOutcome.Failed, "Retained Office work needs review.", RecoveryRecordPath: PendingPreparationDirectory));
         if (result?.Publication?.IsCommitted == true)
         {
             const string cleanupMessage = "PDF saved. Temporary files still need cleanup. Close Context Suite and reopen it before converting more Office files.";
@@ -154,6 +169,7 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
                 await CleanNativeAsync(context);
                 if (context.Prepared.Journal.Changes.Any(change => change.Step == OfficeOwnershipStep.ProfileDeleted))
                     await Task.Run(context.Prepared.Retire);
+                else if (context.Owner is null) context.Prepared.RetireUnstarted();
                 else context.Prepared.Dispose();
                 _pending.Remove(context);
             }

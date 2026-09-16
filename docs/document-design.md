@@ -12,7 +12,8 @@ admission now has a tested internal immutable plan and paid/trial path. The
 application executor also passes isolated export/validation/copy-publication and
 pending-cleanup tests. [Direct PDF dispatch](office-direct-command.md) now connects
 Office documents and combined images through one batch admission. Completed
-contexts support recorded retirement; incomplete-preparation retention and
+contexts and recorded unstarted preparation support retirement; torn or missing
+preparation records and
 integrated acceptance remain open. Host completion alone is insufficient. Worker interruption evidence covers snapshot preparation and
 following work, with reservation-copy interruption still open.
 

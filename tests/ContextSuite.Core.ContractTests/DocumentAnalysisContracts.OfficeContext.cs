@@ -208,6 +208,7 @@ internal static partial class DocumentAnalysisContracts
         }
 
         await OfficeRetirementContracts.RunAsync(Path.GetFullPath(scratch), OpenXml("docx"), check);
+        await OfficePreparationFailureContractsAsync(scratch, check);
 
         void Refuses(Action action, string name)
         {
