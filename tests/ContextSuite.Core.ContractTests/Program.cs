@@ -252,6 +252,11 @@ if (args.Length == 4 && args[0] == "--short-audio-direct")
     Console.WriteLine($"Passed {checks} isolated short-audio direct checks.");
     return 0;
 }
+if (args.Length == 3 && args[0] == "--audio-listening-pack")
+{
+    await AudioListeningContracts.RunAsync(args[1], args[2]);
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--audio-conversion-worker")
 {
     var checks = 0;

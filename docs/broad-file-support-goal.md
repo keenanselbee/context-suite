@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [audio listening review pack](audio-listening-review.md) now supplies three
+generated references, fifteen encoded clips and fifteen decoded comparisons.
+All thirty real-worker/application publications pass, with exact FLAC samples,
+unchanged originals and clean worker/publication state. The local worksheet
+keeps human listening and player compatibility explicitly unreviewed. Browser
+inspection was unavailable; real-recording, visual and device acceptance remain
+open. This adds repeatable review tooling without changing shipping presets.
+
 The [Office runtime performance checkpoint](office-runtime-performance.md) removes
 repeated ancestor pathname scans while preserving every pinned hash and final
 file identity check. Acquisition measured 18.94 seconds before and 9.75 seconds
