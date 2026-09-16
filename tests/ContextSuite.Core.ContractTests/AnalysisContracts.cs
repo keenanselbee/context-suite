@@ -80,7 +80,8 @@ internal static class AnalysisContracts
             (".res", new[] { "godot-resource", "windows-resource" }), (".ase", new[] { "adobe-swatches", "aseprite" }),
             (".heif", new[] { "avif", "heif" }), (".heifs", new[] { "avif", "heif" }),
             (".hif", new[] { "avif", "heif" }),
-            (".apk", new[] { "alpine-apk", "apk" }), (".rar", new[] { "java-archive", "rar" }) })
+            (".apk", new[] { "alpine-apk", "apk" }), (".rar", new[] { "java-archive", "rar" }),
+            (".ts", new[] { "mpeg-ts", "typescript" }), (".mts", new[] { "mpeg-ts", "typescript" }) })
         {
             var name = "fixture" + extension.ToUpperInvariant();
             check(catalog.FindByName(name).Select(type => type.Id).Order().SequenceEqual(candidates),
@@ -116,13 +117,24 @@ internal static class AnalysisContracts
             "analysis: readable PDB text is a qualified molecular filename hint, not a validated structure");
         var sourceText = "print('Hello')\n"u8.ToArray();
         foreach (var (name, id) in new[] { ("script.py", "python"), ("Dockerfile", "dockerfile"),
-            ("data.json", "json"), ("CMakeLists.txt", "cmake"), ("README.md", "markdown"), ("app.ts", "typescript") })
+            ("data.json", "json"), ("CMakeLists.txt", "cmake"), ("README.md", "markdown"), ("app.ts", "typescript"),
+            ("module.MTS", "typescript"), ("module.CTS", "typescript"), ("types.D.MTS", "typescript"), ("types.D.CTS", "typescript"),
+            ("GEMFILE", "ruby"), ("RAKEFILE", "ruby"), ("module.mjs", "javascript"), ("module.cjs", "javascript"),
+            ("component.jsx", "javascript"), ("window.pyw", "python"), ("interface.pyi", "python") })
         {
             var hinted = Inspect(sourceText, name);
             check(hinted.Identity.FormatId == id && hinted.Identity.Basis == IdentificationBasis.Filename &&
                 hinted.Identity.Confidence == IdentificationConfidence.Likely && hinted.Warnings.IsEmpty,
                 "analysis: readable text provides a qualified filename hint, not a false parse, for " + name);
         }
+        check(catalog.FindByName("types.D.MTS").Single().Id == "typescript" && catalog.FindByName("types.D.CTS").Single().Id == "typescript",
+            "analysis catalog: compound module declarations take precedence over shorter suffix hints");
+        check(new[] { "Gemfile.lock", "Gemfile.txt", "another.Gemfile", "Rakefile.backup" }.All(name =>
+            catalog.FindByName(name).All(type => type.Id != "ruby")),
+            "analysis catalog: Ruby build and dependency names require an exact filename");
+        foreach (var name in new[] { "module.CTS", "types.D.MTS", "types.D.CTS", "GEMFILE", "RAKEFILE" })
+            check(Inspect("%PDF-1.7\n"u8.ToArray(), name).Identity is { FormatId: "pdf", Basis: IdentificationBasis.Content },
+                "analysis: recognized content overrides added module or exact-name hints: " + name);
         check(Inspect(sourceText, "code.h").Identity.Confidence == IdentificationConfidence.Ambiguous &&
             Inspect(sourceText, "script.m").Identity.Confidence == IdentificationConfidence.Ambiguous,
             "analysis: text alone cannot choose between shared C/C++ or MATLAB/Objective-C extensions");

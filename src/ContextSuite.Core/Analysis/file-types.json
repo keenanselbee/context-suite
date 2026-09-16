@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-14.1",
+  "revision": "2026-09-16.1",
   "types": [
     {
       "id": "3gp",
@@ -2317,11 +2317,15 @@
       "id": "ruby",
       "name": "Ruby source",
       "family": "Source code",
-      "commonUses": "Ruby application code, Rake automation tasks, or RubyGems package definitions.",
+      "commonUses": "Ruby application code, Rake build tasks, or dependency and package definitions such as Gemfile and gemspec files.",
       "extensions": [
         ".rb",
         ".rake",
         ".gemspec"
+      ],
+      "fileNames": [
+        "Gemfile",
+        "Rakefile"
       ],
       "source": "https://docs.ruby-lang.org/en/master/syntax_rdoc.html",
       "textCompatible": true
@@ -2620,11 +2624,15 @@
       "id": "typescript",
       "name": "TypeScript source",
       "family": "Source code",
-      "commonUses": "TypeScript application code and type declarations; TSX can include interface markup, and .ts is also used for video streams.",
+      "commonUses": "TypeScript application code, modules and type declarations; TSX can include interface markup. The .ts and .mts suffixes are also used for video streams.",
       "extensions": [
         ".ts",
         ".tsx",
-        ".d.ts"
+        ".d.ts",
+        ".mts",
+        ".cts",
+        ".d.mts",
+        ".d.cts"
       ],
       "source": "https://www.typescriptlang.org/docs/handbook/2/type-declarations.html",
       "textCompatible": true

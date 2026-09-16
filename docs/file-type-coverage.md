@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-14.1; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-16.1; expanded catalog and bounded structure analysis, not release acceptance
 
 Transformation status reconciled 2026-09-16. The
 [launch capability matrix](launch-capability-matrix.md) distinguishes the current

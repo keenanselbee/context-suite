@@ -5,6 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [source module alias review](catalog-module-alias-review.md) adds four
+TypeScript suffixes and exact Gemfile/Rakefile hints while retaining both source
+and video meanings for `.mts` and `.ts`. All 3,998 foundation checks pass,
+including 24 new confidence/alias cases. The catalog remains 244 records with
+unchanged detectors, MIME identifiers and executable capabilities. Broader alias
+coverage, Office fidelity, manual acceptance and packaging gates remain open.
+
 The [no-visible-slide handling](powerpoint-slide-evaluation.md#presentations-without-visible-slides)
 now explains empty or fully hidden PPTX decks before prompts, paid admission or
 worker startup. Unknown visibility remains unknown. All 3,974 foundation checks

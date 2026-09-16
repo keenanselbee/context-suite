@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-14.1; 244 records. This is a descriptive
+Catalog revision: 2026-09-16.1; 244 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -24,6 +24,9 @@ The [document purpose review](catalog-document-review.md) covers 31 records and
 records source/variant limits separately from parsing and conversion support.
 The [source/configuration purpose review](catalog-source-code-review.md) checks
 49 records and clarifies twenty descriptions/references without changing recognition.
+The [module and build filename review](catalog-module-alias-review.md) adds four
+TypeScript suffixes and the exact Ruby names Gemfile/Rakefile, preserving shared
+video meanings and qualified filename confidence.
 The [data purpose review](catalog-data-review.md) covers 37 Data records and
 updates fifteen descriptions/references; it does not certify all format variants.
 The [video purpose review](catalog-video-review.md) covers ten records and updates
@@ -230,7 +233,7 @@ for actual parsed facts and current resource limits.
 | reg | Windows Registry data | `.reg` | Filename hint; text sampling |
 | rpm | RPM package | `.rpm` | Filename hint only |
 | rtf | Rich Text Format | `.rtf` | Filename hint; text sampling |
-| ruby | Ruby source | `.rb`, `.rake`, `.gemspec` | Filename hint; text sampling |
+| ruby | Ruby source | `.rb`, `.rake`, `.gemspec`; `Gemfile`, `Rakefile` | Filename hint; text sampling |
 | rust | Rust source | `.rs` | Filename hint; text sampling |
 | sass | Sass style source | `.scss`, `.sass` | Filename hint; text sampling |
 | scala | Scala source | `.scala`, `.sc` | Filename hint; text sampling |
@@ -255,7 +258,7 @@ for actual parsed facts and current resource limits.
 | tracker | Tracker music module | `.mod`, `.xm`, `.it`, `.s3m`, `.mptm` | Filename hint only |
 | truetype | TrueType font | `.ttf` | Bounded font header declarations; likely, no glyph validation |
 | tsv | Tab-separated table | `.tsv`, `.tab` | Filename hint; text sampling |
-| typescript | TypeScript source | `.ts`, `.tsx`, `.d.ts` | Filename hint; text sampling |
+| typescript | TypeScript source | `.ts`, `.tsx`, `.d.ts`, `.mts`, `.cts`, `.d.mts`, `.d.cts` | Filename hint; text sampling |
 | unitypackage | Unity asset package | `.unitypackage` | Filename hint only |
 | unreal-asset | Unreal Engine asset | `.uasset`, `.umap` | Filename hint only |
 | usd | Universal Scene Description | `.usd`, `.usda`, `.usdc`, `.usdz` | Filename hint only |

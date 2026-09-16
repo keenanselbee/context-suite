@@ -1,9 +1,9 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.4**. This checkpoint adds known-date refusal
-to public baseline `9db95eb` and private baseline `616d7ee`.
-Catalog schema 1, revision **2026-09-14.1**, **244 records**.
+Matrix revision: **2026-09-16.5**. This checkpoint updates catalog aliases
+after public baseline `15fd0df` and private baseline `6b8d84a`.
+Catalog schema 1, revision **2026-09-16.1**, **244 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
 
