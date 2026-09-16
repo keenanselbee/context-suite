@@ -1,4 +1,4 @@
-"""Check retained authored ExcelDates evidence without executing an Office engine."""
+"""Check retained authored Excel date evidence without executing an Office engine."""
 import datetime
 import hashlib
 import io
@@ -48,12 +48,15 @@ def main():
     root = pathlib.Path(sys.argv[1]).absolute()
     report = json.loads(read(root / 'office-evaluation.json'))
     names = {f'Excel dates {variant}.xlsx' for variant in ('1900-default', '1900-explicit', '1904')}
-    if report['Mode'] != 'ExcelDates' or len(report['Results']) != 3 or {item['Source'] for item in report['Results']} != names:
-        raise ValueError('Expected three complete ExcelDates cases')
+    formulas = report['Mode'] == 'ExcelFormulaDates'
+    expected_cases = {(name, profile) for name in names for profile in ('calc-always', 'calc-never')} if formulas else {(name, 'default') for name in names}
+    if report['Mode'] not in ('ExcelDates', 'ExcelFormulaDates') or len(report['Results']) != len(expected_cases) or {(item['Source'], item['ProfileStyle']) for item in report['Results']} != expected_cases:
+        raise ValueError('Expected complete date-system/calculation cases')
     checked = []
     for item in report['Results']:
         name = item['Source']
-        folder = root / name[:-5]
+        profile = item['ProfileStyle']
+        folder = root / (name[:-5] + ('-' + profile if formulas else ''))
         source = read(root / 'fixtures' / name)
         if not item['Completed'] or item['Pages'] != 1 or sha(source) != item['SourceSha256'] or sha(read(folder / (name[:-5] + '.pdf'))) != item['PdfSha256']:
             raise ValueError('Incomplete case or changed source/PDF')
@@ -68,7 +71,7 @@ def main():
             if declaration != ('1' if use1904 else '0' if 'explicit' in name else None):
                 raise ValueError('Unexpected source date-system declaration')
             sheet = ET.fromstring(archive.read('xl/worksheets/sheet1.xml'))
-            if sheet.findall('.//' + NS + 'f'):
+            if not formulas and sheet.findall('.//' + NS + 'f'):
                 raise ValueError('Date fixture must not depend on formula calculation')
             cells = {cell.get('r'): cell for cell in sheet.findall('.//' + NS + 'c')}
             values = ['1', '59', '60', '61', '40729', '40729.5', '1.5']
@@ -83,9 +86,12 @@ def main():
             expected_values = []
             for index, (value, style) in enumerate(zip(values, styles), 2):
                 cell = cells['B' + str(index)]
-                if cell.get('s') != style or cell.findtext(NS + 'v') != value or cells['A' + str(index)].findtext(NS + 'is/' + NS + 't') != f'R{index - 1:02d}':
+                cached = '40729' if formulas and index < 6 else value
+                if formulas and cell.findtext(NS + 'f') != '0+' + value:
+                    raise ValueError('Authored arithmetic formula changed')
+                if cell.get('s') != style or cell.findtext(NS + 'v') != cached or cells['A' + str(index)].findtext(NS + 'is/' + NS + 't') != f'R{index - 1:02d}':
                     raise ValueError('Authored numeric value/style/label changed')
-                expected_values.append(expected(float(value), use1904, style))
+                expected_values.append(expected(float(cached if formulas and profile == 'calc-never' else value), use1904, style))
         pages = json.loads(read(folder / 'extracted-text.json'))
         if pages != item['Text'] or len(pages) != 1 or 'HIDDEN' in pages[0] or 'OUTSIDE' in pages[0]:
             raise ValueError('Retained text or print policy changed')
@@ -97,10 +103,24 @@ def main():
                         for index, ((_, actual), target) in enumerate(zip(rows, expected_values), 1)]
         if observations != item['DateObservations']:
             raise ValueError('Recorded date observations disagree with independent source/text inspection')
-        checked.append({'Source': name, 'SourceSha256': item['SourceSha256'], 'PdfSha256': item['PdfSha256'], 'Date1904': declaration,
+        if formulas:
+            preflight = item['DatePreflight']
+            dates = preflight['StoredDates']
+            if preflight['FormatId'] != 'xlsx' or preflight['Refusal'] is not None or not dates['Complete'] or dates['EarlyDateCells'] != 0 or dates['DateFormulaCells'] != 6:
+                raise ValueError('Formula preflight evidence changed')
+            profile_path = pathlib.Path(item['Profile']).absolute()
+            if profile_path.parent != ROOT / '.codex-temp' or not re.fullmatch(r'office-profile-[0-9a-f]{32}u', profile_path.name) or profile_path.is_symlink() or profile_path.is_junction():
+                raise ValueError('Unexpected formula profile path')
+            settings_path = profile_path / 'settings-verification.json'
+            if settings_path.is_symlink() or settings_path.is_junction() or settings_path.stat().st_size > 4096:
+                raise ValueError('Invalid profile verification receipt')
+            settings = json.loads(settings_path.read_bytes())
+            if not settings['Verified'] or settings['CalculationMode'] != (0 if profile == 'calc-always' else 1):
+                raise ValueError('Explicit calculation profile was not verified')
+        checked.append({'Source': name, 'ProfileStyle': profile, 'SourceSha256': item['SourceSha256'], 'PdfSha256': item['PdfSha256'], 'Date1904': declaration,
                         'MatchingValues': sum(row['Matches'] for row in observations), 'Observations': observations})
-    result = {'Results': checked, 'Scope': 'Authored numeric-date and elapsed-time cells only; differences are fidelity findings, not accepted output or general locale/formula compatibility.'}
-    with (root / 'independent-dates.json').open('x') as output:
+    result = {'Results': checked, 'Mode': report['Mode'], 'FidelityPassed': all(row['Matches'] for case in checked for row in case['Observations']), 'Scope': 'Authored numeric/arithmetic-date and elapsed-time cells only; differences are fidelity findings, not accepted output or general locale/formula compatibility.'}
+    with (root / ('independent-formula-dates.json' if formulas else 'independent-dates.json')).open('x') as output:
         json.dump(result, output, indent=2)
     print(json.dumps(result, indent=2))
 

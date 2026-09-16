@@ -116,7 +116,7 @@ if (args is ["--process-owner", var ownerRoot])
     await OfficeEvaluationProcess.RunAsync(Environment.ProcessPath!, ["--process-child", "orphan", ownerRoot], ownerRoot);
     return 0;
 }
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates" or "ExcelPrint" or "WordRevisions" or "WordFinalText" or "WordRevisionStructures" or "PowerPointSlides" or "EmbeddedImages")) return 2;
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates" or "ExcelFormulaDates" or "ExcelPrint" or "WordRevisions" or "WordFinalText" or "WordRevisionStructures" or "PowerPointSlides" or "EmbeddedImages")) return 2;
 var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths";
 var embeddedImages = args.Length == 4 && args[3] == "EmbeddedImages";
 var fontSubstitution = args.Length == 4 && args[3] == "FontSubstitution";
@@ -125,10 +125,11 @@ var wordStructures = args.Length == 4 && args[3] == "WordRevisionStructures";
 var wordFinalText = args.Length == 4 && args[3] == "WordFinalText";
 var wordRevisions = args.Length == 4 && args[3] is "WordRevisions" or "WordFinalText" or "WordRevisionStructures";
 var excelPrint = args.Length == 4 && args[3] == "ExcelPrint";
-var excelDates = args.Length == 4 && args[3] == "ExcelDates";
+var excelFormulaDates = args.Length == 4 && args[3] == "ExcelFormulaDates";
+var excelDates = args.Length == 4 && args[3] is "ExcelDates" or "ExcelFormulaDates";
 var excelCalculation = args.Length == 4 && args[3] == "ExcelCalculation";
 var legacyPdf = args.Length == 4 && args[3] == "LegacyPdf";
-var profileStyles = wordFinalText || wordStructures ? new[] { "final-text", "show-changes-control" } : excelCalculation ? new[] { "calc-default", "calc-always", "calc-never" } : legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "EnvironmentPaths"
+var profileStyles = excelFormulaDates ? new[] { "calc-always", "calc-never" } : wordFinalText || wordStructures ? new[] { "final-text", "show-changes-control" } : excelCalculation ? new[] { "calc-default", "calc-always", "calc-never" } : legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "EnvironmentPaths"
     ? new[] { "env-control", "env-all", "env-profile", "env-TEMP", "env-TMP", "env-APPDATA", "env-LOCALAPPDATA" } : args[3] == "ProfileLengths"
     ? new[] { "length-90", "length-110", "length-130", "length-150", "length-170" }
     : new[] { "short-ascii", "short-unicode", "long-ascii", "long-unicode" };
@@ -181,7 +182,7 @@ if (args.Length == 4 && args[3] is "LegacyAnalysis" or "LegacyPdf")
 }
 var baselines = new Dictionary<string, (string Folder, JsonElement Render, string[] Text)>();
 var comparisons = new List<object>();
-var conversionCases = wordStructures ? WordRevisionStructureFixtures.Create(fixtures) : embeddedImages ? OfficeImageFixtures.Create(fixtures) : powerPointSlides ? PowerPointSlideFixtures.Create(fixtures) : wordRevisions ? WordRevisionFixtures.Create(fixtures) : excelPrint ? ExcelPrintFixtures.Create(fixtures) : excelDates ? ExcelDateFixtures.Create(fixtures) : fontSubstitution ? OfficeFontFixtures.Create(fixtures) : excelCalculation ? ExcelCalculationFixtures.Create(fixtures) : new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) };
+var conversionCases = wordStructures ? WordRevisionStructureFixtures.Create(fixtures) : embeddedImages ? OfficeImageFixtures.Create(fixtures) : powerPointSlides ? PowerPointSlideFixtures.Create(fixtures) : wordRevisions ? WordRevisionFixtures.Create(fixtures) : excelPrint ? ExcelPrintFixtures.Create(fixtures) : excelDates ? ExcelDateFixtures.Create(fixtures, excelFormulaDates) : fontSubstitution ? OfficeFontFixtures.Create(fixtures) : excelCalculation ? ExcelCalculationFixtures.Create(fixtures) : new[] { ("Word ü.docx", "writer_pdf_Export", 2), ("Excel ü.xlsx", "calc_pdf_Export", 1), ("PowerPoint ü.pptx", "impress_pdf_Export", 2) };
 foreach (var (name, filter, expectedPages) in conversionCases)
 {
     if (args.Length == 4 && !legacyPdf && !excelCalculation && !excelDates && !excelPrint && !wordRevisions && !powerPointSlides && !fontSubstitution && !embeddedImages && !name.StartsWith(profileMatrix ? "PowerPoint" : args[3], StringComparison.Ordinal)) continue;
@@ -193,7 +194,17 @@ foreach (var (name, filter, expectedPages) in conversionCases)
             ? Path.Combine(root, "legacy-" + extension, Path.ChangeExtension(name, extension)) : Path.Combine(fixtures, name);
         var hash = Hash(source);
         var sourceWriteTime = File.GetLastWriteTimeUtc(source);
-        var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name) + (legacyPdf || excelCalculation || wordFinalText || wordStructures ? "-" + profileStyle : "")); Directory.CreateDirectory(folder);
+        OfficeSourcePreflight? datePreflight = null;
+        if (excelFormulaDates)
+        {
+            using var input = File.OpenRead(source);
+            using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            datePreflight = await OfficeSourcePreflight.InspectOpenXmlAsync(source, input, deadline.Token);
+            if (datePreflight.FormatId != "xlsx" || datePreflight.Refusal is not null ||
+                datePreflight.StoredDates is not { Complete: true, EarlyDateCells: 0, DateFormulaCells: 6 })
+                throw new InvalidDataException("Authored formula/date preflight observation changed.");
+        }
+        var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name) + (legacyPdf || excelCalculation || excelFormulaDates || wordFinalText || wordStructures ? "-" + profileStyle : "")); Directory.CreateDirectory(folder);
         // Keep input and output paths identical across profile variants, then retain each result separately.
         var outputFolder = profileMatrix ? Path.Combine(root, "conversion") : folder; Directory.CreateDirectory(outputFolder);
         var options = new Dictionary<string, object>();
@@ -272,7 +283,7 @@ foreach (var (name, filter, expectedPages) in conversionCases)
         var structureObservation = wordStructures ? WordRevisionStructureFixtures.Observe(name, profileStyle, text) : null;
         if (structureObservation is not null) structuresMatch &= structureObservation.Matches;
         var printObservation = excelPrint ? ExcelPrintFixtures.Observe(name, text) : null;
-        var dateObservations = excelDates ? ExcelDateFixtures.Observe(name, text) : null;
+        var dateObservations = excelDates ? ExcelDateFixtures.Observe(name, text, excelFormulaDates && profileStyle == "calc-never") : null;
         if (!excelCalculation && !excelDates && !excelPrint && !wordRevisions && !powerPointSlides && !textMatches) throw new InvalidDataException("Expected visible text or hidden/print-area policy did not match: " + name);
         if (!wordRevisions && filter == "writer_pdf_Export" &&
             (!text[0].Contains("FIRST PAGE HEADER") || text[0].Contains("RUNNING HEADER") ||
@@ -280,10 +291,10 @@ foreach (var (name, filter, expectedPages) in conversionCases)
              !text[0].Contains("Page 1 of 2") || !text[1].Contains("Page 2 of 2") || text.Any(page => page.Contains("99"))))
             throw new InvalidDataException("Word first/default headers or PAGE/NUMPAGES field rendering did not match authored expectations.");
         if (Hash(source) != hash) throw new InvalidDataException("Generated original changed.");
-        if ((wordFinalText || wordStructures) && File.GetLastWriteTimeUtc(source) != sourceWriteTime)
+        if ((wordFinalText || wordStructures || excelFormulaDates) && File.GetLastWriteTimeUtc(source) != sourceWriteTime)
             throw new InvalidDataException("Word revision source write time changed.");
         results.Add(new { Source = Path.GetFileName(source), SourceSha256 = hash, ProfileStyle = profileStyle, Completed = true, conversion.Profile, conversion.EnvironmentPaths,
-            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds, SourceWriteTimeUtc = wordFinalText || wordStructures ? (DateTime?)sourceWriteTime : null, CalculationObservation = calculationObservation, DateObservations = dateObservations, PrintObservation = printObservation, RevisionObservation = revisionObservation, StructureObservation = structureObservation, SlideObservation = slideObservation, ExportOptions = powerPointSlides || embeddedImages || filter == "writer_pdf_Export" ? options : null, PdfFontNames = pdfFonts,
+            PdfSha256 = Hash(pdf), Pages = pages, conversion.Milliseconds, SourceWriteTimeUtc = wordFinalText || wordStructures || excelFormulaDates ? (DateTime?)sourceWriteTime : null, CalculationObservation = calculationObservation, DateObservations = dateObservations, DatePreflight = excelFormulaDates ? new { datePreflight!.FormatId, datePreflight.Refusal, datePreflight.StoredDates } : null, PrintObservation = printObservation, RevisionObservation = revisionObservation, StructureObservation = structureObservation, SlideObservation = slideObservation, ExportOptions = powerPointSlides || embeddedImages || filter == "writer_pdf_Export" ? options : null, PdfFontNames = pdfFonts,
             RequestedFont = fontSubstitution ? (name.Contains("missing", StringComparison.Ordinal) ? OfficeFontFixtures.MissingFont : "Arial") : null,
             ConversionOutput = conversion.Output, Diagnostics = conversion.Error, Text = text, Render = rendered.RootElement.Clone() });
         if (structureObservation is not null) Console.WriteLine("OBSERVED: " + name + ": structural revision text matches=" + structureObservation.Matches);

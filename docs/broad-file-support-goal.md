@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Excel formula-date experiment](excel-date-system-evaluation.md#formula-results-after-recalculation-2026-09-16)
+confirms a remaining fidelity defect: modern saved results pass source preflight,
+but recalculation produces six incorrect early-1900 displays. Six exports yield
+36/42 matching displays; saved-value and 1904 controls match their policies.
+Originals remain unchanged, and independent inspection plus eight negative
+controls verifies the observation. This is failed fidelity evidence, not a
+shipping fix or permission to remove required spreadsheet conversion support.
+
 The [Office packaging recheck](office-production-payload.md) passes all 33 checks
 with the current pinned host and runtime, including six new interrupted/corrupted
 copy checks. Partial stages remain inspectable and cannot be silently reused;

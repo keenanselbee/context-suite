@@ -14,6 +14,11 @@ incorrect output; it does not correct the renderer or settle whether refusal is
 acceptable for launch. Formula results after recalculation and unsupported
 formatting/inspection cases still require a complete date policy.
 
+The later formula experiment below demonstrates that this is an actual bypass
+of the known-date check: modern saved values pass preflight, while recalculation
+produces six incorrect early-date displays. The rendering policy remains
+unresolved; successful preflight is not proof of date fidelity.
+
 
 Fixture and independent expectations
 ------------------------------------
@@ -190,6 +195,70 @@ dotnet run --project proprietary/tests/ContextSuite.Pdf.ContractTests -c Release
   --office-date-refusal '<retained Excel date fixtures directory>' `
   '<new .codex-temp/office-date-refusal-GUID directory>'
 ```
+
+
+Formula results after recalculation (2026-09-16)
+-----------------------------------------------
+
+`Test-OfficeEvaluation.ps1 -ExcelFormulaDates` generates three variants with the
+same date-system declarations and number formats as the numeric matrix. Each
+of the seven numeric cells becomes an explicit arithmetic formula (`0+` followed
+by its original numeric value). The first four saved results are deliberately
+set to 40729; the remaining caches retain their correct values. There are no
+external references or volatile functions. This separates calculation policy
+from the date display issue without using customer documents.
+
+Each workbook is exported under explicit always-recalculate and never-recalculate
+profiles. Both settings are verified after the engine exits. The current shared
+source preflight is run before each export and returns ordinary XLSX, no refusal,
+complete stored-date inspection, zero early stored dates and six calendar-formatted
+formula cells. The elapsed-duration formula is not counted as a calendar date.
+The preflight does not evaluate any formula.
+
+| Date-system declaration | Recalculate | Use saved values |
+| --- | --- | --- |
+| Omitted (1900) | 4/7 displays match; serials 1, 59 and 60 remain wrong | 7/7 match the deliberately saved values |
+| Explicit false (1900) | 4/7 displays match; the same three errors | 7/7 match the deliberately saved values |
+| Explicit true (1904) | 7/7 match | 7/7 match the deliberately saved values |
+
+Overall **36 of 42 displays match; fidelity fails**. Saved-value matches do not
+make those stale values mathematically correct. They verify the explicitly chosen
+saved-value behavior only. Recalculated modern dates, date/time and elapsed-hour
+controls retain their expected displays. Changing a whole workbook's date base
+cannot fix only the affected values. The current implementation is not changed
+to rewrite cells, force saved values or silently omit formula support.
+
+All six exports complete with structural PDF checks, independent PDFium
+text/rendering, one-page geometry, unchanged original hashes/write times and no
+active child processes after job cleanup. These are command-line evaluation
+exports using short repository-local profiles, not production app/worker
+publication or AppContainer network-isolation acceptance. No Windows profile
+registration, installation, Explorer changes or live commerce occurs.
+
+Evidence is retained at
+`.codex-temp/office-engine/a56167ab9fb54686971491918ccd26f8/evaluation-ede461f4630a4338a9375a56d602fbf7`.
+`office-evaluation.json` records all six cases and preflight observations;
+`independent-formula-dates.json` derives expectations from the source values,
+arithmetic, formats and chosen calculation policy, and explicitly records
+`FidelityPassed: false`. The inspection uses authored Excel-format expectations,
+not Microsoft Excel-rendered reference PDFs.
+
+The wrapper log and source/exit receipts use `.codex-temp/excel-formula-dates`.
+The Release probe build has zero warnings/errors; all 17 profile declaration
+contracts pass. Eight negative controls reject altered mode, missing cases,
+PDF identity, observations, preflight counts, profile paths, arithmetic and
+caches. The inspector also rechecks a fresh copy of the original numeric matrix,
+retaining its 15/21 matches. These records are in
+`.codex-temp/excel-formula-dates-inspection.json`. After execution, only the
+inspector's path guard was corrected to match the existing profile-name suffix;
+all renderer, fixture and Core source inputs remain unchanged. Repository
+boundary, theme and 165-document checks pass. General foundation/native suites
+were not rerun for this evaluation-only change.
+
+Next work must handle dates produced by recalculation, as well as stored dates
+and formats outside the scan's scope. The existing known-date refusal cannot
+close this gate. No refusal-only scope reduction or date-fidelity acceptance is
+inferred from the experiment.
 
 
 Evidence and limits

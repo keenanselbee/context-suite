@@ -2,10 +2,10 @@ using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-// Authored numeric cells only: no formulas, external links or customer documents.
+// Authored numeric cells or explicit arithmetic formulas; no external links or customer documents.
 internal static class ExcelDateFixtures
 {
-    public static (string Name, string Filter, int Pages)[] Create(string directory)
+    public static (string Name, string Filter, int Pages)[] Create(string directory, bool formulas = false)
     {
         XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
         var cases = new[] { "1900-default", "1900-explicit", "1904" };
@@ -28,7 +28,8 @@ internal static class ExcelDateFixtures
                 var row = index + 2;
                 var element = TextRow(row, "R" + (index + 1).ToString("D2"));
                 element.Add(new XElement(ns + "c", new XAttribute("r", "B" + row), new XAttribute("s", index == 5 ? "2" : index == 6 ? "3" : "1"),
-                    new XElement(ns + "v", values[index])));
+                    formulas ? new XElement(ns + "f", "0+" + values[index]) : null,
+                    new XElement(ns + "v", formulas && index < 4 ? "40729" : values[index])));
                 data.Add(element);
             }
             data.Add(TextRow(20, "OUTSIDE PRINT AREA"));
@@ -57,13 +58,15 @@ internal static class ExcelDateFixtures
         return cases.Select(name => ("Excel dates " + name + ".xlsx", "calc_pdf_Export", 1)).ToArray();
     }
 
-    public static DateObservation[] Observe(string name, string[] pages)
+    public static DateObservation[] Observe(string name, string[] pages, bool cachedFormulas = false)
     {
         if (pages.Length != 1 || !pages[0].Contains("DATE SYSTEM") || pages[0].Contains("HIDDEN") || pages[0].Contains("OUTSIDE"))
             throw new InvalidDataException("Date fixture text or print policy changed.");
         string[] expected = name.Contains("1904", StringComparison.Ordinal)
             ? ["1904-01-02", "1904-02-29", "1904-03-01", "1904-03-02", "2015-07-06", "2015-07-06 12:00:00", "36:00:00"]
             : ["1900-01-01", "1900-02-28", "1900-02-29", "1900-03-01", "2011-07-05", "2011-07-05 12:00:00", "36:00:00"];
+        if (cachedFormulas)
+            for (var index = 0; index < 4; index++) expected[index] = expected[4];
         var matches = Regex.Matches(pages[0], @"R(?<row>0[1-7])\s+(?<value>.*?)(?=R0[1-7]|$)", RegexOptions.Singleline);
         if (matches.Count != 7 || matches.Select(match => match.Groups["row"].Value).Distinct().Count() != 7)
             throw new InvalidDataException("Cannot associate all seven authored date cells with PDF text.");
