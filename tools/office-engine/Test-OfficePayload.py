@@ -29,9 +29,13 @@ def main():
     scratch.mkdir()
     print("Office payload evidence:", scratch, flush=True)
     results = []
-    source_inputs = {str(path.relative_to(payload.ROOT)): payload.digest(path) for path in
-                     (Path(__file__).resolve(), TOOLS / "Stage-OfficePayload.py", TOOLS / "payload-candidate.json",
-                      payload.ROOT / "tools/Build-Production.ps1", payload.ROOT / "tools/curated-engine/Test-ProductionPayload.ps1")}
+    record = payload.selection()
+    input_paths = [Path(__file__).resolve(), TOOLS / "Stage-OfficePayload.py", TOOLS / "payload-candidate.json",
+                   TOOLS / "evaluation.json", TOOLS / "Write-OfficeRuntimeInventory.py",
+                   payload.ROOT / "proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
+                   payload.ROOT / "tools/Build-Production.ps1", payload.ROOT / "tools/curated-engine/Test-ProductionPayload.ps1"]
+    input_paths.extend(payload.ROOT / item["path"] for item in record["host"]["sources"])
+    source_inputs = {str(path.relative_to(payload.ROOT)): payload.digest(path) for path in input_paths}
 
     def passed(name):
         results.append(name)
@@ -54,7 +58,6 @@ def main():
             raise AssertionError("Production entry-point check failed: " + name)
         passed(name)
 
-    record = payload.selection()
     lease = (payload.ROOT / "proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs").read_text()
     writer = (TOOLS / "Write-OfficeRuntimeInventory.py").read_text()
     for value in (record["host"]["sha256"], record["inventory"]["sha256"], str(record["host"]["bytes"]),
@@ -133,6 +136,41 @@ def main():
     if any(invalid.iterdir()):
         raise AssertionError("Host source mismatch changed destination.")
 
+    # Faults affect only the disposable destination. A partial copy must remain
+    # inspectable, fail verification and refuse a retry into that same stage.
+    for mode in ("interrupted", "corrupted"):
+        failed_stage = scratch / (mode + "-copy")
+        failed_stage.mkdir()
+
+        def failed_copy(original, output):
+            output.write(b"incomplete host")
+            if mode == "interrupted":
+                raise OSError("Authored copy interruption")
+
+        with patch.object(payload.shutil, "copyfileobj", side_effect=failed_copy):
+            try:
+                payload.stage(failed_stage, source)
+            except OSError as error:
+                if mode != "interrupted" or str(error) != "Authored copy interruption":
+                    raise
+            except ValueError as error:
+                if mode != "corrupted" or "Office payload identity differs" not in str(error):
+                    raise
+            else:
+                raise AssertionError("Copy fault was accepted: " + mode)
+        partial = failed_stage / "office-engine"
+        partial_files = {path.relative_to(partial).as_posix(): payload.digest(path)
+                         for path in partial.rglob("*") if path.is_file()}
+        if partial_files != {record["host"]["path"]: payload.digest(partial / record["host"]["path"])} or (
+                partial / record["host"]["path"]).read_bytes() != b"incomplete host":
+            raise AssertionError("Failed copy was removed or later files were written.")
+        passed(mode + " copy stops and retains partial destination")
+        refused(mode + " copy fails payload verification", lambda: payload.verify(partial))
+        refused(mode + " copy cannot be overwritten on retry", lambda: payload.stage(failed_stage, source))
+        if partial_files != {path.relative_to(partial).as_posix(): payload.digest(path)
+                             for path in partial.rglob("*") if path.is_file()}:
+            raise AssertionError("Refused retry changed the partial copy.")
+
     # A junction within this disposable tree exercises both ancestor and child
     # checks without changing permissions or touching a target outside scratch.
     linked = scratch / "linked-engine"
@@ -168,7 +206,9 @@ def main():
         raise AssertionError("Test inputs changed during verification.")
     passed("Original Office runtime base payload and test sources unchanged")
     (scratch / "results.json").write_text(json.dumps({"Passed": True, "Checks": results, "Sources": source_inputs,
-                                                     "BaseFiles": base_inputs, "CombinedPayload": str(combined)}, indent=2) + "\n", encoding="utf-8")
+                                                     "OfficeSelection": record, "OfficeSource": str(source),
+                                                     "BasePayload": str(base), "BaseFiles": base_inputs,
+                                                     "CombinedPayload": str(combined)}, indent=2) + "\n", encoding="utf-8")
     print(f"Passed {len(results)} Office payload checks. No Office process or Windows profile was created.", flush=True)
 
 

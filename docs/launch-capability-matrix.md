@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.6**. This checkpoint corrects configuration filename hints
-after public baseline `e36e056` and private baseline `6b8d84a`.
+Matrix revision: **2026-09-16.7**. This checkpoint refreshes Office staging checks
+after public baseline `c0c8ac3` and private baseline `6b8d84a`.
 Catalog schema 1, revision **2026-09-16.2**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
@@ -12,7 +12,8 @@ The source baseline and the last packaged candidate are different. Candidate
 Office command and recovery work is verified in isolated scratch builds. Default
 release packaging still excludes the optional audio/PDF/Office candidates. The
 [explicit Office staging path](office-production-payload.md) is implemented;
-all 27 scratch packaging checks pass. Fresh formal combined packaging remains
+all 33 scratch packaging checks pass with the current host, including copy-failure
+retention and retry refusal. Fresh formal combined packaging remains
 open. A menu label does not establish that a particular build can execute the
 operation.
 

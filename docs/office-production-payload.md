@@ -1,7 +1,7 @@
 Office Production Candidate Payload
 ===================================
 
-Status: explicit isolated staging and verification implemented; 27 scratch
+Status: explicit isolated staging and verification implemented; 33 scratch
 packaging checks pass. Formal combined staging, redistribution review and release
 adoption remain open.
 
@@ -75,9 +75,17 @@ python -B tools/office-engine/Test-OfficePayload.py `
 It copies the base to a fresh scratch directory, removes only that copy's stale
 inventory receipt, stages Office, and checks the combined production allowlist.
 It exercises corruption, missing files/notices, empty-directory membership,
-linked paths, host-source mismatch and build/verifier opt-in guards. Its retained
-results identify test-source and base-payload hashes. Neither the original base
-nor source engine is modified.
+linked paths, host-source mismatch and build/verifier opt-in guards. It also
+injects an interrupted copy and a corrupted copy into separate scratch stages.
+Both must stop at the damaged host, retain that partial file for inspection,
+fail payload verification and refuse to overwrite the same destination on retry.
+This is deterministic copy-fault coverage, not a power-loss or disk-failure test.
+
+The retained results identify the source and base paths, full Office selection,
+test/build/verifier inputs, native host source pins, runtime lease, inventory
+writer and all base-file hashes. Neither the original base nor source engine is
+modified. These receipts identify the inspected inputs; they do not reproduce
+the native host build or prove renderer execution from the combined scratch copy.
 
 
 Recorded verification
@@ -99,9 +107,30 @@ The later [font-review checkpoint](office-font-review.md) updates the native
 host and its source pins. The current full Office payload verifies at
 `.codex-temp/office-execution/cd4db5e58f5f414599199aa6b5602677/worker`.
 The private repository fixes LF endings for the pinned native source files so
-Git checkout preserves their byte identities. The older 27-check matrix above
-was not rerun; the current complete payload and thirteen native exports have
-separate verification evidence in the font-review record.
+Git checkout preserves their byte identities. The complete payload and thirteen
+native exports have separate verification evidence in the font-review record.
+
+The 2026-09-16 run at
+`.codex-temp/office-payload-tests-035aa07baebd4d5d83574371c93b024c`
+passes all **33 checks** with the current pinned host, including six new
+interrupted/corrupted-copy checks. Its Office source is
+`.codex-temp/office-execution/d99391e39ffb46649b8f7cf05653408d/worker/office-engine`;
+its base is the same reserved 1.1.0 image/audio/PDF payload above. All 19,332
+runtime files, host and inventory pass complete copied verification and the
+combined production allowlist. Original runtime identities, twelve captured
+source inputs and all 117 base files remain unchanged. `results.json` records
+the exact selection and paths; each production-entry-point check has its own log.
+
+Both injected copy faults retain the damaged host, stop before copying later
+files, fail verification and refuse retry into the existing directory. The
+disposable partial stages remain available for inspection. The complete combined
+scratch copy intentionally has no inherited formal inventory receipt. No product
+version was reserved, production build performed, Office engine executed or
+Windows profile created. The retained base contains older managed application
+assemblies; this test does not establish that the current application and all
+engines have been packaged or executed together. Repository boundary, theme and
+165-document checks pass; managed/media execution was not rerun for this test-only
+change.
 
 
 Remaining acceptance

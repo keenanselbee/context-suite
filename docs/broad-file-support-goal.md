@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office packaging recheck](office-production-payload.md) passes all 33 checks
+with the current pinned host and runtime, including six new interrupted/corrupted
+copy checks. Partial stages remain inspectable and cannot be silently reused;
+source and retained base bytes remain unchanged. This is a combined scratch
+allowlist test using the older 1.1.0 managed payload, not a new production build
+or renderer execution. Fresh combined packaging, Office fidelity/isolation and
+manual acceptance remain open.
+
 The [configuration filename review](catalog-configuration-alias-review.md) separates
 generic `.cfg`/`.conf` hints from INI and adds `.directory` desktop entries. It
 reviews all eleven configuration records and their nineteen associations. All
