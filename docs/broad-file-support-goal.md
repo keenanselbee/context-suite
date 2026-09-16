@@ -5,6 +5,12 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [renderer font-environment evaluation](office-font-environment.md) observes
+313 identical family names before/after export in twelve normal/restricted cases.
+Arial is listed, the authored absent family is not, and independent PDF/runtime
+and native cleanup checks pass. This provides an additional resolution input;
+actual-use, style/theme/alias and glyph/embedded-font fidelity remain open.
+
 The [Office PDF font review](office-font-review.md) now transports the renderer's
 bounded missing-family report to a per-document Save PDF copy / Skip file
 choice, after independent validation and native cleanup and before publication.

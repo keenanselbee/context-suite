@@ -67,6 +67,11 @@ overflow refuses the case. Raw data is diagnostic evidence from authored fixture
 not text safe to insert into a customer window. Independent inspection must
 validate its JSON and compare it with the generated PDFs and cleanup records.
 
+The following [font-environment evaluation](office-font-environment.md) extends
+this mode with a bounded read-only family-list query before and after export.
+Those lists are separate from missing-font callbacks and require their own
+inspection; they are not font-program or glyph-fidelity certificates.
+
 Inspect a completed run with the separately pinned qpdf/PDFium tools:
 
 ```powershell

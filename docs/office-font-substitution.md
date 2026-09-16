@@ -57,7 +57,8 @@ rights, per-script glyph fallback and the renderer's actual font environment.
 Comparing PDF BaseFont strings alone is not an adequate production detector.
 Preserve copies and use a compact necessary decision when fidelity cannot be
 maintained, within the existing context-menu UX; a general planner is unnecessary.
-The detector and exact customer flow are still unimplemented.
+Complete font resolution remains unimplemented; later checkpoints below add the
+reported-substitution review and renderer-family observations.
 The subsequent [renderer callback evaluation](office-font-callback-evaluation.md)
 finds a viable positive warning signal: all twelve normal/restricted exports
 distinguish the synthetic missing family from Arial, with independently checked
@@ -66,6 +67,9 @@ cannot prove complete font/style/glyph fidelity. The subsequent
 [Office PDF font review](office-font-review.md) implements bounded warning
 transport and per-document Save/Skip; broader fidelity and visible acceptance
 remain open.
+The [renderer family-list evaluation](office-font-environment.md) now supplies
+313 stable names in the authored normal/restricted cases. It distinguishes the
+known absent family but does not prove styles, programs or glyph availability.
 The subsequent [read-only declaration scan](document-font-references.md) reports
 requested names and unresolved themes within fixed limits; it does not establish
 installed availability or determine the fonts actually used by the renderer.

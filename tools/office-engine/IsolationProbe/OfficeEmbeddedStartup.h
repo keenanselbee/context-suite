@@ -24,11 +24,27 @@ struct OfficeKitDocumentMethods {
     int (*type)(OfficeKitDocument*);
     void (*unusedRenderingMembers[10])();
     void (*registerCallback)(OfficeKitDocument*, void (*)(int, const char*, void*), void*);
+    void (*unusedInputMembers[8])();
+    char* (*getCommandValues)(OfficeKitDocument*, const char*);
 };
 struct OfficeKitDocument { OfficeKitDocumentMethods* methods; };
 struct OfficeKitFixture { const wchar_t* family; const wchar_t* extension; const wchar_t* profile; };
 const OfficeKitFixture kitFixtures[] = {{L"Word", L"docx", L"w"}, {L"Excel", L"xlsx", L"x"}, {L"PowerPoint", L"pptx", L"p"}};
 struct OfficeKit { OfficeKitMethods* methods; };
+
+void ObserveFontEnvironment(OfficeKit* kit, OfficeKitDocument* document, const fs::path& path) {
+    Require(document->methods->getCommandValues && kit->methods->freeError, "Pinned read-only font query API");
+    auto* reply = document->methods->getCommandValues(document, ".uno:CharFontName");
+    // The pinned query allocates with malloc and freeError delegates to the same
+    // runtime's free. Keep that allocator pair inside the engine module.
+    struct ReplyGuard { char* value; void (*release)(char*); ~ReplyGuard() { if (value) release(value); } } guard{reply, kit->methods->freeError};
+    const auto length = reply ? strnlen_s(reply, 262145) : 0;
+    Require(length > 0 && length <= 262144 && !fs::exists(path), "Bound fresh font-environment evidence");
+    std::ofstream output(path, std::ios::binary);
+    output.write(reply, static_cast<std::streamsize>(length)); output.flush();
+    Require(output.good(), "Write complete font-environment evidence");
+    std::cout << "{\"fontEnvironmentBytes\":" << length << "}\n" << std::flush;
+}
 
 std::wstring KitCaseName(int index, bool isolated, bool fonts, bool missing) {
     return std::wstring(kitFixtures[index].family) + (fonts ? (missing ? L"-font-missing" : L"-font-control") : L"") +
@@ -159,6 +175,7 @@ int OfficeKitChild(const fs::path& root, bool isolated, int fixtureIndex = -1, b
                 document->methods->registerCallback(document, FontCallback, &fontObservation);
                 Require(!fontObservation.limited, "Bound font callback evidence");
                 std::cout << "{\"fontCallbackRegistered\":true}\n" << std::flush;
+                ObserveFontEnvironment(kit, document, pdf.parent_path() / L"fonts-before.json");
             }
             const auto pdfUri = KitFileUri(pdf);
             const char* options = R"({"UseLosslessCompression":{"type":"boolean","value":"true"},"ReduceImageResolution":{"type":"boolean","value":"false"},"UseTaggedPDF":{"type":"boolean","value":"true"},"ExportBookmarks":{"type":"boolean","value":"true"},"ExportNotes":{"type":"boolean","value":"false"},"ExportNotesPages":{"type":"boolean","value":"false"},"ExportOnlyNotesPages":{"type":"boolean","value":"false"},"ExportHiddenSlides":{"type":"boolean","value":"false"},"SinglePageSheets":{"type":"boolean","value":"false"},"ExportFormFields":{"type":"boolean","value":"false"},"IsAddStream":{"type":"boolean","value":"false"},"EncryptFile":{"type":"boolean","value":"false"},"ExportTrackedChanges":{"type":"boolean","value":"false"},"SelectPdfVersion":{"type":"long","value":"17"}})";
@@ -169,6 +186,7 @@ int OfficeKitChild(const fs::path& root, bool isolated, int fixtureIndex = -1, b
             }
             Require(saved != 0, "Export authored PDF");
             if (fonts) {
+                ObserveFontEnvironment(kit, document, pdf.parent_path() / L"fonts-after.json");
                 document->methods->registerCallback(document, nullptr, nullptr);
                 Require(!fontObservation.limited, "Bound font callback evidence through PDF export");
                 std::cout << "{\"fontCallbackCount\":" << fontObservation.count << "}\n" << std::flush;
