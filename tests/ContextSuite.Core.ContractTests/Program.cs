@@ -42,6 +42,11 @@ if (args is ["--office-word-font-styles", var styleWorker, var styleEvidence])
     await OfficeWordFontStyleContracts.RunAsync(styleWorker, styleEvidence);
     return 0;
 }
+if (args is ["--office-powerpoint-slides", var slideWorker, var slideEvidence])
+{
+    await OfficePowerPointSlideContracts.RunAsync(slideWorker, slideEvidence);
+    return 0;
+}
 if (args is ["--office-word-revisions", var paragraphWorker, var paragraphEvidence, "paragraphs"])
 {
     await OfficeWordRevisionContracts.RunAsync(paragraphWorker, paragraphEvidence, paragraphMarks: true);

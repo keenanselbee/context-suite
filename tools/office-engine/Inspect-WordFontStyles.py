@@ -22,7 +22,9 @@ def main():
     parser.add_argument("--execution-id", type=uuid.UUID, required=True)
     parser.add_argument("--pdf-prepared", type=Path, required=True)
     parser.add_argument("--pdfium-prepared", type=Path, required=True)
+    parser.add_argument("--powerpoint-slides", action="store_true", help="Inspect the three authored application PowerPoint slide cases instead.")
     args = parser.parse_args()
+    prefix = "slides" if args.powerpoint_slides else "style"
     root = Path(__file__).resolve().parents[2]
     stage = root / ".codex-temp/office-execution" / args.execution_id.hex
     qpdf_root = args.pdf_prepared.resolve(strict=True)
@@ -58,8 +60,8 @@ def main():
                  if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
     identifier = uuid.uuid4().hex
-    log = stage / ("style-inspection-run-" + identifier + ".log")
-    before = set(stage.glob("style-inspection-*"))
+    log = stage / (prefix + "-inspection-run-" + identifier + ".log")
+    before = set(stage.glob(prefix + "-inspection-*"))
     with log.open("wb") as output:
         result = subprocess.run(["dotnet", "build", str(root / "tools/office-engine/Probe/Office.Evaluation.csproj"),
                                  "-c", "Release", "--no-restore", "--verbosity", "quiet"], cwd=root, stdout=output, stderr=output)
@@ -67,20 +69,20 @@ def main():
             raise RuntimeError("Inspection build failed: " + str(log))
         executable = root / "artifacts/managed/bin/Office.Evaluation/Release/net10.0-windows/Office.Evaluation.exe"
         binaries.update({str(path): digest(path) for path in executable.parent.iterdir() if path.is_file()})
-        result = subprocess.run([str(executable), "--inspect-word-font-styles", str(report), str(qpdf), str(pdfium)],
+        result = subprocess.run([str(executable), "--inspect-powerpoint-publications" if args.powerpoint_slides else "--inspect-word-font-styles", str(report), str(qpdf), str(pdfium)],
                                 cwd=root, stdout=output, stderr=output)
     unchanged = all(digest(root / name) == expected for name, expected in sources.items()) and all(
         digest(Path(name)) == expected for name, expected in binaries.items())
-    created = [path for path in set(stage.glob("style-inspection-*")) - before if path.is_dir()]
+    created = [path for path in set(stage.glob(prefix + "-inspection-*")) - before if path.is_dir()]
     passed = result.returncode == 0 and unchanged and len(created) == 1 and read(created[0] / "results.json")["Passed"]
-    receipt = stage / ("style-inspection-receipt-" + identifier + ".json")
+    receipt = stage / (prefix + "-inspection-receipt-" + identifier + ".json")
     receipt.write_text(json.dumps({"Passed": passed, "ExitCode": result.returncode, "InputsUnchanged": unchanged,
         "Sources": sources, "Binaries": binaries, "ReportSha256": digest(report),
         "Inspection": str(created[0]) if len(created) == 1 else None, "Log": str(log)}, indent=2))
     print(log.read_text(errors="replace")[-3000:], flush=True)
     print("Inspection receipt:", receipt, flush=True)
     if not passed:
-        raise RuntimeError("Word font-style inspection failed; retain the complete comparison evidence.")
+        raise RuntimeError("Office publication inspection failed; retain the complete comparison evidence.")
 
 
 if __name__ == "__main__":

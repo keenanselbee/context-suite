@@ -104,3 +104,75 @@ No arbitrary-document isolation is established. AppContainer testing still needs
 its separate outside-repository authorization. No installation, Explorer changes,
 live commerce, production Office handler or manual/accessibility acceptance is
 part of this experiment.
+
+
+Application publication matrix
+------------------------------
+
+The opt-in `Test-OfficeExecution.py --powerpoint-slides` scenario now runs the
+three ordinary slide cases through `MainViewModel`'s real Convert > PDF action,
+the current worker, independent output validators and application publication.
+It uses the same authored packages described above. The earlier notes-page
+positive control remains evaluation evidence; production keeps notes export off.
+
+The scenario requests Overwrite originals in its isolated settings and requires
+PDF copies without recycling. It verifies selected-document order, all original
+hashes/write times, absence of a spreadsheet calculation prompt, and native
+profile, registry mapping, context and publication-journal cleanup. Font reports
+are retained for diagnosis and the matrix fails if these authored Arial fixtures
+unexpectedly require review. No shipping font-review choice is bypassed.
+
+The independent inspection command is:
+
+```powershell
+python -B tools/office-engine/Inspect-WordFontStyles.py --powerpoint-slides `
+  --execution-id '<completed execution UUID>' `
+  --pdf-prepared '.codex-temp/pdf-engine/3edb2e8361e04782a91ef8364bd3a537' `
+  --pdfium-prepared '.codex-temp/pdfium-engine/44820d5e04b34ceb81ff3d666fbdb622'
+```
+
+The existing pinned-inspector wrapper also supports PowerPoint, avoiding a
+second copy of its engine and source verification logic. It builds the separate
+evaluation host and verifies qpdf, PDFium and all retained input hashes. Inspection
+recreates the authored packages and compares every part, checks publication
+identity and source preservation, validates PDF structure, renders every page,
+and requires exact normalized page text and 720-by-405-point dimensions. Four
+negative text controls reject reordered output, exported hidden slides, note
+leakage and unexpected extra text.
+
+This establishes a bounded application workflow when its run and independent
+inspection both pass. It does not establish general font/layout fidelity,
+Microsoft PowerPoint pixel equivalence, hidden-information sanitization, all-hidden
+decks or visible acceptance. The separate network-isolation, broader Office,
+formal packaging and release gates remain open.
+
+On 2026-09-16, execution `5c53dc392b904b3a830c064c5bbb501d` passes all eleven
+application checks and publishes three copies containing seven pages in total.
+All three native profiles, registry mappings and contexts are removed; originals
+retain their recorded bytes and write times, and no publication journal remains.
+The execution receipt reports exit code zero and unchanged captured sources,
+binaries and engine inputs. Worker, contract-host and inspector Release builds
+complete with zero warnings and errors.
+
+Independent receipt `slides-inspection-receipt-94d0a884e4724414a947844723ca87d2.json`
+under that execution directory passes all three PDF text/geometry comparisons
+and four negative text controls. Its source and independent-validator hashes
+remain unchanged. The earlier notes-page positive control was not rerun. Neither
+these render files nor hidden application execution establish visual usability,
+keyboard, screen-reader, other-theme/DPI or installed-shell acceptance.
+
+Reproduce execution with authorized disposable profiles and retained pinned
+engine directories, before running the independent inspection above:
+
+```powershell
+python -B tools/office-engine/Test-OfficeExecution.py --create-disposable-profiles `
+  --powerpoint-slides `
+  --office-engine '.codex-temp/office-execution/f8c3e213cc634163af7e2dd88484aa83/worker/office-engine' `
+  --pdf-engine '.codex-temp/office-execution/f8c3e213cc634163af7e2dd88484aa83/worker/pdf-engine' `
+  --pdf-renderer '.codex-temp/office-execution/f8c3e213cc634163af7e2dd88484aa83/worker/pdf-renderer'
+```
+
+The first attempt, `49d6ce0cb37b4d52bfcb09893c2d5e10`, rejected reuse of a
+retained worker because its top-level files differed from the current build.
+It stopped before profile creation. The successful run built a fresh scratch
+worker and copied the verified engines; the reserved formal package is unchanged.

@@ -22,6 +22,7 @@ def main():
     parser.add_argument("--direct", action="store_true", help="Exercise mixed image/Office PDF commands and Office retry through the application view model.")
     parser.add_argument("--font-review", action="store_true", help="Exercise real missing-font reports, per-file review, refusal and cleanup.")
     parser.add_argument("--word-font-styles", action="store_true", help="Export fifteen authored style/theme controls and verify source selections, review signals and cleanup.")
+    parser.add_argument("--powerpoint-slides", action="store_true", help="Export three authored slide-order, hidden-slide and speaker-note cases through the application.")
     parser.add_argument("--pdf-validator", type=Path, help="Combined-image validator required for the direct mixed-command test.")
     parser.add_argument("--office-engine", type=Path)
     parser.add_argument("--pdf-engine", type=Path)
@@ -31,11 +32,11 @@ def main():
     args = parser.parse_args()
     if not args.create_disposable_profiles:
         parser.error("Explicit disposable Office profile authorization is required.")
-    if sum((args.direct, args.cleanup_only, args.font_review, args.word_font_styles)) > 1:
+    if sum((args.direct, args.cleanup_only, args.font_review, args.word_font_styles, args.powerpoint_slides)) > 1:
         parser.error("Choose only one execution scenario.")
-    if args.word_font_styles and args.fixtures is not None:
-        parser.error("Word font-style mode creates its own authored fixtures; omit --fixtures.")
-    if not args.word_font_styles and args.fixtures is None:
+    if (args.word_font_styles or args.powerpoint_slides) and args.fixtures is not None:
+        parser.error("The selected mode creates its own authored fixtures; omit --fixtures.")
+    if not (args.word_font_styles or args.powerpoint_slides) and args.fixtures is None:
         parser.error("--fixtures is required for the selected scenario.")
     if args.direct and (args.cleanup_only or args.pdf_validator is None and args.retained_worker is None):
         parser.error("Direct mode requires a combined-image validator and cannot use cleanup-only mode.")
@@ -61,6 +62,10 @@ def main():
     fixture_source = root / "tools/office-engine/Probe/WordFontStyleFixtures.cs"
     if args.word_font_styles:
         sources[str(fixture_source.relative_to(root))] = digest(fixture_source)
+    if args.powerpoint_slides:
+        for name in ("OfficeFixtures.cs", "PowerPointSlideFixtures.cs"):
+            path = root / "tools/office-engine/Probe" / name
+            sources[str(path.relative_to(root))] = digest(path)
     for label, project in (("worker", "src/ContextSuite.Worker/ContextSuite.Worker.csproj"),
                            ("contracts", "tests/ContextSuite.Core.ContractTests/ContextSuite.Core.ContractTests.csproj")):
         build = subprocess.run(["dotnet", "build", str(root / project), "-c", "Release", "--no-restore", "--verbosity", "quiet"], cwd=root, capture_output=True)
@@ -110,11 +115,13 @@ def main():
     (stage / "inputs.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
     if any(digest(root / name) != expected for name, expected in sources.items()):
         raise RuntimeError("Source drift before execution.")
-    print("Starting fifteen disposable Word font-style exports." if args.word_font_styles else
+    print("Starting three disposable PowerPoint slide exports." if args.powerpoint_slides else
+          "Starting fifteen disposable Word font-style exports." if args.word_font_styles else
           "Starting thirteen disposable font-review exports." if args.font_review else "Starting one disposable profile cleanup/retry check." if args.cleanup_only else
           "Starting five disposable direct-command exports." if args.direct else "Starting six disposable Office exports and application publication checks.", flush=True)
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
-        arguments = [str(host), "--office-word-font-styles", str(worker_root / "ContextSuite.Worker.exe"), str(stage / "contracts")] if args.word_font_styles else [
+        arguments = [str(host), "--office-powerpoint-slides" if args.powerpoint_slides else "--office-word-font-styles",
+                     str(worker_root / "ContextSuite.Worker.exe"), str(stage / "contracts")] if (args.word_font_styles or args.powerpoint_slides) else [
             str(host), "--office-font-execution" if args.font_review else "--office-execution-cleanup" if args.cleanup_only else "--office-direct-execution" if args.direct else "--office-execution",
             str(worker_root / "ContextSuite.Worker.exe"), str(fixtures), str(stage / "contracts")]
         started = time.perf_counter()
@@ -129,7 +136,7 @@ def main():
     if run.returncode or not unchanged:
         raise RuntimeError("Office execution failed; inspect retained context journals and profile cleanup before retrying: " + str(stage))
     report = json.loads((stage / "contracts/results.json").read_text(encoding="utf-8"))
-    if not report.get("Passed") or len(report.get("Profiles", [])) != (15 if args.word_font_styles else 13 if args.font_review else 1 if args.cleanup_only else 5 if args.direct else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
+    if not report.get("Passed") or len(report.get("Profiles", [])) != (3 if args.powerpoint_slides else 15 if args.word_font_styles else 13 if args.font_review else 1 if args.cleanup_only else 5 if args.direct else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
         raise RuntimeError("Missing complete execution and cleanup evidence.")
 
 

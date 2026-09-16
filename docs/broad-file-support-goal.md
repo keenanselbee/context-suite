@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [PowerPoint application matrix](powerpoint-slide-evaluation.md#application-publication-matrix)
+passes eleven actual-command checks and publishes three PDF copies. Independent
+inspection verifies seven pages for saved slide order, hidden-slide exclusion,
+absent speaker-note text and page dimensions, with four negative text controls.
+Originals and recorded runtime inputs are unchanged; all three native profiles
+and contexts are removed. Broader presentation fidelity, visible acceptance,
+Office network isolation and formal release gates remain open.
+
 The [audio listening review pack](audio-listening-review.md) now supplies three
 generated references, fifteen encoded clips and fifteen decoded comparisons.
 All thirty real-worker/application publications pass, with exact FLAC samples,

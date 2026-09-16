@@ -30,6 +30,8 @@ if (args is ["--inspect-word-body-fonts", var wordFontFixtures])
     return await WordBodyFontEvaluation.RunAsync(wordFontFixtures);
 if (args is ["--inspect-word-font-styles", var fontStyleReport, var fontStyleQpdf, var fontStylePdfium])
     return await OfficeWordFontStyleInspection.RunAsync(fontStyleReport, fontStyleQpdf, fontStylePdfium);
+if (args is ["--inspect-powerpoint-publications", var slideReport, var slideQpdf, var slidePdfium])
+    return await OfficePowerPointInspection.RunAsync(slideReport, slideQpdf, slidePdfium);
 if (args is ["--inspect-word-publications", var wordReport, var wordQpdf, var wordPdfium])
     return await OfficeWordRevisionInspection.RunAsync(wordReport, wordQpdf, wordPdfium);
 if (args is ["--preflight-isolation-fixtures", var preflightFixtures])
