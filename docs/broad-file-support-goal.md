@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Word revision application matrix](word-revision-application.md) passes all
+30 command/publication/cleanup checks and thirteen independently inspected PDF
+text/page checks. Inline, formatting and table final pixels match clean controls;
+moved text reproduces the existing 151-pixel spacing difference. All thirteen
+native output buffers match the earlier command-line evaluations, and all
+profiles/contexts are removed. The combined exact-pixel matrix remains failed;
+complex revisions, broader fidelity and integrated acceptance remain open.
+
 The [actual-app preparation follow-up](office-app-preparation.md) passes all 55
 checks in the complete default layout: recovery guidance, forwarded Analyze,
 blocked Office work, following Word export and cleanup after shutdown. Correcting

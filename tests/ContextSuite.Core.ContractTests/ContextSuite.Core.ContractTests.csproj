@@ -6,6 +6,8 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\tools\office-engine\Probe\WordRevisionFixtures.cs" Link="Fixtures\WordRevisionFixtures.cs" />
+    <Compile Include="..\..\tools\office-engine\Probe\WordRevisionStructureFixtures.cs" Link="Fixtures\WordRevisionStructureFixtures.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\FileAnalysisReader.cs" Link="Runtime\FileAnalysisReader.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\SynchronousFileIo.cs" Link="Runtime\SynchronousFileIo.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\LicenseViewModel.cs" Link="Runtime\LicenseViewModel.cs" />

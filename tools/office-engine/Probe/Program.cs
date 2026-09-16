@@ -24,6 +24,8 @@ if (args is ["--worker-stop-fixtures", var stopFixtureRoot])
 
 if (args is ["--inspect-host-completions", var hostStage, var hostCase])
     return await OfficeHostInspection.RunAsync(hostStage, hostCase);
+if (args is ["--inspect-word-publications", var wordReport, var wordQpdf, var wordPdfium])
+    return await OfficeWordRevisionInspection.RunAsync(wordReport, wordQpdf, wordPdfium);
 if (args is ["--preflight-isolation-fixtures", var preflightFixtures])
     return await OfficeFixturePreflight.RunAsync(preflightFixtures);
 if (args is ["--inspect-worker-exports", var workerReport, var workerQpdf, var workerPdfium, var workerControl])

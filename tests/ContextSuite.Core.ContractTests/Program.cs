@@ -32,6 +32,12 @@ if (args is ["--office-retirement-native", var retirementEvidence, var retiremen
     return 0;
 }
 
+if (args is ["--office-word-revisions", var revisionWorker, var revisionEvidence])
+{
+    await OfficeWordRevisionContracts.RunAsync(revisionWorker, revisionEvidence);
+    return 0;
+}
+
 if (args is ["--office-execution-cleanup", var cleanupWorker, var cleanupFixtures, var cleanupEvidence])
 {
     await OfficeExecutionContracts.RunCleanupAsync(cleanupWorker, cleanupFixtures, cleanupEvidence);

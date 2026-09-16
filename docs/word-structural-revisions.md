@@ -109,3 +109,12 @@ No shipping implementation, engine pin or reserved product payload changes.
 Customer Office conversion and required isolation remain unfinished. No installed
 state, Explorer registration, live commerce, native recycling or new UI/keyboard,
 screen-reader or theme/DPI acceptance is involved.
+
+The [application-command follow-up](word-revision-application.md) subsequently
+exports these nine documents and the four inline controls through native
+isolation, independent validation and final copy publication. All 30 application
+checks and thirteen expected-text/page checks pass. Formatting and table finals
+match clean controls; moved text reproduces the same 151-pixel discrepancy.
+All thirteen full pixel buffers match their corresponding earlier command-line
+evaluations. The exact-move fidelity question remains open; this is additional
+integration evidence, not a tolerance change or a repaired renderer.

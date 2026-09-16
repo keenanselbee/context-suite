@@ -175,3 +175,9 @@ exports for formatting, row changes and moved text. Text checks pass throughout;
 the move case differs from its clean control by 151 pixels despite identical
 font-program bytes. That exact-pixel matrix remains failed and is not folded
 into the eight passing inline-revision cases above.
+
+The [application-command matrix](word-revision-application.md) now verifies the
+four inline documents and nine structural controls through the actual command,
+native host and copy-publication path. All thirteen expected texts pass, with
+exact final pixels for the inline variants, formatting and table changes. The
+move comparison still differs by 151 pixels; it remains a recorded fidelity gap.
