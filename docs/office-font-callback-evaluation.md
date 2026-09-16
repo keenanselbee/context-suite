@@ -120,16 +120,14 @@ builds in Release without warnings/errors. Native-run inputs were unchanged;
 later edits add inspection/reporting only.
 
 
-Next implementation
--------------------
+Following implementation
+------------------------
 
-The production native host, runtime pins, protocol and customer UI are unchanged.
-The next change should transport validated family names through the fixed private
-host/worker reply, retain independent PDF validation, and require a compact
-explicit choice before saving a PDF when the renderer reports substitutions.
-Keep the candidate unpublished until that choice; cancellation must retire the
-same owned context and preserve the original. Do not add a general planner or
-insert raw callback JSON into a window.
+The subsequent [Office PDF font review](office-font-review.md) transports bounded,
+validated family names through the private native host and worker. Its compact
+Save/Skip choice occurs after independent validation and native cleanup, before
+publication. That implementation has separate test evidence; this evaluation's
+twelve exports do not establish customer UI acceptance.
 
 This positive warning signal still needs a defensible policy for unreported
 style/glyph/embedded-font cases. Callback absence is not permission for quiet

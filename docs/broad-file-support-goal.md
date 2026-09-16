@@ -5,12 +5,20 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office PDF font review](office-font-review.md) now transports the renderer's
+bounded missing-family report to a per-document Save PDF copy / Skip file
+choice, after independent validation and native cleanup and before publication.
+All 85 isolated execution checks and seven independent PDF comparisons pass,
+with originals preserved and all thirteen native profiles/contexts removed.
+The 3,701 foundation and 119 hidden view contracts pass. Complete font fidelity,
+visible acceptance and release adoption remain open.
+
 The [renderer font callback evaluation](office-font-callback-evaluation.md)
 passes twelve native exports and independent callback/PDF checks. Normal and
 restricted processes agree on missing-family signals and all six pixel pairs;
 the full runtime and originals remain unchanged, and the native profile is gone.
-This establishes a positive warning mechanism for the next host/worker and
-compact consent flow, not complete font fidelity or implemented customer UI.
+This establishes the positive warning mechanism used by the following host/worker
+and compact consent flow, not complete font fidelity or customer UI acceptance.
 
 The [known Excel date refusal](excel-date-system-evaluation.md#known-date-conversion-refusal)
 now stops positively identified early-1900 date risks in the application,

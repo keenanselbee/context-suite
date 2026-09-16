@@ -62,8 +62,10 @@ The subsequent [renderer callback evaluation](office-font-callback-evaluation.md
 finds a viable positive warning signal: all twelve normal/restricted exports
 distinguish the synthetic missing family from Arial, with independently checked
 PDFs and matching isolation pixels. The callback filters some substitutions and
-cannot prove complete font/style/glyph fidelity. Customer warning transport and
-the consent flow still need implementation.
+cannot prove complete font/style/glyph fidelity. The subsequent
+[Office PDF font review](office-font-review.md) implements bounded warning
+transport and per-document Save/Skip; broader fidelity and visible acceptance
+remain open.
 The subsequent [read-only declaration scan](document-font-references.md) reports
 requested names and unresolved themes within fixed limits; it does not establish
 installed availability or determine the fonts actually used by the renderer.

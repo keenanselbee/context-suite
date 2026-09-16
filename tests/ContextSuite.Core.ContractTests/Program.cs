@@ -61,6 +61,12 @@ if (args is ["--office-direct-execution", var directWorker, var directFixtures, 
     return 0;
 }
 
+if (args is ["--office-font-execution", var fontWorker, var fontFixtures, var fontEvidence])
+{
+    await OfficeFontExecutionContracts.RunAsync(fontWorker, fontFixtures, fontEvidence);
+    return 0;
+}
+
 if (args is ["--worker-lifetime-hold", var lifetimeStage, var lifetimeMode])
 {
     await WorkerLifetimeContracts.HoldAsync(lifetimeStage, lifetimeMode);

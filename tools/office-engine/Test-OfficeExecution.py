@@ -19,6 +19,7 @@ def main():
     parser.add_argument("--create-disposable-profiles", action="store_true")
     parser.add_argument("--cleanup-only", action="store_true", help="Exercise one obstructed profile cleanup and retry without launching Office.")
     parser.add_argument("--direct", action="store_true", help="Exercise mixed image/Office PDF commands and Office retry through the application view model.")
+    parser.add_argument("--font-review", action="store_true", help="Exercise real missing-font reports, per-file review, refusal and cleanup.")
     parser.add_argument("--pdf-validator", type=Path, help="Combined-image validator required for the direct mixed-command test.")
     parser.add_argument("--office-engine", type=Path)
     parser.add_argument("--pdf-engine", type=Path)
@@ -28,6 +29,8 @@ def main():
     args = parser.parse_args()
     if not args.create_disposable_profiles:
         parser.error("Explicit disposable Office profile authorization is required.")
+    if sum((args.direct, args.cleanup_only, args.font_review)) > 1:
+        parser.error("Choose only one execution scenario.")
     if args.direct and (args.cleanup_only or args.pdf_validator is None and args.retained_worker is None):
         parser.error("Direct mode requires a combined-image validator and cannot use cleanup-only mode.")
     if args.retained_worker is None and not all((args.office_engine, args.pdf_engine, args.pdf_renderer)):
@@ -97,10 +100,10 @@ def main():
     (stage / "inputs.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
     if any(digest(root / name) != expected for name, expected in sources.items()):
         raise RuntimeError("Source drift before execution.")
-    print("Starting one disposable profile cleanup/retry check." if args.cleanup_only else
+    print("Starting thirteen disposable font-review exports." if args.font_review else "Starting one disposable profile cleanup/retry check." if args.cleanup_only else
           "Starting five disposable direct-command exports." if args.direct else "Starting six disposable Office exports and application publication checks.", flush=True)
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
-        run = subprocess.run([str(host), "--office-execution-cleanup" if args.cleanup_only else "--office-direct-execution" if args.direct else "--office-execution", str(worker_root / "ContextSuite.Worker.exe"), str(fixtures), str(stage / "contracts")],
+        run = subprocess.run([str(host), "--office-font-execution" if args.font_review else "--office-execution-cleanup" if args.cleanup_only else "--office-direct-execution" if args.direct else "--office-execution", str(worker_root / "ContextSuite.Worker.exe"), str(fixtures), str(stage / "contracts")],
                              cwd=root, stdout=output, stderr=error)
     unchanged = all(digest(root / name) == expected for name, expected in sources.items()) and all(
         digest(Path(name)) == expected for group in (originals, engines, binaries) for name, expected in group.items())
@@ -109,7 +112,7 @@ def main():
     if run.returncode or not unchanged:
         raise RuntimeError("Office execution failed; inspect retained context journals and profile cleanup before retrying: " + str(stage))
     report = json.loads((stage / "contracts/results.json").read_text(encoding="utf-8"))
-    if not report.get("Passed") or len(report.get("Profiles", [])) != (1 if args.cleanup_only else 5 if args.direct else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
+    if not report.get("Passed") or len(report.get("Profiles", [])) != (13 if args.font_review else 1 if args.cleanup_only else 5 if args.direct else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
         raise RuntimeError("Missing complete execution and cleanup evidence.")
 
 

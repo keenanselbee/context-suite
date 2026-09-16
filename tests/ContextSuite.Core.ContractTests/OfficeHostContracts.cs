@@ -6,20 +6,21 @@ internal static class OfficeHostContracts
 {
     public static void Run(Action<bool, string> check)
     {
+        OfficeFontContracts.Run(check);
         var id = Guid.NewGuid(); var sourceHash = new string('A', 64); var outputHash = new string('B', 64);
         foreach (var (format, calculation) in new[] { ("docx", "none"), ("xlsx", "cached"), ("xlsx", "recalculate"), ("pptx", "none") })
         {
-            var fields = new Dictionary<string, object> { ["version"] = 1, ["requestId"] = id.ToString("N"), ["completed"] = true,
+            var fields = new Dictionary<string, object> { ["version"] = 2, ["requestId"] = id.ToString("N"), ["completed"] = true,
                 ["format"] = format, ["policy"] = OfficeHostProtocol.Policy, ["calculation"] = calculation, ["sourceBytes"] = 100,
-                ["outputBytes"] = 200, ["sourceSha256"] = sourceHash, ["outputSha256"] = outputHash };
+                ["outputBytes"] = 200, ["sourceSha256"] = sourceHash, ["outputSha256"] = outputHash, ["fontReports"] = Array.Empty<string>() };
             var valid = JsonSerializer.SerializeToUtf8Bytes(fields);
             var result = OfficeHostProtocol.ReadCompletion(valid, 0, id, format, calculation, 100, sourceHash);
-            check(result.RequestId == id && result.OutputBytes == 200 && result.OutputSha256 == outputHash,
+            check(result.RequestId == id && result.OutputBytes == 200 && result.OutputSha256 == outputHash && result.MissingFontFamilies.IsEmpty,
                 "Office host: bound completed reply for " + format + "/" + calculation);
             Refuse(valid, 83, "owner crash despite success-shaped reply");
             Refuse([], 0, "zero exit without terminal reply");
             Refuse(valid[..^1], 0, "truncated terminal reply");
-            foreach (var (key, value) in new (string, object)[] { ("version", 2), ("requestId", Guid.NewGuid().ToString("N")),
+            foreach (var (key, value) in new (string, object)[] { ("version", 1), ("requestId", Guid.NewGuid().ToString("N")),
                 ("completed", false), ("format", "pdf"), ("policy", "other"), ("calculation", "unspecified"),
                 ("sourceBytes", 101), ("outputBytes", 0), ("outputBytes", OfficeHostProtocol.MaximumOutputBytes + 1),
                 ("sourceSha256", outputHash), ("outputSha256", new string('G', 64)), ("outputBytes", "200") })

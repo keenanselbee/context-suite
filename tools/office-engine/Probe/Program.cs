@@ -40,6 +40,8 @@ if (args is ["--inspect-isolation-exports", var isolatedStage, var isolatedQpdf,
     return await OfficeIsolatedExportInspection.RunAsync(isolatedStage, isolatedQpdf, isolatedPdfium);
 if (args is ["--inspect-font-callbacks", var fontStage, var fontQpdf, var fontPdfium])
     return await OfficeIsolatedExportInspection.RunAsync(fontStage, fontQpdf, fontPdfium, fontComparison: true);
+if (args is ["--inspect-font-publications", var fontReport, var fontPublicationQpdf, var fontPublicationPdfium, var fontControl])
+    return await OfficeFontPublicationInspection.RunAsync(fontReport, fontPublicationQpdf, fontPublicationPdfium, fontControl);
 if (args is ["--inspect-isolation-exports", var namedStage, var namedQpdf, var namedPdfium, var caseName])
     return await OfficeIsolatedExportInspection.RunAsync(namedStage, namedQpdf, namedPdfium, caseName);
 if (args is ["--inspect-isolation-exports", var hostExportStage, var hostQpdf, var hostPdfium, var exportCase, var controlCase])

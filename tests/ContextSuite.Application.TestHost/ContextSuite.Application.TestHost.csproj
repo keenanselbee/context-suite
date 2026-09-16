@@ -18,6 +18,7 @@
     <Page Include="..\..\src\ContextSuite.Application\AudioConversionWindow.xaml" Link="AudioConversionWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\ImagePdfOrderWindow.xaml" Link="ImagePdfOrderWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\OfficeCalculationWindow.xaml" Link="OfficeCalculationWindow.xaml" />
+    <Page Include="..\..\src\ContextSuite.Application\OfficeFontReviewWindow.xaml" Link="OfficeFontReviewWindow.xaml" />
     <Page Include="..\..\src\ContextSuite.Application\OptimizationWindow.xaml" Link="OptimizationWindow.xaml" />
   </ItemGroup>
 </Project>

@@ -42,5 +42,6 @@ public sealed record OfficeExportCandidate(Guid ItemId, OfficeHostCompletion Com
             value.OutputBytes is <= 0 or > OfficeHostProtocol.MaximumOutputBytes ||
             value.OutputSha256 is not { Length: 64 } || !value.OutputSha256.All(char.IsAsciiHexDigit))
             throw new InvalidDataException("Office candidate does not match its export request.");
+        OfficeHostProtocol.ValidateFontFamilies(value.MissingFontFamilies);
     }
 }

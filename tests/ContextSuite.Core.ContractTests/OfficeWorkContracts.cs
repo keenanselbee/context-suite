@@ -32,7 +32,7 @@ internal static class OfficeWorkContracts
         Refused(() => (command with { PdfBytes = [1] }).Validate(), "PDF bytes on Office command");
         Refused(() => (command with { AudioBytes = [1] }).Validate(), "audio bytes on Office command");
         Refused(() => (command with { AudioTarget = ContextSuite.Core.Audio.AudioFormat.Flac }).Validate(), "audio target on Office command");
-        var completion = new OfficeHostCompletion(request, "docx", "none", 100, 200, hash, new string('B', 64));
+        var completion = new OfficeHostCompletion(request, "docx", "none", 100, 200, hash, new string('B', 64), []);
         var candidate = new OfficeExportCandidate(item, completion, OfficeHostProtocol.Policy);
         candidate.Validate(work, request); check(true, "Office candidate matches admitted request");
         foreach (var invalid in new[] { candidate with { ItemId = Guid.NewGuid() }, candidate with { Policy = "other" },
@@ -41,6 +41,8 @@ internal static class OfficeWorkContracts
             candidate with { Completion = completion with { SourceSha256 = new string('B', 64) } },
             candidate with { Completion = completion with { Format = "xlsx" } },
             candidate with { Completion = completion with { Calculation = "cached" } },
+            candidate with { Completion = completion with { MissingFontFamilies = default } },
+            candidate with { Completion = completion with { MissingFontFamilies = ["A", "a"] } },
             candidate with { Completion = completion with { OutputBytes = 0 } },
             candidate with { Completion = completion with { OutputBytes = OfficeHostProtocol.MaximumOutputBytes + 1 } },
             candidate with { Completion = completion with { OutputSha256 = "invalid" } } })

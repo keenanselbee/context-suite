@@ -25,6 +25,7 @@ public partial class App : System.Windows.Application
     private AudioConversionWindow? _audioConversionWindow;
     private ImagePdfOrderWindow? _imagePdfOrderWindow;
     private OfficeCalculationWindow? _officeCalculationWindow;
+    private OfficeFontReviewWindow? _officeFontReviewWindow;
     private readonly QuietWorkflow _quiet = new();
     private readonly System.Windows.Threading.DispatcherTimer _quietTimer = new() { Interval = TimeSpan.FromMilliseconds(200) };
     private bool _userOpened;
@@ -88,6 +89,7 @@ public partial class App : System.Windows.Application
             _viewModel.AudioConversionRequested += ShowAudioConversionAsync;
             _viewModel.ImagePdfOrderRequested += ShowImagePdfOrderAsync;
             _viewModel.OfficeCalculationRequested += ShowOfficeCalculationAsync;
+            _viewModel.OfficeFontsRequested += ShowOfficeFontReviewAsync;
             var window = new MainWindow { DataContext = _viewModel };
             window.InputNotice.Text = _settings.Warning ?? "";
             MainWindow = window;
@@ -177,6 +179,20 @@ public partial class App : System.Windows.Application
         finally { _officeCalculationWindow = null; }
     }
 
+    private async Task<bool> ShowOfficeFontReviewAsync(Core.Office.OfficeFontReview review, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var window = new OfficeFontReviewWindow(review);
+        if (MainWindow.IsVisible) window.Owner = MainWindow;
+        _officeFontReviewWindow = window;
+        window.Closed += (_, _) => completion.TrySetResult(window.Accepted);
+        window.Show();
+        using var registration = token.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
+        try { return await completion.Task; }
+        finally { _officeFontReviewWindow = null; }
+    }
+
     private static async Task PlayAfterAsync(Task previous, bool warning = false)
     {
         try { await previous; await CompletionSound.PlayAsync(warning); }
@@ -189,7 +205,7 @@ public partial class App : System.Windows.Application
         if (_paidLicense is null || _closing) return;
         if (_licenseWindow is not null) { _licenseWindow.Activate(); return; }
         _licenseWindow = new(new LicenseViewModel(_paidLicense));
-        var owner = _officeCalculationWindow as Window ?? _imagePdfOrderWindow as Window ?? _audioConversionWindow as Window ?? _conversionWindow as Window ?? _settingsWindow ?? MainWindow;
+        var owner = _officeFontReviewWindow as Window ?? _officeCalculationWindow as Window ?? _imagePdfOrderWindow as Window ?? _audioConversionWindow as Window ?? _conversionWindow as Window ?? _settingsWindow ?? MainWindow;
         if (owner.IsVisible) _licenseWindow.Owner = owner;
         _licenseWindow.Closed += async (_, _) =>
         {
@@ -228,7 +244,7 @@ public partial class App : System.Windows.Application
     private async void CheckQuietWindow(object? sender, EventArgs e)
     {
         if (_closing || _viewModel is null) return;
-        if (!_userOpened && _conversionWindow is null && _audioConversionWindow is null && _imagePdfOrderWindow is null && _officeCalculationWindow is null && _quiet.ShowProgress(DateTimeOffset.UtcNow)) MainWindow.Show();
+        if (!_userOpened && _conversionWindow is null && _audioConversionWindow is null && _imagePdfOrderWindow is null && _officeCalculationWindow is null && _officeFontReviewWindow is null && _quiet.ShowProgress(DateTimeOffset.UtcNow)) MainWindow.Show();
         if (_viewModel.IsBusy || _userOpened || _quiet.NeedsAttention || _settingsWindow is not null || _openingSettings || _licenseWindow is not null) return;
         MainWindow.Hide();
         // A bounded refresh may finish quietly before exit so short image jobs do

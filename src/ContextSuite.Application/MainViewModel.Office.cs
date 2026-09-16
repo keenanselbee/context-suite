@@ -107,13 +107,14 @@ internal sealed partial class MainViewModel
             }, token);
         if (office is not null)
         {
-            _officeExecutor ??= new(worker, Publisher!, trial!, officeContextRoot!);
+            _officeExecutor ??= new(worker, Publisher!, trial!, officeContextRoot!, reviewFonts: (review, cancellation) =>
+                OfficeFontsRequested is null ? Task.FromResult(false) : OfficeFontsRequested(review, cancellation));
             var byPath = office.Plan.Sources.ToDictionary(source => source.Path,
                 source => officeRows.Single(row => row.ItemId == source.ItemId), StringComparer.OrdinalIgnoreCase);
             await _officeExecutor.ExecuteAdmittedAsync(office, admission, result =>
             {
                 byPath[result.Path].ApplyResult(result);
-                if (result.State == OperationState.Running) Summary = "Creating PDF: " + Path.GetFileName(result.Path);
+                if (result.State == OperationState.Running) Summary = result.Message + ": " + Path.GetFileName(result.Path);
             }, token);
         }
 

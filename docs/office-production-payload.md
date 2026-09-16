@@ -16,7 +16,7 @@ Pinned input and layout
 ----------------------
 
 [The selection record](../tools/office-engine/payload-candidate.json) pins the
-104,960-byte long-path-aware native host and the canonical 2,276,994-byte runtime
+110,592-byte long-path-aware native host and the canonical 2,276,994-byte runtime
 inventory already enforced by the [private runtime lease](office-runtime-verification.md).
 The inventory's fixed SHA-256 identifies all 19,332 vendor files and their sizes
 and hashes, totaling 1,517,294,910 bytes. Staging checks the upstream archive pin
@@ -94,6 +94,14 @@ The base was the reserved 1.1.0 stage
 Final verification confirms unchanged source-runtime identities, base-file hashes
 and test-source hashes. `results.json` records the exact checks and scratch
 combined payload. No Office process or Windows profile was created.
+
+The later [font-review checkpoint](office-font-review.md) updates the native
+host and its source pins. The current full Office payload verifies at
+`.codex-temp/office-execution/cd4db5e58f5f414599199aa6b5602677/worker`.
+The private repository fixes LF endings for the pinned native source files so
+Git checkout preserves their byte identities. The older 27-check matrix above
+was not rerun; the current complete payload and thirteen native exports have
+separate verification evidence in the font-review record.
 
 
 Remaining acceptance

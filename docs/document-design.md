@@ -593,4 +593,8 @@ and does not establish general spreadsheet layout or enable Office conversion.
 The later [Office font substitution evaluation](office-font-substitution.md)
 finds silent typography changes despite matching page/text checks. Missing-font
 handling must be explicit in the required Office converter; the evaluation does
-not provide a production font-resolution detector or accepted fidelity tolerance.
+not provide a complete font-resolution detector or accepted fidelity tolerance.
+The [Office PDF font review](office-font-review.md) now carries the renderer's
+bounded missing-family report to a per-document Save PDF copy / Skip file choice
+after independent validation and native cleanup, before publication. Reports
+cannot establish fidelity for unreported style, glyph or embedded-font changes.

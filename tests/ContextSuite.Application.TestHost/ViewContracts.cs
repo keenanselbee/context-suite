@@ -22,7 +22,8 @@ internal static class ViewContracts
         // not be called. No production licensing state is touched.
         var licenseModel = new LicenseViewModel(new(new UnusedLicenseService(),
             new LicenseStore(Path.Combine(Path.GetTempPath(), "unused-license-view-contract.bin"), LicenseEnvironment.Sandbox)));
-        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new LicenseWindow(licenseModel), new AudioConversionWindow(), new ImagePdfOrderWindow(), new OfficeCalculationWindow()];
+        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new LicenseWindow(licenseModel), new AudioConversionWindow(), new ImagePdfOrderWindow(), new OfficeCalculationWindow(),
+            new OfficeFontReviewWindow(new(@"C:\fixtures\Document.docx", ["Missing Font", "日本語"]))];
         try
         {
             foreach (var window in windows)
@@ -55,6 +56,32 @@ internal static class ViewContracts
                 "Office empty restart report adds no visible status or window");
             recoveryModel.DisposeAsync().AsTask().GetAwaiter().GetResult();
             var audio = windows[5];
+            var fontReview = (OfficeFontReviewWindow)windows[8];
+            Check(!fontReview.Accepted && Find<Button>(fontReview, "OfficeFontsSkip").IsCancel &&
+                !Find<Button>(fontReview, "OfficeFontsSave").IsDefault, "Office font review: no implicit consent; Escape declares skip");
+            Check(Find<TextBlock>(fontReview, "OfficeMissingFonts").Text == "Missing Font" + Environment.NewLine + "日本語",
+                "Office font review: exact bounded family names are readable text");
+            Find<Button>(fontReview, "OfficeFontsSave").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(fontReview.Accepted, "Office font review: Save explicitly accepts this document");
+            var skippedFonts = new OfficeFontReviewWindow(new(@"C:\fixtures\Document.docx", ["Missing Font"]));
+            Find<Button>(skippedFonts, "OfficeFontsSkip").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(!skippedFonts.Accepted, "Office font review: Skip grants no consent");
+            var closedFonts = new OfficeFontReviewWindow(new(@"C:\fixtures\Document.docx", ["Missing Font"]));
+            closedFonts.Close();
+            Check(!closedFonts.Accepted, "Office font review: closing grants no consent");
+            var manyFonts = new OfficeFontReviewWindow(new(@"C:\fixtures\Document.docx",
+                [.. Enumerable.Range(0, 64).Select(index => "Unavailable family " + index + " " + new string('x', 100))]));
+            var fontContent = (FrameworkElement)manyFonts.Content;
+            fontContent.Measure(new Size(manyFonts.MinWidth - 16, manyFonts.MinHeight - 40));
+            fontContent.Arrange(new Rect(0, 0, manyFonts.MinWidth - 16, manyFonts.MinHeight - 40));
+            fontContent.UpdateLayout();
+            var fontBody = Descendants(manyFonts).OfType<ScrollViewer>().Single();
+            var saveFonts = Find<Button>(manyFonts, "OfficeFontsSave");
+            var saveFontBounds = saveFonts.TransformToAncestor(fontContent).TransformBounds(new Rect(saveFonts.RenderSize));
+            var fontBodyBounds = fontBody.TransformToAncestor(fontContent).TransformBounds(new Rect(fontBody.RenderSize));
+            Check(fontBody.ScrollableHeight > 0 && saveFontBounds.Top >= fontBodyBounds.Bottom && saveFontBounds.Bottom <= fontContent.RenderSize.Height,
+                "Office font review: maximum family list scrolls while Save remains reachable at minimum size");
+            manyFonts.Close();
             passed += ImagePdfOrderViewContracts.Run(windows[6]);
             var calculation = (OfficeCalculationWindow)windows[7];
             Check(calculation.Calculation is null && !Find<Button>(calculation, "OfficeSavedValues").IsDefault &&

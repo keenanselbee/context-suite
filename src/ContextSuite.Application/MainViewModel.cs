@@ -62,6 +62,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     public event Func<AudioConversionViewModel, CancellationToken, Task<ConfirmedAudioConversion?>>? AudioConversionRequested;
     public event Func<ImagePdfOrderViewModel, CancellationToken, Task<ConfirmedImagePdf?>>? ImagePdfOrderRequested;
     public event Func<CancellationToken, Task<string?>>? OfficeCalculationRequested;
+    public event Func<ContextSuite.Core.Office.OfficeFontReview, CancellationToken, Task<bool>>? OfficeFontsRequested;
     public event Action<OperationRequest, FileRow[]>? QuickBatchStarted;
     public event Action<OperationRequest, FileRow[]>? QuickBatchCompleted;
     public event PropertyChangedEventHandler? PropertyChanged;

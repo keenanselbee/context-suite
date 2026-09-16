@@ -47,7 +47,7 @@ internal static class OfficePdfContracts
         var id = Guid.NewGuid();
         var work = new OfficeExportWork(id, Path.Combine(Path.GetTempPath(), "office-" + id.ToString("N")),
             "ContextSuite.Office." + id.ToString("N"), "docx", "none", 8, new string('A', 64));
-        var candidate = new OfficeExportCandidate(id, new(Guid.NewGuid(), "docx", "none", 8, 16, work.SourceSha256, new string('B', 64)), work.Policy);
+        var candidate = new OfficeExportCandidate(id, new(Guid.NewGuid(), "docx", "none", 8, 16, work.SourceSha256, new string('B', 64), []), work.Policy);
         var request = new OfficePdfWork(work, candidate, Path.Combine(Path.GetTempPath(), ".context-suite-" + id.ToString("N") + ".tmp"));
         request.Validate(); check(true, "Office PDF: request binds completed export and external reservation");
         var command = new WorkerCommand(1, Guid.NewGuid(), "office-pdf-validate", OfficePdf: request);

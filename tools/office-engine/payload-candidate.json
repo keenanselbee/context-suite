@@ -4,13 +4,13 @@
   "archiveSha256": "F9877032FD908BEB9C0DDF06DF4AF5C2E85F419C42E14876C4CCE5AAE5FB2660",
   "host": {
     "path": "ContextSuite.OfficeHost.exe",
-    "bytes": 104960,
-    "sha256": "6C2300992201F054E28E7B72715304CA63E0AABEFA909CF7D356D3F275D77677",
+    "bytes": 110592,
+    "sha256": "D8FE02337D606C3ECD17F3919F7D6F1208BB3085A142339A7ECFAC69100F5662",
     "sources": [
       { "path": "proprietary/src/ContextSuite.OfficeHost.Native/app.manifest", "sha256": "4BED6AE394654B3A06E06156879B0EEE739F7B620C6697243FF596F254D989C4" },
       { "path": "proprietary/src/ContextSuite.OfficeHost.Native/CMakeLists.txt", "sha256": "E40D252F531E3110C853D4BE40D8388E2B31EFBA83E1CD6662C5BE15AC75C07F" },
-      { "path": "proprietary/src/ContextSuite.OfficeHost.Native/EmbeddedOffice.h", "sha256": "8105C45FF865234099C800832F8DEB4ACD05E24D941838B0DBFD7619C038A4A2" },
-      { "path": "proprietary/src/ContextSuite.OfficeHost.Native/Host.cpp", "sha256": "EA3605BD4C6CA88FE050ABAD5FB01C64ACCD1E06806490037750835F0E6C7CF4" }
+      { "path": "proprietary/src/ContextSuite.OfficeHost.Native/EmbeddedOffice.h", "sha256": "A88D835C28BCC2F66C079C552F4224C9417751324ED2B59C7E2615F32F238A6A" },
+      { "path": "proprietary/src/ContextSuite.OfficeHost.Native/Host.cpp", "sha256": "2430A0AC6DB96EAD9B3D0CD66F3A1CEB2434BB146A686AD0C1EDF5C729DD9134" }
     ]
   },
   "inventory": {
