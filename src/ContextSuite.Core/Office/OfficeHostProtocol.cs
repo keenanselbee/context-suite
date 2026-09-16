@@ -11,6 +11,7 @@ public static class OfficeHostProtocol
     public const int MaximumFontReportBytes = 16 * 1024;
     public const long MaximumSourceBytes = 64 * 1024 * 1024;
     public const long MaximumOutputBytes = 128 * 1024 * 1024;
+    public const long MaximumWorkbookBytes = 64 * 1024 * 1024;
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
     public static OfficeHostCompletion ReadCompletion(ReadOnlyMemory<byte> bytes, int exitCode, Guid requestId,
@@ -27,10 +28,10 @@ public static class OfficeHostProtocol
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object) throw new InvalidDataException("Missing Office completion object.");
             var expected = new HashSet<string>(["version", "requestId", "completed", "format", "policy", "calculation",
-                "sourceBytes", "outputBytes", "sourceSha256", "outputSha256", "fontReports"], StringComparer.Ordinal);
+                "sourceBytes", "outputBytes", "sourceSha256", "outputSha256", "fontReports", "workbookBytes", "workbookSha256"], StringComparer.Ordinal);
             foreach (var property in root.EnumerateObject())
                 if (!expected.Remove(property.Name)) throw new InvalidDataException("Unexpected or repeated Office completion field.");
-            if (expected.Count != 0 || root.GetProperty("version").GetInt32() != 2 || !root.GetProperty("completed").GetBoolean() ||
+            if (expected.Count != 0 || root.GetProperty("version").GetInt32() != 3 || !root.GetProperty("completed").GetBoolean() ||
                 root.GetProperty("requestId").GetString() != requestId.ToString("N") || root.GetProperty("format").GetString() != format ||
                 root.GetProperty("policy").GetString() != Policy || root.GetProperty("calculation").GetString() != calculation ||
                 root.GetProperty("sourceBytes").GetInt64() != sourceBytes ||
@@ -41,13 +42,23 @@ public static class OfficeHostProtocol
             if (outputBytes is <= 0 or > MaximumOutputBytes || !Hash(outputHash))
                 throw new InvalidDataException("Invalid Office candidate identity.");
             var fonts = ReadFontReports(root.GetProperty("fontReports"));
-            return new(requestId, format, calculation, sourceBytes, outputBytes, sourceSha256.ToUpperInvariant(), outputHash!.ToUpperInvariant(), fonts);
+            var workbookBytes = root.GetProperty("workbookBytes").GetInt64();
+            var workbookHash = root.GetProperty("workbookSha256").GetString();
+            ValidateWorkbookIdentity(format, workbookBytes, workbookHash);
+            return new(requestId, format, calculation, sourceBytes, outputBytes, sourceSha256.ToUpperInvariant(), outputHash!.ToUpperInvariant(), fonts,
+                workbookBytes, workbookHash?.ToUpperInvariant());
         }
         catch (Exception error) when (error is JsonException or InvalidOperationException or FormatException or OverflowException)
         { throw new InvalidDataException("Invalid Office completion reply.", error); }
     }
 
     private static bool Hash(string? value) => value is { Length: 64 } && value.All(char.IsAsciiHexDigit);
+
+    public static void ValidateWorkbookIdentity(string format, long bytes, string? sha256)
+    {
+        if (format == "xlsx" ? bytes is <= 0 or > MaximumWorkbookBytes || !Hash(sha256) : bytes != 0 || sha256 is not null)
+            throw new InvalidDataException("Missing or invalid calculated workbook identity.");
+    }
 
     public static void ValidateFontFamilies(ImmutableArray<string> families)
     {

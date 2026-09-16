@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.10**. This checkpoint verifies same-document native
-date-copy/PDF observations after public baseline `16992de` and private baseline `6b8d84a`.
+Matrix revision: **2026-09-16.11**. This checkpoint implements the calculated-date
+publication guard after public baseline `cb1e95d` and private baseline `6b8d84a`.
 Catalog schema 1, revision **2026-09-16.2**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
@@ -188,8 +188,13 @@ and the bounded reader detects the recalculated early dates in those retained
 copies. A later same-document native experiment preserves the same 42 caches and
 produces six identical before/after PDF pairs, with exact text, geometry and
 pixels. Thirteen independent-inspector controls pass. The date errors remain;
-this authored-fixture evaluation does not add a production post-calculation
-publication guard or establish arbitrary-workbook equivalence.
+that authored-fixture evaluation does not establish arbitrary-workbook equivalence.
+The subsequent [calculated-date guard](excel-calculated-date-guard.md) adds a
+hash-bound workbook copy to host completion and checks it during export admission
+and independent PDF validation. Four cached/1904 cases publish; both known
+recalculated-error cases are withheld with guidance and complete cleanup. This
+closes the demonstrated publication gap without correcting the date renderer or
+settling unknown-format interpretation and broader spreadsheet fidelity.
 Native file/profile ownership and interruption evidence
 also do not by themselves close the separate
 [Office network-isolation evidence](office-isolation-evaluation.md).

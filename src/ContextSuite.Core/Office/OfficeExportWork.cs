@@ -9,6 +9,7 @@ public sealed record OfficeExportWork(Guid ItemId, string DirectoryPath, string 
 {
     [JsonIgnore] public string SourcePath => Path.Combine(DirectoryPath, "input", "source." + Format);
     [JsonIgnore] public string CandidatePath => Path.Combine(DirectoryPath, "output", "candidate.pdf");
+    [JsonIgnore] public string WorkbookPath => Path.Combine(DirectoryPath, "output", "calculated.xlsx");
     [JsonIgnore] public string EngineProfilePath => Path.Combine(DirectoryPath, "profile", "engine");
 
     public void Validate()
@@ -43,5 +44,6 @@ public sealed record OfficeExportCandidate(Guid ItemId, OfficeHostCompletion Com
             value.OutputSha256 is not { Length: 64 } || !value.OutputSha256.All(char.IsAsciiHexDigit))
             throw new InvalidDataException("Office candidate does not match its export request.");
         OfficeHostProtocol.ValidateFontFamilies(value.MissingFontFamilies);
+        OfficeHostProtocol.ValidateWorkbookIdentity(value.Format, value.WorkbookBytes, value.WorkbookSha256);
     }
 }

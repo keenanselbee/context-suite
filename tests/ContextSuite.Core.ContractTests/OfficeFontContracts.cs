@@ -8,9 +8,10 @@ internal static class OfficeFontContracts
     internal static void Run(Action<bool, string> check)
     {
         var request = Guid.NewGuid(); var hash = new string('A', 64);
-        var fields = new Dictionary<string, object?> { ["version"] = 2, ["requestId"] = request.ToString("N"),
+        var fields = new Dictionary<string, object?> { ["version"] = 3, ["requestId"] = request.ToString("N"),
             ["completed"] = true, ["format"] = "docx", ["policy"] = OfficeHostProtocol.Policy, ["calculation"] = "none",
-            ["sourceBytes"] = 100, ["outputBytes"] = 200, ["sourceSha256"] = hash, ["outputSha256"] = hash };
+            ["sourceBytes"] = 100, ["outputBytes"] = 200, ["sourceSha256"] = hash, ["outputSha256"] = hash,
+            ["workbookBytes"] = 0, ["workbookSha256"] = null };
         var fonts = Read(new[] { Hex("{\"fontsmissing\":[\"Zeta\",\"日本語 \\\"Font\\\"\"]}"), Hex("{\"fontsmissing\":[\"zeta\",\"Alpha\"]}") });
         check(fonts.MissingFontFamilies.SequenceEqual(new[] { "Alpha", "Zeta", "日本語 \"Font\"" }),
             "Office fonts: bounded Unicode names survive and repeated events merge deterministically");

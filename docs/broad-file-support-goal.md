@@ -5,6 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [calculated-date guard](excel-calculated-date-guard.md) now binds a native
+workbook copy to the PDF completion and inspects it before publication. Four
+cached/1904 controls publish; two recalculated early-date cases are withheld
+with clear guidance. All 4,110 foundation, 63 private guard and 32 application
+checks pass, along with independent cache/pixel inspection and nine rejection
+controls. Originals and native cleanup are verified. Correct date rendering,
+active copy-save interruption, broader fidelity and release acceptance remain
+open; refusal of known corruption does not complete required Excel support.
+
 The [native workbook-copy experiment](excel-date-system-evaluation.md#native-same-document-copy-experiment-2026-09-16)
 now binds six calculated workbook copies to PDFs from the same loaded document.
 All six before/after pairs retain exact text, geometry and pixels, and all 42

@@ -10,9 +10,10 @@ internal static class OfficeHostContracts
         var id = Guid.NewGuid(); var sourceHash = new string('A', 64); var outputHash = new string('B', 64);
         foreach (var (format, calculation) in new[] { ("docx", "none"), ("xlsx", "cached"), ("xlsx", "recalculate"), ("pptx", "none") })
         {
-            var fields = new Dictionary<string, object> { ["version"] = 2, ["requestId"] = id.ToString("N"), ["completed"] = true,
+            var fields = new Dictionary<string, object?> { ["version"] = 3, ["requestId"] = id.ToString("N"), ["completed"] = true,
                 ["format"] = format, ["policy"] = OfficeHostProtocol.Policy, ["calculation"] = calculation, ["sourceBytes"] = 100,
-                ["outputBytes"] = 200, ["sourceSha256"] = sourceHash, ["outputSha256"] = outputHash, ["fontReports"] = Array.Empty<string>() };
+                ["outputBytes"] = 200, ["sourceSha256"] = sourceHash, ["outputSha256"] = outputHash, ["fontReports"] = Array.Empty<string>(),
+                ["workbookBytes"] = format == "xlsx" ? 300 : 0, ["workbookSha256"] = format == "xlsx" ? new string('C', 64) : null };
             var valid = JsonSerializer.SerializeToUtf8Bytes(fields);
             var result = OfficeHostProtocol.ReadCompletion(valid, 0, id, format, calculation, 100, sourceHash);
             check(result.RequestId == id && result.OutputBytes == 200 && result.OutputSha256 == outputHash && result.MissingFontFamilies.IsEmpty,
@@ -25,18 +26,28 @@ internal static class OfficeHostContracts
                 ("sourceBytes", 101), ("outputBytes", 0), ("outputBytes", OfficeHostProtocol.MaximumOutputBytes + 1),
                 ("sourceSha256", outputHash), ("outputSha256", new string('G', 64)), ("outputBytes", "200") })
             {
-                var changed = new Dictionary<string, object>(fields) { [key] = value };
+                var changed = new Dictionary<string, object?>(fields) { [key] = value };
                 Refuse(JsonSerializer.SerializeToUtf8Bytes(changed), 0, "mismatched/invalid " + key);
             }
             foreach (var key in fields.Keys)
             {
-                var missing = new Dictionary<string, object>(fields); missing.Remove(key);
+                var missing = new Dictionary<string, object?>(fields); missing.Remove(key);
                 Refuse(JsonSerializer.SerializeToUtf8Bytes(missing), 0, "missing " + key);
             }
             Refuse(Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(valid).Replace("{", "{\"completed\":false,", StringComparison.Ordinal)), 0, "duplicate completion field");
             Refuse(Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(valid).Replace("{", "{\"extra\":1,", StringComparison.Ordinal)), 0, "unknown field");
             Refuse(Encoding.UTF8.GetBytes("diagnostics\n" + Encoding.UTF8.GetString(valid)), 0, "diagnostics mixed into completion channel");
             Refuse(new byte[OfficeHostProtocol.MaximumReplyBytes + 1], 0, "reply byte limit");
+            foreach (var (key, value) in new (string, object?)[] { ("version", 2), ("workbookBytes", -1),
+                ("workbookBytes", OfficeHostProtocol.MaximumWorkbookBytes + 1), ("workbookBytes", "300"),
+                ("workbookSha256", ""), ("workbookSha256", new string('G', 64)), ("workbookSha256", 300),
+                ("workbookBytes", format == "xlsx" ? 0 : 300), ("workbookSha256", format == "xlsx" ? null : new string('C', 64)) })
+                Refuse(JsonSerializer.SerializeToUtf8Bytes(new Dictionary<string, object?>(fields) { [key] = value }), 0, "invalid calculated workbook " + key);
+            check(result.WorkbookBytes == (format == "xlsx" ? 300 : 0) && result.WorkbookSha256 == (format == "xlsx" ? new string('C', 64) : null),
+                "Office host: workbook identity is required only for Excel");
+            var restored = JsonSerializer.Deserialize<OfficeHostCompletion>(JsonSerializer.Serialize(result))!;
+            check(restored == result || restored.WorkbookBytes == result.WorkbookBytes && restored.WorkbookSha256 == result.WorkbookSha256,
+                "Office host: worker transport retains calculated workbook identity");
 
             void Refuse(byte[] bytes, int exit, string reason)
             {

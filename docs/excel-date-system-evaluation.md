@@ -399,10 +399,11 @@ altered numeric cache with an updated hash; their new receipt is
 `.codex-temp/excel-native-date-cli-inspector-checks.json`. Foundation contracts are
 unchanged and were not rerun for this evaluation-only change.
 
-The next implementation step is to carry bounded calculated-value evidence from
-the isolated production host through validation, including interrupted copy-save,
-deadline/cancellation and cleanup checks. This experiment alone neither adds that
-publication guard nor repairs the required date fidelity. Broader workbook
+The subsequent [calculated-date guard](excel-calculated-date-guard.md) carries
+bounded workbook evidence from the isolated production host through validation
+and withholds the demonstrated bad exports. Active copy-save interruption and
+broader deadline/cancellation coverage remain open. This experiment alone
+neither adds that publication guard nor repairs required date fidelity. Broader workbook
 formatting, native network isolation, current combined packaging and manual
 acceptance remain separate open work.
 

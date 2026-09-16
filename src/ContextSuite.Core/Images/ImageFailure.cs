@@ -3,7 +3,7 @@ namespace ContextSuite.Core.Images;
 public enum ImageFailure
 {
     InvalidInput, UnsupportedInput, SourceChanged, FileAccess, ResourceLimit,
-    EngineFailure, ValidationFailed, TimedOut, WorkerTerminated
+    EngineFailure, ValidationFailed, TimedOut, WorkerTerminated, OfficeDateFidelity
 }
 
 // Only stable categories cross IPC, never native diagnostics or private metadata.
@@ -23,6 +23,7 @@ public sealed class ImageFailureException(ImageFailure failure, Exception? inner
         ImageFailure.ValidationFailed => "The output failed validation and was not published. Try another format or policy.",
         ImageFailure.TimedOut => "The image worker exceeded its time limit. No unvalidated output was published.",
         ImageFailure.WorkerTerminated => "The image worker stopped unexpectedly. This item was not retried; later items can continue.",
+        ImageFailure.OfficeDateFidelity => "The calculated workbook contains dates before March 1, 1900 that Context Suite cannot currently convert accurately. Export the PDF from Excel instead. Analyze remains available.",
         _ => throw new InvalidDataException("Unknown image failure category.")
     };
 }

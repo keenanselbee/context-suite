@@ -16,12 +16,18 @@ Pinned input and layout
 ----------------------
 
 [The selection record](../tools/office-engine/payload-candidate.json) pins the
-110,592-byte long-path-aware native host and the canonical 2,276,994-byte runtime
+112,640-byte long-path-aware native host and the canonical 2,276,994-byte runtime
 inventory already enforced by the [private runtime lease](office-runtime-verification.md).
 The inventory's fixed SHA-256 identifies all 19,332 vendor files and their sizes
 and hashes, totaling 1,517,294,910 bytes. Staging checks the upstream archive pin
 against the independent evaluation record and the host against four current
 private source/build-input hashes. It does not copy private source or build receipts.
+
+The [calculated-date guard](excel-calculated-date-guard.md) advances the host to
+completion protocol version 3 and repeats all 33 packaging checks with that pin.
+Evidence is `.codex-temp/office-payload-tests-dfb43ac88ccb4b33a4665fb4be4b749d`.
+The combined scratch check still uses the retained 1.1.0 base managed payload;
+it is not a fresh formal package of the current application and worker.
 
 The input is a complete `office-engine` directory retained from an isolated
 worker evaluation, containing the host, `runtime-files.txt` and `runtime/`.

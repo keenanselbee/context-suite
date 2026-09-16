@@ -59,6 +59,11 @@ if (args is ["--office-execution-cleanup", var cleanupWorker, var cleanupFixture
     return 0;
 }
 
+if (args is ["--office-excel-dates", var datesWorker, var datesFixtures, var datesEvidence])
+{
+    await OfficeExcelDateExecutionContracts.RunAsync(datesWorker, datesFixtures, datesEvidence);
+    return 0;
+}
 if (args is ["--office-execution", var executionWorker, var executionFixtures, var executionEvidence])
 {
     await OfficeExecutionContracts.RunAsync(executionWorker, executionFixtures, executionEvidence);

@@ -158,7 +158,9 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
         var cancelled = failure is OperationCanceledException;
         var state = cancelled ? OperationState.Cancelled : failure is NotSupportedException or MediaWorkerException { Failure: ImageFailure.UnsupportedInput }
             ? OperationState.Unsupported : OperationState.Failed;
-        var message = skippedFonts ? "PDF skipped because fonts were replaced. Original kept." : cancelled ? "Office conversion cancelled. Original kept." : failure is MediaWorkerException { Failure: ImageFailure.ResourceLimit }
+        var message = skippedFonts ? "PDF skipped because fonts were replaced. Original kept." : cancelled ? "Office conversion cancelled. Original kept." : failure is MediaWorkerException { Failure: ImageFailure.OfficeDateFidelity }
+            ? ImageFailureException.Describe(ImageFailure.OfficeDateFidelity)
+            : failure is MediaWorkerException { Failure: ImageFailure.ResourceLimit }
             ? "The document exceeds a PDF processing limit. Try fewer pages or a smaller page size. Original kept."
             : "Office PDF conversion failed. Check the document and try again. Original kept.";
         return new(source.Path, state, message, result?.Publication);

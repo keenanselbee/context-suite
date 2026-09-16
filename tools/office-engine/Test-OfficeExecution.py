@@ -23,6 +23,7 @@ def main():
     parser.add_argument("--font-review", action="store_true", help="Exercise real missing-font reports, per-file review, refusal and cleanup.")
     parser.add_argument("--word-font-styles", action="store_true", help="Export fifteen authored style/theme controls and verify source selections, review signals and cleanup.")
     parser.add_argument("--powerpoint-slides", action="store_true", help="Export three authored slide-order, hidden-slide and speaker-note cases through the application.")
+    parser.add_argument("--excel-dates", action="store_true", help="Check six authored formula-date cases through isolated export, publication/refusal and cleanup.")
     parser.add_argument("--pdf-validator", type=Path, help="Combined-image validator required for the direct mixed-command test.")
     parser.add_argument("--office-engine", type=Path)
     parser.add_argument("--pdf-engine", type=Path)
@@ -32,7 +33,7 @@ def main():
     args = parser.parse_args()
     if not args.create_disposable_profiles:
         parser.error("Explicit disposable Office profile authorization is required.")
-    if sum((args.direct, args.cleanup_only, args.font_review, args.word_font_styles, args.powerpoint_slides)) > 1:
+    if sum((args.direct, args.cleanup_only, args.font_review, args.word_font_styles, args.powerpoint_slides, args.excel_dates)) > 1:
         parser.error("Choose only one execution scenario.")
     if (args.word_font_styles or args.powerpoint_slides) and args.fixtures is not None:
         parser.error("The selected mode creates its own authored fixtures; omit --fixtures.")
@@ -122,7 +123,7 @@ def main():
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
         arguments = [str(host), "--office-powerpoint-slides" if args.powerpoint_slides else "--office-word-font-styles",
                      str(worker_root / "ContextSuite.Worker.exe"), str(stage / "contracts")] if (args.word_font_styles or args.powerpoint_slides) else [
-            str(host), "--office-font-execution" if args.font_review else "--office-execution-cleanup" if args.cleanup_only else "--office-direct-execution" if args.direct else "--office-execution",
+            str(host), "--office-excel-dates" if args.excel_dates else "--office-font-execution" if args.font_review else "--office-execution-cleanup" if args.cleanup_only else "--office-direct-execution" if args.direct else "--office-execution",
             str(worker_root / "ContextSuite.Worker.exe"), str(fixtures), str(stage / "contracts")]
         started = time.perf_counter()
         run = subprocess.run(arguments, cwd=root, stdout=output, stderr=error)
