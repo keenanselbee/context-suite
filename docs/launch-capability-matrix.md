@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.9**. This checkpoint verifies exported date-cache inspection
-after public baseline `90844bb` and private baseline `6b8d84a`.
+Matrix revision: **2026-09-16.10**. This checkpoint verifies same-document native
+date-copy/PDF observations after public baseline `16992de` and private baseline `6b8d84a`.
 Catalog schema 1, revision **2026-09-16.2**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
@@ -185,8 +185,11 @@ displays; 36/42 displays match overall. Formula and unsupported-inspection cases
 still need a complete policy. General XLSX fidelity cannot be accepted until this
 is addressed. Separate workbook-copy exports now preserve all 42 expected caches,
 and the bounded reader detects the recalculated early dates in those retained
-copies. That enables further native evaluation but does not bind the copies to
-the exact PDF instance or add a post-calculation publication guard.
+copies. A later same-document native experiment preserves the same 42 caches and
+produces six identical before/after PDF pairs, with exact text, geometry and
+pixels. Thirteen independent-inspector controls pass. The date errors remain;
+this authored-fixture evaluation does not add a production post-calculation
+publication guard or establish arbitrary-workbook equivalence.
 Native file/profile ownership and interruption evidence
 also do not by themselves close the separate
 [Office network-isolation evidence](office-isolation-evaluation.md).

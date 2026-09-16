@@ -1,7 +1,10 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $PreparedDirectory, [Parameter(Mandatory)][string] $PdfPreparedDirectory,
+    [switch] $ExcelNativeDateSnapshots, [string] $NativeDateProbeDirectory,
     [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelFormulaDates, [switch] $ExcelDateSnapshots, [switch] $ExcelPrint, [switch] $WordRevisions, [switch] $WordFinalText, [switch] $WordRevisionStructures, [switch] $PowerPointSlides, [switch] $EmbeddedImages)
 $ErrorActionPreference = 'Stop'
+if ($ExcelNativeDateSnapshots -ne [bool]$NativeDateProbeDirectory) { throw 'Native date mode requires its prepared probe directory, exclusively.' }
+if ($ExcelNativeDateSnapshots -and @($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelFormulaDates, $ExcelDateSnapshots, $ExcelPrint, $WordRevisions, $WordFinalText, $WordRevisionStructures, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count) { throw 'Choose one evaluation mode at a time.' }
 if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelFormulaDates, $ExcelDateSnapshots, $ExcelPrint, $WordRevisions, $WordFinalText, $WordRevisionStructures, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $office = (Resolve-Path -LiteralPath $PreparedDirectory).Path
@@ -33,6 +36,16 @@ if ((Get-FileHash -LiteralPath $probe).Hash -ne $build.sha256 -or
 }
 $qpdf = Join-Path $pdf 'unpacked\qpdf-12.4.1-msvc64\bin\qpdf.exe'
 $probeArguments = @($office, $qpdf, $probe)
+if ($ExcelNativeDateSnapshots) {
+    $dateRoot = (Resolve-Path -LiteralPath $NativeDateProbeDirectory).Path
+    if (-not $dateRoot.StartsWith((Join-Path $repository '.codex-temp\office-date-native\'), [StringComparison]::OrdinalIgnoreCase)) { throw 'Use an owned native date probe build.' }
+    $dateBuild = Get-Content -LiteralPath (Join-Path $dateRoot 'build.json') -Raw | ConvertFrom-Json
+    $dateProbe = Join-Path $dateRoot 'build\bin\Release\ContextSuite.Office.DateProbe.exe'
+    if ($dateBuild.executable -ne $dateProbe -or (Get-FileHash -LiteralPath $dateProbe).Hash -ne $dateBuild.sha256 -or
+        (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'DateProbe\Probe.cpp')).Hash -ne $dateBuild.sourceSha256 -or
+        (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'DateProbe\CMakeLists.txt')).Hash -ne $dateBuild.cmakeSha256) { throw 'Native date probe identity changed.' }
+    $probeArguments = @('--native-excel-date-snapshots', $office, $qpdf, $probe, $dateProbe)
+}
 if ($ProfileMatrix) { $probeArguments += 'ProfileMatrix' }
 if ($ProfileLengths) { $probeArguments += 'ProfileLengths' }
 if ($EnvironmentPaths) { $probeArguments += 'EnvironmentPaths' }
@@ -68,3 +81,4 @@ if ($EmbeddedImages) { Write-Output 'Image export completion requires Inspect-Of
 if ($WordRevisionStructures) { Write-Output 'Twelve structural revision exports require independent text/pixel inspection; all observations are retained, and text mismatches fail the run.' }
 
 if ($ExcelDateSnapshots) { Write-Output 'Workbook copies expose engine caches for inspection; no PDF correspondence, corrected date rendering or publication guard is established.' }
+if ($ExcelNativeDateSnapshots) { Write-Output 'Same-document copy-save observations require independent snapshot/PDF inspection; date fidelity and production adoption remain separate.' }

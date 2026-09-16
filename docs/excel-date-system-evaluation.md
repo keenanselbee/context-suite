@@ -326,12 +326,85 @@ Both disposable copies are retained. Repository boundary, theme and 165-document
 checks pass. Formal packaging and visible acceptance were not rerun.
 
 LibreOfficeKit documents [copy-save semantics](https://github.com/LibreOffice/core/blob/master/include/LibreOfficeKit/LibreOfficeKit.hxx)
-that retain the loaded document's identity. A future native experiment must bind
-the calculated workbook evidence and PDF to the same loaded instance, demonstrate
-that saving the evidence does not recalculate or alter the PDF, retain deadlines
-and output bounds, and cover cleanup/cancellation before publication. Separate
-command-line exports do not establish that correspondence. This checkpoint also
-does not repair early-date rendering or settle the required launch date policy.
+that retain the loaded document's identity. Separate command-line exports do not
+establish correspondence with a PDF from the same instance. The native experiment
+below checks that correspondence for these authored workbooks; production
+integration, interrupted-save handling, early-date rendering and the required
+launch date policy remain open.
+
+
+Native same-document copy experiment (2026-09-16)
+------------------------------------------------
+
+The evaluation-only [native probe](../tools/office-engine/DateProbe/Probe.cpp)
+loads each authored formula workbook once. On that same document pointer it
+saves a PDF, saves an XLSX copy without `TakeOwnership`, and saves a second PDF.
+The [managed harness](../tools/office-engine/Probe/ExcelNativeDateEvaluation.cs)
+uses the existing bounded job and fresh short profile for each case. These are
+ordinary processes operating on passive generated fixtures, not filesystem or
+network isolation acceptance. No production host, transport or packaging changes
+are part of this experiment.
+
+All six date-system/calculation cases complete. The twelve PDFs pass qpdf and
+independent PDFium parsing/rendering. Each before/after pair has identical raw
+text, Letter page geometry and 96-DPI BGRA pixels. All 42 exported numeric caches
+match the selected saved-values or recalculation policy. The bounded reader
+reports three early dates for both recalculated 1900 cases, zero for the other
+four controls and six date-formatted formulas in every copy. Originals retain
+their bytes and last-write timestamps, and completed jobs contain no processes.
+
+The independent inspector records `PdfUnchanged: true` and
+`ExpectedCachesMatch: true`, but **`DateFidelityPassed: false`**. Only 36 of 42
+date/duration displays match Excel expectations, before and after copy-save.
+The same six early-1900 display errors remain. Identical wrong PDFs prove that
+this copy-save did not change these fixtures; they do not prove correct rendering
+or establish equivalence for arbitrary workbooks.
+
+Evidence:
+`.codex-temp/office-engine/a56167ab9fb54686971491918ccd26f8/evaluation-63a69667cfcd4512b2e607d4034839ab`.
+It includes the twelve PDFs, six workbook copies, per-case progress, profile/job
+records, text, renders and `independent-date-snapshots.json`. Source-bound log and
+unchanged-input receipts use `.codex-temp/excel-native-dates-inherited`.
+The native executable is identified by
+`.codex-temp/office-date-native/f13dc52e87fa440f868fe8834d4f5e70/build.json`;
+the wrapper checks that executable and its C++/CMake sources before execution.
+
+The initial run reached its 60-second deadline without producing a PDF. Its
+failed log and unchanged-input receipt remain under `.codex-temp/excel-native-dates`,
+with evidence directory `evaluation-421445804fc94cc3931f37625f1c52ea` beneath
+the same prepared Office root. Its owned process was terminated. The completed
+run supplies `SAL_LOK_OPTIONS=unipoll` before native process creation, matching
+the established embedded evaluation, and adds flushed phase diagnostics. It
+does not extend the deadline or count the timed-out run as successful.
+
+Build and run with independently prepared payloads:
+
+```powershell
+.\tools\office-engine\Build-ExcelDateProbe.ps1
+.\tools\office-engine\Test-OfficeEvaluation.ps1 `
+  -PreparedDirectory '<prepared Office directory>' `
+  -PdfPreparedDirectory '<prepared qpdf directory>' `
+  -PdfiumPreparedDirectory '<prepared PDFium directory>' `
+  -ExcelNativeDateSnapshots -NativeDateProbeDirectory '<new native probe directory>'
+python -B tools/office-engine/Inspect-ExcelDateSnapshots.py '<completed evaluation directory>'
+```
+
+Native and managed Release builds pass; all 17 profile declaration checks pass.
+Thirteen independent-inspector rejection controls cover incomplete cases,
+changed sources/copies/PDFs/date observations, mismatched profiles, failed scans,
+changed/truncated pixels and unfinished jobs. Their receipt is
+`.codex-temp/excel-native-date-inspector-checks.json`. The seven existing CLI
+snapshot-inspector controls also pass with the extended inspector, including an
+altered numeric cache with an updated hash; their new receipt is
+`.codex-temp/excel-native-date-cli-inspector-checks.json`. Foundation contracts are
+unchanged and were not rerun for this evaluation-only change.
+
+The next implementation step is to carry bounded calculated-value evidence from
+the isolated production host through validation, including interrupted copy-save,
+deadline/cancellation and cleanup checks. This experiment alone neither adds that
+publication guard nor repairs the required date fidelity. Broader workbook
+formatting, native network isolation, current combined packaging and manual
+acceptance remain separate open work.
 
 
 Evidence and limits

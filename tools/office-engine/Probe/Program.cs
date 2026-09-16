@@ -5,6 +5,8 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
+if (args is ["--native-excel-date-snapshots", var nativeDatePrepared, var nativeDateQpdf, var nativeDatePdfium, var nativeDateProbe])
+    return await ExcelNativeDateEvaluation.RunAsync(nativeDatePrepared, nativeDateQpdf, nativeDatePdfium, nativeDateProbe);
 if (args is ["--worker-stop-fixtures", var stopFixtureRoot])
 {
     var folder = Path.GetFullPath(stopFixtureRoot);

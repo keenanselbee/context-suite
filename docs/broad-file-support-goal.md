@@ -5,6 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [native workbook-copy experiment](excel-date-system-evaluation.md#native-same-document-copy-experiment-2026-09-16)
+now binds six calculated workbook copies to PDFs from the same loaded document.
+All six before/after pairs retain exact text, geometry and pixels, and all 42
+numeric caches follow the selected calculation policy. Seventeen profile checks
+and thirteen independent-inspector rejection controls pass. The same six wrong
+early-date displays remain: this establishes a bounded evaluation result, not
+correct rendering or a production publication guard. Isolated host integration,
+copy-save cancellation/cleanup, date fidelity and release acceptance remain open.
+
 The [exported-cache experiment](excel-date-system-evaluation.md#exported-cache-inspection-2026-09-16)
 finds all 42 numeric caches preserved according to the selected calculation
 policy. The bounded date reader now handles the reviewed LibreOffice calculation
