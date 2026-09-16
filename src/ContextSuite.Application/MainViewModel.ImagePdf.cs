@@ -7,12 +7,12 @@ namespace ContextSuite.Application;
 
 internal sealed partial class MainViewModel
 {
-    private async Task ConvertImagesToPdfAsync(OperationRequest request, FileRow row, CancellationToken token)
+    private async Task<ConfirmedImagePdf?> PrepareImagesToPdfAsync(OperationRequest request, FileRow row, CancellationToken token)
     {
         if (!worker.HasImagePdfConverter)
         {
             row.ApplyResult(new(row.Path, OperationState.Unsupported, "PDF conversion is unavailable in this build."));
-            return;
+            return null;
         }
         var sources = new List<ImageSourceFacts>();
         long sourceBytes = 0, pixels = 0;
@@ -31,7 +31,7 @@ internal sealed partial class MainViewModel
                     row.ImagePdfRetryBlocked = true;
                     row.ApplyResult(new(row.Path, OperationState.Failed,
                         $"{Path.GetFileName(paths[index])} changed since page order was reviewed. Start a new Convert > PDF command. All originals are kept."));
-                    return;
+                    return null;
                 }
                 var page = ImagePdfPage.Create(source);
                 sourceBytes += source.FileBytes; pixels += (long)page.Width * page.Height;
@@ -45,7 +45,7 @@ internal sealed partial class MainViewModel
                 var unsupported = error is NotSupportedException or MediaWorkerException { Failure: ImageFailure.UnsupportedInput };
                 row.ApplyResult(new(row.Path, unsupported ? OperationState.Unsupported : OperationState.Failed,
                     $"Could not include {Path.GetFileName(paths[index])}. PDF conversion currently supports static PNG, JPEG, WebP, BMP and TGA images within its size limits. Check this file and try again. No PDF was saved; all originals are kept."));
-                return;
+                return null;
             }
         }
         ImagePdfPlan plan;
@@ -54,21 +54,16 @@ internal sealed partial class MainViewModel
         {
             row.ApplyResult(new(row.Path, OperationState.Unsupported,
                 "These images cannot form one PDF within this build's limits. Select fewer or smaller images without duplicate files. No PDF was saved; all originals are kept."));
-            return;
+            return null;
         }
         var confirmed = reviewed is null ? await ConfirmImagePdfOrderAsync(plan, token) : plan.Confirm(true);
         if (confirmed is null)
         {
             row.ApplyResult(new(row.Path, OperationState.Cancelled, "PDF conversion cancelled before confirmation. All originals are kept."));
-            return;
+            return null;
         }
         row.ReviewedImagePdf = confirmed.Plan;
         token.ThrowIfCancellationRequested();
-        await new ImagePdfExecutor(worker, Publisher!, trial!).ExecuteAsync(confirmed, result =>
-        {
-            // The row represents the original invocation; publication names the reviewed first image.
-            row.ApplyResult(result with { Path = row.Path });
-            Summary = result.State == OperationState.Running ? "Creating one PDF from the reviewed images." : Summary;
-        }, token);
+        return confirmed;
     }
 }

@@ -91,6 +91,20 @@ again** converts only unfinished pages, using current settings for those new cop
 If the source PDF changed, start a new Convert command. Page retry information is
 kept for the current results session; restarting the app does not resume that list.
 
+The optional **Convert > PDF** workflow combines selected supported images into
+one PDF copy. With several images, review their page order before converting.
+When the optional Office engine is present, selected Word `.docx`, Excel `.xlsx`
+and PowerPoint `.pptx` documents each get a separate PDF copy. Images in a mixed
+selection still form their own combined PDF. Originals are always kept.
+
+For spreadsheets, choose **Use saved values** to use formula results stored in
+the workbook, or **Recalculate** to evaluate supported formulas locally before
+exporting. Saved values may be out of date; recalculation may change results.
+External data is not refreshed. **Try again** keeps this choice for a failed
+document. These optional Office paths are undergoing isolated acceptance and
+are not included in the reserved packaged candidate. Other Office variants may
+be declined; Analyze remains available.
+
 License and transfer
 --------------------
 

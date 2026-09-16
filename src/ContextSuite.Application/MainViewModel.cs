@@ -15,7 +15,7 @@ using ContextSuite.Core.Pdf;
 namespace ContextSuite.Application;
 
 internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? settings = null, OutputPublisher? publisher = null,
-    IOperationAccess? trial = null) : INotifyPropertyChanged, IAsyncDisposable
+    IOperationAccess? trial = null, string? officeContextRoot = null) : INotifyPropertyChanged, IAsyncDisposable
 {
     private readonly Queue<(OperationRequest Request, FileRow[] Rows)> _pending = new();
     private readonly HashSet<Guid> _received = [];
@@ -61,6 +61,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     public event Func<ConversionViewModel, CancellationToken, Task<ConfirmedImageBatch?>>? ConversionRequested;
     public event Func<AudioConversionViewModel, CancellationToken, Task<ConfirmedAudioConversion?>>? AudioConversionRequested;
     public event Func<ImagePdfOrderViewModel, CancellationToken, Task<ConfirmedImagePdf?>>? ImagePdfOrderRequested;
+    public event Func<CancellationToken, Task<string?>>? OfficeCalculationRequested;
     public event Action<OperationRequest, FileRow[]>? QuickBatchStarted;
     public event Action<OperationRequest, FileRow[]>? QuickBatchCompleted;
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -84,15 +85,19 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         _received.Add(request.RequestId);
         var batchId = ++_batch;
         var snapshot = Settings.Capture(request.Operation);
-        var rows = (request.IsImagePdfConversion ? request.Paths.Take(1) : request.Paths)
+        var imagePaths = request.IsImagePdfConversion
+            ? request.Paths.Where(path => !IsOfficePdfPath(path)).ToImmutableArray() : [];
+        var imageIndex = imagePaths.IsEmpty ? -1 : request.Paths.IndexOf(imagePaths[0]);
+        var rows = request.Paths.Where((path, index) => !request.IsImagePdfConversion || IsOfficePdfPath(path) || index == imageIndex)
             .Select(path => new FileRow(batchId, request.Operation, path, snapshot, request.Action)).ToArray();
-        if (request.IsImagePdfConversion) rows[0].ImagePdfPaths = request.Paths;
+        if (!imagePaths.IsEmpty) rows.First(row => row.Path == imagePaths[0]).ImagePdfPaths = imagePaths;
         if (retryRows is not null)
             foreach (var row in rows)
                 if (retryRows.FirstOrDefault(previous => string.Equals(previous.Path, row.Path, StringComparison.OrdinalIgnoreCase)) is { } previous)
                 {
                     row.ResumePdfFrom(previous);
                     row.ResumeImagePdfFrom(previous);
+                    row.OfficeCalculation = previous.OfficeCalculation;
                 }
         foreach (var row in rows) Rows.Add(row);
         Changed(nameof(HasResults)); Changed(nameof(IsLanding)); Changed(nameof(DisplayRows));
@@ -202,7 +207,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     {
         if (request.IsImagePdfConversion)
         {
-            await ConvertImagesToPdfAsync(request, rows[0], cancellationToken);
+            await ConvertPdfBatchAsync(request, rows, cancellationToken);
             return;
         }
         if (request.IsQuickAudioConversion)
@@ -551,6 +556,8 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         _lifetime.Cancel();
         CancelPending();
         if (_running is not null) await _running;
+        if (_officeRecovery is not null) await _officeRecovery;
+        await DisposeOfficeAsync();
         await worker.DisposeAsync();
         _lifetime.Dispose();
     }

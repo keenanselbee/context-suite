@@ -31,7 +31,9 @@ internal static class OfficeWorkerInspection
                 outputPath = publication.GetProperty("OutputPath").GetString()!;
                 format = Path.GetExtension(sourcePath).TrimStart('.');
                 var originals = Path.Combine(Path.GetDirectoryName(reportPath)!, "originals");
-                if (Path.GetDirectoryName(sourcePath) != originals || Path.GetDirectoryName(outputPath) != originals ||
+                var selectedOutput = Path.Combine(Path.GetDirectoryName(reportPath)!, "output");
+                if (Path.GetDirectoryName(sourcePath) != originals ||
+                    Path.GetDirectoryName(outputPath) != originals && Path.GetDirectoryName(outputPath) != selectedOutput ||
                     sourcePath != publication.GetProperty("SourcePath").GetString() || entry.GetProperty("State").GetInt32() != 5 ||
                     publication.GetProperty("Outcome").GetInt32() != 0 || !publication.GetProperty("IsCommitted").GetBoolean() ||
                     new FileInfo(sourcePath).Length != publication.GetProperty("SourceBytes").GetInt64() ||

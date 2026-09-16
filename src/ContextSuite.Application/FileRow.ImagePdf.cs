@@ -5,7 +5,8 @@ namespace ContextSuite.Application;
 
 internal sealed partial class FileRow
 {
-    public bool IsImagePdf => Operation == "convert" && Action == "pdf";
+    public bool IsImagePdf => Operation == "convert" && Action == "pdf" && !ImagePdfPaths.IsDefaultOrEmpty;
+    internal string? OfficeCalculation { get; set; }
     internal ImmutableArray<string> ImagePdfPaths { get; set; } = [];
     internal Guid ImagePdfRetryId { get; private set; } = Guid.NewGuid();
     internal ImagePdfPlan? ReviewedImagePdf { get; set; }

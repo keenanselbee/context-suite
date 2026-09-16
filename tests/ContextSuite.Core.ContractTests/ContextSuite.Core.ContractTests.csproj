@@ -44,6 +44,7 @@
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Audio.cs" Link="Runtime\MainViewModel.Audio.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Pdf.cs" Link="Runtime\MainViewModel.Pdf.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.ImagePdf.cs" Link="Runtime\MainViewModel.ImagePdf.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Office.cs" Link="Runtime\MainViewModel.Office.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\FileRow.ImagePdf.cs" Link="Runtime\FileRow.ImagePdf.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\FileRow.Pdf.cs" Link="Runtime\FileRow.Pdf.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\AudioConversionViewModel.cs" Link="Runtime\AudioConversionViewModel.cs" />

@@ -22,8 +22,10 @@ visible acceptance remain pending. Optional Convert > PDF now combines images
 through a focused order review, one validated copy and whole-document retry.
 Bounded legacy DOC/XLS/PPT analysis now supplements package analysis; its
 [supported headers and limits](legacy-document-analysis.md) are explicit.
-Office-to-PDF remains planned;
-retain the simple customer surfaces above. Shared Analyze/fallback,
+[Optional Office-to-PDF dispatch](office-direct-command.md) now creates separate
+document copies, sharing one admission with combined-image PDF work. Spreadsheet
+calculation requires a focused choice; retention, fidelity and integrated
+acceptance remain open. Retain the simple customer surfaces above. Shared Analyze/fallback,
 bounded JSON/XML structure analysis and a 244-entry catalog are implemented with automated
 evidence; see [current coverage](file-type-coverage.md). Signing is deferred.
 

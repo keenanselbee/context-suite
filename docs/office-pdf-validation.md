@@ -2,7 +2,8 @@ Office PDF Validation
 =====================
 
 Status: isolated application export/validation/publication transaction verified;
-customer command integration and completed-context retirement remain unfinished.
+[customer command integration](office-direct-command.md) is implemented with
+acceptance in progress. Incomplete-preparation retention remains unfinished.
 
 An Office host completion acknowledges an export; it does not authorize final
 publication. `OfficePdfWork` binds that completed candidate to its source context,

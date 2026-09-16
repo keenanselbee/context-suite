@@ -1,7 +1,8 @@
 Document Support Design
 =======================
 
-Status: bounded package analysis and optional direct PDF optimization, PDF-to-PNG and combined image-to-PDF implemented with automated evidence; engine adoption, Office transformations and launch acceptance pending
+Status: bounded package analysis and optional PDF/Office commands implemented;
+expanded fidelity, engine adoption and launch acceptance remain incomplete.
 
 The independent [Office PDF validation component](office-pdf-validation.md)
 checks acknowledged exports with pinned structural and page readers before
@@ -9,8 +10,10 @@ filling an existing reservation. It now has typed worker dispatch, 71 actual-wor
 checks, 57 direct-reader checks and 72 public policy/transport contracts. Customer
 admission now has a tested internal immutable plan and paid/trial path. The
 application executor also passes isolated export/validation/copy-publication and
-pending-cleanup tests. Customer command dispatch and completed-context retirement
-remain pending. Host completion alone is insufficient. Worker interruption evidence covers snapshot preparation and
+pending-cleanup tests. [Direct PDF dispatch](office-direct-command.md) now connects
+Office documents and combined images through one batch admission. Completed
+contexts support recorded retirement; incomplete-preparation retention and
+integrated acceptance remain open. Host completion alone is insufficient. Worker interruption evidence covers snapshot preparation and
 following work, with reservation-copy interruption still open.
 
 The [PDF page geometry matrix](pdf-page-geometry.md) now verifies cropped and

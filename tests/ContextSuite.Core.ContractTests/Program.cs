@@ -38,6 +38,12 @@ if (args is ["--office-execution", var executionWorker, var executionFixtures, v
     return 0;
 }
 
+if (args is ["--office-direct-execution", var directWorker, var directFixtures, var directEvidence])
+{
+    await OfficeDirectExecutionContracts.RunAsync(directWorker, directFixtures, directEvidence);
+    return 0;
+}
+
 if (args is ["--worker-lifetime-hold", var lifetimeStage, var lifetimeMode])
 {
     await WorkerLifetimeContracts.HoldAsync(lifetimeStage, lifetimeMode);
@@ -326,6 +332,7 @@ try
     OfficeWorkContracts.Run(Check);
     OfficePdfContracts.Run(Check);
     await OfficeConversionContracts.RunAsync(args[0], Check);
+    await DocumentAnalysisContracts.OfficeDirectContractsAsync(args[0], Check);
     await OfficeJournalContracts.RunAsync(args[0], Check);
     await DocumentAnalysisContracts.OfficeContextContractsAsync(args[0], Check);
     await OfficeRecoveryCoordinatorContracts.RunAsync(args[0], Check);

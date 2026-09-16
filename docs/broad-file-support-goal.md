@@ -5,6 +5,16 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [direct Office PDF command](office-direct-command.md) now dispatches
+DOCX/XLSX/PPTX documents to separate PDF copies and combines the image subset
+into one reviewed PDF. One admission covers a mixed command. Spreadsheet
+calculation has an explicit choice retained on retry; startup recovery and
+executor lifetime are connected. All 3,472 foundation, 15 actual mixed-command
+and retry checks, and 110 hidden view checks pass. Three Office outputs pass
+independent text, geometry and pixel comparison; all five native profiles and
+contexts are removed. Broader fidelity, incomplete-preparation retention,
+the owner's Excel default, fresh packaging and visible acceptance remain open.
+
 The [Office root-creation check](office-context-preparation.md) now validates the
 location, policy and original before creating temporary root directories. All
 3,461 foundation contracts pass, including 27 new filesystem/refusal checks.

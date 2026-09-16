@@ -539,7 +539,7 @@ public:
         if (role_ == CommandRole::Action && definition_.kind == CommandKind::Optimize)
             return DuplicateString(PresetTooltips[preset_], tooltip);
         if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert)
-            return DuplicateString(preset_ == 12 ? L"Combine images into one PDF copy; review page order for multiple images; keep all originals" :
+            return DuplicateString(preset_ == 12 ? L"Create PDF copies from supported images and Office documents; combine selected images; keep all originals" :
                 preset_ >= 6 ? L"Convert audio using fixed settings; ask before required quality changes" :
                 preset_ == 5 ? L"Choose format, quality and advanced settings" :
                 preset_ == 0 ? L"Convert images to PNG; PDF pages become numbered PNG copies and keep the PDF" :

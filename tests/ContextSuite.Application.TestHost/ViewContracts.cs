@@ -22,7 +22,7 @@ internal static class ViewContracts
         // not be called. No production licensing state is touched.
         var licenseModel = new LicenseViewModel(new(new UnusedLicenseService(),
             new LicenseStore(Path.Combine(Path.GetTempPath(), "unused-license-view-contract.bin"), LicenseEnvironment.Sandbox)));
-        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new LicenseWindow(licenseModel), new AudioConversionWindow(), new ImagePdfOrderWindow()];
+        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new LicenseWindow(licenseModel), new AudioConversionWindow(), new ImagePdfOrderWindow(), new OfficeCalculationWindow()];
         try
         {
             foreach (var window in windows)
@@ -56,6 +56,15 @@ internal static class ViewContracts
             recoveryModel.DisposeAsync().AsTask().GetAwaiter().GetResult();
             var audio = windows[5];
             passed += ImagePdfOrderViewContracts.Run(windows[6]);
+            var calculation = (OfficeCalculationWindow)windows[7];
+            Check(calculation.Calculation is null && !Find<Button>(calculation, "OfficeSavedValues").IsDefault &&
+                !Find<Button>(calculation, "OfficeRecalculate").IsDefault && Find<Button>(calculation, "OfficeCalculationCancel").IsCancel,
+                "Office spreadsheet choice: no implicit policy or default confirmation; Escape is declared as cancellation");
+            Find<Button>(calculation, "OfficeSavedValues").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(calculation.Calculation == "cached", "Office spreadsheet choice: saved-values button returns its explicit policy");
+            var recalculate = new OfficeCalculationWindow();
+            Find<Button>(recalculate, "OfficeRecalculate").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(recalculate.Calculation == "recalculate", "Office spreadsheet choice: recalculate button returns its explicit policy");
             Check(!Find<Expander>(audio, "AudioConversionFiles").IsExpanded && Find<Button>(audio, "CancelAudioConversion").IsCancel &&
                 !Find<Button>(audio, "ConfirmAudioConversion").IsDefault,
                 "audio decision: files start collapsed; Escape cancels and Enter does not implicitly confirm");

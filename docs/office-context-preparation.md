@@ -2,7 +2,9 @@ Office Context Preparation
 ==========================
 
 Status: preparation, live retirement and recorded retirement after restart are
-implemented; incomplete preparation and customer Office integration remain open.
+implemented; incomplete preparation remains open. The
+[direct Office command](office-direct-command.md) now owns preparation through
+the application view model's lifetime.
 
 `OfficeContextPreparation.CreateAsync` now constructs the source context used by
 the Office worker. It takes a context root, the runtime directory, an

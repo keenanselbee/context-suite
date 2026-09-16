@@ -65,7 +65,10 @@ images require page-order review; retries keep that order and preserve originals
 An explicit [combined production candidate](docs/pdf-production-payload.md) now
 packages these PDF engines and notices alongside images/audio. Default release
 adoption, broader document fidelity and Office conversion remain pending.
-Normal packaging still excludes this validator. Office-to-PDF remains pending.
+Normal packaging still excludes this validator. [Optional Office PDF commands](docs/office-direct-command.md)
+now connect DOCX/XLSX/PPTX documents to separate validated copies, with a focused
+spreadsheet calculation choice. Integrated acceptance and Office packaging remain
+pending.
 The [goal record](docs/broad-file-support-goal.md)
 identifies the latest isolated staging and its limited acceptance scope.
 The owner accepted the image utility's simplified UI; screen-reader, additional
