@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-16.1; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-16.2; expanded catalog and bounded structure analysis, not release acceptance
 
 Transformation status reconciled 2026-09-16. The
 [launch capability matrix](launch-capability-matrix.md) distinguishes the current
@@ -12,7 +12,7 @@ Recognition and capabilities
 ----------------------------
 
 The embedded [catalog](../src/ContextSuite.Core/Analysis/file-types.json) currently
-contains 244 independently authored descriptions; aliases do not inflate this count.
+contains 245 independently authored descriptions; aliases do not inflate this count.
 The [inventory](file-type-inventory.md) lists each entry and its actual detector status.
 Catalog schema 1 has stable IDs, extension aliases, exact filenames,
 families, typical uses, optional MIME identifiers and source references. It contains no commands or
@@ -84,7 +84,10 @@ accounts for the then-current 34 content-identifiable catalog IDs and 209 filena
 records. It corrects the inventory's stale MP3 label and records the precise prefix,
 package and optional-probe distinctions, without adding runtime behavior or claiming
 complete format validation. The archive alias addition brings filename-hint records
-to 210.
+to 210. The [configuration filename review](catalog-configuration-alias-review.md)
+adds a generic configuration record, bringing that count to 211. It separates
+`.cfg`/`.conf` from INI and adds `.directory`, reviewing all eleven configuration
+records without adding a parser or executable capability.
 The [document font reference scan](document-font-references.md) adds optional
 literal names and unresolved theme references from selected OOXML XML parts,
 with declared scope and unavailable results on budget/format failure.

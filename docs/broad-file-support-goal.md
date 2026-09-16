@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [configuration filename review](catalog-configuration-alias-review.md) separates
+generic `.cfg`/`.conf` hints from INI and adds `.directory` desktop entries. It
+reviews all eleven configuration records and their nineteen associations. All
+4,020 foundation contracts pass, including 22 new checks. The catalog now has
+245 descriptions, with 34 content-identification routes and 211 filename-only
+records. Broader alias coverage, Office fidelity, manual acceptance and fresh
+combined packaging remain open.
+
 The [source module alias review](catalog-module-alias-review.md) adds four
 TypeScript suffixes and exact Gemfile/Rakefile hints while retaining both source
 and video meanings for `.mts` and `.ts`. All 3,998 foundation checks pass,

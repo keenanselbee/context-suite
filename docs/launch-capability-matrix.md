@@ -1,9 +1,9 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.5**. This checkpoint updates catalog aliases
-after public baseline `15fd0df` and private baseline `6b8d84a`.
-Catalog schema 1, revision **2026-09-16.1**, **244 records**.
+Matrix revision: **2026-09-16.6**. This checkpoint corrects configuration filename hints
+after public baseline `e36e056` and private baseline `6b8d84a`.
+Catalog schema 1, revision **2026-09-16.2**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
 
@@ -35,7 +35,7 @@ budget with cancellation, not a guaranteed return time from every Windows driver
 | Input family | Recognition | Detailed analysis currently implemented | Transformation relationship |
 | --- | --- | --- | --- |
 | Any regular file, including empty, extensionless and unknown | Filename hints, bounded content evidence or unknown | File size, inspected extent, evidence/confidence and available facts; unknown is a useful result | No conversion inferred |
-| Catalog entries | 244 descriptions; 34 have content-identification routes and 210 are filename hints only | Plain-language typical uses, qualified evidence, optional descriptive MIME identifiers | Catalog has no executable permissions |
+| Catalog entries | 245 descriptions; 34 have content-identification routes and 211 are filename hints only | Plain-language typical uses, qualified evidence, optional descriptive MIME identifiers | Catalog has no executable permissions |
 | DDS | Supported header structure | Texture dimensions, representation, mip/array/depth and payload declarations | Separate bounded texture conversion below |
 | PNG, JPEG, GIF, BMP, WebP | Signatures and bounded headers | Available declared dimensions and format-specific header facts | Analyze does not decode pixels or certify transparency, animation or conversion eligibility |
 | WAVE, FLAC, AIFF/AIFF-C, AU | Container/header evidence | Supported rate/channel/precision/extent declarations; derived timing where justified | AIFF/AU recognition does not add conversion |

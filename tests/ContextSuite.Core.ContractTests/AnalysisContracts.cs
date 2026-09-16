@@ -115,6 +115,29 @@ internal static class AnalysisContracts
         check(Inspect("HEADER    AUTHORED TEXT ONLY\n"u8.ToArray(), "model.pdb").Identity is
             { FormatId: "protein-data-bank", Basis: IdentificationBasis.Filename, Confidence: IdentificationConfidence.Likely },
             "analysis: readable PDB text is a qualified molecular filename hint, not a validated structure");
+        foreach (var (name, id, content) in new[] {
+            ("nginx.CONF", "configuration", "events { worker_connections 64; }"),
+            ("setup.CFG", "configuration", "[metadata]\nname = fixture"),
+            ("settings.INI", "ini", "[settings]\nenabled = true"),
+            ("menu.DIRECTORY", "desktop-entry", "[Desktop Entry]\nType=Directory\nName=Fixture") })
+        {
+            var hinted = Inspect(Encoding.UTF8.GetBytes(content), name);
+            check(hinted.Identity is { Basis: IdentificationBasis.Filename, Confidence: IdentificationConfidence.Likely } &&
+                hinted.Identity.FormatId == id,
+                "analysis: configuration names describe a likely use without certifying syntax: " + name);
+            check(Inspect([0, 1, 2, 255], name).Identity is
+                { Basis: IdentificationBasis.Filename, Confidence: IdentificationConfidence.Likely } &&
+                !Inspect([0, 1, 2, 255], name).Warnings.IsEmpty,
+                "analysis: binary configuration filenames retain an explicit unverified warning: " + name);
+            foreach (var (bytes, format) in new[] { ("{}"u8.ToArray(), "json"),
+                ("<root/>"u8.ToArray(), "xml"), ("%PDF-1.7\n"u8.ToArray(), "pdf") })
+                check(Inspect(bytes, name).Identity is { Basis: IdentificationBasis.Content } identity && identity.FormatId == format,
+                    "analysis: recognized content overrides configuration filename hints: " + name + " / " + format);
+        }
+        check(catalog.FindByName("nginx.conf").Single().Id == "configuration" &&
+            catalog.FindByName("setup.cfg").Single().Id == "configuration" &&
+            catalog.FindByName("settings.ini").Single().Id == "ini",
+            "analysis catalog: broad configuration suffixes no longer imply INI syntax");
         var sourceText = "print('Hello')\n"u8.ToArray();
         foreach (var (name, id) in new[] { ("script.py", "python"), ("Dockerfile", "dockerfile"),
             ("data.json", "json"), ("CMakeLists.txt", "cmake"), ("README.md", "markdown"), ("app.ts", "typescript"),

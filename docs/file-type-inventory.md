@@ -1,7 +1,7 @@
 Common File Type Inventory
 ===========================
 
-Catalog revision: 2026-09-16.1; 244 records. This is a descriptive
+Catalog revision: 2026-09-16.2; 245 records. This is a descriptive
 inventory, not a list of supported conversions or complete decoders. Multiple
 extensions and related variants may share a record; aliases are not counted
 separately. Known filename matches and longest compound suffixes take precedence
@@ -27,6 +27,9 @@ The [source/configuration purpose review](catalog-source-code-review.md) checks
 The [module and build filename review](catalog-module-alias-review.md) adds four
 TypeScript suffixes and the exact Ruby names Gemfile/Rakefile, preserving shared
 video meanings and qualified filename confidence.
+The [configuration filename review](catalog-configuration-alias-review.md) separates
+`.cfg`/`.conf` from INI and adds the `.directory` desktop-entry hint, reviewing
+all eleven configuration records and their nineteen associations.
 The [data purpose review](catalog-data-review.md) covers 37 Data records and
 updates fifteen descriptions/references; it does not certify all format variants.
 The [video purpose review](catalog-video-review.md) covers ten records and updates
@@ -85,6 +88,7 @@ for actual parsed facts and current resource limits.
 | chm | Compiled HTML Help | `.chm` | Filename hint only |
 | cmake | CMake build configuration | `CMakeLists.txt`, `.cmake` | Filename hint; text sampling |
 | collada | COLLADA scene | `.dae` | Filename hint; text sampling |
+| configuration | Application configuration | `.cfg`, `.conf` | Filename hint; text sampling |
 | cpp | C++ source or header | `.cpp`, `.cc`, `.cxx`, `.hpp`, `.hh`, `.hxx`, `.h` | Filename hint; text sampling |
 | crx | Chrome extension | `.crx` | Filename hint only |
 | csharp | C# source | `.cs` | Filename hint; text sampling |
@@ -96,7 +100,7 @@ for actual parsed facts and current resource limits.
 | dbase | dBASE table | `.dbf` | Filename hint only |
 | dds | DDS texture | `.dds` | DDS signature; supported header parsing can confirm structure, not pixels |
 | deb | Debian package | `.deb` | Filename hint only |
-| desktop-entry | Desktop entry | `.desktop` | Filename hint; text sampling |
+| desktop-entry | Desktop entry | `.desktop`, `.directory` | Filename hint; text sampling |
 | dicom | DICOM medical data | `.dcm`, `.dicom` | Filename hint only |
 | djvu | DjVu document | `.djvu`, `.djv` | Filename hint only |
 | dmg | Apple disk image | `.dmg` | Filename hint only |
@@ -143,7 +147,7 @@ for actual parsed facts and current resource limits.
 | ico | Windows icon | `.ico` | Filename hint only |
 | iges | IGES CAD data | `.iges`, `.igs` | Filename hint; text sampling |
 | illustrator | Illustrator artwork | `.ai` | Filename hint only |
-| ini | INI-style configuration | `.ini`, `.cfg`, `.conf` | Filename hint; text sampling |
+| ini | INI-style configuration | `.ini` | Filename hint; text sampling |
 | iso | ISO disc image | `.iso` | Filename hint only |
 | java | Java source | `.java` | Filename hint; text sampling |
 | java-archive | Java archive | `.jar`, `.war`, `.ear`, `.rar` | Filename hint only |

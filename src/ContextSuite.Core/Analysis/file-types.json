@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-16.1",
+  "revision": "2026-09-16.2",
   "types": [
     {
       "id": "3gp",
@@ -409,6 +409,18 @@
       "textCompatible": true
     },
     {
+      "id": "configuration",
+      "name": "Application configuration",
+      "family": "Configuration or system data",
+      "commonUses": "Settings or instructions for an application. The filename does not identify the application or the syntax it expects.",
+      "extensions": [
+        ".cfg",
+        ".conf"
+      ],
+      "source": "https://nginx.org/en/docs/beginners_guide.html",
+      "textCompatible": true
+    },
+    {
       "id": "cpp",
       "name": "C++ source or header",
       "family": "Source code",
@@ -547,11 +559,12 @@
       "id": "desktop-entry",
       "name": "Desktop entry",
       "family": "Configuration or system data",
-      "commonUses": "Application-launcher or related desktop integration settings on freedesktop-compatible systems.",
+      "commonUses": "Application launchers, links and menu-directory descriptions on freedesktop-compatible systems.",
       "extensions": [
-        ".desktop"
+        ".desktop",
+        ".directory"
       ],
-      "source": "https://specifications.freedesktop.org/desktop-entry-spec/latest/",
+      "source": "https://specifications.freedesktop.org/desktop-entry/latest/file-naming.html",
       "textCompatible": true
     },
     {
@@ -1161,11 +1174,9 @@
       "id": "ini",
       "name": "INI-style configuration",
       "family": "Configuration or system data",
-      "commonUses": "Application settings stored in sections and named values; .cfg and .conf can use other formats.",
+      "commonUses": "Application settings organized into sections and named values; exact syntax varies by application.",
       "extensions": [
-        ".ini",
-        ".cfg",
-        ".conf"
+        ".ini"
       ],
       "source": "https://docs.python.org/3/library/configparser.html",
       "textCompatible": true
