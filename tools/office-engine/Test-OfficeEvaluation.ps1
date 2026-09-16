@@ -1,10 +1,12 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $PreparedDirectory, [Parameter(Mandatory)][string] $PdfPreparedDirectory,
-    [switch] $ExcelNativeDateSnapshots, [string] $NativeDateProbeDirectory,
+    [switch] $ExcelNativeDateSnapshots, [string] $NativeDateProbeDirectory, [string] $WorkbookSaveFixtures, [switch] $WorkbookSaveFirst, [switch] $WorkbookSaveCapacity,
     [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelFormulaDates, [switch] $ExcelDateSnapshots, [switch] $ExcelPrint, [switch] $WordRevisions, [switch] $WordFinalText, [switch] $WordRevisionStructures, [switch] $PowerPointSlides, [switch] $EmbeddedImages)
 $ErrorActionPreference = 'Stop'
-if ($ExcelNativeDateSnapshots -ne [bool]$NativeDateProbeDirectory) { throw 'Native date mode requires its prepared probe directory, exclusively.' }
-if ($ExcelNativeDateSnapshots -and @($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelFormulaDates, $ExcelDateSnapshots, $ExcelPrint, $WordRevisions, $WordFinalText, $WordRevisionStructures, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count) { throw 'Choose one evaluation mode at a time.' }
+if ($WorkbookSaveFirst -and -not $WorkbookSaveFixtures) { throw 'Workbook-first comparison requires authored workbook fixtures.' }
+if ($WorkbookSaveCapacity -and (-not $WorkbookSaveFixtures -or $WorkbookSaveFirst)) { throw 'Capacity comparison requires authored workbooks and the original save order.' }
+if (($ExcelNativeDateSnapshots -or [bool]$WorkbookSaveFixtures) -ne [bool]$NativeDateProbeDirectory) { throw 'Native date/workbook mode requires its prepared probe directory, exclusively.' }
+if (($ExcelNativeDateSnapshots -and $WorkbookSaveFixtures) -or (($ExcelNativeDateSnapshots -or $WorkbookSaveFixtures) -and @($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelFormulaDates, $ExcelDateSnapshots, $ExcelPrint, $WordRevisions, $WordFinalText, $WordRevisionStructures, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count)) { throw 'Choose one evaluation mode at a time.' }
 if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelFormulaDates, $ExcelDateSnapshots, $ExcelPrint, $WordRevisions, $WordFinalText, $WordRevisionStructures, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $office = (Resolve-Path -LiteralPath $PreparedDirectory).Path
@@ -36,7 +38,7 @@ if ((Get-FileHash -LiteralPath $probe).Hash -ne $build.sha256 -or
 }
 $qpdf = Join-Path $pdf 'unpacked\qpdf-12.4.1-msvc64\bin\qpdf.exe'
 $probeArguments = @($office, $qpdf, $probe)
-if ($ExcelNativeDateSnapshots) {
+if ($ExcelNativeDateSnapshots -or $WorkbookSaveFixtures) {
     $dateRoot = (Resolve-Path -LiteralPath $NativeDateProbeDirectory).Path
     if (-not $dateRoot.StartsWith((Join-Path $repository '.codex-temp\office-date-native\'), [StringComparison]::OrdinalIgnoreCase)) { throw 'Use an owned native date probe build.' }
     $dateBuild = Get-Content -LiteralPath (Join-Path $dateRoot 'build.json') -Raw | ConvertFrom-Json
@@ -44,7 +46,8 @@ if ($ExcelNativeDateSnapshots) {
     if ($dateBuild.executable -ne $dateProbe -or (Get-FileHash -LiteralPath $dateProbe).Hash -ne $dateBuild.sha256 -or
         (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'DateProbe\Probe.cpp')).Hash -ne $dateBuild.sourceSha256 -or
         (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'DateProbe\CMakeLists.txt')).Hash -ne $dateBuild.cmakeSha256) { throw 'Native date probe identity changed.' }
-    $probeArguments = @('--native-excel-date-snapshots', $office, $qpdf, $probe, $dateProbe)
+    $probeArguments = if ($WorkbookSaveFixtures) { @($(if ($WorkbookSaveCapacity) { '--native-workbook-capacity' } elseif ($WorkbookSaveFirst) { '--native-workbook-first' } else { '--native-workbook-save' }), $office, (Resolve-Path -LiteralPath $WorkbookSaveFixtures).Path, $dateProbe) }
+        else { @('--native-excel-date-snapshots', $office, $qpdf, $probe, $dateProbe) }
 }
 if ($ProfileMatrix) { $probeArguments += 'ProfileMatrix' }
 if ($ProfileLengths) { $probeArguments += 'ProfileLengths' }

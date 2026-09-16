@@ -5,13 +5,25 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [48-sheet workbook investigation](excel-calculated-date-guard.md#workbook-capacity-and-pdf-admission)
+fixes two independent failures: the calculated-copy save exhausted its 512 MiB
+process allowance, and PDF admission expanded ordinary reference chains beyond
+the rewrite oracle's depth limit. The host can now use the existing 1 GiB shared
+job budget; bounded admission checks every reference without recursive expansion.
+All 4,120 foundation contracts and 43 actual application checks pass. Independent
+inspection of four 48-page PDFs preserves exact text, geometry and control pixels
+in 144 comparisons. Originals are unchanged and six native contexts are removed.
+Early-date fidelity, unfinished-write
+interruption, broader acceptance and fresh release packaging remain open.
+
 The [unfinished-workbook experiment](excel-calculated-date-guard.md#unfinished-write-experiment)
 does not pass the stricter partial-write timing check. It also exposes a native
 failure on an authored 48-sheet XLSX after a structurally valid 48-page PDF is
 written but before a workbook copy appears. Six disposable profiles/mappings are
 removed and original hashes are unchanged. Speculative production/harness edits
-were removed; reproducible fixtures and failed evidence remain. Diagnose that
-native failure and its misleading error message; do not count these attempts as
+were removed; reproducible fixtures and failed evidence remain. That native
+failure is diagnosed above; its misleading error message still needs an
+Office-specific explanation. Do not count these attempts as
 interruption or Excel fidelity acceptance.
 
 The [workbook-growth stop checks](excel-calculated-date-guard.md#stops-after-observed-workbook-growth)

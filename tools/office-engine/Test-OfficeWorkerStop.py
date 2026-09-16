@@ -21,7 +21,7 @@ def main():
     parser.add_argument("--large-fixtures", type=Path, required=True)
     parser.add_argument("--fixtures", type=Path, required=True)
     parser.add_argument("--workbook-copy", action="store_true", help="Stop XLSX exports only after observing the calculated workbook grow.")
-    parser.add_argument("--mode", choices=("all", "cancel", "worker-loss", "deadline", "owner-loss", "startup-recovery", "app-recovery"), default="all")
+    parser.add_argument("--mode", choices=("all", "cancel", "worker-loss", "deadline", "owner-loss", "startup-recovery", "app-recovery", "diagnostic", "diagnostic-validation"), default="all")
     args = parser.parse_args()
     if not args.create_disposable_profile:
         parser.error("Explicit disposable profile authorization is required before preparation or execution.")
@@ -97,6 +97,25 @@ def main():
     if any(digest(root / name) != expected for name, expected in sources.items()):
         raise RuntimeError("Harness sources changed during build.")
     (scratch / "build.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    if args.mode in ("diagnostic", "diagnostic-validation"):
+        reports = []
+        for name, fixture in (("large", args.large_fixtures), ("ordinary", args.fixtures)):
+            evidence = scratch / "contracts" / name
+            with (scratch / (name + "-stdout.log")).open("wb") as output, (scratch / (name + "-stderr.log")).open("wb") as error:
+                result = subprocess.run([str(managed), "--office-worker-validation-diagnostic" if args.mode == "diagnostic-validation" else "--office-worker-stop-diagnostic", str(worker),
+                    str((fixture / "Excel \u00fc.xlsx").resolve()), "xlsx", str(evidence)], cwd=root, stdout=output, stderr=error)
+            profiles = list(evidence.glob("*-profile.json"))
+            if len(profiles) != 1 or not json.loads(profiles[0].read_text())["Removed"]:
+                raise RuntimeError("Diagnostic profile cleanup is incomplete; inspect retained evidence.")
+            if result.returncode != 0 and not (evidence / "failure.txt").exists():
+                raise RuntimeError("Diagnostic failure did not retain the native error.")
+            reports.append({"Name": name, "ExitCode": result.returncode, "ProfileRemoved": True})
+            print(f"Office diagnostic {name}: exit {result.returncode}; evidence {evidence}", flush=True)
+        if any(digest(Path(name)) != expected for name, expected in fixtures.items()) or any(digest(root / name) != expected for name, expected in sources.items()):
+            raise RuntimeError("Diagnostic inputs changed during execution.")
+        (scratch / "diagnostic.json").write_text(json.dumps({"Completed": True, "Reports": reports,
+            "Scope": "Direct isolated adapter diagnostics; failed exports are not acceptance."}, indent=2) + "\n")
+        return
     # The private adapter validates the complete pinned Office runtime before each launch.
     # Preserve the owner process until its bounded operations and profile cleanup finish.
     with (scratch / "stdout.log").open("wb") as output, (scratch / "stderr.log").open("wb") as error:

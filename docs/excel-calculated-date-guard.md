@@ -196,9 +196,9 @@ All six disposable profiles and registry mappings are absent. Original fixture
 hashes and retained worker files are unchanged. Independent ZIP inspection
 confirms the five produced workbook copies are complete. The 48-sheet PDF passes
 qpdf structure checks and contains 48 pages; this is not text/layout acceptance.
-Its native failure remains unexplained and needs diagnosis before broader Excel
-reliability is accepted. The worker's generic damaged-image message also fails
-to explain this Office error usefully.
+At that checkpoint its native failure remained unexplained. The investigation
+below diagnoses the capacity failure; the worker's generic damaged-image message
+still needs an Office-specific explanation for failures that remain.
 
 The authored fixture generator now supports `--workbook-stop-fixtures <fresh
 isolation-directory> <sheets> [bitmap-size]`: 8, 12, 24 or 48 sheets, 384- or
@@ -209,3 +209,81 @@ mode retains identical package-part contents. Fresh reproduction of the 48-,
 Evidence is `.codex-temp/workbook-write-verification-fd6eac32df7747fd82eff2df26341269/results.json`;
 its `InterruptionMatrixPassed` is explicitly false. Production sources, native
 limits, engine pins and release versions remain unchanged.
+
+
+Workbook capacity and PDF admission
+-----------------------------------
+
+The authored 48-sheet XLSX exposed two independent production limits. The native
+engine wrote a valid PDF but failed to save its calculated workbook near the
+512 MiB per-process allowance. Raising that allowance to 1 GiB completed the
+same exports at 571,764,736 bytes (about 545 MiB) peak process commitment. The
+aggregate job limit remains 1 GiB, shared by the host and its descendants. The
+eight-process limit, timeout, profile/grant boundaries and native host pin are
+unchanged.
+
+Evaluation-only diagnostics now retain the library's bounded save error and
+Windows job peak memory. The old native host's `Windows error 5` suffix was not
+proof of a filesystem permission failure: the library save does not establish
+that `GetLastError` describes its failure. Ordinary-process comparisons under
+the same job limits reproduce the failed save. Saving the workbook before its
+PDF still fails near 512 MiB, so changing export order is not a fix.
+
+The comparison evidence is under
+`.codex-temp/office-engine/a56167ab9fb54686971491918ccd26f8`:
+
+| Run | Result |
+| --- | --- |
+| `workbook-save-2b98a7680f554782b0fee3d2651ed2e8` | Original order, 512 MiB: save fails at 536,784,896 peak process bytes |
+| `workbook-save-777bb8eb83d1459eb7199b671b851b72` | Workbook first, 512 MiB: save fails at 536,469,504 peak process bytes |
+| `workbook-save-410170ff6fe8484889bc0d37f2481922` | Original order, 1 GiB: both PDFs and workbook complete at 571,764,736 peak process bytes |
+
+These are passive authored-fixture comparisons, not AppContainer isolation
+acceptance. Original hashes/timestamps and profile calculation settings remain
+unchanged. The source-bound evaluation helper is
+`.codex-temp/office-date-native/d707c0c43b744c4cb3b6cb25b0901dac`;
+the shipping native host was not rebuilt or repinned. All sixteen evaluation
+process-lifetime checks pass in
+`.codex-temp/office-workbook-process-contracts-024ea996664a44e8a82814eb1c15397b`.
+
+The first application run with the new memory allowance completed the workbook
+save but failed independent PDF admission. Its 48-page PDF's ordinary reference
+chains exceeded the rewrite oracle's recursive hashing depth. Admission now
+validates every object and reference through a bounded flat scan. Forbidden
+content, schema, JSON nesting, byte, node and object checks remain; full rewrite
+hashing keeps its original depth and canonical-byte limits. All **4,120 foundation
+contracts pass**, including ten new long-outline/reference regression checks.
+The source-bound log and receipt use `.codex-temp/office-capacity-foundation`.
+
+The failed application run is
+`.codex-temp/office-execution/f5109065be3c41c3b7a72275ab1fbbf4`;
+the confirming direct validation diagnostic is
+`.codex-temp/office-worker/bd11a06d73c5435493ef6bb596e7da29`.
+All five profiles and registry mappings from these attempts are absent; the
+application contexts are retired. The read-only reconciliation is retained in
+`.codex-temp/office-capacity-verification.json`. Failed attempts remain evidence,
+not passed matrices.
+
+With both fixes, the fresh actual application run passes **43 checks** in
+`.codex-temp/office-execution/a05e947d5d7c4ae0ae95aaa26ba3fb79`. It publishes the
+48-sheet Excel PDF and ordinary Word/PowerPoint copies, exercises collision,
+publication failure, cancellation and obstructed-cleanup retry, preserves all
+original bytes/timestamps and removes all six owned profiles, mappings, contexts
+and journals. `exit.json` records exit zero and unchanged source/fixture/binary
+inputs. Both Release builds have zero warnings/errors.
+
+The [capacity inspector](../tools/office-engine/Probe/ExcelWorkbookCapacityInspection.cs)
+independently checks four PDFs: the prior 512 MiB attempt's completed PDF, the
+successful capacity comparison's before/after PDFs, and the application-published
+copy. qpdf splits each into 48 pages; PDFium inspects and renders each page at
+96 dpi. All authored sheet labels and their order, 612-by-792-point page geometry
+and exact control pixels match across **144 page comparisons**. The receipt is
+`contracts/capacity-inspection-932efc4ac0e74bab89ba9175e34c864b/results.json`
+under the fresh application run. Inspection source/input identities and exit zero
+are recorded in `.codex-temp/office-capacity-verification.json`. This fixture has
+exact equality; it does not broaden the owner's separate spacing tolerance.
+
+These fixes do not establish cancellation before a workbook ZIP finishes, fix
+early-1900 date rendering, complete broader Office fidelity, or provide fresh
+combined release packaging. The resource allowance is a bounded capacity fix,
+not a claim that every admitted 64 MiB workbook can be rendered within it.

@@ -5,6 +5,10 @@ using System.Text.Json;
 using ContextSuite.Core.Analysis;
 
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
+if (args is ["--inspect-workbook-capacity", var capacityReport, var capacityControl, var capacityEvaluation, var capacityQpdf, var capacityPdfium])
+    return await ExcelWorkbookCapacityInspection.RunAsync(capacityReport, capacityControl, capacityEvaluation, capacityQpdf, capacityPdfium);
+if (args is ["--native-workbook-save" or "--native-workbook-first" or "--native-workbook-capacity", var savePrepared, var saveFixtures, var saveNative])
+    return await ExcelWorkbookSaveEvaluation.RunAsync(savePrepared, saveFixtures, saveNative, args[0] == "--native-workbook-first", args[0] == "--native-workbook-capacity" ? 1024 : 512);
 if (args is ["--native-excel-date-snapshots", var nativeDatePrepared, var nativeDateQpdf, var nativeDatePdfium, var nativeDateProbe])
     return await ExcelNativeDateEvaluation.RunAsync(nativeDatePrepared, nativeDateQpdf, nativeDatePdfium, nativeDateProbe);
 if (args.Length >= 2 && args[0] is "--worker-stop-fixtures" or "--workbook-stop-fixtures")

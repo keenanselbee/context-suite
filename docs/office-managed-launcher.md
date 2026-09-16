@@ -23,9 +23,16 @@ ambient environment and accepts no command arguments for the native host. Only
 NUL input and separate stdout/stderr write handles are inherited. It verifies
 the actual AppContainer state, expected SID and empty capability list while the
 child is suspended. Job limits are read back after being set: eight processes,
-512 MiB per process, 1 GiB aggregate and termination when the last job handle
+1 GiB per process, 1 GiB aggregate and termination when the last job handle
 closes. This is process/resource containment, not complete content/network
 acceptance for Office.
+
+The per-process allowance previously stopped an authored 48-sheet workbook's
+calculated-copy save near 512 MiB. The host may now use the existing aggregate
+allowance; its descendants still share that same 1 GiB total. The
+[workbook capacity investigation](excel-calculated-date-guard.md#workbook-capacity-and-pdf-admission)
+records the measured failure, successful comparison and application verification.
+Earlier launcher runs below used the original 512 MiB per-process limit.
 
 The default deadline is two minutes; internal callers can shorten it but cannot
 extend it. Stdout is bounded to the 4,096-byte completion protocol and stderr to

@@ -70,7 +70,9 @@ void CALLBACK WorkTimer(HWND, UINT, UINT_PTR timer, DWORD) {
 
 int wmain(int argc, wchar_t** argv) {
     try {
-        Require(argc == 5, "Expected runtime program, source, owned profile and output directory");
+        const bool workbookFirst = argc == 6 && std::wstring(argv[5]) == L"--workbook-first";
+        const bool workbookSave = workbookFirst || (argc == 6 && std::wstring(argv[5]) == L"--workbook-save");
+        Require(argc == 5 || workbookSave, "Expected runtime program, source, owned profile and output directory");
         const fs::path program(argv[1]), source(argv[2]), profile(argv[3]), output(argv[4]);
         for (const auto& path : { program, source, profile, output }) {
             Require(path.is_absolute() && path.native().find(L"\\.codex-temp\\") != std::wstring::npos, "Repository scratch paths only");
@@ -79,7 +81,7 @@ int wmain(int argc, wchar_t** argv) {
                 Require(attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_REPARSE_POINT) == 0, "Ordinary existing fixture paths");
             }
         }
-        Require(source.extension() == L".xlsx" && fs::file_size(source) > 0 && fs::file_size(source) <= 1024 * 1024, "Bound authored source");
+        Require(source.extension() == L".xlsx" && fs::file_size(source) > 0 && fs::file_size(source) <= (workbookSave ? 64u : 1u) * 1024 * 1024, "Bound authored source");
         const auto before = output / L"before.pdf", after = output / L"after.pdf", snapshot = output / source.filename();
         Require(!fs::exists(before) && !fs::exists(after) && !fs::exists(snapshot), "Fresh output files");
         Require(!fs::exists(output / L"progress.txt"), "Fresh progress evidence");
@@ -97,7 +99,7 @@ int wmain(int argc, wchar_t** argv) {
         const auto initialize = reinterpret_cast<OfficeKit* (*)(const char*, const char*)>(GetProcAddress(module, "libreofficekit_hook_2"));
         Require(initialize != nullptr, "Pinned embedded hook");
         const auto kit = initialize(Utf8(program.native()).c_str(), FileUri(profile).c_str());
-        Require(kit && kit->methods && kit->methods->bytes >= sizeof(OfficeMethods) && kit->methods->destroy && kit->methods->loadWithOptions && kit->methods->runLoop, "Engine ABI");
+        Require(kit && kit->methods && kit->methods->bytes >= sizeof(OfficeMethods) && kit->methods->destroy && kit->methods->loadWithOptions && kit->methods->runLoop && kit->methods->error && kit->methods->freeError, "Engine ABI");
         mark("engine-initialized");
         inExecute = reinterpret_cast<bool (*)()>(GetProcAddress(module, "?IsInExecute@Application@@SA_NXZ"));
         onMainThread = reinterpret_cast<bool (*)()>(GetProcAddress(module, "?IsMainThread@Application@@SA_NXZ"));
@@ -115,15 +117,26 @@ int wmain(int argc, wchar_t** argv) {
                 Require(document->methods->type(document) == 1, "Spreadsheet family");
                 mark("document-loaded");
                 const char* options = R"({"UseLosslessCompression":{"type":"boolean","value":"true"},"ReduceImageResolution":{"type":"boolean","value":"false"},"UseTaggedPDF":{"type":"boolean","value":"true"},"ExportBookmarks":{"type":"boolean","value":"true"},"ExportNotes":{"type":"boolean","value":"false"},"SinglePageSheets":{"type":"boolean","value":"false"},"ExportFormFields":{"type":"boolean","value":"false"},"IsAddStream":{"type":"boolean","value":"false"},"EncryptFile":{"type":"boolean","value":"false"},"SelectPdfVersion":{"type":"long","value":"17"}})";
-                Require(document->methods->saveAs(document, FileUri(before).c_str(), "pdf", options) != 0, "PDF before copy-save");
+                auto saveWorkbook = [&] {
+                  // No TakeOwnership: keep the same loaded document and original URL.
+                  if (!document->methods->saveAs(document, FileUri(snapshot).c_str(), "xlsx", nullptr)) {
+                    // Evaluation-only, authored sources: retain the library error
+                    // here. Production diagnostics never expose this text.
+                    char* value = kit->methods->error(kit);
+                    const std::string detail = value ? std::string(value, strnlen_s(value, 4096)) : "No library error";
+                    if (value) kit->methods->freeError(value);
+                    throw std::runtime_error("Calculated workbook copy: " + detail);
+                  }
+                  mark("snapshot-exported");
+                };
+                if (workbookFirst) saveWorkbook();
+                Require(document->methods->saveAs(document, FileUri(before).c_str(), "pdf", options) != 0, "First PDF export");
                 mark("before-exported");
-                // No TakeOwnership: keep the same loaded document and original URL.
-                Require(document->methods->saveAs(document, FileUri(snapshot).c_str(), "xlsx", nullptr) != 0, "Calculated workbook copy");
-                mark("snapshot-exported");
+                if (!workbookFirst) saveWorkbook();
                 Require(document->methods->saveAs(document, FileUri(after).c_str(), "pdf", options) != 0, "PDF after copy-save");
                 mark("after-exported");
                 for (const auto& path : { before, snapshot, after })
-                    Require(fs::file_size(path) > 0 && fs::file_size(path) <= 16 * 1024 * 1024, "Bound completed output");
+                    Require(fs::file_size(path) > 0 && fs::file_size(path) <= (workbookSave ? 64u : 16u) * 1024 * 1024, "Bound completed output");
                 completed = true;
             } catch (...) { failure = std::current_exception(); }
             destroyer = std::thread([&] { kit->methods->destroy(kit); destroyed = true; });

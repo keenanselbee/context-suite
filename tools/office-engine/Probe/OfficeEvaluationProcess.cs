@@ -10,13 +10,15 @@ using Microsoft.Win32.SafeHandles;
 // access and must only execute the harness's authored passive fixtures.
 internal static class OfficeEvaluationProcess
 {
-    internal sealed record Result(string Output, string Error, int ProcessId, uint TotalProcesses, uint ActiveProcessesAfterCleanup, long Milliseconds);
+    internal sealed record Result(string Output, string Error, int ProcessId, uint TotalProcesses, uint ActiveProcessesAfterCleanup, long Milliseconds,
+        ulong PeakProcessBytes = 0, ulong PeakJobBytes = 0, ulong ProcessLimitBytes = 512 * 1024 * 1024);
 
     internal static async Task<Result> RunAsync(string executable, IEnumerable<string> arguments, string directory,
         IReadOnlyDictionary<string, string>? overrides = null, CancellationToken token = default,
-        TimeSpan? timeout = null, Func<int, Func<Process, bool>, CancellationToken, Task>? observe = null)
+        TimeSpan? timeout = null, Func<int, Func<Process, bool>, CancellationToken, Task>? observe = null, int processMemoryMiB = 512)
     {
         token.ThrowIfCancellationRequested();
+        if (processMemoryMiB is not (512 or 1024)) throw new ArgumentOutOfRangeException(nameof(processMemoryMiB));
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
         using var observationCancellation = CancellationTokenSource.CreateLinkedTokenSource(deadline.Token);
         deadline.CancelAfter(timeout ?? TimeSpan.FromSeconds(60));
@@ -25,7 +27,7 @@ internal static class OfficeEvaluationProcess
         var limits = new ExtendedLimits
         {
             Basic = new BasicLimits { Flags = 0x2000 | 0x100 | 0x200 | 8, ActiveProcesses = 8 },
-            ProcessMemory = 512 * 1024 * 1024, JobMemory = 1024 * 1024 * 1024
+            ProcessMemory = (nuint)processMemoryMiB * 1024 * 1024, JobMemory = 1024 * 1024 * 1024
         };
         Require(SetInformationJobObject(job, 9, ref limits, (uint)Marshal.SizeOf<ExtendedLimits>()));
         using var stdout = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
@@ -72,9 +74,11 @@ internal static class OfficeEvaluationProcess
             await observation;
             await Task.WhenAll(readers);
             deadline.Token.ThrowIfCancellationRequested();
-            if (process.ExitCode != 0) throw new IOException($"Evaluation child exited {process.ExitCode}: {await errors}");
+            Require(QueryExtendedInformation(job, 9, out var usage, (uint)Marshal.SizeOf<ExtendedLimits>(), IntPtr.Zero));
+            if (process.ExitCode != 0) throw new IOException($"Evaluation child exited {process.ExitCode}; process limit bytes {limits.ProcessMemory}, peak process bytes {usage.PeakProcessMemory}, peak job bytes {usage.PeakJobMemory}: {await errors}");
             var accounting = await Empty(job);
-            return new(await output, await errors, process.Id, accounting.TotalProcesses, accounting.ActiveProcesses, timer.ElapsedMilliseconds);
+            return new(await output, await errors, process.Id, accounting.TotalProcesses, accounting.ActiveProcesses, timer.ElapsedMilliseconds,
+                (ulong)usage.PeakProcessMemory, (ulong)usage.PeakJobMemory, (ulong)limits.ProcessMemory);
         }
         finally
         {
@@ -207,6 +211,8 @@ internal static class OfficeEvaluationProcess
     private static extern bool SetInformationJobObject(SafeFileHandle job, int kind, ref ExtendedLimits limits, uint bytes);
     [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool QueryInformationJobObject(SafeFileHandle job, int kind, out Accounting accounting, uint bytes, IntPtr returned);
+    [DllImport("kernel32.dll", EntryPoint = "QueryInformationJobObject", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool QueryExtendedInformation(SafeFileHandle job, int kind, out ExtendedLimits limits, uint bytes, IntPtr returned);
     [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool TerminateJobObject(SafeFileHandle job, uint exitCode);
     [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
