@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.3**. This checkpoint adds optional Office staging
-to public baseline `cd3f8ec`; private baseline `616d7ee` is unchanged.
+Matrix revision: **2026-09-16.4**. This checkpoint adds known-date refusal
+to public baseline `9db95eb` and private baseline `616d7ee`.
 Catalog schema 1, revision **2026-09-14.1**, **244 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
@@ -176,9 +176,11 @@ accept changed dates, missing content, new page breaks or substituted fonts.
 
 The [early-1900 Excel experiment](excel-date-system-evaluation.md) still has six
 incorrect displayed dates despite successful export. A bounded stored-numeric-date
-inspection now returns separate preflight evidence; no production correction
-or publication guard is established. General XLSX fidelity cannot be accepted
-until this is addressed. Native file/profile ownership and interruption evidence
+inspection now returns separate preflight evidence and blocks positively
+identified risks before application preparation or private export. The renderer
+is not corrected, and formula/unsupported-inspection cases still need a complete
+policy. General XLSX fidelity cannot be accepted until this is addressed.
+Native file/profile ownership and interruption evidence
 also do not by themselves close the separate
 [Office network-isolation evidence](office-isolation-evaluation.md).
 

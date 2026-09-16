@@ -7,6 +7,13 @@ complete with unchanged originals, but only 15 of 21 displayed values match the
 independently authored Excel expectations. This is a fidelity finding, not an
 accepted customer conversion matrix.
 
+Current preflight now refuses a workbook when the bounded stored-date inspection
+positively identifies this early-1900 risk. The application, context preparation
+and private export path share that refusal. This prevents the demonstrated
+incorrect output; it does not correct the renderer or settle whether refusal is
+acceptable for launch. Formula results after recalculation and unsupported
+formatting/inspection cases still require a complete date policy.
+
 
 Fixture and independent expectations
 ------------------------------------
@@ -131,9 +138,58 @@ dotnet run --project tools/office-engine/Probe/Office.Evaluation.csproj -c Relea
   --inspect-excel-stored-dates '<original Excel date evaluation directory>'
 ```
 
-The six PDF date mismatches remain unresolved. Next work must connect a complete
-date policy to execution/publication, including formula and unsupported-format
-cases; this inspection component alone does not satisfy that requirement.
+The six retained PDF date mismatches remain unresolved. The later known-date
+refusal below prevents those positively identified workbooks from entering new
+exports. Next work must complete date policy for formula and unsupported-format
+cases and resolve the required launch behavior; detection and refusal do not
+establish corrected rendering.
+
+
+Known-date conversion refusal
+-----------------------------
+
+`OfficeSourcePreflight` retains the XLSX identity and stored-date evidence while
+returning an explanation when `EarlyDateCells` is positive. The application
+reports the document as unsupported before asking about calculation or requesting
+paid admission. Context preparation repeats the check on its source lease before
+creating any root, journal or snapshot. The private adapter repeats it on the
+fingerprinted read-only snapshot before opening the native runtime and returns
+the same explanation. Both cached-value and recalculation modes are affected;
+retry cannot bypass the check. The user is directed to export from Excel, and
+Analyze remains available.
+
+The check uses the existing declared worksheet scan, including hidden or unused
+declared parts, without trying to infer which cells will be printed. A modern
+date, ordinary number, elapsed duration or the 1904 date system does not trigger
+this particular refusal. That absence is not a fidelity certificate. Unavailable
+inspection counts remain unavailable; this change neither claims those cases
+are safe nor resolves their pending rendering/publication policy.
+
+All **3,656 foundation contracts** pass, including application command/retry and
+preparation checks, at
+`.codex-temp/office-date-refusal-674a449ccc8c403db0d851997200513c`.
+All **24 private adapter checks** pass at
+`.codex-temp/office-date-refusal-85ce699330e144de8978650f492e42e5`.
+The private checks cover both calculation modes on the three retained authored
+workbooks. Affected workbooks fail at source preflight; the 1904 control reaches
+runtime lookup. The test supplies no native host and creates no native profile
+or PDF. Original bytes/timestamps and recorded relevant source inputs are
+unchanged. Both contract projects build in Release without warnings/errors.
+
+The first private run reached the correct missing-runtime boundary for the 1904
+control but failed because its assertion caught managed file exceptions only;
+the native directory lease returns Windows error 2. The corrected assertion
+accepts only missing-file/directory errors 2/3 at that boundary. This test-only
+correction followed the passing foundation run; its production and public test
+sources remain unchanged. The failed run is retained with the foundation evidence.
+
+To rerun the focused private check after building its project:
+
+```powershell
+dotnet run --project proprietary/tests/ContextSuite.Pdf.ContractTests -c Release -- `
+  --office-date-refusal '<retained Excel date fixtures directory>' `
+  '<new .codex-temp/office-date-refusal-GUID directory>'
+```
 
 
 Evidence and limits

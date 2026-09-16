@@ -1,9 +1,13 @@
 using ContextSuite.Core.Analysis;
+using ContextSuite.Application;
+using ContextSuite.Application.Infrastructure;
+using ContextSuite.Core.Operations;
+using ContextSuite.Core.Settings;
 using System.Xml.Linq;
 
 internal static partial class DocumentAnalysisContracts
 {
-    private static async Task StoredExcelDatesAsync(Action<bool, string> check)
+    private static async Task StoredExcelDatesAsync(string scratch, Action<bool, string> check)
     {
         const string ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
         const string content = "application/vnd.openxmlformats-officedocument.spreadsheetml.";
@@ -87,7 +91,61 @@ internal static partial class DocumentAnalysisContracts
         catch (OperationCanceledException) { check(source.Position == 0, "stored Excel dates: cancellation precedes reads"); }
         using var preflightInput = new MemoryStream(Zip(Parts()), false);
         var preflight = await OfficeSourcePreflight.InspectOpenXmlAsync("fixture.xlsx", preflightInput, default);
-        check(preflight.FormatId == "xlsx" && preflight.Refusal is null && preflight.StoredDates?.EarlyDateCells == 3,
-            "stored Excel dates: preflight returns separate evidence without silently deciding pending launch policy");
+        check(preflight.FormatId == "xlsx" && preflight.Refusal?.Contains("cannot currently convert accurately") == true && preflight.StoredDates?.EarlyDateCells == 3,
+            "stored Excel dates: known date corruption refuses conversion with reason and Analyze retained");
+        foreach (var (label, parts, refused) in new[] {
+            ("explicit 1900", Parts(properties: "<workbookPr date1904='false'/>"), true),
+            ("date formula cache", formulas, true),
+            ("modern dates", Parts(values: "61 40729 40729.5"), false),
+            ("1904", Parts(properties: "<workbookPr date1904='true'/>"), false),
+            ("elapsed time", Parts("[h]:mm:ss"), false),
+            ("literal numbers", Parts("0.00"), false) })
+        {
+            using var input = new MemoryStream(Zip(parts), false);
+            var result = await OfficeSourcePreflight.InspectOpenXmlAsync("dates.xlsx", input, default);
+            check(result.FormatId == "xlsx" && (result.Refusal is not null) == refused,
+                "stored Excel dates: preflight distinguishes " + label);
+        }
+        var stage = Path.GetFullPath(Path.Combine(scratch, "office-date-refusal-" + Guid.NewGuid().ToString("N")));
+        var runtime = Path.Combine(stage, "runtime"); Directory.CreateDirectory(runtime);
+        var original = Path.Combine(stage, "dates.xlsx"); var originalBytes = Zip(Parts());
+        File.WriteAllBytes(original, originalBytes); var written = File.GetLastWriteTimeUtc(original);
+        foreach (var calculation in new[] { "cached", "recalculate" })
+        {
+            var contexts = Path.Combine(stage, calculation, "contexts");
+            try
+            {
+                using var prepared = await OfficeContextPreparation.CreateAsync(contexts, runtime, original, "xlsx", calculation, default, createContextRoot: true);
+                check(false, "stored Excel dates: known failure reached context preparation");
+            }
+            catch (InvalidDataException error)
+            { check(error.Message == preflight.Refusal && !Directory.Exists(Path.Combine(stage, calculation)),
+                "stored Excel dates: " + calculation + " refusal precedes root journal snapshot and profile creation"); }
+            using var exclusive = new FileStream(original, FileMode.Open, FileAccess.Read, FileShare.None);
+            check(exclusive.Length == originalBytes.Length && File.GetLastWriteTimeUtc(original) == written,
+                "stored Excel dates: preparation refusal releases unchanged source lease: " + calculation);
+        }
+        var worker = Path.Combine(runtime, "ContextSuite.Worker.exe");
+        foreach (var name in new[] { "office-engine/ContextSuite.OfficeHost.exe", "office-engine/runtime-files.txt", "pdf-engine/qpdf.exe", "pdf-renderer/ContextSuite.PdfRenderer.exe" })
+        {
+            var path = Path.Combine(runtime, name.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!); File.WriteAllText(path, "non-executable presence marker");
+        }
+        var access = new DirectOfficeAccess(); var prompts = 0;
+        await using (var vm = new MainViewModel(new WorkerClient(worker, Path.Combine(stage, "scratch")),
+            new SuiteSettings { Convert = new(ReplaceOriginals: true) }, new OutputPublisher(Path.Combine(stage, "publications"), null!),
+            access, Path.Combine(stage, "contexts")))
+        {
+            vm.OfficeCalculationRequested += _ => { prompts++; return Task.FromResult<string?>("cached"); };
+            vm.Admit(new(Guid.NewGuid(), "convert", "pdf", [original])); await vm.WaitForIdleAsync();
+            check(vm.Rows.Single().Result.State == OperationState.Unsupported && vm.Rows.Single().Status.Contains(preflight.Refusal!) &&
+                prompts == 0 && access.Admissions == 0, "stored Excel dates: direct command explains failure before prompts access or worker dispatch");
+            vm.RetryFailed(); await vm.WaitForIdleAsync();
+            check(vm.Rows.All(row => row.Result.State == OperationState.Unsupported) && prompts == 0 && access.Admissions == 0,
+                "stored Excel dates: retry retains the same date refusal without dispatch");
+        }
+        check(File.ReadAllBytes(original).SequenceEqual(originalBytes) && File.GetLastWriteTimeUtc(original) == written &&
+            !Directory.Exists(Path.Combine(stage, "contexts")) && !Directory.Exists(Path.Combine(stage, "publications")),
+            "stored Excel dates: direct refusal keeps original without output reservations or native context");
     }
 }

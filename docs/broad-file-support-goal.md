@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [known Excel date refusal](excel-date-system-evaluation.md#known-date-conversion-refusal)
+now stops positively identified early-1900 date risks in the application,
+preparation and private exporter before native execution. All 3,656 foundation
+and 24 focused private checks pass, preserving the originals without any native
+export or profile creation. This prevents the demonstrated incorrect output;
+corrected rendering, formula/unsupported-format handling and the owner's launch
+decision remain open.
+
 The [Office production staging path](office-production-payload.md) now requires
 explicit selection, a fresh stage and the complete independent PDF validators.
 Its pinned runtime and native host remain optional; the reserved 1.1.0 package
@@ -16,11 +24,12 @@ The [stored Excel date inspection](excel-date-system-evaluation.md#stored-value-
 now supplies bounded numeric/date-format evidence to Office preflight, separately
 from admission. All 3,643 foundation contracts pass and the three retained date
 fixtures return expected risk counts 3, 3 and 0 without source changes or a native
-export. This does not correct or authorize the six known PDF date errors. The
+export. The later refusal above blocks positively identified cases but does not
+correct the six known PDF date errors. The
 owner's refusal-versus-exact-conversion decision remains pending; formula and
 unsupported-format handling still need a complete execution/publication policy.
 
-The [launch capability matrix, revision 2026-09-16.3](launch-capability-matrix.md)
+The [launch capability matrix, revision 2026-09-16.4](launch-capability-matrix.md)
 now reconciles the implemented input/output pairs, analysis coverage, original-file
 rules and engine availability against current source. The retained 1.1.0 stage
 still verifies all 116 files, but contains no Office engine. Early-1900 Excel

@@ -114,9 +114,10 @@ External data is not refreshed. **Try again** keeps this choice for a failed
 document. These optional Office paths are undergoing isolated acceptance and
 are not included in the reserved packaged candidate. Only ordinary DOCX, XLSX
 and PPTX variants are currently admitted; legacy files, templates and macro-enabled
-documents have no current conversion path. A known early-1900 spreadsheet date
-display issue remains under development, so general spreadsheet fidelity is not
-accepted yet. Analyze remains available.
+documents have no current conversion path. If Context Suite detects affected
+dates before March 1, 1900, it keeps the workbook and asks you to export the PDF
+from Excel. Spreadsheet date fidelity remains under development; broader
+spreadsheet acceptance is incomplete. Analyze remains available.
 
 License and transfer
 --------------------

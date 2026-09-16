@@ -35,9 +35,12 @@ public sealed record OfficeSourcePreflight(FileAnalysis Analysis, string? Format
             } : null;
         if (format is null || format != analysis.Identity.FormatId)
             return new(analysis, null, "This Office document variant is not supported by the current conversion preflight. Analyze remains available.");
-        // Keep stored-date evidence separate from admission. It does not prove
-        // formula/recalculation fidelity or settle the pending launch policy.
+        // Stop the demonstrated date corruption before either calculation mode.
+        // Other dates/formulas and incomplete inspection still need separate
+        // fidelity evidence; absence of this refusal is not a rendering permit.
         var dates = format == "xlsx" ? await ExcelStoredDateInspection.ReadAsync(input, cancellationToken) : null;
+        if (dates is { EarlyDateCells: > 0 })
+            return new(analysis, format, "This workbook contains dates before March 1, 1900 that Context Suite cannot currently convert accurately. Export the PDF from Excel instead. Analyze remains available.", dates);
         return new(analysis, format, null, dates);
     }
 }
