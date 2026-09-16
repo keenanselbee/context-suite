@@ -7,20 +7,28 @@ using ContextSuite.Core.Analysis;
 // Runs only the passive fixtures authored here, never arbitrary customer documents.
 if (args is ["--native-excel-date-snapshots", var nativeDatePrepared, var nativeDateQpdf, var nativeDatePdfium, var nativeDateProbe])
     return await ExcelNativeDateEvaluation.RunAsync(nativeDatePrepared, nativeDateQpdf, nativeDatePdfium, nativeDateProbe);
-if (args is ["--worker-stop-fixtures", var stopFixtureRoot])
+if (args.Length >= 2 && args[0] is "--worker-stop-fixtures" or "--workbook-stop-fixtures")
 {
-    var folder = Path.GetFullPath(stopFixtureRoot);
+    var workbook = args[0] == "--workbook-stop-fixtures";
+    var pages = 12;
+    var bitmapSize = 384;
+    if (workbook ? args.Length is not (3 or 4) || !int.TryParse(args[2], out pages) || pages is not (8 or 12 or 24 or 48) ||
+        args.Length == 4 && (!int.TryParse(args[3], out bitmapSize) || bitmapSize is not (384 or 1024)) : args.Length != 2)
+        throw new ArgumentException("Workbook fixtures require 8, 12, 24 or 48 sheets and optional bitmap size 384 or 1024.");
+    var folder = Path.GetFullPath(args[1]);
     if (!folder.Contains("\\.codex-temp\\office-isolation\\", StringComparison.OrdinalIgnoreCase) || Directory.Exists(folder))
         throw new IOException("Use fresh owned isolation fixtures.");
     Directory.CreateDirectory(folder); OfficeFixtures.Create(folder);
-    foreach (var (family, extension) in new[] { ("Word", "docx"), ("Excel", "xlsx"), ("PowerPoint", "pptx") })
-        File.Move(OfficeExportFixture.Create(folder, family, 12), Path.Combine(folder, family + " \u00fc." + extension), true);
+    var families = workbook ? new[] { ("Excel", "xlsx") } : new[] { ("Word", "docx"), ("Excel", "xlsx"), ("PowerPoint", "pptx") };
+    foreach (var (family, extension) in families)
+        File.Move(OfficeExportFixture.Create(folder, family, pages, bitmapSize), Path.Combine(folder, family + " \u00fc." + extension), true);
     File.WriteAllText(Path.Combine(folder, "fixtures.json"), JsonSerializer.Serialize(new
     {
-        PagesPerDocument = 12,
+        ExpandedFamilies = families.Select(entry => entry.Item1).ToArray(), PagesPerDocument = pages, BitmapSize = bitmapSize,
         Files = Directory.GetFiles(folder).Select(path => new { Name = Path.GetFileName(path), Sha256 = Hash(path) }).ToArray()
     }, new JsonSerializerOptions { WriteIndented = true }));
-    Console.WriteLine("Created three passive twelve-page Office interruption fixtures.");
+    Console.WriteLine(workbook ? $"Created a passive {pages}-sheet workbook plus ordinary Word/PowerPoint controls." :
+        "Created three passive twelve-page Office interruption fixtures.");
     return 0;
 }
 

@@ -5,6 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [unfinished-workbook experiment](excel-calculated-date-guard.md#unfinished-write-experiment)
+does not pass the stricter partial-write timing check. It also exposes a native
+failure on an authored 48-sheet XLSX after a structurally valid 48-page PDF is
+written but before a workbook copy appears. Six disposable profiles/mappings are
+removed and original hashes are unchanged. Speculative production/harness edits
+were removed; reproducible fixtures and failed evidence remain. Diagnose that
+native failure and its misleading error message; do not count these attempts as
+interruption or Excel fidelity acceptance.
+
 The [workbook-growth stop checks](excel-calculated-date-guard.md#stops-after-observed-workbook-growth)
 pass 36 cancellation, worker-termination and deadline checks. Six disposable
 profiles/mappings are removed, originals remain unchanged, and three following

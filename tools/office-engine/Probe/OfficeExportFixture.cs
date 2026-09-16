@@ -7,12 +7,17 @@ using System.Text;
 internal static partial class OfficeExportFixture
 {
     internal const int Pages = 96;
-    internal static string Create(string directory, string family, int pages = Pages) => family switch
+    internal static string Create(string directory, string family, int pages = Pages, int bitmapSize = 384)
     {
-        "Word" => Create(directory, pages),
-        "Excel" or "PowerPoint" => CreateVisual(directory, family, pages),
-        _ => throw new ArgumentException("Choose Word, Excel or PowerPoint.", nameof(family))
-    };
+        if (bitmapSize is not (384 or 1024) || (long)pages * bitmapSize * bitmapSize * 3 > 60 * 1024 * 1024)
+            throw new ArgumentOutOfRangeException(nameof(bitmapSize));
+        return family switch
+        {
+            "Word" when bitmapSize == 384 => Create(directory, pages),
+            "Excel" or "PowerPoint" => CreateVisual(directory, family, pages, bitmapSize),
+            _ => throw new ArgumentException("Choose Word, Excel or PowerPoint; enlarged bitmaps are for Excel/PowerPoint.", nameof(family))
+        };
+    }
 
     internal static string Create(string directory, int pages = Pages)
     {
@@ -46,9 +51,9 @@ internal static partial class OfficeExportFixture
         { using var entry = zip.CreateEntry(name).Open(); using var writer = new StreamWriter(entry, new UTF8Encoding(false)); writer.Write(value); }
     }
 
-    private static byte[] Bitmap(int seed)
+    private static byte[] Bitmap(int seed, int size = 384)
     {
-        const int size = 384; var bytes = new byte[54 + size * size * 3];
+        var bytes = new byte[54 + size * size * 3];
         bytes[0] = (byte)'B'; bytes[1] = (byte)'M';
         Number(2, bytes.Length); Number(10, 54); Number(14, 40); Number(18, size); Number(22, -size);
         bytes[26] = 1; bytes[28] = 24; Number(34, bytes.Length - 54);

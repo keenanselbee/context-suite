@@ -6,7 +6,7 @@ internal static partial class OfficeExportFixture
     // Clone only our passive authored template, with one distinct bitmap per sheet/slide.
     // Explicit print areas and slide order make the full-export page count independent
     // of the interruption observer. There are no formulas, links or hidden pages here.
-    private static string CreateVisual(string directory, string family, int pages)
+    private static string CreateVisual(string directory, string family, int pages, int bitmapSize = 384)
     {
         if (pages is < 1 or > Pages) throw new ArgumentOutOfRangeException(nameof(pages));
         var excel = family == "Excel";
@@ -66,7 +66,7 @@ internal static partial class OfficeExportFixture
             links.Root.Add(Link(id, excel ? "worksheet" : "slide", (excel ? "worksheets/" : "slides/") + pageName));
             Type(pagesPrefix + pageName, excel ? "spreadsheetml.worksheet" : "presentationml.slide");
             Write(pagesPrefix + pageName, pageDocument); Write(pagesPrefix + "_rels/" + pageName + ".rels", pageLinks);
-            using var image = zip.CreateEntry(prefix + "/media/" + imageName, CompressionLevel.NoCompression).Open(); image.Write(Bitmap(page));
+            using var image = zip.CreateEntry(prefix + "/media/" + imageName, CompressionLevel.NoCompression).Open(); image.Write(Bitmap(page, bitmapSize));
         }
         Write(part, document); Write(linksPart, links); Write("[Content_Types].xml", types);
         return path;

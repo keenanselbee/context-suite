@@ -164,3 +164,48 @@ before an export result is accepted. They do not establish that termination
 landed before the ZIP writer finished, or during the later managed date
 inspection. Those narrower interruption points remain open. No production
 implementation, payload pin or release version changes in this checkpoint.
+
+
+Unfinished-write experiment
+---------------------------
+
+A subsequent experiment required the stopped workbook to lack its ZIP end
+record. **That interruption matrix did not pass.** Increasing the sheet count,
+sampling briefly without a timer delay, triggering on the first incomplete ZIP,
+and using larger embedded images did not establish the required stop timing.
+Completed writes are not counted as partial-write coverage.
+
+The retained attempts under `.codex-temp/office-worker` are:
+
+| Run | Actual result |
+| --- | --- |
+| `b7a9acb01d684214ae1895bffdeb82d8` | 48 sheets: native export fails after producing a PDF; no workbook copy appears |
+| `c2acd30da0294498a4b7c8b4f3e06dc1` | 24 sheets: export completes before a second partial size is observed |
+| `99cb9976acfa4965a950d1f7971068a9` | 24 sheets: faster sampling still misses the second partial size |
+| `82c667cad3e44e09acd5f71817cd6214` | 24 sheets: export completes before any incomplete ZIP is observed |
+| `229774b70f1648868b0d3a4477f8f474` | Eight larger images: cancellation starts after partial bytes, but the stopped ZIP is complete |
+| `36a829ff92654dbfbce6bfc847f6ce52` | The same fixture with earlier lifetime-job termination still leaves a complete ZIP |
+
+The speculative application shutdown change and stricter stop-harness changes
+were removed. Their patches remain in `.codex-temp/unfinished-workbook-{public,private}.patch`.
+The existing 36-check test retains its documented scope. The two cancelled
+eight-sheet attempts returned no accepted result and stopped their exact host
+before returning; neither proves interruption of an unfinished write.
+
+All six disposable profiles and registry mappings are absent. Original fixture
+hashes and retained worker files are unchanged. Independent ZIP inspection
+confirms the five produced workbook copies are complete. The 48-sheet PDF passes
+qpdf structure checks and contains 48 pages; this is not text/layout acceptance.
+Its native failure remains unexplained and needs diagnosis before broader Excel
+reliability is accepted. The worker's generic damaged-image message also fails
+to explain this Office error usefully.
+
+The authored fixture generator now supports `--workbook-stop-fixtures <fresh
+isolation-directory> <sheets> [bitmap-size]`: 8, 12, 24 or 48 sheets, 384- or
+1024-pixel bitmaps, and at most 60 MiB of generated bitmap data. Word/PowerPoint
+stay ordinary controls in this mode. The existing three-family twelve-page
+mode retains identical package-part contents. Fresh reproduction of the 48-,
+24- and eight-sheet fixtures also matches all prior package-part contents.
+Evidence is `.codex-temp/workbook-write-verification-fd6eac32df7747fd82eff2df26341269/results.json`;
+its `InterruptionMatrixPassed` is explicitly false. Production sources, native
+limits, engine pins and release versions remain unchanged.
