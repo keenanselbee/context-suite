@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [no-visible-slide handling](powerpoint-slide-evaluation.md#presentations-without-visible-slides)
+now explains empty or fully hidden PPTX decks before prompts, paid admission or
+worker startup. Unknown visibility remains unknown. All 3,974 foundation checks
+pass, including 61 new cases. Three fresh ordinary exports pass eleven application
+checks and independent PDF inspection, retaining seven exact prior rendered pages,
+geometry and text. Originals are unchanged and all native profiles/contexts are
+removed. Broader Office fidelity, visible acceptance and release gates remain open.
+
 The [PowerPoint application matrix](powerpoint-slide-evaluation.md#application-publication-matrix)
 passes eleven actual-command checks and publishes three PDF copies. Independent
 inspection verifies seven pages for saved slide order, hidden-slide exclusion,

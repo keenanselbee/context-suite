@@ -152,7 +152,7 @@ Document transformations
 | PDF > PNG | One numbered PNG per page, 150 DPI, supported crop/rotation/UserUnit applied | Copies only; retains stored visible appearances, not editable forms, attachments or verifiable signatures; protected/unsupported/oversized inputs can be refused |
 | DOCX > PDF | Separate PDF 1.7 copy per document; final text, tracked markup hidden; source revisions retained | Exact ordinary document content type and matching suffix; broader fields, comments, protection, fonts and pagination open |
 | XLSX > PDF | Separate PDF copy; explicit saved-values or recalculation choice retained on retry; external data not refreshed | No implicit calculation default; known early-1900 date display errors remain unresolved |
-| PPTX > PDF | Separate PDF copy; saved slide order, hidden slides and speaker notes excluded | Broader presentation/media/font/layout fidelity and visible acceptance open |
+| PPTX > PDF | Separate PDF copy; saved slide order, hidden slides and speaker notes excluded; positively identified zero-visible-slide decks stop before export | Unknown visibility is not treated as an empty deck; broader presentation/media/font/layout fidelity and visible acceptance open |
 | Mixed images and DOCX/XLSX/PPTX > PDF | One reviewed image PDF plus one separate copy per Office document under shared admission | Office documents do not become pages of the combined image PDF |
 | DOC/XLS/PPT; Office templates and macro-enabled variants | None in the current converter | Recognition/evaluation is not implementation; launch variant decision or implementation and fidelity evidence still required |
 | ODT/ODS/ODP | No transformation selected | Keep required bounded analysis; adding PDF conversion needs a scope decision |

@@ -176,3 +176,61 @@ The first attempt, `49d6ce0cb37b4d52bfcb09893c2d5e10`, rejected reuse of a
 retained worker because its top-level files differed from the current build.
 It stopped before profile creation. The successful run built a fresh scratch
 worker and copied the verified engines; the reserved formal package is unchanged.
+
+
+Presentations without visible slides
+------------------------------------
+
+Conversion preflight now stops an ordinary PPTX when the existing bounded slide
+inspection explicitly establishes zero visible slides. This covers an empty saved
+slide list and a fully hidden deck under the fixed policy that excludes hidden
+slides and speaker notes. The message asks the user to add or unhide a slide in
+PowerPoint, then try again; Analyze remains available. No rendering behavior is
+inferred from the earlier all-hidden analysis fixture.
+
+The check reuses the read-only visibility facts; it adds no parser or native
+operation. Malformed relationships, unsupported compatibility instructions,
+ambiguous visibility and exhausted inspection budgets retain unavailable counts
+and are not treated as empty. A visible slide, including default visibility,
+does not trigger this refusal. These are source declarations, not a general
+certificate that every page can render correctly.
+
+The direct command and retry report the explanation before calculation/font
+prompts, paid admission, output reservation or worker startup. Context preparation
+repeats preflight under its source lease before creating a root, journal or
+snapshot. The private adapter's existing preflight also consumes the same refusal
+before opening a native runtime. Known-empty tests use non-executable presence
+markers to establish that no worker or Office profile is needed, with Overwrite
+originals selected and no alternate output folder. Originals remain unchanged.
+
+All **3,974 foundation contracts** pass, including 61 new checks for empty and
+fully hidden decks, Transitional/Strict and numeric/text Boolean declarations,
+visible/default-visible controls, incomplete/budget-limited inspection,
+preparation, the direct command and retry. Evidence is
+`.codex-temp/powerpoint-no-visible-foundation-final.log`, with matching
+`-inputs.json` and `-exit.json` receipts reporting exit code zero and unchanged
+captured source inputs. No native Office profile is created by those refusal
+fixtures. The private adapter's existing call site was reviewed; a separate
+private-adapter refusal harness was not rerun for this change.
+
+The first redirected PowerShell invocation stopped on the expected malformed-client
+IPC diagnostic before completing the suite. Its process exited and its log remains
+at `.codex-temp/powerpoint-no-visible-foundation.log`. The passing run uses the
+same canonical foundation command with logging captured by the outer Python
+process; the expected diagnostic remains in the log and the suite completes.
+
+Fresh worker run `d99391e39ffb46649b8f7cf05653408d` then passes all eleven ordinary
+PowerPoint application checks. Independent receipt
+`slides-inspection-receipt-a70b9379029040c09297e7591cd0c0aa.json` passes all three
+PDF inspections and four negative text controls. `no-visible-regression-comparison.json`
+in that execution directory confirms exact equality of all seven rendered BGRA
+frames, dimensions/stride and extracted page text with the preceding
+`5c53dc392b904b3a830c064c5bbb501d` control. Original hashes and timestamps are
+preserved; all three native profiles, mappings and contexts are removed. Both
+execution and independent inspection retain unchanged input receipts.
+
+Worker, contract-host and inspector Release builds pass without warnings or
+errors. Repository boundary, theme-policy and 163-document checks pass. This is
+no-visible-slide handling plus an ordinary-export regression; visible UI,
+screen-reader, theme/DPI, general presentation fidelity and the separate Office
+network-isolation and formal release gates remain open.

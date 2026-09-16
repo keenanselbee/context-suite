@@ -1,6 +1,10 @@
 using System.Security.Cryptography;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Analysis;
+using ContextSuite.Application;
+using ContextSuite.Core.Office;
+using ContextSuite.Core.Operations;
+using ContextSuite.Core.Settings;
 
 internal static partial class DocumentAnalysisContracts
 {
@@ -23,6 +27,20 @@ internal static partial class DocumentAnalysisContracts
         check(Counts(empty).All(fact => fact.Integer == 0), "slides: empty declared list needs no slide part reads");
         check(Counts(await AnalyzeAsync(Package(Parts(["false", "0"])))).Select(fact => fact.Integer).SequenceEqual(new long?[] { 0, 2, 0 }),
             "slides: all-hidden deck retains zero visible slides without guessing export behavior");
+        foreach (var strict in new[] { false, true })
+        foreach (var values in new string?[][] { [], ["false", "0"], ["true", "false"], [null, "0"] })
+        {
+            var source = Package(Parts(values, strict));
+            using var input = new MemoryStream(source, writable: false);
+            var preflight = await OfficeSourcePreflight.InspectOpenXmlAsync("slides.pptx", input, default);
+            var emptyDeck = values.All(value => value is "false" or "0");
+            check(preflight.FormatId == "pptx" && (emptyDeck
+                ? preflight.Refusal?.Contains("no visible slides to export") == true
+                : preflight.Refusal is null), "slides: conversion preflight distinguishes known empty and visible decks, strict=" + strict);
+            check(input.ToArray().SequenceEqual(source) && input.CanRead, "slides: conversion visibility preflight preserves source");
+        }
+        await NoVisibleSlidesCommandAsync(scratch, Package(Parts([])), "empty", check);
+        await NoVisibleSlidesCommandAsync(scratch, Package(Parts(["false", "0"])), "all-hidden", check);
         var unused = Parts([null]);
         unused["content/slide1.xml"] = unused["content/slide1.xml"].Replace("<sld ", "<sld xmlns:show=\"urn:unused\" ");
         unused["content/unreferenced.xml"] = "<sld show=\"false\"/>";
@@ -69,12 +87,19 @@ internal static partial class DocumentAnalysisContracts
                 Counts(result).Length == 3 && Counts(result).All(fact => fact.Availability == FactAvailability.Unavailable && fact.Integer is null) &&
                 result.Warnings.Any(warning => warning.StartsWith("Slide visibility is unavailable")),
                 "slides: optional failure preserves identity/declared count and discards partial visibility: " + label);
+            using var input = new MemoryStream(Package(parts), writable: false);
+            var preflight = await OfficeSourcePreflight.InspectOpenXmlAsync("uncertain.pptx", input, default);
+            check(preflight.Refusal?.Contains("no visible slides") != true,
+                "slides: unavailable visibility is not refused as an empty deck: " + label);
         }
         foreach (var count in new[] { 128, 129 })
         {
             var result = await AnalyzeAsync(Package(Parts(Enumerable.Repeat<string?>(null, count).ToArray())));
             check(result.Identity.FormatId == "pptx" && (count == 128 ? Counts(result)[0].Integer == 128 : Counts(result).All(fact => fact.Availability == FactAvailability.Unavailable)),
                 "slides: bounded slide selection at " + count);
+            using var input = new MemoryStream(Package(Parts(Enumerable.Repeat<string?>(null, count).ToArray())), writable: false);
+            var preflight = await OfficeSourcePreflight.InspectOpenXmlAsync("bounded.pptx", input, default);
+            check(preflight.Refusal is null, "slides: visible or budget-limited presentation is not mistaken for an empty deck at " + count);
         }
         var aggregate = Parts(Enumerable.Repeat<string?>(null, 5).ToArray());
         for (var index = 1; index <= 5; index++) aggregate[$"content/slide{index}.xml"] = aggregate[$"content/slide{index}.xml"].Replace("<cSld/>", "<cSld>" + new string('x', 220 * 1024) + "</cSld>");
@@ -116,5 +141,51 @@ internal static partial class DocumentAnalysisContracts
             }
             return parts;
         }
+    }
+
+    private static async Task NoVisibleSlidesCommandAsync(string scratch, byte[] bytes, string name, Action<bool, string> check)
+    {
+        var stage = Path.GetFullPath(Path.Combine(scratch, "office-no-slides-" + name + "-" + Guid.NewGuid().ToString("N")));
+        var runtime = Path.Combine(stage, "runtime"); Directory.CreateDirectory(runtime);
+        var original = Path.Combine(stage, name + ".pptx"); File.WriteAllBytes(original, bytes);
+        var written = File.GetLastWriteTimeUtc(original);
+        var contexts = Path.Combine(stage, "prepared", "contexts");
+        try
+        {
+            using var prepared = await OfficeContextPreparation.CreateAsync(contexts, runtime, original, "pptx", "none", default, createContextRoot: true);
+            check(false, "slides: known empty presentation reached context preparation");
+        }
+        catch (InvalidDataException error)
+        {
+            check(error.Message.Contains("no visible slides to export") && !Directory.Exists(Path.Combine(stage, "prepared")),
+                "slides: " + name + " refusal precedes context, journal and snapshot creation");
+        }
+        using (var exclusive = new FileStream(original, FileMode.Open, FileAccess.Read, FileShare.None))
+            check(exclusive.Length == bytes.Length && File.GetLastWriteTimeUtc(original) == written,
+                "slides: preparation refusal releases unchanged original lease: " + name);
+        foreach (var marker in new[] { "office-engine/ContextSuite.OfficeHost.exe", "office-engine/runtime-files.txt", "pdf-engine/qpdf.exe", "pdf-renderer/ContextSuite.PdfRenderer.exe" })
+        {
+            var path = Path.Combine(runtime, marker.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!); File.WriteAllText(path, "non-executable presence marker");
+        }
+        var access = new DirectOfficeAccess(); var prompts = 0;
+        await using var worker = new WorkerClient(Path.Combine(runtime, "ContextSuite.Worker.exe"), Path.Combine(stage, "scratch"));
+        await using (var vm = new MainViewModel(worker, new SuiteSettings { Convert = new(ReplaceOriginals: true) },
+            new OutputPublisher(Path.Combine(stage, "publications"), null!), access, Path.Combine(stage, "contexts")))
+        {
+            vm.OfficeCalculationRequested += _ => { prompts++; return Task.FromResult<string?>("cached"); };
+            vm.OfficeFontsRequested += (_, _) => { prompts++; return Task.FromResult(true); };
+            vm.Admit(new(Guid.NewGuid(), "convert", "pdf", [original])); await vm.WaitForIdleAsync();
+            check(vm.Rows.Single().Result.State == OperationState.Unsupported && vm.Rows.Single().Status.Contains("Add or unhide a slide") &&
+                prompts == 0 && access.Admissions == 0 && worker.ProcessId is null,
+                "slides: " + name + " command explains no export before prompts, paid admission or worker startup");
+            vm.RetryFailed(); await vm.WaitForIdleAsync();
+            check(vm.Rows.All(row => row.Result.State == OperationState.Unsupported) && prompts == 0 && access.Admissions == 0 && worker.ProcessId is null,
+                "slides: " + name + " retry retains the same no-slide explanation without dispatch");
+        }
+        check(File.ReadAllBytes(original).SequenceEqual(bytes) && File.GetLastWriteTimeUtc(original) == written &&
+            !Directory.Exists(Path.Combine(stage, "contexts")) && !Directory.Exists(Path.Combine(stage, "publications")) &&
+            !Directory.EnumerateFiles(stage, "*.pdf", SearchOption.AllDirectories).Any(),
+            "slides: " + name + " refusal creates no PDF or reservation and preserves the original");
     }
 }

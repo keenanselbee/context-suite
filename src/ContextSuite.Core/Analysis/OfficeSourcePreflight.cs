@@ -35,6 +35,11 @@ public sealed record OfficeSourcePreflight(FileAnalysis Analysis, string? Format
             } : null;
         if (format is null || format != analysis.Identity.FormatId)
             return new(analysis, null, "This Office document variant is not supported by the current conversion preflight. Analyze remains available.");
+        // The fixed presentation export excludes hidden slides and speaker notes.
+        // An unavailable/budget-limited count is not evidence of an empty deck.
+        if (format == "pptx" && analysis.Facts.Any(fact => fact.Id == "document.slides-visible" &&
+                fact.Availability == FactAvailability.Explicit && fact.Integer == 0))
+            return new(analysis, format, "This presentation has no visible slides to export. Add or unhide a slide in PowerPoint, then try again. Analyze remains available.");
         // Stop the demonstrated date corruption before either calculation mode.
         // Other dates/formulas and incomplete inspection still need separate
         // fidelity evidence; absence of this refusal is not a rendering permit.

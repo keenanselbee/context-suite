@@ -106,6 +106,9 @@ one PDF copy. With several images, review their page order before converting.
 When the optional Office engine is present, selected Word `.docx`, Excel `.xlsx`
 and PowerPoint `.pptx` documents each get a separate PDF copy. Images in a mixed
 selection still form their own combined PDF. Originals are always kept.
+PowerPoint export omits hidden slides and speaker notes. If the saved presentation
+has no visible slides, Context Suite asks you to add or unhide a slide and creates
+no PDF. If it cannot determine visibility, it does not label the presentation empty.
 
 For spreadsheets, choose **Use saved values** to use formula results stored in
 the workbook, or **Recalculate** to evaluate supported formulas locally before
