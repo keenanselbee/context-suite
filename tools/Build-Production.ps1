@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Debug', [switch] $SkipShell,
     [guid] $StagingId = [guid]::Empty, [string] $AudioDistributionDirectory,
-    [string] $QpdfPreparedDirectory, [string] $PdfiumPreparedDirectory, [string] $QpdfSourceArchive)
+    [string] $QpdfPreparedDirectory, [string] $PdfiumPreparedDirectory, [string] $QpdfSourceArchive,
+    [string] $OfficeEngineDirectory)
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
@@ -13,6 +14,9 @@ $includePdf = [bool]$QpdfPreparedDirectory -or [bool]$PdfiumPreparedDirectory -o
 if ($includePdf -and ($StagingId -eq [guid]::Empty -or -not $QpdfPreparedDirectory -or
     -not $PdfiumPreparedDirectory -or -not $QpdfSourceArchive)) {
     throw 'The PDF candidate requires a new StagingId, both prepared engines and the pinned qpdf source archive.'
+}
+if ($OfficeEngineDirectory -and ($StagingId -eq [guid]::Empty -or -not $includePdf)) {
+    throw 'The Office candidate requires a new StagingId and the complete PDF candidate for independent output validation.'
 }
 # Candidate builds get a new, non-reusable staging directory. They must never
 # refresh the development payload that Explorer may currently have registered.
@@ -53,6 +57,10 @@ if ($includePdf) {
     & python -B (Join-Path $PSScriptRoot 'pdf-engine\Stage-PdfPayload.py') --payload $output `
         --qpdf-directory $QpdfPreparedDirectory --pdfium-directory $PdfiumPreparedDirectory --qpdf-source $QpdfSourceArchive
     if ($LASTEXITCODE -ne 0) { throw 'PDF candidate staging failed.' }
+}
+if ($OfficeEngineDirectory) {
+    & python -B (Join-Path $PSScriptRoot 'office-engine\Stage-OfficePayload.py') --payload $output --engine-directory $OfficeEngineDirectory
+    if ($LASTEXITCODE -ne 0) { throw 'Office candidate staging failed.' }
 }
 $privateProject = Join-Path $repositoryRoot 'proprietary\src\ContextSuite.Private\ContextSuite.Private.csproj'
 if (-not (Test-Path -LiteralPath $privateProject)) {
@@ -102,7 +110,7 @@ if (-not $SkipShell) {
     & (Join-Path $PSScriptRoot 'New-PrototypeAssets.ps1') -OutputDirectory $output
 }
 & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload $output `
-    -AllowAudioCandidate:([bool]$AudioDistributionDirectory) -AllowPdfCandidate:$includePdf
+    -AllowAudioCandidate:([bool]$AudioDistributionDirectory) -AllowPdfCandidate:$includePdf -AllowOfficeCandidate:([bool]$OfficeEngineDirectory)
 $verifiedVersion = & (Join-Path $PSScriptRoot 'Test-ProductVersion.ps1') -Payload $output
 if ($verifiedVersion -ne $productVersion) { throw 'Product version changed during staging.' }
 $inventory = @(Get-ChildItem -LiteralPath $output -Recurse -File | Where-Object Name -ne 'payload-inventory.json' | ForEach-Object {

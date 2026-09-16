@@ -1,6 +1,10 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $Payload, [switch] $AllowAudioCandidate, [switch] $AllowPdfCandidate)
+param([Parameter(Mandatory)][string] $Payload, [switch] $AllowAudioCandidate, [switch] $AllowPdfCandidate,
+    [switch] $AllowOfficeCandidate)
 $ErrorActionPreference = 'Stop'
+if ($AllowOfficeCandidate -and -not $AllowPdfCandidate) {
+    throw 'The Office candidate requires the PDF candidate for independent output validation.'
+}
 & (Join-Path $PSScriptRoot 'Test-ProductionEngine.ps1') -Payload $Payload
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'dds-engine\Test-DdsEngine.ps1') -Payload $Payload
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'png-engine\Test-PngEngine.ps1') -Payload $Payload
@@ -32,8 +36,20 @@ if ($AllowPdfCandidate) {
     $pdfSelection = Get-Content -LiteralPath (Join-Path $pdfTools 'payload-candidate.json') -Raw | ConvertFrom-Json
     $allowed += @($pdfSelection.files | ForEach-Object { $_.path.Replace('/', '\') })
 }
+if ($AllowOfficeCandidate) {
+    $officeTools = Join-Path (Split-Path $PSScriptRoot -Parent) 'office-engine'
+    & python -B (Join-Path $officeTools 'Stage-OfficePayload.py') --payload $root
+    if ($LASTEXITCODE -ne 0) { throw 'Office candidate payload verification failed.' }
+    $allowed += 'office-engine\ContextSuite.OfficeHost.exe', 'office-engine\runtime-files.txt'
+    $allowed += @(Get-Content -LiteralPath (Join-Path $root 'office-engine\runtime-files.txt') | ForEach-Object {
+        'office-engine\runtime\' + ($_ -split "`t", 3)[0].Replace('/', '\')
+    })
+}
+# Office has over 19,000 files. Keep membership lookup linear in payload size.
+$allowedSet = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+foreach ($name in $allowed) { [void]$allowedSet.Add($name) }
 foreach ($file in Get-ChildItem -LiteralPath $root -Recurse -File) {
-    if ($file.FullName.Substring($root.Length + 1) -notin $allowed) { throw "Unreviewed production file: $($file.FullName)" }
+    if (-not $allowedSet.Contains($file.FullName.Substring($root.Length + 1))) { throw "Unreviewed production file: $($file.FullName)" }
 }
 foreach ($required in 'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'ContextSuite.Engine.json', 'ContextSuite.Commercial.dll') {
     if (-not (Test-Path -LiteralPath (Join-Path $root $required)) -or (Get-Item -LiteralPath (Join-Path $root $required)).Length -eq 0) { throw "Missing/empty production notice/identity: $required" }

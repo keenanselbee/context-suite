@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.2**. This checkpoint adds stored-date preflight
-evidence to public baseline `284cde5`; private baseline `616d7ee` is unchanged.
+Matrix revision: **2026-09-16.3**. This checkpoint adds optional Office staging
+to public baseline `cd3f8ec`; private baseline `616d7ee` is unchanged.
 Catalog schema 1, revision **2026-09-14.1**, **244 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
@@ -10,9 +10,11 @@ is incomplete. This matrix does not change the selected launch scope.
 The source baseline and the last packaged candidate are different. Candidate
 **1.1.0** contains images, audio and PDF engines, but no Office engine. Later
 Office command and recovery work is verified in isolated scratch builds. Default
-release packaging still excludes the optional audio/PDF candidates, and has no
-Office staging path. A menu label or catalog entry does not establish that a
-particular build can execute the operation.
+release packaging still excludes the optional audio/PDF/Office candidates. The
+[explicit Office staging path](office-production-payload.md) is implemented;
+all 27 scratch packaging checks pass. Fresh formal combined packaging remains
+open. A menu label does not establish that a particular build can execute the
+operation.
 
 Read `Implemented` below as an application/worker path with bounded admission and
 recorded automated evidence, subject to every stated condition. It does not mean
@@ -215,7 +217,7 @@ Completion still requires:
 
 - Resolve Office date fidelity and exact legacy/template/macro variant scope;
   finish broader fonts/layout/content and network-isolation acceptance, then
-  implement verified Office staging and review its redistribution requirements.
+  complete formal Office staging and review its redistribution requirements.
 - Finish catalog alias/MIME coverage and remaining regular-file/driver/network
   acceptance. Preserve honest fallback when detailed inspection is unavailable.
 - Close audio input/metadata and independent decoder/listening/player gaps;

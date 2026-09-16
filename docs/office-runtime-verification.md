@@ -1,8 +1,9 @@
 Office Runtime Verification
 ===========================
 
-Status: candidate payload leases verified; worker routing and customer Office
-conversion remain incomplete
+Status: candidate payload leases verified; subsequent worker, command and
+[optional staging](office-production-payload.md) integration are recorded
+separately. Expanded release acceptance remains incomplete.
 
 The private runtime verifier pins the evaluated native host and the complete
 LibreOffice 26.2.6.3 file inventory before returning a lease. It reads and hashes
