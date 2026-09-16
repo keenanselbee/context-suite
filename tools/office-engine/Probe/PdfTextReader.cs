@@ -8,7 +8,8 @@ internal static class PdfTextReader
         var handle = NativeLibrary.Load(library);
         NativeLibrary.SetDllImportResolver(typeof(PdfTextReader).Assembly, (name, _, _) => name == "pdfium-evaluation" ? handle : IntPtr.Zero);
     }
-    public static string[] Read(string path)
+    public static string[] Read(string path) => Read(path, null);
+    internal static string[] Read(string path, Action<IntPtr, IntPtr>? inspectPage)
     {
         var bytes = File.ReadAllBytes(path);
         if (bytes.Length is <= 0 or > 16 * 1024 * 1024) throw new InvalidDataException("PDF text input limit.");
@@ -33,6 +34,7 @@ internal static class PdfTextReader
                         if (text == IntPtr.Zero) throw new InvalidDataException("PDF text extraction failed.");
                         try
                         {
+                            inspectPage?.Invoke(page, text);
                             var length = FPDFText_CountChars(text);
                             if (length is < 0 or > 1000000) throw new InvalidDataException("PDF text character limit.");
                             var buffer = new ushort[length + 1];

@@ -29,6 +29,7 @@ internal static class OfficeWordRevisionInspection
         PdfTextReader.Initialize(Path.Combine(Path.GetDirectoryName(pdfium)!, "pdfium.dll"));
         var renders = new Dictionary<string, (string Folder, JsonElement Render, string[] Text)>();
         var observations = new List<object>();
+        var moveObservations = new Dictionary<string, WordMoveSpacing.Observation>();
         var allText = true;
         var allLayout = true;
         foreach (var entry in data.GetProperty("Results").EnumerateArray())
@@ -79,6 +80,12 @@ internal static class OfficeWordRevisionInspection
                 allLayout &= lineLayout.Value;
             }
             renders.Add(name, (target, render, text));
+            if (name is "Word structures move clean.docx" or "Word structures move tracked.docx")
+            {
+                var move = WordMoveSpacing.Read(output);
+                moveObservations.Add(name, move);
+                File.WriteAllText(Path.Combine(target, "spacing.json"), JsonSerializer.Serialize(move));
+            }
             if (Hash(source) != sourceHash || Hash(output) != outputHash || File.GetLastWriteTimeUtc(source) != sourceTime || File.GetLastWriteTimeUtc(output) != outputTime)
                 throw new IOException("Inspection inputs changed.");
             observations.Add(new { Name = name, SourceSha256 = sourceHash, OutputSha256 = outputHash, Text = text,
@@ -86,6 +93,8 @@ internal static class OfficeWordRevisionInspection
         }
         var comparisons = new List<object>();
         var exact = true;
+        var fidelity = true;
+        var spacingGuards = paragraphMarks ? 0 : WordMoveSpacing.VerifyGuards(moveObservations["Word structures move clean.docx"]);
         if (!paragraphMarks)
             foreach (var variant in new[] { "shown", "hidden", "unspecified" })
                 Compare("inline-" + variant, "Word revisions clean.docx", "Word revisions " + variant + ".docx", expectSame: true);
@@ -94,12 +103,15 @@ internal static class OfficeWordRevisionInspection
             Compare(kind + "-final", $"Word structures {kind} clean.docx", $"Word structures {kind} tracked.docx", expectSame: true);
             Compare(kind + "-before", $"Word structures {kind} clean.docx", $"Word structures {kind} before.docx", expectSame: false);
         }
-        var passed = names.Count == 0 && allText && allLayout && exact;
+        var passed = names.Count == 0 && allText && allLayout && fidelity;
         File.WriteAllText(Path.Combine(folder, "results.json"), JsonSerializer.Serialize(new { Passed = passed,
             TextPassed = allText, LineLayoutPassed = paragraphMarks ? allLayout : (bool?)null,
-            PixelComparisonsPassed = exact, Observations = observations, Comparisons = comparisons },
+            PixelComparisonsPassed = exact, FidelityComparisonsPassed = fidelity,
+            MoveHorizontalLimitPoints = WordMoveSpacing.MaximumHorizontalPoints,
+            SpacingGuardsPassed = spacingGuards,
+            Observations = observations, Comparisons = comparisons },
             new JsonSerializerOptions { WriteIndented = true }));
-        Console.WriteLine($"{expectedCount} Word PDFs: text={allText}, paragraph layout={(paragraphMarks ? allLayout.ToString() : "not separately tested")}, exact final/control pixel matrix={exact}.");
+        Console.WriteLine($"{expectedCount} Word PDFs: text={allText}, paragraph layout={(paragraphMarks ? allLayout.ToString() : "not separately tested")}, exact final/control pixel matrix={exact}, accepted fidelity={fidelity}.");
         return passed ? 0 : 1;
 
         void Compare(string label, string baseline, string candidate, bool expectSame)
@@ -108,7 +120,13 @@ internal static class OfficeWordRevisionInspection
             var result = LegacyPdfComparison.Compare(before.Folder, before.Render, before.Text, after.Folder, after.Render, after.Text);
             var matches = result.Pages.All(page => page.ExactPixels) == expectSame;
             exact &= matches;
-            comparisons.Add(new { Case = label, ExpectedSamePixels = expectSame, Passed = matches, Comparison = result });
+            WordMoveSpacing.Comparison? spacing = null;
+            if (label == "move-final")
+                spacing = WordMoveSpacing.Compare(moveObservations[baseline], moveObservations[candidate]);
+            var accepted = spacing is null ? matches : spacing.Passed && result.TextEqual;
+            fidelity &= accepted;
+            comparisons.Add(new { Case = label, ExpectedSamePixels = expectSame, ExactComparisonPassed = matches,
+                Passed = accepted, Spacing = spacing, Comparison = result });
         }
     }
 

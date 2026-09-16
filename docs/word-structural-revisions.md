@@ -5,7 +5,9 @@ The 2026-09-14 follow-up tests the owner's final-text Word export policy on
 formatting changes, table-row changes and moved text. All twelve exports pass
 their expected text and source-preservation checks. Formatting and table final
 pages exactly match clean controls. The move comparison differs by 151 pixels,
-so the combined exact-pixel matrix **fails** and is not accepted as a full pass.
+so the combined exact-pixel matrix **fails**. The later
+[owner-approved spacing check](word-revision-application.md#owner-approved-spacing-acceptance)
+accepts this measured case separately while retaining that diagnostic failure.
 
 
 Authored scope
@@ -65,10 +67,11 @@ in the moved span; their vertical origins agree. Thus matching extracted text
 and embedded fonts do not establish identical positions. The 96-DPI crop was
 inspected as a diagnostic, not a customer UI or Microsoft Word baseline review.
 
-The exact comparison is unchanged: no image rescaling, accepted tolerance,
-source rewrite or revision removal hides this difference. Resolving the renderer's
-spacing behavior or establishing a defensible fidelity policy remains necessary
-before claiming support for arbitrary tracked moves. Paragraph-mark revisions,
+The historical exact comparison is unchanged: no image rescaling, source rewrite
+or revision removal hides this difference. The owner subsequently accepted small
+spacing differences with content, formatting and layout preserved; the linked
+application inspection applies a bounded check to this case. It does not establish
+support for arbitrary tracked moves. Additional paragraph-mark interactions,
 more complex tables/moves, comments, protection, mixed authors, fields, pagination
 and legacy DOC also retain their separate verification gaps.
 
@@ -116,5 +119,6 @@ isolation, independent validation and final copy publication. All 30 application
 checks and thirteen expected-text/page checks pass. Formatting and table finals
 match clean controls; moved text reproduces the same 151-pixel discrepancy.
 All thirteen full pixel buffers match their corresponding earlier command-line
-evaluations. The exact-move fidelity question remains open; this is additional
-integration evidence, not a tolerance change or a repaired renderer.
+evaluations. The later bounded spacing acceptance settles this measured case;
+broader moved-text fidelity remains open. The renderer has not been repaired or
+changed by the acceptance policy.

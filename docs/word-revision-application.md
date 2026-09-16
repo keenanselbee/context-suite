@@ -2,9 +2,10 @@ Word Revision Application Acceptance
 ===================================
 
 Status: all 30 application-command checks and all thirteen PDF text/geometry
-checks pass. The exact-pixel matrix remains failed: moved text reproduces the
-151-pixel difference from its clean final control. The other final comparisons
-match exactly. No tolerance or source rewrite has been introduced.
+checks pass. The owner's small-spacing policy now accepts the measured moved-text
+case while retaining its 151-pixel exact-comparison failure. All other final
+comparisons match exactly. See the bounded acceptance below; this does not
+establish general Office fidelity or change the renderer.
 
 The six-document paragraph-mark follow-up below also passes all 16 application
 checks and independent text, line-layout and exact-pixel comparisons.
@@ -50,8 +51,9 @@ pixel buffer. The source's stored revisions are preserved.
 Inline shown/hidden/omitted variants must match the clean final document. Each
 structural tracked final must match its clean final; before-change controls must
 differ. These exact comparisons retain changed-pixel counts. The inspector
-records text and pixel outcomes separately and returns a failing exit if either
-matrix fails, after retaining all comparisons. A successful export is not
+records text, exact pixels and accepted fidelity separately. It returns a failing
+exit for a text, layout or accepted-fidelity failure after retaining comparisons.
+Only the authored move-final case uses the bounded spacing check below. A successful export is not
 silently promoted to a fidelity pass. Show-changes positive controls remain the
 earlier evaluation's evidence; this application run exercises only the selected
 fixed production policy.
@@ -184,3 +186,47 @@ run's `revision-inspection-63406b024d784b989a88a9c4e6c9d0d0`. It does not rerun
 those native exports or turn the failed comparison into a pass. Worker,
 contract-host and inspector Release builds have zero warnings/errors. Shipping
 code, engine pins, formal packaging and visible acceptance remain unchanged.
+
+
+Owner-approved spacing acceptance
+--------------------------------
+
+On 2026-09-15 the owner allowed small font-spacing differences when content,
+formatting and page layout are preserved. Exact pixel equality remains a useful
+diagnostic, but is no longer required for the measured moved-text case.
+
+The test-only [spacing inspector](../tools/office-engine/Probe/WordMoveSpacing.cs)
+reads the actual clean and tracked publications through PDFium's
+[character APIs](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdf_text.h)
+and [embedded-font APIs](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdf_edit.h).
+It requires identical raw text, including line separators, character order and
+embedded font bytes; 12-point unrotated opaque black text; only plain filled text
+objects without annotations; and unchanged vertical origins and glyph bounds.
+Page count and Letter geometry retain the existing independent checks.
+
+The horizontal origins and both horizontal glyph bounds may differ by at most
+**0.071 PDF points**. This is the observed approximately 0.07-point difference
+rounded upward by 0.001 point, under one tenth of a pixel at 96 DPI. It is an
+implementation bound for this authored fixture, not an owner-selected universal
+threshold or an allowance for changed line wrapping, pagination, fonts or content.
+All other final cases retain their exact-pixel requirement. Before-change controls
+must still differ. No PDF, source document or rendered buffer is modified.
+
+Reinspection of the retained thirteen native publications passes with 45 measured
+characters, maximum horizontal difference **0.07000732421875 points**, zero
+vertical difference and identical content/font checks. The exact comparison
+still records **151 changed pixels** and `PixelComparisonsPassed: false`;
+`FidelityComparisonsPassed` and overall `Passed` are true. Evidence is the original
+run's `revision-inspection-ab578dea27704d80a0e3676c98593668` directory.
+
+Ten in-memory acceptance guards pass: unchanged control plus refusals for added
+text, missing/changed characters, larger origin/bound shifts, vertical movement,
+changed size/font and nonfinite positions. The nonfinite guard initially caught
+LINQ maximum's treatment of NaN; explicit finite-coordinate checks corrected it
+before the passing run. These are inspector guards, not new Office exports.
+
+The retained six paragraph PDFs also pass text, line layout and exact pixels in
+their run's `revision-inspection-6227d90e427e40cdbac44fdc99c9c68d`. No native export
+or profile creation was repeated. The historical exact-only failures above remain
+unaltered evidence. Complex moves, other fonts and broader layout still need
+their own acceptance; this policy does not clear the commercial release goal.

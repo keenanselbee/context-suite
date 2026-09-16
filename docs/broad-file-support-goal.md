@@ -9,7 +9,8 @@ The [paragraph-mark revision controls](word-revision-application.md#paragraph-ma
 pass 16 application checks and six independent PDF text, line-layout and exact
 pixel checks. Deleted paragraph breaks join content and inserted breaks retain
 separate lines; all originals and native cleanup checks pass. The earlier
-moved-text spacing discrepancy and broader fidelity/acceptance work remain open.
+moved-text case now passes the owner's bounded spacing acceptance below;
+broader fidelity/acceptance work remains open.
 
 The [Word revision application matrix](word-revision-application.md) passes all
 30 command/publication/cleanup checks and thirteen independently inspected PDF
@@ -18,6 +19,15 @@ moved text reproduces the existing 151-pixel spacing difference. All thirteen
 native output buffers match the earlier command-line evaluations, and all
 profiles/contexts are removed. The combined exact-pixel matrix remains failed;
 complex revisions, broader fidelity and integrated acceptance remain open.
+
+On 2026-09-15 the owner accepted small font-spacing differences when content,
+formatting and page layout are preserved. The
+[bounded move inspection](word-revision-application.md#owner-approved-spacing-acceptance)
+now passes all thirteen retained publications under that policy: identical text
+and embedded font bytes, unchanged vertical layout and at most 0.0700074 points
+horizontal difference within the fixture's 0.071-point limit. Ten acceptance
+guards and the six-case paragraph regression pass. Exact pixel diagnostics stay
+visible; no universal tolerance, renderer fix or new native export is claimed.
 
 The [actual-app preparation follow-up](office-app-preparation.md) passes all 55
 checks in the complete default layout: recovery guidance, forwarded Analyze,
@@ -508,7 +518,8 @@ The [structural Word revision matrix](word-structural-revisions.md) adds twelve
 exports with passing text/source checks and exact formatting/table controls.
 Moved text differs by 151 pixels and up to 0.07001 PDF points in horizontal
 character position, with identical embedded font bytes. The exact-pixel matrix
-remains failed; this is a recorded fidelity gap, not an accepted tolerance.
+remains failed. The subsequent owner-approved bounded application inspection
+accepts this measured spacing difference while retaining the exact failure.
 
 The latest combined production stage is candidate 1.0.9 at
 `artifacts/production-staging/4798b0329381494f8db92a8441aa2ef0`.

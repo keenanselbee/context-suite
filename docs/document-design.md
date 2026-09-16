@@ -231,6 +231,15 @@ and table-row controls but finds a small horizontal glyph-position difference
 for moved text. Its exact-pixel matrix remains failed; the chosen display default
 does not by itself clear arbitrary tracked-move fidelity.
 
+On 2026-09-15 the owner allowed small font-spacing differences for Office-to-PDF
+when content, formatting and page layout are preserved. Keep exact pixel
+differences in diagnostics and require measured evidence for accepted spacing;
+this does not permit missing text, changed fonts, reflow or pagination changes.
+The [authored move acceptance](word-revision-application.md#owner-approved-spacing-acceptance)
+implements a 0.071-point horizontal limit for that measured case, with unchanged
+vertical layout, text and embedded font bytes. Other cases need their own
+evidence; the bound is not a universal document-fidelity threshold.
+
 The [PowerPoint slide/notes experiment](powerpoint-slide-evaluation.md) tests
 saved slide order, hidden first/last slides and speaker-note exclusion, with a
 positive notes-export control. Its observed results inform the export policy;

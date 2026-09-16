@@ -180,4 +180,8 @@ The [application-command matrix](word-revision-application.md) now verifies the
 four inline documents and nine structural controls through the actual command,
 native host and copy-publication path. All thirteen expected texts pass, with
 exact final pixels for the inline variants, formatting and table changes. The
-move comparison still differs by 151 pixels; it remains a recorded fidelity gap.
+move comparison still differs by 151 pixels. The later
+[bounded spacing acceptance](word-revision-application.md#owner-approved-spacing-acceptance)
+applies the owner's permission for small spacing differences with content,
+formatting and layout preserved. It accepts that measured case while retaining
+the exact-pixel diagnostic; broader revision fidelity remains open.
