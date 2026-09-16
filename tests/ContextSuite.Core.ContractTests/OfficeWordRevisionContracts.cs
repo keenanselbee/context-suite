@@ -9,7 +9,7 @@ using Microsoft.Win32;
 
 internal static class OfficeWordRevisionContracts
 {
-    internal static async Task RunAsync(string workerPath, string evidence)
+    internal static async Task RunAsync(string workerPath, string evidence, bool paragraphMarks = false)
     {
         var root = Path.GetFullPath(evidence);
         if (!root.Contains("\\.codex-temp\\office-execution\\", StringComparison.OrdinalIgnoreCase) || Directory.Exists(root))
@@ -18,8 +18,10 @@ internal static class OfficeWordRevisionContracts
         var contexts = Path.Combine(root, "contexts");
         var retained = Path.Combine(root, "retained-journals"); Directory.CreateDirectory(retained);
         var output = Path.Combine(root, "output"); Directory.CreateDirectory(output);
-        var names = WordRevisionFixtures.Create(originals).Concat(WordRevisionStructureFixtures.Create(originals))
+        var names = (paragraphMarks ? WordRevisionStructureFixtures.Create(originals, true) :
+            WordRevisionFixtures.Create(originals).Concat(WordRevisionStructureFixtures.Create(originals)))
             .Select(item => item.Name).ToArray();
+        var expectedCount = paragraphMarks ? 6 : 13;
         var files = names.Select(name => Path.Combine(originals, name)).ToArray();
         var before = files.ToDictionary(path => path, path => new { Sha256 = Hash(path), Written = File.GetLastWriteTimeUtc(path) });
         var checks = new List<string>();
@@ -43,7 +45,7 @@ internal static class OfficeWordRevisionContracts
             await vm.WaitForIdleAsync();
             results = vm.Rows.Select(row => row.Result).ToArray();
             File.WriteAllText(Path.Combine(root, "outcomes.json"), JsonSerializer.Serialize(results));
-            Check(results.Length == 13, "one Word command returns all thirteen revision/control outcomes");
+            Check(results.Length == expectedCount, $"one Word command returns all {expectedCount} revision/control outcomes");
             foreach (var result in results)
             {
                 Check(result.State == OperationState.Succeeded && result.Publication is { IsCommitted: true } publication &&
@@ -53,7 +55,7 @@ internal static class OfficeWordRevisionContracts
             }
         }
         Check(before.All(pair => Hash(pair.Key) == pair.Value.Sha256 && File.GetLastWriteTimeUtc(pair.Key) == pair.Value.Written),
-            "all thirteen original documents retain bytes and timestamps");
+            $"all {expectedCount} original documents retain bytes and timestamps");
         Check(!Directory.EnumerateFileSystemEntries(contexts).Any() && worker.ProcessId is null,
             "application disposal leaves no worker or Office context");
         var profiles = new List<object>();
@@ -67,9 +69,9 @@ internal static class OfficeWordRevisionContracts
                 !Directory.Exists(work.DirectoryPath), "revision export profile and context removed: " + work.ItemId);
             profiles.Add(new { work.ProfileName, Sid = sid, Removed = true, Journal = record, ContextRetired = true });
         }
-        Check(profiles.Count == 13, "all thirteen native export lifetimes have retained cleanup evidence");
+        Check(profiles.Count == expectedCount, $"all {expectedCount} native export lifetimes have retained cleanup evidence");
         File.WriteAllText(Path.Combine(root, "results.json"), JsonSerializer.Serialize(new { Passed = true,
-            Mode = "WordRevisions", Checks = checks, Results = results, Originals = before, Profiles = profiles },
+            Mode = paragraphMarks ? "WordParagraphRevisions" : "WordRevisions", Checks = checks, Results = results, Originals = before, Profiles = profiles },
             new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"Passed {checks.Count} application Word revision export checks. Independent fidelity inspection is still required.");
 

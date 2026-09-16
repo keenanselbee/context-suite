@@ -13,18 +13,24 @@ internal static class OfficeWordRevisionInspection
         var root = Path.GetDirectoryName(reportPath)!;
         using var report = JsonDocument.Parse(File.ReadAllText(reportPath));
         var data = report.RootElement;
-        if (!data.GetProperty("Passed").GetBoolean() || data.GetProperty("Mode").GetString() != "WordRevisions" ||
-            data.GetProperty("Results").GetArrayLength() != 13 || data.GetProperty("Profiles").GetArrayLength() != 13 ||
+        var mode = data.GetProperty("Mode").GetString();
+        var paragraphMarks = mode == "WordParagraphRevisions";
+        var expectedCount = paragraphMarks ? 6 : 13;
+        if (!data.GetProperty("Passed").GetBoolean() || mode is not ("WordRevisions" or "WordParagraphRevisions") ||
+            data.GetProperty("Results").GetArrayLength() != expectedCount || data.GetProperty("Profiles").GetArrayLength() != expectedCount ||
             data.GetProperty("Profiles").EnumerateArray().Any(item => !item.GetProperty("Removed").GetBoolean() || !item.GetProperty("ContextRetired").GetBoolean()))
-            throw new IOException("Thirteen completed exports and native cleanup are required.");
+            throw new IOException("The complete selected export matrix and native cleanup are required.");
         var folder = Path.Combine(Path.GetDirectoryName(root)!, "revision-inspection-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(folder); Console.WriteLine("Word revision PDF inspection: " + folder);
         var fixtures = Path.Combine(folder, "fixtures"); Directory.CreateDirectory(fixtures);
-        var names = WordRevisionFixtures.Create(fixtures).Concat(WordRevisionStructureFixtures.Create(fixtures)).Select(item => item.Name).ToHashSet();
+        var names = (paragraphMarks ? WordRevisionStructureFixtures.Create(fixtures, true) :
+            WordRevisionFixtures.Create(fixtures).Concat(WordRevisionStructureFixtures.Create(fixtures)))
+            .Select(item => item.Name).ToHashSet();
         PdfTextReader.Initialize(Path.Combine(Path.GetDirectoryName(pdfium)!, "pdfium.dll"));
         var renders = new Dictionary<string, (string Folder, JsonElement Render, string[] Text)>();
         var observations = new List<object>();
         var allText = true;
+        var allLayout = true;
         foreach (var entry in data.GetProperty("Results").EnumerateArray())
         {
             var source = entry.GetProperty("Path").GetString()!;
@@ -60,25 +66,40 @@ internal static class OfficeWordRevisionInspection
                 ? WordRevisionStructureFixtures.Observe(name, "final-text", text).Matches
                 : text.Length == 1 && Regex.Replace(text[0], @"\s+", " ").Trim() == "CONTROL_MARKER INSERTED_MARKER END_MARKER";
             allText &= matches;
+            bool? lineLayout = null;
+            if (paragraphMarks)
+            {
+                var parts = Path.GetFileNameWithoutExtension(name).Split(' ');
+                var split = parts[2] == "paragraph-insert" ? parts[3] != "before" : parts[3] == "before";
+                string[] expectedLines = split ? ["CONTROL_MARKER", "PARAGRAPH_LEFT", "PARAGRAPH_RIGHT", "END_MARKER"] :
+                    ["CONTROL_MARKER", "PARAGRAPH_LEFT PARAGRAPH_RIGHT", "END_MARKER"];
+                var actualLines = text.Single().Split(["\r\n", "\n", "\r"], StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line => Regex.Replace(line, @"\s+", " ").Trim()).ToArray();
+                lineLayout = actualLines.SequenceEqual(expectedLines, StringComparer.Ordinal);
+                allLayout &= lineLayout.Value;
+            }
             renders.Add(name, (target, render, text));
             if (Hash(source) != sourceHash || Hash(output) != outputHash || File.GetLastWriteTimeUtc(source) != sourceTime || File.GetLastWriteTimeUtc(output) != outputTime)
                 throw new IOException("Inspection inputs changed.");
-            observations.Add(new { Name = name, SourceSha256 = sourceHash, OutputSha256 = outputHash, Text = text, TextMatches = matches });
+            observations.Add(new { Name = name, SourceSha256 = sourceHash, OutputSha256 = outputHash, Text = text,
+                TextMatches = matches, LineLayoutMatches = lineLayout });
         }
         var comparisons = new List<object>();
         var exact = true;
-        foreach (var variant in new[] { "shown", "hidden", "unspecified" })
-            Compare("inline-" + variant, "Word revisions clean.docx", "Word revisions " + variant + ".docx", expectSame: true);
-        foreach (var kind in new[] { "format", "table", "move" })
+        if (!paragraphMarks)
+            foreach (var variant in new[] { "shown", "hidden", "unspecified" })
+                Compare("inline-" + variant, "Word revisions clean.docx", "Word revisions " + variant + ".docx", expectSame: true);
+        foreach (var kind in paragraphMarks ? new[] { "paragraph-delete", "paragraph-insert" } : new[] { "format", "table", "move" })
         {
             Compare(kind + "-final", $"Word structures {kind} clean.docx", $"Word structures {kind} tracked.docx", expectSame: true);
             Compare(kind + "-before", $"Word structures {kind} clean.docx", $"Word structures {kind} before.docx", expectSame: false);
         }
-        var passed = names.Count == 0 && allText && exact;
+        var passed = names.Count == 0 && allText && allLayout && exact;
         File.WriteAllText(Path.Combine(folder, "results.json"), JsonSerializer.Serialize(new { Passed = passed,
-            TextPassed = allText, PixelComparisonsPassed = exact, Observations = observations, Comparisons = comparisons },
+            TextPassed = allText, LineLayoutPassed = paragraphMarks ? allLayout : (bool?)null,
+            PixelComparisonsPassed = exact, Observations = observations, Comparisons = comparisons },
             new JsonSerializerOptions { WriteIndented = true }));
-        Console.WriteLine($"Thirteen Word PDFs: text={allText}, exact final/control pixel matrix={exact}. Retain individual comparisons.");
+        Console.WriteLine($"{expectedCount} Word PDFs: text={allText}, paragraph layout={(paragraphMarks ? allLayout.ToString() : "not separately tested")}, exact final/control pixel matrix={exact}.");
         return passed ? 0 : 1;
 
         void Compare(string label, string baseline, string candidate, bool expectSame)

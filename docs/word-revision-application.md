@@ -6,6 +6,9 @@ checks pass. The exact-pixel matrix remains failed: moved text reproduces the
 151-pixel difference from its clean final control. The other final comparisons
 match exactly. No tolerance or source rewrite has been introduced.
 
+The six-document paragraph-mark follow-up below also passes all 16 application
+checks and independent text, line-layout and exact-pixel comparisons.
+
 
 Scope
 --------
@@ -75,8 +78,8 @@ installation, Explorer-registration, live commerce or native recycling changes.
 
 This verifies application orchestration, not a visible dispatcher/router test.
 It establishes no keyboard, screen-reader, theme/DPI or installed-shell result.
-Paragraph-mark revisions, comments, protection, fields, more complex moves and
-tables, and broader font/pagination fidelity remain separate requirements. No
+Additional paragraph interactions, comments, protection, fields, more complex
+moves and tables, and broader font/pagination fidelity remain separate requirements. No
 Microsoft Word baseline or commercial release clearance is claimed.
 
 
@@ -124,3 +127,60 @@ against retained Word/Excel/PowerPoint publications, in
 `.codex-temp/office-execution/cb8320577db3481aabe99f9fb1fcb3c0/inspection-9950f829fe8f4acc91f41bec142b08d6`.
 No wider foundation, image or audio suite is claimed as a new run here. No
 shipping implementation, runtime pin or formal production package changed.
+
+
+Paragraph-mark controls
+-----------------------
+
+The focused `--paragraph-marks` mode adds six authored documents through the same
+application/native/publication path. Each case has clean-final, tracked and
+before-change controls. The fixture marks only the first paragraph's ending,
+under `w:pPr/w:rPr`; its literal text remains ordinary run content. Saved markup
+visibility is true, so the fixed export policy must determine the final view.
+
+| Revision | Final layout | Before-change control |
+| --- | --- | --- |
+| Delete paragraph mark | Join the two spans on one line | Two separate lines |
+| Insert paragraph mark | Retain two separate lines | Both spans on one line |
+
+The declarations follow Microsoft's descriptions of
+[deleted paragraph marks](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.deleted?view=openxml-3.0.1)
+and the [inserted paragraph-mark property](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.paragraphmarkrunproperties.inserted?view=openxml-3.0.1).
+The inserted-element example represents a split into two paragraphs. Its opening
+remark confusingly says deleted; the authored control follows the example and
+the insertion definition, not that contradictory sentence. No upstream document
+or source implementation is copied.
+
+The inspector now reports paragraph line layout separately from normalized text.
+All literal markers could survive while the paragraph break remained wrong;
+normalized text alone would miss that failure. Clean/tracked full-page pixels
+must also match, and each before-change control must differ. The original
+thirteen-case mode keeps its original fixtures and comparisons.
+
+Add `--paragraph-marks` to the export command above and use the same
+`-WordRevisions` inspector command on its printed result. The inspector derives
+the exact six-case scope from `Mode: WordParagraphRevisions`; it refuses unknown
+or incomplete scopes. No spacing tolerance is selected by this addition.
+
+Native evidence at
+`.codex-temp/office-execution/bbd3b60bab7244e8b502b7fa791e4c75` exits zero with
+unchanged source/binary inputs and all **16 application checks** passing. All six
+originals retain bytes and modification times. All six profile folders/mappings
+and contexts are removed; the final native inventory also reports zero test
+application/worker/Office-host processes. The selected scratch worker is
+`.codex-temp/office-execution/f19507c697f44c64b149e1b2e2192292/worker`.
+
+The run's `revision-inspection-fb5fd86bbd3246a19a87d4ffc2fb2e1c` independently
+passes all six expected texts, paragraph line layouts and Letter page geometries.
+Both tracked finals match their clean full-page pixel buffers exactly; both
+before-change controls differ. A separate XML parse verifies all six authored
+source paragraph counts, ordinary text runs, saved visibility flags and the two
+paragraph-mark declarations. It is recorded in
+`.codex-temp/word-paragraph-declarations.json`.
+
+The inspector regression on the earlier thirteen PDFs still passes expected
+texts and reproduces only the existing 151-pixel move-final failure, in that
+run's `revision-inspection-63406b024d784b989a88a9c4e6c9d0d0`. It does not rerun
+those native exports or turn the failed comparison into a pass. Worker,
+contract-host and inspector Release builds have zero warnings/errors. Shipping
+code, engine pins, formal packaging and visible acceptance remain unchanged.

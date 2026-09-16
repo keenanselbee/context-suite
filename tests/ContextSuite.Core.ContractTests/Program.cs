@@ -37,6 +37,11 @@ if (args is ["--office-word-revisions", var revisionWorker, var revisionEvidence
     await OfficeWordRevisionContracts.RunAsync(revisionWorker, revisionEvidence);
     return 0;
 }
+if (args is ["--office-word-revisions", var paragraphWorker, var paragraphEvidence, "paragraphs"])
+{
+    await OfficeWordRevisionContracts.RunAsync(paragraphWorker, paragraphEvidence, paragraphMarks: true);
+    return 0;
+}
 
 if (args is ["--office-execution-cleanup", var cleanupWorker, var cleanupFixtures, var cleanupEvidence])
 {

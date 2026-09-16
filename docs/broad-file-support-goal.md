@@ -5,6 +5,12 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [paragraph-mark revision controls](word-revision-application.md#paragraph-mark-controls)
+pass 16 application checks and six independent PDF text, line-layout and exact
+pixel checks. Deleted paragraph breaks join content and inserted breaks retain
+separate lines; all originals and native cleanup checks pass. The earlier
+moved-text spacing discrepancy and broader fidelity/acceptance work remain open.
+
 The [Word revision application matrix](word-revision-application.md) passes all
 30 command/publication/cleanup checks and thirteen independently inspected PDF
 text/page checks. Inline, formatting and table final pixels match clean controls;

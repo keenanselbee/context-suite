@@ -1,4 +1,4 @@
-"""Export thirteen authored Word revision controls through the actual application command."""
+"""Export authored Word revision controls through the actual application command."""
 
 import argparse
 import hashlib
@@ -17,6 +17,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--create-disposable-profiles", action="store_true")
     parser.add_argument("--worker", type=Path, required=True)
+    parser.add_argument("--paragraph-marks", action="store_true", help="Test six inserted/deleted paragraph-mark controls instead of the original thirteen cases.")
     args = parser.parse_args()
     if not args.create_disposable_profiles:
         parser.error("Explicit disposable native-profile authorization is required.")
@@ -48,10 +49,13 @@ def main():
     binaries = {str(path): digest(path) for path in sorted(set(worker.parent.rglob("*")).union(host.parent.iterdir())) if path.is_file()}
     (stage / "inputs.json").write_text(json.dumps({"Sources": sources, "Binaries": binaries, "Worker": str(worker)}, indent=2))
     assert all(digest(Path(name)) == expected for name, expected in sources.items()), "Source drift before launch"
-    print("Starting thirteen disposable Word exports; independent PDF inspection follows separately.", flush=True)
+    expected_count = 6 if args.paragraph_marks else 13
+    command = [str(host), "--office-word-revisions", str(worker), str(stage / "contracts")]
+    if args.paragraph_marks:
+        command.append("paragraphs")
+    print(f"Starting {expected_count} disposable Word exports; independent PDF inspection follows separately.", flush=True)
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
-        result = subprocess.run([str(host), "--office-word-revisions", str(worker), str(stage / "contracts")],
-                                cwd=root, stdout=output, stderr=error)
+        result = subprocess.run(command, cwd=root, stdout=output, stderr=error)
     unchanged = all(digest(Path(name)) == expected for group in (sources, binaries) for name, expected in group.items())
     (stage / "exit.json").write_text(json.dumps({"ExitCode": result.returncode, "InputsUnchanged": unchanged}))
     print((stage / "stdout.log").read_text(errors="replace"), end="", flush=True)
@@ -59,7 +63,7 @@ def main():
         print((stage / "stderr.log").read_text(errors="replace")[-4000:], flush=True)
         raise RuntimeError("Word revision execution failed; retain context/profile evidence: " + str(stage))
     report = json.loads((stage / "contracts/results.json").read_text())
-    assert report["Passed"] and len(report["Profiles"]) == 13
+    assert report["Passed"] and len(report["Profiles"]) == expected_count
     assert all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"])
 
 

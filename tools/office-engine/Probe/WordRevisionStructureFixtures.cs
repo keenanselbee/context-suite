@@ -10,10 +10,10 @@ internal static class WordRevisionStructureFixtures
     private const string Author = "w:author=\"Fixture Author\" w:date=\"2026-09-14T00:00:00Z\"";
     private const string Font = "<w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\"/><w:sz w:val=\"24\"/>";
 
-    internal static (string Name, string Filter, int Pages)[] Create(string directory)
+    internal static (string Name, string Filter, int Pages)[] Create(string directory, bool paragraphMarks = false)
     {
         var cases = new List<(string, string, int)>();
-        foreach (var kind in Kinds)
+        foreach (var kind in paragraphMarks ? new[] { "paragraph-delete", "paragraph-insert" } : Kinds)
         foreach (var variant in Variants)
         {
             var name = $"Word structures {kind} {variant}.docx";
@@ -21,6 +21,8 @@ internal static class WordRevisionStructureFixtures
             {
                 "format" => Format(variant),
                 "table" => Table(variant),
+                "paragraph-delete" => Paragraphs(variant, inserted: false),
+                "paragraph-insert" => Paragraphs(variant, inserted: true),
                 _ => Move(variant)
             };
             var parts = new Dictionary<string, string>
@@ -60,7 +62,7 @@ internal static class WordRevisionStructureFixtures
     {
         var parts = Path.GetFileNameWithoutExtension(name).Split(' ');
         if (parts.Length != 4 || parts[0] != "Word" || parts[1] != "structures" ||
-            !Kinds.Contains(parts[2]) || !Variants.Contains(parts[3]) ||
+            (!Kinds.Contains(parts[2]) && parts[2] is not ("paragraph-delete" or "paragraph-insert")) || !Variants.Contains(parts[3]) ||
             profile is not ("final-text" or "show-changes-control") ||
             profile == "show-changes-control" && parts[3] != "tracked")
             throw new ArgumentException("Unknown structural revision fixture/profile.");
@@ -69,6 +71,7 @@ internal static class WordRevisionStructureFixtures
         var body = kind switch
         {
             "format" => "FORMAT_MARKER",
+            "paragraph-delete" or "paragraph-insert" => "PARAGRAPH_LEFT PARAGRAPH_RIGHT",
             "table" when variant == "before" => "ROW_KEEP ROW_OLD",
             "table" when shown => "ROW_KEEP ROW_OLD ROW_NEW",
             "table" => "ROW_KEEP ROW_NEW",
@@ -87,6 +90,16 @@ internal static class WordRevisionStructureFixtures
         if (variant == "tracked")
             properties += $"<w:rPrChange w:id=\"1\" {Author}><w:rPr>{Font}<w:i/></w:rPr></w:rPrChange>";
         return "<w:p>" + Run("FORMAT_MARKER", properties) + "</w:p>";
+    }
+
+    private static string Paragraphs(string variant, bool inserted)
+    {
+        var left = Run("PARAGRAPH_LEFT "); var right = Run("PARAGRAPH_RIGHT");
+        var split = inserted ? variant != "before" : variant != "clean";
+        if (!split) return "<w:p>" + left + right + "</w:p>";
+        var properties = variant == "tracked"
+            ? $"<w:pPr><w:rPr><w:{(inserted ? "ins" : "del")} w:id=\"40\" {Author}/></w:rPr></w:pPr>" : "";
+        return "<w:p>" + properties + left + "</w:p><w:p>" + right + "</w:p>";
     }
 
     private static string Table(string variant)
