@@ -12,6 +12,15 @@ internal static class Program
         if (args is ["--direct-command-contracts", var stagedWorker]) return DirectCommandContracts.RunAsync(stagedWorker).GetAwaiter().GetResult();
         if (args is ["--view-contracts"]) return ViewContracts.Run();
         if (args is ["--office-app-lifecycle", var lifecycleWorker]) return OfficeAppLifecycleContracts.RunAsync(lifecycleWorker).GetAwaiter().GetResult();
+        if (args is ["--office-preparation-lifecycle", var preparationWorker, var preparationFixture])
+            return OfficeAppLifecycleContracts.RunPreparationAsync(preparationWorker, preparationFixture).GetAwaiter().GetResult();
+        if (args is ["--office-preparation-lifecycle", var filteredWorker, var filteredFixture, var preparationCase, var preparationLayout])
+            return OfficeAppLifecycleContracts.RunPreparationAsync(filteredWorker, filteredFixture, preparationCase, preparationLayout).GetAwaiter().GetResult();
+        if (args is ["--office-app-preparation-hold", var preparationRoot, var preparationRuntime, var preparationMode])
+        {
+            OfficeAppLifecycleContracts.HoldPreparationAsync(preparationRoot, preparationRuntime, preparationMode).GetAwaiter().GetResult();
+            return 0;
+        }
         if (args is ["--license-workflow-contracts"]) return LicenseWorkflowContracts.RunAsync().GetAwaiter().GetResult();
         var licenseWorkflow = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_LICENSE_WORKFLOW") == "1";
         if (!(licenseWorkflow && args.Length == 0) && (args.Length != 2 || args[0] != "--activation-file")) return 2;

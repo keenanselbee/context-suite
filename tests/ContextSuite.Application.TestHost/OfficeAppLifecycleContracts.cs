@@ -14,7 +14,7 @@ namespace ContextSuite.Application.TestHost;
 // Runs the actual App dispatcher/router lifecycle in disposable child processes.
 // Default cases use schema-only journals. Native recovery is invoked separately
 // by the opt-in Office owner-loss harness after it creates and abandons a profile.
-internal sealed class OfficeAppLifecycleContracts(string root, string mode) : IDisposable
+internal sealed partial class OfficeAppLifecycleContracts(string root, string mode) : IDisposable
 {
     private readonly List<string> _checks = [];
     private readonly List<string> _shown = [];
@@ -29,10 +29,11 @@ internal sealed class OfficeAppLifecycleContracts(string root, string mode) : ID
 
     internal void Prepare(string worker)
     {
-        if (mode is not ("missing" or "completed" or "review-forward" or "locked-forward" or "locked-close" or "native-recovery"))
+        if (!IsPreparation && mode is not ("missing" or "completed" or "review-forward" or "locked-forward" or "locked-close" or "native-recovery"))
             throw new InvalidDataException("Unknown Office application lifecycle case.");
         if (Directory.EnumerateFileSystemEntries(root).Any(path => Path.GetFileName(path) != "ActivationCleanup" &&
-            !(mode == "native-recovery" && Path.GetFileName(path) == "WorkerScratch")))
+            !(mode == "native-recovery" && Path.GetFileName(path) == "WorkerScratch") &&
+            !(IsPreparation && Path.GetFileName(path) is "WorkerScratch" or "original.docx" or "ready.json" or "owner-stdout.log" or "owner-stderr.log")))
             throw new InvalidDataException("Lifecycle preparation requires a fresh isolated directory.");
         if (mode == "native-recovery" && (!root.Contains("\\.codex-temp\\office-worker\\", StringComparison.OrdinalIgnoreCase) ||
             Directory.GetFiles(Path.Combine(root, "WorkerScratch", "OfficeContexts"), "*.ownership").Length != 1))
@@ -43,6 +44,7 @@ internal sealed class OfficeAppLifecycleContracts(string root, string mode) : ID
         using (var output = File.Create(Path.Combine(root, "fixture.bmp"))) encoder.Save(output);
         _sourceBytes = File.ReadAllBytes(Path.Combine(root, "fixture.bmp"));
         File.WriteAllText(Path.Combine(root, "settings.json"), JsonSerializer.Serialize(new SuiteSettings { PlayCompletionSound = false }));
+        if (IsPreparation) { PrepareInterruptedContext(); return; }
         if (mode is "missing" or "native-recovery") return;
         var contexts = Path.Combine(root, "WorkerScratch", "OfficeContexts"); Directory.CreateDirectory(contexts);
         var id = Guid.NewGuid(); var directory = Path.Combine(contexts, "office-" + id.ToString("N")); Directory.CreateDirectory(directory);
@@ -73,7 +75,7 @@ internal sealed class OfficeAppLifecycleContracts(string root, string mode) : ID
         {
             try
             {
-                using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(mode == "native-recovery" ? 180 : 25));
+                using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(mode == "native-recovery" || IsPreparation ? 180 : 25));
                 while (app.MainWindow?.DataContext is not MainViewModel) await Task.Delay(20, deadline.Token);
                 _model = (MainViewModel)app.MainWindow.DataContext;
                 var recovery = (Task)typeof(App).GetField("_officeRecovery", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(app)!;
@@ -84,7 +86,11 @@ internal sealed class OfficeAppLifecycleContracts(string root, string mode) : ID
                         "direct conversion completes: " + _model.Summary + " " + string.Join("; ", _model.Rows.Select(row => row.Status)));
                     return; // Exercise ordinary quiet exit without requesting it.
                 }
-                if (mode == "native-recovery")
+                if (IsPreparation)
+                {
+                    await ObservePreparationRecoveryAsync(app, recovery, deadline.Token);
+                }
+                else if (mode == "native-recovery")
                 {
                     await ObserveNativeRecoveryAsync(recovery, deadline.Token);
                     Check(_model.RecoveryNotice.Contains("Cleaned up 1 interrupted Office conversion") &&
@@ -161,6 +167,7 @@ internal sealed class OfficeAppLifecycleContracts(string root, string mode) : ID
                     "explicit shutdown awaits the bounded sharing retry rather than abandoning recovery");
                 Check(File.ReadAllBytes(Path.Combine(root, "fixture.bmp")).SequenceEqual(_sourceBytes), "original fixture remains unchanged");
                 _held?.Dispose(); _held = null;
+                if (IsPreparation) VerifyPreparationExit();
                 if (_journal is not null) Check(File.ReadAllBytes(_journal).SequenceEqual(_journalBytes!), "lifecycle preserves retained journal bytes");
                 File.WriteAllText(Path.Combine(root, "lifecycle.json"), JsonSerializer.Serialize(new { Passed = true, Mode = mode,
                     Checks = _checks, ShownWindows = _shown, ElapsedSeconds = _elapsed.Elapsed.TotalSeconds, CloseAtSeconds = _closeAt }));

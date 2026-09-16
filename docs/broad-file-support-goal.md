@@ -5,13 +5,23 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [actual-app preparation follow-up](office-app-preparation.md) passes all 55
+checks in the complete default layout: recovery guidance, forwarded Analyze,
+blocked Office work, following Word export and cleanup after shutdown. Correcting
+the native profile environment fixes the longer-path startup failure without
+shortening application storage. Broader fidelity, visible acceptance and expanded
+packaging remain open. All 15 mixed Office/image command and retry checks pass;
+three Office PDFs pass independent text, geometry and exact pixel comparison.
+All disposable profile folders/mappings and test processes are gone. The earlier
+3,532-contract foundation receipt still matches its 266 recorded source files.
+
 The [interrupted Office preparation follow-up](office-context-preparation.md)
 now cleans up recorded empty and partial copies after cancellation or verified
 owner death. Blocked cleanup retains ownership for retry; full recovery storage
 blocks further documents. All 3,532 foundation and 40 native retirement checks
 pass, with all disposable profiles removed and a clean Release test-host build.
-Torn or missing journals, actual-app acceptance of this new recovery path,
-broader fidelity and integrated release acceptance remain open. This run adds no
+Torn or missing journals still require review; broader fidelity and integrated
+release acceptance remain open. That foundation/native run adds no
 renderer, packaging or visible acceptance evidence.
 
 The [direct Office PDF command](office-direct-command.md) now dispatches

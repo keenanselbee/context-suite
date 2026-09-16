@@ -7,6 +7,12 @@ missing preparation records still require review. The
 [direct Office command](office-direct-command.md) now owns preparation through
 the application view model's lifetime.
 
+The [actual-app acceptance follow-up](office-app-preparation.md) passes all 55
+checks across interrupted preparation, recovery guidance, forwarded Analyze,
+blocked Office work and cleanup after shutdown. Correcting the native profile
+environment permits the following Word export at the original failing path
+length; the full layout is accepted without shortening application storage.
+
 `OfficeContextPreparation.CreateAsync` now constructs the source context used by
 the Office worker. It takes a context root, the runtime directory, an
 original path, an explicit DOCX/XLSX/PPTX format and the explicit calculation

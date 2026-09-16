@@ -71,6 +71,16 @@ stopped before checking PDFs because it expected sibling outputs; the inspector
 now also accepts the exact test-owned selected output folder. It does not accept
 arbitrary output paths.
 
+The [native profile environment follow-up](office-app-preparation.md) reruns all
+15 direct checks with the corrected adapter in
+`.codex-temp/office-execution/cb8320577db3481aabe99f9fb1fcb3c0`. Its
+`inspection-5e585ae2cf144f05a9e5343d51a13c20` independently verifies the three
+normal Office PDFs against the same text, geometry and exact pixel controls.
+Inputs remain unchanged and all five profiles/contexts are removed. That
+follow-up also passes 55 actual-App checks across interrupted preparation,
+forwarded Analyze, a following Word export and blocked-cleanup guidance; it
+does not establish visible spreadsheet-prompt or broader fidelity acceptance.
+
 All **110 hidden view contracts** pass, including the new window's layout,
 explicit button policies and cancellation declaration. The window's minimum
 height was finalized after engine execution; rendering and dispatch code did not
