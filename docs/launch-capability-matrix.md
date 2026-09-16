@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.8**. This checkpoint records Excel formula-date failures
-after public baseline `2f34b25` and private baseline `6b8d84a`.
+Matrix revision: **2026-09-16.9**. This checkpoint verifies exported date-cache inspection
+after public baseline `90844bb` and private baseline `6b8d84a`.
 Catalog schema 1, revision **2026-09-16.2**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
@@ -183,7 +183,10 @@ is not corrected. A later six-export formula matrix confirms that modern cached
 values pass preflight but recalculation can produce the same six wrong early-date
 displays; 36/42 displays match overall. Formula and unsupported-inspection cases
 still need a complete policy. General XLSX fidelity cannot be accepted until this
-is addressed.
+is addressed. Separate workbook-copy exports now preserve all 42 expected caches,
+and the bounded reader detects the recalculated early dates in those retained
+copies. That enables further native evaluation but does not bind the copies to
+the exact PDF instance or add a post-calculation publication guard.
 Native file/profile ownership and interruption evidence
 also do not by themselves close the separate
 [Office network-isolation evidence](office-isolation-evaluation.md).

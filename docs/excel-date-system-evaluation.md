@@ -118,7 +118,7 @@ scan completed within its supported declaration scope, not that Excel fidelity
 is complete.
 
 Locale-dependent built-ins, multi-section/conditional/localized custom formats,
-row/column format inheritance, conditional formatting, ambiguous declarations,
+row/nondefault-column format inheritance, conditional formatting, ambiguous declarations,
 Strict/compatibility date semantics and budget failures return unavailable counts.
 Incomplete inspection never becomes zero. XML DTDs/resolvers are disabled, depth
 is limited to 32, and the existing ZIP reader bounds entries to 4,096, each part
@@ -259,6 +259,79 @@ Next work must handle dates produced by recalculation, as well as stored dates
 and formats outside the scan's scope. The existing known-date refusal cannot
 close this gate. No refusal-only scope reduction or date-fidelity acceptance is
 inferred from the experiment.
+
+
+Exported cache inspection (2026-09-16)
+--------------------------------------
+
+`Test-OfficeEvaluation.ps1 -ExcelDateSnapshots` exports the same three authored
+formula workbooks to separate XLSX copies under both explicit calculation modes.
+All **42 exported numeric caches match** the chosen saved-value or recalculation
+policy. Originals retain their hashes and write times, six jobs end with no active
+children, and all 17 profile declaration checks pass. These exports produce no
+PDFs and use command-line evaluation profiles, not registered Windows profiles.
+
+The original bounded date reader returned unavailable for every copy. Inspection
+identified the known LibreOffice workbook calculation-syntax extension and an
+explicit column style of zero. The reader now accepts the exact reviewed
+extension shape and the default column style, without evaluating formulas or
+changing the input. Its complete read of all six retained copies reports three
+early dates for each recalculated 1900 variant, zero for the saved-value and 1904
+controls, and six date-formatted formula cells in every case.
+
+Microsoft documents [column styles](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.column?view=openxml-3.0.1)
+as defaults. Index zero agrees with the reader's existing fallback for cells
+without an explicit style; other column inheritance and all row inheritance
+remain unavailable. LibreOffice's [extension writer](https://raw.githubusercontent.com/LibreOffice/core/master/sc/source/filter/excel/xeextlst.cxx)
+identifies the calculation extension's URI and five string-reference conventions.
+The reader accepts those values only in a single, exact workbook extension with
+one empty payload element and the expected attribute. Unknown values, namespaces,
+attributes, nested content, repeated/relocated extensions and worksheet copies
+remain unavailable. This is interpretation of stored values and formats only;
+the syntax marker does not authorize formula evaluation. The upstream source is
+research, not a claim that its bytes match the pinned runtime.
+
+Evidence is retained at
+`.codex-temp/office-engine/a56167ab9fb54686971491918ccd26f8/evaluation-9023afb44fbc45acb75646f596c11cc6`.
+The independent [copy inspector](../tools/office-engine/Inspect-ExcelDateSnapshots.py)
+checks authored formulas, source caches, formats, date declarations, exported
+numeric caches, hashes, calculation profiles and job completion.
+`independent-date-snapshots.json` records the output declarations and observations.
+The later `stored-snapshot-inspection-6b406b2169084ba98d5bb119de2034f1.json`
+records the improved reader's six successful checks with unchanged copies.
+The original unavailable observations remain in `office-evaluation.json`.
+
+Recheck the generated copies without launching an engine:
+
+```powershell
+dotnet run --project tools/office-engine/Probe/Office.Evaluation.csproj -c Release -- `
+  --inspect-excel-date-snapshots '<completed ExcelDateSnapshots directory>'
+```
+
+The native-generation log and receipts use `.codex-temp/excel-date-snapshots`.
+The reader/probe changes were made after generation; the retained files were then
+read again rather than regenerating them. Source data is never normalized or
+rewritten to make the inspection pass. Release probe builds have zero warnings
+or errors. The existing date guard can now inspect this additional workbook
+shape, but no production snapshot-export or post-calculation guard is added.
+
+All **4,058 foundation contracts pass**, including 38 new reader-boundary checks.
+The canonical Release log and unchanged-input receipts use
+`.codex-temp/excel-snapshot-foundation`. Seven independent-inspector controls pass
+in `.codex-temp/excel-snapshot-inspector-checks.json`, including an altered numeric
+cache with a correspondingly updated hash. The first scratch mutation changed
+a shared-string index instead of the intended numeric cell and correctly left
+the cache comparison unchanged; the corrected control selects cell B2 explicitly.
+Both disposable copies are retained. Repository boundary, theme and 165-document
+checks pass. Formal packaging and visible acceptance were not rerun.
+
+LibreOfficeKit documents [copy-save semantics](https://github.com/LibreOffice/core/blob/master/include/LibreOfficeKit/LibreOfficeKit.hxx)
+that retain the loaded document's identity. A future native experiment must bind
+the calculated workbook evidence and PDF to the same loaded instance, demonstrate
+that saving the evidence does not recalculate or alter the PDF, retain deadlines
+and output bounds, and cover cleanup/cancellation before publication. Separate
+command-line exports do not establish that correspondence. This checkpoint also
+does not repair early-date rendering or settle the required launch date policy.
 
 
 Evidence and limits

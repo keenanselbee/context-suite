@@ -26,6 +26,8 @@ if (args is ["--inspect-host-completions", var hostStage, var hostCase])
     return await OfficeHostInspection.RunAsync(hostStage, hostCase);
 if (args is ["--inspect-excel-stored-dates", var dateEvidence])
     return await ExcelStoredDateEvaluation.RunAsync(dateEvidence);
+if (args is ["--inspect-excel-date-snapshots", var snapshotEvidence])
+    return await ExcelStoredDateEvaluation.RunSnapshotsAsync(snapshotEvidence);
 if (args is ["--inspect-word-body-fonts", var wordFontFixtures])
     return await WordBodyFontEvaluation.RunAsync(wordFontFixtures);
 if (args is ["--inspect-word-font-styles", var fontStyleReport, var fontStyleQpdf, var fontStylePdfium])
@@ -116,7 +118,7 @@ if (args is ["--process-owner", var ownerRoot])
     await OfficeEvaluationProcess.RunAsync(Environment.ProcessPath!, ["--process-child", "orphan", ownerRoot], ownerRoot);
     return 0;
 }
-if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates" or "ExcelFormulaDates" or "ExcelPrint" or "WordRevisions" or "WordFinalText" or "WordRevisionStructures" or "PowerPointSlides" or "EmbeddedImages")) return 2;
+if (args.Length is < 3 or > 4 || args.Length == 4 && args[3] is not ("Word" or "Excel" or "PowerPoint" or "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths" or "LegacyAnalysis" or "LegacyPdf" or "ExcelCalculation" or "FontSubstitution" or "ExcelDates" or "ExcelFormulaDates" or "ExcelDateSnapshots" or "ExcelPrint" or "WordRevisions" or "WordFinalText" or "WordRevisionStructures" or "PowerPointSlides" or "EmbeddedImages")) return 2;
 var profileMatrix = args.Length == 4 && args[3] is "ProfileMatrix" or "ProfileLengths" or "EnvironmentPaths";
 var embeddedImages = args.Length == 4 && args[3] == "EmbeddedImages";
 var fontSubstitution = args.Length == 4 && args[3] == "FontSubstitution";
@@ -125,8 +127,9 @@ var wordStructures = args.Length == 4 && args[3] == "WordRevisionStructures";
 var wordFinalText = args.Length == 4 && args[3] == "WordFinalText";
 var wordRevisions = args.Length == 4 && args[3] is "WordRevisions" or "WordFinalText" or "WordRevisionStructures";
 var excelPrint = args.Length == 4 && args[3] == "ExcelPrint";
-var excelFormulaDates = args.Length == 4 && args[3] == "ExcelFormulaDates";
-var excelDates = args.Length == 4 && args[3] is "ExcelDates" or "ExcelFormulaDates";
+var excelDateSnapshots = args.Length == 4 && args[3] == "ExcelDateSnapshots";
+var excelFormulaDates = args.Length == 4 && args[3] is "ExcelFormulaDates" or "ExcelDateSnapshots";
+var excelDates = args.Length == 4 && args[3] is "ExcelDates" or "ExcelFormulaDates" or "ExcelDateSnapshots";
 var excelCalculation = args.Length == 4 && args[3] == "ExcelCalculation";
 var legacyPdf = args.Length == 4 && args[3] == "LegacyPdf";
 var profileStyles = excelFormulaDates ? new[] { "calc-always", "calc-never" } : wordFinalText || wordStructures ? new[] { "final-text", "show-changes-control" } : excelCalculation ? new[] { "calc-default", "calc-always", "calc-never" } : legacyPdf ? new[] { "modern", "legacy" } : !profileMatrix ? new[] { "default" } : args[3] == "EnvironmentPaths"
@@ -207,6 +210,30 @@ foreach (var (name, filter, expectedPages) in conversionCases)
         var folder = Path.Combine(root, profileMatrix ? profileStyle : Path.GetFileNameWithoutExtension(name) + (legacyPdf || excelCalculation || excelFormulaDates || wordFinalText || wordStructures ? "-" + profileStyle : "")); Directory.CreateDirectory(folder);
         // Keep input and output paths identical across profile variants, then retain each result separately.
         var outputFolder = profileMatrix ? Path.Combine(root, "conversion") : folder; Directory.CreateDirectory(outputFolder);
+        if (excelDateSnapshots)
+        {
+            // Evaluation only: observe recalculated caches through a separate
+            // command-line XLSX export. This is not a production date guard or
+            // proof of same-document-instance PDF/snapshot correspondence.
+            var snapshotRun = await RunOffice(Path.GetFileNameWithoutExtension(name),
+                ["--convert-to", "xlsx:Calc MS Excel 2007 XML", "--outdir", folder, source], profileStyle);
+            File.WriteAllText(Path.Combine(folder, "conversion.json"), JsonSerializer.Serialize(snapshotRun, new JsonSerializerOptions { WriteIndented = true }));
+            var snapshot = Path.Combine(folder, name);
+            if (!File.Exists(snapshot) || new FileInfo(snapshot).Length is <= 0 or > 16 * 1024 * 1024 ||
+                Hash(source) != hash || File.GetLastWriteTimeUtc(source) != sourceWriteTime)
+                throw new InvalidDataException("Expected a bounded workbook copy with unchanged original.");
+            ExcelStoredDateInspection inspected;
+            using (var input = File.OpenRead(snapshot))
+            using (var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+                inspected = await ExcelStoredDateInspection.ReadAsync(input, deadline.Token);
+            results.Add(new { Source = name, SourceSha256 = hash, SourceWriteTimeUtc = sourceWriteTime,
+                ProfileStyle = profileStyle, Completed = true, snapshotRun.Profile, snapshotRun.Milliseconds,
+                SnapshotSha256 = Hash(snapshot), StoredDates = inspected,
+                DatePreflight = new { datePreflight!.FormatId, datePreflight.Refusal, datePreflight.StoredDates } });
+            SaveResults();
+            Console.WriteLine($"OBSERVED: {name} ({profileStyle}): workbook copy complete; date scan complete={inspected.Complete}, early={inspected.EarlyDateCells}, formulas={inspected.DateFormulaCells}.");
+            continue;
+        }
         var options = new Dictionary<string, object>();
         foreach (var (key, value) in new[] { ("UseLosslessCompression", true), ("ReduceImageResolution", false), ("UseTaggedPDF", true),
             ("ExportBookmarks", true), ("ExportNotes", false), ("ExportNotesPages", false), ("ExportOnlyNotesPages", false),

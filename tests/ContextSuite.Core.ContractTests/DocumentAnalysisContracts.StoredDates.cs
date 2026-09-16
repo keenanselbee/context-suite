@@ -47,6 +47,38 @@ internal static partial class DocumentAnalysisContracts
             check((await Inspect(Parts(code))).EarlyDateCells == 0, "stored Excel dates: numeric/time/literal format is not a calendar date " + code);
         var boundary = await Inspect(Parts(values: "0 0.5 1 59.999 60 60.999 61 61.001 -1"));
         check(boundary.EarlyDateCells == 6, "stored Excel dates: zero and fractional boundaries are retained as risks");
+        const string calculationExtension = "<extLst><ext xmlns:loext='http://schemas.libreoffice.org/' uri='{7626C862-2A13-11E5-B345-FEFF819CDC9F}'><loext:extCalcPr stringRefSyntax='CalcA1ExcelA1'/></ext></extLst>";
+        foreach (var syntax in new[] { "CalcA1", "ExcelA1", "ExcelR1C1", "CalcA1ExcelA1", "Unspecified" })
+        {
+            var parts = Parts("yyyy\\-mm\\-dd", properties: calculationExtension.Replace("CalcA1ExcelA1", syntax));
+            parts[4] = (parts[4].Name, parts[4].Text.Replace("<sheetData>", "<cols><col min='1' max='1' style='0'/></cols><sheetData>"));
+            var observed = await Inspect(parts);
+            check(observed.Complete && observed.EarlyDateCells == 3 && observed.DateFormulaCells == 0,
+                "stored Excel dates: known calculation syntax and default column style preserve direct date evidence: " + syntax);
+        }
+        foreach (var extension in new[] {
+            calculationExtension.Replace("CalcA1ExcelA1", "unknown"),
+            calculationExtension.Replace("stringRefSyntax=", "other="),
+            calculationExtension.Replace("<loext:extCalcPr ", "<loext:extCalcPr extra='1' "),
+            calculationExtension.Replace("http://schemas.libreoffice.org/", "urn:unknown"),
+            calculationExtension.Replace("{7626C862-2A13-11E5-B345-FEFF819CDC9F}", "wrong"),
+            calculationExtension.Replace("'/></ext>", "'><loext:child/></loext:extCalcPr></ext>"),
+            calculationExtension.Replace("'/></ext>", "'>unexpected</loext:extCalcPr></ext>"),
+            calculationExtension.Replace("</extLst>", "<ext uri='unknown'/></extLst>"),
+            calculationExtension + calculationExtension,
+            "<bookViews>" + calculationExtension + "</bookViews>" })
+        {
+            var observed = await Inspect(Parts(properties: extension));
+            check(!observed.Complete && observed.EarlyDateCells is null && observed.DateFormulaCells is null,
+                "stored Excel dates: unreviewed or ambiguous calculation extension retains unavailable counts");
+        }
+        var wrongPart = Parts(); wrongPart[4] = (wrongPart[4].Name, wrongPart[4].Text.Replace("</worksheet>", calculationExtension + "</worksheet>"));
+        check(!(await Inspect(wrongPart)).Complete, "stored Excel dates: workbook extension is not accepted in a worksheet");
+        foreach (var style in new[] { "1", "-1", "unknown" })
+        {
+            var parts = Parts(); parts[4] = (parts[4].Name, parts[4].Text.Replace("<sheetData>", $"<cols><col min='1' max='1' style='{style}'/></cols><sheetData>"));
+            check(!(await Inspect(parts)).Complete, "stored Excel dates: nondefault or invalid column style remains unavailable: " + style);
+        }
         foreach (var (id, expected) in new[] { (14, 3), (15, 3), (16, 3), (17, 3), (22, 3), (18, 0), (21, 0), (45, 0), (46, 0), (49, 0) })
         {
             var parts = Parts(formatId: id);

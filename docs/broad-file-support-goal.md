@@ -5,6 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [exported-cache experiment](excel-date-system-evaluation.md#exported-cache-inspection-2026-09-16)
+finds all 42 numeric caches preserved according to the selected calculation
+policy. The bounded date reader now handles the reviewed LibreOffice calculation
+extension and default column style, identifying the affected recalculated dates
+in all six retained workbook copies. All 4,058 foundation contracts pass, with
+38 new boundary checks, plus seven independent-inspector controls. Same-instance
+native PDF/evidence binding and corrected date rendering remain open; these
+separate workbook exports do not constitute a production publication guard.
+
 The [Excel formula-date experiment](excel-date-system-evaluation.md#formula-results-after-recalculation-2026-09-16)
 confirms a remaining fidelity defect: modern saved results pass source preflight,
 but recalculation produces six incorrect early-1900 displays. Six exports yield

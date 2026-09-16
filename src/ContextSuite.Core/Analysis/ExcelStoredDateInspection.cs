@@ -37,7 +37,7 @@ public sealed record ExcelStoredDateInspection(bool Complete, int? EarlyDateCell
             }
             var workbookName = names.Where(pair => pair.Value == Prefix + "sheet.main+xml").Select(pair => pair.Key).ToArray();
             if (workbookName.Length != 1) throw new InvalidDataException("Ordinary workbook declaration required.");
-            var workbook = Parse(await package.ReadPartAsync(workbookName[0]), token);
+            var workbook = Parse(await package.ReadPartAsync(workbookName[0]), token, allowCalculationSyntax: true);
             Require(workbook, "workbook");
             var properties = workbook.Elements(XName.Get("workbookPr", Spreadsheet)).ToArray();
             if (properties.Length > 1) throw new InvalidDataException("Ambiguous date base.");
@@ -65,10 +65,11 @@ public sealed record ExcelStoredDateInspection(bool Complete, int? EarlyDateCell
             {
                 if (++sheets > 64) throw new InvalidDataException("Worksheet part limit.");
                 var sheet = Parse(await package.ReadPartAsync(name), token); Require(sheet, "worksheet");
-                // These can supply an effective format different from a cell's direct style.
+                // Column style zero uses the same format as an unstyled cell.
+                // Other inheritance can differ from the direct style inspected below.
                 if (sheet.Descendants().Any(element => element.Name.LocalName == "conditionalFormatting") ||
                     sheet.Descendants(XName.Get("row", Spreadsheet)).Any(row => row.Attribute("s") is not null) ||
-                    sheet.Descendants(XName.Get("col", Spreadsheet)).Any(col => col.Attribute("style") is not null))
+                    sheet.Descendants(XName.Get("col", Spreadsheet)).Any(col => col.Attribute("style") is not null && Integer(col, "style") != 0))
                     throw new InvalidDataException("Effective formatting requires additional interpretation.");
                 foreach (var cell in sheet.Elements(XName.Get("sheetData", Spreadsheet)).Elements(XName.Get("row", Spreadsheet)).Elements(XName.Get("c", Spreadsheet)))
                 {
@@ -140,7 +141,7 @@ public sealed record ExcelStoredDateInspection(bool Complete, int? EarlyDateCell
         return text.Contains('y') || text.Contains('d') || !elapsed && text.Contains('m') && !text.Contains('h') && !text.Contains('s');
     }
 
-    private static XElement Parse(byte[] bytes, CancellationToken token)
+    private static XElement Parse(byte[] bytes, CancellationToken token, bool allowCalculationSyntax = false)
     {
         var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null,
             MaxCharactersInDocument = DocumentPackageReader.MaximumPartBytes };
@@ -150,6 +151,23 @@ public sealed record ExcelStoredDateInspection(bool Complete, int? EarlyDateCell
         stream.Position = 0;
         using var bounded = XmlReader.Create(stream, settings);
         var result = XElement.Load(bounded);
+        // This known workbook extension selects string-reference formula syntax,
+        // not stored numeric values or number formats. Never interpret formulas.
+        // Validate its exact shape before omitting it from this read-only scan.
+        if (allowCalculationSyntax && result.Name == XName.Get("workbook", Spreadsheet))
+        {
+            var lists = result.Elements(XName.Get("extLst", Spreadsheet)).ToArray();
+            if (lists.Length == 1 && !lists[0].HasAttributes && lists[0].Elements().Count() == 1 &&
+                lists[0].Elements().Single() is { } extension && extension.Name == XName.Get("ext", Spreadsheet) &&
+                extension.Attributes().Count(attribute => !attribute.IsNamespaceDeclaration) == 1 &&
+                (string?)extension.Attribute("uri") == "{7626C862-2A13-11E5-B345-FEFF819CDC9F}" &&
+                extension.Elements().Count() == 1 && extension.Elements().Single() is { } syntax &&
+                syntax.Name == XName.Get("extCalcPr", "http://schemas.libreoffice.org/") &&
+                !syntax.HasElements && syntax.Value.Length == 0 &&
+                syntax.Attributes().Count(attribute => !attribute.IsNamespaceDeclaration) == 1 &&
+                (string?)syntax.Attribute("stringRefSyntax") is "CalcA1" or "ExcelA1" or "ExcelR1C1" or "CalcA1ExcelA1" or "Unspecified")
+                lists[0].Remove();
+        }
         if (result.DescendantsAndSelf().Any(element => element.Name.NamespaceName is not (Spreadsheet or Types) ||
             element.Attributes().Any(attribute => !attribute.IsNamespaceDeclaration && attribute.Name.NamespaceName.Length != 0 &&
                 attribute.Name != XNamespace.Xml + "space" && attribute.Name != XName.Get("id", "http://schemas.openxmlformats.org/officeDocument/2006/relationships"))))

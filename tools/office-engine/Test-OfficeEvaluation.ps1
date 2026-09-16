@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $PreparedDirectory, [Parameter(Mandatory)][string] $PdfPreparedDirectory,
-    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelFormulaDates, [switch] $ExcelPrint, [switch] $WordRevisions, [switch] $WordFinalText, [switch] $WordRevisionStructures, [switch] $PowerPointSlides, [switch] $EmbeddedImages)
+    [Parameter(Mandatory)][string] $PdfiumPreparedDirectory, [switch] $ProfileMatrix, [switch] $ProfileLengths, [switch] $EnvironmentPaths, [switch] $LegacyAnalysis, [switch] $LegacyPdf, [switch] $ExcelCalculation, [switch] $FontSubstitution, [switch] $ExcelDates, [switch] $ExcelFormulaDates, [switch] $ExcelDateSnapshots, [switch] $ExcelPrint, [switch] $WordRevisions, [switch] $WordFinalText, [switch] $WordRevisionStructures, [switch] $PowerPointSlides, [switch] $EmbeddedImages)
 $ErrorActionPreference = 'Stop'
-if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelFormulaDates, $ExcelPrint, $WordRevisions, $WordFinalText, $WordRevisionStructures, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
+if (@($ProfileMatrix, $ProfileLengths, $EnvironmentPaths, $LegacyAnalysis, $LegacyPdf, $ExcelCalculation, $FontSubstitution, $ExcelDates, $ExcelFormulaDates, $ExcelDateSnapshots, $ExcelPrint, $WordRevisions, $WordFinalText, $WordRevisionStructures, $PowerPointSlides, $EmbeddedImages).Where({ $_ }).Count -gt 1) { throw 'Choose one evaluation mode at a time.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $office = (Resolve-Path -LiteralPath $PreparedDirectory).Path
 $pdf = (Resolve-Path -LiteralPath $PdfPreparedDirectory).Path
@@ -42,6 +42,7 @@ if ($ExcelCalculation) { $probeArguments += 'ExcelCalculation' }
 if ($FontSubstitution) { $probeArguments += 'FontSubstitution' }
 if ($ExcelDates) { $probeArguments += 'ExcelDates' }
 if ($ExcelFormulaDates) { $probeArguments += 'ExcelFormulaDates' }
+if ($ExcelDateSnapshots) { $probeArguments += 'ExcelDateSnapshots' }
 if ($ExcelPrint) { $probeArguments += 'ExcelPrint' }
 if ($PowerPointSlides) { $probeArguments += 'PowerPointSlides' }
 if ($EmbeddedImages) { $probeArguments += 'EmbeddedImages' }
@@ -65,3 +66,5 @@ if ($PowerPointSlides) { Write-Output 'Slide-policy completion records order, hi
 if ($EmbeddedImages) { Write-Output 'Image export completion requires Inspect-OfficeImages.py before claiming pixel/resolution preservation.' }
 
 if ($WordRevisionStructures) { Write-Output 'Twelve structural revision exports require independent text/pixel inspection; all observations are retained, and text mismatches fail the run.' }
+
+if ($ExcelDateSnapshots) { Write-Output 'Workbook copies expose engine caches for inspection; no PDF correspondence, corrected date rendering or publication guard is established.' }
