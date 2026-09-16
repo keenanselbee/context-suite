@@ -60,6 +60,14 @@ public sealed partial record WordBodyFontInspection(bool Available, int TextRuns
                     knownDependencies = settings.Name == W + "settings" &&
                         settings.Elements().All(element => element.Name == W + "revisionView" || element.Name == W + "trackRevisions");
                 }
+                var fontTableName = SelectPart(links, "fontTable", WordType + "fontTable+xml");
+                if (knownDependencies && fontTableName is not null)
+                {
+                    var fontTable = Parse(await package.ReadPartAsync(fontTableName), token);
+                    knownDependencies = PlainFontTable(fontTable);
+                    // Font programs and other font-table dependencies are not inspected.
+                    if ((await ReadLinksAsync(fontTableName)).Count != 0) knownDependencies = false;
+                }
             }
             token.ThrowIfCancellationRequested();
             return result with { InspectedBytes = package.InspectedBytes,
@@ -84,7 +92,7 @@ public sealed partial record WordBodyFontInspection(bool Available, int TextRuns
                     if (link.Name != XName.Get("Relationship", Relationships) || string.IsNullOrWhiteSpace(id) ||
                         !ids.Add(id) || string.IsNullOrWhiteSpace(type) || mode is not (null or "Internal" or "External"))
                         throw new InvalidDataException("Ambiguous relationships.");
-                    if (type is not (RelationPrefix + "officeDocument" or RelationPrefix + "styles" or RelationPrefix + "theme" or RelationPrefix + "settings"))
+                    if (type is not (RelationPrefix + "officeDocument" or RelationPrefix + "styles" or RelationPrefix + "theme" or RelationPrefix + "settings" or RelationPrefix + "fontTable"))
                     {
                         // Uninspected dependencies can supply fonts/aliases or rendered
                         // content. Keep their reports rather than claiming exclusivity.

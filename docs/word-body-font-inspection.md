@@ -69,14 +69,30 @@ name proven to occur only in inactive revision properties.
 This requires at least one live text run, every counted run resolved, no coverage
 issues, a closed set of understood main-story elements and no uninspected
 relationships. The only inspected settings are revision visibility and tracking.
-Any other settings or dependency, including a font table with possible aliases,
-disables filtering. Any matching live declaration in the body, styles or theme
+Other settings and uninspected dependencies disable filtering. A relationship-
+selected plain font table is now inspected before filtering: unique family names
+and scalar metric properties alone do not establish current text usage. Alternate
+names, embedded fonts, font-table relationships, extensions and ambiguous or
+oversized tables retain every report. Any matching live declaration in the body, styles or theme
 also disqualifies the family, even if the declaration appears unused. Non-text
 run and paragraph-mark declarations count against exclusivity.
 
 Unknown reports and active families keep their original review behavior. The
-native report and transport remain unchanged. This is not a general font-table,
-alias, revision or whole-document absence detector; broader coverage remains open.
+native report and transport remain unchanged. This is not a general alias,
+revision or whole-document absence detector; broader coverage remains open.
+
+The table reader permits at most 256 case-insensitively unique names of 128
+characters, under the existing package/XML budgets. It recognizes only the
+standard scalar charset, family, notTrueType, panose1, pitch and signature leaves;
+duplicate properties, nested content and unknown attributes retain reports.
+It never opens an embedded font program or resolves an alternate name.
+
+Microsoft's [font-table definition](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.font)
+distinguishes family names, substitution metrics and embedded forms. Its
+[alternate-name definition](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.altname)
+allows additional family lookup names; these require separate resolution before
+any revision-only report may be filtered. The plain-table export evidence is
+recorded in the [style matrix](word-font-style-evaluation.md).
 
 Limits and failure behavior
 ---------------------------

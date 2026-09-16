@@ -5,6 +5,16 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [plain Word font-table check](word-font-style-evaluation.md#plain-font-table-verification)
+now lets supported revision-only font warnings remain quiet when a document has
+ordinary family/metric declarations. Aliases, embedded fonts and unknown or
+ambiguous table evidence retain their warnings. All 3,913 foundation checks and
+fifteen fresh exports pass, including 80 application checks and independent PDF
+comparisons, preserving exact prior
+pixels, text and font names. Originals and runtime inputs are unchanged; every
+disposable native profile and context is removed. Broader font coverage and
+commercial release acceptance remain open.
+
 The [Word font-style export matrix](word-font-style-evaluation.md) found and
 corrected an unnecessary review for a font confined to deleted text. Bounded
 source evidence now filters only proven inactive revision names, retaining

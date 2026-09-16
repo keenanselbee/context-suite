@@ -5,6 +5,42 @@ namespace ContextSuite.Core.Analysis;
 
 public sealed partial record WordBodyFontInspection
 {
+    private static bool PlainFontTable(XElement table)
+    {
+        if (table.Name != W + "fonts" || table.Attributes().Any(attribute => !attribute.IsNamespaceDeclaration) ||
+            table.Nodes().OfType<XText>().Any(text => !string.IsNullOrWhiteSpace(text.Value)))
+            return false;
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var font in table.Elements())
+        {
+            var name = (string?)font.Attribute(W + "name");
+            if (font.Name != W + "font" || string.IsNullOrWhiteSpace(name) || name.Length > 128 ||
+                name.Any(char.IsControl) || !names.Add(name) || names.Count > 256 ||
+                font.Attributes().Any(attribute => !attribute.IsNamespaceDeclaration && attribute.Name != W + "name") ||
+                font.Nodes().OfType<XText>().Any(text => !string.IsNullOrWhiteSpace(text.Value)))
+                return false;
+            var properties = new HashSet<XName>();
+            foreach (var property in font.Elements())
+            {
+                // These leaves describe metrics, not alternative family names or programs.
+                // Aliases, embedding, extensions and ambiguous properties retain all reports.
+                if (property.Name.NamespaceName != Word || property.HasElements ||
+                    !string.IsNullOrWhiteSpace(property.Value) || !properties.Add(property.Name))
+                    return false;
+                var allowed = property.Name.LocalName switch
+                {
+                    "charset" or "family" or "notTrueType" or "panose1" or "pitch" => new[] { "val" },
+                    "sig" => ["usb0", "usb1", "usb2", "usb3", "csb0", "csb1"],
+                    _ => []
+                };
+                if (allowed.Length == 0 || property.Attributes().Any(attribute => !attribute.IsNamespaceDeclaration &&
+                    (attribute.Name.NamespaceName != Word || !allowed.Contains(attribute.Name.LocalName))))
+                    return false;
+            }
+        }
+        return true;
+    }
+
     // Call only on source evidence retained under the application's original lease.
     // Unknown reports remain intact; this never changes the renderer's raw report.
     public ImmutableArray<string> KeepActiveReports(ImmutableArray<string> reports) =>

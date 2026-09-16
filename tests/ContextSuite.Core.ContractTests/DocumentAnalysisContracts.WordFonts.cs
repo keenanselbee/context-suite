@@ -186,10 +186,70 @@ internal static partial class DocumentAnalysisContracts
             "Word font review: theme alternatives disqualify revision-only evidence");
         var unknownDependency = Parts(Paragraph(deleted + Run()));
         unknownDependency[3] = (unknownDependency[3].Name, unknownDependency[3].Text.Replace("</Relationships>",
-            $"<Relationship Id='fonts' Type='{rel}fontTable' Target='fontTable.xml'/></Relationships>"));
+            $"<Relationship Id='header' Type='{rel}header' Target='header.xml'/></Relationships>"));
         var dependency = await Inspect(unknownDependency);
         check(dependency.Available && dependency.KeepActiveReports(["Deleted Family"]).SequenceEqual(["Deleted Family"]),
-            "Word font review: uninspected font/alias dependencies retain reports");
+            "Word font review: uninspected story dependencies retain reports");
+        (string Name, string Text)[] FontTable(string contents)
+        {
+            var parts = Parts(Paragraph(deleted + Run()));
+            parts[0] = (parts[0].Name, parts[0].Text.Replace("</Types>",
+                $"<Override PartName='/fonts/catalog.xml' ContentType='{type}fontTable+xml'/></Types>"));
+            parts[3] = (parts[3].Name, parts[3].Text.Replace("</Relationships>",
+                $"<Relationship Id='fonts' Type='{rel}fontTable' Target='../fonts/catalog.xml'/></Relationships>"));
+            return [.. parts, ("fonts/catalog.xml", $"<w:fonts xmlns:w='{word}'>{contents}</w:fonts>")];
+        }
+        var metrics = "<w:panose1 w:val='020B0604020202020204'/><w:charset w:val='00'/><w:family w:val='swiss'/>" +
+            "<w:pitch w:val='variable'/><w:sig w:usb0='00000001' w:usb1='00000000' w:usb2='00000000' w:usb3='00000000' w:csb0='00000001' w:csb1='00000000'/>";
+        var plainTable = $"<w:font w:name='Default Family'>{metrics}</w:font><w:font w:name='Deleted Family'/>";
+        var withTable = await Inspect(FontTable(plainTable));
+        check(withTable.Available && withTable.Families.SequenceEqual(["Default Family"]) &&
+            withTable.KeepActiveReports(["Deleted Family", "Default Family", "Unknown"]).SequenceEqual(["Default Family", "Unknown"]),
+            "Word font review: ordinary relationship-selected table metrics do not turn deleted-only declarations into usage");
+        foreach (var (label, contents) in new[]
+        {
+            ("alias", "<w:font w:name='Default Family'><w:altName w:val='Deleted Family,Other'/></w:font>"),
+            ("embedded regular", "<w:font w:name='Default Family'><w:embedRegular/></w:font>"),
+            ("embedded bold", "<w:font w:name='Default Family'><w:embedBold/></w:font>"),
+            ("embedded italic", "<w:font w:name='Default Family'><w:embedItalic/></w:font>"),
+            ("embedded bold italic", "<w:font w:name='Default Family'><w:embedBoldItalic/></w:font>"),
+            ("unknown property", "<w:font w:name='Default Family'><w:unknown/></w:font>"),
+            ("duplicate name", "<w:font w:name='Arial'/><w:font w:name='ARIAL'/>"),
+            ("duplicate property", "<w:font w:name='Arial'><w:pitch/><w:pitch/></w:font>"),
+            ("foreign property", "<w:font w:name='Arial'><x:pitch xmlns:x='urn:unknown'/></w:font>"),
+            ("nested property", "<w:font w:name='Arial'><w:pitch><w:altName/></w:pitch></w:font>"),
+            ("unknown attribute", "<w:font w:name='Arial' w:alias='Deleted Family'/>"),
+            ("property attribute", "<w:font w:name='Arial'><w:pitch w:alias='Deleted Family'/></w:font>"),
+            ("missing name", "<w:font/>"),
+            ("long name", $"<w:font w:name='{new string('a', 129)}'/>"),
+            ("control in name", "<w:font w:name='Bad&#xA;Name'/>"),
+            ("text content", "<w:font w:name='Arial'>Uninterpreted text</w:font>"),
+            ("too many names", string.Concat(Enumerable.Range(0, 257).Select(i => $"<w:font w:name='Family {i}'/>")))
+        })
+        {
+            var result = await Inspect(FontTable(contents));
+            check(result.Available && result.KeepActiveReports(["Deleted Family"]).SequenceEqual(["Deleted Family"]),
+                "Word font review: font-table " + label + " retains reports without losing body evidence");
+        }
+        var tableDependency = FontTable(plainTable);
+        var tableRelationships = $"<Relationships xmlns='http://schemas.openxmlformats.org/package/2006/relationships'><Relationship Id='font' Type='{rel}font' Target='font.odttf'/></Relationships>";
+        var embeddedDependency = await Inspect([.. tableDependency, ("fonts/_rels/catalog.xml.rels", tableRelationships)]);
+        check(embeddedDependency.KeepActiveReports(["Deleted Family"]).SequenceEqual(["Deleted Family"]),
+            "Word font review: font-table relationships retain reports without reading font programs");
+        foreach (var (index, before, after) in new[]
+        {
+            (0, type + "fontTable+xml", "application/xml"),
+            (3, "../fonts/catalog.xml", "../fonts/missing.xml"),
+            (3, "Target='../fonts/catalog.xml'", "Target='../fonts/catalog.xml' TargetMode='External'"),
+            (6, "<w:fonts ", "<!DOCTYPE fonts [<!ENTITY bad SYSTEM 'file:///forbidden'>]><w:fonts ")
+        })
+        {
+            var parts = FontTable(plainTable);
+            parts[index] = (parts[index].Name, parts[index].Text.Replace(before, after, StringComparison.Ordinal));
+            var result = await Inspect(parts);
+            check(!result.Available && result.KeepActiveReports(["Deleted Family"]).SequenceEqual(["Deleted Family"]),
+                "Word font review: invalid selected font-table package evidence retains reports");
+        }
         var unknownSettings = Parts(Paragraph(deleted + Run()));
         unknownSettings[0] = (unknownSettings[0].Name, unknownSettings[0].Text.Replace("</Types>",
             $"<Override PartName='/settings.xml' ContentType='{type}settings+xml'/></Types>"));

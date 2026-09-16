@@ -88,6 +88,14 @@ internal static class WordFontStyleFixtures
                     </w:body></w:document>
                     """
             };
+            if (item.Key is "deleted-missing" or "old-formatting")
+            {
+                parts["[Content_Types].xml"] = parts["[Content_Types].xml"].Replace("</Types>",
+                    "<Override PartName='/word/fontTable.xml' ContentType='application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml'/></Types>");
+                parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"].Replace("</Relationships>",
+                    $"<Relationship Id='fonts' Type='{office}fontTable' Target='fontTable.xml'/></Relationships>");
+                parts["word/fontTable.xml"] = $"<w:fonts xmlns:w='{w}'><w:font w:name='Arial'><w:family w:val='swiss'/><w:pitch w:val='variable'/></w:font><w:font w:name='{Missing}'/></w:fonts>";
+            }
             using var file = new FileStream(Path.Combine(directory, Name(item.Key)), FileMode.CreateNew);
             using var archive = new ZipArchive(file, ZipArchiveMode.Create);
             foreach (var part in parts)

@@ -30,6 +30,11 @@ final-text export policy must still exclude deleted text and old formatting.
 No source document is rewritten. Fixtures contain no fields, external links,
 embedded objects or executable content.
 
+The current deleted-text and old-formatting fixtures also contain an explicitly
+related font table with Arial metrics and the absent family name. The original
+verification below used the earlier fixtures without this table; its retained
+results are historical evidence and are not relabeled as table coverage.
+
 Application and independent checks
 ----------------------------------
 
@@ -111,6 +116,42 @@ new PDFs with the first run: exact pixels, extracted text and normalized font
 names are unchanged. The review count falls from three to two. This validates
 the review correction without introducing a spacing tolerance or changing the
 rendered result. The raw native callback and host/worker protocol are unchanged.
+
+Plain font-table verification
+-----------------------------
+
+Execution `04f2dcae50ac4f6a8b20059604ded307` adds related plain font tables to
+the deleted-text and old-formatting fixtures. All **80 application checks** pass:
+only the two actively missing-font cases request review, all fifteen validated
+copies publish, originals retain their bytes and write times, and all fifteen
+native profiles and contexts are removed. Source, fixture, runtime and binary
+hashes remain unchanged throughout the run.
+
+Independent inspection `style-inspection-c005d4ca958c47b7815dd19ef3bbe420` passes
+all fifteen text/page-geometry checks, three available-font controls, eleven
+exact style/control comparisons and three distinct-font controls. Receipt
+`style-inspection-receipt-8532fd5250f847899f435caaa11bdc5e.json` binds the passed
+inspection to unchanged inputs and pinned PDF readers.
+
+The first inspection refused the added eighth package part because its fixture
+check hard-coded seven parts. That failed receipt is retained. The inspector now
+requires the authored seven/eight-part count and still compares every part's
+identity, size and bytes. The successful rerun inspects the same exports; no
+native export was repeated to fix this inspection-only assumption.
+
+The additional `font-table-comparison.json` verifies that only those two source
+fixtures gain font-table content, relationships and content types. All fifteen
+PDFs retain the earlier run's exact pixels, text and normalized font names;
+the review count remains two. The reader's separate foundation guards retain
+reports for aliases, embedded programs, table relationships, malformed and
+oversized evidence. No broader alias or embedded-font support is claimed.
+
+All **3,913 foundation contracts** pass with unchanged source inputs, including
+46 added table/dependency guards. The final receipts and log use
+`.codex-temp/word-font-table-final-foundation-*`. Worker, contract-test and
+inspection-probe Release builds have zero warnings/errors. Repository boundary,
+system-theme policy and 161-document checks pass. No new visible-window or
+screen-reader acceptance was performed.
 
 Remaining scope
 ---------------

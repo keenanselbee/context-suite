@@ -113,7 +113,8 @@ internal static class OfficeWordFontStyleInspection
     private static void VerifyParts(string source, string expected)
     {
         using var actual = ZipFile.OpenRead(source); using var authored = ZipFile.OpenRead(expected);
-        if (actual.Entries.Count != 7 || authored.Entries.Count != 7) throw new IOException("Changed authored font-style package parts.");
+        if (authored.Entries.Count is not (7 or 8) || actual.Entries.Count != authored.Entries.Count)
+            throw new IOException("Changed authored font-style package parts.");
         foreach (var entry in authored.Entries)
         {
             var found = actual.Entries.SingleOrDefault(item => item.FullName == entry.FullName);
