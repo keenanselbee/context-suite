@@ -1,7 +1,7 @@
 File Type Coverage
 ==================
 
-Revision: 2026-09-16.2; expanded catalog and bounded structure analysis, not release acceptance
+Revision: 2026-09-16.3; expanded catalog and bounded structure analysis, not release acceptance
 
 Transformation status reconciled 2026-09-16. The
 [launch capability matrix](launch-capability-matrix.md) distinguishes the current
@@ -24,7 +24,8 @@ The historical [source retrieval audit](catalog-source-review.json) covers 223 r
 186 retrieved, 7 search-indexed and 30 unavailable to the research tool. This
 is a reachability/title review, not completed factual, variant or reuse-rights
 acceptance. Unavailable retrieval does not establish a broken URL. MIME coverage
-beyond the first 36 records and complete alias/variant provenance remain pending. The later
+beyond the initially reviewed records and complete alias/variant provenance remain
+separate work; the later MIME expansion below now covers 100 records. The later
 [common image review](image-header-analysis.md) verifies four descriptions and
 their newly implemented bounded detectors against primary specifications.
 The [alias review](catalog-alias-review.md) adds six missing alternative meanings
@@ -35,7 +36,11 @@ for 36 records, with per-identifier provenance and qualified technical details.
 The [registration/variant reconciliation](catalog-mime-variant-review.md) reviews
 all those claims and adds seven supported alias associations. Shared HEIF/AVIF
 suffixes remain ambiguous without content evidence. Wider alias and additional
-MIME coverage remain open.
+MIME coverage remain open. The [MIME expansion](catalog-mime-expansion.md) adds
+75 associations to 64 more records after checking registration and file-family
+scope. There are now 134 associations across 100 records; 145 records make no
+MIME claim. RTP-only MP2T and general AU/audio-basic associations are deliberately
+excluded. No identification field, detector or executable capability changes.
 The [font header review](font-header-analysis.md) verifies five font descriptions
 and adds bounded declarations without installation, rendering or decompression.
 The [audio purpose review](catalog-audio-review.md) checks all eighteen Audio

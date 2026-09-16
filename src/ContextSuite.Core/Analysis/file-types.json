@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "2026-09-16.2",
+  "revision": "2026-09-16.3",
   "types": [
     {
       "id": "3gp",
@@ -11,7 +11,17 @@
         ".3gp",
         ".3g2"
       ],
-      "source": "https://www.rfc-editor.org/rfc/rfc3839.html"
+      "source": "https://www.rfc-editor.org/rfc/rfc3839.html",
+      "mimeTypes": [
+        {
+          "value": "video/3gpp",
+          "source": "https://www.iana.org/assignments/media-types/video/3gpp"
+        },
+        {
+          "value": "video/3gpp2",
+          "source": "https://www.iana.org/assignments/media-types/video/3gpp2"
+        }
+      ]
     },
     {
       "id": "3mf",
@@ -21,7 +31,13 @@
       "extensions": [
         ".3mf"
       ],
-      "source": "https://3mf.io/spec/"
+      "source": "https://3mf.io/spec/",
+      "mimeTypes": [
+        {
+          "value": "model/3mf",
+          "source": "https://www.iana.org/assignments/media-types/model/3mf"
+        }
+      ]
     },
     {
       "id": "7z",
@@ -52,7 +68,13 @@
         ".aac",
         ".adts"
       ],
-      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000036.shtml"
+      "source": "https://www.loc.gov/preservation/digital/formats/fdd/fdd000036.shtml",
+      "mimeTypes": [
+        {
+          "value": "audio/aac",
+          "source": "https://www.iana.org/assignments/media-types/audio/aac"
+        }
+      ]
     },
     {
       "id": "access",
@@ -126,7 +148,17 @@
         ".arrow",
         ".feather"
       ],
-      "source": "https://arrow.apache.org/docs/python/feather.html"
+      "source": "https://arrow.apache.org/docs/python/feather.html",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.apache.arrow.file",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.apache.arrow.file"
+        },
+        {
+          "value": "application/vnd.apache.arrow.stream",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.apache.arrow.stream"
+        }
+      ]
     },
     {
       "id": "aseprite",
@@ -148,7 +180,13 @@
         ".asf",
         ".wmv"
       ],
-      "source": "https://learn.microsoft.com/en-us/windows/win32/wmformat/overview-of-the-asf-format"
+      "source": "https://learn.microsoft.com/en-us/windows/win32/wmformat/overview-of-the-asf-format",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.ms-asf",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-asf"
+        }
+      ]
     },
     {
       "id": "ass",
@@ -317,7 +355,13 @@
       "extensions": [
         ".cab"
       ],
-      "source": "https://learn.microsoft.com/en-us/windows/win32/msi/cabinet-files"
+      "source": "https://learn.microsoft.com/en-us/windows/win32/msi/cabinet-files",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.ms-cab-compressed",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-cab-compressed"
+        }
+      ]
     },
     {
       "id": "caf",
@@ -381,7 +425,13 @@
       "extensions": [
         ".chm"
       ],
-      "source": "https://learn.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-1-4-sdk"
+      "source": "https://learn.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-1-4-sdk",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.ms-htmlhelp",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-htmlhelp"
+        }
+      ]
     },
     {
       "id": "cmake",
@@ -406,7 +456,13 @@
         ".dae"
       ],
       "source": "https://www.khronos.org/collada/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "model/vnd.collada+xml",
+          "source": "https://www.iana.org/assignments/media-types/model/vnd.collada+xml"
+        }
+      ]
     },
     {
       "id": "configuration",
@@ -523,7 +579,13 @@
         ".dart"
       ],
       "source": "https://dart.dev/overview",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/vnd.dart",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.dart"
+        }
+      ]
     },
     {
       "id": "dbase",
@@ -533,7 +595,13 @@
       "extensions": [
         ".dbf"
       ],
-      "source": "https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm"
+      "source": "https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.dbf",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.dbf"
+        }
+      ]
     },
     {
       "id": "dds",
@@ -553,7 +621,13 @@
       "extensions": [
         ".deb"
       ],
-      "source": "https://manpages.debian.org/bookworm/dpkg-dev/deb.5.en.html"
+      "source": "https://manpages.debian.org/bookworm/dpkg-dev/deb.5.en.html",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.debian.binary-package",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.debian.binary-package"
+        }
+      ]
     },
     {
       "id": "desktop-entry",
@@ -576,7 +650,13 @@
         ".dcm",
         ".dicom"
       ],
-      "source": "https://dicom.nema.org/medical/dicom/current/output/chtml/part01/chapter_1.html"
+      "source": "https://dicom.nema.org/medical/dicom/current/output/chtml/part01/chapter_1.html",
+      "mimeTypes": [
+        {
+          "value": "application/dicom",
+          "source": "https://www.iana.org/assignments/media-types/application/dicom"
+        }
+      ]
     },
     {
       "id": "djvu",
@@ -587,7 +667,13 @@
         ".djvu",
         ".djv"
       ],
-      "source": "https://djvu.org/"
+      "source": "https://djvu.org/",
+      "mimeTypes": [
+        {
+          "value": "image/vnd.djvu",
+          "source": "https://www.iana.org/assignments/media-types/image/vnd.djvu"
+        }
+      ]
     },
     {
       "id": "dmg",
@@ -678,7 +764,13 @@
       "extensions": [
         ".dwg"
       ],
-      "source": "https://www.autodesk.com/support/technical/article/caas/sfdcarticles/sfdcarticles/AutoCAD-drawing-file-format.html"
+      "source": "https://www.autodesk.com/support/technical/article/caas/sfdcarticles/sfdcarticles/AutoCAD-drawing-file-format.html",
+      "mimeTypes": [
+        {
+          "value": "image/vnd.dwg",
+          "source": "https://www.iana.org/assignments/media-types/image/vnd.dwg"
+        }
+      ]
     },
     {
       "id": "dxf",
@@ -689,7 +781,13 @@
         ".dxf"
       ],
       "source": "https://help.autodesk.com/cloudhelp/2023/ENU/AutoCAD-DXF/files/GUID-73E9E797-3BAA-4795-BBD8-4CE7A03E93CF.htm",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "image/vnd.dxf",
+          "source": "https://www.iana.org/assignments/media-types/image/vnd.dxf"
+        }
+      ]
     },
     {
       "id": "editorconfig",
@@ -735,7 +833,13 @@
         ".eml"
       ],
       "source": "https://www.rfc-editor.org/rfc/rfc5322.html",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "message/rfc822",
+          "source": "https://datatracker.ietf.org/doc/html/rfc2046#section-5.2.1"
+        }
+      ]
     },
     {
       "id": "environment",
@@ -761,7 +865,13 @@
         ".epsf"
       ],
       "source": "https://helpx.adobe.com/photoshop/using/saving-files-graphics-formats.html",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/postscript",
+          "source": "https://www.iana.org/assignments/media-types/application/postscript"
+        }
+      ]
     },
     {
       "id": "epub",
@@ -842,7 +952,17 @@
         ".fit",
         ".fts"
       ],
-      "source": "https://fits.gsfc.nasa.gov/"
+      "source": "https://fits.gsfc.nasa.gov/",
+      "mimeTypes": [
+        {
+          "value": "application/fits",
+          "source": "https://www.iana.org/assignments/media-types/application/fits"
+        },
+        {
+          "value": "image/fits",
+          "source": "https://www.iana.org/assignments/media-types/image/fits"
+        }
+      ]
     },
     {
       "id": "flac",
@@ -880,7 +1000,13 @@
         ".ttc",
         ".otc"
       ],
-      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff"
+      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff",
+      "mimeTypes": [
+        {
+          "value": "font/collection",
+          "source": "https://www.iana.org/assignments/media-types/font/collection"
+        }
+      ]
     },
     {
       "id": "fortran",
@@ -920,7 +1046,13 @@
         ".geojson"
       ],
       "source": "https://www.rfc-editor.org/rfc/rfc7946.html",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/geo+json",
+          "source": "https://www.iana.org/assignments/media-types/application/geo+json"
+        }
+      ]
     },
     {
       "id": "gif",
@@ -959,7 +1091,17 @@
         ".gltf",
         ".glb"
       ],
-      "source": "https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html"
+      "source": "https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html",
+      "mimeTypes": [
+        {
+          "value": "model/gltf+json",
+          "source": "https://www.iana.org/assignments/media-types/model/gltf+json"
+        },
+        {
+          "value": "model/gltf-binary",
+          "source": "https://www.iana.org/assignments/media-types/model/gltf-binary"
+        }
+      ]
     },
     {
       "id": "go",
@@ -1046,7 +1188,13 @@
         ".hdf4",
         ".hdf"
       ],
-      "source": "https://www.hdfgroup.org/solutions/hdf4/"
+      "source": "https://www.hdfgroup.org/solutions/hdf4/",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.hdfgroup.hdf4",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.hdfgroup.hdf4"
+        }
+      ]
     },
     {
       "id": "hdf5",
@@ -1058,7 +1206,13 @@
         ".hdf5",
         ".hdf"
       ],
-      "source": "https://support.hdfgroup.org/documentation/hdf5/latest/_f_m_t3.html"
+      "source": "https://support.hdfgroup.org/documentation/hdf5/latest/_f_m_t3.html",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.hdfgroup.hdf5",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.hdfgroup.hdf5"
+        }
+      ]
     },
     {
       "id": "heif",
@@ -1126,7 +1280,13 @@
         ".ical"
       ],
       "source": "https://www.rfc-editor.org/rfc/rfc5545.html",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/calendar",
+          "source": "https://www.iana.org/assignments/media-types/text/calendar"
+        }
+      ]
     },
     {
       "id": "icns",
@@ -1146,7 +1306,13 @@
       "extensions": [
         ".ico"
       ],
-      "source": "https://learn.microsoft.com/en-us/windows/win32/uxguide/vis-icons"
+      "source": "https://learn.microsoft.com/en-us/windows/win32/uxguide/vis-icons",
+      "mimeTypes": [
+        {
+          "value": "image/vnd.microsoft.icon",
+          "source": "https://www.iana.org/assignments/media-types/image/vnd.microsoft.icon"
+        }
+      ]
     },
     {
       "id": "iges",
@@ -1158,7 +1324,13 @@
         ".igs"
       ],
       "source": "https://www.nist.gov/publications/introduction-iso-10303-step-standard-product-data-exchange",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "model/iges",
+          "source": "https://www.iana.org/assignments/media-types/model/iges"
+        }
+      ]
     },
     {
       "id": "illustrator",
@@ -1213,7 +1385,13 @@
         ".ear",
         ".rar"
       ],
-      "source": "https://docs.oracle.com/javaee/7/tutorial/packaging001.htm"
+      "source": "https://docs.oracle.com/javaee/7/tutorial/packaging001.htm",
+      "mimeTypes": [
+        {
+          "value": "application/java-archive",
+          "source": "https://www.iana.org/assignments/media-types/application/java-archive"
+        }
+      ]
     },
     {
       "id": "java-class",
@@ -1275,7 +1453,17 @@
         ".jpf",
         ".jpx"
       ],
-      "source": "https://jpeg.org/jpeg2000/applications.html"
+      "source": "https://jpeg.org/jpeg2000/applications.html",
+      "mimeTypes": [
+        {
+          "value": "image/jp2",
+          "source": "https://www.iana.org/assignments/media-types/image/jp2"
+        },
+        {
+          "value": "image/jpx",
+          "source": "https://www.iana.org/assignments/media-types/image/jpx"
+        }
+      ]
     },
     {
       "id": "json",
@@ -1325,7 +1513,13 @@
       "extensions": [
         ".jxl"
       ],
-      "source": "https://jpeg.org/jpegxl/"
+      "source": "https://jpeg.org/jpegxl/",
+      "mimeTypes": [
+        {
+          "value": "image/jxl",
+          "source": "https://www.iana.org/assignments/media-types/image/jxl"
+        }
+      ]
     },
     {
       "id": "keynote",
@@ -1335,7 +1529,13 @@
       "extensions": [
         ".key"
       ],
-      "source": "https://support.apple.com/guide/keynote/welcome/mac"
+      "source": "https://support.apple.com/guide/keynote/welcome/mac",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.apple.keynote",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.apple.keynote"
+        }
+      ]
     },
     {
       "id": "kindle",
@@ -1357,7 +1557,17 @@
         ".kml",
         ".kmz"
       ],
-      "source": "https://www.ogc.org/standard/kml/"
+      "source": "https://www.ogc.org/standard/kml/",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.google-earth.kml+xml",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.google-earth.kml+xml"
+        },
+        {
+          "value": "application/vnd.google-earth.kmz",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.google-earth.kmz"
+        }
+      ]
     },
     {
       "id": "kotlin",
@@ -1520,7 +1730,17 @@
         ".mka",
         ".mks"
       ],
-      "source": "https://www.rfc-editor.org/rfc/rfc9559.html"
+      "source": "https://www.rfc-editor.org/rfc/rfc9559.html",
+      "mimeTypes": [
+        {
+          "value": "video/matroska",
+          "source": "https://www.iana.org/assignments/media-types/video/matroska"
+        },
+        {
+          "value": "audio/matroska",
+          "source": "https://www.iana.org/assignments/media-types/audio/matroska"
+        }
+      ]
     },
     {
       "id": "mhtml",
@@ -1593,7 +1813,13 @@
         ".mp4",
         ".m4v"
       ],
-      "source": "https://www.iso.org/standard/79110.html"
+      "source": "https://www.iso.org/standard/79110.html",
+      "mimeTypes": [
+        {
+          "value": "video/mp4",
+          "source": "https://www.iana.org/assignments/media-types/video/mp4"
+        }
+      ]
     },
     {
       "id": "mpeg",
@@ -1606,7 +1832,13 @@
         ".mpe",
         ".vob"
       ],
-      "source": "https://www.itu.int/rec/T-REC-H.222.0"
+      "source": "https://www.itu.int/rec/T-REC-H.222.0",
+      "mimeTypes": [
+        {
+          "value": "video/mpeg",
+          "source": "https://datatracker.ietf.org/doc/html/rfc2046#section-4.4"
+        }
+      ]
     },
     {
       "id": "mpeg-ts",
@@ -1716,7 +1948,13 @@
       "extensions": [
         ".numbers"
       ],
-      "source": "https://support.apple.com/guide/numbers/welcome/mac"
+      "source": "https://support.apple.com/guide/numbers/welcome/mac",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.apple.numbers",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.apple.numbers"
+        }
+      ]
     },
     {
       "id": "object-code",
@@ -1750,7 +1988,17 @@
         ".odg",
         ".otg"
       ],
-      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html"
+      "source": "https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.oasis.opendocument.graphics",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.oasis.opendocument.graphics"
+        },
+        {
+          "value": "application/vnd.oasis.opendocument.graphics-template",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.oasis.opendocument.graphics-template"
+        }
+      ]
     },
     {
       "id": "odp",
@@ -1870,7 +2118,13 @@
       "extensions": [
         ".otf"
       ],
-      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff"
+      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff",
+      "mimeTypes": [
+        {
+          "value": "font/otf",
+          "source": "https://www.iana.org/assignments/media-types/font/otf"
+        }
+      ]
     },
     {
       "id": "orc",
@@ -1890,7 +2144,13 @@
       "extensions": [
         ".pages"
       ],
-      "source": "https://support.apple.com/guide/pages/welcome/mac"
+      "source": "https://support.apple.com/guide/pages/welcome/mac",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.apple.pages",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.apple.pages"
+        }
+      ]
     },
     {
       "id": "parquet",
@@ -1900,7 +2160,13 @@
       "extensions": [
         ".parquet"
       ],
-      "source": "https://parquet.apache.org/docs/overview/"
+      "source": "https://parquet.apache.org/docs/overview/",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.apache.parquet",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.apache.parquet"
+        }
+      ]
     },
     {
       "id": "pcap",
@@ -1911,7 +2177,13 @@
         ".pcap",
         ".cap"
       ],
-      "source": "https://www.ietf.org/archive/id/draft-ietf-opsawg-pcap-06.html"
+      "source": "https://www.ietf.org/archive/id/draft-ietf-opsawg-pcap-06.html",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.tcpdump.pcap",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.tcpdump.pcap"
+        }
+      ]
     },
     {
       "id": "pcapng",
@@ -1962,7 +2234,13 @@
         ".cpl",
         ".ocx"
       ],
-      "source": "https://learn.microsoft.com/en-us/windows/win32/debug/pe-format"
+      "source": "https://learn.microsoft.com/en-us/windows/win32/debug/pe-format",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.microsoft.portable-executable",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.microsoft.portable-executable"
+        }
+      ]
     },
     {
       "id": "perl",
@@ -2008,7 +2286,13 @@
         ".p12",
         ".pfx"
       ],
-      "source": "https://www.rfc-editor.org/rfc/rfc7292.html"
+      "source": "https://www.rfc-editor.org/rfc/rfc7292.html",
+      "mimeTypes": [
+        {
+          "value": "application/pkcs12",
+          "source": "https://www.iana.org/assignments/media-types/application/pkcs12"
+        }
+      ]
     },
     {
       "id": "plist",
@@ -2086,7 +2370,13 @@
         ".ps"
       ],
       "source": "https://www.adobe.com/jp/print/postscript/pdfs/PLRM.pdf",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/postscript",
+          "source": "https://www.iana.org/assignments/media-types/application/postscript"
+        }
+      ]
     },
     {
       "id": "powershell",
@@ -2191,7 +2481,13 @@
         ".psd",
         ".psb"
       ],
-      "source": "https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/"
+      "source": "https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/",
+      "mimeTypes": [
+        {
+          "value": "image/vnd.adobe.photoshop",
+          "source": "https://www.iana.org/assignments/media-types/image/vnd.adobe.photoshop"
+        }
+      ]
     },
     {
       "id": "python",
@@ -2247,7 +2543,13 @@
         ".mov",
         ".qt"
       ],
-      "source": "https://developer.apple.com/documentation/quicktime-file-format"
+      "source": "https://developer.apple.com/documentation/quicktime-file-format",
+      "mimeTypes": [
+        {
+          "value": "video/quicktime",
+          "source": "https://www.iana.org/assignments/media-types/video/quicktime"
+        }
+      ]
     },
     {
       "id": "r",
@@ -2280,7 +2582,13 @@
       "extensions": [
         ".rar"
       ],
-      "source": "https://www.rarlab.com/technote.htm"
+      "source": "https://www.rarlab.com/technote.htm",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.rar",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.rar"
+        }
+      ]
     },
     {
       "id": "reg",
@@ -2384,7 +2692,13 @@
       "extensions": [
         ".shp"
       ],
-      "source": "https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf"
+      "source": "https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.shp",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.shp"
+        }
+      ]
     },
     {
       "id": "shell-script",
@@ -2419,7 +2733,13 @@
         ".sql"
       ],
       "source": "https://www.postgresql.org/docs/current/sql-syntax.html",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/sql",
+          "source": "https://www.iana.org/assignments/media-types/application/sql"
+        }
+      ]
     },
     {
       "id": "sqlite",
@@ -2432,7 +2752,13 @@
         ".db",
         ".db3"
       ],
-      "source": "https://www.sqlite.org/fileformat.html"
+      "source": "https://www.sqlite.org/fileformat.html",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.sqlite3",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.sqlite3"
+        }
+      ]
     },
     {
       "id": "srt",
@@ -2466,7 +2792,13 @@
         ".stp"
       ],
       "source": "https://www.nist.gov/publications/introduction-iso-10303-step-standard-product-data-exchange",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "model/step",
+          "source": "https://www.iana.org/assignments/media-types/model/step"
+        }
+      ]
     },
     {
       "id": "stl",
@@ -2476,7 +2808,13 @@
       "extensions": [
         ".stl"
       ],
-      "source": "https://docs.blender.org/manual/en/5.0/modeling/geometry_nodes/input/import/stl.html"
+      "source": "https://docs.blender.org/manual/en/5.0/modeling/geometry_nodes/input/import/stl.html",
+      "mimeTypes": [
+        {
+          "value": "model/stl",
+          "source": "https://www.iana.org/assignments/media-types/model/stl"
+        }
+      ]
     },
     {
       "id": "svg",
@@ -2583,7 +2921,13 @@
         ".toml"
       ],
       "source": "https://toml.io/en/v1.0.0",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "application/toml",
+          "source": "https://www.iana.org/assignments/media-types/application/toml"
+        }
+      ]
     },
     {
       "id": "torrent",
@@ -2617,7 +2961,13 @@
       "extensions": [
         ".ttf"
       ],
-      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff"
+      "source": "https://learn.microsoft.com/en-us/typography/opentype/spec/otff",
+      "mimeTypes": [
+        {
+          "value": "font/ttf",
+          "source": "https://www.iana.org/assignments/media-types/font/ttf"
+        }
+      ]
     },
     {
       "id": "tsv",
@@ -2629,7 +2979,13 @@
         ".tab"
       ],
       "source": "https://www.iana.org/assignments/media-types/text/tab-separated-values",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/tab-separated-values",
+          "source": "https://www.iana.org/assignments/media-types/text/tab-separated-values"
+        }
+      ]
     },
     {
       "id": "typescript",
@@ -2680,7 +3036,17 @@
         ".usdc",
         ".usdz"
       ],
-      "source": "https://openusd.org/release/intro.html"
+      "source": "https://openusd.org/release/intro.html",
+      "mimeTypes": [
+        {
+          "value": "model/vnd.usdz+zip",
+          "source": "https://www.iana.org/assignments/media-types/model/vnd.usdz+zip"
+        },
+        {
+          "value": "model/vnd.usda",
+          "source": "https://www.iana.org/assignments/media-types/model/vnd.usda"
+        }
+      ]
     },
     {
       "id": "valve-package",
@@ -2713,7 +3079,13 @@
         ".vcard"
       ],
       "source": "https://www.rfc-editor.org/rfc/rfc6350.html",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/vcard",
+          "source": "https://www.iana.org/assignments/media-types/text/vcard"
+        }
+      ]
     },
     {
       "id": "vhd",
@@ -2754,7 +3126,13 @@
       "extensions": [
         ".wasm"
       ],
-      "source": "https://webassembly.github.io/spec/core/binary/index.html"
+      "source": "https://webassembly.github.io/spec/core/binary/index.html",
+      "mimeTypes": [
+        {
+          "value": "application/wasm",
+          "source": "https://www.iana.org/assignments/media-types/application/wasm"
+        }
+      ]
     },
     {
       "id": "wave",
@@ -2777,7 +3155,17 @@
         ".mtl"
       ],
       "source": "https://docs.blender.org/manual/en/3.3/files/import_export/obj.html",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "model/obj",
+          "source": "https://www.iana.org/assignments/media-types/model/obj"
+        },
+        {
+          "value": "model/mtl",
+          "source": "https://www.iana.org/assignments/media-types/model/mtl"
+        }
+      ]
     },
     {
       "id": "wavpack",
@@ -2824,7 +3212,13 @@
         ".vtt"
       ],
       "source": "https://www.w3.org/TR/webvtt1/",
-      "textCompatible": true
+      "textCompatible": true,
+      "mimeTypes": [
+        {
+          "value": "text/vtt",
+          "source": "https://www.iana.org/assignments/media-types/text/vtt"
+        }
+      ]
     },
     {
       "id": "wheel",
@@ -2896,7 +3290,13 @@
       "extensions": [
         ".woff"
       ],
-      "source": "https://www.w3.org/TR/WOFF/"
+      "source": "https://www.w3.org/TR/WOFF/",
+      "mimeTypes": [
+        {
+          "value": "font/woff",
+          "source": "https://www.iana.org/assignments/media-types/font/woff"
+        }
+      ]
     },
     {
       "id": "woff2",
@@ -2906,7 +3306,13 @@
       "extensions": [
         ".woff2"
       ],
-      "source": "https://www.w3.org/TR/WOFF2/"
+      "source": "https://www.w3.org/TR/WOFF2/",
+      "mimeTypes": [
+        {
+          "value": "font/woff2",
+          "source": "https://www.iana.org/assignments/media-types/font/woff2"
+        }
+      ]
     },
     {
       "id": "xcf",
@@ -2943,7 +3349,13 @@
       "extensions": [
         ".xlsb"
       ],
-      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/acc8aa92-1f02-4167-99f5-84f9f676b95a"
+      "source": "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/acc8aa92-1f02-4167-99f5-84f9f676b95a",
+      "mimeTypes": [
+        {
+          "value": "application/vnd.ms-excel.sheet.binary.macroenabled.12",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-excel.sheet.binary.macroEnabled.12"
+        }
+      ]
     },
     {
       "id": "xlsx",
@@ -3016,7 +3428,17 @@
         ".xps",
         ".oxps"
       ],
-      "source": "https://learn.microsoft.com/en-us/windows-hardware/drivers/print/driver-support-for-openxps"
+      "source": "https://learn.microsoft.com/en-us/windows-hardware/drivers/print/driver-support-for-openxps",
+      "mimeTypes": [
+        {
+          "value": "application/oxps",
+          "source": "https://www.iana.org/assignments/media-types/application/oxps"
+        },
+        {
+          "value": "application/vnd.ms-xpsdocument",
+          "source": "https://www.iana.org/assignments/media-types/application/vnd.ms-xpsdocument"
+        }
+      ]
     },
     {
       "id": "xz",
@@ -3074,7 +3496,13 @@
         ".zstd",
         ".tzst"
       ],
-      "source": "https://www.rfc-editor.org/rfc/rfc8878.html"
+      "source": "https://www.rfc-editor.org/rfc/rfc8878.html",
+      "mimeTypes": [
+        {
+          "value": "application/zstd",
+          "source": "https://www.iana.org/assignments/media-types/application/zstd"
+        }
+      ]
     }
   ]
 }

@@ -46,6 +46,9 @@ excludes linked RFCs and other materials. No RFC prose, parser code or registry
 description text is copied. Name constraints follow the registration syntax in
 [RFC 6838 section 4.2](https://www.rfc-editor.org/rfc/rfc6838.html#section-4.2).
 
+The later [MIME expansion](catalog-mime-expansion.md) brings coverage to 134
+associations across 100 of 245 records, preserving the initial 59 associations.
+
 This review establishes selected registration spellings and family mappings, not
 complete catalog factual review or every MIME alias in use. The historical
 [source retrieval audit](catalog-source-review.json) remains unchanged.

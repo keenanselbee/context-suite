@@ -1,9 +1,9 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.11**. This checkpoint implements the calculated-date
-publication guard after public baseline `cb1e95d` and private baseline `6b8d84a`.
-Catalog schema 1, revision **2026-09-16.2**, **245 records**.
+Matrix revision: **2026-09-16.12**. This update adds reviewed catalog MIME
+references and records the later Office capacity and failure-guidance fixes.
+Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
 
@@ -59,7 +59,9 @@ have separate [ZIP/XML limits](document-design.md). These are different paths,
 not one universal full-file read allowance.
 
 All current typical-use descriptions have a review record, including the added
-Alpine APK meaning. Remaining alias/variant and MIME review is still open.
+Alpine APK meaning. The [MIME expansion](catalog-mime-expansion.md) brings
+descriptive coverage to 134 associations across 100 records, leaving 145 without
+a MIME claim. Remaining alias/variant and additional MIME review is still open.
 No external format database or source prose has been imported. Detailed
 provenance and detector coverage remain separate from descriptive coverage.
 
@@ -195,6 +197,12 @@ and independent PDF validation. Four cached/1904 cases publish; both known
 recalculated-error cases are withheld with guidance and complete cleanup. This
 closes the demonstrated publication gap without correcting the date renderer or
 settling unknown-format interpretation and broader spreadsheet fidelity.
+The later [48-sheet capacity fix](excel-calculated-date-guard.md#workbook-capacity-and-pdf-admission)
+passes 43 application checks and 144 independent page comparisons, using the
+unchanged 1 GiB aggregate job cap and bounded flat PDF admission. The
+[failure-guidance update](office-direct-command.md#office-failure-guidance)
+uses document-specific messages and passes eight actual-worker refusal checks.
+Neither checkpoint resolves the outstanding date-fidelity policy.
 Native file/profile ownership and interruption evidence
 also do not by themselves close the separate
 [Office network-isolation evidence](office-isolation-evaluation.md).

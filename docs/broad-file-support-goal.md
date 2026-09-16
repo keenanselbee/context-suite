@@ -5,6 +5,13 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [catalog MIME expansion](catalog-mime-expansion.md) adds 75 reviewed
+associations to 64 existing records. The 245-record catalog now has descriptive
+MIME references for 100 records, retaining all names, aliases, confidence rules
+and executable boundaries. It deliberately excludes a transport-only MP2T type
+and the overly broad AU/audio-basic association. Catalog revision is
+2026-09-16.3; broader variant review and integrated release acceptance remain open.
+
 The [Office failure guidance](office-direct-command.md#office-failure-guidance)
 now distinguishes failed export, refused PDF validation, timeout, stopped worker,
 access and processing limits without exposing native diagnostics or implying a
@@ -1730,7 +1737,7 @@ Milestone 0: scope and evidence contracts
 - [x] Record the broader launch direction and preserve the completed image scope.
 - [x] Produce a versioned capability matrix distinguishing catalog recognition,
   signature identification, detailed analysis, conversion and optimization.
-  See [revision 2026-09-16.2](launch-capability-matrix.md); it preserves open
+  See the [current matrix](launch-capability-matrix.md); it preserves open
   implementation/acceptance cells and does not declare release readiness.
 - [ ] Freeze the first audio input/output pairs and metadata/fidelity policies.
 - [x] Resolve the document transformation decision below with concrete options.
@@ -1770,16 +1777,25 @@ Milestone 2: reviewed offline format catalog
 
 - [x] Use a versioned, reviewable data file packaged with the app; no database
   service or mandatory online lookup. Define stable IDs and a migration policy.
-- [ ] Store display name, aliases/extensions, family, common uses, MIME identifiers
+- [x] Store display name, aliases/extensions, family, common uses, MIME identifiers
   where meaningful, evidence rules, source references and description provenance.
   Keep engine capabilities separate from format descriptions.
-- [ ] Cover images, audio, documents, text/code/data, archives, executables,
+  [Schema 1](../src/ContextSuite.Core/Analysis/FileTypeCatalog.cs) stores these
+  fields; the [purpose review](catalog-purpose-review.md) and later additions
+  account for descriptions, and the [MIME review](catalog-mime-expansion.md)
+  records qualified identifiers. This does not complete every alias review.
+- [x] Cover images, audio, documents, text/code/data, archives, executables,
   fonts, databases, disk images, video, 3D and commonly encountered game assets.
   Initial planning target: at least 200 distinct useful catalog records, reviewed
   against a concrete common-file inventory. Aliases do not inflate that count;
   coverage gaps matter more than hitting a number.
-- [ ] Research established registries; review reuse terms before importing data.
+  The [245-record inventory](file-type-inventory.md) covers all listed families;
+  its 34 content routes remain distinct from 211 filename-only descriptions.
+- [x] Research established registries; review reuse terms before importing data.
   Write concise descriptions appropriate to ordinary users and retain sources.
+  The [registry review](catalog-mime-descriptions.md#provenance-and-reuse) records
+  IANA/IETF terms. Only reviewed identifiers/references enter the catalog;
+  descriptions are independently authored and no external database is bundled.
 - [ ] Implement deterministic conflict handling, including shared ZIP/OLE
   containers, ambiguous extensions, polyglot/contradictory evidence and plain
   XML/JSON whose application-specific type cannot be established.
