@@ -12,6 +12,12 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--office-worker-failures", var failureWorker, var failureEvidence])
+{
+    await OfficeFailureContracts.RunWorkerAsync(failureWorker, failureEvidence);
+    return 0;
+}
+
 if (args is ["--office-preparation-hold", var preparationStage, var preparationMode])
 {
     await OfficePreparationCrashContracts.HoldAsync(preparationStage, preparationMode);
@@ -373,6 +379,7 @@ try
     await DocumentAnalysisContracts.RunAsync(args[0], Check);
     OfficeHostContracts.Run(Check);
     OfficeWorkContracts.Run(Check);
+    OfficeFailureContracts.Run(Check);
     OfficePdfContracts.Run(Check);
     await OfficeConversionContracts.RunAsync(args[0], Check);
     await DocumentAnalysisContracts.OfficeDirectContractsAsync(args[0], Check);

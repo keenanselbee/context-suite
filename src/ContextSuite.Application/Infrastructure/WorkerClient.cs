@@ -302,7 +302,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             {
                 if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null || reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null || reply.ImagePdfResult is not null || reply.OfficeCandidate is not null || reply.OfficePdfResult is not null || reply.Capabilities.Length != 0)
                     throw new InvalidDataException("Worker failure response contains invalid or contradictory data.");
-                throw new MediaWorkerException(failure);
+                throw new MediaWorkerException(failure, command: command.Command);
             }
             return reply;
         }
@@ -310,12 +310,12 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             await StopAsync(false);
-            throw new MediaWorkerException(ImageFailure.TimedOut);
+            throw new MediaWorkerException(ImageFailure.TimedOut, command: command.Command);
         }
         catch (IOException error)
         {
             await StopAsync(false);
-            throw new MediaWorkerException(ImageFailure.WorkerTerminated, error);
+            throw new MediaWorkerException(ImageFailure.WorkerTerminated, error, command.Command);
         }
         catch
         {
@@ -424,8 +424,9 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     }
 }
 
-internal sealed class MediaWorkerException(ImageFailure failure, Exception? inner = null)
-    : IOException(ImageFailureException.Describe(failure), inner)
+internal sealed class MediaWorkerException(ImageFailure failure, Exception? inner = null, string? command = null)
+    : IOException(command is "office-export" or "office-pdf-validate"
+        ? OfficeFailureMessages.Describe(failure, command == "office-pdf-validate") : ImageFailureException.Describe(failure), inner)
 {
     public ImageFailure Failure { get; } = failure;
 }

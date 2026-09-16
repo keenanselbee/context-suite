@@ -197,8 +197,10 @@ hashes and retained worker files are unchanged. Independent ZIP inspection
 confirms the five produced workbook copies are complete. The 48-sheet PDF passes
 qpdf structure checks and contains 48 pages; this is not text/layout acceptance.
 At that checkpoint its native failure remained unexplained. The investigation
-below diagnoses the capacity failure; the worker's generic damaged-image message
-still needs an Office-specific explanation for failures that remain.
+below diagnoses the capacity failure. The subsequent
+[Office failure guidance](office-direct-command.md#office-failure-guidance)
+corrects the worker exception's generic damaged-image wording; the result window
+already used a generic Office explanation and now has more specific guidance.
 
 The authored fixture generator now supports `--workbook-stop-fixtures <fresh
 isolation-directory> <sheets> [bitmap-size]`: 8, 12, 24 or 48 sheets, 384- or

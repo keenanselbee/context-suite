@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office failure guidance](office-direct-command.md#office-failure-guidance)
+now distinguishes failed export, refused PDF validation, timeout, stopped worker,
+access and processing limits without exposing native diagnostics or implying a
+damaged image. All 4,130 foundation and eight actual-worker checks pass. Authored
+inputs are preserved and worker scratch is released; no Office engine or native
+profile is needed for these refusal tests. Visible acceptance and broader release
+gates remain open.
+
 The [48-sheet workbook investigation](excel-calculated-date-guard.md#workbook-capacity-and-pdf-admission)
 fixes two independent failures: the calculated-copy save exhausted its 512 MiB
 process allowance, and PDF admission expanded ordinary reference chains beyond
@@ -22,8 +30,8 @@ failure on an authored 48-sheet XLSX after a structurally valid 48-page PDF is
 written but before a workbook copy appears. Six disposable profiles/mappings are
 removed and original hashes are unchanged. Speculative production/harness edits
 were removed; reproducible fixtures and failed evidence remain. That native
-failure is diagnosed above; its misleading error message still needs an
-Office-specific explanation. Do not count these attempts as
+failure is diagnosed above; the subsequent failure-guidance checkpoint also
+corrects its misleading diagnostic wording. Do not count these attempts as
 interruption or Excel fidelity acceptance.
 
 The [workbook-growth stop checks](excel-calculated-date-guard.md#stops-after-observed-workbook-growth)

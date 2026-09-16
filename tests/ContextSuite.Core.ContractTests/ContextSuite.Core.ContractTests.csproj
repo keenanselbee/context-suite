@@ -29,6 +29,7 @@
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ActivationRouter.cs" Link="Runtime\ActivationRouter.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ActivationGate.cs" Link="Runtime\ActivationGate.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\WorkerClient.cs" Link="Runtime\WorkerClient.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OfficeFailureMessages.cs" Link="Runtime\OfficeFailureMessages.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\WorkerProcessJob.cs" Link="Runtime\WorkerProcessJob.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OfficeSandboxOwner.cs" Link="Runtime\OfficeSandboxOwner.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OfficeOwnershipJournal.cs" Link="Runtime\OfficeOwnershipJournal.cs" />

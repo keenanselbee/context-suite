@@ -39,6 +39,47 @@ records for the next process if it cannot finish. No pending journal is discarde
 to allow another export. Retention of incomplete preparation and interrupted
 exports without retirement intent remains unfinished release work.
 
+Office failure guidance
+-----------------------
+
+Office worker exceptions and final results use fixed document-specific messages.
+The shared failure categories and transport are unchanged. A native export failure
+does not establish that the document is damaged; its message recommends opening
+the document in its usual application and exporting there. PDF-validation refusal
+instead states that the generated PDF could not be validated and was not saved.
+Timeout, unexpected worker exit, file access and processing limits have distinct
+guidance. Known early-date fidelity and cleanup/recovery explanations remain.
+Native exception text, paths and document metadata never supply the user message.
+
+The result window previously used a generic Office explanation. The misleading
+"damaged image" wording came from the shared worker exception in diagnostics;
+it was not evidence that the result window displayed that text. Both surfaces
+now use the Office wording, with the executor preserving the failed operation's
+phase. Other media operations retain their existing exception messages.
+
+All **4,130 foundation checks** pass, including ten additional message/privacy
+and compatibility checks. The current source-bound log and receipt use
+`.codex-temp/office-failure-final-foundation`. All **eight actual-worker checks**
+pass in `.codex-temp/office-failures/1718430225754f75ad4154ac7381674a`: invalid
+contexts, a missing directory, unavailable validation inputs and fabricated
+completion identities receive safe typed explanations; the worker remains usable,
+leaves authored bytes unchanged and releases its scratch directory. The test
+worker has no Office engine and creates no Windows profile or native Office
+export. Worker, application and private harness Release builds have zero warnings
+or errors. Visible result-window acceptance is not inferred from these checks.
+
+The first worker attempt, `b0331010d6334c02b475301847a24ea0`, stopped on an
+incorrect test expectation: missing native directory handles currently map to
+the generic engine-failure category, not file access. The corrected test preserves
+that production classification. The failed process exited, inputs were unchanged
+and no native Office profile was created. It is not counted as a passed run.
+
+Run the focused contract host after a Release foundation build with
+`--office-worker-failures <scratch-worker.exe> <fresh-repository-evidence-directory>`.
+Use an evidence directory below `.codex-temp/office-failures/` and a scratch worker
+with the pinned PDF readers. This mode creates only repository-local fixtures.
+
+
 Verification
 ------------
 
