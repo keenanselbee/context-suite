@@ -26,6 +26,8 @@ if (args is ["--inspect-host-completions", var hostStage, var hostCase])
     return await OfficeHostInspection.RunAsync(hostStage, hostCase);
 if (args is ["--inspect-excel-stored-dates", var dateEvidence])
     return await ExcelStoredDateEvaluation.RunAsync(dateEvidence);
+if (args is ["--inspect-word-body-fonts", var wordFontFixtures])
+    return await WordBodyFontEvaluation.RunAsync(wordFontFixtures);
 if (args is ["--inspect-word-publications", var wordReport, var wordQpdf, var wordPdfium])
     return await OfficeWordRevisionInspection.RunAsync(wordReport, wordQpdf, wordPdfium);
 if (args is ["--preflight-isolation-fixtures", var preflightFixtures])

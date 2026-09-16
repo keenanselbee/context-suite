@@ -7,6 +7,11 @@ both as declarations. This is groundwork for required Office conversion and
 useful read-only detail; it is not the missing-font detector or an enabled
 Office-to-PDF action.
 
+The later [Word body inspection](word-body-font-inspection.md) adds separate
+source-use evidence to Office preflight for supported final-text runs, resolving
+active style chains and Latin theme selections. It retains explicit gaps and
+does not change this Analyze declaration scan or establish complete font fidelity.
+
 
 Meaning and scope
 -----------------

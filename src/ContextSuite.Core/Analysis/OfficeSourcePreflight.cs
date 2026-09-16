@@ -4,7 +4,7 @@ namespace ContextSuite.Core.Analysis;
 // The caller must retain its read lease through copying/rendering and enforce
 // separate engine, isolation, active-content and publication policies.
 public sealed record OfficeSourcePreflight(FileAnalysis Analysis, string? FormatId, string? Refusal,
-    ExcelStoredDateInspection? StoredDates = null)
+    ExcelStoredDateInspection? StoredDates = null, WordBodyFontInspection? WordFonts = null)
 {
     public static async Task<OfficeSourcePreflight> InspectOpenXmlAsync(string path, Stream input,
         CancellationToken cancellationToken)
@@ -41,6 +41,9 @@ public sealed record OfficeSourcePreflight(FileAnalysis Analysis, string? Format
         var dates = format == "xlsx" ? await ExcelStoredDateInspection.ReadAsync(input, cancellationToken) : null;
         if (dates is { EarlyDateCells: > 0 })
             return new(analysis, format, "This workbook contains dates before March 1, 1900 that Context Suite cannot currently convert accurately. Export the PDF from Excel instead. Analyze remains available.", dates);
-        return new(analysis, format, null, dates);
+        // Source font selections remain separate from renderer reports. Incomplete
+        // coverage neither invents missing families nor bypasses the existing review.
+        var fonts = format == "docx" ? await WordBodyFontInspection.ReadAsync(input, cancellationToken) : null;
+        return new(analysis, format, null, dates, fonts);
     }
 }

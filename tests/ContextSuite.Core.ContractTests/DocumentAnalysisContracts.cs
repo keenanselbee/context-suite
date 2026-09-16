@@ -14,6 +14,7 @@ internal static partial class DocumentAnalysisContracts
     {
         await OfficeSourcePreflightContractsAsync(check);
         await StoredExcelDatesAsync(scratch, check);
+        await WordBodyFontsAsync(check);
         foreach (var id in new[] { "docx", "xlsx", "pptx" })
         foreach (var strict in new[] { false, true })
         {

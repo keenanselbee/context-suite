@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Word body font inspection](word-body-font-inspection.md) now resolves bounded
+active style chains and Latin theme selections for supported final-text runs,
+excluding unused styles and deleted text. Office preflight carries explicit
+coverage gaps; it does not add a prompt or override renderer-reported review.
+All 3,792 foundation contracts and two source-preserving retained Word inspections
+pass. Full story/script resolution, other Office families and rendered font
+fidelity remain incomplete.
+
 The [renderer font-environment evaluation](office-font-environment.md) observes
 313 identical family names before/after export in twelve normal/restricted cases.
 Arial is listed, the authored absent family is not, and independent PDF/runtime
