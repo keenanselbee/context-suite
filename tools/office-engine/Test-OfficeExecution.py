@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import time
 import uuid
 
 
@@ -116,7 +117,11 @@ def main():
         arguments = [str(host), "--office-word-font-styles", str(worker_root / "ContextSuite.Worker.exe"), str(stage / "contracts")] if args.word_font_styles else [
             str(host), "--office-font-execution" if args.font_review else "--office-execution-cleanup" if args.cleanup_only else "--office-direct-execution" if args.direct else "--office-execution",
             str(worker_root / "ContextSuite.Worker.exe"), str(fixtures), str(stage / "contracts")]
+        started = time.perf_counter()
         run = subprocess.run(arguments, cwd=root, stdout=output, stderr=error)
+        elapsed = time.perf_counter() - started
+    (stage / "timing.json").write_text(json.dumps({"ApplicationSeconds": elapsed,
+        "Scope": "Application harness wall time, including authored fixtures and checks; excludes worker staging and final input hashing."}))
     unchanged = all(digest(root / name) == expected for name, expected in sources.items()) and all(
         digest(Path(name)) == expected for group in (originals, engines, binaries) for name, expected in group.items())
     (stage / "exit.json").write_text(json.dumps({"ExitCode": run.returncode, "InputsUnchanged": unchanged}), encoding="utf-8")

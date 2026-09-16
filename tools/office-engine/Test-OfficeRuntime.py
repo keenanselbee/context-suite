@@ -16,27 +16,41 @@ def digest(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--copy-receipt", type=Path, required=True)
-    parser.add_argument("--host-receipt", type=Path, required=True)
+    parser.add_argument("--copy-receipt", type=Path)
+    parser.add_argument("--host-receipt", type=Path)
+    parser.add_argument("--package", type=Path, help="Use a retained scratch worker's office-engine directory.")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     evidence = root / ".codex-temp/office-runtime" / uuid.uuid4().hex
     evidence.mkdir(parents=True)
     inventory = evidence / "runtime-files.txt"
-    copied = json.loads(args.copy_receipt.read_text(encoding="utf-8"))
-    host = json.loads(args.host_receipt.read_text(encoding="utf-8-sig"))
+    if args.package is not None:
+        if args.copy_receipt is not None or args.host_receipt is not None:
+            parser.error("Choose a scratch package or the two preparation receipts.")
+        package = args.package.resolve(strict=True)
+        package.relative_to(root / ".codex-temp/office-execution")
+        inventory = package / "runtime-files.txt"
+        copied = {"destination": str(package / "runtime")}
+        host = {"executable": str(package / "ContextSuite.OfficeHost.exe")}
+    else:
+        if args.copy_receipt is None or args.host_receipt is None:
+            parser.error("Provide a scratch package or both preparation receipts.")
+        copied = json.loads(args.copy_receipt.read_text(encoding="utf-8"))
+        host = json.loads(args.host_receipt.read_text(encoding="utf-8-sig"))
     project = root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
     names = ["proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
              "proprietary/src/ContextSuite.Private/Office/OfficeDirectoryLeases.cs",
              "proprietary/src/ContextSuite.Private/IO/MediaFiles.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeRuntimeContracts.cs",
+             "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeRuntimeFileContracts.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/Program.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj",
              "tools/office-engine/Write-OfficeRuntimeInventory.py", "tools/office-engine/Test-OfficeRuntime.py"]
     sources = {name: digest(root / name) for name in names}
-    commands = [[sys.executable, str(root / "tools/office-engine/Write-OfficeRuntimeInventory.py"),
-                 str(args.copy_receipt.resolve()), str(inventory)],
-                ["dotnet", "build", str(project), "-c", "Release", "--no-restore", "--verbosity", "quiet"]]
+    commands = [] if args.package is not None else [
+        [sys.executable, str(root / "tools/office-engine/Write-OfficeRuntimeInventory.py"),
+         str(args.copy_receipt.resolve()), str(inventory)]]
+    commands.append(["dotnet", "build", str(project), "-c", "Release", "--no-restore", "--verbosity", "quiet"])
     for index, command in enumerate(commands):
         result = subprocess.run(command, cwd=root, capture_output=True)
         (evidence / f"prepare-{index}.log").write_bytes(result.stdout + result.stderr)
@@ -45,7 +59,7 @@ def main():
     if any(digest(root / name) != value for name, value in sources.items()):
         raise RuntimeError("Runtime verification sources changed during the build.")
     managed = root / "artifacts/managed/bin/ContextSuite.Pdf.ContractTests/Release/net10.0/ContextSuite.Pdf.ContractTests.exe"
-    receipt = {"source": sources, "host": host, "copyReceiptSha256": digest(args.copy_receipt),
+    receipt = {"source": sources, "host": host, "copyReceiptSha256": digest(args.copy_receipt) if args.copy_receipt else None,
                "inventorySha256": digest(inventory), "runtime": copied["destination"],
                "managedFiles": {path.name: digest(path) for path in managed.parent.iterdir() if path.is_file()}}
     (evidence / "build.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
@@ -55,7 +69,10 @@ def main():
     (evidence / "stdout.log").write_bytes(result.stdout)
     (evidence / "stderr.log").write_bytes(result.stderr)
     print((result.stdout + result.stderr).decode(errors="replace"), end="", flush=True)
-    if result.returncode:
+    unchanged = all(digest(root / name) == value for name, value in sources.items()) and all(
+        digest(managed.parent / name) == value for name, value in receipt["managedFiles"].items()) and digest(inventory) == receipt["inventorySha256"]
+    (evidence / "exit.json").write_text(json.dumps({"ExitCode": result.returncode, "InputsUnchanged": unchanged}))
+    if result.returncode or not unchanged:
         raise RuntimeError(f"Office runtime verification failed: {evidence}")
     report = json.loads((evidence / "contracts/results.json").read_text(encoding="utf-8"))
     if not report["Passed"] or report["RuntimeFiles"] != 19332:

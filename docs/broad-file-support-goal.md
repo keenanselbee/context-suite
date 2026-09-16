@@ -5,6 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Office runtime performance checkpoint](office-runtime-performance.md) removes
+repeated ancestor pathname scans while preserving every pinned hash and final
+file identity check. Acquisition measured 18.94 seconds before and 9.75 seconds
+after on the same cached runtime. All 45 native runtime safety checks and 80
+application checks pass; fifteen PDFs retain exact prior text, fonts and pixels,
+and every disposable profile and context is removed. The batch observation also
+improves, with its approximate historical timing explicitly qualified. Broader
+fidelity, packaging and release acceptance remain open.
+
 The [plain Word font-table check](word-font-style-evaluation.md#plain-font-table-verification)
 now lets supported revision-only font warnings remain quiet when a document has
 ordinary family/metric declarations. Aliases, embedded fonts and unknown or

@@ -11,19 +11,27 @@ all 19,332 runtime files (1,517,294,910 bytes), checks exact membership includin
 the three expected empty package-cache directories, and rejects linked entries.
 The source is the independently prepared candidate, never `reference/`.
 
-The current long-path-aware host is 104,960 bytes with SHA-256
+The current font-reporting host is 110,592 bytes with SHA-256
+`D8FE02337D606C3ECD17F3919F7D6F1208BB3085A142339A7ECFAC69100F5662`;
+see [Office font review](office-font-review.md). The preceding long-path-aware
+host was 104,960 bytes with SHA-256
 `6C2300992201F054E28E7B72715304CA63E0AABEFA909CF7D356D3F275D77677`.
 The original verifier evidence below used the preceding 103,936-byte host,
 `8DFF459F2F10F82B5DD82EA887FC4FD07F15DDAB45372C38202B6E4A4508E060`.
 See the [interruption investigation](office-worker-interruption.md) for the
 intermediate diagnostic host and the [directory-boundary correction](office-path-boundary.md)
-for the current manifest, evidence and remaining platform limitation.
+for that manifest, evidence and remaining platform limitation.
 The canonical UTF-8 inventory is 2,276,994 bytes with SHA-256
 `70DAF53038F8B4E8B5FDF74B6877393616094762C0E0BDC5245D657C16DBCD2D`.
 Each line is relative path, byte count and uppercase SHA-256, separated by tabs;
 paths are sorted ordinally and lines end with LF. The inventory writer accepts
 only the retained candidate's exact inventory and upstream archive identity.
 This is not a facility for selecting arbitrary engine versions or executables.
+
+The subsequent [runtime performance work](office-runtime-performance.md) reuses
+verified directory handles within acquisition while preserving every file hash
+and final file-handle check. It also adds redirected-cached-directory tests and
+the retained scratch-package verification command.
 
 
 Lease boundary
