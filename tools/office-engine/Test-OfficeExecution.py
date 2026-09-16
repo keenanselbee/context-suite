@@ -20,17 +20,22 @@ def main():
     parser.add_argument("--cleanup-only", action="store_true", help="Exercise one obstructed profile cleanup and retry without launching Office.")
     parser.add_argument("--direct", action="store_true", help="Exercise mixed image/Office PDF commands and Office retry through the application view model.")
     parser.add_argument("--font-review", action="store_true", help="Exercise real missing-font reports, per-file review, refusal and cleanup.")
+    parser.add_argument("--word-font-styles", action="store_true", help="Export fifteen authored style/theme controls and verify source selections, review signals and cleanup.")
     parser.add_argument("--pdf-validator", type=Path, help="Combined-image validator required for the direct mixed-command test.")
     parser.add_argument("--office-engine", type=Path)
     parser.add_argument("--pdf-engine", type=Path)
     parser.add_argument("--pdf-renderer", type=Path)
     parser.add_argument("--retained-worker", type=Path, help="Reuse a scratch worker after matching its top-level files to the fresh build; readers verify their full pinned runtimes.")
-    parser.add_argument("--fixtures", type=Path, required=True)
+    parser.add_argument("--fixtures", type=Path)
     args = parser.parse_args()
     if not args.create_disposable_profiles:
         parser.error("Explicit disposable Office profile authorization is required.")
-    if sum((args.direct, args.cleanup_only, args.font_review)) > 1:
+    if sum((args.direct, args.cleanup_only, args.font_review, args.word_font_styles)) > 1:
         parser.error("Choose only one execution scenario.")
+    if args.word_font_styles and args.fixtures is not None:
+        parser.error("Word font-style mode creates its own authored fixtures; omit --fixtures.")
+    if not args.word_font_styles and args.fixtures is None:
+        parser.error("--fixtures is required for the selected scenario.")
     if args.direct and (args.cleanup_only or args.pdf_validator is None and args.retained_worker is None):
         parser.error("Direct mode requires a combined-image validator and cannot use cleanup-only mode.")
     if args.retained_worker is None and not all((args.office_engine, args.pdf_engine, args.pdf_renderer)):
@@ -38,9 +43,10 @@ def main():
     if args.retained_worker is not None and any((args.office_engine, args.pdf_engine, args.pdf_renderer, args.pdf_validator)):
         parser.error("A retained worker uses its own engine directories; omit separate engines.")
     root = Path(__file__).resolve().parents[2]
-    fixtures = args.fixtures.resolve(strict=True)
-    fixtures.relative_to(root / ".codex-temp")
-    originals = {str(path): digest(path) for path in fixtures.iterdir() if path.is_file()}
+    fixtures = args.fixtures.resolve(strict=True) if args.fixtures else None
+    if fixtures is not None:
+        fixtures.relative_to(root / ".codex-temp")
+    originals = {str(path): digest(path) for path in fixtures.iterdir() if path.is_file()} if fixtures else {}
     stage = root / ".codex-temp/office-execution" / uuid.uuid4().hex
     stage.mkdir(parents=True)
     print("Office execution evidence:", stage, flush=True)
@@ -51,6 +57,9 @@ def main():
     paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json", "tools/Require-Private.targets")
                  if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
+    fixture_source = root / "tools/office-engine/Probe/WordFontStyleFixtures.cs"
+    if args.word_font_styles:
+        sources[str(fixture_source.relative_to(root))] = digest(fixture_source)
     for label, project in (("worker", "src/ContextSuite.Worker/ContextSuite.Worker.csproj"),
                            ("contracts", "tests/ContextSuite.Core.ContractTests/ContextSuite.Core.ContractTests.csproj")):
         build = subprocess.run(["dotnet", "build", str(root / project), "-c", "Release", "--no-restore", "--verbosity", "quiet"], cwd=root, capture_output=True)
@@ -100,11 +109,14 @@ def main():
     (stage / "inputs.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
     if any(digest(root / name) != expected for name, expected in sources.items()):
         raise RuntimeError("Source drift before execution.")
-    print("Starting thirteen disposable font-review exports." if args.font_review else "Starting one disposable profile cleanup/retry check." if args.cleanup_only else
+    print("Starting fifteen disposable Word font-style exports." if args.word_font_styles else
+          "Starting thirteen disposable font-review exports." if args.font_review else "Starting one disposable profile cleanup/retry check." if args.cleanup_only else
           "Starting five disposable direct-command exports." if args.direct else "Starting six disposable Office exports and application publication checks.", flush=True)
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
-        run = subprocess.run([str(host), "--office-font-execution" if args.font_review else "--office-execution-cleanup" if args.cleanup_only else "--office-direct-execution" if args.direct else "--office-execution", str(worker_root / "ContextSuite.Worker.exe"), str(fixtures), str(stage / "contracts")],
-                             cwd=root, stdout=output, stderr=error)
+        arguments = [str(host), "--office-word-font-styles", str(worker_root / "ContextSuite.Worker.exe"), str(stage / "contracts")] if args.word_font_styles else [
+            str(host), "--office-font-execution" if args.font_review else "--office-execution-cleanup" if args.cleanup_only else "--office-direct-execution" if args.direct else "--office-execution",
+            str(worker_root / "ContextSuite.Worker.exe"), str(fixtures), str(stage / "contracts")]
+        run = subprocess.run(arguments, cwd=root, stdout=output, stderr=error)
     unchanged = all(digest(root / name) == expected for name, expected in sources.items()) and all(
         digest(Path(name)) == expected for group in (originals, engines, binaries) for name, expected in group.items())
     (stage / "exit.json").write_text(json.dumps({"ExitCode": run.returncode, "InputsUnchanged": unchanged}), encoding="utf-8")
@@ -112,7 +124,7 @@ def main():
     if run.returncode or not unchanged:
         raise RuntimeError("Office execution failed; inspect retained context journals and profile cleanup before retrying: " + str(stage))
     report = json.loads((stage / "contracts/results.json").read_text(encoding="utf-8"))
-    if not report.get("Passed") or len(report.get("Profiles", [])) != (13 if args.font_review else 1 if args.cleanup_only else 5 if args.direct else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
+    if not report.get("Passed") or len(report.get("Profiles", [])) != (15 if args.word_font_styles else 13 if args.font_review else 1 if args.cleanup_only else 5 if args.direct else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
         raise RuntimeError("Missing complete execution and cleanup evidence.")
 
 

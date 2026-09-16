@@ -159,5 +159,50 @@ internal static partial class DocumentAnalysisContracts
         check(preflight.Refusal is null && preflight.WordFonts is { Available: true, ResolvedRuns: 1 } &&
             preflight.WordFonts.Families.SequenceEqual(["Default Family"]),
             "Word used fonts: Office preflight carries evidence without changing admission");
+        var deleted = "<w:del>" + Run("<w:rFonts w:ascii='Deleted Family'/>") + "</w:del>";
+        var inactive = await Inspect(Parts(Paragraph(deleted + Run())));
+        check(inactive.InactiveRevisionFamilies.SequenceEqual(["Deleted Family"]) &&
+            inactive.KeepActiveReports(["deleted family", "Default Family", "Unknown Family"]).SequenceEqual(["Default Family", "Unknown Family"]),
+            "Word font review: only the proven inactive revision name is removed, preserving unknown and active reports");
+        foreach (var (label, body, styles) in new[]
+        {
+            ("live font", Paragraph(deleted + Run("<w:rFonts w:ascii='Deleted Family'/>")), defaults),
+            ("non-text run declaration", Paragraph(deleted + Run() + "<w:r><w:rPr><w:rFonts w:ascii='Deleted Family'/></w:rPr></w:r>"), defaults),
+            ("paragraph mark declaration", Paragraph(deleted + Run(), "<w:rPr><w:rFonts w:ascii='Deleted Family'/></w:rPr>"), defaults),
+            ("unused live style declaration", Paragraph(deleted + Run()), defaults + Style("Unused", "character", "<w:rFonts w:ascii='Deleted Family'/>")),
+            ("unresolved text", Paragraph(deleted + Run(text: "&#x4E00;")), defaults),
+            ("unknown body element", Paragraph(deleted + Run() + "<w:unknown/>"), defaults),
+            ("header reference", Paragraph(deleted + Run()) + "<w:sectPr><w:headerReference/></w:sectPr>", defaults),
+            ("field", Paragraph(deleted + Run() + "<w:r><w:fldChar w:fldCharType='begin'/></w:r>"), defaults),
+            ("no live text", Paragraph(deleted), defaults)
+        })
+        {
+            var result = await Inspect(Parts(body, styles));
+            check(result.KeepActiveReports(["Deleted Family"]).SequenceEqual(["Deleted Family"]),
+                "Word font review: report retained for " + label);
+        }
+        var activeTheme = await Inspect(Parts(Paragraph(deleted + Run()), themeXml: theme.Replace("Major Family", "Deleted Family")));
+        check(activeTheme.KeepActiveReports(["Deleted Family"]).SequenceEqual(["Deleted Family"]),
+            "Word font review: theme alternatives disqualify revision-only evidence");
+        var unknownDependency = Parts(Paragraph(deleted + Run()));
+        unknownDependency[3] = (unknownDependency[3].Name, unknownDependency[3].Text.Replace("</Relationships>",
+            $"<Relationship Id='fonts' Type='{rel}fontTable' Target='fontTable.xml'/></Relationships>"));
+        var dependency = await Inspect(unknownDependency);
+        check(dependency.Available && dependency.KeepActiveReports(["Deleted Family"]).SequenceEqual(["Deleted Family"]),
+            "Word font review: uninspected font/alias dependencies retain reports");
+        var unknownSettings = Parts(Paragraph(deleted + Run()));
+        unknownSettings[0] = (unknownSettings[0].Name, unknownSettings[0].Text.Replace("</Types>",
+            $"<Override PartName='/settings.xml' ContentType='{type}settings+xml'/></Types>"));
+        unknownSettings[3] = (unknownSettings[3].Name, unknownSettings[3].Text.Replace("</Relationships>",
+            $"<Relationship Id='settings' Type='{rel}settings' Target='../settings.xml'/></Relationships>"));
+        foreach (var settings in new[] { "<w:themeFontLang/>", "<w:compat/>" })
+        {
+            var result = await Inspect([.. unknownSettings, ("settings.xml", $"<w:settings xmlns:w='{word}'>{settings}</w:settings>")]);
+            check(result.Available && result.KeepActiveReports(["Deleted Family"]).SequenceEqual(["Deleted Family"]),
+                "Word font review: uninspected settings retain reports");
+        }
+        var malformedSettings = await Inspect([.. unknownSettings, ("settings.xml", "<not-settings/>")]);
+        check(malformedSettings.KeepActiveReports(["Deleted Family"]).SequenceEqual(["Deleted Family"]),
+            "Word font review: malformed settings never silence a report");
     }
 }

@@ -8,7 +8,8 @@ namespace ContextSuite.Core.Analysis;
 // Font-family selections for supported final-text runs in the main Word story.
 // This is source evidence, not installed/glyph/embedding or rendered-font proof.
 public sealed partial record WordBodyFontInspection(bool Available, int TextRuns, int ResolvedRuns,
-    ImmutableArray<string> Families, ImmutableArray<string> CoverageIssues, int InspectedBytes)
+    ImmutableArray<string> Families, ImmutableArray<string> CoverageIssues, int InspectedBytes,
+    ImmutableArray<string> InactiveRevisionFamilies = default)
 {
     private const string Word = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
     private const string Drawing = "http://schemas.openxmlformats.org/drawingml/2006/main";
@@ -30,6 +31,7 @@ public sealed partial record WordBodyFontInspection(bool Available, int TextRuns
             var types = Parse(await package.ReadPartAsync("[Content_Types].xml"), token);
             if (types.Name != XName.Get("Types", ContentTypes)) throw new InvalidDataException("Unexpected content types.");
             var declarations = new Dictionary<string, string>(StringComparer.Ordinal);
+            var knownDependencies = true;
             foreach (var part in types.Elements(XName.Get("Override", ContentTypes)))
             {
                 var name = (string?)part.Attribute("PartName");
@@ -48,7 +50,20 @@ public sealed partial record WordBodyFontInspection(bool Available, int TextRuns
             var styles = styleName is null ? null : Parse(await package.ReadPartAsync(styleName), token);
             var theme = themeName is null ? null : Parse(await package.ReadPartAsync(themeName), token);
             var result = InspectBody(body, styles, theme, token);
-            return result with { InspectedBytes = package.InspectedBytes };
+            var inactive = InactiveFamilies(document, body, styles, theme, result);
+            if (!inactive.IsEmpty && knownDependencies)
+            {
+                var settingsName = SelectPart(links, "settings", WordType + "settings+xml");
+                if (settingsName is not null)
+                {
+                    var settings = Parse(await package.ReadPartAsync(settingsName), token);
+                    knownDependencies = settings.Name == W + "settings" &&
+                        settings.Elements().All(element => element.Name == W + "revisionView" || element.Name == W + "trackRevisions");
+                }
+            }
+            token.ThrowIfCancellationRequested();
+            return result with { InspectedBytes = package.InspectedBytes,
+                InactiveRevisionFamilies = knownDependencies ? inactive : [] };
 
             async Task<Dictionary<string, List<string>>> ReadLinksAsync(string owner)
             {
@@ -69,7 +84,13 @@ public sealed partial record WordBodyFontInspection(bool Available, int TextRuns
                     if (link.Name != XName.Get("Relationship", Relationships) || string.IsNullOrWhiteSpace(id) ||
                         !ids.Add(id) || string.IsNullOrWhiteSpace(type) || mode is not (null or "Internal" or "External"))
                         throw new InvalidDataException("Ambiguous relationships.");
-                    if (type is not (RelationPrefix + "officeDocument" or RelationPrefix + "styles" or RelationPrefix + "theme")) continue;
+                    if (type is not (RelationPrefix + "officeDocument" or RelationPrefix + "styles" or RelationPrefix + "theme" or RelationPrefix + "settings"))
+                    {
+                        // Uninspected dependencies can supply fonts/aliases or rendered
+                        // content. Keep their reports rather than claiming exclusivity.
+                        knownDependencies = false;
+                        continue;
+                    }
                     // Only selected internal package parts are read. Never open external targets.
                     if (mode == "External") throw new InvalidDataException("External selected font dependency.");
                     if (!links.TryGetValue(type, out var targets)) links.Add(type, targets = []);

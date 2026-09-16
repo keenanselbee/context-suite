@@ -4,7 +4,8 @@ Word Body Font Inspection
 Office preflight now carries bounded source font-family evidence for supported
 final-text runs in an ordinary Transitional DOCX main story. This begins the
 document-side counterpart to the [renderer font list](office-font-environment.md).
-It does not add a customer prompt or suppress the existing
+The later [style export evaluation](word-font-style-evaluation.md) also uses
+strictly bounded evidence to remove revision-only names from the existing
 [renderer-reported substitution review](office-font-review.md).
 
 The result separates available package inspection, counted text runs, resolved
@@ -55,6 +56,27 @@ This is requested family evidence. Installed aliases, selected font faces,
 metric substitutions, embedded programs/rights and glyph fallback still require
 renderer and PDF evidence. Do not turn a partial result into an automatic warning,
 approval, refusal or a promise that a document will retain its layout.
+
+Inactive revision reports
+-------------------------
+
+The renderer can report a font used only by deleted text even when the final PDF
+contains none of that text. The application retains immutable source evidence
+from preparation under its existing original-file lease. After native cleanup,
+independent PDF validation and another source check, it can remove a reported
+name proven to occur only in inactive revision properties.
+
+This requires at least one live text run, every counted run resolved, no coverage
+issues, a closed set of understood main-story elements and no uninspected
+relationships. The only inspected settings are revision visibility and tracking.
+Any other settings or dependency, including a font table with possible aliases,
+disables filtering. Any matching live declaration in the body, styles or theme
+also disqualifies the family, even if the declaration appears unused. Non-text
+run and paragraph-mark declarations count against exclusivity.
+
+Unknown reports and active families keep their original review behavior. The
+native report and transport remain unchanged. This is not a general font-table,
+alias, revision or whole-document absence detector; broader coverage remains open.
 
 Limits and failure behavior
 ---------------------------

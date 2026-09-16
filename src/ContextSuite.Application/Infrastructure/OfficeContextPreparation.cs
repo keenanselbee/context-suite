@@ -21,6 +21,7 @@ internal sealed class OfficeContextPreparation : IDisposable
     internal OfficeOwnershipJournal Journal { get; private set; } = null!;
     internal string OriginalPath { get; private set; } = null!;
     internal FileFingerprint OriginalIdentity { get; private set; } = null!;
+    internal WordBodyFontInspection? WordFonts { get; private set; }
 
     internal static async Task<OfficeContextPreparation> CreateAsync(string contextRoot, string runtimeDirectory,
         string sourcePath, string format, string calculation, CancellationToken token, bool createContextRoot = false,
@@ -50,6 +51,7 @@ internal sealed class OfficeContextPreparation : IDisposable
             var admission = await OfficeSourcePreflight.InspectOpenXmlAsync(source, result._original, token);
             if (admission.Refusal is not null || admission.FormatId != format)
                 throw new InvalidDataException(admission.Refusal ?? "The document contents differ from the selected Office format.");
+            result.WordFonts = admission.WordFonts;
             result.OriginalIdentity = await PublicationFiles.FingerprintAsync(result._original, token);
             result.Work = work with { SourceBytes = result.OriginalIdentity.Length, SourceSha256 = result.OriginalIdentity.Sha256 };
             result.Work.Validate();

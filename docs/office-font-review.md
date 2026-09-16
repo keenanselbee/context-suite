@@ -20,6 +20,14 @@ claim of complete font fidelity. The
 filtered substitutions and missing style/glyph/embedded-font coverage. Those
 limitations remain release gates.
 
+The later [Word style evaluation](word-font-style-evaluation.md) found that a
+deleted-text font can produce a report even when the PDF matches the clean
+control exactly. The app now removes only names that bounded, retained Word
+source evidence proves exclusive to inactive revisions. Incomplete coverage,
+uninspected settings/dependencies, active declarations and unknown report names
+retain the existing prompt. Raw renderer reports remain intact; see the
+[exclusivity rules](word-body-font-inspection.md#inactive-revision-reports).
+
 
 Publication boundary
 --------------------

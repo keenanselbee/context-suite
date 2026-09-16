@@ -5,10 +5,19 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [Word font-style export matrix](word-font-style-evaluation.md) found and
+corrected an unnecessary review for a font confined to deleted text. Bounded
+source evidence now filters only proven inactive revision names, retaining
+active, unknown and ambiguous reports. All 3,867 foundation and 80 application
+checks pass; fifteen PDFs retain identical text, font names and pixels before
+and after the correction. All native profiles and contexts are removed.
+Broader source coverage, font fidelity and release acceptance remain open.
+
 The [Word body font inspection](word-body-font-inspection.md) now resolves bounded
 active style chains and Latin theme selections for supported final-text runs,
 excluding unused styles and deleted text. Office preflight carries explicit
-coverage gaps; it does not add a prompt or override renderer-reported review.
+coverage gaps. That initial checkpoint did not change renderer-reported review;
+the bounded revision-only correction above is the subsequent behavior.
 All 3,792 foundation contracts and two source-preserving retained Word inspections
 pass. Full story/script resolution, other Office families and rendered font
 fidelity remain incomplete.

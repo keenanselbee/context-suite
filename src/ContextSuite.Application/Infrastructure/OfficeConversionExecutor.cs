@@ -88,10 +88,12 @@ internal sealed class OfficeConversionExecutor(WorkerClient worker, OutputPublis
             var validated = await worker.ValidateOfficePdfAsync(new(prepared.Work, candidate, reservation.TemporaryPath), token);
             await prepared.VerifyAsync(token);
             OfficeHostProtocol.ValidateFontFamilies(candidate.Completion.MissingFontFamilies);
-            if (!candidate.Completion.MissingFontFamilies.IsEmpty)
+            var reviewFamilies = prepared.WordFonts?.KeepActiveReports(candidate.Completion.MissingFontFamilies) ??
+                candidate.Completion.MissingFontFamilies;
+            if (!reviewFamilies.IsEmpty)
             {
                 report?.Invoke(new(source.Path, OperationState.Running, "Waiting for font review before saving PDF"));
-                var accepted = reviewFonts is not null && await reviewFonts(new(source.Path, candidate.Completion.MissingFontFamilies), token);
+                var accepted = reviewFonts is not null && await reviewFonts(new(source.Path, reviewFamilies), token);
                 token.ThrowIfCancellationRequested();
                 if (!accepted)
                 {
