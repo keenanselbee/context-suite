@@ -3,7 +3,8 @@ namespace ContextSuite.Core.Analysis;
 // Necessary source identification only, not a rendering permit or a safety scan.
 // The caller must retain its read lease through copying/rendering and enforce
 // separate engine, isolation, active-content and publication policies.
-public sealed record OfficeSourcePreflight(FileAnalysis Analysis, string? FormatId, string? Refusal)
+public sealed record OfficeSourcePreflight(FileAnalysis Analysis, string? FormatId, string? Refusal,
+    ExcelStoredDateInspection? StoredDates = null)
 {
     public static async Task<OfficeSourcePreflight> InspectOpenXmlAsync(string path, Stream input,
         CancellationToken cancellationToken)
@@ -34,6 +35,9 @@ public sealed record OfficeSourcePreflight(FileAnalysis Analysis, string? Format
             } : null;
         if (format is null || format != analysis.Identity.FormatId)
             return new(analysis, null, "This Office document variant is not supported by the current conversion preflight. Analyze remains available.");
-        return new(analysis, format, null);
+        // Keep stored-date evidence separate from admission. It does not prove
+        // formula/recalculation fidelity or settle the pending launch policy.
+        var dates = format == "xlsx" ? await ExcelStoredDateInspection.ReadAsync(input, cancellationToken) : null;
+        return new(analysis, format, null, dates);
     }
 }

@@ -5,7 +5,15 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
-The [launch capability matrix, revision 2026-09-16.1](launch-capability-matrix.md)
+The [stored Excel date inspection](excel-date-system-evaluation.md#stored-value-inspection-2026-09-16)
+now supplies bounded numeric/date-format evidence to Office preflight, separately
+from admission. All 3,643 foundation contracts pass and the three retained date
+fixtures return expected risk counts 3, 3 and 0 without source changes or a native
+export. This does not correct or authorize the six known PDF date errors. The
+owner's refusal-versus-exact-conversion decision remains pending; formula and
+unsupported-format handling still need a complete execution/publication policy.
+
+The [launch capability matrix, revision 2026-09-16.2](launch-capability-matrix.md)
 now reconciles the implemented input/output pairs, analysis coverage, original-file
 rules and engine availability against current source. The retained 1.1.0 stage
 still verifies all 116 files, but contains no Office engine. Early-1900 Excel
@@ -1530,7 +1538,7 @@ Milestone 0: scope and evidence contracts
 - [x] Record the broader launch direction and preserve the completed image scope.
 - [x] Produce a versioned capability matrix distinguishing catalog recognition,
   signature identification, detailed analysis, conversion and optimization.
-  See [revision 2026-09-16.1](launch-capability-matrix.md); it preserves open
+  See [revision 2026-09-16.2](launch-capability-matrix.md); it preserves open
   implementation/acceptance cells and does not declare release readiness.
 - [ ] Freeze the first audio input/output pairs and metadata/fidelity policies.
 - [x] Resolve the document transformation decision below with concrete options.

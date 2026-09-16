@@ -1,8 +1,9 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.1**. Implementation baseline: public `67cb42d`,
-private `616d7ee`. Catalog schema 1, revision **2026-09-14.1**, **244 records**.
+Matrix revision: **2026-09-16.2**. This checkpoint adds stored-date preflight
+evidence to public baseline `284cde5`; private baseline `616d7ee` is unchanged.
+Catalog schema 1, revision **2026-09-14.1**, **244 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
 
@@ -172,8 +173,9 @@ move fixture has its own 0.071-point horizontal bound. That allowance does not
 accept changed dates, missing content, new page breaks or substituted fonts.
 
 The [early-1900 Excel experiment](excel-date-system-evaluation.md) still has six
-incorrect displayed dates despite successful export. No production correction
-or affected-cell guard is established. General XLSX fidelity cannot be accepted
+incorrect displayed dates despite successful export. A bounded stored-numeric-date
+inspection now returns separate preflight evidence; no production correction
+or publication guard is established. General XLSX fidelity cannot be accepted
 until this is addressed. Native file/profile ownership and interruption evidence
 also do not by themselves close the separate
 [Office network-isolation evidence](office-isolation-evaluation.md).

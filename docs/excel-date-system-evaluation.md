@@ -69,6 +69,73 @@ It does not yet identify affected cells, derive their effective date system or
 repair the rendering mismatch.
 
 
+Stored-value inspection (2026-09-16)
+-----------------------------------
+
+The [conversion preflight](../src/ContextSuite.Core/Analysis/OfficeSourcePreflight.cs)
+now returns separate [stored-date evidence](../src/ContextSuite.Core/Analysis/ExcelStoredDateInspection.cs)
+for identified ordinary XLSX packages. It does not change admission or accept
+the renderer's incorrect dates. The owner has been asked whether launch may
+decline affected workbooks or must convert those dates exactly; that decision
+is still pending. Exact date fidelity remains required until scope is resolved.
+
+LibreOffice's [calculation documentation](https://help.libreoffice.org/latest/en-US/text/shared/optionen/01060500.html)
+explicitly distinguishes its pre-March-1900 calendar from Excel's. The current
+upstream [workbook importer](https://raw.githubusercontent.com/LibreOffice/core/master/sc/source/filter/oox/workbooksettings.cxx)
+selects only the 1899-12-30 or 1904-01-01 base and describes the remaining early-date
+difference. This is current upstream research, not a claim that its source bytes
+match the pinned binary. The exact version-tag URL could not be retrieved.
+Changing every cell or the workbook's date base would also move the already
+correct modern dates and durations; no such change is made.
+
+The new reader counts numeric cells with stored values from zero inclusive to
+61 exclusive and a supported direct calendar number format in the Transitional
+1900 system. It separately counts date-formatted formula cells; it never evaluates
+formulas or treats a cached result as the result of future recalculation. The
+1904 system retains zero for this particular risk. Literal numbers, ordinary time
+formats and elapsed durations are distinguished from calendar dates using
+Microsoft's [number-format definitions](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.numberingformat?view=openxml-3.0.1).
+No cell values, formulas, sheet names or cell addresses are returned in the result.
+
+The scope is the worksheet parts explicitly declared in content-type overrides,
+including hidden or potentially unused parts. It is not an effective print-area
+or whole-workbook semantic check. ISO date-string cells, chart labels and formulas
+which acquire a date only after evaluation are outside the numeric-value count.
+Zero is not a certificate of correct rendering. `Complete` means this stored-value
+scan completed within its supported declaration scope, not that Excel fidelity
+is complete.
+
+Locale-dependent built-ins, multi-section/conditional/localized custom formats,
+row/column format inheritance, conditional formatting, ambiguous declarations,
+Strict/compatibility date semantics and budget failures return unavailable counts.
+Incomplete inspection never becomes zero. XML DTDs/resolvers are disabled, depth
+is limited to 32, and the existing ZIP reader bounds entries to 4,096, each part
+to 256 KiB, total expanded parts to 1 MiB and reads to 4 MiB. The date scan also
+limits worksheet parts to 64, cell formats to 4,096 and cells to 65,536. It uses
+the caller's cancellation token and restores the source position. General Analyze
+does not start this additional cell scan.
+
+All **3,643 foundation contracts** pass, including the new stored-date cases,
+with unchanged recorded source inputs. Evidence:
+`.codex-temp/excel-stored-dates-35c2dd0b5d15481d85db0531593bbad4`.
+The three retained failing/control workbooks independently produce expected
+counts **3, 3, 0** with no formula cells and unchanged hashes/write times, in
+`stored-date-inspection-545260301d8f4f108d929f20873cbb2c.json` under the original
+evaluation directory. This read launches no Office engine and creates no native
+profile. Contract and inspection builds complete without warnings/errors.
+
+Reproduce the retained-fixture read with:
+
+```powershell
+dotnet run --project tools/office-engine/Probe/Office.Evaluation.csproj -c Release -- `
+  --inspect-excel-stored-dates '<original Excel date evaluation directory>'
+```
+
+The six PDF date mismatches remain unresolved. Next work must connect a complete
+date policy to execution/publication, including formula and unsupported-format
+cases; this inspection component alone does not satisfy that requirement.
+
+
 Evidence and limits
 -------------------
 

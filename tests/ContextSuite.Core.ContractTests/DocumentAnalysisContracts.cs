@@ -13,6 +13,7 @@ internal static partial class DocumentAnalysisContracts
     public static async Task RunAsync(string scratch, Action<bool, string> check)
     {
         await OfficeSourcePreflightContractsAsync(check);
+        await StoredExcelDatesAsync(check);
         foreach (var id in new[] { "docx", "xlsx", "pptx" })
         foreach (var strict in new[] { false, true })
         {
