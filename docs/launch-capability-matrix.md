@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.12**. This update adds reviewed catalog MIME
-references and records the later Office capacity and failure-guidance fixes.
+Matrix revision: **2026-09-16.13**. This update records maximum-selection Analyze
+performance alongside reviewed MIME references and Office fixes.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. This matrix does not change the selected launch scope.
@@ -237,6 +237,11 @@ the image/audio/PDF allowlists, dependencies and notices. Inventory SHA-256:
 No Office payload file is present. This is a fresh verification of retained bytes,
 not a fresh build or rerun of all media workflows. A changed final package needs
 the next reserved version, **1.1.1**, and complete relevant integrated checks.
+
+The [current Analyze benchmark](analyze-performance.md#maximum-selection-refresh-2026-09-16)
+passes authored 256-path and maximum 4,096-path selections with per-file failures,
+preserved originals and bounded inspection. It adds large-selection evidence;
+visible responsiveness, optional-worker latency and true cold storage remain open.
 
 Completion still requires:
 

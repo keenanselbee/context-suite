@@ -117,3 +117,61 @@ repeated median / 9.93 ms p95. Individual cases have at most 99.21 ms first-call
 median and 3.17 ms repeated p95. Every case remains within the timing/allocation
 budgets above. This refresh includes the current readers but retains the same
 small synthetic workload; it does not extend the environment or worker coverage.
+
+
+Maximum-selection refresh (2026-09-16)
+-------------------------------------
+
+The benchmark now includes 256-file and 4,096-file selections through the actual
+application coordinator. The latter reaches the request's current path limit.
+Each selection has distinct Unicode filenames containing independently authored
+small PNG, JSON, DOCX, unknown binary and empty-file contents. A locked file and
+a missing path precede two readable trailing files. All rows retain their input
+order; both failures remain per-file and later analysis completes. No output,
+license admission or optional worker is allowed.
+
+The original ten cases also run unchanged, including large-file bounded reads.
+Each of twelve cases has three fresh processes with eleven samples per process:
+three first calls and thirty repeated calls. Fixture generation and hashing warm
+the file cache; these are not cold-storage measurements. The larger cases allow
+180 seconds per child, compared with 30 seconds for the small cases. That harness
+bound does not change the application's per-file read deadline.
+
+The same Windows 11 build 26200 / i9-9900K / 32 GiB machine, using .NET 10.0.11,
+records:
+
+| Selection | First-call median, ms | Repeated median, ms | Repeated p95, ms | Repeated median allocated bytes |
+| --- | ---: | ---: | ---: | ---: |
+| Original eight-file case | 135.78 | 7.34 | 9.96 | 1,076,244 |
+| 256 distinct paths | 351.97 | 222.56 | 242.02 | 16,218,568 |
+| 4,096 distinct paths | 3,512.79 | 2,757.81 | 2,858.42 | 260,368,048 |
+
+Allocation is cumulative process-wide managed allocation per batch, including
+harness observations. It is not retained result memory, peak working set or a
+memory ceiling. Across these two large selections, allocation per selected path
+is similar; that observation does not establish all-format scaling. Original
+individual cases remain within their existing timing and allocation budgets,
+with at most 97.40 ms first-call median and 3.03 ms repeated p95.
+
+For this authored workload and reference host, investigate 256-file regressions
+above 1 second first-call median, 500 ms repeated p95 or 32 MiB repeated median
+allocation. For the maximum selection, use 8 seconds, 5 seconds and 384 MiB
+respectively. These provisional review triggers allow headroom over the measured
+baseline; they are not customer promises or thresholds for unrelated hardware
+and document complexity.
+
+Evidence is `.codex-temp/analyze-benchmark/70552a2bf20c4da1972ef5ce51709e51`:
+`machine.json`, `fixtures.json`, `inputs.json`, 36 process receipts and
+`benchmark.json`. All 4,103 existing fixtures retain their bytes, sizes and
+write timestamps. All identities, input order and reported inspection limits
+pass. Source and host identities remain unchanged during execution; the Release
+build has zero warnings/errors. A later comment-only correction to the wrapper
+is recorded separately with identical Python syntax trees and the exact tested
+source retained as `Benchmark-Analyze.tested.py`.
+
+No production behavior changes. The test host now accepts the application's
+actual maximum selection instead of an artificial 32-path benchmark limit.
+Visible rendering and responsiveness, retained/peak process memory, optional
+audio/PDF workers, true cold storage, other machines and remote/cloud paths
+remain unmeasured. This closes the former small-selection-only evidence gap,
+not the complete performance or expanded release gate.

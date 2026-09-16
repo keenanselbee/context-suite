@@ -16,7 +16,7 @@ internal static class AnalyzeBenchmark
             StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("Use generated benchmark scratch.");
         var request = JsonSerializer.Deserialize<Request>(File.ReadAllText(path)) ?? throw new InvalidDataException("Missing benchmark request.");
         var fixtures = Path.Combine(Path.GetDirectoryName(path)!, "fixtures") + Path.DirectorySeparatorChar;
-        if (request.Paths.Length is < 1 or > 32 || request.Iterations is < 2 or > 20 ||
+        if (request.Paths.Length is < 1 or > OperationRequest.MaximumPaths || request.Iterations is < 2 or > 20 ||
             request.Paths.Any(file => !Path.GetFullPath(file).StartsWith(fixtures, StringComparison.OrdinalIgnoreCase)))
             throw new InvalidDataException("Benchmark accepts only its bounded generated fixtures.");
         var samples = new List<object>();

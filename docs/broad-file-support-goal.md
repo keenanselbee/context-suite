@@ -5,6 +5,14 @@ Status: active; universal Analyze and optional audio/PDF candidates implemented;
 required Office conversion and integrated acceptance remain incomplete
 Owner direction: 2026-09-09
 
+The [maximum-selection Analyze benchmark](analyze-performance.md#maximum-selection-refresh-2026-09-16)
+now exercises 256 and 4,096 distinct paths, including locked/missing files before
+readable trailing rows. All twelve workloads pass across 36 processes; the
+maximum selection takes 3.51 seconds first-call median and 2.76 seconds repeated
+median on the reference machine. All 4,103 fixture hashes/timestamps remain
+unchanged. Production behavior is unchanged; visible UI, optional-worker latency,
+true cold storage and other environments remain separate performance gates.
+
 The [catalog MIME expansion](catalog-mime-expansion.md) adds 75 reviewed
 associations to 64 existing records. The 245-record catalog now has descriptive
 MIME references for 100 records, retaining all names, aliases, confidence rules

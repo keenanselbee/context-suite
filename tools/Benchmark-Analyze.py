@@ -57,11 +57,43 @@ def main():
                 stream.write(block)
     expected = {'empty.txt': None, 'small.bin': None, 'small.png': 'png', 'small.json': 'json',
                 'large.bin': None, 'large.json': 'json', 'large.docx': 'docx', 'locked.bin': None, 'missing.bin': None}
+    cases = [(name, [name], False) for name in expected] + [('mixed-selection', [name for name in expected if name != 'missing.bin'], True)]
+    # Distinct files exercise admission and retained results for a realistic
+    # selection. Reuse only authored small contents.
+    with zipfile.ZipFile(fixtures / 'large.docx') as package:
+        parts = {name: package.read(name) for name in package.namelist() if name != 'unrelated.bin'}
+    with zipfile.ZipFile(fixtures / 'small.docx', 'x', compression=zipfile.ZIP_STORED) as package:
+        for name, data in parts.items():
+            package.writestr(name, data)
+    contents = [('bin', block[:4096], None), ('png', png, 'png'),
+                ('json', (fixtures / 'small.json').read_bytes(), 'json'),
+                ('txt', b'', None), ('docx', (fixtures / 'small.docx').read_bytes(), 'docx')]
+    selection = []
+    for index in range(4094):
+        extension, data, format_id = contents[index % len(contents)]
+        name = f'selection-{index:04d}-\u00fc.{extension}'
+        (fixtures / name).write_bytes(data)
+        expected[name] = format_id
+        selection.append(name)
+    # Put failures before successful trailing rows to verify the batch continues.
+    for count in (256, 4096):
+        names = selection[:count - 2]
+        names = names[:-2] + ['locked.bin', 'missing.bin'] + names[-2:]
+        cases.append((f'mixed-selection-{count}', names, True))
     originals = {p.name: {'bytes': p.stat().st_size, 'modifiedNs': p.stat().st_mtime_ns, 'sha256': digest(p)}
                  for p in fixtures.iterdir()}
     (scratch / 'fixtures.json').write_text(json.dumps(originals, indent=2))
     host = repository / 'artifacts/managed/bin/ContextSuite.Core.ContractTests/Release/net10.0-windows/ContextSuite.Core.ContractTests.dll'
-    cases = [(name, [name], False) for name in expected] + [('mixed-selection', [name for name in expected if name != 'missing.bin'], True)]
+    source_paths = [repository / 'Directory.Build.props', pathlib.Path(__file__).resolve(),
+                    repository / 'tools/Benchmark-Analyze.ps1']
+    for directory in ('src/ContextSuite.Core', 'src/ContextSuite.Application', 'src/Shared',
+                      'tests/ContextSuite.Core.ContractTests'):
+        source_paths += [p for p in (repository / directory).rglob('*')
+                         if p.is_file() and p.suffix in ('.cs', '.csproj', '.xaml', '.json')
+                         and not any(part in ('obj', 'bin') for part in p.relative_to(repository).parts)]
+    sources = {str(p.relative_to(repository)): digest(p) for p in source_paths}
+    binaries = {p.name: digest(p) for p in host.parent.iterdir() if p.is_file()}
+    (scratch / 'inputs.json').write_text(json.dumps({'Sources': sources, 'HostFiles': binaries}, indent=2))
     results = []
     kernel = ctypes.WinDLL('kernel32', use_last_error=True)
     kernel.CreateFileW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
@@ -79,9 +111,9 @@ def main():
             for index in range(3):
                 started = time.perf_counter()
                 process = subprocess.run(['dotnet', str(host), '--benchmark-analyze', str(specification)],
-                                         capture_output=True, text=True, timeout=30, cwd=repository)
+                                         capture_output=True, text=True, timeout=180 if len(names) > 32 else 30, cwd=repository)
                 elapsed = (time.perf_counter() - started) * 1000
-                if process.returncode or len(process.stdout) > 2 * 1024 * 1024:
+                if process.returncode or len(process.stdout) > 16 * 1024 * 1024:
                     raise RuntimeError(process.stderr[:4096] or process.stdout[:4096] or 'Benchmark child failed')
                 result = json.loads(process.stdout)
                 assert len(result['Samples']) == 11
@@ -94,7 +126,7 @@ def main():
                         else:
                             assert item['Error'] is None and item['FormatId'] == expected[file], item
                             assert item['FileBytes'] == originals[file]['bytes']
-                            maximum = 5 * 1024 * 1024 if file == 'large.docx' else min(originals[file]['bytes'], 65536)
+                            maximum = 5 * 1024 * 1024 if expected[file] == 'docx' else min(originals[file]['bytes'], 65536)
                             assert 0 <= item['InspectedBytes'] <= maximum
                 result['WholeProcessMilliseconds'] = elapsed
                 (scratch / (name + f'.run-{index}.json')).write_text(json.dumps(result, indent=2))
@@ -102,7 +134,7 @@ def main():
             cold = [run['Samples'][0]['Milliseconds'] for run in runs]
             warm = [sample for run in runs for sample in run['Samples'][1:]]
             times = sorted(sample['Milliseconds'] for sample in warm)
-            summary = {'Case': name, 'FreshFirstCallMedianMs': statistics.median(cold),
+            summary = {'Case': name, 'FileCount': len(names), 'FreshFirstCallMedianMs': statistics.median(cold),
                        'RepeatedMedianMs': statistics.median(times), 'RepeatedP95Ms': times[math.ceil(len(times) * .95) - 1],
                        'RepeatedAllocationMedianBytes': statistics.median(sample['ManagedAllocatedBytes'] for sample in warm),
                        'MaximumReportedInspectedBytes': max((file['InspectedBytes'] or 0 for run in runs for sample in run['Samples'] for file in sample['Files'])),
@@ -115,7 +147,10 @@ def main():
     for name, before in originals.items():
         path = fixtures / name
         assert {'bytes': path.stat().st_size, 'modifiedNs': path.stat().st_mtime_ns, 'sha256': digest(path)} == before
+    assert all(digest(repository / name) == value for name, value in sources.items()), 'Benchmark sources changed'
+    assert {p.name: digest(p) for p in host.parent.iterdir() if p.is_file()} == binaries, 'Benchmark host changed'
     (scratch / 'benchmark.json').write_text(json.dumps({'Results': results, 'OriginalsUnchanged': True,
+        'InputsUnchanged': True,
         'HostSha256': digest(host), 'AnalyzerSourceSha256': digest(repository / 'src/ContextSuite.Application/Infrastructure/FileAnalysisReader.cs'),
         'Scope': 'Three fresh processes per case; first-call and 30 repeated samples. File caches not cleared; optional media workers, Explorer/UI and remote/cloud storage excluded.'}, indent=2))
     print('Verified source hashes/timestamps and bounded reported inspection. Evidence: ' + str(scratch))
