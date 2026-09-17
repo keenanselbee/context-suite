@@ -15,6 +15,14 @@ pages-to-images and Word/Excel/PowerPoint-to-PDF are selected for launch; exact
 variants, engines and fidelity follow the [document design](document-design.md).
 Neither expansion is implemented by the existing image adapters.
 
+The 2026-09-16 goal revision additionally requires HEIC and AVIF input to the
+existing JPEG/PNG commands and AIFF/WMA input to the existing six audio targets.
+These input additions are planned, not implemented. Their admitted variants,
+color/HDR/alpha or audio precision/layout policies, metadata preservation and
+engine packaging must be verified before capability registration. They do not
+add output formats, Optimize presets or a general conversion planner. ALAC
+remains a separate evaluation; see the current broad file support goal.
+
 Status: PNG/JPEG/WebP/BMP/TGA conversion, planner, preview and trial-gated publication
 implemented and verified locally for the bounded slice; release checks remain open.
 

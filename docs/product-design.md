@@ -17,8 +17,8 @@ analysis/conversion and lossless FLAC optimization, plus PDF/Office/OpenDocument
 analysis. Selected launch actions include images-to-PDF, PDF pages-to-images,
 PDF optimization and Word/Excel/PowerPoint-to-PDF. Optional PDF optimization has
 direct worker/publication coverage; PDF-to-PNG has direct PNG-command coverage
-with per-document summaries and partial-page retries. Renderer packaging and
-visible acceptance remain pending. Optional Convert > PDF now combines images
+with per-document summaries and partial-page retries. Renderer release adoption
+and visible acceptance remain pending. Optional Convert > PDF now combines images
 through a focused order review, one validated copy and whole-document retry.
 Bounded legacy DOC/XLS/PPT analysis now supplements package analysis; its
 [supported headers and limits](legacy-document-analysis.md) are explicit.
@@ -26,10 +26,22 @@ Bounded legacy DOC/XLS/PPT analysis now supplements package analysis; its
 document copies, sharing one admission with combined-image PDF work. Spreadsheet
 calculation requires a focused choice; retention, fidelity and integrated
 acceptance remain open. Retain the simple customer surfaces above. Shared Analyze/fallback,
-bounded JSON/XML structure analysis and a 244-entry catalog are implemented with automated
+bounded JSON/XML structure analysis and a 245-entry catalog are implemented with automated
 evidence; see [current coverage](file-type-coverage.md). The
 [launch capability matrix](launch-capability-matrix.md) separates recognition,
 analysis, executable pairs, packaged engines and remaining acceptance. Signing is deferred.
+The [combined 1.1.1 candidate](combined-office-candidate.md) packages all selected
+engine families for isolated integration; that build does not establish release
+adoption or complete Office fidelity and visible acceptance.
+
+On 2026-09-16 the owner added HEIC/AVIF input to JPEG/PNG and AIFF/WMA input
+to the existing audio targets to the required local candidate goal. These are
+planned compatibility additions, not current executable capabilities. Exact
+variants, fidelity, metadata, engine distribution and integrated acceptance must
+be verified before enabling them. ALAC remains a separate evaluation. The
+[current completion plan](broad-file-support-goal.md#current-objective-and-completion-plan)
+defines scope freeze, implementation, customer acceptance and combined packaging
+milestones, including reviewed commits in both repositories.
 
 Status: shell/process and output-safety foundations implemented; PNG/JPEG/WebP/BMP/TGA
 conversion and bounded DDS analysis/conversion have passed local acceptance.

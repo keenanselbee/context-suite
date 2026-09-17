@@ -1,11 +1,11 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.13**. This update records maximum-selection Analyze
-performance alongside reviewed MIME references and Office fixes.
+Matrix revision: **2026-09-16.15**. This update records owner-selected input
+additions separately from the combined Office candidate 1.1.1 capabilities.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
-is incomplete. This matrix does not change the selected launch scope.
+is incomplete. The newly selected inputs below are required but unimplemented.
 
 The source baseline and the last packaged candidate are different. Candidate
 **1.1.0** contains images, audio and PDF engines, but no Office engine. Later
@@ -13,9 +13,25 @@ Office command and recovery work is verified in isolated scratch builds. Default
 release packaging still excludes the optional audio/PDF/Office candidates. The
 [explicit Office staging path](office-production-payload.md) is implemented;
 all 33 scratch packaging checks pass with the current host, including copy-failure
-retention and retry refusal. Fresh formal combined packaging remains
-open. A menu label does not establish that a particular build can execute the
-operation.
+retention and retry refusal. The fresh combined **1.1.1** candidate now includes
+Office; its current evidence is recorded below and in the
+[candidate record](combined-office-candidate.md). Release adoption and complete
+acceptance remain open. A menu label does not establish that a particular build
+can execute the operation.
+
+Required compatibility additions selected 2026-09-16:
+
+| Input | Required target commands | Current state |
+| --- | --- | --- |
+| HEIC | JPEG, PNG | Planned; admitted variants, color/HDR, orientation, alpha, metadata and engine review pending |
+| AVIF | JPEG, PNG | Planned; admitted variants, color/HDR, orientation, alpha, metadata and engine review pending |
+| AIFF | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Planned; exact AIFF/AIFF-C variants, metadata and fidelity matrix pending |
+| WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Planned; exact codec/protection, metadata and fidelity matrix pending |
+
+No output or Optimize capability for these four formats is added. ALAC remains
+a separate evaluation. The [current goal](broad-file-support-goal.md#current-objective-and-completion-plan)
+requires implementation and integrated acceptance before completion; the existing
+conversion matrices below describe only implemented capabilities.
 
 Read `Implemented` below as an application/worker path with bounded admission and
 recorded automated evidence, subject to every stated condition. It does not mean
@@ -44,7 +60,7 @@ budget with cancellation, not a guaranteed return time from every Windows driver
 | PDF | Initial signature; optional complete bounded probe | Header version; optional pages, encryption and document inventories | Zero signature-field count does not certify unsigned content |
 | OOXML Word/Excel/PowerPoint | Agreeing package relationship, content type and XML family | Scoped package, sheet/slide, visibility, font-reference, workbook-setting, revision and relationship declarations | Grouped family identity does not admit templates or macro-enabled variants for conversion |
 | ODT/ODS/ODP | Agreeing MIME, manifest and content family | Available declarations, sheet/slide elements and declared encryption | Analysis required; OpenDocument conversion has not been selected |
-| Legacy DOC/XLS/PPT | Compound directory plus agreeing supported binary headers | Bounded version, size and encryption declarations | Legacy PDF conversion remains unimplemented and unresolved |
+| Legacy DOC/XLS/PPT | Compound directory plus agreeing supported binary headers | Bounded version, size and encryption declarations | Legacy PDF conversion is deferred by the owner for first release |
 | JSON/XML/text | Bounded structure or strict encoding sample | Root/count facts for complete small JSON/XML; possible text encoding | No application semantics, DTD resolution or code execution |
 | ZIP/compound files | Container structures | Bounded directory/allocation declarations; selected package facts | No archive extraction |
 | Windows executables/fonts | Supported signatures and bounded headers | PE machine/section declarations; font flavor/table/count declarations | No execution, font installation or rendering |
@@ -154,10 +170,10 @@ Document transformations
 | Supported PNG/JPEG/WebP/BMP/TGA > PDF | One raster-only PDF 1.7; several images require explicit page-order review; orientation, supported samples/color/alpha and physical dimensions retained | No DDS, OCR or tagged/accessibility PDF; all selected images must qualify; visible order review open |
 | PDF > PNG | One numbered PNG per page, 150 DPI, supported crop/rotation/UserUnit applied | Copies only; retains stored visible appearances, not editable forms, attachments or verifiable signatures; protected/unsupported/oversized inputs can be refused |
 | DOCX > PDF | Separate PDF 1.7 copy per document; final text, tracked markup hidden; source revisions retained | Exact ordinary document content type and matching suffix; broader fields, comments, protection, fonts and pagination open |
-| XLSX > PDF | Separate PDF copy; explicit saved-values or recalculation choice retained on retry; external data not refreshed | No implicit calculation default; known early-1900 date display errors remain unresolved |
+| XLSX > PDF | Separate PDF copy; owner-selected explicit saved-values or recalculation choice retained on retry; external data not refreshed | Known incorrect early-1900 date results blocked; renderer correction deferred, broader fidelity still requires acceptance |
 | PPTX > PDF | Separate PDF copy; saved slide order, hidden slides and speaker notes excluded; positively identified zero-visible-slide decks stop before export | Unknown visibility is not treated as an empty deck; broader presentation/media/font/layout fidelity and visible acceptance open |
 | Mixed images and DOCX/XLSX/PPTX > PDF | One reviewed image PDF plus one separate copy per Office document under shared admission | Office documents do not become pages of the combined image PDF |
-| DOC/XLS/PPT; Office templates and macro-enabled variants | None in the current converter | Recognition/evaluation is not implementation; launch variant decision or implementation and fidelity evidence still required |
+| DOC/XLS/PPT; Office templates and macro-enabled variants | None in the current converter | Owner deferred conversion for first release on 2026-09-16; existing analysis remains |
 | ODT/ODS/ODP | No transformation selected | Keep required bounded analysis; adding PDF conversion needs a scope decision |
 
 Images-to-PDF permits at most 128 MiB/16 million pixels per image and
@@ -229,14 +245,21 @@ outcome. The [quick start](customer-quick-start.md) owns customer-facing guidanc
 Packaging, evidence and work to finish
 --------------------------------------
 
-The retained stage is
+The earlier retained stage is
 `artifacts/production-staging/169f27e246ce43c4808afa9f99e044a3`, version **1.1.0**.
 All 116 listed files and their sizes/hashes were rechecked on 2026-09-16, as were
 the image/audio/PDF allowlists, dependencies and notices. Inventory SHA-256:
 `160B80B502C99E225408D114450E524BE68C817A37719E3B8BD8E75737E652D2`.
 No Office payload file is present. This is a fresh verification of retained bytes,
-not a fresh build or rerun of all media workflows. A changed final package needs
-the next reserved version, **1.1.1**, and complete relevant integrated checks.
+not a fresh build or rerun of all media workflows.
+
+The fresh [combined 1.1.1 candidate](combined-office-candidate.md) is
+`artifacts/production-staging/3efa4342aed9435995d8f00b52fead96`: 19,450 inventoried
+files including Office, with a verified version reservation and 4,330 passing
+foundation/image-worker checks. The linked record owns subsequent workflow
+evidence and remaining acceptance. This is isolated candidate packaging, not
+release adoption; any further changed formal payload needs **1.1.2** or the next
+available version.
 
 The [current Analyze benchmark](analyze-performance.md#maximum-selection-refresh-2026-09-16)
 passes authored 256-path and maximum 4,096-path selections with per-file failures,
@@ -245,15 +268,19 @@ visible responsiveness, optional-worker latency and true cold storage remain ope
 
 Completion still requires:
 
-- Resolve Office date fidelity and exact legacy/template/macro variant scope;
-  finish broader fonts/layout/content and network-isolation acceptance, then
-  complete formal Office staging and review its redistribution requirements.
-- Finish catalog alias/MIME coverage and remaining regular-file/driver/network
-  acceptance. Preserve honest fallback when detailed inspection is unavailable.
+- Implement and accept the required HEIC/AVIF to JPEG/PNG and AIFF/WMA to existing
+  audio targets, including exact variant and fidelity matrices.
+- Verify the owner-selected modern Office scope and known-date refusal policy;
+  finish broader fonts/layout/content and network-isolation acceptance, and
+  review redistribution requirements before release adoption.
+- Validate the declared catalog aliases and factual coverage, and finish required
+  regular-file/driver/network acceptance. Full MIME population is not a completion
+  prerequisite. Preserve honest fallback when detailed inspection is unavailable.
 - Close audio input/metadata and independent decoder/listening/player gaps;
   complete PDF fidelity/recovery and selected engine adoption reviews.
-- Assemble one fresh selected payload, verify its source/runtime identities and
-  run the relevant image/audio/PDF/Office and recovery checks against that build.
+- Complete the remaining fidelity, metadata and independent-decoder cases against
+  a selected candidate. The fresh combined stage and representative workflow
+  replays do not by themselves establish every advertised boundary.
 - Manually accept the expanded Analyze report and necessary audio, page-order and
   spreadsheet prompts. Record keyboard/Escape and visible status separately from
   screen-reader, other themes/DPI and installed-shell acceptance.

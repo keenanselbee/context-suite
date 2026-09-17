@@ -12,6 +12,14 @@ No arbitrary engine arguments, normalization, trimming or automatic downmixing
 are exposed. The encoding API retains same-format bytes; the application batch
 skips same-format files without publication or trial admission.
 
+The owner-selected 2026-09-16 expansion requires AIFF and WMA input to these
+existing six targets. It is planned, not admitted by the current policy.
+Implementation must specify AIFF/AIFF-C and WMA codec variants, protected-content
+refusals, decoded fidelity and metadata/artwork handling before enabling pairs.
+Existing quality, resampling and precision consent rules continue to apply.
+ALAC remains a separate evaluation. See the
+[current goal](broad-file-support-goal.md#current-objective-and-completion-plan).
+
 Fixed target policies
 ---------------------
 

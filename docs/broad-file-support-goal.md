@@ -1,9 +1,128 @@
 Broad File Support Goal
 ======================
 
-Status: active; universal Analyze and optional audio/PDF candidates implemented;
-required Office conversion and integrated acceptance remain incomplete
-Owner direction: 2026-09-09
+Status: incomplete; combined candidate implemented, expanded acceptance pending
+Owner direction: 2026-09-09; scope and completion plan revised 2026-09-16
+
+
+Current objective and completion plan
+-------------------------------------
+
+Deliver an accepted local release candidate for Analyze, Convert and Optimize,
+with a fixed, tested capability matrix and simple context-menu operation.
+Retain the implemented image, audio, PDF and modern Office actions; add the
+owner-selected HEIC/AVIF image inputs and AIFF/WMA audio inputs. Preserve copies
+by default, explicit safe overwrite settings, quiet success, bounded local
+processing, existing access rules and useful read-only Analyze fallback.
+
+This section governs remaining work. The evidence history and original
+implementation milestones below remain useful records, but their older pending
+labels do not override the current capability matrix or completed evidence.
+The combined 1.1.1 stage contains all existing engine families; it does not
+implement the newly selected inputs or establish commercial release readiness.
+
+### Required input additions
+
+| Addition | Required result | Acceptance boundary |
+| --- | --- | --- |
+| HEIC and AVIF input | Convert each admitted input to JPEG or PNG through the existing target commands | Four declared input/output pairs; verify orientation, color, alpha, precision, metadata and dimensions. HDR, sequences and auxiliary images need an explicit supported/refused policy; no silent flattening or tone mapping. Retain the explicit matte choice for transparent-to-JPEG conversion. |
+| AIFF and WMA input | Convert admitted variants to the existing WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis and Opus targets | Publish a variant/codec and target matrix. Verify decoded audio, rate/layout, precision, tags and artwork under existing consent rules. Treat AIFF-C variants, WMA codecs and protected content explicitly; an extension never admits every variant. |
+
+Both additions are required implementation work, not implemented capabilities.
+They add input compatibility, not HEIC/AVIF/AIFF/WMA output or new Optimize
+presets. HEIC/AVIF comes first, followed by AIFF/WMA. Evaluate ALAC separately;
+it is not a required addition. A blocked required pair must be reported and
+resolved with the owner, not silently removed from scope.
+
+Select and pin production dependencies independently, review redistribution and
+package impact, and add representative and malformed fixtures before enabling
+menu capabilities. Test mixed selections, cancellation, failed publication,
+retry and original preservation through the actual application/worker path.
+Keep new capabilities unavailable when the corresponding engine is absent.
+
+### Milestone A: freeze acceptance and preserve the baseline
+
+- [ ] Reconcile the capability matrix and current documentation with the combined
+  1.1.1 evidence, retaining failed attempts and explicitly untested cases.
+- [ ] Record the exact accepted input variants and fixed output policies for the
+  existing operations and the four new input families.
+- [x] Resolve Office variant scope and spreadsheet policy: on 2026-09-16 the owner
+  selected modern DOCX/XLSX/PPTX only, retained the saved-values/recalculate choice,
+  and accepted blocking known incorrect dates while deferring renderer correction.
+  Legacy, template and macro-enabled conversion is deferred; analysis remains.
+- [ ] Finish the representative font/layout acceptance corpus. The existing
+  allowance for small spacing differences does not permit changed content or
+  pagination, and missing-font decisions remain explicit.
+- [ ] Define a finite acceptance corpus and measurable timing/package budgets
+  before evaluating passes. The current uncompressed candidate is about 1.57 GB.
+  Keep 245 reviewed catalog descriptions as the baseline; full MIME coverage or
+  an ever-growing catalog is not a prerequisite. Every advertised fact still
+  needs evidence, and filename hints must remain distinct from content detection.
+- [ ] Complete the pending reviewed public/private DIFF and COMMIT checkpoint
+  before beginning another major implementation slice.
+
+Exit: every launch operation has a declared input/output contract, required
+evidence and an explicit unresolved-decision list, with no ambiguous support claim.
+
+### Milestone B: deliver and verify the selected compatibility additions
+
+- [ ] Implement and verify HEIC/AVIF to JPEG/PNG under the policies above.
+- [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
+  codec, metadata and fidelity matrix; retain all existing quality-change prompts.
+- [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
+  refuse the affected inputs clearly before publishing an incorrect result.
+- [ ] Complete focused regression and actual-engine verification, update the
+  owning design/matrix and perform a public/private checkpoint after each slice.
+
+Exit: required pairs have reproducible successful and boundary/failure evidence;
+no unverified format variant is advertised as supported.
+
+### Milestone C: accept the customer experience
+
+- [ ] Review realistic mixed-file selections, necessary prompts, quiet success,
+  progress, cancellation, retry, settings, access changes and readable failures.
+- [ ] Perform human audio listening/player checks and Office/PDF content/layout
+  review against the declared corpus, with originals preserved.
+- [ ] Record keyboard/Escape, focus, screen-reader delivery, themes, DPI and
+  multiple-monitor results separately. Hidden tests do not prove visible delivery.
+- [ ] Measure Analyze, engine startup and representative conversions against the
+  declared budgets; record the final payload size and accepted tradeoffs.
+
+Exit: the owner accepts the expanded visible workflows; each environment check
+is passed or explicitly recorded as an outstanding release gate.
+
+### Milestone D: finish the combined local candidate
+
+- [ ] Build one fresh versioned candidate containing the accepted engines and
+  replay the required integrated checks against those exact staged bytes.
+- [ ] Complete engine redistribution/adoption and isolation evidence, source and
+  payload inventories, customer documentation and the current capability matrix.
+- [ ] Finish reviewed DIFF/COMMIT checkpoints in both independent repositories,
+  preserving unrelated changes and excluding private sources from public history.
+- [ ] Produce a completion audit listing delivered features, evidence, limitations
+  and separately outstanding release gates. New required additions must be included.
+
+Exit: the expanded local implementation and agreed acceptance are complete.
+Signing remains deferred. Installation/Explorer changes, installer lifecycle,
+live commerce, purchases and publication retain their separate authorization
+boundaries. A successful local candidate does not clear those commercial gates.
+
+Video conversion, OCR, archive extraction, resize/rotate editing, a general
+workspace and arbitrary command presets remain outside this goal. They are not
+implied by the reference material or the newly selected input families.
+
+
+Implementation evidence history
+-------------------------------
+
+The fresh [combined candidate 1.1.1](combined-office-candidate.md) packages all
+selected image/audio/PDF/Office engines together: 19,450 inventoried files with
+verified identities and version reservation. The final foundation/image-worker
+run passes 4,330 checks against that exact stage. An earlier cancellation-test
+observation failure remains recorded; production cancellation code is unchanged.
+The candidate record tracks ongoing media/Office workflow acceptance. The older
+1.1.0 stage is preserved; Office fidelity, visible acceptance and release gates
+remain open.
 
 The [maximum-selection Analyze benchmark](analyze-performance.md#maximum-selection-refresh-2026-09-16)
 now exercises 256 and 4,096 distinct paths, including locked/missing files before
@@ -1734,9 +1853,10 @@ Coverage to deliver
 
 Audio format names are launch targets, not current capability claims. Distinguish
 container from codec: M4A can contain AAC or ALAC; Ogg can contain different codecs.
-Record exactly which combinations can be read and written. Investigate AIFF,
-ALAC, WMA and APE as additional common inputs; they are not required output
-promises until evaluated. Do not quietly remove a target because an engine
+Record exactly which combinations can be read and written. The 2026-09-16
+revision makes AIFF and WMA inputs required; ALAC remains a separate evaluation
+and APE is outside the required additions. No new output formats are selected.
+Do not quietly remove a target because an engine
 experiment fails: report the gap and select another approach or resolve scope.
 
 Milestone 0: scope and evidence contracts
@@ -1924,7 +2044,8 @@ Required deliverables and completion audit
 The goal is complete only when the capability matrix and catalog are implemented,
 universal fallback and richer analysis work, agreed audio paths and FLAC
 optimization pass, document transformation scope is resolved and delivered,
-and Milestone 6 evidence/documentation is current. A plan or a long extension
+and the current Milestones A-D, including HEIC/AVIF and AIFF/WMA inputs, are
+complete with current evidence/documentation. A plan or a long extension
 list alone is not completion. Do not count existing image tests as new coverage.
 
 Deliver the format catalog with provenance, shared analysis model/UI, tested

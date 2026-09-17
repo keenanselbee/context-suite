@@ -56,6 +56,19 @@ open release-gate checklist, not proof the expansion is ready.
 Consequences
 ------------
 
+On 2026-09-16 the owner refined this goal into a bounded local candidate
+acceptance plan and selected HEIC/AVIF input to JPEG/PNG and AIFF/WMA input
+to the existing audio targets as required additions. These remain planned until
+their exact variants, fidelity and engine packaging pass verification. ALAC is
+a separate evaluation. No additional output format or general editing UI is
+selected. The current goal owns the revised milestones and the separately
+authorized public/private DIFF and COMMIT checkpoints.
+
+The owner also selected modern DOCX/XLSX/PPTX-only conversion for first release,
+deferring legacy, template and macro-enabled conversion. Excel retains the
+explicit saved-values/recalculate choice. Known incorrect date results remain
+blocked; renderer correction is deferred. Existing document analysis remains.
+
 Breadth in the catalog can grow independently from parser and conversion breadth.
 Unknown, ambiguous, encrypted and malformed files remain useful report outcomes.
 Each detector and advertised operation needs evidence; a broad engine capability

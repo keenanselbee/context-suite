@@ -36,6 +36,14 @@ PDF and Office/OpenDocument identification and read-only analysis to the next
 implementation goal. On 2026-09-09 the owner selected PDF tools plus
 Word/Excel/PowerPoint-to-PDF for launch. Analysis alone does not satisfy this scope.
 
+On 2026-09-16 the owner selected modern DOCX/XLSX/PPTX conversion only for the
+first release. Legacy DOC/XLS/PPT, templates and macro-enabled conversion are
+deferred; their existing bounded analysis is retained. Excel keeps its explicit
+saved-values/recalculate choice with no silent default. Known incorrect
+early-1900 date results remain blocked, and correcting the renderer itself is
+deferred. This accepts the documented refusal policy, not incorrect output or
+unverified date variants. Broader content/font/layout acceptance remains required.
+
 Required analysis
 -----------------
 
