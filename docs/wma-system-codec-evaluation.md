@@ -1,7 +1,7 @@
 Independent WMA Codec Evaluation
 ================================
 
-Status: **WMA fidelity not accepted**, 2026-09-16 local date. The Lossless fixture
+Status: **WMA fidelity not accepted**, 2026-09-17 local date. The Lossless fixture
 writer's packet loss is corrected; 13 Lossless cases now preserve exact source
 samples. Standard/Pro/Voice sample-extent differences remain. WMA stays outside
 customer commands and the selected production payload; its required input goal
@@ -46,6 +46,51 @@ against the authored source and independent decoder. All codecs require equal,
 nonempty decoded extents between implementations for this comparison. Prefix
 sample error is reported separately; it never excuses a missing tail. No
 comparison aligns, pads or trims audio to pass.
+
+
+Pro terminal-overlap investigation
+----------------------------------
+
+The later 57-case run at
+`.codex-temp/wma-system-matrix-b4e0b36daab146de849cb4f9f92f8469` completes every
+observation, with **27 equal nonempty extents** and all **13 Lossless cases**
+still exact. Thirty Standard/Pro/Voice extent failures remain; exit 1 and
+`accepted: false` remain the correct result. Seventeen added stereo Pro PCM16
+lengths exercise 512/1,024/1,536/2,048/4,096-frame boundaries and one second.
+
+The independently authored
+[frame inspector](../tools/audio-engine/Inspect-WmaProFrames.py) reads bounded
+ffprobe packet dumps for the corpus's 48 kHz, `0x00e0` Pro profile. It records
+frame sizes, per-channel subframe lengths and start/end trim declarations;
+it does not decode audio or modify input/output samples. The runner pins its
+source hash and retains `frame-headers.json` for each Pro case.
+
+The whole-frame count minus declared trim matches the selected decoder's output
+after accounting for refusal to emit a negative-length frame. Adding the final
+overlap, `(2048 - largest final channel block) / 2`, predicts the Windows and
+authored extents in **all 26 Pro cases**. Stereo 2,049-frame sources lose 768
+frames; one-second sources lose 512. New 511/512/513-frame sources produce no
+candidate samples despite native exit 0, while Windows preserves their full
+extents. Exact 2,048/4,096-frame controls and the surround cases remain useful
+passing controls. The inspector's eight malformed/profile refusal checks pass.
+
+This is evidence for missing terminal overlap, not a verified decoder repair or
+a policy permitting synthesized padding. Samples must be recovered from the
+decoded overlap and compared against Windows, including the full tail. No
+selected FFmpeg source, binary, customer capability or production payload was
+changed. The investigation used static inspection of the independently pinned
+decoder's frame tiling, trim and overlap handling; its
+[upstream implementation](https://www.ffmpeg.org/doxygen/trunk/wmaprodec_8c_source.html)
+provides background, while the retained local source revision remains authoritative.
+
+Earlier diagnostic evidence is retained at
+`.codex-temp/wma-pro-tail-d9932da55d824dd6870c6b1fac687bd4`, including seven
+original packet/header comparisons and
+`boundaries-04f1b1e887f14b43a3fc5ad7388def5c` with 17 generated lengths. An initial
+scratch parser omitted variable subframe tiling and produced invalid trim
+interpretations; it was corrected before the versioned inspector and full run.
+The old scratch `headers.json` also labels a final block length as frame bits;
+use `inspected-headers.json` or the final run's `frame-headers.json` instead.
 
 
 Current Lossless fixture correction
@@ -165,8 +210,10 @@ The expected current result is exit 1 with a complete failed-acceptance receipt.
 Inspect per-case writer/native logs and comparisons; do not report mere process
 success or equal FFmpeg builds as fidelity evidence. No app build is needed.
 
-Next identify and repair the selected decoder's Pro/Voice tail handling or
-evaluate a separately bounded Windows decoding path against this same corpus.
+Next evaluate a narrow Pro terminal-overlap repair against the frozen corpus,
+including actual recovered samples and empty-output boundaries. Investigate
+Voice separately or evaluate a bounded Windows decoding path against the same
+authored samples and independent evidence.
 Resolve Standard padding/timeline behavior; retain the corrected Lossless
 fixture regression. Malformed/discontinuous timeline tests remain a separate gate.
 Then finish ASF metadata compatibility, actual-worker publication/recovery,

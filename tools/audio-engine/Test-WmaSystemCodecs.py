@@ -23,6 +23,9 @@ ROOT = TOOLS.parent.parent
 spec = importlib.util.spec_from_file_location('audio_smoke', TOOLS / 'Test-AudioCandidate.py')
 smoke = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(smoke)
+spec = importlib.util.spec_from_file_location('wma_pro_frames', TOOLS / 'Inspect-WmaProFrames.py')
+pro_frames = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(pro_frames)
 
 # Freeze the small matrix before running it. Sub-block, frame-boundary and
 # one-second signals exercise flushing; they do not replace listening tests.
@@ -31,6 +34,8 @@ PROFILES = [('standard', 44100, 1, 16), ('standard', 48000, 2, 16),
             ('lossless', 44100, 2, 16), ('lossless', 48000, 2, 24), ('lossless', 96000, 6, 24),
             ('voice', 8000, 1, 16), ('voice', 11025, 1, 16),
             ('voice', 16000, 1, 16), ('voice', 22050, 1, 16)]
+PRO_TAIL_FRAMES = (511, 512, 513, 1023, 1024, 1025, 1535, 1536, 1537,
+                   2047, 2048, 2050, 4095, 4096, 4097, 47999, 48001)
 
 
 def digest(path):
@@ -105,9 +110,11 @@ def main():
     writer = evidence / 'WmaFixtureWriter.exe'
     identity = {'toolSourceSha256': digest(source), 'writerSha256': digest(writer),
                 'scriptSha256': digest(pathlib.Path(__file__)), 'windows': str(sys.getwindowsversion()),
+                'proInspectorSha256': digest(TOOLS / 'Inspect-WmaProFrames.py'),
                 'candidateRuntime': inventory, 'profiles': PROFILES,
                 'lengths': ['1', '2049', 'one-second'],
                 'losslessSurroundTailFrames': [65535, 65536, 65537, 192000],
+                'proStereo16TailFrames': PRO_TAIL_FRAMES,
                 'criteria': 'Lossless must match authored samples exactly. Compare complete decoded extents for all codecs; report prefix error separately, never align, trim or pad to pass. Lossy listening quality remains unverified.'}
     (evidence / 'identity.json').write_text(json.dumps(identity, indent=2) + '\n')
     results = []
@@ -115,6 +122,8 @@ def main():
         lengths = (1, 2049, rate)
         if (codec, rate, channels, bits) == ('lossless', 96000, 6, 24):
             lengths += (65535, 65536, 65537, 192000)
+        if (codec, rate, channels, bits) == ('pro', 48000, 2, 16):
+            lengths += PRO_TAIL_FRAMES
         for frames in lengths:
             name = f'{codec}-{rate}-{channels}-{bits}-{frames}'
             directory = evidence / name
@@ -139,7 +148,9 @@ def main():
                 fixture = directory / 'fixture.wma'
                 item['sourceSha256'] = digest(directory / 'source.pcm')
                 item['wmaSha256'] = digest(fixture)
-                probe = native([binary / 'ffprobe.exe', '-v', 'error', '-show_streams', '-show_format', '-of', 'json', fixture], directory)
+                packet_options = ['-show_packets', '-show_data'] if codec == 'pro' else []
+                probe = native([binary / 'ffprobe.exe', '-v', 'error', '-show_streams', '-show_format',
+                                *packet_options, '-of', 'json', fixture], directory)
                 (directory / 'probe.json').write_bytes(probe.stdout)
                 if probe.returncode:
                     raise ValueError('Candidate inspection failed')
@@ -169,6 +180,13 @@ def main():
                 item['candidateFrames'] = len(actual) // channels
                 item['windowsFrames'] = len(reference) // channels
                 item['acceptedExtent'] = bool(actual and reference) and item['candidateVsWindows']['sameExtent']
+                if codec == 'pro':
+                    declarations = pro_frames.inspect(facts)
+                    (directory / 'frame-headers.json').write_text(json.dumps(declarations, indent=2) + '\n')
+                    predicted = declarations['samplesWithTerminalOverlapHypothesis']
+                    item['proOverlapHypothesisMatches'] = predicted == item['windowsFrames'] == frames
+                    # Diagnostic agreement never substitutes for actual decoded samples.
+                    item['proDeclaredOverlap'] = declarations['terminalOverlapHypothesis']
                 if codec == 'lossless':
                     item['acceptedLossless'] = all(item[field]['sameExtent'] and item[field]['maximum'] == 0
                                                    for field in ('candidateVsWindows', 'candidateVsAuthored', 'windowsVsAuthored'))

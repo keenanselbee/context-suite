@@ -15,6 +15,11 @@ provides independent authored sources and decoding. Its 36 observations expose
 sample-extent/fixture-drain failures; the current acceptance result is false.
 The Lossless ASF/VBR fixture correction now passes 13 exact source comparisons
 within 40 observations; Standard/Pro/Voice extent failures still prevent acceptance.
+The subsequent 57-case run adds 17 Pro boundary lengths and retains 30 failed
+extents. `Inspect-WmaProFrames.py '<retained Pro probe.json>'` reports bounded
+frame/trim declarations and a terminal-overlap hypothesis; it is diagnostic,
+not a decoder or an output-padding policy. The full runner records those headers
+and the inspector identity alongside actual sample comparisons.
 Run `Test-WmaSystemCodecs.py '<expanded workspace>'` to reproduce. Its expected
 nonzero result must not be reported as passing WMA support.
 

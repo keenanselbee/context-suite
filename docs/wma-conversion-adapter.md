@@ -10,6 +10,9 @@ The later [independent system-codec corpus](wma-system-codec-evaluation.md)
 finds Standard/Pro/Voice sample-extent differences. Its Lossless fixture packet
 loss is corrected with 13 exact source comparisons. Earlier same-FFmpeg tests remain scoped
 evidence; they do not establish WMA fidelity or permit customer admission.
+The expanded 57-case corpus retains those 13 exact Lossless cases and records
+30 failed extents. Pro frame declarations implicate missing terminal overlap,
+including empty short outputs; actual decoder repair remains pending.
 
 This uses the exact expanded seven-file runtime from the
 [restricted input evaluation](audio-expanded-input-evaluation.md). Only that

@@ -137,6 +137,10 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   all 13 Lossless source/Windows/candidate comparisons pass, including four
   cutoff/longer-surround regressions. The 40-case corpus still has 15 failed
   Standard/Pro/Voice extents; decoder repair/evaluation remains required.
+  The next 57-case run retains 13 exact Lossless cases and 30 failed extents.
+  Frame-header inspection predicts Windows/authored lengths for all 26 Pro cases
+  when terminal overlap is included; 511-513-frame Pro inputs currently decode
+  empty. Recover and verify real overlap samples before treating this as fixed.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the
