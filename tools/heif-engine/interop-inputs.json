@@ -1,0 +1,226 @@
+{
+  "libavifRevision": "d98b4bcb67e9b2e5056d1f9ae18a088779d7945f",
+  "files": [
+    {
+      "path": "libavif/LICENSE",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/LICENSE",
+      "bytes": 20415,
+      "sha256": "165ABF92CC04B39E80D29CADEA7A6A7E8FDDF59407D4AD2616507A7EBE8216F9"
+    },
+    {
+      "path": "libavif/tests/data/README.md",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/README.md",
+      "bytes": 43454,
+      "sha256": "73497854110364FC73D2E2508C8512DDC097F00FE469CD51CEA7DC53F0B74026"
+    },
+    {
+      "path": "libavif/tests/data/abc.png",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/abc.png",
+      "bytes": 8274,
+      "sha256": "5561862FBD409A3F86B02DB73EBB8572D0E2A307EB45ECF9017A1B2137B9F729"
+    },
+    {
+      "path": "libavif/tests/data/abc_color_irot_alpha_irot.avif",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/abc_color_irot_alpha_irot.avif",
+      "bytes": 10597,
+      "sha256": "B371CC88244A873131E4D10FF9363D71CE4F41CF333BD4A491B38D970D9ABD3B"
+    },
+    {
+      "path": "libavif/tests/data/abc_color_irot_alpha_NOirot.avif",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/abc_color_irot_alpha_NOirot.avif",
+      "bytes": 10596,
+      "sha256": "F2C8CD6DED641C68D13B3363417A62288A5EB335870DE8D0B9DA5093865FFB9A"
+    },
+    {
+      "path": "libavif/tests/data/white_1x1.avif",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/white_1x1.avif",
+      "bytes": 305,
+      "sha256": "EA4E43D1F07E4C00DE16C13AFA32376111BB306E51F08212CF4C1B6064DF3667"
+    },
+    {
+      "path": "libavif/tests/data/io/kodim03_yuv420_8bpc.avif",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/io/kodim03_yuv420_8bpc.avif",
+      "bytes": 25430,
+      "sha256": "E69C973A3DDF635412C9A0C6CDA66798102D0030303614873B337F658983EF5D"
+    },
+    {
+      "path": "libavif/tests/data/clap_irot_imir_non_essential.avif",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/clap_irot_imir_non_essential.avif",
+      "bytes": 653,
+      "sha256": "33F869FCF2A879913EB394982B8FC03E9A60C25831AA37622DDEFA656FD39FC1"
+    },
+    {
+      "path": "libavif/tests/data/color_grid_alpha_nogrid.avif",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/color_grid_alpha_nogrid.avif",
+      "bytes": 2373,
+      "sha256": "BAE56368B348B1D847E2BFB662522599F0C63DFE62FB68826C9E42A300FF405D"
+    },
+    {
+      "path": "libavif/tests/data/color_grid_alpha_grid_tile_shared_in_dimg.avif",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/color_grid_alpha_grid_tile_shared_in_dimg.avif",
+      "bytes": 2781,
+      "sha256": "1924AD27FA74AFF5278367245D56E14804F6F5A6AC9FBC3DA19B39033E167235"
+    },
+    {
+      "path": "libavif/tests/data/color_grid_gainmap_different_grid.avif",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/color_grid_gainmap_different_grid.avif",
+      "bytes": 3101,
+      "sha256": "73A68C3D6DAAD7B8298DB975A00F02BCA46B6C3F292EAC09D3C1443D2006FAB2"
+    },
+    {
+      "path": "libavif/tests/data/colors-animated-8bpc.avif",
+      "url": "https://raw.githubusercontent.com/AOMediaCodec/libavif/d98b4bcb67e9b2e5056d1f9ae18a088779d7945f/tests/data/colors-animated-8bpc.avif",
+      "bytes": 1235,
+      "sha256": "2F8683D21725261F37F86E115F0C212CC52D0FEFD3A2DDFCC4FA648C1859906D"
+    },
+    {
+      "path": "libheif/COPYING",
+      "sourceArchive": "D0C02B4B0E978F34A1974B6F3EEA7975A537BF7A9195FFEEA38E7242FF316FDD",
+      "bytes": 44366,
+      "sha256": "FA81CE652315B013359D6E8E4744335F31A50C7C192907176D3632F78A3B4596"
+    },
+    {
+      "path": "libheif/tests/data/clap_cropped.heic",
+      "sourceArchive": "D0C02B4B0E978F34A1974B6F3EEA7975A537BF7A9195FFEEA38E7242FF316FDD",
+      "bytes": 2060,
+      "sha256": "54C62D0CB9E3EE09537788F9AF59FFF245791A681A80A16B27DA1C23488A8E29"
+    },
+    {
+      "path": "libheif/tests/data/clap_cropped.avif",
+      "sourceArchive": "D0C02B4B0E978F34A1974B6F3EEA7975A537BF7A9195FFEEA38E7242FF316FDD",
+      "bytes": 1428,
+      "sha256": "9E40E6210293C6C4BF1EB8281CD4B045D2FF89BBA1F35D8F11958BFFA6BE0428"
+    },
+    {
+      "path": "libheif/tests/data/clap_cropped_irot_imir.avif",
+      "sourceArchive": "D0C02B4B0E978F34A1974B6F3EEA7975A537BF7A9195FFEEA38E7242FF316FDD",
+      "bytes": 1448,
+      "sha256": "15D854779BB939EE34E887AD69AB57C8837B74FFE2E394E4F40453DC04BBBF9D"
+    },
+    {
+      "path": "libheif/tests/data/conformance_window_padding.heic",
+      "sourceArchive": "D0C02B4B0E978F34A1974B6F3EEA7975A537BF7A9195FFEEA38E7242FF316FDD",
+      "bytes": 656,
+      "sha256": "CF670BAD6021268E85DB1D9E2593A5BE1AA7F2EE1E706AF5E76EE7ABF2A73EC6"
+    },
+    {
+      "path": "libheif/tests/data/rainbow-451x461.heic",
+      "sourceArchive": "D0C02B4B0E978F34A1974B6F3EEA7975A537BF7A9195FFEEA38E7242FF316FDD",
+      "bytes": 7080,
+      "sha256": "4B2CE727F093944975F143BA2B39C4C64511B766D94552F8D51A755916E7F983"
+    },
+    {
+      "path": "libheif/examples/example.heic",
+      "sourceArchive": "D0C02B4B0E978F34A1974B6F3EEA7975A537BF7A9195FFEEA38E7242FF316FDD",
+      "bytes": 718114,
+      "sha256": "7F8B363E4936C0666A25F64F3A92FDA10BD8E5453BE4592530B65A55DD98F3F2"
+    },
+    {
+      "path": "libheif/examples/example.avif",
+      "sourceArchive": "D0C02B4B0E978F34A1974B6F3EEA7975A537BF7A9195FFEEA38E7242FF316FDD",
+      "bytes": 113604,
+      "sha256": "54A0DC31D02B6F5D9D4B66027D4787861B7AF15FFD8FAB8EAB963D10C5411469"
+    }
+  ],
+  "cases": [
+    {
+      "path": "libavif/tests/data/abc_color_irot_alpha_irot.avif",
+      "sha256": "B371CC88244A873131E4D10FF9363D71CE4F41CF333BD4A491B38D970D9ABD3B",
+      "expectation": "pending-color"
+    },
+    {
+      "path": "libavif/tests/data/abc_color_irot_alpha_NOirot.avif",
+      "sha256": "F2C8CD6DED641C68D13B3363417A62288A5EB335870DE8D0B9DA5093865FFB9A",
+      "expectation": "pending-color"
+    },
+    {
+      "path": "libavif/tests/data/white_1x1.avif",
+      "sha256": "EA4E43D1F07E4C00DE16C13AFA32376111BB306E51F08212CF4C1B6064DF3667",
+      "expectation": "convert",
+      "width": 1,
+      "height": 1,
+      "alpha": false
+    },
+    {
+      "path": "libavif/tests/data/io/kodim03_yuv420_8bpc.avif",
+      "sha256": "E69C973A3DDF635412C9A0C6CDA66798102D0030303614873B337F658983EF5D",
+      "expectation": "convert",
+      "width": 768,
+      "height": 512,
+      "alpha": false
+    },
+    {
+      "path": "libavif/tests/data/clap_irot_imir_non_essential.avif",
+      "sha256": "33F869FCF2A879913EB394982B8FC03E9A60C25831AA37622DDEFA656FD39FC1",
+      "expectation": "pending-color"
+    },
+    {
+      "path": "libavif/tests/data/color_grid_alpha_nogrid.avif",
+      "sha256": "BAE56368B348B1D847E2BFB662522599F0C63DFE62FB68826C9E42A300FF405D",
+      "expectation": "convert",
+      "width": 80,
+      "height": 80,
+      "alpha": true
+    },
+    {
+      "path": "libavif/tests/data/color_grid_alpha_grid_tile_shared_in_dimg.avif",
+      "sha256": "1924AD27FA74AFF5278367245D56E14804F6F5A6AC9FBC3DA19B39033E167235",
+      "expectation": "refuse"
+    },
+    {
+      "path": "libavif/tests/data/color_grid_gainmap_different_grid.avif",
+      "sha256": "73A68C3D6DAAD7B8298DB975A00F02BCA46B6C3F292EAC09D3C1443D2006FAB2",
+      "expectation": "refuse"
+    },
+    {
+      "path": "libavif/tests/data/colors-animated-8bpc.avif",
+      "sha256": "2F8683D21725261F37F86E115F0C212CC52D0FEFD3A2DDFCC4FA648C1859906D",
+      "expectation": "refuse"
+    },
+    {
+      "path": "libheif/tests/data/clap_cropped.heic",
+      "sha256": "54C62D0CB9E3EE09537788F9AF59FFF245791A681A80A16B27DA1C23488A8E29",
+      "expectation": "convert",
+      "width": 64,
+      "height": 64,
+      "alpha": false
+    },
+    {
+      "path": "libheif/tests/data/clap_cropped.avif",
+      "sha256": "9E40E6210293C6C4BF1EB8281CD4B045D2FF89BBA1F35D8F11958BFFA6BE0428",
+      "expectation": "convert",
+      "width": 64,
+      "height": 64,
+      "alpha": false
+    },
+    {
+      "path": "libheif/tests/data/clap_cropped_irot_imir.avif",
+      "sha256": "15D854779BB939EE34E887AD69AB57C8837B74FFE2E394E4F40453DC04BBBF9D",
+      "expectation": "convert",
+      "width": 64,
+      "height": 64,
+      "alpha": false
+    },
+    {
+      "path": "libheif/tests/data/conformance_window_padding.heic",
+      "sha256": "CF670BAD6021268E85DB1D9E2593A5BE1AA7F2EE1E706AF5E76EE7ABF2A73EC6",
+      "expectation": "pending-color"
+    },
+    {
+      "path": "libheif/tests/data/rainbow-451x461.heic",
+      "sha256": "4B2CE727F093944975F143BA2B39C4C64511B766D94552F8D51A755916E7F983",
+      "expectation": "pending-color"
+    },
+    {
+      "path": "libheif/examples/example.heic",
+      "sha256": "7F8B363E4936C0666A25F64F3A92FDA10BD8E5453BE4592530B65A55DD98F3F2",
+      "expectation": "refuse"
+    },
+    {
+      "path": "libheif/examples/example.avif",
+      "sha256": "54A0DC31D02B6F5D9D4B66027D4787861B7AF15FFD8FAB8EAB963D10C5411469",
+      "expectation": "pending-color"
+    }
+  ],
+  "scope": "Local upstream interoperability corpus; passing refusals do not close pending color compatibility."
+}

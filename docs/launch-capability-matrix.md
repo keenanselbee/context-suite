@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.20**. This update records verified local HEIC/AVIF
-source/runtime review bundles separately from combined candidate 1.1.1 capabilities.
+Matrix revision: **2026-09-16.21**. This update records upstream HEIC/AVIF
+interoperability and color gaps separately from combined candidate 1.1.1 capabilities.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. The newly selected inputs below still require customer integration.
@@ -37,6 +37,10 @@ The [HEIF review bundles](heif-distribution.md) pass tampering checks and an
 extracted library-only rebuild. The current decoder repeats focused bridge,
 adapter, worker, loader and recovery acceptance. These are engineering results;
 redistribution approval and production adoption remain pending for both formats.
+The [upstream corpus](heif-interoperability.md) passes 107 worker/publication
+checks with 12 copies, but identifies six missing/unspecified-color or ICC-only
+inputs still refused by current admission. Those are open compatibility work,
+not completed acceptance or a newly approved reduction in launch scope.
 
 Read `Implemented` below as an application/worker path with bounded admission and
 recorded automated evidence, subject to every stated condition. It does not mean

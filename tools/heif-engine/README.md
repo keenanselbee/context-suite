@@ -180,6 +180,15 @@ changed. The ordinary suite tests dispatch interruption; add `--stress-evidence`
 as described below to test interruption during observed native work. Neither
 suite establishes visible usability.
 
+`Test-HeifInterop.py --inputs '<pinned upstream corpus>' --bridge '<pinned bridge>'`
+verifies `interop-inputs.json` against local files, then builds/copies the real
+worker and public contract host into fresh scratch. The manifest retains source
+URLs/archive identities; the runner does not download or execute upstream tools.
+It checks conversion/publication, typed refusals, same-worker recovery and source
+preservation. Pending color cases are separate from intentional feature refusals;
+a passing regression does not close those compatibility gaps. See the
+[upstream record](../../docs/heif-interoperability.md) for results and limits.
+
 `Test-HeifLoader.py --bridge '<pinned bridge DLL>' --fixture '<authored HEIC>'`
 builds the private image host and creates six disposable copies for valid,
 preloaded-library, junction, hard-link, extra-library and missing-library cases.

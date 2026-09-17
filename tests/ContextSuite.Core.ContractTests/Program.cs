@@ -12,6 +12,12 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--heif-interop", var interopWorker, var interopFixtures, var interopManifest, var interopRoot])
+{
+    await HeifInteropContracts.RunAsync(interopWorker, interopFixtures, interopManifest, interopRoot);
+    return 0;
+}
+
 if (args is ["--heif-interruption", var interruptionWorker, var interruptionFixtures, var interruptionRoot])
 {
     await HeifInterruptionContracts.RunAsync(interruptionWorker, interruptionFixtures, interruptionRoot);

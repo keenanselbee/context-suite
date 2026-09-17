@@ -92,6 +92,10 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   checks; their library source kit rebuilds without the private checkout. The
   refreshed candidate repeats all focused media/loader/recovery checks. Source
   delivery and modified-library use with identity checks remain release decisions.
+  The [upstream interoperability corpus](heif-interoperability.md) adds 107 real
+  worker/publication checks and 12 copies from six independent upstream inputs.
+  Six ICC-only or missing/unspecified-color cases remain explicit compatibility
+  gaps; passing their current refusal checks does not close HEIC/AVIF acceptance.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or

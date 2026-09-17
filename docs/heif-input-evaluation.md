@@ -606,3 +606,8 @@ It repeats bridge, worker, interruption, loader and adapter acceptance and
 proves an extracted library source kit can build without the private checkout.
 That record owns current identities and evidence; redistribution approval,
 production adoption and broader interoperability remain open.
+
+The later [upstream interoperability record](heif-interoperability.md) verifies
+12 real-worker outputs from six independently produced still images. It also
+identifies six color-admission gaps requiring resolution before acceptance.
+Passing current-policy refusals does not establish those files are supported.
