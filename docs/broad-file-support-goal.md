@@ -102,6 +102,12 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   and active-native recovery checks pass again. Revised source/runtime bundles
   pass 16 mutation checks, with a verified library-only source-kit rebuild.
   Production adoption, broader fidelity, budgets and human acceptance remain open.
+  The [isolated HEIF packaging path](heif-production-payload.md) now passes
+  53 copy/allowlist checks and five inventoried-stage guard checks. The current
+  combined scratch app/worker includes all existing engines plus fourteen HEIF
+  runtime/notice files. Its exact worker passes 659 checks and publishes 104
+  copies without changing the payload. No formal version is reserved; the 1.1.1
+  stage stays intact. Final combined staging and release adoption remain required.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or

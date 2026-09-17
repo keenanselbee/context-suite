@@ -1,8 +1,9 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.22**. This update records HEIC/AVIF color fallback,
-HDR refusal and alpha alignment separately from combined candidate 1.1.1 capabilities.
+Matrix revision: **2026-09-16.23**. This update records optional HEIC/AVIF
+packaging and exact combined-scratch worker execution separately from reserved
+candidate 1.1.1 capabilities.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. The newly selected inputs below still require customer integration.
@@ -23,8 +24,8 @@ Required compatibility additions selected 2026-09-16:
 
 | Input | Required target commands | Current state |
 | --- | --- | --- |
-| HEIC | JPEG, PNG | Authored SDR adapter/worker, loader, resource-limit and active-native recovery checks pass; broader variants, redistribution, engine adoption and packaging pending |
-| AVIF | JPEG, PNG | Authored SDR adapter/worker, loader and active-native recovery checks pass; broader variants, engine adoption and packaging pending |
+| HEIC | JPEG, PNG | Authored SDR adapter/worker, loader, resource-limit, recovery and optional combined-scratch packaging checks pass; broader fidelity, redistribution and formal release adoption pending |
+| AVIF | JPEG, PNG | Authored SDR adapter/worker, loader, recovery and optional combined-scratch packaging checks pass; broader fidelity, redistribution and formal release adoption pending |
 | AIFF | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Planned; exact AIFF/AIFF-C variants, metadata and fidelity matrix pending |
 | WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Planned; exact codec/protection, metadata and fidelity matrix pending |
 
@@ -44,6 +45,11 @@ with inconsistent alpha transforms are explicitly unsupported; hidden HDR remain
 refused. Authored sample/profile fidelity, loader and active-native recovery
 checks pass for the revised decoder. Broader fidelity and visible acceptance
 remain open, along with the adoption and redistribution gates above.
+The [packaging checkpoint](heif-production-payload.md) adds an explicit isolated
+build option and fourteen pinned decoder/notice files (5,062,827 bytes). It passes
+53 packaging and five immutable-stage checks; the exact combined scratch worker
+repeats all 659 corpus checks and 104 publications. This is not a replacement for
+the reserved 1.1.1 stage or the required final versioned candidate.
 
 Read `Implemented` below as an application/worker path with bounded admission and
 recorded automated evidence, subject to every stated condition. It does not mean

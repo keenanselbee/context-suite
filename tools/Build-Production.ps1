@@ -2,13 +2,16 @@
 param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Debug', [switch] $SkipShell,
     [guid] $StagingId = [guid]::Empty, [string] $AudioDistributionDirectory,
     [string] $QpdfPreparedDirectory, [string] $PdfiumPreparedDirectory, [string] $QpdfSourceArchive,
-    [string] $OfficeEngineDirectory)
+    [string] $OfficeEngineDirectory, [string] $HeifDistributionDirectory)
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
 $productVersion = & (Join-Path $PSScriptRoot 'Test-ProductVersion.ps1')
 if ($AudioDistributionDirectory -and $StagingId -eq [guid]::Empty) {
     throw 'The audio candidate requires a new StagingId; development and installed payloads must not be changed.'
+}
+if ($HeifDistributionDirectory -and $StagingId -eq [guid]::Empty) {
+    throw 'The HEIF candidate requires a new StagingId; development and installed payloads must not be changed.'
 }
 $includePdf = [bool]$QpdfPreparedDirectory -or [bool]$PdfiumPreparedDirectory -or [bool]$QpdfSourceArchive
 if ($includePdf -and ($StagingId -eq [guid]::Empty -or -not $QpdfPreparedDirectory -or
@@ -62,6 +65,10 @@ if ($OfficeEngineDirectory) {
     & python -B (Join-Path $PSScriptRoot 'office-engine\Stage-OfficePayload.py') --payload $output --engine-directory $OfficeEngineDirectory
     if ($LASTEXITCODE -ne 0) { throw 'Office candidate staging failed.' }
 }
+if ($HeifDistributionDirectory) {
+    & python -B (Join-Path $PSScriptRoot 'heif-engine\Stage-HeifPayload.py') --payload $output --distribution $HeifDistributionDirectory
+    if ($LASTEXITCODE -ne 0) { throw 'HEIF candidate staging failed.' }
+}
 $privateProject = Join-Path $repositoryRoot 'proprietary\src\ContextSuite.Private\ContextSuite.Private.csproj'
 if (-not (Test-Path -LiteralPath $privateProject)) {
     throw 'Production requires the compatible context-suite-private repository at proprietary/. There is no public demo build.'
@@ -110,7 +117,8 @@ if (-not $SkipShell) {
     & (Join-Path $PSScriptRoot 'New-PrototypeAssets.ps1') -OutputDirectory $output
 }
 & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload $output `
-    -AllowAudioCandidate:([bool]$AudioDistributionDirectory) -AllowPdfCandidate:$includePdf -AllowOfficeCandidate:([bool]$OfficeEngineDirectory)
+    -AllowAudioCandidate:([bool]$AudioDistributionDirectory) -AllowPdfCandidate:$includePdf -AllowOfficeCandidate:([bool]$OfficeEngineDirectory) `
+    -AllowHeifCandidate:([bool]$HeifDistributionDirectory)
 $verifiedVersion = & (Join-Path $PSScriptRoot 'Test-ProductVersion.ps1') -Payload $output
 if ($verifiedVersion -ne $productVersion) { throw 'Product version changed during staging.' }
 $inventory = @(Get-ChildItem -LiteralPath $output -Recurse -File | Where-Object Name -ne 'payload-inventory.json' | ForEach-Object {

@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $Payload, [switch] $AllowAudioCandidate, [switch] $AllowPdfCandidate,
-    [switch] $AllowOfficeCandidate)
+    [switch] $AllowOfficeCandidate, [switch] $AllowHeifCandidate)
 $ErrorActionPreference = 'Stop'
 if ($AllowOfficeCandidate -and -not $AllowPdfCandidate) {
     throw 'The Office candidate requires the PDF candidate for independent output validation.'
@@ -44,6 +44,13 @@ if ($AllowOfficeCandidate) {
     $allowed += @(Get-Content -LiteralPath (Join-Path $root 'office-engine\runtime-files.txt') | ForEach-Object {
         'office-engine\runtime\' + ($_ -split "`t", 3)[0].Replace('/', '\')
     })
+}
+if ($AllowHeifCandidate) {
+    $heifTools = Join-Path (Split-Path $PSScriptRoot -Parent) 'heif-engine'
+    & python -B (Join-Path $heifTools 'Stage-HeifPayload.py') --payload $root
+    if ($LASTEXITCODE -ne 0) { throw 'HEIF candidate payload verification failed.' }
+    $heifSelection = Get-Content -LiteralPath (Join-Path $heifTools 'payload-candidate.json') -Raw | ConvertFrom-Json
+    $allowed += @($heifSelection.files | ForEach-Object { 'heif\' + $_.path.Replace('/', '\') })
 }
 # Office has over 19,000 files. Keep membership lookup linear in payload size.
 $allowedSet = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)

@@ -44,6 +44,18 @@ All inputs and results stay under repository `.codex-temp`. See the
 [distribution evidence](../../docs/heif-distribution.md) for exact identities,
 commands, limitations and unresolved release decisions.
 
+`Stage-HeifPayload.py --distribution '<verified bundle>' --payload '<fresh
+isolated payload>'` stages the complete pinned runtime under `heif/`. Omitting
+`--distribution` verifies an existing copy. The production build exposes this
+through `-HeifDistributionDirectory` with a fresh staging ID; its default still
+omits HEIF. `Test-HeifPayload.py --distribution '<bundle>' --base-payload
+'<retained combined stage>'` exercises packaging in scratch, including copy
+failures and the production allowlist. See the
+[packaging record](../../docs/heif-production-payload.md).
+`Test-HeifPayloadGuard.py --distribution '<bundle>' --retained-payload '<stage
+without HEIF>'` checks refusal before writes when an inventory already exists,
+plus successful staging into a new scratch directory.
+
 `Fixtures` creates twenty-four independently authored 64-by-48 patterns:
 all eight orientations, alpha stripes and a rotated alpha image with EXIF/XMP,
 for both HEIC and AVIF, plus full-range BT.709 matrix color patterns with sRGB
@@ -197,6 +209,9 @@ for all three depths. A copied private image host accepts `<new evidence root>
 --heif-color <passing color evidence>` for output fidelity and HDR/copy checks.
 Pass the same `--color-evidence` to the interoperability runner for actual-worker
 publication and recovery. See [the color policy](../../docs/heif-color-fallback.md).
+Use `--payload '<complete combined candidate>'` instead of `--bridge` to execute
+the exact verified image/audio/PDF/Office/HEIF worker in place. That mode builds
+only the test host and verifies the complete payload inventory before running.
 
 `Test-HeifLoader.py --bridge '<pinned bridge DLL>' --fixture '<authored HEIC>'`
 builds the private image host and creates six disposable copies for valid,

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "status": "local-candidate-not-commercial-clearance",
+  "archiveBytes": 1571532,
+  "archiveSha256": "E39F98D00FA7C04EEB3CE1527C72BAA0C59BCEBD3933FDEE0B0574548F5096B6",
+  "files": [
+    {
+      "path": "ContextSuite.Heif.Native.dll",
+      "archivePath": "bin/ContextSuite.Heif.Native.dll",
+      "bytes": 146944,
+      "sha256": "798A9EC3D940E013B9C9B07A54A9B1F525513C35353AD8E9AB9BC2738C12E013"
+    },
+    {
+      "path": "heif.dll",
+      "archivePath": "bin/heif.dll",
+      "bytes": 2950656,
+      "sha256": "709AA42349807BDD790E36AC05C163C577C02260ADD1955AF5820DAD6EA0BE4A"
+    },
+    {
+      "path": "libde265.dll",
+      "archivePath": "bin/libde265.dll",
+      "bytes": 555520,
+      "sha256": "E95DFC0405C9DE6C22B730BDFE8A01B20AA1F2B8F44C99FB3D5B7A9398C8F78C"
+    },
+    {
+      "path": "SOURCE-CHANGES.patch",
+      "archivePath": "SOURCE-CHANGES.patch",
+      "bytes": 1110,
+      "sha256": "5E09E861C89717F860E6A453F6B919949F5834A7A465082D5EF28883179FA0B5"
+    },
+    {
+      "path": "SOURCE-DE265-COLOR.patch",
+      "archivePath": "SOURCE-DE265-COLOR.patch",
+      "bytes": 802,
+      "sha256": "675E9B488313AE94CB7530C3C5088E9F1E583B21DCAD390D2EF274D9001BE0F4"
+    },
+    {
+      "path": "SOURCE-HEIF-COLOR.patch",
+      "archivePath": "SOURCE-HEIF-COLOR.patch",
+      "bytes": 972,
+      "sha256": "261CBD6B0DDF349E66ADE49D3895CD42947EF28BED78EB7C0B2AE394C0025536"
+    },
+    {
+      "path": "THIRD-PARTY-NOTICES.txt",
+      "archivePath": "THIRD-PARTY-NOTICES.txt",
+      "bytes": 1951,
+      "sha256": "4355CB235171B571A251544D3EDE89EBCC272A5451177F5ECD74E4A4CB66C821"
+    },
+    {
+      "path": "licenses/AOM.AUTHORS.txt",
+      "archivePath": "licenses/AOM.AUTHORS.txt",
+      "bytes": 13178,
+      "sha256": "C31B80CA48FDE06CA03AEF2F3DEC15413FE0C2661FE6B56E86CCD69DBC6F9A1D"
+    },
+    {
+      "path": "licenses/AOM.LICENSE.txt",
+      "archivePath": "licenses/AOM.LICENSE.txt",
+      "bytes": 1316,
+      "sha256": "4764A286D8B2FAEAF42F4418E7D7A28D58FC8FD4D00A3D0A7F44B0A4099DE7F2"
+    },
+    {
+      "path": "licenses/AOM.PATENTS.txt",
+      "archivePath": "licenses/AOM.PATENTS.txt",
+      "bytes": 5701,
+      "sha256": "661FB8E504744E95587B556B94A58343448300606A41BEA8C7A9B97125696E61"
+    },
+    {
+      "path": "licenses/AOM.supplier.txt",
+      "archivePath": "licenses/AOM.supplier.txt",
+      "bytes": 1372,
+      "sha256": "3A3D636CD83B83C82FB97FDC831C0A2AC1C4783BCE5D3FEEAED17F66320762D6"
+    },
+    {
+      "path": "licenses/SourceCopyrightNotices.txt",
+      "archivePath": "licenses/SourceCopyrightNotices.txt",
+      "bytes": 1294600,
+      "sha256": "96B474376A68E18400A0E95333CCEA17F0A0470C62AEE8289E14E8F1784499AE"
+    },
+    {
+      "path": "licenses/libde265.COPYING.txt",
+      "archivePath": "licenses/libde265.COPYING.txt",
+      "bytes": 44339,
+      "sha256": "02CC1585A20677992E0BA578FA692635DC193735F2691DC81DE924B51C4E8020"
+    },
+    {
+      "path": "licenses/libheif.COPYING.txt",
+      "archivePath": "licenses/libheif.COPYING.txt",
+      "bytes": 44366,
+      "sha256": "FA81CE652315B013359D6E8E4744335F31A50C7C192907176D3632F78A3B4596"
+    }
+  ]
+}

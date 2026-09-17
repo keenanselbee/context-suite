@@ -176,3 +176,8 @@ The [redistribution decisions](heif-distribution.md#remaining-release-decisions)
 production adoption, performance/package budgets and human acceptance remain
 open. No reserved stage, installed application, Explorer registration or live
 service changed. The active release-candidate goal remains incomplete.
+
+The subsequent [packaging checkpoint](heif-production-payload.md) adds the
+explicit production staging path and repeats the 659-check corpus against an
+exact combined scratch worker. That later record owns packaging evidence; the
+payload identities and color/alpha policies above remain unchanged.
