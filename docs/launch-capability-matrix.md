@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.19**. This update records isolated HEIC/AVIF worker
-and direct-command conversion separately from combined candidate 1.1.1 capabilities.
+Matrix revision: **2026-09-16.20**. This update records verified local HEIC/AVIF
+source/runtime review bundles separately from combined candidate 1.1.1 capabilities.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. The newly selected inputs below still require customer integration.
@@ -32,6 +32,11 @@ No output or Optimize capability for these four formats is added. ALAC remains
 a separate evaluation. The [current goal](broad-file-support-goal.md#current-objective-and-completion-plan)
 requires implementation and integrated acceptance before completion; the existing
 conversion matrices below describe only implemented capabilities.
+
+The [HEIF review bundles](heif-distribution.md) pass tampering checks and an
+extracted library-only rebuild. The current decoder repeats focused bridge,
+adapter, worker, loader and recovery acceptance. These are engineering results;
+redistribution approval and production adoption remain pending for both formats.
 
 Read `Implemented` below as an application/worker path with bounded admission and
 recorded automated evidence, subject to every stated condition. It does not mean

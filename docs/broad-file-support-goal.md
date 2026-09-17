@@ -88,6 +88,10 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   resource-limit result and verifies same-worker recovery. The rebuilt decoder
   passes 3,634 bridge and 2,819 output-fidelity checks. Broader variants,
   redistribution, engine adoption and final packaging remain required.
+  The [source/runtime review bundles](heif-distribution.md) pass 14 verification
+  checks; their library source kit rebuilds without the private checkout. The
+  refreshed candidate repeats all focused media/loader/recovery checks. Source
+  delivery and modified-library use with identity checks remain release decisions.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or

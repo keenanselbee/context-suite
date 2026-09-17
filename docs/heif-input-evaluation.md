@@ -599,3 +599,10 @@ realistic-file interoperability, performance budgets and visible acceptance
 remain open. The previous general image/foundation and Office lease results
 were not rerun for this dependency-pin slice. No release version, formal 1.1.1
 stage, installed application, Explorer registration or live service changed.
+
+The later [source/runtime review checkpoint](heif-distribution.md) supersedes
+these payload pins with a full rebuild from the library-only-capable recipe.
+It repeats bridge, worker, interruption, loader and adapter acceptance and
+proves an extracted library source kit can build without the private checkout.
+That record owns current identities and evidence; redistribution approval,
+production adoption and broader interoperability remain open.

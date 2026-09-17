@@ -17,6 +17,9 @@ bridge. It retains archive/source/patch identities, command exits, logs, a local
 SDK and a three-DLL `payload`. The build does not update application pins or
 register/adopt the engine. The AOM static artifact is verified, not rebuilt.
 
+`--libraries-only` builds just libheif/libde265 without reading the private
+checkout. It is also used by the verified source-kit rebuild below.
+
 ```powershell
 python -B tools/heif-engine/Build-HeifEngine.py `
   --sources '<repository scratch directory containing libheif.tar.gz and libde265.tar.gz>' `
@@ -29,6 +32,17 @@ instead of discarding them. It changes no limit or media transformation. Use the
 generated bridge in `Test-HeifBridge.py`, `Test-HeifWorker.py` and
 `Test-HeifLoader.py` before accepting new private binary pins. Source/license
 redistribution, formal payload adoption and commercial clearance remain separate.
+
+`Review-HeifDistribution.py prepare '<full candidate build>' --aom-source
+'<pinned local AOM source ZIP>'` prepares local review archives. The `verify`
+operation checks an existing bundle against fixed source/runtime identities,
+exact membership and derived notices without extracting or executing it.
+`Test-HeifDistribution.py '<bundle directory>'` exercises tampered bundles.
+`Rebuild-HeifSource.py '<bundle directory>' --cmake '<Visual Studio CMake path>'`
+verifies and rebuilds the extracted library-only source kit in fresh scratch.
+All inputs and results stay under repository `.codex-temp`. See the
+[distribution evidence](../../docs/heif-distribution.md) for exact identities,
+commands, limitations and unresolved release decisions.
 
 `Fixtures` creates twenty-four independently authored 64-by-48 patterns:
 all eight orientations, alpha stripes and a rotated alpha image with EXIF/XMP,

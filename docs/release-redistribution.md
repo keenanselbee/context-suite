@@ -4,6 +4,15 @@ Release Redistribution Checklist
 Reviewed: 2026-09-07, with dated additions below. Engineering review, not a legal
 opinion or release approval.
 
+HEIF addition, 2026-09-16: isolated HEIC/AVIF decoder source/runtime review
+archives now retain original libheif/libde265 archives and COPYING texts, the
+local libheif patch, selected AOM source/artifacts and separate AOM patent text.
+The extracted library-only kit rebuilds without private source. This introduces
+LGPL libraries outside the earlier curated image map. Modified-library use with
+current identity checks, source delivery, product/source terms, linked-component
+review and patent questions remain open. No production package adopts this
+engine yet; see [the review evidence](heif-distribution.md).
+
 Audio addition, 2026-09-11: the optional restricted FFmpeg candidate now has
 verified runtime/source review archives, retained root and compiler-input notices,
 and a successful rebuild from the extracted eight-archive source kit. It includes
@@ -74,7 +83,7 @@ Component obligations
 
 The earlier curated image inventory uses attribution/permissive-style licenses;
 no GPL/LGPL library appears in that accepted image map. This does not cover the
-optional audio candidate or document engines. That observation is not a blanket legal
+optional audio/HEIF candidates or document engines. That observation is not a blanket legal
 clearance. Retain copyright/license/disclaimer text, mark custom build changes,
 and avoid implying upstream endorsement. This native inventory does not by
 itself require publishing the proprietary application or building an LGPL

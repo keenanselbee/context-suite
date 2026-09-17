@@ -36,6 +36,8 @@ def main():
     parser.add_argument("--sources", required=True, help="Directory containing pinned libheif.tar.gz and libde265.tar.gz")
     parser.add_argument("--aom", required=True, help="Selected pinned AOM headers, static library, resource and license")
     parser.add_argument("--cmake", required=True)
+    parser.add_argument("--libraries-only", action="store_true",
+                        help="Rebuild the LGPL libraries without the private bridge checkout")
     args = parser.parse_args()
     if os.name != "nt":
         raise ValueError("Use Windows x64 with Visual Studio 18")
@@ -57,9 +59,10 @@ def main():
             raise ValueError("AOM input identity differs: " + relative)
         inputs[str(path)] = expected
     bridge_source = ROOT / "proprietary/src/ContextSuite.Heif.Native"
-    for path in bridge_source.iterdir():
-        if path.is_file():
-            inputs[str(path)] = digest(path)
+    if not args.libraries_only:
+        for path in bridge_source.iterdir():
+            if path.is_file():
+                inputs[str(path)] = digest(path)
     workspace = SCRATCH / "heif-engine" / uuid.uuid4().hex
     workspace.mkdir(parents=True)
     print("HEIF engine evidence:", workspace, flush=True)
@@ -127,17 +130,20 @@ def main():
         "-DAOM_INCLUDE_DIR=" + str(aom / "include/aom"), "-DAOM_LIBRARY=" + str(aom / "lib/CORE_RL_aom_.lib")])
     run("heif-build", [cmake, "--build", workspace / "heif-build", "--config", "Release", "--parallel", "4"])
     run("heif-sdk", [cmake, "--install", workspace / "heif-build", "--config", "Release"])
-    run("bridge-configure", [cmake, "-S", bridge_source, "-B", workspace / "bridge-build", *common,
-        "-DCMAKE_PREFIX_PATH=" + str(sdk)])
-    run("bridge-build", [cmake, "--build", workspace / "bridge-build", "--config", "Release", "--parallel", "4"])
+    if not args.libraries_only:
+        run("bridge-configure", [cmake, "-S", bridge_source, "-B", workspace / "bridge-build", *common,
+            "-DCMAKE_PREFIX_PATH=" + str(sdk)])
+        run("bridge-build", [cmake, "--build", workspace / "bridge-build", "--config", "Release", "--parallel", "4"])
     payload = workspace / "payload"
     payload.mkdir()
-    shutil.copy2(workspace / "bridge-build/Release/ContextSuite.Heif.Native.dll", payload)
+    if not args.libraries_only:
+        shutil.copy2(workspace / "bridge-build/Release/ContextSuite.Heif.Native.dll", payload)
     for name in ("heif.dll", "libde265.dll"):
         shutil.copy2(sdk / "bin" / name, payload)
     if any(digest(Path(path)) != expected for path, expected in inputs.items()):
         raise ValueError("Build inputs changed")
     (workspace / "results.json").write_text(json.dumps({"Passed": True, "BuildOnly": True,
+        "LibrariesOnly": args.libraries_only,
         "Payload": {path.name: digest(path) for path in payload.iterdir()},
         "InputsSha256": digest(workspace / "inputs.json"),
         "OriginalSourcesSha256": digest(workspace / "original-sources.json"),

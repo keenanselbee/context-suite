@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "aomSource": {
+    "url": "https://codeload.github.com/ImageMagick/aom/zip/79de389e4abced53cb6e85b7574826dbc227cd9c",
+    "bytes": 7736874,
+    "sha256": "EB7BF09FBBA46DC527256EFBF32E79EC8C0F9AC48432CA30849485AF91F6C8AD",
+    "prefix": "aom-79de389e4abced53cb6e85b7574826dbc227cd9c/",
+    "revision": "79de389e4abced53cb6e85b7574826dbc227cd9c"
+  }
+}

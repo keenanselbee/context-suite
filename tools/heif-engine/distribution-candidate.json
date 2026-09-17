@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "status": "local-review-not-commercial-clearance",
+  "files": {
+    "ContextSuite.Heif.Native.dll": {
+      "bytes": 130048,
+      "sha256": "55AC6DF9292D876C5689627563E846DD1F21A1CBCF5F4799879CFF8D9F71CF09"
+    },
+    "heif.dll": {
+      "bytes": 2950144,
+      "sha256": "9231D312757F12681C94458F8073EE6B1392C7177384C4E84E080B20CC33B526"
+    },
+    "libde265.dll": {
+      "bytes": 556032,
+      "sha256": "A8F37EDFA42FAC0427A62E6A827DC032CE7DA0BD40AE3BC96E0E5B41245A0124"
+    }
+  }
+}
