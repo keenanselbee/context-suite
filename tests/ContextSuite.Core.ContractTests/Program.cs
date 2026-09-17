@@ -430,6 +430,7 @@ try
     AudioProbeContracts.Run(Check);
     AudioConversionContracts.Run(Check);
     await WaveMetadataContracts.RunAsync(Check);
+    await AiffMetadataContracts.RunAsync(Check);
     await AudioSampleContracts.RunAsync(Check);
     ImagePlanContracts.Run(args[0], Check);
     await PngOptimizationContracts.RunAsync(args[0], Check);

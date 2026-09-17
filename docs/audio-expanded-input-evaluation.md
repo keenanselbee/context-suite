@@ -1,8 +1,10 @@
 AIFF and WMA Input Evaluation
 ============================
 
-Status: isolated native evaluation, 2026-09-16. AIFF/WMA conversion is not yet
-enabled in Context Suite. The selected production audio payload, installed app
+Status: isolated native evaluation, 2026-09-16. The later
+[AIFF adapter checkpoint](aiff-conversion-adapter.md) adds managed conversion
+evidence; AIFF/WMA commands are not yet enabled in Context Suite.
+The selected production audio payload, installed app
 and reserved combined 1.1.1 stage are unchanged.
 
 The [required compatibility goal](broad-file-support-goal.md) adds inputs for the
@@ -104,7 +106,8 @@ python -B tools/audio-engine/Test-AudioExpandedInputs.py '<expanded workspace>' 
 python -B tools/audio-engine/Test-AudioConfiguration.py '<baseline workspace>/build' '<expanded workspace>/build'
 ```
 
-Next implement bounded AIFF/ASF metadata inventory and typed input planning,
+The later AIFF adapter implements bounded AIFF inventory and typed planning.
+Next complete ASF metadata inventory and WMA input planning,
 preserving tags/artwork and refusing significant unsupported information.
 Classify compression by actual codec, map big-endian floats correctly to WAV,
 retain all precision/resampling/lossy-generation prompts, and keep input-only

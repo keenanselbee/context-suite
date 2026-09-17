@@ -42,12 +42,14 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         var sourceFormat = SourceFormat(source.Container, audio.Codec);
         if (source.Streams.Any(stream => stream.AttachedPicture) && sourceFormat != target &&
             !(sourceFormat is AudioFormat.Wave or AudioFormat.Flac && target is AudioFormat.Wave or AudioFormat.Flac or AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus) &&
-            !(sourceFormat is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus && target is AudioFormat.Wave or AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Flac or AudioFormat.Vorbis or AudioFormat.Opus))
+            !(sourceFormat is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus && target is AudioFormat.Wave or AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Flac or AudioFormat.Vorbis or AudioFormat.Opus) && source.Container != "aiff")
             throw new NotSupportedException("Artwork needs a preservation handler for these formats. Originals were kept.");
         var sourceBits = audio.SampleBits ?? audio.Codec switch
-        { "pcm_u8" => 8, "pcm_s16le" => 16, "pcm_s24le" => 24, "pcm_s32le" or "pcm_f32le" => 32, "pcm_f64le" => 64, _ => (int?)null };
-        var floating = audio.Codec is "pcm_f32le" or "pcm_f64le";
-        var lossy = sourceFormat is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus;
+        { "pcm_u8" or "pcm_s8" => 8, "pcm_s16le" or "pcm_s16be" => 16, "pcm_s24le" or "pcm_s24be" => 24,
+            "pcm_s32le" or "pcm_s32be" or "pcm_f32le" or "pcm_f32be" => 32, "pcm_f64le" or "pcm_f64be" => 64, _ => (int?)null };
+        var floating = audio.Codec is "pcm_f32le" or "pcm_f64le" or "pcm_f32be" or "pcm_f64be";
+        var lossy = sourceFormat is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus ||
+            audio.Codec is "pcm_alaw" or "pcm_mulaw" or "adpcm_ima_qt";
         var targetLossy = target is not (AudioFormat.Wave or AudioFormat.Flac);
         if (!lossy && !floating && sourceBits is not (8 or 16 or 24 or 32))
             throw new NotSupportedException("The source precision must be known and supported before conversion.");
@@ -90,11 +92,11 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
             throw new NotSupportedException("AAC cannot retain this sample rate. Choose another format.");
         int? bits = target switch
         {
-            AudioFormat.Wave => floating ? audio.Codec == "pcm_f64le" ? 64 : 32 : lossy ? 32 : sourceBits,
+            AudioFormat.Wave => floating ? audio.Codec is "pcm_f64le" or "pcm_f64be" ? 64 : 32 : lossy ? 32 : sourceBits,
             AudioFormat.Flac => already ? sourceBits : floating || lossy ? 24 : Math.Max(16, sourceBits!.Value),
             _ => null
         };
-        if (target == AudioFormat.Flac && sourceBits == 8 && !already)
+        if (target == AudioFormat.Flac && sourceBits == 8 && !already && !lossy)
             notices.Add("This encoder stores 8-bit audio in 16-bit FLAC samples without changing the decoded sound or adding recorded detail.");
         if (target == AudioFormat.Flac && (floating || lossy))
         {
@@ -103,7 +105,7 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         }
         var codec = target switch
         {
-            AudioFormat.Wave => floating ? audio.Codec : lossy ? "pcm_f32le" : bits switch
+            AudioFormat.Wave => floating ? bits == 64 ? "pcm_f64le" : "pcm_f32le" : lossy ? "pcm_f32le" : bits switch
                 { 8 => "pcm_u8", 16 => "pcm_s16le", 24 => "pcm_s24le", 32 => "pcm_s32le", _ => throw new InvalidDataException("Invalid WAVE precision.") },
             AudioFormat.Flac => "flac", AudioFormat.Mp3 => "mp3", AudioFormat.M4a => "aac",
             AudioFormat.Vorbis => "vorbis", AudioFormat.Opus => "opus", _ => throw new ArgumentOutOfRangeException(nameof(target))
@@ -121,7 +123,8 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
             throw new InvalidOperationException("The audio conversion needs acknowledgement of its quality changes.");
     }
 
-    private static AudioFormat SourceFormat(string container, string codec) => (container, codec) switch
+    // Null is an admitted input-only format, never an additional output choice.
+    private static AudioFormat? SourceFormat(string container, string codec) => (container, codec) switch
     {
         ("wav", "pcm_u8" or "pcm_s16le" or "pcm_s24le" or "pcm_s32le" or "pcm_f32le" or "pcm_f64le") => AudioFormat.Wave,
         ("flac", "flac") => AudioFormat.Flac,
@@ -129,6 +132,8 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         ("mov,mp4,m4a,3gp,3g2,mj2", "aac") => AudioFormat.M4a,
         ("ogg", "vorbis") => AudioFormat.Vorbis,
         ("ogg", "opus") => AudioFormat.Opus,
+        ("aiff", "pcm_s8" or "pcm_s16be" or "pcm_s24be" or "pcm_s32be" or "pcm_s16le" or
+            "pcm_f32be" or "pcm_f64be" or "pcm_alaw" or "pcm_mulaw" or "adpcm_ima_qt") => null,
         _ => throw new NotSupportedException("This container and audio codec have no verified conversion policy yet.")
     };
 }

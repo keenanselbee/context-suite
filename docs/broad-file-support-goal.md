@@ -116,6 +116,11 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   smoke. PCM/float sample oracles pass exactly. Compressed decoder agreement is
   narrower evidence; WMA duration/delay, Pro/Lossless/Voice fixtures, metadata,
   application/worker integration and payload adoption remain open.
+  The [AIFF adapter checkpoint](aiff-conversion-adapter.md) now passes 366 checks
+  with 68 outputs, including exact lossless samples, six target formats, text
+  and artwork comparisons. The public suite passes 4,233 contracts after fixing
+  an Office test readiness-file sharing race. AIFF worker integration, broader
+  variants, WMA preservation and combined payload adoption remain required.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

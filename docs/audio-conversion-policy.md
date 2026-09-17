@@ -13,9 +13,10 @@ are exposed. The encoding API retains same-format bytes; the application batch
 skips same-format files without publication or trial admission.
 
 The owner-selected 2026-09-16 expansion requires AIFF and WMA input to these
-existing six targets. It is planned, not admitted by the current policy.
-Implementation must specify AIFF/AIFF-C and WMA codec variants, protected-content
-refusals, decoded fidelity and metadata/artwork handling before enabling pairs.
+existing six targets. The [AIFF adapter](aiff-conversion-adapter.md) now has
+typed planning, bounded container inventory and isolated native conversion
+evidence. Customer/worker admission and production adoption remain pending.
+WMA still needs codec/protection, metadata and conversion integration.
 Existing quality, resampling and precision consent rules continue to apply.
 ALAC remains a separate evaluation. See the
 [current goal](broad-file-support-goal.md#current-objective-and-completion-plan).

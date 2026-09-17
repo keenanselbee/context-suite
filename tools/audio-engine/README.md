@@ -5,6 +5,8 @@ The opt-in [AIFF/WMA native evaluation](../../docs/audio-expanded-input-evaluati
 adds restricted input decoders with 27 generated decoding fixtures and fifteen
 configuration guards. Application integration and production adoption remain
 pending; the default build and existing six target choices are unchanged.
+The later [AIFF adapter matrix](../../docs/aiff-conversion-adapter.md) adds
+366 checks and 68 outputs with text/artwork and decoded-sample comparisons.
 
 The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
 cover tiny recordings, codec-frame boundaries and safe publication/recovery.
