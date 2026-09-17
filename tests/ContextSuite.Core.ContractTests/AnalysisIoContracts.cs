@@ -136,12 +136,19 @@ internal static class AnalysisIoContracts
         using var raceLock = await HeldOplock.AcquireAsync(racePath);
         using var entered = new ManualResetEventSlim();
         using var proceed = new ManualResetEventSlim();
+        using var opening = new ManualResetEventSlim();
+        var nativeError = 0;
         var race = Task.Run(() => SynchronousFileIo.Run(() =>
         {
             entered.Set();
             proceed.Wait();
+            opening.Set();
             using var file = HeldOplock.Open(racePath);
-            if (file.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error());
+            if (file.IsInvalid)
+            {
+                nativeError = Marshal.GetLastWin32Error();
+                throw new Win32Exception(nativeError);
+            }
             return true;
         }, raceToken.Token));
         try
@@ -150,9 +157,17 @@ internal static class AnalysisIoContracts
             raceToken.Cancel();
             await Task.Delay(150); // Cancellation initially finds no pending I/O.
             proceed.Set();
-            check(await Task.Run(() => raceLock.Broken.WaitOne(TimeSpan.FromSeconds(3))), "analysis I/O: native open starts after cancellation was requested");
+            // Cancellation may abort CreateFile before the filesystem reports an
+            // oplock break. Observe entry into the native call and its actual
+            // canceled return, rather than requiring that intermediate event.
+            check(await Task.Run(() => opening.Wait(TimeSpan.FromSeconds(3))), "analysis I/O: native open starts after cancellation was requested");
             try { await race.WaitAsync(TimeSpan.FromSeconds(3)); check(false, "analysis I/O: repeated cancellation closes the pre-request race"); }
-            catch (OperationCanceledException) { check(true, "analysis I/O: repeated cancellation closes the pre-request race"); }
+            catch (OperationCanceledException error)
+            {
+                check(nativeError == 995 && error.InnerException is Win32Exception { NativeErrorCode: 995 } &&
+                    error.CancellationToken == raceToken.Token, "analysis I/O: repeated cancellation closes the pre-request race with native abort");
+                observations.Add(new { mode = "cancel-before-open", nativeError, oplockBreakObserved = raceLock.Broken.WaitOne(0) });
+            }
         }
         finally
         {

@@ -179,3 +179,29 @@ those edits were present in the earlier staged PDF payload. Native wait-chain
 inspection did not identify the cause; the explicit failed-request trace did.
 These tests do not close remaining remote-driver, metadata-stall or visible
 Analyze acceptance.
+
+
+Cancellation-race observation (2026-09-16)
+----------------------------------------
+
+The first combined 1.1.1 foundation attempt failed while requiring an oplock-break
+notification after cancellation had already been requested. Its retained log is
+`.codex-temp/combined-office-foundation-687959738113440e9ad3cb19da15c136/run.log`.
+The original attempt did not record the native return code, so it does not prove
+which ordering occurred. A focused diagnostic run passes the old assertion;
+the failure is not counted as a successful run.
+
+The race check now observes entry into the native open and requires the actual
+`ERROR_OPERATION_ABORTED` (995) return, the corresponding inner Win32 exception
+and the original cancellation token. An intermediate lock notification is
+recorded without being mandatory. This follows Microsoft's
+[cancellation completion guidance](https://learn.microsoft.com/en-us/windows/win32/fileio/canceling-pending-i-o-operations):
+the final native result establishes whether the operation was canceled. The
+existing held-lock, five-second deadline, same-thread reuse and original-file
+safety assertions remain. Production reader and cancellation code are unchanged.
+
+The corrected check passes during the combined candidate rerun; full workflow
+results are recorded in the [candidate evidence](combined-office-candidate.md).
+An earlier focused invocation used a relative scratch path and failed path
+admission; the absolute-path diagnostic passed 36 checks. Neither diagnostic
+is substituted for the complete integrated run.
