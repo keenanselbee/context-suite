@@ -1,7 +1,7 @@
 HEIC And AVIF Input Evaluation
 =============================
 
-Status: isolated native builds and 72 authored 8/10/12-bit decoder fixtures pass;
+Status: isolated native builds and 126 authored 8/10/12-bit decoder fixtures pass;
 broader fidelity and integration remain open. No production conversion or menu
 capability enabled.
 Owner selected HEIC/AVIF to JPEG/PNG on 2026-09-16.
@@ -101,11 +101,24 @@ reject HEIC/AVIF output, and existing image-to-PDF or DDS routes must not broade
 accidentally when adding enum values. Recognition and menu routing remain cheap;
 native decoding stays in the worker.
 
-The integration choice must compare extending the curated decoder against a
-separate narrow decoder bridge feeding the existing Q16 output path. Consider
-metadata visibility, color/precision fidelity, interruption, native dependency
-identity and redistribution. Do not replace the curated engine with a stock
-all-format build simply to make a fixture pass.
+Use a narrow private decoder bridge inside the existing sequential worker,
+feeding the existing Q16 output and validation path. Extending the curated
+ImageMagick DLL would change the already-verified image engine and its delegate
+allowlist; it would still require explicit container/color admission. A separate
+bridge exposes source ICC/NCLX, item structure and original sample precision
+without replacing that engine. Pin and verify the bridge and decoder dependencies
+as one optional payload. This is the selected implementation direction, not an
+implemented production capability. It adds no resident process or Explorer parser.
+
+The bridge must carry source color declarations independently of decoded pixels,
+normalize 10/12-bit samples to Q16, and apply container geometry exactly once.
+ICC-managed output must keep a consistent profile/sample pair; NCLX-only SDR
+needs independently verified explicit color handling, including common BT.709
+and Display P3 cases. Refuse HDR/gain-map content, sequences, multiple meaningful
+images and unsupported auxiliary content before publication. Supported ordinary
+still composition and alpha must retain their appearance; thumbnail omission
+follows Automatic's mandatory-copy rule. Do not treat all auxiliary items as
+discardable metadata or advertise a variant before its integration tests pass.
 
 
 Authored orientation, alpha, color and metadata fixtures
@@ -161,3 +174,46 @@ because the probe needed an explicit string header; no fixtures ran. The next
 20-fixture grayscale run passed, followed by the eight-bit color-expanded run
 `6d521c1dedb94a018b47e854eb1f38ea` and the precision matrix above.
 None of those failures is substituted for a successful result.
+
+
+Color declarations and image structure
+--------------------------------------
+
+The expanded corpus adds nine cases per codec at each precision: BT.709 transfer,
+Display P3 primaries, PQ and HLG transfer signals, sRGB ICC, Adobe RGB ICC with two
+NCLX transfer declarations, a two-image collection and a thumbnail. Existing
+orientation/alpha/metadata/color cases remain. ICC fixtures use the existing
+pinned stage's managed `Magick.NET.Core.dll` profile data; the helper and assembly
+are hashed with the run, and generated profile bytes are preserved separately.
+
+| Sample depth | Run under `.codex-temp/heif-fixtures/` | Result |
+| --- | --- | --- |
+| 8 bits | `c572b8c49a6544b0a95aaaa9197b6dea` | 42 exact-pixel decodes and four refusals |
+| 10 bits | `e83dfb1e37fc4893b500a450656d7eb8` | 42 exact-pixel decodes and four refusals |
+| 12 bits | `da0ec01bac8e414d93421b47e064df9f` | 42 exact-pixel decodes and four refusals |
+
+All 126 outputs match their independently calculated samples exactly, including
+18 cases retaining source ICC bytes exactly through decode. Source NCLX values,
+collection counts, thumbnail counts and original identities match. These are
+transport tests: they do not prove final color-managed appearance, HDR support,
+collection conversion, grid/depth/gain-map handling or arbitrary container safety.
+
+The pinned `heif_decoding.h` documents that null `output_image_nclx_profile`
+defaults to sRGB conversion, including for HDR. The probe now explicitly enables
+`output_image_nclx_profile_passthrough`. The source handle returns each expected
+NCLX declaration, but the decoded interleaved image returns no NCLX in all 126
+cases. Independent pixel comparisons establish retained sample values; the
+bridge must preserve the source declaration itself. An absent decoded profile
+must never be interpreted as permission to assume sRGB. The exact cause of the
+decoded-profile omission has not been established.
+
+Retained attempts: `872c0fbac61b4ecba7ef07d1621ff7c6` stopped before native tests
+because Windows treated `Profiles` and `profiles` as the same directory;
+`2793d65ed48347a38c7b06a3e372c4df` failed to compile until the sequence API header
+was included. `6464e2c8c21b48e4b908d7782c1e8b50` exposed the decoded-NCLX omission.
+`c1e6f40ff7b24cd69c8476c8debd5e5e` exposed reversed thumbnail assignment in the
+fixture-only upstream C wrapper: the wrapper passes its documented arguments in
+the opposite order to the internal function. Fixtures now use the dedicated
+thumbnail encoder, whose source calls that internal function in the declared
+order. The passing runs verify one thumbnail and one top-level image. No upstream
+source, decoder SDK, existing production stage or installed application changed.

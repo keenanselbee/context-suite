@@ -70,9 +70,11 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
 
 - [ ] Implement and verify HEIC/AVIF to JPEG/PNG under the policies above.
   The [initial decoder evaluation](heif-input-evaluation.md) builds isolated
-  libheif/libde265 libraries and passes 72 authored 8/10/12-bit orientation, color,
-  alpha and metadata fixtures plus 12 refusals. Broader ICC/HDR and
-  item-policy coverage, output conversion and production integration remain required.
+  libheif/libde265 libraries and passes 126 authored 8/10/12-bit orientation, color,
+  alpha, ICC/metadata and item-structure fixtures plus 12 refusals. Explicit NCLX
+  passthrough preserves source samples; the private bridge must carry the source
+  color declaration separately. Final color/HDR and item-policy coverage, output
+  conversion and production integration remain required.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or

@@ -1,10 +1,12 @@
 #include <libheif/heif.h>
+#include <libheif/heif_sequences.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 static void Check(heif_error error) {
@@ -45,6 +47,9 @@ int wmain(int argc, wchar_t** argv) {
         if (!options) throw std::runtime_error("Options allocation failed.");
         options->strict_decoding = 1;
         options->convert_hdr_to_8bit = 0;
+        // Keep source color values/profile; output color policy belongs to the caller.
+        // A null output profile otherwise requests an implicit sRGB conversion.
+        options->output_image_nclx_profile_passthrough = 1;
         const int sourceBits = heif_image_handle_get_luma_bits_per_pixel(handle.get());
         if (sourceBits != 8 && sourceBits != 10 && sourceBits != 12) throw std::runtime_error("Research precision limit.");
         const int bytesPerSample = sourceBits > 8 ? 2 : 1;
@@ -60,6 +65,29 @@ int wmain(int argc, wchar_t** argv) {
         if (!plane || width <= 0 || height <= 0 || uint64_t(width) * height > 40000000 || stride < width * 4 * bytesPerSample)
             throw std::runtime_error("Invalid decoded plane.");
         std::filesystem::create_directory(output);
+        heif_color_profile_nclx* rawColor = nullptr;
+        const auto colorError = heif_image_handle_get_nclx_color_profile(handle.get(), &rawColor);
+        if (colorError.code != heif_error_Color_profile_does_not_exist) Check(colorError);
+        std::unique_ptr<heif_color_profile_nclx, decltype(&heif_nclx_color_profile_free)>
+            color(rawColor, heif_nclx_color_profile_free);
+        heif_color_profile_nclx* rawDecodedColor = nullptr;
+        const auto decodedColorError = heif_image_get_nclx_color_profile(pixels.get(), &rawDecodedColor);
+        if (decodedColorError.code != heif_error_Color_profile_does_not_exist) Check(decodedColorError);
+        std::unique_ptr<heif_color_profile_nclx, decltype(&heif_nclx_color_profile_free)>
+            decodedColor(rawDecodedColor, heif_nclx_color_profile_free);
+        const size_t iccSize = heif_image_handle_get_raw_color_profile_size(handle.get());
+        if (iccSize > 4 * 1024 * 1024 || heif_image_get_raw_color_profile_size(pixels.get()) != iccSize)
+            throw std::runtime_error("Research ICC limit or changed decoded profile size.");
+        if (iccSize) {
+            std::vector<uint8_t> icc(iccSize), decodedIcc(iccSize);
+            Check(heif_image_handle_get_raw_color_profile(handle.get(), icc.data()));
+            Check(heif_image_get_raw_color_profile(pixels.get(), decodedIcc.data()));
+            if (icc != decodedIcc) throw std::runtime_error("Decoder changed ICC bytes.");
+            std::ofstream profile(output / "profile.icc", std::ios::binary);
+            profile.write(reinterpret_cast<const char*>(icc.data()), icc.size());
+            profile.close();
+            if (!profile) throw std::runtime_error("Cannot write research ICC profile.");
+        }
         std::ofstream rgba(output / "pixels.rgba", std::ios::binary);
         for (int y = 0; y < height; ++y) rgba.write(reinterpret_cast<const char*>(plane + size_t(y) * stride), width * 4 * bytesPerSample);
         rgba.close();
@@ -86,9 +114,25 @@ int wmain(int argc, wchar_t** argv) {
             << ",\"height\":" << height << ",\"topLevelImages\":" << heif_context_get_number_of_top_level_images(ctx.get())
             << ",\"alpha\":" << heif_image_handle_has_alpha_channel(handle.get())
             << ",\"metadataCount\":" << metadataCount
+            << ",\"sequenceTracks\":" << heif_context_number_of_sequence_tracks(ctx.get())
+            << ",\"thumbnails\":" << heif_image_handle_get_number_of_thumbnails(handle.get())
+            << ",\"otherAuxiliaryImages\":" << heif_image_handle_get_number_of_auxiliary_images(handle.get(), LIBHEIF_AUX_IMAGE_FILTER_OMIT_ALPHA)
+            << ",\"depthImages\":" << heif_image_handle_get_number_of_depth_images(handle.get())
+            << ",\"premultipliedAlpha\":" << heif_image_handle_is_premultiplied_alpha(handle.get())
+            << ",\"contentLightLevel\":" << heif_image_handle_has_content_light_level(handle.get())
+            << ",\"masteringDisplay\":" << heif_image_handle_has_mastering_display_colour_volume(handle.get())
+            << ",\"iccBytes\":" << iccSize
             << ",\"sourceLumaBits\":" << sourceBits << ",\"decodedBits\":" << decodedBits
-            << ",\"storageBits\":" << bytesPerSample * 8
-            << ",\"rgbaFnv64\":\"" << std::hex << digest << "\"}\n";
+            << ",\"storageBits\":" << bytesPerSample * 8;
+        for (const auto& entry : {std::pair{"sourceNclx", color.get()}, std::pair{"decodedNclx", decodedColor.get()}}) {
+            std::cout << ",\"" << entry.first << "\":";
+            if (!entry.second) std::cout << "null";
+            else std::cout << "{\"primaries\":" << entry.second->color_primaries
+                << ",\"transfer\":" << entry.second->transfer_characteristics
+                << ",\"matrix\":" << entry.second->matrix_coefficients
+                << ",\"fullRange\":" << int(entry.second->full_range_flag) << "}";
+        }
+        std::cout << ",\"rgbaFnv64\":\"" << std::hex << digest << "\"}\n";
         return 0;
     } catch (const std::exception& error) { std::cerr << error.what() << "\n"; return 1; }
 }

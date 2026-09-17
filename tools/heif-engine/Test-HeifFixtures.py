@@ -51,6 +51,8 @@ def main():
     parser.add_argument("--encoder-sdk", required=True, type=Path)
     parser.add_argument("--cmake", required=True, type=Path)
     parser.add_argument("--bit-depth", type=int, choices=(8, 10, 12), default=8)
+    parser.add_argument("--profile-assembly", type=Path,
+                        help="Pinned Magick.NET.Core.dll for additional ICC/NCLX/item fixtures.")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     scratch = root / ".codex-temp"
@@ -69,6 +71,11 @@ def main():
     for directory in ("Fixtures", "Probe"):
         sources += list((root / "tools/heif-engine" / directory).glob("*"))
     inputs = {str(path): digest(path) for path in sources if path.is_file()}
+    profile_assembly = args.profile_assembly.resolve(strict=True) if args.profile_assembly else None
+    if profile_assembly:
+        profile_assembly.relative_to(root)
+        inputs[str(profile_assembly)] = digest(profile_assembly)
+        inputs.update({str(path): digest(path) for path in (root / "tools/heif-engine/Profiles").iterdir() if path.is_file()})
     inputs.update({str(path): digest(path) for sdk in (decoder, encoder)
                    for path in sdk.rglob("*") if path.is_file()})
     (evidence / "inputs.json").write_text(json.dumps(inputs, indent=2) + "\n")
@@ -85,6 +92,14 @@ def main():
         return child.stdout
 
     executables = {}
+    profiles = None
+    if profile_assembly:
+        profile_project = evidence / "Profiles-build"
+        shutil.copytree(root / "tools/heif-engine/Profiles", profile_project)
+        run("profiles-build", ["dotnet", "build", profile_project / "Profiles.csproj", "-c", "Release",
+                               "-p:ProfileAssembly=" + str(profile_assembly)])
+        profiles = evidence / "profiles"
+        run("profiles-generate", ["dotnet", profile_project / "bin/Release/net10.0/Profiles.dll", profiles])
     for name, sdk in (("Fixtures", encoder), ("Probe", decoder)):
         build = evidence / (name + "-build")
         run(name + "-configure", [cmake, "-S", root / "tools/heif-engine" / name,
@@ -95,10 +110,13 @@ def main():
             shutil.copy2(library, build / "Release" / library.name)
         executables[name] = build / "Release" / ("ContextSuite.Heif." + name + ".exe")
     fixtures = evidence / "fixtures"
-    run("generate", [executables["Fixtures"], fixtures, args.bit_depth])
+    run("generate", [executables["Fixtures"], fixtures, args.bit_depth] + ([profiles] if profiles else []))
     originals = {str(path): digest(path) for path in fixtures.iterdir()}
-    if len(originals) != 24:
-        raise ValueError("Expected twenty-four authored fixtures.")
+    fixture_count = 42 if profiles else 24
+    if len(originals) != fixture_count:
+        raise ValueError("Unexpected authored fixture count.")
+    if profiles:
+        originals.update({str(path): digest(path) for path in profiles.iterdir()})
     results = []
     exif = bytes.fromhex("49492a0008000000010012010300010000000100000000000000")
     xmp = ('<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
@@ -118,8 +136,26 @@ def main():
         if max(differences) > 1 or any(differences[3::4]):
             raise ValueError("Unexpected decoded pixels: " + source.name + ", max difference " + str(max(differences)))
         if info["alpha"] != int(alpha) or info["sourceLumaBits"] != args.bit_depth or info["decodedBits"] != args.bit_depth or \
-                info["storageBits"] != (8 if args.bit_depth == 8 else 16) or info["topLevelImages"] != 1:
+                info["storageBits"] != (8 if args.bit_depth == 8 else 16) or \
+                info["topLevelImages"] != (2 if source.stem.endswith("-collection") else 1):
             raise ValueError("Wrong source declarations: " + source.name)
+        expected_nclx = {"primaries": 12 if source.stem.endswith("-p3") else 1,
+                         "transfer": 1 if source.stem.endswith("-bt709") else 16 if source.stem.endswith("-pq") else
+                         18 if source.stem.endswith("-hlg") else 13, "matrix": 1, "fullRange": 1}
+        # This pinned engine may omit NCLX on interleaved RGB output. Keep the
+        # source profile independently; exact sample checks prove passthrough.
+        if info["sourceNclx"] != expected_nclx or (info["decodedNclx"] is not None and any(
+                info["decodedNclx"][key] != expected_nclx[key] for key in ("primaries", "transfer"))):
+            raise ValueError("Changed source color interpretation: " + source.name)
+        if info["thumbnails"] != int(source.stem.endswith("-thumbnail")) or any(info[key] for key in (
+                "sequenceTracks", "otherAuxiliaryImages", "depthImages", "premultipliedAlpha", "contentLightLevel", "masteringDisplay")):
+            raise ValueError("Unexpected image structure: " + source.name)
+        if "-icc-" in source.stem:
+            expected_icc = (profiles / ("srgb.icc" if source.stem.endswith("-icc-srgb") else "adobe.icc")).read_bytes()
+            if info["iccBytes"] != len(expected_icc) or (output / "profile.icc").read_bytes() != expected_icc:
+                raise ValueError("Changed ICC profile: " + source.name)
+        elif info["iccBytes"] or (output / "profile.icc").exists():
+            raise ValueError("Unexpected ICC profile: " + source.name)
         blocks = [(output / ("metadata-" + str(i) + ".bin")).read_bytes() for i in range(info["metadataCount"])]
         if metadata:
             if len(blocks) != 2 or xmp not in blocks or not any(
@@ -148,7 +184,7 @@ def main():
         raise ValueError("Source, SDK or fixture changed during verification.")
     (evidence / "results.json").write_text(json.dumps({"Passed": True, "BitDepth": args.bit_depth, "Fixtures": originals,
         "Decoded": results, "Refusals": 4, "InputsUnchanged": True}, indent=2) + "\n")
-    print("Twenty-four authored decodes and four hostile-input refusals passed.", flush=True)
+    print(f"{fixture_count} authored decodes and four hostile-input refusals passed.", flush=True)
 
 
 if __name__ == "__main__":

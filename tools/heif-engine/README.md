@@ -20,6 +20,11 @@ admission policy; it does not establish HDR or collection support. Higher-depth
 samples use little-endian 16-bit storage with their original 10/12-bit range,
 not values normalized to 65535. The probe rejects changed sample precision.
 Its library allocation limits do not replace Windows job/deadline controls.
+NCLX passthrough is explicitly enabled: a null output profile without that flag
+requests the library's implicit sRGB conversion. The probe records source and
+decoded NCLX separately, retains source ICC bytes and checks decoded ICC equality.
+The selected engine currently returns no NCLX on its interleaved RGB output;
+callers must carry the source declaration alongside the verified samples.
 
 `Test-HeifFixtures.py` builds both tools in a fresh repository scratch directory,
 copies each tool's selected DLLs, creates the authored files and calculates
@@ -35,6 +40,14 @@ python -B tools/heif-engine/Test-HeifFixtures.py `
   --cmake '<Visual Studio CMake path>/cmake.exe' `
   --bit-depth 8
 ```
+
+Add `--profile-assembly '<pinned local stage>/Magick.NET.Core.dll'` to run 42
+fixtures per depth. A scratch .NET 10 helper exports the existing managed
+library's sRGB and Adobe RGB profiles, without loading the image native engine.
+The additional cases cover BT.709 transfer, Display P3 primaries, PQ/HLG signals,
+ICC with NCLX, two-image collections and thumbnails. Assembly, helper and
+generated profile identities join the run receipts. This verifies color-sample
+and profile transport, not final display appearance or HDR conversion support.
 
 Both SDKs must be under this repository's `.codex-temp` and must be separate.
 The caller prepares them from the recorded sources; the harness does not download
@@ -52,7 +65,8 @@ The harness compares sample values, including exact alpha, rather than merely
 checking the declared depth or 16-bit storage size.
 
 Fixture generation covers 8/10/12-bit grayscale/color patterns and partial
-alpha. Other color interpretations/ICC, HDR, auxiliary images, grids, collections,
+alpha. Final ICC/NCLX color transforms, HDR admission, auxiliary images, grids,
+collection admission,
 JPEG/PNG publication and application recovery remain separate required work.
 Do not redistribute these native builds or upstream example fixtures as part
 of the application without their separate source/license and payload review.
