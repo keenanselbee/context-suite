@@ -38,7 +38,12 @@ void Generate(const std::filesystem::path& directory, heif_compression_format co
     std::unique_ptr<heif_encoder, decltype(&heif_encoder_release)> encoder(rawEncoder, heif_encoder_release);
     Check(heif_encoder_set_parameter_string(encoder.get(), "tune", "psnr"));
     Check(heif_encoder_set_lossless(encoder.get(), 1));
-    Check(heif_encoder_set_parameter_string(encoder.get(), "chroma", "444"));
+    const bool grid = variant == "grid";
+    const bool limited = variant.find("limited") != std::string::npos;
+    const int horizontal = variant.find("420") != std::string::npos || variant.find("422") != std::string::npos ? 2 : 1;
+    const int vertical = variant.find("420") != std::string::npos ? 2 : 1;
+    const auto chromaFormat = vertical == 2 ? heif_chroma_420 : horizontal == 2 ? heif_chroma_422 : heif_chroma_444;
+    Check(heif_encoder_set_parameter_string(encoder.get(), "chroma", vertical == 2 ? "420" : horizontal == 2 ? "422" : "444"));
     if (codec == heif_compression_AV1) {
         Check(heif_encoder_set_parameter_integer(encoder.get(), "threads", 1));
         Check(heif_encoder_set_parameter_integer(encoder.get(), "speed", 8));
@@ -48,33 +53,45 @@ void Generate(const std::filesystem::path& directory, heif_compression_format co
         Check(heif_encoder_set_parameter_string(encoder.get(), "x265:frame-threads", "1"));
         Check(heif_encoder_set_parameter_string(encoder.get(), "x265:pools", "none"));
     }
-    heif_image* rawImage = nullptr;
-    Check(heif_image_create(Width, Height, heif_colorspace_YCbCr, heif_chroma_444, &rawImage));
-    std::unique_ptr<heif_image, decltype(&heif_image_release)> image(rawImage, heif_image_release);
-    for (auto channel : {heif_channel_Y, heif_channel_Cb, heif_channel_Cr, heif_channel_Alpha}) {
-        if (channel == heif_channel_Alpha && !alpha) continue;
-        Check(heif_image_add_plane(image.get(), channel, Width, Height, bits));
-        int stride = 0;
-        auto plane = heif_image_get_plane(image.get(), channel, &stride);
-        if (!plane || stride < Width * (bits > 8 ? 2 : 1)) throw std::runtime_error("Invalid fixture plane.");
-        for (int y = 0; y < Height; ++y) for (int x = 0; x < Width; ++x) {
-            const int chroma = !colored ? 128 : channel == heif_channel_Cb ?
-                96 + ((x / 8) % 4) * 16 : 104 + ((y / 8) % 4) * 16;
-            const uint16_t value = channel == heif_channel_Y ? Gray(x, y, bits) :
-                channel == heif_channel_Alpha ? Alpha(x, alpha, bits) : static_cast<uint16_t>(chroma << (bits - 8));
-            if (bits == 8) plane[size_t(y) * stride + x] = static_cast<uint8_t>(value);
-            else reinterpret_cast<uint16_t*>(plane + size_t(y) * stride)[x] = value;
+    std::vector<std::unique_ptr<heif_image, decltype(&heif_image_release)>> tiles;
+    for (int tile = 0; tile < (grid ? 4 : 1); ++tile) {
+        heif_image* rawImage = nullptr;
+        Check(heif_image_create(Width, Height, heif_colorspace_YCbCr, chromaFormat, &rawImage));
+        tiles.emplace_back(rawImage, heif_image_release);
+        auto& image = tiles.back();
+        for (auto channel : {heif_channel_Y, heif_channel_Cb, heif_channel_Cr, heif_channel_Alpha}) {
+            if (channel == heif_channel_Alpha && !alpha) continue;
+            const bool chromaChannel = channel == heif_channel_Cb || channel == heif_channel_Cr;
+            const int planeWidth = Width / (chromaChannel ? horizontal : 1);
+            const int planeHeight = Height / (chromaChannel ? vertical : 1);
+            Check(heif_image_add_plane(image.get(), channel, planeWidth, planeHeight, bits));
+            int stride = 0;
+            auto plane = heif_image_get_plane(image.get(), channel, &stride);
+            if (!plane || stride < planeWidth * (bits > 8 ? 2 : 1)) throw std::runtime_error("Invalid fixture plane.");
+            for (int y = 0; y < planeHeight; ++y) for (int x = 0; x < planeWidth; ++x) {
+                const int sx = x * (chromaChannel ? horizontal : 1) + (tile % 2) * Width;
+                const int sy = y * (chromaChannel ? vertical : 1) + (tile / 2) * Height;
+                const int chroma = !colored ? 128 : channel == heif_channel_Cb ?
+                    96 + ((sx / 8) % 4) * 16 : 104 + ((sy / 8) % 4) * 16;
+                const int gray = Gray(sx, sy, bits);
+                const int luma = limited ? (16 << (bits - 8)) + (gray * (219 << (bits - 8)) + ((1 << bits) - 1) / 2) / ((1 << bits) - 1) : gray;
+                const uint16_t value = channel == heif_channel_Y ? static_cast<uint16_t>(luma) :
+                    channel == heif_channel_Alpha ? Alpha(sx, alpha, bits) : static_cast<uint16_t>(chroma << (bits - 8));
+                if (bits == 8) plane[size_t(y) * stride + x] = static_cast<uint8_t>(value);
+                else reinterpret_cast<uint16_t*>(plane + size_t(y) * stride)[x] = value;
+            }
         }
     }
+    auto& image = tiles.front();
     std::unique_ptr<heif_color_profile_nclx, decltype(&heif_nclx_color_profile_free)>
         color(heif_nclx_color_profile_alloc(), heif_nclx_color_profile_free);
     if (!color) throw std::runtime_error("Cannot allocate fixture color profile.");
     Check(heif_nclx_color_profile_set_color_primaries(color.get(), variant == "p3" ? 12 : 1));
     Check(heif_nclx_color_profile_set_transfer_characteristics(color.get(),
         variant == "bt709" || variant == "icc-adobe-bt709" ? 1 : variant == "pq" ? 16 : variant == "hlg" ? 18 : 13));
-    Check(heif_nclx_color_profile_set_matrix_coefficients(color.get(), 1));
-    color->full_range_flag = 1;
-    Check(heif_image_set_nclx_color_profile(image.get(), color.get()));
+    Check(heif_nclx_color_profile_set_matrix_coefficients(color.get(), variant == "matrix601" ? 6 : variant == "matrix2020" ? 9 : 1));
+    color->full_range_flag = limited ? 0 : 1;
+    for (auto& tile : tiles) Check(heif_image_set_nclx_color_profile(tile.get(), color.get()));
     if (variant.rfind("icc-", 0) == 0) {
         const auto path = profiles / (variant == "icc-srgb" ? "srgb.icc" : "adobe.icc");
         const auto size = std::filesystem::file_size(path);
@@ -91,7 +108,12 @@ void Generate(const std::filesystem::path& directory, heif_compression_format co
     options->output_nclx_profile = color.get();
     options->save_two_colr_boxes_when_ICC_and_nclx_available = 1;
     heif_image_handle* rawHandle = nullptr;
-    Check(heif_context_encode_image(context.get(), image.get(), encoder.get(), options.get(), &rawHandle));
+    if (grid) {
+        // The incremental API applies orientation to the grid, not each tile.
+        Check(heif_context_add_grid_image(context.get(), Width * 2, Height * 2, 2, 2, options.get(), &rawHandle));
+        for (int tile = 0; tile < 4; ++tile)
+            Check(heif_context_add_image_tile(context.get(), rawHandle, tile % 2, tile / 2, tiles[tile].get(), encoder.get()));
+    } else Check(heif_context_encode_image(context.get(), image.get(), encoder.get(), options.get(), &rawHandle));
     std::unique_ptr<heif_image_handle, decltype(&heif_image_handle_release)> handle(rawHandle, heif_image_handle_release);
     if (variant == "collection" || variant == "thumbnail") {
         heif_image_handle* rawSecond = nullptr;
@@ -118,7 +140,8 @@ void Generate(const std::filesystem::path& directory, heif_compression_format co
 
 int wmain(int argc, wchar_t** argv) {
     try {
-        if (argc < 2 || argc > 4) throw std::runtime_error("Specify a new fixture directory, optional bit depth and profile directory.");
+        if (argc < 2 || argc > 5 || (argc == 5 && std::wstring(argv[4]) != L"--variants"))
+            throw std::runtime_error("Specify a new fixture directory, optional bit depth, profile directory and --variants.");
         const int bits = argc >= 3 ? std::stoi(std::wstring(argv[2])) : 8;
         if (bits != 8 && bits != 10 && bits != 12) throw std::runtime_error("Use 8, 10 or 12 bits.");
         const std::filesystem::path directory(argv[1]);
@@ -136,11 +159,18 @@ int wmain(int argc, wchar_t** argv) {
             Generate(directory, codec, extension, bits, 6, true, true);
             Generate(directory, codec, extension, bits, 1, false, false, true);
             Generate(directory, codec, extension, bits, 6, true, true, true);
-            if (argc == 4) {
+            if (argc >= 4) {
                 const std::filesystem::path profiles(argv[3]);
                 if (!profiles.is_absolute()) throw std::runtime_error("Use an absolute profile directory.");
                 for (const auto& variant : {"bt709", "p3", "pq", "hlg", "icc-srgb", "icc-adobe", "icc-adobe-bt709", "collection", "thumbnail"})
                     Generate(directory, codec, extension, bits, 1, false, false, true, variant, profiles);
+            }
+            if (argc == 5) {
+                for (const auto& variant : {"420-full", "422-full", "420-limited", "422-limited", "444-limited", "matrix601", "matrix2020"})
+                    Generate(directory, codec, extension, bits, 1, false, false, true, variant);
+                Generate(directory, codec, extension, bits, 1, false, false, true, "grid");
+                Generate(directory, codec, extension, bits, 1, true, false, true, "grid");
+                Generate(directory, codec, extension, bits, 6, true, true, true, "grid");
             }
         }
         heif_deinit();

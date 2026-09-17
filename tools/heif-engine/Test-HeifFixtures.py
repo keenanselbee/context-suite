@@ -17,16 +17,17 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest().upper()
 
 
-def expected_pixels(orientation, alpha, colored, bits):
-    width, height = (48, 64) if orientation >= 5 else (64, 48)
+def expected_pixels(orientation, alpha, colored, bits, variant=""):
+    source_width, source_height = (128, 96) if variant.endswith("-grid") else (64, 48)
+    width, height = (source_height, source_width) if orientation >= 5 else (source_width, source_height)
     result = []
     maximum = (1 << bits) - 1
     for y in range(height):
         for x in range(width):
             sx, sy = {
-                1: (x, y), 2: (63 - x, y), 3: (63 - x, 47 - y),
-                4: (x, 47 - y), 5: (y, x), 6: (y, 47 - x),
-                7: (63 - y, 47 - x), 8: (63 - y, x),
+                1: (x, y), 2: (source_width - 1 - x, y), 3: (source_width - 1 - x, source_height - 1 - y),
+                4: (x, source_height - 1 - y), 5: (y, x), 6: (y, source_height - 1 - x),
+                7: (source_width - 1 - y, source_height - 1 - x), 8: (source_width - 1 - y, x),
             }[orientation]
             gray8 = (sx * 7 + sy * 11 + ((sx // 8) ^ (sy // 8)) * 19) & 255
             gray = ((gray8 * maximum + 127) // 255 + ((sx + 3 * sy) & ((1 << (bits - 8)) - 1))) & maximum
@@ -34,10 +35,17 @@ def expected_pixels(orientation, alpha, colored, bits):
             if colored:
                 cb = (96 + ((sx // 8) % 4) * 16 - 128) * (1 << (bits - 8))
                 cr = (104 + ((sy // 8) % 4) * 16 - 128) * (1 << (bits - 8))
-                # Independent full-range BT.709 matrix, retaining sRGB transfer.
-                red = gray + 2 * (1 - 0.2126) * cr
-                blue = gray + 2 * (1 - 0.0722) * cb
-                green = (gray - 0.2126 * red - 0.0722 * blue) / (1 - 0.2126 - 0.0722)
+                if "limited" in variant:
+                    span = 219 << (bits - 8)
+                    encoded = (gray * span + maximum // 2) // maximum
+                    gray = encoded * maximum / span
+                    cb *= maximum / (224 << (bits - 8))
+                    cr *= maximum / (224 << (bits - 8))
+                # Independent matrix and range expansion, retaining the source transfer.
+                kr, kb = (0.299, 0.114) if variant.endswith("matrix601") else (0.2627, 0.0593) if variant.endswith("matrix2020") else (0.2126, 0.0722)
+                red = gray + 2 * (1 - kr) * cr
+                blue = gray + 2 * (1 - kb) * cb
+                green = (gray - kr * red - kb * blue) / (1 - kr - kb)
                 result.extend(max(0, min(maximum, round(value))) for value in (red, green, blue))
                 result.append(opacity)
             else:
@@ -53,7 +61,10 @@ def main():
     parser.add_argument("--bit-depth", type=int, choices=(8, 10, 12), default=8)
     parser.add_argument("--profile-assembly", type=Path,
                         help="Pinned Magick.NET.Core.dll for additional ICC/NCLX/item fixtures.")
+    parser.add_argument("--variants", action="store_true", help="Also verify grids, chroma subsampling, limited range and matrix variants.")
     args = parser.parse_args()
+    if args.variants and not args.profile_assembly:
+        parser.error("--variants requires --profile-assembly")
     root = Path(__file__).resolve().parents[2]
     scratch = root / ".codex-temp"
     decoder = args.decoder_sdk.resolve(strict=True)
@@ -110,9 +121,9 @@ def main():
             shutil.copy2(library, build / "Release" / library.name)
         executables[name] = build / "Release" / ("ContextSuite.Heif." + name + ".exe")
     fixtures = evidence / "fixtures"
-    run("generate", [executables["Fixtures"], fixtures, args.bit_depth] + ([profiles] if profiles else []))
+    run("generate", [executables["Fixtures"], fixtures, args.bit_depth] + ([profiles] if profiles else []) + (["--variants"] if args.variants else []))
     originals = {str(path): digest(path) for path in fixtures.iterdir()}
-    fixture_count = 42 if profiles else 24
+    fixture_count = 62 if args.variants else 42 if profiles else 24
     if len(originals) != fixture_count:
         raise ValueError("Unexpected authored fixture count.")
     if profiles:
@@ -127,7 +138,7 @@ def main():
         metadata = "-metadata" in source.stem
         output = evidence / (source.name + "-decoded")
         info = json.loads(run(source.name, [executables["Probe"], source, output]))
-        width, height, pixels = expected_pixels(orientation, alpha, "-color" in source.stem, args.bit_depth)
+        width, height, pixels = expected_pixels(orientation, alpha, "-color" in source.stem, args.bit_depth, source.stem)
         pixel_bytes = (output / "pixels.rgba").read_bytes()
         actual = list(pixel_bytes) if args.bit_depth == 8 else [value[0] for value in struct.iter_unpack("<H", pixel_bytes)]
         if (info["width"], info["height"]) != (width, height) or len(actual) != len(pixels):
@@ -141,7 +152,9 @@ def main():
             raise ValueError("Wrong source declarations: " + source.name)
         expected_nclx = {"primaries": 12 if source.stem.endswith("-p3") else 1,
                          "transfer": 1 if source.stem.endswith("-bt709") else 16 if source.stem.endswith("-pq") else
-                         18 if source.stem.endswith("-hlg") else 13, "matrix": 1, "fullRange": 1}
+                         18 if source.stem.endswith("-hlg") else 13,
+                         "matrix": 6 if source.stem.endswith("matrix601") else 9 if source.stem.endswith("matrix2020") else 1,
+                         "fullRange": 0 if "limited" in source.stem else 1}
         # This pinned engine may omit NCLX on interleaved RGB output. Keep the
         # source profile independently; exact sample checks prove passthrough.
         if info["sourceNclx"] != expected_nclx or (info["decodedNclx"] is not None and any(

@@ -49,6 +49,13 @@ ICC with NCLX, two-image collections and thumbnails. Assembly, helper and
 generated profile identities join the run receipts. This verifies color-sample
 and profile transport, not final display appearance or HDR conversion support.
 
+Add `--variants` with `--profile-assembly` for 62 cases per depth, including
+4:2:0/4:2:2, limited range, BT.601/BT.2020 matrices and four-tile grids with
+alpha/orientation. The grid generator uses the incremental API so orientation
+applies to the complete image. Expected pixels come from independent range,
+matrix and geometry arithmetic, with at most one source-depth value of rounding
+difference and exact alpha. Tile patterns differ to detect incorrect placement.
+
 Both SDKs must be under this repository's `.codex-temp` and must be separate.
 The caller prepares them from the recorded sources; the harness does not download
 or select a replacement engine. Use Visual Studio 18 x64. Match the static CRT
@@ -65,9 +72,9 @@ The harness compares sample values, including exact alpha, rather than merely
 checking the declared depth or 16-bit storage size.
 
 Fixture generation covers 8/10/12-bit grayscale/color patterns and partial
-alpha. Final ICC/NCLX color transforms, HDR admission, auxiliary images, grids,
-collection admission,
-JPEG/PNG publication and application recovery remain separate required work.
+alpha. Final ICC/NCLX color transforms, HDR admission, auxiliary images,
+collection admission, JPEG/PNG publication and application recovery remain
+separate from this decoder-fixture test.
 Do not redistribute these native builds or upstream example fixtures as part
 of the application without their separate source/license and payload review.
 
@@ -95,6 +102,9 @@ buffer bounds, refusals, cancellation and subsequent decoding. It hashes private
 source identities without copying private source into public outputs. The bridge
 reports capabilities; it is not a conversion admission policy, and this test does
 not validate final JPEG/PNG output, publication or application recovery.
+The current bridge ABI is version 2; it reports the primary item type and
+underlying codec separately. Expanded fixture runs also exercise six malformed
+grid mutations per codec/depth, with a valid grid decode after each refusal.
 
 The private image contract host also accepts a new absolute evidence directory,
 `--heif-conversion` and one or more expanded fixture-evidence directories. Build
@@ -103,6 +113,8 @@ and place the three pinned decoder DLLs in that copy's `heif` subdirectory befor
 running. This exercises the actual adapter and existing output validation without
 refreshing a production stage or installed application. Keep the exact host
 inventory and command/exit receipts with the result.
+Append `--grid-refusals '<passing bridge evidence directory>'` to verify those
+same malformed-grid refusals and subsequent recovery through the managed adapter.
 
 `ColorProfiles` builds the offline BT.709/P3 ICC generator against the selected
 curated-engine artifact directory (`LCMS_ARTIFACTS`). Its generated resources are

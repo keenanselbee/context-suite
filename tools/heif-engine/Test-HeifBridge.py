@@ -20,7 +20,42 @@ def digest(path):
 class Info(ctypes.Structure):
     _fields_ = [(name, ctypes.c_uint32) for name in (
         "abi", "width", "height", "bits", "primaries", "transfer", "matrix", "fullRange",
-        "itemType", "flags", "iccBytes", "exifBytes", "xmpBytes")]
+        "itemType", "flags", "iccBytes", "exifBytes", "xmpBytes", "codec")]
+
+
+def grid_mutations(data):
+    """Mutate only the known authored grid layout; never use this as a file parser."""
+    def field(kind):
+        offset = data.index(kind)
+        if data.count(kind) != 1:
+            raise ValueError("Authored grid layout changed: " + repr(kind))
+        return offset + 4
+
+    dimg = field(b"dimg")
+    item = struct.unpack_from(">H", data, dimg)[0]
+    if struct.unpack_from(">H", data, dimg + 2)[0] != 4:
+        raise ValueError("Expected four authored tile references")
+    cases = {}
+    for name, target in (("missing-tile", 65535), ("self-reference", item)):
+        changed = bytearray(data)
+        struct.pack_into(">H", changed, dimg + 4, target)
+        cases[name] = bytes(changed)
+    changed = bytearray(data)
+    struct.pack_into(">H", changed, dimg + 2, 65535)
+    cases["truncated-reference-list"] = bytes(changed)
+    grid = field(b"idat")
+    if data[grid:grid + 4] != b"\0\0\1\1":
+        raise ValueError("Expected authored 16-bit two-by-two grid")
+    changed = bytearray(data)
+    changed[grid + 2:grid + 4] = b"\xff\xff"
+    cases["excessive-tile-count"] = bytes(changed)
+    changed = bytearray(data)
+    struct.pack_into(">H", changed, grid + 4, 129)
+    cases["uncovered-width"] = bytes(changed)
+    changed = bytearray(data)
+    struct.pack_into(">H", changed, grid + 6, 0)
+    cases["zero-height"] = bytes(changed)
+    return cases
 
 
 def main():
@@ -71,6 +106,7 @@ def main():
         return bytes(buffer.raw)
 
     observations = []
+    refusals = []
     null_callback = callback_type()
     for folder in directories:
         baseline = json.loads((folder / "results.json").read_text())
@@ -84,17 +120,20 @@ def main():
                 info = Info()
                 check(native.cs_heif_info(result, ctypes.byref(info), ctypes.sizeof(info)) == 0, "ABI info")
                 facts = row["facts"]
-                check((info.abi, info.width, info.height, info.bits) == (1, facts["width"], facts["height"], facts["sourceLumaBits"]), "Geometry and precision")
+                check((info.abi, info.width, info.height, info.bits) == (2, facts["width"], facts["height"], facts["sourceLumaBits"]), "Geometry and precision")
                 check(all(getattr(info, key) == value for key, value in facts["sourceNclx"].items()), "Source NCLX")
-                check(info.itemType == int.from_bytes(b"hvc1" if source.suffix == ".heic" else b"av01", "big"), "Primary codec item")
+                codec = int.from_bytes(b"hvc1" if source.suffix == ".heic" else b"av01", "big")
+                grid = source.stem.endswith("-grid")
+                check(info.itemType == (int.from_bytes(b"grid", "big") if grid else codec) and info.codec == codec, "Primary item and underlying codec")
                 check(bool(info.flags & 1) == bool(facts["alpha"]) and bool(info.flags & 16), "Alpha/NCLX flags")
                 check(bool(info.flags & 64) == bool(facts["thumbnails"]) and bool(info.flags & 128) == (facts["topLevelImages"] > 1), "Thumbnail/collection flags")
                 check(not (info.flags & (2 | 4 | 8 | 256 | 512)), "Unexpected capability flags")
                 # x265 fixtures also carry a clean aperture for encoder padding.
-                check(bool(info.flags & 32) == (source.suffix == ".heic" or int(source.stem.split("-")[1]) != 1),
+                check(bool(info.flags & 32) == ((source.suffix == ".heic" and not grid) or int(source.stem.split("-")[1]) != 1),
                       "Container geometry flag " + source.name)
                 pixels = folder / (source.name + "-decoded") / "pixels.rgba"
-                check(digest(pixels) == row["expectedPixelsSha256"], "Exact independently authored pixel oracle")
+                check(digest(pixels) == row["actualPixelsSha256"] and row["maximumPixelDifference"] <= 1,
+                      "Independently bounded decoder sample oracle")
                 samples = list(pixels.read_bytes()) if info.bits == 8 else [x[0] for x in struct.iter_unpack("<H", pixels.read_bytes())]
                 maximum = (1 << info.bits) - 1
                 expected = b"".join(struct.pack("<H", (sample * 65535 + maximum // 2) // maximum) for sample in samples)
@@ -117,6 +156,22 @@ def main():
                 data = ctypes.create_string_buffer((folder / f"{name}.{extension}").read_bytes())
                 result = ctypes.c_void_p(123)
                 check(native.cs_heif_decode(data, len(data) - 1, null_callback, None, ctypes.byref(result)) != 0 and not result.value, "Refused input leaves no result")
+            grid = folder / "fixtures" / ("orientation-1-color-grid." + extension)
+            if grid.exists():
+                mutations = evidence / (str(baseline["BitDepth"]) + "-grid-boundaries")
+                mutations.mkdir(exist_ok=True)
+                for name, changed in grid_mutations(grid.read_bytes()).items():
+                    path = mutations / (name + "." + extension)
+                    path.write_bytes(changed)
+                    data = ctypes.create_string_buffer(changed)
+                    result = ctypes.c_void_p(123)
+                    status = native.cs_heif_decode(data, len(changed), null_callback, None, ctypes.byref(result))
+                    check(status in (2, 3, 4) and not result.value, "Malformed grid leaves no result: " + name)
+                    refusals.append({"file": str(path), "sha256": digest(path), "status": status})
+                    valid_grid = ctypes.create_string_buffer(grid.read_bytes())
+                    check(native.cs_heif_decode(valid_grid, len(valid_grid) - 1, null_callback, None, ctypes.byref(result)) == 0 and result.value,
+                          "Valid grid after malformed refusal")
+                    native.cs_heif_release(result)
         valid = ctypes.create_string_buffer((folder / "fixtures/orientation-1.heic").read_bytes())
         for after in (1, 3):
             calls = 0
@@ -135,7 +190,7 @@ def main():
     check(native.cs_heif_info(None, None, 0) == 1 and native.cs_heif_copy(None, 0, None, 0) == 1, "Null result boundaries")
     native.cs_heif_release(None)
     check(all(digest(Path(name)) == value for name, value in inputs.items()), "Bridge/evidence inputs unchanged")
-    (evidence / "results.json").write_text(json.dumps({"Passed": True, "Checks": checks, "Decoded": observations}, indent=2) + "\n")
+    (evidence / "results.json").write_text(json.dumps({"Passed": True, "Checks": checks, "Decoded": observations, "GridRefusals": refusals}, indent=2) + "\n")
     dll_directory.close()
     print(f"{checks} bridge checks passed for {len(observations)} authored inputs.", flush=True)
 

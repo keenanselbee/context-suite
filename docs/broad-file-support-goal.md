@@ -76,8 +76,9 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   color declaration separately. Broader color/HDR and item-policy coverage,
   conversion acceptance and production integration remain required.
   The private in-memory bridge now passes 2,420 ABI, sample/profile, cancellation
-  and refusal checks against the same corpus. The private adapter now passes
-  1,755 checks with 216 JPEG/PNG outputs and independent SDR appearance comparisons;
+  and refusal checks against the same corpus. The expanded chroma/range/grid corpus
+  now has 186 sources, 3,632 bridge checks and 36 additional malformed-grid refusals.
+  The private adapter passes 2,819 checks with 336 JPEG/PNG outputs and independent SDR appearance comparisons;
   broader variants, menu/worker integration and final packaging remain required.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.

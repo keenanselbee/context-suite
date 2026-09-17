@@ -2,7 +2,7 @@ HEIC And AVIF Input Evaluation
 =============================
 
 Status: native decoding and private adapter conversion pass isolated checks,
-including 216 JPEG/PNG outputs; broader fidelity and integration remain open.
+including 336 JPEG/PNG outputs; broader fidelity and integration remain open.
 No packaged engine or customer menu capability enabled.
 Owner selected HEIC/AVIF to JPEG/PNG on 2026-09-16.
 
@@ -270,11 +270,11 @@ retains cancellation. Default production packaging does not supply this director
 
 HEIC/AVIF are input-only enum values. The shared planner permits only JPEG/PNG,
 rejects them as targets and excludes them from image-to-PDF. The adapter currently
-admits ordinary `hvc1`/`av01` items with verified SDR color interpretation; grids,
-premultiplied alpha, HDR signals, collections, sequences and other auxiliary
+admits ordinary `hvc1`/`av01` items and bounded homogeneous grids with verified SDR
+color interpretation. Premultiplied alpha, HDR signals, collections, sequences and other auxiliary
 content remain refused. Nontrivial EXIF/XMP orientation is refused until the
-container/metadata conflict policy is verified. Chroma, limited-range, grids,
-missing/conflicting color declarations and hostile-property coverage still need
+container/metadata conflict policy is verified. Authored chroma, limited-range and
+grid coverage is recorded below; missing/conflicting color declarations and broader hostile-property coverage still need
 expansion before customer capability registration. Source compression is treated
 conservatively as potentially lossy; encoded losslessness is not identified yet.
 
@@ -329,3 +329,70 @@ and **4,130 foundation** contracts pass. These do not replace actual worker,
 publication/recovery, native payload safety, packaging or human acceptance for
 the newly added inputs. The reserved 1.1.1 stage and installed application remain
 unchanged; a future combined candidate needs a fresh version.
+
+
+Chroma, range and grid expansion
+-------------------------------
+
+The next isolated slice adds 4:2:0 and 4:2:2 with full and limited range,
+limited-range 4:4:4, BT.601 and BT.2020 non-constant-luminance matrices, and
+four-tile grids with distinct authored samples, alpha and rotated metadata.
+The matrix is now **62 files per depth, 186 total** at 8/10/12 bits. These cases
+verify decoding the declared YCbCr matrix; a BT.2020 matrix with BT.709 primaries
+does not establish support for the BT.2020 gamut or HDR.
+
+| Depth | Final fixture evidence under `.codex-temp/heif-fixtures/` |
+| --- | --- |
+| 8 | `676ef85e457e4f5a9e53f8539bc972eb` |
+| 10 | `5481b3bcb7d241e7ab066b73ac817578` |
+| 12 | `47fb5b2348ae4376a1cb1f162b8a39ba` |
+
+Independent range expansion and matrix arithmetic allow at most one source-depth
+channel value of rounding difference; observed maxima are one at each depth.
+Alpha remains exact. The bridge and PNG encoder then preserve those verified
+decoded samples exactly, including Q16 normalization and hidden RGB. JPEG matches
+encoding of those samples with the selected matte and quality, as described above.
+Thus the new evidence distinguishes bounded codec/matrix rounding from exact
+transport and output preservation. It does not claim all decoded RGB values equal
+the ideal floating-point matrix result byte-for-byte.
+
+The private bridge ABI is now version 2 (56 bytes), retaining the primary item
+type and adding the underlying codec. For grids it inspects at most 256 tiles,
+requires one HEVC or AV1 codec, checks precision/alpha and declared color
+consistency, and refuses nested compositions and unsupported tile metadata or
+auxiliary capabilities. The managed adapter accepts this bounded grid result.
+The revised bridge at `.codex-temp/heif-bridge/e801a7f8102d492696e3db1da3f96ee0`
+has SHA-256 `55AC6DF9292D876C5689627563E846DD1F21A1CBCF5F4799879CFF8D9F71CF09`;
+the pinned libheif/libde265 libraries are unchanged.
+
+Final bridge evidence at
+`.codex-temp/heif-bridge-tests/490a962ae3a0419a942dcbf953c2dcf8` passes **3,632
+checks**. This includes 36 additional grid refusals: missing tiles, self-references,
+truncated reference lists, excessive tile counts, uncovered width and zero height,
+for each codec/depth. Every refusal leaves no native result, and a valid grid
+decodes immediately afterward. The existing twelve malformed-file and callback
+cancellation checks also pass.
+
+Final adapter evidence at
+`.codex-temp/heif-conversion/031604a37d114eae91a7055b47474b17` passes **2,819
+checks and 336 validated JPEG/PNG outputs**, including the same 36 refusals and
+subsequent adapter recovery. The eighteen HDR/collection cases remain refused.
+The twelve independent BT.709/P3 appearance comparisons still pass. The managed
+Release build has zero warnings/errors, and **942 existing image contracts** pass
+at `.codex-temp/image-tests/engine-9e7c34e114c94017be69489b8fffb6f5`.
+Foundation contracts were not rerun for this private implementation/tooling slice;
+their prior 4,130-check result remains the preceding checkpoint's evidence.
+
+The first generator attempt at `86072a76a5fe498fa289dded3ce20e28` produced an
+invalid rotated grid: the full-grid encoding API applied orientation to each tile.
+The authored generator now uses the incremental grid API, which applies orientation
+to the complete grid. Upstream sources were not modified. The decoder correctly
+refused the malformed attempt. Passing intermediate fixture, bridge and conversion
+runs are retained alongside the final receipts; they do not replace the final
+source-bound runs above.
+
+This remains isolated authored evidence. Real-worker cancellation/deadlines,
+publication/retry, payload loading safety, missing-engine behavior, production
+packaging, realistic external-file interoperability and human acceptance remain
+required. Arbitrary grids, HDR, nested compositions and conflicting declarations
+are not established as supported by this slice.
