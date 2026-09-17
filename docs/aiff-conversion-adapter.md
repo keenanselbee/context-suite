@@ -9,8 +9,9 @@ The selected production payload and reserved combined 1.1.1 stage are unchanged.
 This builds on the [restricted input engine](audio-expanded-input-evaluation.md).
 The private loader recognizes its exact seven-file identity as an evaluation
 candidate and permits AIFF input only for that identity. The existing curated
-and supplier adapter identities retain their earlier input allowlist. ASF/WMA
-is still excluded from adapter probing until its preservation path is ready.
+and supplier adapter identities retain their earlier input allowlist. The later
+[WMA checkpoint](wma-conversion-adapter.md) adds separate ASF preservation and
+v1/v2 conversion tests; its AIFF regression retains all fidelity checks.
 
 
 Planning and preservation boundary

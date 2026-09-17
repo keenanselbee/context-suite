@@ -120,7 +120,14 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   with 68 outputs, including exact lossless samples, six target formats, text
   and artwork comparisons. The public suite passes 4,233 contracts after fixing
   an Office test readiness-file sharing race. AIFF worker integration, broader
-  variants, WMA preservation and combined payload adoption remain required.
+  variants and combined payload adoption remain required.
+  The [WMA v1/v2 adapter checkpoint](wma-conversion-adapter.md) adds 74 public
+  contracts and 283 private checks/36 outputs, including text/artwork, protection
+  refusal and exact decoded timing. The existing six targets remain unchanged.
+  Its full foundation run passes 4,307 contracts; AIFF and existing-audio
+  regressions pass 365 and 368 checks respectively.
+  Representative/discontinuous timelines, Pro/Lossless/Voice, broader metadata
+  and resource/fidelity evidence and actual-worker admission remain required.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

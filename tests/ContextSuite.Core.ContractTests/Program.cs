@@ -12,6 +12,15 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--asf-metadata"])
+{
+    var checks = 0;
+    await AsfMetadataContracts.RunAsync((passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} ASF metadata checks.");
+    return 0;
+}
+
 if (args is ["--heif-interop", var interopWorker, var interopFixtures, var interopManifest, var interopRoot])
 {
     await HeifInteropContracts.RunAsync(interopWorker, interopFixtures, interopManifest, interopRoot);
@@ -431,6 +440,7 @@ try
     AudioConversionContracts.Run(Check);
     await WaveMetadataContracts.RunAsync(Check);
     await AiffMetadataContracts.RunAsync(Check);
+    await AsfMetadataContracts.RunAsync(Check);
     await AudioSampleContracts.RunAsync(Check);
     ImagePlanContracts.Run(args[0], Check);
     await PngOptimizationContracts.RunAsync(args[0], Check);

@@ -7,6 +7,9 @@ configuration guards. Application integration and production adoption remain
 pending; the default build and existing six target choices are unchanged.
 The later [AIFF adapter matrix](../../docs/aiff-conversion-adapter.md) adds
 366 checks and 68 outputs with text/artwork and decoded-sample comparisons.
+The [WMA v1/v2 adapter](../../docs/wma-conversion-adapter.md) adds 283 checks
+and 36 outputs, including protection refusal and exact decoded sample timing.
+Broader variants/timelines, worker integration and customer admission remain open.
 
 The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
 cover tiny recordings, codec-frame boundaries and safe publication/recovery.

@@ -107,8 +107,10 @@ python -B tools/audio-engine/Test-AudioConfiguration.py '<baseline workspace>/bu
 ```
 
 The later AIFF adapter implements bounded AIFF inventory and typed planning.
-Next complete ASF metadata inventory and WMA input planning,
-preserving tags/artwork and refusing significant unsupported information.
+The [WMA adapter checkpoint](wma-conversion-adapter.md) adds ASF metadata
+inventory and v1/v2 input planning, preserving tested tags/artwork and refusing
+significant unsupported information. Representative timing and other codecs
+remain open.
 Classify compression by actual codec, map big-endian floats correctly to WAV,
 retain all precision/resampling/lossy-generation prompts, and keep input-only
 formats out of output choices. Protected content must be refused. Then test
