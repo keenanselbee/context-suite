@@ -58,8 +58,10 @@ Keep new capabilities unavailable when the corresponding engine is absent.
   Keep 245 reviewed catalog descriptions as the baseline; full MIME coverage or
   an ever-growing catalog is not a prerequisite. Every advertised fact still
   needs evidence, and filename hints must remain distinct from content detection.
-- [ ] Complete the pending reviewed public/private DIFF and COMMIT checkpoint
-  before beginning another major implementation slice.
+- [x] Complete the baseline public/private checkpoint before another major slice:
+  public commits `7037850`, `b46dff9` and `663801f` preserve the combined candidate,
+  cancellation-test correction and revised goal. No goal-owned private changes
+  remained; unrelated changes in both repositories were preserved.
 
 Exit: every launch operation has a declared input/output contract, required
 evidence and an explicit unresolved-decision list, with no ambiguous support claim.
@@ -67,6 +69,10 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
 ### Milestone B: deliver and verify the selected compatibility additions
 
 - [ ] Implement and verify HEIC/AVIF to JPEG/PNG under the policies above.
+  The [initial decoder evaluation](heif-input-evaluation.md) builds isolated
+  libheif/libde265 libraries and passes 24 authored eight-bit orientation, color,
+  alpha and metadata fixtures plus four refusals. Higher precision/ICC/HDR and
+  item-policy coverage, output conversion and production integration remain required.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or

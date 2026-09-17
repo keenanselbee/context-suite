@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.24)
+project(ContextSuiteHeifFixtures LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
+find_package(libheif CONFIG REQUIRED)
+add_executable(ContextSuite.Heif.Fixtures Fixtures.cpp)
+target_link_libraries(ContextSuite.Heif.Fixtures PRIVATE heif)
