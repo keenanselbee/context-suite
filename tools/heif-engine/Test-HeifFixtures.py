@@ -17,9 +17,10 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest().upper()
 
 
-def expected_pixels(orientation, alpha, colored):
+def expected_pixels(orientation, alpha, colored, bits):
     width, height = (48, 64) if orientation >= 5 else (64, 48)
-    result = bytearray()
+    result = []
+    maximum = (1 << bits) - 1
     for y in range(height):
         for x in range(width):
             sx, sy = {
@@ -27,20 +28,21 @@ def expected_pixels(orientation, alpha, colored):
                 4: (x, 47 - y), 5: (y, x), 6: (y, 47 - x),
                 7: (63 - y, 47 - x), 8: (63 - y, x),
             }[orientation]
-            gray = (sx * 7 + sy * 11 + ((sx // 8) ^ (sy // 8)) * 19) & 255
-            opacity = ((sx // 8) % 4) * 85 if alpha else 255
+            gray8 = (sx * 7 + sy * 11 + ((sx // 8) ^ (sy // 8)) * 19) & 255
+            gray = ((gray8 * maximum + 127) // 255 + ((sx + 3 * sy) & ((1 << (bits - 8)) - 1))) & maximum
+            opacity = ((sx // 8) % 4) * (maximum // 3) if alpha else maximum
             if colored:
-                cb = 96 + ((sx // 8) % 4) * 16 - 128
-                cr = 104 + ((sy // 8) % 4) * 16 - 128
+                cb = (96 + ((sx // 8) % 4) * 16 - 128) * (1 << (bits - 8))
+                cr = (104 + ((sy // 8) % 4) * 16 - 128) * (1 << (bits - 8))
                 # Independent full-range BT.709 matrix, retaining sRGB transfer.
                 red = gray + 2 * (1 - 0.2126) * cr
                 blue = gray + 2 * (1 - 0.0722) * cb
                 green = (gray - 0.2126 * red - 0.0722 * blue) / (1 - 0.2126 - 0.0722)
-                result.extend(max(0, min(255, round(value))) for value in (red, green, blue))
+                result.extend(max(0, min(maximum, round(value))) for value in (red, green, blue))
                 result.append(opacity)
             else:
                 result.extend((gray, gray, gray, opacity))
-    return width, height, bytes(result)
+    return width, height, result
 
 
 def main():
@@ -48,6 +50,7 @@ def main():
     parser.add_argument("--decoder-sdk", required=True, type=Path)
     parser.add_argument("--encoder-sdk", required=True, type=Path)
     parser.add_argument("--cmake", required=True, type=Path)
+    parser.add_argument("--bit-depth", type=int, choices=(8, 10, 12), default=8)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     scratch = root / ".codex-temp"
@@ -92,7 +95,7 @@ def main():
             shutil.copy2(library, build / "Release" / library.name)
         executables[name] = build / "Release" / ("ContextSuite.Heif." + name + ".exe")
     fixtures = evidence / "fixtures"
-    run("generate", [executables["Fixtures"], fixtures])
+    run("generate", [executables["Fixtures"], fixtures, args.bit_depth])
     originals = {str(path): digest(path) for path in fixtures.iterdir()}
     if len(originals) != 24:
         raise ValueError("Expected twenty-four authored fixtures.")
@@ -106,14 +109,16 @@ def main():
         metadata = "-metadata" in source.stem
         output = evidence / (source.name + "-decoded")
         info = json.loads(run(source.name, [executables["Probe"], source, output]))
-        width, height, pixels = expected_pixels(orientation, alpha, "-color" in source.stem)
-        actual = (output / "pixels.rgba").read_bytes()
+        width, height, pixels = expected_pixels(orientation, alpha, "-color" in source.stem, args.bit_depth)
+        pixel_bytes = (output / "pixels.rgba").read_bytes()
+        actual = list(pixel_bytes) if args.bit_depth == 8 else [value[0] for value in struct.iter_unpack("<H", pixel_bytes)]
         if (info["width"], info["height"]) != (width, height) or len(actual) != len(pixels):
             raise ValueError("Wrong oriented geometry: " + source.name)
         differences = [abs(a - b) for a, b in zip(actual, pixels)]
         if max(differences) > 1 or any(differences[3::4]):
             raise ValueError("Unexpected decoded pixels: " + source.name + ", max difference " + str(max(differences)))
-        if info["alpha"] != int(alpha) or info["sourceLumaBits"] != 8 or info["topLevelImages"] != 1:
+        if info["alpha"] != int(alpha) or info["sourceLumaBits"] != args.bit_depth or info["decodedBits"] != args.bit_depth or \
+                info["storageBits"] != (8 if args.bit_depth == 8 else 16) or info["topLevelImages"] != 1:
             raise ValueError("Wrong source declarations: " + source.name)
         blocks = [(output / ("metadata-" + str(i) + ".bin")).read_bytes() for i in range(info["metadataCount"])]
         if metadata:
@@ -123,7 +128,8 @@ def main():
         elif blocks:
             raise ValueError("Unexpected fixture metadata: " + source.name)
         results.append({"file": source.name, "facts": info, "maximumPixelDifference": max(differences),
-                        "expectedPixelsSha256": hashlib.sha256(pixels).hexdigest().upper(),
+                        "expectedPixelsSha256": hashlib.sha256(bytes(pixels) if args.bit_depth == 8 else
+                            struct.pack("<" + "H" * len(pixels), *pixels)).hexdigest().upper(),
                         "actualPixelsSha256": digest(output / "pixels.rgba")})
     for extension in ("heic", "avif"):
         content = (fixtures / ("orientation-1." + extension)).read_bytes()
@@ -140,7 +146,7 @@ def main():
                 raise ValueError("Refused input created output: " + source.name)
     if any(digest(Path(name)) != value for group in (inputs, originals) for name, value in group.items()):
         raise ValueError("Source, SDK or fixture changed during verification.")
-    (evidence / "results.json").write_text(json.dumps({"Passed": True, "Fixtures": originals,
+    (evidence / "results.json").write_text(json.dumps({"Passed": True, "BitDepth": args.bit_depth, "Fixtures": originals,
         "Decoded": results, "Refusals": 4, "InputsUnchanged": True}, indent=2) + "\n")
     print("Twenty-four authored decodes and four hostile-input refusals passed.", flush=True)
 

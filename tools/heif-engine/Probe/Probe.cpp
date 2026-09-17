@@ -45,17 +45,23 @@ int wmain(int argc, wchar_t** argv) {
         if (!options) throw std::runtime_error("Options allocation failed.");
         options->strict_decoding = 1;
         options->convert_hdr_to_8bit = 0;
-        Check(heif_decode_image(handle.get(), &decoded, heif_colorspace_RGB, heif_chroma_interleaved_RGBA, options.get()));
+        const int sourceBits = heif_image_handle_get_luma_bits_per_pixel(handle.get());
+        if (sourceBits != 8 && sourceBits != 10 && sourceBits != 12) throw std::runtime_error("Research precision limit.");
+        const int bytesPerSample = sourceBits > 8 ? 2 : 1;
+        Check(heif_decode_image(handle.get(), &decoded, heif_colorspace_RGB,
+            sourceBits == 8 ? heif_chroma_interleaved_RGBA : heif_chroma_interleaved_RRGGBBAA_LE, options.get()));
         std::unique_ptr<heif_image, decltype(&heif_image_release)> pixels(decoded, heif_image_release);
+        const int decodedBits = heif_image_get_bits_per_pixel_range(pixels.get(), heif_channel_interleaved);
+        if (decodedBits != sourceBits) throw std::runtime_error("Decoder changed sample precision.");
         const int width = heif_image_get_primary_width(pixels.get());
         const int height = heif_image_get_primary_height(pixels.get());
         int stride = 0;
         const auto plane = heif_image_get_plane_readonly(pixels.get(), heif_channel_interleaved, &stride);
-        if (!plane || width <= 0 || height <= 0 || uint64_t(width) * height > 40000000 || stride < width * 4)
+        if (!plane || width <= 0 || height <= 0 || uint64_t(width) * height > 40000000 || stride < width * 4 * bytesPerSample)
             throw std::runtime_error("Invalid decoded plane.");
         std::filesystem::create_directory(output);
         std::ofstream rgba(output / "pixels.rgba", std::ios::binary);
-        for (int y = 0; y < height; ++y) rgba.write(reinterpret_cast<const char*>(plane + size_t(y) * stride), width * 4);
+        for (int y = 0; y < height; ++y) rgba.write(reinterpret_cast<const char*>(plane + size_t(y) * stride), width * 4 * bytesPerSample);
         rgba.close();
         if (!rgba) throw std::runtime_error("Cannot write research pixels.");
         heif_item_id ids[32];
@@ -73,14 +79,15 @@ int wmain(int argc, wchar_t** argv) {
             if (!block) throw std::runtime_error("Cannot write research metadata.");
         }
         uint64_t digest = 14695981039346656037ULL;
-        for (int y = 0; y < height; ++y) for (int x = 0; x < width * 4; ++x) {
+        for (int y = 0; y < height; ++y) for (int x = 0; x < width * 4 * bytesPerSample; ++x) {
             digest ^= plane[size_t(y) * stride + x]; digest *= 1099511628211ULL;
         }
         std::cout << "{\"library\":\"" << heif_get_version() << "\",\"width\":" << width
             << ",\"height\":" << height << ",\"topLevelImages\":" << heif_context_get_number_of_top_level_images(ctx.get())
             << ",\"alpha\":" << heif_image_handle_has_alpha_channel(handle.get())
             << ",\"metadataCount\":" << metadataCount
-            << ",\"sourceLumaBits\":" << heif_image_handle_get_luma_bits_per_pixel(handle.get())
+            << ",\"sourceLumaBits\":" << sourceBits << ",\"decodedBits\":" << decodedBits
+            << ",\"storageBits\":" << bytesPerSample * 8
             << ",\"rgbaFnv64\":\"" << std::hex << digest << "\"}\n";
         return 0;
     } catch (const std::exception& error) { std::cerr << error.what() << "\n"; return 1; }

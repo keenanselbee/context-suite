@@ -16,16 +16,20 @@ void Check(heif_error error) {
     if (error.code != heif_error_Ok) throw std::runtime_error(error.message);
 }
 
-uint8_t Gray(int x, int y) {
-    return static_cast<uint8_t>((x * 7 + y * 11 + ((x / 8) ^ (y / 8)) * 19) & 255);
+uint16_t Gray(int x, int y, int bits) {
+    const int value = (x * 7 + y * 11 + ((x / 8) ^ (y / 8)) * 19) & 255;
+    const int maximum = (1 << bits) - 1;
+    const int detail = (x + 3 * y) & ((1 << (bits - 8)) - 1);
+    return static_cast<uint16_t>(((value * maximum + 127) / 255 + detail) & maximum);
 }
 
-uint8_t Alpha(int x, bool enabled) {
-    return enabled ? static_cast<uint8_t>(((x / 8) % 4) * 85) : 255;
+uint16_t Alpha(int x, bool enabled, int bits) {
+    const int maximum = (1 << bits) - 1;
+    return static_cast<uint16_t>(enabled ? ((x / 8) % 4) * (maximum / 3) : maximum);
 }
 
 void Generate(const std::filesystem::path& directory, heif_compression_format codec,
-              const std::string& extension, int orientation, bool alpha, bool metadata, bool colored = false) {
+              const std::string& extension, int bits, int orientation, bool alpha, bool metadata, bool colored = false) {
     std::unique_ptr<heif_context, decltype(&heif_context_free)> context(heif_context_alloc(), heif_context_free);
     if (!context) throw std::runtime_error("Cannot allocate fixture context.");
     heif_encoder* rawEncoder = nullptr;
@@ -48,14 +52,18 @@ void Generate(const std::filesystem::path& directory, heif_compression_format co
     std::unique_ptr<heif_image, decltype(&heif_image_release)> image(rawImage, heif_image_release);
     for (auto channel : {heif_channel_Y, heif_channel_Cb, heif_channel_Cr, heif_channel_Alpha}) {
         if (channel == heif_channel_Alpha && !alpha) continue;
-        Check(heif_image_add_plane(image.get(), channel, Width, Height, 8));
+        Check(heif_image_add_plane(image.get(), channel, Width, Height, bits));
         int stride = 0;
         auto plane = heif_image_get_plane(image.get(), channel, &stride);
-        if (!plane || stride < Width) throw std::runtime_error("Invalid fixture plane.");
-        for (int y = 0; y < Height; ++y) for (int x = 0; x < Width; ++x)
-            plane[size_t(y) * stride + x] = channel == heif_channel_Y ? Gray(x, y) :
-                channel == heif_channel_Alpha ? Alpha(x, alpha) :
-                !colored ? 128 : channel == heif_channel_Cb ? 96 + ((x / 8) % 4) * 16 : 104 + ((y / 8) % 4) * 16;
+        if (!plane || stride < Width * (bits > 8 ? 2 : 1)) throw std::runtime_error("Invalid fixture plane.");
+        for (int y = 0; y < Height; ++y) for (int x = 0; x < Width; ++x) {
+            const int chroma = !colored ? 128 : channel == heif_channel_Cb ?
+                96 + ((x / 8) % 4) * 16 : 104 + ((y / 8) % 4) * 16;
+            const uint16_t value = channel == heif_channel_Y ? Gray(x, y, bits) :
+                channel == heif_channel_Alpha ? Alpha(x, alpha, bits) : static_cast<uint16_t>(chroma << (bits - 8));
+            if (bits == 8) plane[size_t(y) * stride + x] = static_cast<uint8_t>(value);
+            else reinterpret_cast<uint16_t*>(plane + size_t(y) * stride)[x] = value;
+        }
     }
     std::unique_ptr<heif_color_profile_nclx, decltype(&heif_nclx_color_profile_free)>
         color(heif_nclx_color_profile_alloc(), heif_nclx_color_profile_free);
@@ -91,7 +99,9 @@ void Generate(const std::filesystem::path& directory, heif_compression_format co
 
 int wmain(int argc, wchar_t** argv) {
     try {
-        if (argc != 2) throw std::runtime_error("Specify one new fixture directory.");
+        if (argc != 2 && argc != 3) throw std::runtime_error("Specify one new fixture directory and optional bit depth.");
+        const int bits = argc == 3 ? std::stoi(std::wstring(argv[2])) : 8;
+        if (bits != 8 && bits != 10 && bits != 12) throw std::runtime_error("Use 8, 10 or 12 bits.");
         const std::filesystem::path directory(argv[1]);
         if (!directory.is_absolute() || std::filesystem::exists(directory))
             throw std::runtime_error("Fixture directory must be new and absolute.");
@@ -102,11 +112,11 @@ int wmain(int argc, wchar_t** argv) {
         for (auto codec : {heif_compression_HEVC, heif_compression_AV1}) {
             const std::string extension = codec == heif_compression_HEVC ? "heic" : "avif";
             for (int orientation = 1; orientation <= 8; ++orientation)
-                Generate(directory, codec, extension, orientation, false, false);
-            Generate(directory, codec, extension, 1, true, false);
-            Generate(directory, codec, extension, 6, true, true);
-            Generate(directory, codec, extension, 1, false, false, true);
-            Generate(directory, codec, extension, 6, true, true, true);
+                Generate(directory, codec, extension, bits, orientation, false, false);
+            Generate(directory, codec, extension, bits, 1, true, false);
+            Generate(directory, codec, extension, bits, 6, true, true);
+            Generate(directory, codec, extension, bits, 1, false, false, true);
+            Generate(directory, codec, extension, bits, 6, true, true, true);
         }
         heif_deinit();
         return 0;

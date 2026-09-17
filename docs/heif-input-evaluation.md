@@ -1,7 +1,7 @@
 HEIC And AVIF Input Evaluation
 =============================
 
-Status: isolated native builds and 24 authored eight-bit decoder fixtures pass;
+Status: isolated native builds and 72 authored 8/10/12-bit decoder fixtures pass;
 broader fidelity and integration remain open. No production conversion or menu
 capability enabled.
 Owner selected HEIC/AVIF to JPEG/PNG on 2026-09-16.
@@ -112,19 +112,29 @@ Authored orientation, alpha, color and metadata fixtures
 -------------------------------------------------------
 
 The repository-owned [fixture tools](../tools/heif-engine/README.md) now generate
-24 deterministic 64-by-48 inputs. Each codec has all eight orientations, a
+24 deterministic 64-by-48 inputs at each of 8, 10 and 12 bits. Each codec has all eight orientations, a
 partial-alpha stripe pattern, a rotated alpha/EXIF/XMP case and two full-range
 NCLX color cases. C++ fixture generation and Python expected-pixel calculation
 are separate; the decoder consumes compressed inputs through the existing
 decode-only DLLs. The color expectations use a full-range BT.709 matrix with
 sRGB transfer characteristics. They do not test general ICC/HDR conversion.
 
-The current run is
-`.codex-temp/heif-fixtures/6d521c1dedb94a018b47e854eb1f38ea`.
-All **24 decodes and four malformed/oversized refusals pass**. Geometry, alpha,
+The current precision matrix is retained under `.codex-temp/heif-fixtures/`:
+
+| Sample depth | Run | Result |
+| --- | --- | --- |
+| 8 bits | `5831eb7ee63d44ee9bb51d64c0c254d3` | 24 exact-pixel decodes and four refusals |
+| 10 bits | `56614f4441ff4119967b1e5c5cef2005` | 24 exact-pixel decodes and four refusals |
+| 12 bits | `60967d792f654adb8e4b23ddb2a60276` | 24 exact-pixel decodes and four refusals |
+
+All **72 decodes and 12 malformed/oversized refusals pass**. Geometry, alpha,
 EXIF/XMP bytes and original/SDK/source hashes match. RGB channels are checked
 against the authored values with a maximum one-code-value allowance; alpha must
-match exactly. All 24 observed outputs match every expected channel byte exactly.
+match exactly. All 72 observed outputs match every expected channel sample exactly.
+Higher-depth patterns contain low-bit detail, and the probe verifies that decoded
+precision matches the source. Ten- and twelve-bit output uses little-endian
+16-bit storage in the original sample range; a future Q16 bridge must normalize
+that range explicitly. These checks do not establish HDR or arbitrary color support.
 Both formats reject the 24-byte truncation and the oversized
 image declaration without creating decoded outputs. Receipts retain every
 command, exit, log, fixture identity and pixel comparison. This is not JPEG/PNG
@@ -134,7 +144,10 @@ Fixture generation uses a separate encoder-enabled libheif SDK. Its x265 4.3
 source archive comes from the [upstream release](https://github.com/Multicorewareinc/x265/releases/tag/4.3),
 SHA-256 `83C53E4C8BBB8F1E33ED59E10A7D621D1D7801CA853910C3EB41F038B8FFB121`.
 It is built locally with assembly disabled and the static CRT, solely for
-authored HEIC fixtures. The AOM encoder is also enabled only in this separate
+authored HEIC fixtures. A separate `generator-high-sdk` combines locally built
+8/10/12-bit x265 static libraries for higher-depth fixtures; the original
+eight-bit generator SDK remains available. Build logs and the local
+`BuildHeifHighDepth.py` procedure are retained under `.codex-temp`. The AOM encoder is also enabled only in this separate
 SDK. Its native binaries are never placed in the decoder or production stage;
 x265 redistribution is not selected. The earlier downloaded upstream Windows
 archive is retained research material and is not used by these tools.
@@ -145,5 +158,6 @@ used the dynamic CRT. Passing builds specify `X265_LIBRARY` and x265's own
 `STATIC_LINK_CRT=ON`. The first tool invocation at
 `.codex-temp/heif-fixtures/cdd8e5f2f3044897b0cbc0c9561156d7` failed compilation
 because the probe needed an explicit string header; no fixtures ran. The next
-20-fixture grayscale run passed, followed by the current color-expanded run.
+20-fixture grayscale run passed, followed by the eight-bit color-expanded run
+`6d521c1dedb94a018b47e854eb1f38ea` and the precision matrix above.
 None of those failures is substituted for a successful result.

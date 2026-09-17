@@ -70,8 +70,8 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
 
 - [ ] Implement and verify HEIC/AVIF to JPEG/PNG under the policies above.
   The [initial decoder evaluation](heif-input-evaluation.md) builds isolated
-  libheif/libde265 libraries and passes 24 authored eight-bit orientation, color,
-  alpha and metadata fixtures plus four refusals. Higher precision/ICC/HDR and
+  libheif/libde265 libraries and passes 72 authored 8/10/12-bit orientation, color,
+  alpha and metadata fixtures plus 12 refusals. Broader ICC/HDR and
   item-policy coverage, output conversion and production integration remain required.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.

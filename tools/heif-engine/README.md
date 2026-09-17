@@ -14,9 +14,11 @@ encoders. x265 is never copied into the decoder/application candidate. Lossless
 encoding, full-range NCLX and 4:4:4 samples make pixel expectations explicit.
 
 `Probe` requires the separate decoder-only libheif build. It rejects registered
-HEVC/AV1 encoders, decodes strict eight-bit RGBA research output and writes raw
+HEVC/AV1 encoders, decodes strict 8/10/12-bit RGBA research output and writes raw
 pixels and bounded metadata into a new output directory. This is not a production
-admission policy; it does not establish HDR, higher-depth or collection support.
+admission policy; it does not establish HDR or collection support. Higher-depth
+samples use little-endian 16-bit storage with their original 10/12-bit range,
+not values normalized to 65535. The probe rejects changed sample precision.
 Its library allocation limits do not replace Windows job/deadline controls.
 
 `Test-HeifFixtures.py` builds both tools in a fresh repository scratch directory,
@@ -30,7 +32,8 @@ the recorded fixture/engine versions, not general format support.
 python -B tools/heif-engine/Test-HeifFixtures.py `
   --decoder-sdk '<repository-local evaluation>/sdk' `
   --encoder-sdk '<repository-local evaluation>/generator-sdk' `
-  --cmake '<Visual Studio CMake path>/cmake.exe'
+  --cmake '<Visual Studio CMake path>/cmake.exe' `
+  --bit-depth 8
 ```
 
 Both SDKs must be under this repository's `.codex-temp` and must be separate.
@@ -41,8 +44,15 @@ option. Its installed library is `x265-static.lib`, which must be supplied
 explicitly as `X265_LIBRARY` to libheif's configuration. Retain the distinct
 decoder SDK and its binary hashes while preparing the generator SDK.
 
-Fixture generation currently covers eight-bit grayscale/color patterns and partial
-alpha. Other color interpretations/ICC, higher precision, HDR, auxiliary images, grids, collections,
+Run each of `--bit-depth 8`, `10` and `12` for the full precision matrix. The
+10/12-bit HEIC fixtures require an x265 multidepth fixture SDK; retain separate
+build receipts for each depth and the combined static library. Higher-depth
+patterns include low-bit detail to detect an accidental eight-bit intermediate.
+The harness compares sample values, including exact alpha, rather than merely
+checking the declared depth or 16-bit storage size.
+
+Fixture generation covers 8/10/12-bit grayscale/color patterns and partial
+alpha. Other color interpretations/ICC, HDR, auxiliary images, grids, collections,
 JPEG/PNG publication and application recovery remain separate required work.
 Do not redistribute these native builds or upstream example fixtures as part
 of the application without their separate source/license and payload review.
