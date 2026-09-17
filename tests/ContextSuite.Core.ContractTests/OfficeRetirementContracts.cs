@@ -63,12 +63,20 @@ internal static class OfficeRetirementContracts
             {
                 using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(45));
                 var readyPath = Path.Combine(stage, "ready.json");
-                while (!File.Exists(readyPath))
+                string? readyText = null;
+                while (readyText is null)
                 {
                     if (child.HasExited) throw new IOException("Retirement fixture exited before readiness: " + await stderr);
-                    await Task.Delay(20, deadline.Token);
+                    if (File.Exists(readyPath))
+                    {
+                        try { readyText = File.ReadAllText(readyPath); }
+                        // The atomically renamed file can become visible before
+                        // Windows releases its transient rename/share handle.
+                        catch (IOException error) when ((error.HResult & 0xffff) is 32 or 33) { }
+                    }
+                    if (readyText is null) await Task.Delay(20, deadline.Token);
                 }
-                using var ready = JsonDocument.Parse(File.ReadAllText(readyPath));
+                using var ready = JsonDocument.Parse(readyText);
                 var work = ready.RootElement.GetProperty("Work").Deserialize<OfficeExportWork>()!; work.Validate();
                 check(Path.GetDirectoryName(work.DirectoryPath) == root, "Office restart fixture owns its exact context: " + scenario);
                 var record = Path.Combine(root, work.ItemId.ToString("N") + ".ownership");
