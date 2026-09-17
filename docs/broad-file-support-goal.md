@@ -110,6 +110,12 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   stage stays intact. Final combined staging and release adoption remain required.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.
+  The [restricted native evaluation](audio-expanded-input-evaluation.md) now
+  builds with explicit opt-in, passes fifteen configuration guards, seven PE
+  hardening/import checks, 27 input-decoding fixtures and the existing six-target
+  smoke. PCM/float sample oracles pass exactly. Compressed decoder agreement is
+  narrower evidence; WMA duration/delay, Pro/Lossless/Voice fixtures, metadata,
+  application/worker integration and payload adoption remain open.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

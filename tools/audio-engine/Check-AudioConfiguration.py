@@ -20,6 +20,13 @@ EXPECTED = {
 
 
 def main():
+    if len(sys.argv) not in (2, 3) or len(sys.argv) == 3 and sys.argv[2] != "--expanded-inputs":
+        raise ValueError("Use <build directory> [--expanded-inputs]")
+    expanded = len(sys.argv) == 3
+    expected = dict(EXPECTED)
+    if expanded:
+        expected["DECODER"] += " PCM_S8 PCM_S16BE PCM_S24BE PCM_S32BE PCM_F32BE PCM_F64BE PCM_ALAW PCM_MULAW ADPCM_IMA_QT WMAV1 WMAV2 WMAPRO WMALOSSLESS WMAVOICE"
+        expected["DEMUXER"] += " AIFF ASF"
     directory = pathlib.Path(sys.argv[1]).resolve()
     scratch = pathlib.Path(__file__).resolve().parents[2] / ".codex-temp"
     if not directory.is_relative_to(scratch) or directory == scratch:
@@ -29,7 +36,7 @@ def main():
     macros = dict(re.findall(r"^#define\s+(\w+)\s+([01])$", text, re.MULTILINE))
     components = dict(re.findall(r"^#define\s+(\w+)\s+([01])$", paths[1].read_text(), re.MULTILINE))
     actual = {}
-    for category, names in EXPECTED.items():
+    for category, names in expected.items():
         suffix = "_" + category
         enabled = {name.removeprefix("CONFIG_").removesuffix(suffix) for name, value in components.items()
                    if name.startswith("CONFIG_") and name.endswith(suffix) and value == "1"}
@@ -45,7 +52,7 @@ def main():
                  "CONFIG_GPL", "CONFIG_NONFREE", "CONFIG_STATIC"):
         if macros.get(name) != "0":
             raise ValueError("Forbidden or unknown configuration: " + name)
-    result = {"status": "Reviewed configuration only; runtime acceptance pending", "components": actual,
+    result = {"status": "Reviewed configuration only; runtime acceptance pending", "expandedInputs": expanded, "components": actual,
               "headers": {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in paths},
               "checkerSha256": hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()}
     (directory / "configuration.json").write_text(json.dumps(result, indent=2))

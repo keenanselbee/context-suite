@@ -95,6 +95,7 @@ def main():
     for dependency in ("opus", "ogg-vorbis", "lame", "make", "nasm", "zlib"):
         parser.add_argument("--" + dependency, required=True)
     parser.add_argument("--configure-only", action="store_true")
+    parser.add_argument("--expanded-inputs", action="store_true", help="Evaluate AIFF/AIFF-C and ASF/WMA inputs; no additional output codecs")
     args = parser.parse_args()
     if os.name != "nt" or sys.version_info < (3, 14):
         raise ValueError("Use Windows x64 with Python 3.14 or later")
@@ -219,6 +220,10 @@ def main():
         "--enable-filter=aresample", "--x86asmexe=" + nasm, "--pkg-config=sh " + short_path(resolver),
         "--extra-cflags=-MD -GS -guard:cf -guard:ehcont -I" + sdk_path + "/include",
         "--extra-ldflags=-guard:cf -guard:ehcont -CETCOMPAT -DYNAMICBASE -HIGHENTROPYVA -NXCOMPAT -libpath:" + sdk_path + "/lib"]
+    if args.expanded_inputs:
+        additions = {"--enable-decoder=": ",pcm_s8,pcm_s16be,pcm_s24be,pcm_s32be,pcm_f32be,pcm_f64be,pcm_alaw,pcm_mulaw,adpcm_ima_qt,wmav1,wmav2,wmapro,wmalossless,wmavoice",
+                     "--enable-demuxer=": ",aiff,asf"}
+        configure = [value + next((extra for prefix, extra in additions.items() if value.startswith(prefix)), "") for value in configure]
     shell_script = workspace / "build.sh"
     checker = pathlib.Path(__file__).with_name("Check-AudioConfiguration.py")
     if (source / "RELEASE").read_text().strip() != "9.0.1" or (source / "VERSION").exists():
@@ -227,7 +232,7 @@ def main():
         "export TMP=" + shlex.quote(short_path(temporary)) + " TEMP=" + shlex.quote(short_path(temporary)) +
         " TMPDIR=" + shlex.quote(short_path(temporary)) + "\ncd " + shlex.quote(short_path(build)) + "\n" +
         shlex.join(configure) + " > ../configure.log 2>&1\n" +
-        shlex.join([sys.executable.replace("\\", "/"), short_path(checker), short_path(build)]) + " > ../configuration-check.log 2>&1\n" +
+        shlex.join([sys.executable.replace("\\", "/"), short_path(checker), short_path(build), *(["--expanded-inputs"] if args.expanded_inputs else [])]) + " > ../configuration-check.log 2>&1\n" +
         ("" if args.configure_only else shlex.join(make_command) + " > ../build.log 2>&1\n"), newline="\n")
     vswhere = pathlib.Path(os.environ["ProgramFiles(x86)"]) / "Microsoft Visual Studio/Installer/vswhere.exe"
     visual_studio = subprocess.check_output([str(vswhere), "-latest", "-products", "*", "-requires",
@@ -239,6 +244,7 @@ def main():
     command_file.write_text('@echo off\ncall "' + str(vcvars) + '" 10.0.26100.0 > "' + str(workspace / "vsenv.log") + '" 2>&1\n'
         'if errorlevel 1 exit /b 1\n"' + str(bash) + '" --noprofile --norc "' + short_path(shell_script) + '"\nexit /b %errorlevel%\n')
     record = {"status": "Configure-only attempt" if args.configure_only else "Unaccepted candidate build attempt",
+              "expandedInputs": args.expanded_inputs,
               "source": pins["ffmpeg"], "dependencies": {name: {"directory": str(value[0]), "manifestSha256": digest(value[0] / "dependency-build.json")} for name, value in builds.items()},
               "configure": configure, "make": make_command, "scriptSha256": script_sha256,
               "checkerSha256": digest(checker), "visualStudio": visual_studio}

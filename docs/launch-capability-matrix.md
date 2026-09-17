@@ -1,9 +1,9 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.23**. This update records optional HEIC/AVIF
-packaging and exact combined-scratch worker execution separately from reserved
-candidate 1.1.1 capabilities.
+Matrix revision: **2026-09-16.24**. This update records isolated AIFF/WMA native
+decoding evidence. Optional HEIC/AVIF combined-scratch packaging and reserved
+candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. The newly selected inputs below still require customer integration.
@@ -26,8 +26,8 @@ Required compatibility additions selected 2026-09-16:
 | --- | --- | --- |
 | HEIC | JPEG, PNG | Authored SDR adapter/worker, loader, resource-limit, recovery and optional combined-scratch packaging checks pass; broader fidelity, redistribution and formal release adoption pending |
 | AVIF | JPEG, PNG | Authored SDR adapter/worker, loader, recovery and optional combined-scratch packaging checks pass; broader fidelity, redistribution and formal release adoption pending |
-| AIFF | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Planned; exact AIFF/AIFF-C variants, metadata and fidelity matrix pending |
-| WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Planned; exact codec/protection, metadata and fidelity matrix pending |
+| AIFF | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | [Isolated native decoding](audio-expanded-input-evaluation.md) passes authored PCM/float and three compressed-variant fixtures; metadata, target matrix and application integration pending |
+| WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | [Isolated native decoding](audio-expanded-input-evaluation.md) passes v1/v2 supplier comparisons; duration/delay, Pro/Lossless/Voice, protection, metadata and application integration pending |
 
 No output or Optimize capability for these four formats is added. ALAC remains
 a separate evaluation. The [current goal](broad-file-support-goal.md#current-objective-and-completion-plan)

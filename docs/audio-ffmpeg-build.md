@@ -31,6 +31,9 @@ python -B tools/audio-engine/Build-AudioEngine.py `
 ```
 
 `--configure-only` stops before compilation, while retaining the component check.
+`--expanded-inputs` opts into the separate
+[AIFF/WMA decoding candidate](audio-expanded-input-evaluation.md); it does not
+change the default build or enable application capabilities.
 The [dependency runner](audio-dependency-builds.md) and
 [build-tool recipes](audio-build-tools.md) prepare those inputs. The launcher uses
 existing Windows short paths, MSVC's dynamic CRT, explicit local library paths

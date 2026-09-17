@@ -1,6 +1,11 @@
 Isolated Audio Engine Evaluation
 ===============================
 
+The opt-in [AIFF/WMA native evaluation](../../docs/audio-expanded-input-evaluation.md)
+adds restricted input decoders with 27 generated decoding fixtures and fifteen
+configuration guards. Application integration and production adoption remain
+pending; the default build and existing six target choices are unchanged.
+
 The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
 cover tiny recordings, codec-frame boundaries and safe publication/recovery.
 See [commands and exact results](../../docs/short-audio-verification.md): the
