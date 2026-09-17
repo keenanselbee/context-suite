@@ -182,6 +182,14 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   55 checks with 24 five-minute generated-speech conversions and repeats the 339
   short/metadata checks. A continuous-tone Windows reference develops saturated
   DC and Opus correctly refuses it; that pathology and broader acceptance remain open.
+  The later [expanded audio worker checkpoint](expanded-audio-worker-verification.md)
+  composes the repaired WMA runtime and optional Windows Voice provider, adds
+  Pro/Lossless planning with inventoried precision and exercises actual application
+  access admission and copy publication. Its finite 144-input corpus passes
+  1,008 checks with 796 copies, independent WAV comparisons and explicit refusal
+  cases without changing quality bounds; 368 existing audio checks also pass.
+  Customer commands, expanded-input interruption/recovery, surround Pro
+  agreement, broader fidelity and combined adoption remain open.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

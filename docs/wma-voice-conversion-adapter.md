@@ -1,10 +1,13 @@
 Windows Voice Conversion Adapter
 ================================
 
-Status: isolated private integration; customer/worker admission and packaging
+Status: isolated private integration; customer admission and formal packaging
 remain pending, 2026-09-17. The optional provider follows the
 [verified Windows Voice process boundary](wma-voice-windows-evaluation.md).
-It does not repair or use FFmpeg's failing Voice decoder.
+It does not repair or use FFmpeg's failing Voice decoder. The later
+[expanded worker checkpoint](expanded-audio-worker-verification.md) composes this
+provider for actual worker admission and copy publication. Direct-command and
+expanded-input interruption/recovery acceptance remain separate gates.
 
 
 Provider and conversion boundary
@@ -163,6 +166,6 @@ for the refreshed helper identity, timings and unchanged fidelity thresholds.
 
 Remaining work includes missing-component environment acceptance, broader duration/resource
 and real speech/music/mixed-mode coverage, hostile/discontinuous packet timelines,
-actual worker/direct-command publication and recovery, provider packaging,
+direct-command and expanded-input interruption/recovery acceptance, provider packaging,
 supported Windows environments, listening and combined release acceptance.
 The existing 1.1.1 stage and installed application are unchanged.

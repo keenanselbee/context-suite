@@ -1,10 +1,15 @@
 WMA Conversion Adapter
 ======================
 
-Status: isolated WMA v1/v2 conversion verified, 2026-09-16. Customer commands,
-actual-worker admission/publication, representative timing and listening
-acceptance, remaining WMA variants and combined payload adoption are pending.
+Status: isolated WMA v1/v2 conversion verified, 2026-09-16. The later
+[expanded worker checkpoint](expanded-audio-worker-verification.md) admits the
+repaired runtime, adds Pro/Lossless planning and composes Windows Voice for actual
+worker publication. Customer commands, broader fidelity, recovery, representative
+timing/listening acceptance and combined payload adoption remain pending.
 The installed application and reserved combined 1.1.1 stage are unchanged.
+
+The runtime and remaining-work statements below describe their dated checkpoints;
+the linked worker record governs the newer managed composition.
 
 The later [Windows Voice adapter](wma-voice-conversion-adapter.md) is a separate
 optional provider using the system codec and the existing six target encoders.

@@ -55,8 +55,10 @@ internal sealed class AudioConversionExecutor(WorkerClient worker, OutputPublish
                     if (result.Publication?.IsCommitted != true)
                     {
                         var unsupported = error is NotSupportedException or MediaWorkerException { Failure: ImageFailure.UnsupportedInput };
+                        var preservation = error is MediaWorkerException { Failure: ImageFailure.ValidationFailed };
                         result = result with { State = unsupported ? OperationState.Unsupported : OperationState.Failed,
                             Message = unsupported ? "This audio has information or a feature that conversion cannot preserve yet. The original was kept." :
+                                preservation ? "The converted audio did not preserve the sound closely enough. Try WAV. The original was kept." :
                                 "Audio conversion failed safely. Check the source and output folder, then try again." };
                     }
                 }

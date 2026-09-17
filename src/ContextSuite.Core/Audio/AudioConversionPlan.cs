@@ -51,7 +51,7 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
             "pcm_s32le" or "pcm_s32be" or "pcm_f32le" or "pcm_f32be" => 32, "pcm_f64le" or "pcm_f64be" => 64, _ => (int?)null };
         var floating = audio.Codec is "pcm_f32le" or "pcm_f64le" or "pcm_f32be" or "pcm_f64be";
         var lossy = sourceFormat is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus ||
-            audio.Codec is "pcm_alaw" or "pcm_mulaw" or "adpcm_ima_qt" or "wmav1" or "wmav2" or "wmavoice";
+            audio.Codec is "pcm_alaw" or "pcm_mulaw" or "adpcm_ima_qt" or "wmav1" or "wmav2" or "wmapro" or "wmavoice";
         var targetLossy = target is not (AudioFormat.Wave or AudioFormat.Flac);
         if (!lossy && !floating && sourceBits is not (8 or 16 or 24 or 32))
             throw new NotSupportedException("The source precision must be known and supported before conversion.");
@@ -138,7 +138,7 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         ("ogg", "opus") => AudioFormat.Opus,
         ("aiff", "pcm_s8" or "pcm_s16be" or "pcm_s24be" or "pcm_s32be" or "pcm_s16le" or
             "pcm_f32be" or "pcm_f64be" or "pcm_alaw" or "pcm_mulaw" or "adpcm_ima_qt") => null,
-        ("asf", "wmav1" or "wmav2" or "wmavoice") => null,
+        ("asf", "wmav1" or "wmav2" or "wmapro" or "wmalossless" or "wmavoice") => null,
         _ => throw new NotSupportedException("This container and audio codec have no verified conversion policy yet.")
     };
 }

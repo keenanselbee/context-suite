@@ -374,3 +374,11 @@ worker directly, without injecting a runtime. Run `Test-AudioPayload.py '<stage>
 for deployment/inventory and build/release refusal checks. See
 [commands and evidence](../../docs/audio-distribution.md). Default release
 packaging still rejects the audio candidate pending redistribution review.
+
+`Test-ExpandedAudioWorker.py '<repaired build>' '<Voice helper directory>'
+'<95-case system corpus>' '<27-case expanded fixtures>'` builds a disposable
+managed worker payload and exercises AIFF/WMA conversion through access admission
+and transactional copy publication. It verifies exact runtime/helper identities,
+adds representative AIFF tones, retains boundary refusals and records independent
+WAV comparisons. See [worker evidence and open gates](../../docs/expanded-audio-worker-verification.md).
+This does not update formal staging, the installed app or Explorer registration.

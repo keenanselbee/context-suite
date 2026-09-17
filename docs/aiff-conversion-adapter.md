@@ -2,13 +2,14 @@ AIFF Conversion Adapter
 =======================
 
 Status: isolated managed/native adapter verified, 2026-09-16. AIFF is not yet an
-enabled customer command. WMA metadata/planning, actual-worker admission and
-publication, final runtime adoption and human acceptance remain separate work.
+enabled customer command. The later [expanded worker checkpoint](expanded-audio-worker-verification.md)
+adds real-worker publication with boundary and representative AIFF inputs.
+Direct-command/recovery acceptance, final runtime adoption and human acceptance remain open.
 The selected production payload and reserved combined 1.1.1 stage are unchanged.
 
 This builds on the [restricted input engine](audio-expanded-input-evaluation.md).
 The private loader recognizes its exact seven-file identity as an evaluation
-candidate and permits AIFF input only for that identity. The existing curated
+candidate; the later repaired runtime also admits AIFF. The existing curated
 and supplier adapter identities retain their earlier input allowlist. The later
 [WMA checkpoint](wma-conversion-adapter.md) adds separate ASF preservation and
 v1/v2 conversion tests; its AIFF regression retains all fidelity checks.

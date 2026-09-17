@@ -72,7 +72,9 @@ try
             }
             else if (command.Command is "flac-probe" or "flac-optimize" or "audio-file-probe" or "audio-convert")
             {
-                audioFiles ??= new AudioFileAdapter(Path.Combine(AppContext.BaseDirectory, "audio-engine"), args[5]);
+                var audioDirectory = Path.Combine(AppContext.BaseDirectory, "audio-engine");
+                var voiceDirectory = Path.Combine(audioDirectory, "voice");
+                audioFiles ??= new AudioFileAdapter(audioDirectory, args[5], Directory.Exists(voiceDirectory) ? voiceDirectory : null);
                 reply = command.Command switch
                 {
                     "flac-probe" => new(1, command.RequestId, [], AudioSource: await audioFiles.ProbeFlacAsync(command.AudioFile!, lifetime.Token)),

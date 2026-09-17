@@ -142,7 +142,7 @@ internal static class AsfMetadataContracts
         await Reject(FileOf(extra: Object(ExtendedContent, manyFields), extension: Object(Library, namedStream)), "aggregate descriptor budget");
         var empty = ImmutableDictionary<string, string>.Empty;
         AudioProbeFacts Facts(string codec) => new("asf", null, [new(0, "audio", codec, 48000, 2, null, null, null, null, empty)], empty);
-        foreach (var codec in new[] { "wmav1", "wmav2" })
+        foreach (var codec in new[] { "wmav1", "wmav2", "wmapro" })
             foreach (var target in Enum.GetValues<AudioFormat>())
             {
                 var plan = AudioConversionPlan.Create(Facts(codec), target);
@@ -162,7 +162,16 @@ internal static class AsfMetadataContracts
                 check(!plan.AlreadyTarget && plan.RequiredConsent == expected && plan.Channels == 1 &&
                     plan.SampleRate == (target == AudioFormat.Opus ? 48000 : rate), "Voice input-only quality policy " + rate + " / " + target);
             }
-        foreach (var codec in new[] { "wmapro", "wmalossless", "wmavoice", "pcm_s16le" })
+        foreach (var bits in new[] { 16, 24 })
+            foreach (var target in Enum.GetValues<AudioFormat>())
+            {
+                var facts = new AudioProbeFacts("asf", null, [new(0, "audio", "wmalossless", 48000, 2, bits, null, null, "stereo", empty)], empty);
+                var plan = AudioConversionPlan.Create(facts, target);
+                check(!plan.AlreadyTarget && plan.RequiredConsent == AudioConversionConsent.None &&
+                    (target is not (AudioFormat.Wave or AudioFormat.Flac) || plan.SampleBits == bits && plan.RequiresExactSamples),
+                    "WMA Lossless plan preserves known precision without lossy-source warning " + bits + " / " + target);
+            }
+        foreach (var codec in new[] { "wmalossless", "wmavoice", "pcm_s16le" })
         {
             try { AudioConversionPlan.Create(Facts(codec), AudioFormat.Wave); check(false, "unverified WMA codec"); }
             catch (NotSupportedException) { check(true, "WMA plan: unverified codec remains refused " + codec); }

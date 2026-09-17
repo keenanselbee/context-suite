@@ -302,6 +302,11 @@ if (args.Length == 3 && args[0] == "--audio-listening-pack")
     await AudioListeningContracts.RunAsync(args[1], args[2]);
     return 0;
 }
+if (args.Length == 4 && args[0] == "--expanded-audio-worker")
+{
+    await ExpandedAudioWorkerContracts.RunAsync(args[1], args[2], args[3]);
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--audio-conversion-worker")
 {
     var checks = 0;

@@ -15,10 +15,13 @@ skips same-format files without publication or trial admission.
 The owner-selected 2026-09-16 expansion requires AIFF and WMA input to these
 existing six targets. The [AIFF adapter](aiff-conversion-adapter.md) now has
 typed planning, bounded container inventory and isolated native conversion
-evidence. Customer/worker admission and production adoption remain pending.
+evidence. The later [expanded worker checkpoint](expanded-audio-worker-verification.md)
+adds actual copy publication; customer admission and production adoption remain pending.
 The [WMA v1/v2 adapter](wma-conversion-adapter.md) adds bounded ASF inventory,
 protection refusal, text/artwork preservation and exact decoded-sample timing.
-Broader WMA variants/timelines and customer/worker integration remain open.
+The repaired candidate adds Pro/Lossless planning and optional Windows Voice
+worker composition. Broader fidelity/timelines, direct-command acceptance and
+formal packaging remain open.
 Existing quality, resampling and precision consent rules continue to apply.
 ALAC remains a separate evaluation. See the
 [current goal](broad-file-support-goal.md#current-objective-and-completion-plan).
