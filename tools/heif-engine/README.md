@@ -95,3 +95,18 @@ buffer bounds, refusals, cancellation and subsequent decoding. It hashes private
 source identities without copying private source into public outputs. The bridge
 reports capabilities; it is not a conversion admission policy, and this test does
 not validate final JPEG/PNG output, publication or application recovery.
+
+The private image contract host also accepts a new absolute evidence directory,
+`--heif-conversion` and one or more expanded fixture-evidence directories. Build
+the ordinary private image tests, copy their output into fresh repository scratch
+and place the three pinned decoder DLLs in that copy's `heif` subdirectory before
+running. This exercises the actual adapter and existing output validation without
+refreshing a production stage or installed application. Keep the exact host
+inventory and command/exit receipts with the result.
+
+`ColorProfiles` builds the offline BT.709/P3 ICC generator against the selected
+curated-engine artifact directory (`LCMS_ARTIFACTS`). Its generated resources are
+tracked with the private implementation, not published from these tools. A repeat
+generation must match the embedded profiles byte-for-byte. See the evaluation
+record for identities and the independent appearance checks; the generator adds
+no runtime dependency or machine installation.

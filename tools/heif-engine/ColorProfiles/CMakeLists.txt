@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.24)
+project(ContextSuiteHeifColorProfiles LANGUAGES CXX)
+set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
+add_executable(ContextSuite.Heif.ColorProfiles Profiles.cpp)
+target_compile_features(ContextSuite.Heif.ColorProfiles PRIVATE cxx_std_20)
+target_compile_options(ContextSuite.Heif.ColorProfiles PRIVATE /W4 /WX /utf-8)
+target_include_directories(ContextSuite.Heif.ColorProfiles SYSTEM PRIVATE "${LCMS_ARTIFACTS}/include/lcms")
+target_link_libraries(ContextSuite.Heif.ColorProfiles PRIVATE "${LCMS_ARTIFACTS}/lib/CORE_RL_lcms_.lib")

@@ -73,11 +73,12 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   libheif/libde265 libraries and passes 126 authored 8/10/12-bit orientation, color,
   alpha, ICC/metadata and item-structure fixtures plus 12 refusals. Explicit NCLX
   passthrough preserves source samples; the private bridge must carry the source
-  color declaration separately. Final color/HDR and item-policy coverage, output
-  conversion and production integration remain required.
+  color declaration separately. Broader color/HDR and item-policy coverage,
+  conversion acceptance and production integration remain required.
   The private in-memory bridge now passes 2,420 ABI, sample/profile, cancellation
-  and refusal checks against the same corpus; managed admission, final encoding
-  and application integration are not yet implemented.
+  and refusal checks against the same corpus. The private adapter now passes
+  1,755 checks with 216 JPEG/PNG outputs and independent SDR appearance comparisons;
+  broader variants, menu/worker integration and final packaging remain required.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or

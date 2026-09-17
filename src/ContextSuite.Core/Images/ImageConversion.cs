@@ -5,7 +5,7 @@ using ContextSuite.Core.Dds;
 
 namespace ContextSuite.Core.Images;
 
-public enum ImageFormat { Png, Jpeg, WebP, Bmp, Tga, Dds }
+public enum ImageFormat { Png, Jpeg, WebP, Bmp, Tga, Dds, Heic, Avif }
 public enum ImageMetadataMode { Preserve, RemoveDescriptive, Automatic }
 
 // EXIF-compatible units: 1 = aspect only, 2 = pixels/inch, 3 = pixels/cm.
@@ -74,7 +74,7 @@ public sealed record ImageConversionOptions(ImageFormat Target, uint Quality = 9
         if ((Target == ImageFormat.Dds && Texture is null) || ExtractMip > 14 ||
             (ExtractMip is not null && (Texture is null || Target == ImageFormat.Dds)) || (Texture is not null && MaximumDimension is not null))
             throw new InvalidDataException("DDS conversion requires texture options; mip extraction must be explicit and resizing is not yet implemented.");
-        if (!Enum.IsDefined(Target) || !Enum.IsDefined(Metadata) || Quality is < 1 or > 100 ||
+        if (!Enum.IsDefined(Target) || Target is ImageFormat.Heic or ImageFormat.Avif || !Enum.IsDefined(Metadata) || Quality is < 1 or > 100 ||
             MaximumDimension is 0 or > 16384 || MatteRgb > 0xffffff ||
             (WebPLossless && Target != ImageFormat.WebP) || (MatteRgb is not null && SupportsAlpha))
             throw new InvalidDataException("Conversion options are invalid or contradictory.");
@@ -182,6 +182,8 @@ public static class ImageConversionPlanner
         var depth = options.Target == ImageFormat.Png && source.BitDepth > 8 ? 16u : 8u;
         var warnings = ImmutableArray.CreateBuilder<OperationWarning>();
         var blocked = source.UnsupportedReason;
+        if (source.Format is ImageFormat.Heic or ImageFormat.Avif && options.Target is not (ImageFormat.Jpeg or ImageFormat.Png))
+            blocked ??= "HEIC and AVIF input currently support JPEG and PNG output only.";
         if (options.Metadata == ImageMetadataMode.Automatic && (source.Format == ImageFormat.Dds || options.Target == ImageFormat.Dds))
             blocked ??= "Choose the explicit image information policy in the DDS dialog.";
         if (source.Format == options.Target && source.Format != ImageFormat.Dds) blocked ??= "Same-format re-encoding belongs to Optimize.";

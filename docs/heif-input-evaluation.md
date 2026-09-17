@@ -1,9 +1,9 @@
 HEIC And AVIF Input Evaluation
 =============================
 
-Status: isolated native builds and 126 authored 8/10/12-bit decoder fixtures pass;
-broader fidelity and integration remain open. No production conversion or menu
-capability enabled.
+Status: native decoding and private adapter conversion pass isolated checks,
+including 216 JPEG/PNG outputs; broader fidelity and integration remain open.
+No packaged engine or customer menu capability enabled.
 Owner selected HEIC/AVIF to JPEG/PNG on 2026-09-16.
 
 The existing curated Q16 engine deliberately excludes HEIF and AV1 delegates.
@@ -229,8 +229,9 @@ Native allocation ownership stays inside the bridge; copies require an exact
 caller buffer size, and every failed decode leaves a null result. The bridge
 accepts cancellation callbacks and applies the existing 40-million-pixel and
 16,384-dimension bounds, plus explicit library allocation/item/tile limits.
-Worker job/deadline enforcement and managed payload identity loading are still
-required at integration. The bridge performs no filesystem or network operations.
+The managed adapter below now supplies payload identity checks. Worker job/deadline
+enforcement still requires integrated verification. The bridge performs no
+filesystem or network operations.
 
 The isolated build at
 `.codex-temp/heif-bridge/4f584b8f3d684488bf87b12b990eaf21` uses the unchanged
@@ -253,6 +254,78 @@ This is a decoding primitive. It deliberately reports collections, HDR transfer
 signals and auxiliary capabilities rather than authorizing their conversion.
 Managed admission must enforce the selected still-image policy, consistent color
 and EXIF/container orientation, alpha handling and mandatory-copy exceptions.
-It is not yet called by the application or included in a production payload.
-Actual JPEG/PNG conversion, appearance checks, grid/auxiliary/hostile coverage and
-worker/publication recovery remain required.
+The managed adapter below now uses it for verified JPEG/PNG conversion and
+appearance checks. It remains absent from production payloads; broader
+grid/auxiliary/hostile coverage and worker/publication recovery remain required.
+
+
+Managed adapter conversion and color appearance
+-----------------------------------------------
+
+The private image adapter now loads the exact three-file decoder candidate from
+an optional `heif` directory beside the worker. It checks compiled-in SHA-256
+identities and DLL membership, rejects linked paths and retains read leases.
+The managed/native boundary checks dimensions, profile sizes and ABI values and
+retains cancellation. Default production packaging does not supply this directory.
+
+HEIC/AVIF are input-only enum values. The shared planner permits only JPEG/PNG,
+rejects them as targets and excludes them from image-to-PDF. The adapter currently
+admits ordinary `hvc1`/`av01` items with verified SDR color interpretation; grids,
+premultiplied alpha, HDR signals, collections, sequences and other auxiliary
+content remain refused. Nontrivial EXIF/XMP orientation is refused until the
+container/metadata conflict policy is verified. Chroma, limited-range, grids,
+missing/conflicting color declarations and hostile-property coverage still need
+expansion before customer capability registration. Source compression is treated
+conservatively as potentially lossy; encoded losslessness is not identified yet.
+
+Original RGB ICC profiles remain attached to unchanged samples. For NCLX-only
+BT.709 or Display P3, small embedded ICC profiles describe the existing samples;
+this preserves their gamut and transfer characteristics in JPEG/PNG. The authored
+[profile generator](../tools/heif-engine/ColorProfiles/Profiles.cpp) calls Little
+CMS's [RGB profile API](https://github.com/mm2/Little-CMS/blob/master/src/cmsvirt.c)
+using declared D65 primaries and inverse BT.709/sRGB transfer curves. It uses the
+already-selected curated-engine Little CMS artifact only during generation;
+no additional runtime library is introduced. Creation dates and optional IDs
+are normalized for reproducible output. The retained build/repeat receipts are
+under `.codex-temp/heif-profiles/5285435955f54c7894b5d47dd8936df1`.
+
+| Generated profile | SHA-256 |
+| --- | --- |
+| BT.709 | `91E576DD1E810BEBCDC730AA8697329E4344E629A3579CC00C1928E71F89F761` |
+| Display P3 | `067AC7D51AD60A72E74EB1138F5A6E8797BDFE082D0E7E6987D8820862CDB6CB` |
+
+The final isolated run at
+`.codex-temp/heif-conversion/aa0e93ec7b0449e287272a85c488f177` passes **1,755
+checks and 216 JPEG/PNG outputs**: 108 admitted sources across both codecs and
+three depths, with the remaining 18 HDR/collection sources refused. PNG samples
+match independently authored values exactly after Q16 normalization. JPEG pixels
+match encoding of those independent values with the selected quality/matte.
+Original ICC bytes, alpha, orientation, mandatory copies and source hashes pass.
+This JPEG comparison verifies adapter consistency, not a second JPEG encoder.
+Twelve BT.709/P3 preview comparisons use independent transfer-curve and ICC-matrix
+arithmetic; observed maximum error is one 8-bit channel value (allowance two).
+
+Two real correctness issues were fixed without weakening output validation:
+gray-looking RGB data must retain RGB storage when paired with an RGB ICC profile,
+and previews now explicitly use Magick.NET's high-resolution color transform.
+The default quantum transform produced red value 5 where the independent matrix
+and direct Little CMS transform expected approximately 1 for the tested dark P3
+pixel. Changing rendering intent or an artifact flag alone did not fix it; the
+explicit `ColorTransformMode.HighRes` overload did. PNG/JPEG keep their original
+color profile and samples; this display correction does not force sRGB output.
+
+Retained failures include initial managed compilation with an incorrect search-
+flag name; `dcfbd1cd5e304af7b8695dd69deab3a7` and
+`c4879f348e60498f8f9f91b990eff714` withheld invalid grayscale/RGB-ICC PNG output.
+`b7db5419729745769b43bdf1c4553a17`, `ea57841f71a6493e87279fec1ce13567`,
+`5b4760ee50bd4ab682d7e44dfb0a9687`, `f8b27a5a6e5e4d33a9c0205f3e5b6b93` and
+`f97f7b2d14f441cab042c19725c99e2a` retain the failed appearance investigation.
+The first successful conversion-only run `a6e46da17efd4ffaa97cc22ed1dd2c6b`
+did not establish display fidelity; `da8b1c9aeb81432f90c88ac60af2ecd7` passed
+the appearance checks before the final matte/copy checks were added.
+
+Release builds have zero warnings/errors. The existing **942 image/adapter**
+and **4,130 foundation** contracts pass. These do not replace actual worker,
+publication/recovery, native payload safety, packaging or human acceptance for
+the newly added inputs. The reserved 1.1.1 stage and installed application remain
+unchanged; a future combined candidate needs a fresh version.

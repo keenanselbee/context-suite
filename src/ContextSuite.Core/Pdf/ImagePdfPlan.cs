@@ -11,7 +11,7 @@ public sealed record ImagePdfPage(ImageSourceFacts Source, uint Width, uint Heig
     {
         ArgumentNullException.ThrowIfNull(source);
         source.Validate();
-        if (source.Format == ImageFormat.Dds || source.UnsupportedReason is not null ||
+        if (source.Format is ImageFormat.Dds or ImageFormat.Heic or ImageFormat.Avif || source.UnsupportedReason is not null ||
             source.FileBytes > 128L * 1024 * 1024 || (long)source.Width * source.Height > 16_000_000)
             throw new NotSupportedException("This image cannot currently be placed in a PDF without losing supported image information.");
         var rotated = source.Orientation is >= 5 and <= 8;
