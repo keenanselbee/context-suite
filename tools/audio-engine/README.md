@@ -44,6 +44,9 @@ explicit Windows Voice decoder against retained samples from the same system
 codec. It passes 36 exact comparisons, eight malformed-input refusals and four
 ownership/input guards. See [scope and next integration work](../../docs/wma-voice-windows-evaluation.md).
 It neither selects a shipping provider nor fixes the FFmpeg waveform differences.
+The helper's later `--inherited` mode also passes 52 private process checks using
+the existing read-only snapshot/pipe/job launcher. The linked evaluation records
+the typed sample header, cancellation/owner-death evidence and reproduction.
 
 The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
 cover tiny recordings, codec-frame boundaries and safe publication/recovery.

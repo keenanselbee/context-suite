@@ -161,8 +161,12 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   now passes 36 exact reference outputs, eight malformed-input refusals and four
   ownership/input guards. It uses the reference's same system codec; it does not
   fix FFmpeg's 32 waveform failures or clear independent fidelity acceptance.
-  Next define the provider/OS-availability policy and inherited-handle/job boundary,
-  then integrate six-target encoding, metadata and actual-worker recovery.
+  Its later inherited-handle mode now passes 52 private process checks through
+  the existing suspended-start/handle-list/job launcher, including exact samples,
+  malformed refusals, active cancellation/deadline, abrupt owner death and recovery.
+  The refreshed native helper repeats all 48 earlier checks. Provider/OS-availability
+  policy, full ASF admission, six-target encoding, metadata and actual-worker
+  recovery remain required; the process test does not enable customer commands.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the
