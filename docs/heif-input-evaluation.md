@@ -2,8 +2,9 @@ HEIC And AVIF Input Evaluation
 =============================
 
 Status: native, adapter and actual-worker conversion pass isolated checks,
-including 336 JPEG/PNG outputs published by application orchestration. Broader
-fidelity, in-flight interruption and packaging remain open. No production engine
+including 336 JPEG/PNG outputs published by application orchestration, native
+interruption/recovery and loader checks. Broader fidelity and packaging remain
+open. No production engine
 packaged or capability registration added.
 Owner selected HEIC/AVIF to JPEG/PNG on 2026-09-16.
 
@@ -534,3 +535,67 @@ Remaining gates include that limit/category fix, broader realistic-file
 interoperability, independently reviewed redistribution, engine adoption and
 production packaging, budgets and visible acceptance. The reserved 1.1.1 stage
 and installed application remain unchanged.
+
+
+Reproducible decoder build and NAL-limit correction
+--------------------------------------------------
+
+The [pinned build recipe](../tools/heif-engine/Build-HeifEngine.py) now creates a
+fresh isolated SDK and decoder payload from the verified release archives and
+selected AOM artifact files in [source inputs](../tools/heif-engine/source-inputs.json).
+It bounds extraction, rejects linked archive entries, retains original source
+inventories, and applies the narrow
+[libheif patch](../tools/heif-engine/libheif-de265-push-errors.patch).
+The patch returns failed libde265 NAL-push results instead of discarding them;
+resource/security-limit and allocation errors retain their category. It does
+not increase limits or change decoding. These native statuses already map to
+the worker's existing resource-limit guidance.
+
+The build at `.codex-temp/heif-engine/fbdde3d851ed43b08d28acc70a87882e` succeeds.
+Post-build review verifies all **884 original source files**, with exactly the
+reviewed patch changed. CMake, command/exit logs, input identities and original/
+patched inventories are retained. libheif emits one upstream C4805 warning for
+a bool/byte comparison in `context.cc`; this is not a zero-warning native build.
+Managed worker/contract builds have zero warnings and errors.
+
+| Payload file | SHA-256 |
+| --- | --- |
+| `ContextSuite.Heif.Native.dll` | `55AC6DF9292D876C5689627563E846DD1F21A1CBCF5F4799879CFF8D9F71CF09` |
+| `heif.dll` | `3A847A8AE5109BB03D4102498A523E8750AF19529813DF57931CFFB668CF100B` |
+| `libde265.dll` | `A0AB26C9C05B5A92D45A6852BACF5B61A46A48A6A1F36D54A36336B7F26620CF` |
+
+The three DLLs total **3,636,224 bytes**, before notices/source materials. PE
+dependency inspection finds only the other listed decoder DLLs and KERNEL32.
+The bridge binary is unchanged; the private loader now pins the rebuilt
+libheif/libde265. This is a controlled source-build recipe, not a claim that
+timestamp-bearing upstream DLLs reproduce byte-for-byte in every build.
+
+The [stress build runner](../tools/heif-engine/Build-HeifStress.py) now generates
+both ordinary interruption inputs and, with `--oversized-nal`, the limit fixture.
+New 3072-square receipts are at
+`.codex-temp/heif-stress/4d2d5816f57c43629314571d247d309f`; the 4096-square
+receipts are at `f51564e516b949b1b7db47bdc5052244` under the same parent.
+Both oversized files exactly reproduce the previously retained bytes. The
+large HEIC now returns resource-limit status, not invalid-input status.
+
+| Verification | Final evidence under `.codex-temp/` | Result |
+| --- | --- | --- |
+| Bridge, repeated NAL refusal and ordinary recovery | `heif-bridge-tests/42c79b21699442cf9d368d8abed10308` | 3,634 checks over 186 authored inputs |
+| Actual worker/publication plus repeated NAL refusal and same-worker recovery | `heif-worker/39fcea360a214ee8a4d9f26622e7375a` | 1,181 checks; 336 published outputs |
+| Active-native cancellation, termination and controlled deadline | Same worker evidence, `interruption/results.json` | 38 checks, all six format/fault cases |
+| Loader ownership/refusals with new pins | `heif-loader/f0f827d5649245fba1864a753c754f5d` | 25 checks |
+| Managed output validation and independent SDR appearance | `heif-conversion/d37db1d1e44c429cb000fe0887b03cbf` | 2,819 checks; 336 outputs |
+
+The first recipe attempt `heif-engine/f0218f0c82dc432b9e063dad4e7db648` stopped
+at patch application because of CRLF patch text. Patch files now require LF.
+The second `7b8af03690c14ad483e16e746e1de44d` stopped at source-membership
+verification because Windows path separators differed from the expected key;
+inventory keys now use forward slashes. Neither attempt built/adopted an engine.
+All failures remain retained. The final successful build/checks above supersede
+those attempts without replacing the earlier baseline evidence.
+
+Source/license redistribution, engine adoption in production packaging, broader
+realistic-file interoperability, performance budgets and visible acceptance
+remain open. The previous general image/foundation and Office lease results
+were not rerun for this dependency-pin slice. No release version, formal 1.1.1
+stage, installed application, Explorer registration or live service changed.

@@ -1,0 +1,24 @@
+--- a/libheif/plugins/decoder_libde265.cc
++++ b/libheif/plugins/decoder_libde265.cc
+@@ -358,7 +358,20 @@
+ #endif
+ 
+     // The codec hands this opaque pointer back unchanged; it carries an integer, not an address.
+-    de265_push_NAL(decoder->ctx, cdata + ptr, nal_size, 0, (void*)user_data); // NOLINT(performance-no-int-to-ptr)
++    const auto pushed = de265_push_NAL(decoder->ctx, cdata + ptr, nal_size, 0, (void*)user_data); // NOLINT(performance-no-int-to-ptr)
++    if (pushed == DE265_ERROR_NAL_SIZE_EXCEEDS_SECURITY_LIMIT ||
++        pushed == DE265_ERROR_IMAGE_SIZE_EXCEEDS_SECURITY_LIMIT) {
++      return {heif_error_Memory_allocation_error, heif_suberror_Security_limit_exceeded,
++              de265_get_error_text(pushed)};
++    }
++    if (pushed == DE265_ERROR_OUT_OF_MEMORY) {
++      return {heif_error_Memory_allocation_error, heif_suberror_Unspecified,
++              de265_get_error_text(pushed)};
++    }
++    if (pushed != DE265_OK) {
++      return {heif_error_Decoder_plugin_error, heif_suberror_Unspecified,
++              de265_get_error_text(pushed)};
++    }
+     ptr += nal_size;
+   }
+ 

@@ -1,7 +1,7 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.18**. This update records isolated HEIC/AVIF worker
+Matrix revision: **2026-09-16.19**. This update records isolated HEIC/AVIF worker
 and direct-command conversion separately from combined candidate 1.1.1 capabilities.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
@@ -23,7 +23,7 @@ Required compatibility additions selected 2026-09-16:
 
 | Input | Required target commands | Current state |
 | --- | --- | --- |
-| HEIC | JPEG, PNG | Authored SDR adapter/worker, loader and active-native recovery checks pass; single-NAL limit wording, broader variants, engine adoption and packaging pending |
+| HEIC | JPEG, PNG | Authored SDR adapter/worker, loader, resource-limit and active-native recovery checks pass; broader variants, redistribution, engine adoption and packaging pending |
 | AVIF | JPEG, PNG | Authored SDR adapter/worker, loader and active-native recovery checks pass; broader variants, engine adoption and packaging pending |
 | AIFF | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Planned; exact AIFF/AIFF-C variants, metadata and fidelity matrix pending |
 | WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Planned; exact codec/protection, metadata and fidelity matrix pending |

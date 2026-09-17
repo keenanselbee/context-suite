@@ -62,6 +62,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bridge", required=True, type=Path)
     parser.add_argument("--fixture-evidence", required=True, action="append", type=Path)
+    parser.add_argument("--limit-fixture", type=Path, help="Authored HEIC exceeding the pinned decoder NAL limit")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     bridge = args.bridge.resolve(strict=True)
@@ -72,6 +73,10 @@ def main():
     inputs = {str(path): digest(path) for path in (
         bridge, bridge.parent / "heif.dll", bridge.parent / "libde265.dll", Path(__file__).resolve())}
     inputs.update({str(path): digest(path) for path in (root / "proprietary/src/ContextSuite.Heif.Native").iterdir() if path.is_file()})
+    limit = args.limit_fixture.resolve(strict=True) if args.limit_fixture else None
+    if limit:
+        limit.relative_to(root / ".codex-temp")
+        inputs[str(limit)] = digest(limit)
     directories = [path.resolve(strict=True) for path in args.fixture_evidence]
     for folder in directories:
         folder.relative_to(root / ".codex-temp/heif-fixtures")
@@ -108,6 +113,13 @@ def main():
     observations = []
     refusals = []
     null_callback = callback_type()
+    if limit:
+        data = ctypes.create_string_buffer(limit.read_bytes())
+        for attempt in range(2):
+            result = ctypes.c_void_p(123)
+            status = native.cs_heif_decode(data, len(data) - 1, null_callback, None, ctypes.byref(result))
+            check(status == 4 and not result.value, "Oversized HEVC NAL retains resource-limit status and no native result")
+        # The ordinary corpus below must still decode in this same process.
     for folder in directories:
         baseline = json.loads((folder / "results.json").read_text())
         check(baseline["Passed"] and baseline["InputsUnchanged"], "Passing baseline required")

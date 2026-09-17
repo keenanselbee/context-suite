@@ -11,7 +11,7 @@ namespace ContextSuite.Core.ContractTests;
 
 internal static class HeifWorkerContracts
 {
-    public static async Task RunAsync(string executable, string withoutEngine, string damagedEngine, string bridgeEvidence, string root, string[] fixtures)
+    public static async Task RunAsync(string executable, string withoutEngine, string damagedEngine, string bridgeEvidence, string root, string[] fixtures, string? limitFixture = null)
     {
         if (!Path.IsPathFullyQualified(root) || Directory.Exists(root)) throw new ArgumentException("Use a new absolute evidence directory.");
         Directory.CreateDirectory(root);
@@ -66,6 +66,18 @@ internal static class HeifWorkerContracts
             }
         }
         var valid = sources.First(source => source.Format == ImageFormat.Heic);
+        if (limitFixture is not null)
+        {
+            var oversized = Path.Combine(originals, "oversized-nal.heic");
+            File.Copy(limitFixture, oversized);
+            snapshots.Add(oversized, (Hash(oversized), File.GetLastWriteTimeUtc(oversized)));
+            var processId = worker.ProcessId;
+            await RejectAsync(oversized, ImageFailure.ResourceLimit);
+            await RejectAsync(oversized, ImageFailure.ResourceLimit);
+            var recovered = await worker.ProbeAsync(new(Guid.NewGuid(), valid.Path), default);
+            Check(worker.ProcessId == processId && recovered.Sha256 == valid.Sha256,
+                "Valid HEIC recovers in the same worker after repeated NAL-limit refusal");
+        }
         using (var boundaries = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(bridgeEvidence, "results.json"))))
         {
             Check(boundaries.RootElement.GetProperty("Passed").GetBoolean(), "Passing malformed-grid baseline");

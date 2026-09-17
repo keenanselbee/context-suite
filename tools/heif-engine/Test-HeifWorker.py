@@ -21,6 +21,7 @@ def main():
     parser.add_argument("--bridge", required=True, type=Path)
     parser.add_argument("--fixture-evidence", required=True, action="append", type=Path)
     parser.add_argument("--grid-evidence", required=True, type=Path)
+    parser.add_argument("--limit-fixture", type=Path)
     parser.add_argument("--stress-evidence", type=Path,
                         help="Also verify interruption during observed native decoding")
     args = parser.parse_args()
@@ -33,6 +34,10 @@ def main():
     for path in [bridge, grid, *fixtures, *([stress] if stress else [])]:
         path.relative_to(scratch)
     inputs = {}
+    limit = args.limit_fixture.resolve(strict=True) if args.limit_fixture else None
+    if limit:
+        limit.relative_to(scratch)
+        inputs[str(limit)] = digest(limit)
     for folder in [grid, *fixtures, *([stress] if stress else [])]:
         result = json.loads((folder / "results.json").read_text())
         if not result["Passed"]:
@@ -88,7 +93,7 @@ def main():
     (evidence / "payloads.json").write_text(json.dumps(payloads, indent=2) + "\n")
     print(run("contracts", [host / "ContextSuite.Core.ContractTests.exe", "--heif-worker",
         worker / "ContextSuite.Worker.exe", absent / "ContextSuite.Worker.exe", damaged / "ContextSuite.Worker.exe",
-        grid, evidence / "results", *fixtures]).decode(), flush=True)
+        grid, evidence / "results", *fixtures, *(["--limit-fixture", limit] if limit else [])]).decode(), flush=True)
     if stress:
         print(run("interruption", [host / "ContextSuite.Core.ContractTests.exe", "--heif-interruption",
             worker / "ContextSuite.Worker.exe", stress / "fixtures", evidence / "interruption"]).decode(), flush=True)

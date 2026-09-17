@@ -20,7 +20,9 @@ if (args is ["--heif-interruption", var interruptionWorker, var interruptionFixt
 
 if (args.Length >= 7 && args[0] == "--heif-worker")
 {
-    await HeifWorkerContracts.RunAsync(args[1], args[2], args[3], args[4], args[5], args[6..]);
+    var hasLimitFixture = args.Length >= 9 && args[^2] == "--limit-fixture";
+    await HeifWorkerContracts.RunAsync(args[1], args[2], args[3], args[4], args[5],
+        hasLimitFixture ? args[6..^2] : args[6..], hasLimitFixture ? args[^1] : null);
     return 0;
 }
 

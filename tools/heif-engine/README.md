@@ -6,6 +6,30 @@ These are research and verification tools, not application engines. Follow the
 retained command receipts and remaining acceptance. No production stage or menu
 is changed by these tools.
 
+
+Pinned decoder build
+--------------------
+
+`Build-HeifEngine.py` verifies the release archives and selected AOM files in
+`source-inputs.json`, extracts fresh bounded source trees, applies the reviewed
+`libheif-de265-push-errors.patch`, and builds libde265, libheif and the private
+bridge. It retains archive/source/patch identities, command exits, logs, a local
+SDK and a three-DLL `payload`. The build does not update application pins or
+register/adopt the engine. The AOM static artifact is verified, not rebuilt.
+
+```powershell
+python -B tools/heif-engine/Build-HeifEngine.py `
+  --sources '<repository scratch directory containing libheif.tar.gz and libde265.tar.gz>' `
+  --aom '<repository scratch selected AOM artifact directory>' `
+  --cmake '<Visual Studio CMake path>/cmake.exe'
+```
+
+The local patch preserves the decoder's NAL-size/image-size and allocation errors
+instead of discarding them. It changes no limit or media transformation. Use the
+generated bridge in `Test-HeifBridge.py`, `Test-HeifWorker.py` and
+`Test-HeifLoader.py` before accepting new private binary pins. Source/license
+redistribution, formal payload adoption and commercial clearance remain separate.
+
 `Fixtures` creates twenty-four independently authored 64-by-48 patterns:
 all eight orientations, alpha stripes and a rotated alpha image with EXIF/XMP,
 for both HEIC and AVIF, plus full-range BT.709 matrix color patterns with sRGB
@@ -148,15 +172,13 @@ preloaded-library, junction, hard-link, extra-library and missing-library cases.
 Inputs must be under repository scratch. The preloaded case uses another copy
 of the trusted libde265; all filesystem changes stay within those test copies.
 
-Build `Stress` with Visual Studio 18 x64 and `CMAKE_PREFIX_PATH` pointing to the
-pinned fixture encoder SDK. Copy its `heif.dll` and the pinned decoder SDK's
-`libde265.dll` beside the resulting `ContextSuite.Heif.Stress.exe`, then pass a
-new absolute fixture directory. It writes `stress.heic` and `stress.avif` using
-3072-square 8-bit noise. Keep fixture encoders out of production payloads.
-Retain configure/build/generate command and exit receipts, an `inputs.json`
-mapping source/SDK absolute paths to SHA-256 hashes, and `results.json` with
-`Passed: true` and a `Fixtures` path-to-hash map, beside the `fixtures` directory.
-The evaluation document identifies the passing retained generation receipt.
+`Build-HeifStress.py --encoder-sdk '<pinned fixture SDK>' --decoder-sdk '<pinned
+decoder SDK>' --cmake '<Visual Studio CMake path>/cmake.exe'` builds `Stress` in
+a fresh scratch directory, creates 3072-square 8-bit noise HEIC/AVIF files and
+retains source/SDK/fixture identities and configure/build/generate receipts.
+Add `--oversized-nal` for a separate 4096-square corpus whose HEIC exceeds the
+decoder's 16 MiB NAL limit. Keep fixture encoders out of production payloads.
+The evaluation document identifies passing retained generation receipts.
 
 Pass that directory as `--stress-evidence '<passing stress evidence>'` to the
 worker harness. After the ordinary worker suite, it observes the owned worker's
@@ -165,3 +187,6 @@ or controlled deadline expiry. It records typed results, unchanged originals,
 no partial publication and fresh-worker recovery for each codec/fault. The x64
 context offsets are checked against the Windows SDK by the generator build.
 This test briefly suspends only an identified thread in its own disposable worker.
+Add `--limit-fixture '<oversized corpus>/fixtures/stress.heic'` to both the bridge
+and worker harnesses to require a resource-limit result on repeated refusals,
+with later ordinary inputs still working in the same native process.

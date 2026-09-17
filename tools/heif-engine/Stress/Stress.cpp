@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 
 // Match the x64 test-only thread-context sampler to the installed Windows SDK.
 static_assert(sizeof(CONTEXT) == 1232 && offsetof(CONTEXT, ContextFlags) == 48 && offsetof(CONTEXT, Rip) == 248);
@@ -18,7 +19,8 @@ static void Check(heif_error error) {
 
 int wmain(int argc, wchar_t** argv) {
     try {
-        if (argc != 2 || !std::filesystem::path(argv[1]).is_absolute() || std::filesystem::exists(argv[1]))
+        if ((argc != 2 && argc != 3) || (argc == 3 && std::wstring_view(argv[2]) != L"--oversized-nal") ||
+            !std::filesystem::path(argv[1]).is_absolute() || std::filesystem::exists(argv[1]))
             throw std::runtime_error("Use a new absolute stress fixture directory.");
         Check(heif_init(nullptr));
         std::filesystem::create_directory(argv[1]);
@@ -38,8 +40,8 @@ int wmain(int argc, wchar_t** argv) {
                 Check(heif_encoder_set_parameter_string(encoder.get(), "x265:frame-threads", "1"));
                 Check(heif_encoder_set_parameter_string(encoder.get(), "x265:pools", "none"));
             }
-            // Keep this single HEVC slice below libde265's 16 MiB NAL limit.
-            constexpr int dimension = 3072;
+            // Default stays below the 16 MiB HEVC NAL limit; the optional case exceeds it.
+            const int dimension = argc == 3 ? 4096 : 3072;
             heif_image* rawImage = nullptr;
             Check(heif_image_create(dimension, dimension, heif_colorspace_YCbCr, heif_chroma_420, &rawImage));
             std::unique_ptr<heif_image, decltype(&heif_image_release)> image(rawImage, heif_image_release);

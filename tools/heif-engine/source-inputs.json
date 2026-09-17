@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "status": "isolated-candidate-not-release-clearance",
+  "archives": [
+    {
+      "name": "libheif",
+      "version": "1.23.4",
+      "url": "https://github.com/strukturag/libheif/releases/download/v1.23.4/libheif-1.23.4.tar.gz",
+      "sha256": "D0C02B4B0E978F34A1974B6F3EEA7975A537BF7A9195FFEEA38E7242FF316FDD",
+      "bytes": 2217221
+    },
+    {
+      "name": "libde265",
+      "version": "1.1.3",
+      "url": "https://github.com/strukturag/libde265/releases/download/v1.1.3/libde265-1.1.3.tar.gz",
+      "sha256": "554228BD17788C99A7E63B37AB5634722190E6E2BF60C1DCB01CEF328E133905",
+      "bytes": 324452
+    }
+  ],
+  "aom": {
+    "version": "3.15.0",
+    "revision": "79de389e4abced53cb6e85b7574826dbc227cd9c",
+    "archiveUrl": "https://github.com/ImageMagick/Dependencies/releases/download/2026.09.01.0503/windows-x64-static-noOpenMP-linked-runtime.zip",
+    "archiveSha256": "28BF8CF9CD10DCDA5F7ED0018E8D708286C88A5D790618942D406199EB645B68",
+    "note": "Selected upstream static artifact, not a local source rebuild.",
+    "files": {
+      "include/aom/aom/aom.h": "8D34F0D892B3CDDF0B1C40FD838D99A943A4C93FF29051998C46F62079E379E9",
+      "include/aom/aom/aomcx.h": "92603F74D0B5B91748210E2A7D67CBA3FF8C6DAE821E9F538B8730A0551C7D76",
+      "include/aom/aom/aomdx.h": "2513921C33844CC2968E22CD7139246DA2D78672ADDA7B30490EC5E6921B8119",
+      "include/aom/aom/aom_codec.h": "60EC67B6689612729BEE7DCC8618D82410F542BB359A5253E13A108D6B3E28EC",
+      "include/aom/aom/aom_decoder.h": "D85ABE2E8C3CD518D9B1174F6FF4D9835AF4B9849FB6F15A88A37DB2ADCA5B00",
+      "include/aom/aom/aom_encoder.h": "EE2EAAE069A83B412FD11F433FA0736A974C09C1A4D55FAF97B327137EB5CD3D",
+      "include/aom/aom/aom_external_partition.h": "B07EF09322D58555EF7A03567C4487CA657BE250A1D2AF58C3BFC33DA74F1AF0",
+      "include/aom/aom/aom_ext_ratectrl.h": "5951FFD7E72D07CCC16C54D301B74647F82C7EAB019A27CFB797B3737C31E5F2",
+      "include/aom/aom/aom_frame_buffer.h": "85B8D1A898FF6ACC090C03149746B7689100C17D034D859784C74C5D521627E1",
+      "include/aom/aom/aom_image.h": "94A238D27B992D88F52AB27CED6848EC7C5C694B41456A3EDE37F54DC96F44CE",
+      "include/aom/aom/aom_integer.h": "6C2436B3BF112B21342D036A14A5D6035C8FEC034CDCAC5DAF35FF3EB5691E44",
+      "include/aom/aom/aom_tpl.h": "20D08936AC1ECC294F4F92EFA979D6AFEC505E12ECACFF4E8CBAB02599086A38",
+      "lib/CORE_RL_aom_.lib": "9E53942AEB20AB573EDC0341552ADC6DCEA305C3C9F2E8BE238AECD87A93A303",
+      "license/aom.txt": "3A3D636CD83B83C82FB97FDC831C0A2AC1C4783BCE5D3FEEAED17F66320762D6",
+      "resource/aom.rc": "8CDAA553D83026018D25A23DB755904826D7FE6129B003A2FAA2D880FEE43D1F"
+    }
+  }
+}
