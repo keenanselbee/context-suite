@@ -78,6 +78,33 @@ def review_pe(text, runtime_names):
     return {"imports": sorted(imports), "requiredHardening": list(HARDENING)}
 
 
+def review_source_changes(directory, record):
+    inventory = json.loads((directory / "source-inventory.json").read_text())
+    expected = {item["path"]: item["sha256"] for item in inventory}
+    effective_path = directory / "effective-sources.json"
+    if build_tool.digest(effective_path) != record["effectiveSourcesSha256"]:
+        raise ValueError("Effective source inventory changed")
+    effective = json.loads(effective_path.read_text())
+    patches = record["patches"]
+    if record["wmaProTailRepair"]:
+        patch = TOOLS / "wmapro-terminal-overlap.patch"
+        target = "libavcodec/wmaprodec.c"
+        if (not record["expandedInputs"] or len(patches) != 1
+                or patches[0]["path"] != patch.name
+                or patches[0]["sha256"] != build_tool.digest(patch)
+                or set(patches[0]["modifiedSources"]) != {target}):
+            raise ValueError("WMA Pro source patch identity differs")
+        changed = patches[0]["modifiedSources"][target]
+        if changed == expected[target] or changed != build_tool.digest(directory / "source" / target):
+            raise ValueError("WMA Pro effective source differs")
+        expected[target] = changed
+    elif patches:
+        raise ValueError("Unselected FFmpeg source patch")
+    if effective != expected:
+        raise ValueError("Effective source changes exceed the reviewed patch")
+    return patches
+
+
 def main():
     if len(sys.argv) != 2:
         raise ValueError("Usage: python Check-AudioBuild.py <completed FFmpeg workspace>")
@@ -85,6 +112,7 @@ def main():
     record = json.loads((directory / "build-result.json").read_text())
     if record["exitCode"] or record["scriptSha256"] != build_tool.digest(TOOLS / "Build-AudioEngine.py"):
         raise ValueError("Use a completed build with the current recipe")
+    patches = review_source_changes(directory, record)
     configure = record["configure"]
     cflags = next(value for value in configure if value.startswith("--extra-cflags="))
     ldflags = next(value for value in configure if value.startswith("--extra-ldflags="))
@@ -121,7 +149,7 @@ def main():
         (evidence / (path.name + ".txt")).write_text(output)
         results[path.name] = review_pe(output, {name.lower() for name in names if name.endswith(".dll")})
     result = {"scope": "Reviewed compiler diagnostics and emitted hardening/import metadata; full runtime acceptance remains required",
-              "reviewedDiagnostics": diagnostics, "runtime": inventory, "pe": results,
+              "reviewedDiagnostics": diagnostics, "runtime": inventory, "pe": results, "patches": patches,
               "dumpbin": str(dumpbin), "dumpbinSha256": build_tool.digest(dumpbin),
               "checkerSha256": build_tool.digest(pathlib.Path(__file__)), "buildReceiptSha256": build_tool.digest(directory / "build-result.json")}
     (evidence / "result.json").write_text(json.dumps(result, indent=2))

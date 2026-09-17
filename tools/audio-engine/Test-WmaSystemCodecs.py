@@ -36,6 +36,10 @@ PROFILES = [('standard', 44100, 1, 16), ('standard', 48000, 2, 16),
             ('voice', 16000, 1, 16), ('voice', 22050, 1, 16)]
 PRO_TAIL_FRAMES = (511, 512, 513, 1023, 1024, 1025, 1535, 1536, 1537,
                    2047, 2048, 2050, 4095, 4096, 4097, 47999, 48001)
+# Frozen before the repair replay: existing stereo prefix peak < 6e-7,
+# RMS < 1.6e-7. Apply the limits to the complete independent Windows output.
+PRO_STEREO_MAXIMUM_ERROR = 1e-6
+PRO_STEREO_RMS_ERROR = 3e-7
 
 
 def digest(path):
@@ -112,9 +116,12 @@ def main():
                 'scriptSha256': digest(pathlib.Path(__file__)), 'windows': str(sys.getwindowsversion()),
                 'proInspectorSha256': digest(TOOLS / 'Inspect-WmaProFrames.py'),
                 'candidateRuntime': inventory, 'profiles': PROFILES,
+                'candidateSourcePatches': record.get('patches', []),
                 'lengths': ['1', '2049', 'one-second'],
                 'losslessSurroundTailFrames': [65535, 65536, 65537, 192000],
                 'proStereo16TailFrames': PRO_TAIL_FRAMES,
+                'proStereoMaximumError': PRO_STEREO_MAXIMUM_ERROR,
+                'proStereoRmsError': PRO_STEREO_RMS_ERROR,
                 'criteria': 'Lossless must match authored samples exactly. Compare complete decoded extents for all codecs; report prefix error separately, never align, trim or pad to pass. Lossy listening quality remains unverified.'}
     (evidence / 'identity.json').write_text(json.dumps(identity, indent=2) + '\n')
     results = []
@@ -187,6 +194,12 @@ def main():
                     item['proOverlapHypothesisMatches'] = predicted == item['windowsFrames'] == frames
                     # Diagnostic agreement never substitutes for actual decoded samples.
                     item['proDeclaredOverlap'] = declarations['terminalOverlapHypothesis']
+                    if channels == 2:
+                        comparison = item['candidateVsWindows']
+                        item['acceptedProSamples'] = (item['acceptedExtent']
+                            and item['candidateFrames'] == frames
+                            and comparison['maximum'] <= PRO_STEREO_MAXIMUM_ERROR
+                            and comparison['rms'] <= PRO_STEREO_RMS_ERROR)
                 if codec == 'lossless':
                     item['acceptedLossless'] = all(item[field]['sameExtent'] and item[field]['maximum'] == 0
                                                    for field in ('candidateVsWindows', 'candidateVsAuthored', 'windowsVsAuthored'))
@@ -201,7 +214,8 @@ def main():
     for item in inventory:
         if digest(binary / item['path']) != item['sha256']:
             raise ValueError('Candidate changed during evaluation')
-    complete = all(item['status'] == 'observed' and item['acceptedExtent'] and item.get('acceptedLossless', True) for item in results)
+    complete = all(item['status'] == 'observed' and item['acceptedExtent']
+                   and item.get('acceptedLossless', True) and item.get('acceptedProSamples', True) for item in results)
     (evidence / 'summary.json').write_text(json.dumps({'cases': len(results), 'accepted': complete,
         'observed': sum(item['status'] == 'observed' for item in results),
         'equalExtents': sum(item.get('acceptedExtent', False) for item in results)}, indent=2) + '\n')

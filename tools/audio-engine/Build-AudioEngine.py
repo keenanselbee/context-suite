@@ -96,7 +96,10 @@ def main():
         parser.add_argument("--" + dependency, required=True)
     parser.add_argument("--configure-only", action="store_true")
     parser.add_argument("--expanded-inputs", action="store_true", help="Evaluate AIFF/AIFF-C and ASF/WMA inputs; no additional output codecs")
+    parser.add_argument("--wma-pro-tail-repair", action="store_true", help="Evaluate the local terminal-overlap patch in a fresh expanded-input build")
     args = parser.parse_args()
+    if args.wma_pro_tail_repair and not args.expanded_inputs:
+        raise ValueError("The WMA Pro repair requires expanded inputs")
     if os.name != "nt" or sys.version_info < (3, 14):
         raise ValueError("Use Windows x64 with Python 3.14 or later")
     pins = {item["id"]: item for item in json.loads(pathlib.Path(__file__).with_name("source-inputs.json").read_text())["archives"]}
@@ -139,6 +142,23 @@ def main():
             inventory.append({"path": relative, "bytes": target.stat().st_size, "sha256": digest(target)})
     (workspace / "source-inventory.json").write_text(json.dumps(inventory, indent=2))
     print(f"Retained {len(inventory)} FFmpeg source files.", flush=True)
+    patches = []
+    effective = {item["path"]: item["sha256"] for item in inventory}
+    if args.wma_pro_tail_repair:
+        patch = pathlib.Path(__file__).with_name("wmapro-terminal-overlap.patch")
+        patch_hash = digest(patch)
+        for options in (["--check"], []):
+            applied = subprocess.run(["git", "apply", "--no-index", *options, str(patch)],
+                                     cwd=source, capture_output=True, text=True, timeout=30)
+            if applied.returncode:
+                raise ValueError("WMA Pro patch refused: " + applied.stderr)
+        modified = {item["path"]: digest(source / item["path"]) for item in inventory
+                    if digest(source / item["path"]) != item["sha256"]}
+        if set(modified) != {"libavcodec/wmaprodec.c"} or digest(patch) != patch_hash:
+            raise ValueError("WMA Pro patch changed unexpected inputs")
+        effective.update(modified)
+        patches.append({"path": patch.name, "sha256": patch_hash, "modifiedSources": modified})
+    (workspace / "effective-sources.json").write_text(json.dumps(effective, indent=2))
     sdk = workspace / "dependencies"
     (sdk / "include").mkdir(parents=True)
     (sdk / "lib").mkdir()
@@ -207,8 +227,9 @@ def main():
         "SRC_LINK=" + source_path, "SHELL=" + short_path(bash),
         "LD=sh " + source_path + "/compat/windows/mslink",
         "WINDRES=sh " + source_path + "/compat/windows/mswindres", "-j2", "ffmpeg.exe", "ffprobe.exe"]
+    version_suffix = "contextsuite-g9b0578816c6f" + ("-wmapro-tail2" if args.wma_pro_tail_repair else "")
     configure = ["sh", short_path(source / "configure"), "--toolchain=msvc", "--arch=x86_64", "--target-os=win32",
-        "--extra-version=contextsuite-g9b0578816c6f",
+        "--extra-version=" + version_suffix,
         "--disable-autodetect", "--disable-everything", "--disable-programs", "--enable-ffmpeg", "--enable-ffprobe",
         "--enable-shared", "--disable-static", "--disable-debug", "--disable-stripping", "--disable-doc",
         "--disable-network", "--disable-avdevice", "--disable-swscale", "--enable-avcodec", "--enable-avformat",
@@ -245,6 +266,8 @@ def main():
         'if errorlevel 1 exit /b 1\n"' + str(bash) + '" --noprofile --norc "' + short_path(shell_script) + '"\nexit /b %errorlevel%\n')
     record = {"status": "Configure-only attempt" if args.configure_only else "Unaccepted candidate build attempt",
               "expandedInputs": args.expanded_inputs,
+              "wmaProTailRepair": args.wma_pro_tail_repair, "patches": patches,
+              "effectiveSourcesSha256": digest(workspace / "effective-sources.json"),
               "source": pins["ffmpeg"], "dependencies": {name: {"directory": str(value[0]), "manifestSha256": digest(value[0] / "dependency-build.json")} for name, value in builds.items()},
               "configure": configure, "make": make_command, "scriptSha256": script_sha256,
               "checkerSha256": digest(checker), "visualStudio": visual_studio}
@@ -252,10 +275,13 @@ def main():
     print("Running native configuration" + ("." if args.configure_only else " and build."), flush=True)
     result = subprocess.run([os.environ["COMSPEC"], "/d", "/c", str(command_file)])
     for item in inventory:
-        if digest(source / item["path"]) != item["sha256"]:
-            raise ValueError("FFmpeg upstream source changed during build")
+        if digest(source / item["path"]) != effective[item["path"]]:
+            raise ValueError("FFmpeg effective source changed during build")
     if sum(path.is_file() for path in source.rglob("*")) != len(inventory):
         raise ValueError("FFmpeg source membership changed")
+    for patch in patches:
+        if digest(pathlib.Path(__file__).with_name(patch["path"])) != patch["sha256"]:
+            raise ValueError("FFmpeg patch changed during build")
     for item in sdk_inventory:
         if digest(sdk / item["path"]) != item["sha256"]:
             raise ValueError("Staged dependency input changed during build")
@@ -284,7 +310,7 @@ def main():
             version = subprocess.run([str(binary / (name + ".exe")), "-version"], cwd=binary, env=environment,
                                      capture_output=True, text=True, timeout=20)
             (workspace / (name + "-version.log")).write_text(version.stdout + version.stderr)
-            if version.returncode or not version.stdout.startswith(name + " version 9.0.1-contextsuite-g9b0578816c6f "):
+            if version.returncode or not version.stdout.startswith(name + " version 9.0.1-" + version_suffix + " "):
                 raise ValueError("Runtime version or loading check failed: " + name)
     print("Native step completed; component/runtime acceptance remains pending: " + str(workspace))
 

@@ -20,6 +20,12 @@ extents. `Inspect-WmaProFrames.py '<retained Pro probe.json>'` reports bounded
 frame/trim declarations and a terminal-overlap hypothesis; it is diagnostic,
 not a decoder or an output-padding policy. The full runner records those headers
 and the inspector identity alongside actual sample comparisons.
+The later opt-in build option `--expanded-inputs --wma-pro-tail-repair` applies a
+recorded patch to fresh source only. Its `wmapro-tail2` runtime passes all 26 Pro
+extents and 23 stereo accuracy checks, with 13 Lossless cases still exact.
+Eleven Standard/Voice extent failures remain; the managed adapter and shipping
+payload do not admit this experimental runtime. See the corpus document for
+native review, fixed sample limits, retained failures and open adoption gates.
 Run `Test-WmaSystemCodecs.py '<expanded workspace>'` to reproduce. Its expected
 nonzero result must not be reported as passing WMA support.
 

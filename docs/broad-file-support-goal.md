@@ -141,6 +141,11 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   Frame-header inspection predicts Windows/authored lengths for all 26 Pro cases
   when terminal overlap is included; 511-513-frame Pro inputs currently decode
   empty. Recover and verify real overlap samples before treating this as fixed.
+  The later isolated `wmapro-tail2` patch recovers real terminal overlap and
+  one-frame audio: all 26 Pro extents and 23 stereo sample comparisons pass.
+  The fresh 57-case run has 46 equal extents and 13 exact Lossless cases; eleven
+  Standard/Voice failures remain. Broader Pro fidelity and all integration,
+  distribution and customer-admission gates remain open.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

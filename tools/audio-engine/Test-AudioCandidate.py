@@ -80,9 +80,12 @@ def main():
     evidence = candidate / ("smoke-" + uuid.uuid4().hex)
     evidence.mkdir()
     print("Audio smoke evidence: " + str(evidence), flush=True)
+    suffix = "contextsuite-g9b0578816c6f" + ("-wmapro-tail2" if record.get("wmaProTailRepair") else "")
+    if "--extra-version=" + suffix not in record["configure"]:
+        raise ValueError("Candidate version does not match its selected build")
     for name in ("ffmpeg", "ffprobe"):
         version = run([binary / (name + ".exe"), "-version"], evidence)
-        if not version.startswith(name + " version 9.0.1-contextsuite-g9b0578816c6f "):
+        if not version.startswith(name + " version 9.0.1-" + suffix + " "):
             raise ValueError("Candidate version differs")
         (evidence / (name + "-version.log")).write_text(version)
     for option in ("decoders", "encoders", "demuxers", "muxers", "protocols"):

@@ -14,7 +14,8 @@ completed dependency directories, verifies their source/output inventories, and
 creates a fresh `.codex-temp/audio-ffmpeg-<id>` workspace. It retains the exact
 FFmpeg archive contents and copies verified headers/libraries into a separate SDK.
 It checks Ogg's generated fixed-width header against the pinned template and
-records the copied dependency files. No source files are edited or installed.
+records the copied dependency files. The default build preserves those source
+files unchanged; nothing is installed.
 
 Use Python 3.14 and the existing Visual Studio 2026, Windows SDK 10.0.26100.0 and
 Git Bash. The command shape is:
@@ -34,6 +35,12 @@ python -B tools/audio-engine/Build-AudioEngine.py `
 `--expanded-inputs` opts into the separate
 [AIFF/WMA decoding candidate](audio-expanded-input-evaluation.md); it does not
 change the default build or enable application capabilities.
+The additional `--wma-pro-tail-repair` evaluation option requires expanded inputs
+and applies the repository-owned `wmapro-terminal-overlap.patch` only to a fresh
+extraction. It preserves the original source inventory and records the patch and
+effective source hashes. Existing candidate/source directories and retained
+archives stay read-only. The modified version suffix identifies this experiment;
+decoder fidelity, native review and distribution/adoption remain separate gates.
 The [dependency runner](audio-dependency-builds.md) and
 [build-tool recipes](audio-build-tools.md) prepare those inputs. The launcher uses
 existing Windows short paths, MSVC's dynamic CRT, explicit local library paths

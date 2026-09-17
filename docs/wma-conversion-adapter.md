@@ -13,6 +13,10 @@ evidence; they do not establish WMA fidelity or permit customer admission.
 The expanded 57-case corpus retains those 13 exact Lossless cases and records
 30 failed extents. Pro frame declarations implicate missing terminal overlap,
 including empty short outputs; actual decoder repair remains pending.
+The subsequent opt-in native repair now passes all 26 Pro extents and 23 complete
+stereo sample comparisons, retaining 13 exact Lossless cases. Eleven Standard/
+Voice extent failures remain. That new native runtime is not yet admitted by
+this managed adapter or shipped in the application.
 
 This uses the exact expanded seven-file runtime from the
 [restricted input evaluation](audio-expanded-input-evaluation.md). Only that
