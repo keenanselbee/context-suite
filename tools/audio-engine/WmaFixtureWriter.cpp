@@ -6,6 +6,7 @@
 #include <mfreadwrite.h>
 #include <mferror.h>
 #include <wmcodecdsp.h>
+#include <wmcontainer.h>
 #include <propsys.h>
 #include <psapi.h>
 #include <wrl/client.h>
@@ -30,6 +31,15 @@ static UINT32 Number(const wchar_t* value)
     return static_cast<UINT32>(number);
 }
 
+static void ConfigureLossless(IPropertyStore* settings)
+{
+    PROPVARIANT enabled{}; enabled.vt = VT_BOOL; enabled.boolVal = VARIANT_TRUE;
+    Require(settings->SetValue(MFPKEY_VBRENABLED, enabled), "Enable lossless VBR");
+    Require(settings->SetValue(MFPKEY_CONSTRAIN_ENUMERATED_VBRQUALITY, enabled), "Constrain lossless quality");
+    PROPVARIANT quality{}; quality.vt = VT_UI4; quality.ulVal = 100;
+    Require(settings->SetValue(MFPKEY_DESIRED_VBRQUALITY, quality), "Select lossless quality");
+}
+
 static void Generate(const GUID& codec, UINT32 rate, UINT32 channels, UINT32 bits, UINT32 frames)
 {
     ComPtr<IMFCollection> types;
@@ -38,11 +48,7 @@ static void Generate(const GUID& codec, UINT32 rate, UINT32 channels, UINT32 bit
         ComPtr<IMFTransform> encoder; ComPtr<IPropertyStore> settings;
         Require(CoCreateInstance(__uuidof(CWMAEncMediaObject), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&encoder)), "Create lossless encoder");
         Require(encoder.As(&settings), "Read lossless settings");
-        PROPVARIANT enabled{}; enabled.vt = VT_BOOL; enabled.boolVal = VARIANT_TRUE;
-        Require(settings->SetValue(MFPKEY_VBRENABLED, enabled), "Enable lossless VBR");
-        Require(settings->SetValue(MFPKEY_CONSTRAIN_ENUMERATED_VBRQUALITY, enabled), "Constrain lossless quality");
-        PROPVARIANT quality{}; quality.vt = VT_UI4; quality.ulVal = 100;
-        Require(settings->SetValue(MFPKEY_DESIRED_VBRQUALITY, quality), "Select lossless quality");
+        ConfigureLossless(settings.Get());
         Require(MFCreateCollection(&types), "Create lossless type list");
         for (DWORD index = 0; index < 4096; ++index)
         {
@@ -93,8 +99,37 @@ static void Generate(const GUID& codec, UINT32 rate, UINT32 channels, UINT32 bit
     ComPtr<IMFByteStream> stream;
     Require(MFCreateFile(MF_ACCESSMODE_WRITE, MF_OPENMODE_FAIL_IF_EXIST, MF_FILEFLAGS_NONE, L"fixture.wma", &stream), "Reserve fixture.wma");
     ComPtr<IMFSinkWriter> writer;
-    Require(MFCreateSinkWriterFromURL(nullptr, stream.Get(), attributes.Get(), &writer), "Create ASF writer");
-    DWORD id = 0; Require(writer->AddStream(selected.Get(), &id), "Add audio stream");
+    ComPtr<IMFMediaSink> mediaSink;
+    DWORD id = 0;
+    if (codec == MFAudioFormat_WMAudio_Lossless)
+    {
+        // The default sink applies CBR buffering and can silently drop encoded
+        // Lossless packets. Configure both the container and its encoder for
+        // the same VBR profile; permit bitrate adjustment instead of loss.
+        ComPtr<IMFASFContentInfo> content;
+        Require(MFCreateASFMediaSink(stream.Get(), &mediaSink), "Create Lossless ASF sink");
+        Require(mediaSink.As(&content), "Read ASF content information");
+        ComPtr<IMFASFProfile> profile; ComPtr<IMFASFStreamConfig> configuration;
+        Require(MFCreateASFProfile(&profile), "Create ASF profile");
+        Require(profile->CreateStream(selected.Get(), &configuration), "Create ASF audio configuration");
+        Require(configuration->SetStreamNumber(1), "Set ASF stream number");
+        Require(profile->SetStream(configuration.Get()), "Set ASF audio stream");
+        ComPtr<IPropertyStore> global;
+        Require(content->GetEncodingConfigurationPropertyStore(0, &global), "Read ASF global settings");
+        PROPVARIANT enabled{}; enabled.vt = VT_BOOL; enabled.boolVal = VARIANT_TRUE;
+        Require(global->SetValue(MFPKEY_ASFMEDIASINK_AUTOADJUST_BITRATE, enabled), "Allow ASF bitrate adjustment");
+        ComPtr<IPropertyStore> settings;
+        Require(content->GetEncodingConfigurationPropertyStore(1, &settings), "Read ASF stream settings");
+        ConfigureLossless(settings.Get());
+        Require(attributes->SetUnknown(MF_SINK_WRITER_ENCODER_CONFIG, settings.Get()), "Attach matching encoder settings");
+        Require(content->SetProfile(profile.Get()), "Set ASF profile");
+        Require(MFCreateSinkWriterFromMediaSink(mediaSink.Get(), attributes.Get(), &writer), "Create Lossless writer");
+    }
+    else
+    {
+        Require(MFCreateSinkWriterFromURL(nullptr, stream.Get(), attributes.Get(), &writer), "Create ASF writer");
+        Require(writer->AddStream(selected.Get(), &id), "Add audio stream");
+    }
     ComPtr<IMFMediaType> input; Require(MFCreateMediaType(&input), "Create PCM type");
     Require(input->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio), "Set audio type");
     Require(input->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM), "Set PCM type");
@@ -125,7 +160,9 @@ static void Generate(const GUID& codec, UINT32 rate, UINT32 channels, UINT32 bit
         Require(sample->SetSampleTime(start), "Set sample time"); Require(sample->SetSampleDuration(end - start), "Set sample duration");
         Require(writer->WriteSample(id, sample.Get()), "Write samples"); first += batch;
     }
-    Require(writer->Finalize(), "Finalize fixture"); writer.Reset(); stream.Reset();
+    Require(writer->Finalize(), "Finalize fixture"); writer.Reset();
+    if (mediaSink) Require(mediaSink->Shutdown(), "Shut down ASF sink");
+    stream.Reset();
     std::printf("Authored source frames: %u\n", frames);
 }
 

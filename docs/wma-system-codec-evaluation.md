@@ -1,10 +1,11 @@
 Independent WMA Codec Evaluation
 ================================
 
-Status: **not accepted**, 2026-09-16 local date. The generated Windows-codec
-corpus exposes sample-extent differences that the earlier same-FFmpeg supplier
-comparison could not establish. WMA remains outside customer commands and the
-selected production payload. The required WMA input goal is unchanged.
+Status: **WMA fidelity not accepted**, 2026-09-16 local date. The Lossless fixture
+writer's packet loss is corrected; 13 Lossless cases now preserve exact source
+samples. Standard/Pro/Voice sample-extent differences remain. WMA stays outside
+customer commands and the selected production payload; its required input goal
+is unchanged. The original failed observations below remain part of the record.
 
 
 Method and finite boundary
@@ -47,10 +48,63 @@ sample error is reported separately; it never excuses a missing tail. No
 comparison aligns, pads or trims audio to pass.
 
 
-Actual results
----------------
+Current Lossless fixture correction
+-----------------------------------
 
-Final evidence:
+The original convenience ASF sink applied inappropriate buffering to Lossless
+VBR output. The generated high-rate surround file contained codec packet-sequence
+jumps, so neither decoder could recover its missing tail. Setting properties on
+the encoder alone, adding an end-of-segment notification, changing input buffer
+sizes/throttling and using another file-opening path did not fix the loss.
+
+The tool now creates an explicit ASF sink/profile for Lossless, sets matching
+VBR/quality settings on its stream and encoder before media-type negotiation,
+and enables `MFPKEY_ASFMEDIASINK_AUTOADJUST_BITRATE`. The container can accommodate
+the encoded data instead of dropping packets. Other codec fixture paths are
+unchanged. This corrects fixture construction; it does not weaken any decoder
+comparison or change a production encoder/decoder.
+
+The final run at
+`.codex-temp/wma-system-matrix-f48320a78b7b4df08c4b9892f23cdbe7` completes
+**40 observations**, including four new Lossless 96 kHz 5.1 tail regressions at
+65,535, 65,536, 65,537 and 192,000 frames. All **13 Lossless cases** match exact
+authored samples and full extents in both decoders, with no packet-loss
+diagnostics. There are **25 equal nonempty decoder extents overall**; the 15
+Standard/Pro/Voice failures remain, so the runner still correctly returns exit 1
+and `accepted: false`. No listening, worker, metadata or release gate is implied.
+
+The corrected native tool builds with zero warnings/errors. Its executable hash
+is `6B18EF9C292AE08F0936D374BEE737F515BB197095AE053070C6BDD579B2CCD2`, and its
+C++ source hash is
+`BE4037550098D70AB95EB569337E9D350B860B4269AC9B65C7AACDDD2D66E309`.
+The earlier corrected 36-case run at
+`wma-system-matrix-cc6a3a65cbde428799ddc4d7efea7894` passed all nine Lossless
+cases before the four boundary regressions were added.
+
+Diagnostic evidence is retained under `.codex-temp/`:
+
+- `wma-drain-e28222d4dc8c4d8d9968d75f828d530b`: encoder settings/statistics and
+  end-of-segment controls, still shortened.
+- `wma-drain-lengths-7a1b18247f4f476bbdaa97847b27b66f`: seven duration/layout
+  cases locate the tail loss; retained packet/frame logs identify sequence gaps.
+- `wma-buffering-870daabfb3b044a3ab797114d922b2c1`: throttled, larger-buffer and
+  single-input controls, still shortened.
+- `wma-config-e7b5bdfd53c244ec8d557e5705eb25e7` and
+  `wma-sink-path-8d2bc0aad9a24e18921be7c9e1df0698`: encoder-only configuration
+  and file-opening controls, still shortened.
+- `wma-asf-config-f0c6e3bf895f45fda9d02f1beec683eb`: explicit matching ASF/VBR
+  configuration restores the formerly failing 96,000-frame system decode.
+
+The fix follows Microsoft's
+[ASF stream configuration](https://learn.microsoft.com/en-us/windows/win32/medfound/adding-stream-information-to-the-asf-file-sink),
+[file-sink properties](https://learn.microsoft.com/en-us/windows/win32/medfound/setting-properties-in-the-file-sink)
+and [sink-writer encoder configuration](https://learn.microsoft.com/en-us/windows/win32/medfound/mf-sink-writer-encoder-config).
+
+
+Original failing results
+-------------------------
+
+Original evidence:
 `.codex-temp/wma-system-matrix-0d4e45e8642f48c692044df4ef171889`.
 All **36 observations completed**, but only **21 have equal nonempty decoded
 extents**, and **8 of 9 Lossless cases** meet the exact authored-source check.
@@ -113,8 +167,8 @@ success or equal FFmpeg builds as fidelity evidence. No app build is needed.
 
 Next identify and repair the selected decoder's Pro/Voice tail handling or
 evaluate a separately bounded Windows decoding path against this same corpus.
-Resolve Standard padding/timeline behavior and the Lossless generator's drain
-failure. Retain malformed/discontinuous timeline tests as a separate gate.
+Resolve Standard padding/timeline behavior; retain the corrected Lossless
+fixture regression. Malformed/discontinuous timeline tests remain a separate gate.
 Then finish ASF metadata compatibility, actual-worker publication/recovery,
 resource budgets and human listening/usability before enabling WMA commands.
 No required codec family is silently removed by these failed observations.

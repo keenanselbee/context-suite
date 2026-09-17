@@ -107,11 +107,15 @@ def main():
                 'scriptSha256': digest(pathlib.Path(__file__)), 'windows': str(sys.getwindowsversion()),
                 'candidateRuntime': inventory, 'profiles': PROFILES,
                 'lengths': ['1', '2049', 'one-second'],
+                'losslessSurroundTailFrames': [65535, 65536, 65537, 192000],
                 'criteria': 'Lossless must match authored samples exactly. Compare complete decoded extents for all codecs; report prefix error separately, never align, trim or pad to pass. Lossy listening quality remains unverified.'}
     (evidence / 'identity.json').write_text(json.dumps(identity, indent=2) + '\n')
     results = []
     for codec, rate, channels, bits in PROFILES:
-        for frames in (1, 2049, rate):
+        lengths = (1, 2049, rate)
+        if (codec, rate, channels, bits) == ('lossless', 96000, 6, 24):
+            lengths += (65535, 65536, 65537, 192000)
+        for frames in lengths:
             name = f'{codec}-{rate}-{channels}-{bits}-{frames}'
             directory = evidence / name
             directory.mkdir()

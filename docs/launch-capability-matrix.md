@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-16.27**. This update records independent WMA codec
-acceptance failures. Optional HEIC/AVIF combined-scratch packaging and reserved
+Matrix revision: **2026-09-16.28**. This update records the Lossless fixture
+correction and remaining WMA failures. Optional HEIC/AVIF scratch packaging and reserved
 candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
@@ -27,7 +27,7 @@ Required compatibility additions selected 2026-09-16:
 | HEIC | JPEG, PNG | Authored SDR adapter/worker, loader, resource-limit, recovery and optional combined-scratch packaging checks pass; broader fidelity, redistribution and formal release adoption pending |
 | AVIF | JPEG, PNG | Authored SDR adapter/worker, loader, recovery and optional combined-scratch packaging checks pass; broader fidelity, redistribution and formal release adoption pending |
 | AIFF | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | [Isolated adapter](aiff-conversion-adapter.md) passes 366 checks/68 outputs with PCM/float, three compressed variants, tested text and artwork; broader fidelity, actual-worker integration and packaging pending |
-| WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Earlier [v1/v2 adapter](wma-conversion-adapter.md) passes scoped 283 checks/36 outputs; [independent codec corpus](wma-system-codec-evaluation.md) exposes Standard/Pro/Voice extent gaps and a Lossless fixture-drain failure. Decoder fidelity, broader metadata/timelines and customer/worker integration remain pending |
+| WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | Earlier [v1/v2 adapter](wma-conversion-adapter.md) passes scoped 283 checks/36 outputs; [independent codec corpus](wma-system-codec-evaluation.md) now passes 13 exact Lossless cases after a fixture fix, with 15 Standard/Pro/Voice extent failures remaining. Decoder fidelity, metadata/timelines and customer/worker integration are pending |
 
 No output or Optimize capability for these four formats is added. ALAC remains
 a separate evaluation. The [current goal](broad-file-support-goal.md#current-objective-and-completion-plan)

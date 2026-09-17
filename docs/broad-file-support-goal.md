@@ -133,6 +133,10 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   eight exact Lossless cases. Standard/Pro/Voice decoding and one Lossless
   fixture-drain case fail acceptance. Repair/evaluate decoding before admission;
   neither same-engine agreement nor trimming/padding closes these gates.
+  The later explicit ASF/VBR fixture configuration corrects Lossless packet loss:
+  all 13 Lossless source/Windows/candidate comparisons pass, including four
+  cutoff/longer-surround regressions. The 40-case corpus still has 15 failed
+  Standard/Pro/Voice extents; decoder repair/evaluation remains required.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

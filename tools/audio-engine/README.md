@@ -13,6 +13,8 @@ Broader variants/timelines, worker integration and customer admission remain ope
 The later [Windows-codec corpus](../../docs/wma-system-codec-evaluation.md)
 provides independent authored sources and decoding. Its 36 observations expose
 sample-extent/fixture-drain failures; the current acceptance result is false.
+The Lossless ASF/VBR fixture correction now passes 13 exact source comparisons
+within 40 observations; Standard/Pro/Voice extent failures still prevent acceptance.
 Run `Test-WmaSystemCodecs.py '<expanded workspace>'` to reproduce. Its expected
 nonzero result must not be reported as passing WMA support.
 
