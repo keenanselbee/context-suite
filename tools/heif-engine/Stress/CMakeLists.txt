@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.24)
+project(ContextSuiteHeifStress LANGUAGES CXX)
+set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
+find_package(libheif 1.23.4 EXACT CONFIG REQUIRED)
+add_executable(ContextSuite.Heif.Stress Stress.cpp)
+target_compile_features(ContextSuite.Heif.Stress PRIVATE cxx_std_20)
+target_compile_options(ContextSuite.Heif.Stress PRIVATE /W4 /WX /utf-8)
+target_link_libraries(ContextSuite.Heif.Stress PRIVATE heif)

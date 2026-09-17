@@ -21,16 +21,19 @@ def main():
     parser.add_argument("--bridge", required=True, type=Path)
     parser.add_argument("--fixture-evidence", required=True, action="append", type=Path)
     parser.add_argument("--grid-evidence", required=True, type=Path)
+    parser.add_argument("--stress-evidence", type=Path,
+                        help="Also verify interruption during observed native decoding")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     scratch = root / ".codex-temp"
     bridge = args.bridge.resolve(strict=True)
     fixtures = [path.resolve(strict=True) for path in args.fixture_evidence]
     grid = args.grid_evidence.resolve(strict=True)
-    for path in [bridge, grid, *fixtures]:
+    stress = args.stress_evidence.resolve(strict=True) if args.stress_evidence else None
+    for path in [bridge, grid, *fixtures, *([stress] if stress else [])]:
         path.relative_to(scratch)
     inputs = {}
-    for folder in [grid, *fixtures]:
+    for folder in [grid, *fixtures, *([stress] if stress else [])]:
         result = json.loads((folder / "results.json").read_text())
         if not result["Passed"]:
             raise ValueError("Passing fixture/bridge evidence required")
@@ -86,10 +89,16 @@ def main():
     print(run("contracts", [host / "ContextSuite.Core.ContractTests.exe", "--heif-worker",
         worker / "ContextSuite.Worker.exe", absent / "ContextSuite.Worker.exe", damaged / "ContextSuite.Worker.exe",
         grid, evidence / "results", *fixtures]).decode(), flush=True)
+    if stress:
+        print(run("interruption", [host / "ContextSuite.Core.ContractTests.exe", "--heif-interruption",
+            worker / "ContextSuite.Worker.exe", stress / "fixtures", evidence / "interruption"]).decode(), flush=True)
     if any(digest(Path(path)) != expected for path, expected in (inputs | payloads).items()):
         raise ValueError("Source, evidence or executable payload changed during verification")
-    (evidence / "verified.json").write_text(json.dumps({"Passed": True, "InputsAndPayloadsUnchanged": True,
-        "ResultSha256": digest(evidence / "results/results.json")}, indent=2) + "\n")
+    verified = {"Passed": True, "InputsAndPayloadsUnchanged": True,
+                "ResultSha256": digest(evidence / "results/results.json")}
+    if stress:
+        verified["InterruptionResultSha256"] = digest(evidence / "interruption/results.json")
+    (evidence / "verified.json").write_text(json.dumps(verified, indent=2) + "\n")
 
 
 if __name__ == "__main__":

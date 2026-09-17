@@ -138,4 +138,30 @@ mixed results, matte preview, collision handling, changed-settings retry,
 dispatch cancellation/death, malformed-grid recovery and missing/altered optional
 decoder behavior. Sources and payloads are hashed before and after the run.
 No production stage, installed app, Explorer registration or live license is
-changed. This does not establish active-native interruption or visible usability.
+changed. The ordinary suite tests dispatch interruption; add `--stress-evidence`
+as described below to test interruption during observed native work. Neither
+suite establishes visible usability.
+
+`Test-HeifLoader.py --bridge '<pinned bridge DLL>' --fixture '<authored HEIC>'`
+builds the private image host and creates six disposable copies for valid,
+preloaded-library, junction, hard-link, extra-library and missing-library cases.
+Inputs must be under repository scratch. The preloaded case uses another copy
+of the trusted libde265; all filesystem changes stay within those test copies.
+
+Build `Stress` with Visual Studio 18 x64 and `CMAKE_PREFIX_PATH` pointing to the
+pinned fixture encoder SDK. Copy its `heif.dll` and the pinned decoder SDK's
+`libde265.dll` beside the resulting `ContextSuite.Heif.Stress.exe`, then pass a
+new absolute fixture directory. It writes `stress.heic` and `stress.avif` using
+3072-square 8-bit noise. Keep fixture encoders out of production payloads.
+Retain configure/build/generate command and exit receipts, an `inputs.json`
+mapping source/SDK absolute paths to SHA-256 hashes, and `results.json` with
+`Passed: true` and a `Fixtures` path-to-hash map, beside the `fixtures` directory.
+The evaluation document identifies the passing retained generation receipt.
+
+Pass that directory as `--stress-evidence '<passing stress evidence>'` to the
+worker harness. After the ordinary worker suite, it observes the owned worker's
+instruction pointer inside libde265/heif before delivering cancellation, death
+or controlled deadline expiry. It records typed results, unchanged originals,
+no partial publication and fresh-worker recovery for each codec/fault. The x64
+context offsets are checked against the Windows SDK by the generator build.
+This test briefly suspends only an identified thread in its own disposable worker.

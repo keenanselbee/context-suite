@@ -464,3 +464,73 @@ loader path/race coverage beyond missing/altered payloads, independently reviewe
 redistribution and production packaging, capability adoption, realistic-file
 interoperability and visible acceptance. The 1.1.1 stage remains reserved and
 unchanged. None of these isolated runs creates a replacement release candidate.
+
+
+Loader ownership and active-native interruption
+----------------------------------------------
+
+The next isolated slice closes the loader and active-native checks above.
+The old loader accepted an already-loaded libde265 from a different directory,
+even though the intended files passed their hashes. The reproduction used a
+second copy of the same trusted library, not untrusted executable code. The
+failed preloaded case is retained at
+`.codex-temp/heif-loader/d6bc5a0936c14d5885ea1cbd8e5e5530`.
+
+The managed loader now retains verified directory handles for every ancestor,
+in addition to the pinned file handles. It refuses linked files/directories,
+unexpected DLL membership and preloaded HEIF modules, then checks every loaded
+module's exact path. Failed acquisition releases its owned handles. The shared
+directory implementation comes from the existing Office runtime checks; Office
+call sites retain their wrapper and unchanged checks. No native binary pin changes.
+
+The [loader harness](../tools/heif-engine/Test-HeifLoader.py) passes **25 checks**
+across six separate processes at
+`.codex-temp/heif-loader/668251b95a2548b6ba222f3a8b48f808`: valid, preloaded,
+junction, hard link, extra library and missing library. The valid case denies
+writing loaded files and renaming either the engine or its host directory.
+Invalid cases load no new HEIF modules. The existing Office file-lease contracts
+pass **15 checks** at
+`.codex-temp/heif-shared-leases/1adb29304d0b437faa83cd8aefd8ae9d`.
+These are bounded ownership tests, not a claim of exhaustive race coverage.
+
+The authored `Stress` generator produces 3072-square, 8-bit, full-range SDR
+HEIC/AVIF noise images. The fixture encoder stays separate from the decoder
+payload. Passing generation receipts are at
+`.codex-temp/heif-stress/cda0ee399a3142c49a33fb382be783bb`.
+This corpus supplies a demanding workload; it is not a new fidelity oracle.
+
+Final worker evidence at
+`.codex-temp/heif-worker/bbab96a9e1ee48c795262db79082079d` passes the existing
+**1,178 checks and 336 published outputs**, plus **38 interruption checks**.
+Before each fault, the test observes an instruction pointer inside the owned
+worker's native library: `libde265.dll` for HEIC and `heif.dll` for AVIF, which
+contains the linked AV1 decoder. This establishes active native processing;
+the AVIF observation does not identify a particular AV1 function. Only the
+test-owned worker thread is briefly suspended; its identity and instruction
+offset are recorded. The Windows SDK verifies the x64 context layout at build.
+
+Cancellation, owned-worker termination and controlled deadline expiry each pass
+for both formats. The deadline test verifies the production 120-second setting
+and triggers its existing clock seam; it does not wait 120 wall-clock seconds.
+Every case preserves source bytes/timestamp, abandons the temporary reservation,
+publishes no incomplete output, returns the appropriate category and successfully
+probes the same image with a fresh worker. The final receipt rechecks all recorded
+source, fixture and executable hashes. Worker/contract builds have zero warnings
+and errors. The earlier 942 image and 4,130 foundation results were not rerun for
+this focused loader/interruption slice.
+
+The first 4096-square stress HEIC at
+`.codex-temp/heif-stress/b944489f829f4c0eb9decc66df3e7329` is retained. Its
+22.2 MB single-slice input exceeds libde265's 16 MiB NAL security limit. The
+upstream libheif adapter ignores that push error and subsequently reports no
+decoded image. The worker safely refuses it, but currently categorizes it as
+invalid input. Clarifying this limit and returning the resource-limit category
+remain required; do not advertise every input under the outer 128 MiB/40 MP
+bounds as supported. The first worker attempt
+`801056d7eb294dd1a192e80d7368054d` passed its ordinary 1,178 checks but failed
+before interruption on this source. It is not passing interruption evidence.
+
+Remaining gates include that limit/category fix, broader realistic-file
+interoperability, independently reviewed redistribution, engine adoption and
+production packaging, budgets and visible acceptance. The reserved 1.1.1 stage
+and installed application remain unchanged.
