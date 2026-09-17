@@ -217,3 +217,42 @@ the opposite order to the internal function. Fixtures now use the dedicated
 thumbnail encoder, whose source calls that internal function in the declared
 order. The passing runs verify one thumbnail and one top-level image. No upstream
 source, decoder SDK, existing production stage or installed application changed.
+
+
+Private in-memory decoder bridge
+--------------------------------
+
+The private `ContextSuite.Heif.Native` library now exposes a versioned, fixed-width
+C ABI for bytes-in decoding. It returns geometry, original precision, source
+NCLX, item/capability flags, ICC, TIFF EXIF, XMP and normalized Q16 RGBA samples.
+Native allocation ownership stays inside the bridge; copies require an exact
+caller buffer size, and every failed decode leaves a null result. The bridge
+accepts cancellation callbacks and applies the existing 40-million-pixel and
+16,384-dimension bounds, plus explicit library allocation/item/tile limits.
+Worker job/deadline enforcement and managed payload identity loading are still
+required at integration. The bridge performs no filesystem or network operations.
+
+The isolated build at
+`.codex-temp/heif-bridge/4f584b8f3d684488bf87b12b990eaf21` uses the unchanged
+decoder SDK, an exact libheif 1.23.4 CMake requirement and warnings-as-errors.
+The final run at
+`.codex-temp/heif-bridge-tests/79f899550e984901baeeddfc0bd36541` passes **2,420
+checks across 126 authored images**. It verifies exact Q16 sample normalization,
+orientation, ICC/EXIF/XMP retention, item flags, all 12 malformed refusals, six
+early/during-operation cancellations, subsequent successful decoding and invalid
+ABI/buffer requests. Recorded source, fixture and binary identities are unchanged.
+
+The first bridge attempt, `be2bfdc33f2646bb84cb1c38afac10aa`, failed its expected
+transformation flag because x265's unrotated fixtures also carry a clean aperture
+for encoder padding. The verifier now accounts for that authored crop; final
+geometry and pixels remain independently exact. The passing intermediate run
+`c75564e7f09741638b8ee16b776e8fb5` preceded the explicit CMake version and ABI-size
+assertions; the final run above includes them.
+
+This is a decoding primitive. It deliberately reports collections, HDR transfer
+signals and auxiliary capabilities rather than authorizing their conversion.
+Managed admission must enforce the selected still-image policy, consistent color
+and EXIF/container orientation, alpha handling and mandatory-copy exceptions.
+It is not yet called by the application or included in a production payload.
+Actual JPEG/PNG conversion, appearance checks, grid/auxiliary/hostile coverage and
+worker/publication recovery remain required.

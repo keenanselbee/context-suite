@@ -75,6 +75,9 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   passthrough preserves source samples; the private bridge must carry the source
   color declaration separately. Final color/HDR and item-policy coverage, output
   conversion and production integration remain required.
+  The private in-memory bridge now passes 2,420 ABI, sample/profile, cancellation
+  and refusal checks against the same corpus; managed admission, final encoding
+  and application integration are not yet implemented.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or

@@ -70,3 +70,28 @@ collection admission,
 JPEG/PNG publication and application recovery remain separate required work.
 Do not redistribute these native builds or upstream example fixtures as part
 of the application without their separate source/license and payload review.
+
+
+Private bridge verification
+---------------------------
+
+The private `src/ContextSuite.Heif.Native` project exposes an in-memory decode
+ABI. Build it with Visual Studio 18 x64 and `CMAKE_PREFIX_PATH` pointing to the
+pinned decoder SDK; place that SDK's `heif.dll` and `libde265.dll` beside the
+result inside a fresh `.codex-temp` build. No production stage is required.
+
+```powershell
+python -B tools/heif-engine/Test-HeifBridge.py `
+  --bridge '<repository-local scratch>/ContextSuite.Heif.Native.dll' `
+  --fixture-evidence '<repository-local scratch>/heif-fixtures/<8-bit run>' `
+  --fixture-evidence '<repository-local scratch>/heif-fixtures/<10-bit run>' `
+  --fixture-evidence '<repository-local scratch>/heif-fixtures/<12-bit run>'
+```
+
+Use passing expanded fixture runs from this harness, with their inputs unchanged.
+The bridge verifier checks normalized Q16 pixels against the independently
+calculated fixture results, source color declarations, item flags, exact profiles,
+buffer bounds, refusals, cancellation and subsequent decoding. It hashes private
+source identities without copying private source into public outputs. The bridge
+reports capabilities; it is not a conversion admission policy, and this test does
+not validate final JPEG/PNG output, publication or application recovery.
