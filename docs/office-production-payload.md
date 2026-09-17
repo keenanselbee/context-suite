@@ -2,8 +2,9 @@ Office Production Candidate Payload
 ===================================
 
 Status: explicit isolated staging and verification implemented; 33 scratch
-packaging checks pass. Formal combined staging, redistribution review and release
-adoption remain open.
+packaging checks pass. [Combined candidate 1.1.1](combined-office-candidate.md)
+now passes a fresh formal build and inventory verification. Integrated workflow
+acceptance, redistribution review and release adoption remain open.
 
 The build can now include the independently prepared Office candidate alongside
 the image/audio/PDF engines. This is an optional packaging path for the existing
@@ -142,9 +143,11 @@ change.
 Remaining acceptance
 --------------------
 
+The fresh [combined candidate](combined-office-candidate.md) closes the former
+formal-build gap; its separate workflow results and limits are recorded there.
 This checkpoint does not resolve the known early-1900 Excel date errors, broaden
 supported Office variants, prove font/layout fidelity, complete network-isolation
-evidence or approve engine redistribution. A fresh formal combined payload and
-representative image/audio/PDF/Office execution and recovery checks against its
-actual staged worker remain required. No visible UI, assistive technology,
+evidence or approve engine redistribution. Representative image/audio/PDF/Office
+execution and recovery must be verified against the actual staged worker, without
+treating a successful build as proof of complete acceptance. No visible UI, assistive technology,
 theme/DPI, installer lifecycle, live commerce or signing acceptance is added.

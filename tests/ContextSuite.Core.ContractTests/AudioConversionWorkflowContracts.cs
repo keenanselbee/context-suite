@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using ContextSuite.Application;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Images;
@@ -105,12 +106,23 @@ internal static class AudioConversionWorkflowContracts
         var badPath = Path.Combine(scratch, "Unmapped.wav"); var wave = await File.ReadAllBytesAsync(sources[AudioFormat.Wave]);
         var unmapped = wave.Concat("zzzz\0\0\0\0"u8.ToArray()).ToArray(); BinaryPrimitives.WriteInt32LittleEndian(unmapped.AsSpan(4), unmapped.Length - 8);
         await File.WriteAllBytesAsync(badPath, unmapped); var badHash = await Hash(badPath);
-        var bad = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), badPath), AudioFormat.Flac, default);
-        var good = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), sources[AudioFormat.Wave]), AudioFormat.Flac, default);
-        var mixed = await fresh.ExecuteAsync(AudioConversionBatch.Create(Guid.NewGuid(), [bad, good], AudioFormat.Flac, new("convert", new())).Confirm(0, false, false), null, default);
-        check(mixed.Results[0].State == OperationState.Unsupported && mixed.Results[1].State == OperationState.Succeeded &&
-            worker.ProcessId == workerId && await Hash(badPath) == badHash,
-            "Audio conversion: unsupported metadata keeps original and next file uses the same worker");
+        try { await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), badPath), AudioFormat.Flac, default); check(false, "Audio unsupported WAV preflight"); }
+        catch (MediaWorkerException error)
+        {
+            check(error.Failure == ImageFailure.UnsupportedInput && await Hash(badPath) == badHash && worker.ProcessId == workerId,
+                "Audio conversion: unsupported WAV metadata is refused during preflight without changing the original");
+        }
+        var admissionsBeforeMixed = freshAccess.Admissions;
+        await using var mixedView = new MainViewModel(worker, new() { PlayCompletionSound = false }, publisher, freshAccess);
+        mixedView.AudioConversionRequested += (_, _) => throw new InvalidOperationException("Routine WAV-to-FLAC needs no prompt.");
+        check(mixedView.Admit(new(Guid.NewGuid(), "convert", "flac", [badPath, sources[AudioFormat.Wave]])).Accepted,
+            "Audio conversion: direct mixed selection is admitted before per-file preflight");
+        await mixedView.WaitForIdleAsync();
+        var mixed = mixedView.Rows.Select(row => row.Result).ToArray();
+        check(mixed.Length == 2 && mixed[0].State == OperationState.Unsupported && mixed[0].Publication is null &&
+            mixed[0].Message.Contains("audio information") && mixed[1].Publication is { Outcome: PublicationOutcome.CopyCreated } &&
+            freshAccess.Admissions == admissionsBeforeMixed + 1 && worker.ProcessId == workerId && await Hash(badPath) == badHash,
+            "Audio conversion: direct unsupported-metadata guidance keeps original and next file uses the same worker");
         var m4aPath = Path.Combine(scratch, "External.m4a"); var m4a = await File.ReadAllBytesAsync(sources[AudioFormat.M4a]);
         var url = m4a.AsSpan().IndexOf("url "u8); if (url < 0) throw new InvalidDataException("Missing local reference fixture.");
         m4a[url + 7] = 0; await File.WriteAllBytesAsync(m4aPath, m4a);

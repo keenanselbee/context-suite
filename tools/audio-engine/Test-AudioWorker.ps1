@@ -4,7 +4,8 @@ param([Parameter(Mandatory)][string] $ProductionStage,
     [Parameter(Mandatory, ParameterSetName = 'Curated')][string] $CandidateDirectory,
     [Parameter(Mandatory, ParameterSetName = 'Packaged')][switch] $Packaged,
     [Parameter(Mandatory)][string] $FixtureDirectory, [string] $ArtworkFixture, [switch] $IncludeOptimization, [switch] $IncludeConversion,
-    [switch] $IncludeInterruptions, [switch] $IncludePublicationCrashes, [switch] $IncludeOptimizationInterruptions)
+    [switch] $IncludeInterruptions, [switch] $IncludePublicationCrashes, [switch] $IncludeOptimizationInterruptions,
+    [Parameter(ParameterSetName = 'Packaged')][switch] $AllowOfficeCandidate)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $stage = (Resolve-Path -LiteralPath $ProductionStage).Path
@@ -38,7 +39,7 @@ if ($isCurated) {
 $scratch = Join-Path $(if ($Packaged) { $audioRoot } else { $prepared }) ('worker-' + [guid]::NewGuid().ToString('N'))
 if ($Packaged) {
     & (Join-Path (Split-Path $PSScriptRoot -Parent) 'curated-engine\Test-ProductionPayload.ps1') -Payload $stage `
-        -AllowAudioCandidate -AllowPdfCandidate:(Test-Path -LiteralPath (Join-Path $stage 'pdf-engine'))
+        -AllowAudioCandidate -AllowPdfCandidate:(Test-Path -LiteralPath (Join-Path $stage 'pdf-engine')) -AllowOfficeCandidate:$AllowOfficeCandidate
     & python -B (Join-Path $PSScriptRoot 'Stage-AudioPayload.py') --payload $stage --inventory
     if ($LASTEXITCODE -ne 0) { throw 'Packaged audio inventory verification failed.' }
     $payload = $stage

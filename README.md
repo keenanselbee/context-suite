@@ -36,7 +36,7 @@ catalog, common audio, and PDF/document support. The first Analyze source slice
 now handles unknown/empty files, initial header identification and existing DDS
 details, bounded JSON/XML structure analysis, WAVE/FLAC header facts,
 bounded OOXML/OpenDocument package and legacy DOC/XLS/PPT analysis, and a
-244-entry offline catalog.
+245-entry offline catalog.
 The [versioned launch matrix](docs/launch-capability-matrix.md) separates current
 analysis, exact conversion pairs, optimization, packaged engines and remaining
 acceptance. See [analysis coverage](docs/file-type-coverage.md) for individual
@@ -71,8 +71,10 @@ adoption and broader document fidelity remain pending. Office conversion is
 implemented separately in isolated builds and is absent from that package.
 Normal packaging still excludes this validator. [Optional Office PDF commands](docs/office-direct-command.md)
 now connect DOCX/XLSX/PPTX documents to separate validated copies, with a focused
-spreadsheet calculation choice. Integrated acceptance and Office packaging remain
-pending.
+spreadsheet calculation choice. Integrated acceptance remains pending.
+The fresh [combined 1.1.1 candidate](docs/combined-office-candidate.md)
+now packages Office alongside image/audio/PDF engines for isolated integration
+checks; fidelity, redistribution and release adoption remain open.
 The [goal record](docs/broad-file-support-goal.md)
 identifies the latest isolated staging and its limited acceptance scope.
 The owner accepted the image utility's simplified UI; screen-reader, additional

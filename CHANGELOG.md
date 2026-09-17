@@ -1,6 +1,19 @@
 Context Suite Changelog
 =======================
 
+1.1.1 - Local combined candidate, 2026-09-16
+-----------------------------------------
+
+- Package the optional isolated Word/Excel/PowerPoint-to-PDF engine alongside
+  image, audio and PDF engines for integrated local acceptance.
+- Include document-specific failure guidance, reviewed font handling,
+  calculated-date publication guards and corrected workbook capacity limits.
+- Expand the catalog to 245 descriptions and 134 qualified MIME references;
+  retain bounded analysis and copies by default.
+- Keep Office date fidelity, network-isolation evidence, redistribution,
+  listening, visible acceptance and commercial release gates open.
+
+
 1.1.0 - Local candidate, 2026-09-14
 ---------------------------------
 

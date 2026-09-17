@@ -2,7 +2,7 @@
 param([Parameter(Mandatory)][string] $ProductionStage,
     [Parameter(Mandatory)][string] $PdfFixtureDirectory,
     [Parameter(Mandatory)][string] $ImagePdfFixtureDirectory,
-    [Parameter(Mandatory)][string] $AudioFixtureDirectory)
+    [Parameter(Mandatory)][string] $AudioFixtureDirectory, [switch] $AllowOfficeCandidate)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $stage = (Resolve-Path -LiteralPath $ProductionStage).Path
@@ -17,7 +17,7 @@ foreach ($pair in @(@($stage, 'artifacts\production-staging\'),
     }
 }
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'curated-engine\Test-ProductionPayload.ps1') `
-    -Payload $stage -AllowPdfCandidate -AllowAudioCandidate
+    -Payload $stage -AllowPdfCandidate -AllowAudioCandidate -AllowOfficeCandidate:$AllowOfficeCandidate
 $inventoryTool = Join-Path (Split-Path $PSScriptRoot -Parent) 'audio-engine\Stage-AudioPayload.py'
 & python -B $inventoryTool --payload $stage --inventory
 if ($LASTEXITCODE -ne 0) { throw 'Combined production inventory verification failed.' }

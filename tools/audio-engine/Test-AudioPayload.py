@@ -70,6 +70,25 @@ def main():
     test_file.unlink()
     refused("Missing inventoried file refused", lambda: payload.verify_inventory(target))
 
+    large = scratch / "large-inventory"
+    large.mkdir()
+    large_records = []
+    for index in range(8192):
+        name = f"{index:04d}-" + "fixture-" * 8 + ".bin"
+        (large / name).write_bytes(b"")
+        large_records.append({"path": name, "bytes": 0, "sha256": payload.digest(b"")})
+    large_inventory = large / "payload-inventory.json"
+    large_inventory.write_text(json.dumps(large_records))
+    assert large_inventory.stat().st_size > 1024 * 1024
+    payload.verify_inventory(large)
+    results.append("Complete inventory above former 1 MiB limit accepted")
+    (large / large_records[-1]["path"]).write_bytes(b"changed")
+    refused("Changed final file in large inventory refused", lambda: payload.verify_inventory(large))
+    large_inventory.write_text(json.dumps([record] * 32769))
+    refused("Inventory record-count limit enforced", lambda: payload.verify_inventory(large))
+    large_inventory.write_bytes(b" " * (16 * 1024 * 1024 + 1))
+    refused("Inventory byte limit enforced before parsing", lambda: payload.verify_inventory(large))
+
     # Exercise the real entry points, including the default release allowlist.
     # Invalid requests must fail before any build or runtime execution.
     guards = [

@@ -100,9 +100,13 @@ def stage(distribution, payload):
 def verify_inventory(payload):
     root = local_path(payload)
     inventory = root / "payload-inventory.json"
-    if inventory.stat().st_size > 1024 * 1024:
+    # The complete Office candidate has over 19,000 pinned runtime files.
+    # Keep parsing bounded while admitting the combined production inventory.
+    if inventory.stat().st_size > 16 * 1024 * 1024:
         raise ValueError("Oversized production inventory")
     records = json.loads(inventory.read_text())
+    if not isinstance(records, list) or len(records) > 32768:
+        raise ValueError("Invalid production inventory record count")
     expected = {item["path"].replace("\\", "/"): item for item in records}
     if len(expected) != len(records):
         raise ValueError("Duplicate production inventory entries")
@@ -114,7 +118,9 @@ def verify_inventory(payload):
             if relative not in expected:
                 raise ValueError("Uninventoried production file: " + relative)
             item = expected[relative]
-            if path.stat().st_size != item["bytes"] or digest(path.read_bytes()) != item["sha256"]:
+            with path.open("rb") as stream:
+                actual_hash = hashlib.file_digest(stream, "sha256").hexdigest().upper()
+            if path.stat().st_size != item["bytes"] or actual_hash != item["sha256"]:
                 raise ValueError("Production inventory identity differs: " + relative)
             actual.add(relative)
     if actual != set(expected):
