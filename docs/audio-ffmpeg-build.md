@@ -41,6 +41,10 @@ extraction. It preserves the original source inventory and records the patch and
 effective source hashes. Existing candidate/source directories and retained
 archives stay read-only. The modified version suffix identifies this experiment;
 decoder fidelity, native review and distribution/adoption remain separate gates.
+`--wma-standard-tail-repair` independently selects the final-reservoir/overlap
+evaluation patch for Standard, also requiring expanded inputs and a fresh source
+extraction. It can be combined with the Pro option. Both changes and their
+distinct version suffixes are recorded; neither enables application commands.
 The [dependency runner](audio-dependency-builds.md) and
 [build-tool recipes](audio-build-tools.md) prepare those inputs. The launcher uses
 existing Windows short paths, MSVC's dynamic CRT, explicit local library paths

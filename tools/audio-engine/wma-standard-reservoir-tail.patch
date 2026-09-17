@@ -1,0 +1,46 @@
+--- a/libavcodec/wmadec.c
++++ b/libavcodec/wmadec.c
+@@ -846,14 +846,39 @@
+         if (s->eof_done)
+             return 0;
+ 
+-        frame->nb_samples = s->frame_len;
++        frame->nb_samples = s->frame_len + s->frame_len / 2;
+         if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+             return ret;
+ 
+         frame->pts = AV_NOPTS_VALUE;
+-        for (int i = 0; i < s->avctx->ch_layout.nb_channels; i++)
+-            memcpy(frame->extended_data[i], &s->frame_out[i][0],
+-                   frame->nb_samples * sizeof(s->frame_out[i][0]));
++        frame->nb_samples = s->frame_len;
++        if (s->use_bit_reservoir && s->last_superframe_len > 0) {
++            int overlap;
++            if (s->last_superframe_len > MAX_CODED_SUPERFRAME_SIZE ||
++                s->last_bitoffset < 0 || s->last_bitoffset > 7)
++                return AVERROR_INVALIDDATA;
++            if ((ret = init_get_bits(&s->gb, s->last_superframe,
++                                    s->last_superframe_len * 8)) < 0)
++                return ret;
++            skip_bits(&s->gb, s->last_bitoffset);
++            /* The final reservoir can contain a complete encoded frame even
++             * though no later packet arrives to trigger its usual decode. */
++            if ((ret = wma_decode_frame(s, (float **)frame->extended_data, 0)) < 0)
++                return ret;
++            if (get_bits_left(&s->gb) < 0)
++                return AVERROR_INVALIDDATA;
++            /* wma_decode_frame retained the reconstructed overlap at offset
++             * zero. Preserve the valid tail left by the final short block. */
++            overlap = (s->frame_len - s->block_len) / 2;
++            for (int i = 0; i < s->avctx->ch_layout.nb_channels; i++)
++                memcpy((float *)frame->extended_data[i] + s->frame_len,
++                       s->frame_out[i], overlap * sizeof(s->frame_out[i][0]));
++            frame->nb_samples += overlap;
++        } else {
++            for (int i = 0; i < s->avctx->ch_layout.nb_channels; i++)
++                memcpy(frame->extended_data[i], &s->frame_out[i][0],
++                       frame->nb_samples * sizeof(s->frame_out[i][0]));
++        }
+ 
+         s->last_superframe_len = 0;
+         s->eof_done = 1;

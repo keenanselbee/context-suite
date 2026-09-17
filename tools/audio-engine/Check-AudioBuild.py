@@ -86,20 +86,20 @@ def review_source_changes(directory, record):
         raise ValueError("Effective source inventory changed")
     effective = json.loads(effective_path.read_text())
     patches = record["patches"]
-    if record["wmaProTailRepair"]:
-        patch = TOOLS / "wmapro-terminal-overlap.patch"
-        target = "libavcodec/wmaprodec.c"
-        if (not record["expandedInputs"] or len(patches) != 1
-                or patches[0]["path"] != patch.name
-                or patches[0]["sha256"] != build_tool.digest(patch)
-                or set(patches[0]["modifiedSources"]) != {target}):
-            raise ValueError("WMA Pro source patch identity differs")
-        changed = patches[0]["modifiedSources"][target]
+    selected = [(name, target) for enabled, name, target in (
+        (record["wmaProTailRepair"], "wmapro-terminal-overlap.patch", "libavcodec/wmaprodec.c"),
+        (record["wmaStandardTailRepair"], "wma-standard-reservoir-tail.patch", "libavcodec/wmadec.c")) if enabled]
+    if len(patches) != len(selected) or (patches and not record["expandedInputs"]):
+        raise ValueError("Unselected WMA source patch")
+    for entry, (name, target) in zip(patches, selected):
+        patch = TOOLS / name
+        if (entry["path"] != patch.name or entry["sha256"] != build_tool.digest(patch)
+                or set(entry["modifiedSources"]) != {target}):
+            raise ValueError("WMA source patch identity differs")
+        changed = entry["modifiedSources"][target]
         if changed == expected[target] or changed != build_tool.digest(directory / "source" / target):
-            raise ValueError("WMA Pro effective source differs")
+            raise ValueError("WMA effective source differs")
         expected[target] = changed
-    elif patches:
-        raise ValueError("Unselected FFmpeg source patch")
     if effective != expected:
         raise ValueError("Effective source changes exceed the reviewed patch")
     return patches

@@ -97,9 +97,10 @@ def main():
     parser.add_argument("--configure-only", action="store_true")
     parser.add_argument("--expanded-inputs", action="store_true", help="Evaluate AIFF/AIFF-C and ASF/WMA inputs; no additional output codecs")
     parser.add_argument("--wma-pro-tail-repair", action="store_true", help="Evaluate the local terminal-overlap patch in a fresh expanded-input build")
+    parser.add_argument("--wma-standard-tail-repair", action="store_true", help="Evaluate the local final-reservoir patch in a fresh expanded-input build")
     args = parser.parse_args()
-    if args.wma_pro_tail_repair and not args.expanded_inputs:
-        raise ValueError("The WMA Pro repair requires expanded inputs")
+    if (args.wma_pro_tail_repair or args.wma_standard_tail_repair) and not args.expanded_inputs:
+        raise ValueError("WMA repairs require expanded inputs")
     if os.name != "nt" or sys.version_info < (3, 14):
         raise ValueError("Use Windows x64 with Python 3.14 or later")
     pins = {item["id"]: item for item in json.loads(pathlib.Path(__file__).with_name("source-inputs.json").read_text())["archives"]}
@@ -144,18 +145,21 @@ def main():
     print(f"Retained {len(inventory)} FFmpeg source files.", flush=True)
     patches = []
     effective = {item["path"]: item["sha256"] for item in inventory}
-    if args.wma_pro_tail_repair:
-        patch = pathlib.Path(__file__).with_name("wmapro-terminal-overlap.patch")
+    for enabled, name, target in ((args.wma_pro_tail_repair, "wmapro-terminal-overlap.patch", "libavcodec/wmaprodec.c"),
+                                  (args.wma_standard_tail_repair, "wma-standard-reservoir-tail.patch", "libavcodec/wmadec.c")):
+        if not enabled:
+            continue
+        patch = pathlib.Path(__file__).with_name(name)
         patch_hash = digest(patch)
         for options in (["--check"], []):
             applied = subprocess.run(["git", "apply", "--no-index", *options, str(patch)],
                                      cwd=source, capture_output=True, text=True, timeout=30)
             if applied.returncode:
-                raise ValueError("WMA Pro patch refused: " + applied.stderr)
+                raise ValueError("WMA patch refused: " + applied.stderr)
         modified = {item["path"]: digest(source / item["path"]) for item in inventory
-                    if digest(source / item["path"]) != item["sha256"]}
-        if set(modified) != {"libavcodec/wmaprodec.c"} or digest(patch) != patch_hash:
-            raise ValueError("WMA Pro patch changed unexpected inputs")
+                    if digest(source / item["path"]) != effective[item["path"]]}
+        if set(modified) != {target} or digest(patch) != patch_hash:
+            raise ValueError("WMA patch changed unexpected inputs")
         effective.update(modified)
         patches.append({"path": patch.name, "sha256": patch_hash, "modifiedSources": modified})
     (workspace / "effective-sources.json").write_text(json.dumps(effective, indent=2))
@@ -228,6 +232,7 @@ def main():
         "LD=sh " + source_path + "/compat/windows/mslink",
         "WINDRES=sh " + source_path + "/compat/windows/mswindres", "-j2", "ffmpeg.exe", "ffprobe.exe"]
     version_suffix = "contextsuite-g9b0578816c6f" + ("-wmapro-tail2" if args.wma_pro_tail_repair else "")
+    version_suffix += "-wmastandard-tail1" if args.wma_standard_tail_repair else ""
     configure = ["sh", short_path(source / "configure"), "--toolchain=msvc", "--arch=x86_64", "--target-os=win32",
         "--extra-version=" + version_suffix,
         "--disable-autodetect", "--disable-everything", "--disable-programs", "--enable-ffmpeg", "--enable-ffprobe",
@@ -267,6 +272,7 @@ def main():
     record = {"status": "Configure-only attempt" if args.configure_only else "Unaccepted candidate build attempt",
               "expandedInputs": args.expanded_inputs,
               "wmaProTailRepair": args.wma_pro_tail_repair, "patches": patches,
+              "wmaStandardTailRepair": args.wma_standard_tail_repair,
               "effectiveSourcesSha256": digest(workspace / "effective-sources.json"),
               "source": pins["ffmpeg"], "dependencies": {name: {"directory": str(value[0]), "manifestSha256": digest(value[0] / "dependency-build.json")} for name, value in builds.items()},
               "configure": configure, "make": make_command, "scriptSha256": script_sha256,

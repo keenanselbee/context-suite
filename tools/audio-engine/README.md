@@ -26,6 +26,11 @@ extents and 23 stereo accuracy checks, with 13 Lossless cases still exact.
 Eleven Standard/Voice extent failures remain; the managed adapter and shipping
 payload do not admit this experimental runtime. See the corpus document for
 native review, fixed sample limits, retained failures and open adoption gates.
+The combined `--wma-standard-tail-repair` evaluation also passes 20 Standard
+extent/sample comparisons, with 62 equal extents in the 71-case corpus. Nine
+Voice extent failures remain. The exact prior files pass 57 repair/preservation
+assertions; all 51 non-Standard outputs are unchanged. This runtime remains an
+isolated experiment, with no managed runtime pin or customer capability change.
 Run `Test-WmaSystemCodecs.py '<expanded workspace>'` to reproduce. Its expected
 nonzero result must not be reported as passing WMA support.
 

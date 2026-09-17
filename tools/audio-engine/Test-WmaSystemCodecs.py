@@ -40,6 +40,12 @@ PRO_TAIL_FRAMES = (511, 512, 513, 1023, 1024, 1025, 1535, 1536, 1537,
 # RMS < 1.6e-7. Apply the limits to the complete independent Windows output.
 PRO_STEREO_MAXIMUM_ERROR = 1e-6
 PRO_STEREO_RMS_ERROR = 3e-7
+STANDARD_TAIL_FRAMES = (511, 512, 513, 1023, 1024, 1025, 2047, 2048,
+                        2050, 4095, 4096, 4097, 47999, 48001)
+# Frozen before the native Standard repair build. Reservoir diagnostics recover
+# all six original Windows outputs with peak < 5e-7 and RMS < 1.2e-7.
+STANDARD_MAXIMUM_ERROR = 1e-6
+STANDARD_RMS_ERROR = 3e-7
 
 
 def digest(path):
@@ -122,6 +128,9 @@ def main():
                 'proStereo16TailFrames': PRO_TAIL_FRAMES,
                 'proStereoMaximumError': PRO_STEREO_MAXIMUM_ERROR,
                 'proStereoRmsError': PRO_STEREO_RMS_ERROR,
+                'standardStereo16TailFrames': STANDARD_TAIL_FRAMES,
+                'standardMaximumError': STANDARD_MAXIMUM_ERROR,
+                'standardRmsError': STANDARD_RMS_ERROR,
                 'criteria': 'Lossless must match authored samples exactly. Compare complete decoded extents for all codecs; report prefix error separately, never align, trim or pad to pass. Lossy listening quality remains unverified.'}
     (evidence / 'identity.json').write_text(json.dumps(identity, indent=2) + '\n')
     results = []
@@ -131,6 +140,8 @@ def main():
             lengths += (65535, 65536, 65537, 192000)
         if (codec, rate, channels, bits) == ('pro', 48000, 2, 16):
             lengths += PRO_TAIL_FRAMES
+        if (codec, rate, channels, bits) == ('standard', 48000, 2, 16):
+            lengths += STANDARD_TAIL_FRAMES
         for frames in lengths:
             name = f'{codec}-{rate}-{channels}-{bits}-{frames}'
             directory = evidence / name
@@ -187,6 +198,13 @@ def main():
                 item['candidateFrames'] = len(actual) // channels
                 item['windowsFrames'] = len(reference) // channels
                 item['acceptedExtent'] = bool(actual and reference) and item['candidateVsWindows']['sameExtent']
+                if codec == 'standard':
+                    comparison = item['candidateVsWindows']
+                    # Standard encoder padding remains part of the independent
+                    # Windows output; never trim it to the authored duration.
+                    item['acceptedStandardSamples'] = (item['acceptedExtent']
+                        and comparison['maximum'] <= STANDARD_MAXIMUM_ERROR
+                        and comparison['rms'] <= STANDARD_RMS_ERROR)
                 if codec == 'pro':
                     declarations = pro_frames.inspect(facts)
                     (directory / 'frame-headers.json').write_text(json.dumps(declarations, indent=2) + '\n')
@@ -215,7 +233,8 @@ def main():
         if digest(binary / item['path']) != item['sha256']:
             raise ValueError('Candidate changed during evaluation')
     complete = all(item['status'] == 'observed' and item['acceptedExtent']
-                   and item.get('acceptedLossless', True) and item.get('acceptedProSamples', True) for item in results)
+                   and item.get('acceptedLossless', True) and item.get('acceptedProSamples', True)
+                   and item.get('acceptedStandardSamples', True) for item in results)
     (evidence / 'summary.json').write_text(json.dumps({'cases': len(results), 'accepted': complete,
         'observed': sum(item['status'] == 'observed' for item in results),
         'equalExtents': sum(item.get('acceptedExtent', False) for item in results)}, indent=2) + '\n')

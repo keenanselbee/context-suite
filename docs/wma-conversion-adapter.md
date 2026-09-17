@@ -6,6 +6,12 @@ actual-worker admission/publication, representative timing and listening
 acceptance, remaining WMA variants and combined payload adoption are pending.
 The installed application and reserved combined 1.1.1 stage are unchanged.
 
+Latest isolated native evidence also repairs Standard's retained final frame:
+20 Standard extent/sample comparisons pass in the 71-case system corpus, with
+26 Pro extents, 23 Pro stereo accuracy passes and 13 exact Lossless cases retained.
+Nine Voice extent failures remain. The adapter still pins its earlier runtime;
+the repaired candidate is not admitted to managed conversion or shipping output.
+
 The later [independent system-codec corpus](wma-system-codec-evaluation.md)
 finds Standard/Pro/Voice sample-extent differences. Its Lossless fixture packet
 loss is corrected with 13 exact source comparisons. Earlier same-FFmpeg tests remain scoped

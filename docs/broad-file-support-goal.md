@@ -146,6 +146,12 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   The fresh 57-case run has 46 equal extents and 13 exact Lossless cases; eleven
   Standard/Voice failures remain. Broader Pro fidelity and all integration,
   distribution and customer-admission gates remain open.
+  The combined Standard/Pro evaluation now decodes the retained Standard final
+  frame and overlap: all 20 Standard sample/extent checks pass. Its 71-case corpus
+  has 62 equal extents, with all prior Pro and Lossless passes retained; nine
+  Voice extent failures remain. Replay preserves 51 non-Standard outputs exactly.
+  The native repair remains isolated; managed pins and customer commands are
+  unchanged. Broader fidelity, hostile timelines, worker and adoption gates remain.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

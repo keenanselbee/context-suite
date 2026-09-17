@@ -3,8 +3,8 @@ Independent WMA Codec Evaluation
 
 Status: **WMA fidelity not accepted**, 2026-09-17 local date. The Lossless fixture
 writer's packet loss is corrected; 13 Lossless cases now preserve exact source
-samples. An opt-in Pro repair now passes the declared 26-case extent and
-23-case stereo sample checks. Standard/Voice differences remain. WMA stays outside
+samples. Opt-in repairs now pass 20 Standard sample/extent checks, 26 Pro extent
+checks and 23 Pro stereo sample checks. Voice differences remain. WMA stays outside
 customer commands and the selected production payload; its required input goal
 is unchanged. The original failed observations below remain part of the record.
 
@@ -47,6 +47,80 @@ against the authored source and independent decoder. All codecs require equal,
 nonempty decoded extents between implementations for this comparison. Prefix
 sample error is reported separately; it never excuses a missing tail. No
 comparison aligns, pads or trims audio to pass.
+
+
+Isolated Standard decoder repair
+--------------------------------
+
+The final Standard packet can leave a complete encoded frame in the decoder's
+bit reservoir. The original EOF path emits existing overlap without decoding
+that frame. This damages the audible tail and can omit another 512 reconstructed
+samples. A retained-state diagnostic at
+`.codex-temp/wma-standard-state-2cb2140a185444ac9af68070b8adeed0` consumes that
+reservoir with the pinned decoder and captures its remaining overlap. All six
+original Standard cases then match Windows extents; peak differences stay below
+`5e-7` and RMS below `1.2e-7`. This diagnostic is separate from native repair
+acceptance and is not a production decoding path.
+
+The opt-in `--wma-standard-tail-repair` build option applies the local
+[reservoir patch](../tools/audio-engine/wma-standard-reservoir-tail.patch) only
+to a fresh extraction. At EOF it decodes retained bytes, rejects an exhausted
+bitstream, and appends the actual overlap determined by the final block size.
+The non-reservoir output path remains unchanged. It can be combined with the
+Pro repair; each selected patch has its own hash, source change and version
+suffix. No synthetic packet, output padding or sample alignment is used by the
+patch.
+
+Before building, the Standard acceptance limits were fixed at peak error `1e-6`
+and RMS error `3e-7` against complete Windows output. Encoder padding remains
+part of that comparison; no authored-duration trim is allowed. The corpus adds
+14 stereo PCM16 source lengths: 511, 512, 513, 1,023, 1,024, 1,025, 2,047,
+2,048, 2,050, 4,095, 4,096, 4,097, 47,999 and 48,001 frames. Together with the
+six existing Standard cases and previous Pro/Lossless/Voice cases, this makes
+71 observations. Broader rates, coding modes, discontinuities, malformed inputs
+and listening remain separate acceptance gates.
+
+The combined repaired build is
+`.codex-temp/audio-ffmpeg-9442e1e447824b6dac315cf4128903ce`, with suffix
+`contextsuite-g9b0578816c6f-wmapro-tail2-wmastandard-tail1`. Its seven runtime
+files total 5,056,000 bytes, 512 bytes more than the Pro-only build. Standard
+patch SHA-256 is
+`356C4F674923E542C22501ADAEBDB29143E3652431AE6915D917DFD17040DAEB`;
+the modified `libavcodec/wmadec.c` hash is
+`F0C6D70449D578B983FA9EB6C541D230471C95DD5F31B0AC007F0C96B8E4C455`.
+The original source archive/inventory and the Pro patch remain unchanged.
+
+Fresh corpus `wma-system-matrix-4ec8e4f014164f228c1de7af3a94307e` completes
+**71 observations with 62 equal nonempty extents**. All **20 Standard cases**
+pass the fixed sample limits; largest peak/RMS differences are approximately
+`4.77e-7`/`1.12e-7`. All **26 Pro extents**, **23 stereo Pro accuracy checks**
+and **13 exact Lossless cases** still pass. Nine Voice extent failures remain,
+with its earlier sample differences; the runner correctly returns exit 1 and
+`accepted: false`. Equal surround Pro extents still do not certify its fidelity.
+
+Replay `wma-standard-repair-replay-f061c3c4a5754c969c6716c278a8af82` uses the
+previous Pro-repaired corpus's exact files and retained Windows output. All
+**57 repair/preservation assertions** pass: six Standard cases now meet complete
+Windows extent/accuracy, their already decoded prefixes remain byte-identical,
+and all 51 non-Standard outputs remain byte-identical. The last group includes
+known Voice failures; it is preservation evidence, not acceptance of Voice.
+
+Additional evidence inside the combined build:
+
+- `build-review-8094a1f9269e4b3bb2674d32a9ba5305`: both patch identities,
+  eleven previously reviewed diagnostics and all seven hardened PE files.
+- `expanded-inputs-3da20faf8e5c4c1a9adebd6101930ab8`: all 27 existing input
+  fixtures pass, including non-reservoir WMA v1/v2 and exact AIFF PCM/float.
+- `smoke-30a1826d167f460ba8fc60a776ebdb21`: all six output targets, artwork
+  decoding and original preservation pass.
+
+Twelve provenance checks pass at
+`.codex-temp/wma-standard-repair-guards-d35a3f1f566d4b2d84a6bcf9896a4497`,
+covering selected patches and refusal of missing/swapped/altered entries,
+unselected flags and changed effective-source identity. Missing expanded-input
+opt-in is also refused before dependency access. No managed production runtime
+pin, worker allowlist, installed app or reserved package changed; managed suites
+were not rerun for this isolated native/tooling change.
 
 
 Isolated Pro decoder repair
@@ -284,11 +358,11 @@ The expected current result is exit 1 with a complete failed-acceptance receipt.
 Inspect per-case writer/native logs and comparisons; do not report mere process
 success or equal FFmpeg builds as fidelity evidence. No app build is needed.
 
-Next extend Pro fidelity/hostile-input evidence beyond the repaired corpus.
-Investigate Standard and Voice separately or evaluate a bounded Windows decoding
-path against the same authored samples and independent evidence.
-Resolve Standard tail/timeline behavior; retain the corrected Lossless
-fixture regression. Malformed/discontinuous timeline tests remain a separate gate.
+Next extend Standard/Pro fidelity and hostile-input evidence beyond the repaired
+corpus. Investigate Voice separately or evaluate a bounded Windows decoding path
+against the same authored samples and independent evidence. Resolve broader
+Standard timeline behavior and retain the corrected Lossless fixture regression.
+Malformed/discontinuous timeline tests remain a separate gate.
 Then finish ASF metadata compatibility, actual-worker publication/recovery,
 resource budgets and human listening/usability before enabling WMA commands.
 No required codec family is silently removed by these failed observations.
