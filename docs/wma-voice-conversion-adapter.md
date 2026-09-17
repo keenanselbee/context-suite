@@ -13,7 +13,7 @@ Provider and conversion boundary
 `AudioEncodingAdapter` accepts an explicit optional Windows Voice directory.
 The provider requires Windows 11 x64 and retains verified directory and read-only
 file leases on the owned helper. Its selected SHA-256 is
-`AA295AE98450A52E2A3678EFA35BA6027380DECE5815334969B80C2F550C0E5F`.
+`B03029719B338363193C6111A204B144A23EF52947301D6CA5493267C3D0DBA5`.
 The helper uses the operating system's Media Foundation/Voice codec. Windows DLLs
 are not copied into the payload or pinned to one host's hashes. No fallback,
 download, registration or automatic component installation is performed.
@@ -34,9 +34,10 @@ Windows environments still require acceptance; injected statuses do not prove
 that environment behavior.
 
 The initial provider admits mono PCM16-decoded Voice at 8, 11.025, 16 and
-22.05 kHz. It retains the native evaluation's 16 MiB input and 262,144-frame
-decoded limit; these are temporary integration bounds, not the final launch
-duration budget. The broader file-support goal is unchanged.
+22.05 kHz. The later [streaming revision](wma-voice-streaming-verification.md)
+replaces the short evaluation bounds with the shared 512 MiB input and 1 GiB
+decoded float64 budget. It verifies five-minute generated speech at all four
+rates and all six targets; broader resource and media acceptance remain open.
 
 Before decoding, the complete bounded ASF object inventory must pass protection,
 stream, metadata and object-extent checks. The provider inherits the owned
@@ -155,6 +156,10 @@ Existing audio replay
 `voice-availability-audio-regression-4f94d0eebe5c4b149bfcadcf2c7d847d` passes
 **368 probe/encoding checks**, including the shared launcher. Public foundation,
 WMA v1/v2 and AIFF matrices above were not rerun for this availability-only change.
+
+The later streaming revision records 55 focused checks and 24 five-minute speech
+conversions, plus a retained continuous-tone/Opus refusal. See its linked evidence
+for the refreshed helper identity, timings and unchanged fidelity thresholds.
 
 Remaining work includes missing-component environment acceptance, broader duration/resource
 and real speech/music/mixed-mode coverage, hostile/discontinuous packet timelines,

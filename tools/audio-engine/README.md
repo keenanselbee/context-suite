@@ -55,6 +55,11 @@ parsing, requires a parent-owned job and emits a bounded versioned reply. The
 linked adapter document records the refreshed pin, 25 availability/launcher
 checks and unchanged 48 native/52 process checks. Missing-component Windows
 acceptance remains separate from injected exit-status tests.
+`Test-WmaVoiceDuration.py --speech '<expanded runtime bin>'` authors a bounded
+five-minute corpus using an installed offline Windows voice. The later
+[streaming verification](../../docs/wma-voice-streaming-verification.md) records
+all six targets, exact reference comparison and a retained continuous-tone
+failure; the shared limits do not imply unrestricted duration acceptance.
 
 The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
 cover tiny recordings, codec-frame boundaries and safe publication/recovery.

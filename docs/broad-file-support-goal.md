@@ -177,6 +177,11 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   passes 25 focused checks, and its rebuilt helper repeats 48 native and 52
   process checks. Actual missing-component Windows acceptance, broader media/resource
   acceptance, actual-worker integration and packaging remain.
+  The [streaming Voice revision](wma-voice-streaming-verification.md) removes the
+  short decoded-duration cap and uses the shared file/decoded budgets. It passes
+  55 checks with 24 five-minute generated-speech conversions and repeats the 339
+  short/metadata checks. A continuous-tone Windows reference develops saturated
+  DC and Opus correctly refuses it; that pathology and broader acceptance remain open.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

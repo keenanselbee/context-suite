@@ -112,7 +112,7 @@ def main():
     # Check output ownership and early refusal separately from codec fidelity.
     large = evidence / 'oversized.wma'
     with large.open('xb') as stream:
-        stream.truncate(16 * 1024 * 1024 + 1)
+        stream.truncate(512 * 1024 * 1024 + 1)
     standard = next(row for row in rows if row['name'] == 'standard-44100-1-16-1')
     standard_path = corpus / standard['name'] / 'fixture.wma'
     if system.digest(standard_path) != standard['wmaSha256']:

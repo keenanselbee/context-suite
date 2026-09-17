@@ -17,6 +17,9 @@
 
 using Microsoft::WRL::ComPtr;
 static FILE* diagnostics = stdout;
+static bool logSamples = true;
+// Match the managed file adapter: 512 MiB input and 1 GiB float64 reference.
+static constexpr UINT64 MaximumFrames = 1024ULL * 1024 * 1024 / 8;
 class VoiceUnavailable final : public std::runtime_error {
 public:
     explicit VoiceUnavailable(const char* operation) : std::runtime_error(operation) { }
@@ -122,7 +125,7 @@ static void Pull(IMFTransform* decoder, HANDLE output, bool floating, UINT64& to
         BYTE* bytes = nullptr; DWORD length = 0;
         Require(buffer->Lock(&bytes, nullptr, &length), "Lock output");
         DWORD unit = floating ? 4 : 2;
-        if (length % unit || length > 1024 * 1024 || total + length / unit > 262144) {
+        if (length % unit || length > 1024 * 1024 || total + length / unit > MaximumFrames) {
             buffer->Unlock(); throw std::runtime_error("Decoded extent exceeds the evaluation bound");
         }
         std::vector<float> converted;
@@ -136,7 +139,7 @@ static void Pull(IMFTransform* decoder, HANDLE output, bool floating, UINT64& to
         buffer->Unlock();
         if (!success || saved != outputBytes) throw std::runtime_error("Cannot save decoded samples");
         LONGLONG time = -1, duration = -1; owned->GetSampleTime(&time); owned->GetSampleDuration(&duration);
-        std::fprintf(diagnostics, "Output: frames=%lu time=%lld duration=%lld\n", outputBytes / 4, time, duration);
+        if (logSamples) std::fprintf(diagnostics, "Output: frames=%lu time=%lld duration=%lld\n", outputBytes / 4, time, duration);
         total += outputBytes / 4;
     }
     throw std::runtime_error("Decoder output did not reach a bounded input boundary");
@@ -155,7 +158,7 @@ static void Decode(const wchar_t* input, bool inherited) {
         Require(MFCreateFile(MF_ACCESSMODE_READ, MF_OPENMODE_FAIL_IF_NOT_EXIST, MF_FILEFLAGS_NONE, input, &stream), "Open source");
     }
     QWORD size = 0; Require(stream->GetLength(&size), "Read source size");
-    if (!size || size > 16 * 1024 * 1024) throw std::runtime_error("Source exceeds evaluation limit");
+    if (!size || size > 512ULL * 1024 * 1024) throw std::runtime_error("Source exceeds evaluation limit");
     ComPtr<IMFSourceReader> reader;
     Require(MFCreateSourceReaderFromByteStream(stream.Get(), nullptr, &reader), "Create compressed reader");
     Require(reader->SetStreamSelection(static_cast<DWORD>(MF_SOURCE_READER_ALL_STREAMS), FALSE), "Deselect streams");
@@ -204,7 +207,7 @@ static void Decode(const wchar_t* input, bool inherited) {
                 throw std::runtime_error("Cannot write sample header");
         }
         bool ended = false;
-        for (unsigned count = 0; count < 4096; ++count) {
+        for (unsigned count = 0; count < 1000000; ++count) {
             DWORD flags = 0; LONGLONG time = 0; ComPtr<IMFSample> sample;
             Require(reader->ReadSample(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), 0, nullptr, &flags, &time, &sample), "Read compressed sample");
             if (flags & ~MF_SOURCE_READERF_ENDOFSTREAM) throw std::runtime_error("Unexpected source stream transition");
@@ -229,6 +232,7 @@ int wmain(int count, wchar_t** args) {
     const bool inherited = std::wcscmp(args[1], L"--inherited") == 0;
     const bool availability = std::wcscmp(args[1], L"--availability") == 0;
     if (inherited || availability) diagnostics = stderr;
+    logSamples = !inherited;
     bool com = false, media = false;
     try {
         if (!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32))
