@@ -611,3 +611,12 @@ The later [upstream interoperability record](heif-interoperability.md) verifies
 12 real-worker outputs from six independently produced still images. It also
 identifies six color-admission gaps requiring resolution before acceptance.
 Passing current-policy refusals does not establish those files are supported.
+
+The subsequent [color and alpha checkpoint](heif-color-fallback.md) resolves
+those color-admission gaps with ABI-3 effective declarations and retained ICC,
+while refusing two upstream files with inconsistent color/alpha transforms.
+It verifies 66 authored missing/unspecified-color and hidden-HDR variants, 84
+additional fidelity outputs and 104 actual-worker copies from the combined
+upstream/authored corpus. The final decoder repeats the existing adapter,
+worker, loader and active-native recovery checks. That record owns the current
+payload/source-kit identities; production adoption and full acceptance remain open.

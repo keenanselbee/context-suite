@@ -46,8 +46,10 @@ def main():
     pins = json.loads(manifest.read_text())
     sources, aom = local(args.sources), local(args.aom)
     cmake = Path(args.cmake).resolve(strict=True)
+    patches = [("libheif", "libheif-de265-push-errors.patch"),
+               ("libheif", "libheif-hidden-hdr.patch"), ("libde265", "libde265-color-signals.patch")]
     inputs = {str(path): digest(path) for path in (Path(__file__).resolve(), manifest,
-              recipe / "libheif-de265-push-errors.patch", cmake)}
+              *(recipe / name for _, name in patches), cmake)}
     for pin in pins["archives"]:
         path = sources / (pin["name"] + ".tar.gz")
         if path.stat().st_size != pin["bytes"] or digest(path) != pin["sha256"]:
@@ -104,12 +106,14 @@ def main():
             print(child.stdout.decode(errors="replace"), child.stderr.decode(errors="replace"), flush=True)
             raise RuntimeError("Failed " + name + "; retained evidence: " + str(workspace))
 
-    patch = recipe / "libheif-de265-push-errors.patch"
     heif_source = workspace / "source/libheif"
-    run("patch-check", ["git", "apply", "--check", patch], heif_source)
-    run("patch", ["git", "apply", patch], heif_source)
+    for library, name in patches:
+        patch = recipe / name
+        run(name + "-check", ["git", "apply", "--check", patch], workspace / "source" / library)
+        run(name + "-apply", ["git", "apply", patch], workspace / "source" / library)
     changed = {key: digest(workspace / key) for key in inventory if digest(workspace / key) != inventory[key]}
-    if set(changed) != {"source/libheif/libheif/plugins/decoder_libde265.cc"}:
+    if set(changed) != {"source/libheif/libheif/plugins/decoder_libde265.cc",
+                        "source/libheif/libheif/image-items/image_item.cc", "source/libde265/libde265/vui.cc"}:
         raise ValueError("Patch affected unexpected source membership")
     (workspace / "patched-sources.json").write_text(json.dumps(changed, indent=2) + "\n")
     common = ["-G", "Visual Studio 18 2026", "-A", "x64", "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",

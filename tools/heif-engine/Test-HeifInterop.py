@@ -17,6 +17,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--inputs", required=True, type=Path)
     parser.add_argument("--bridge", required=True, type=Path)
+    parser.add_argument("--color-evidence", type=Path, help="Also exercise passing authored missing-color/HDR cases")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     source = args.inputs.resolve(strict=True)
@@ -47,6 +48,39 @@ def main():
             inputs[str(root / name)] = digest(root / name)
     evidence = root / ".codex-temp/heif-interop" / uuid.uuid4().hex
     evidence.mkdir(parents=True)
+    if args.color_evidence:
+        colors = args.color_evidence.resolve(strict=True)
+        colors.relative_to(root / ".codex-temp")
+        color_manifest = colors / "results.json"
+        native = json.loads(color_manifest.read_text())
+        if not native["Passed"]:
+            raise ValueError("Passing native color evidence required")
+        recorded = json.loads((colors / "inputs.json").read_text())
+        if any(digest(Path(path)) != expected for path, expected in recorded.items()):
+            raise ValueError("Native color evidence changed")
+        inputs.update(recorded); inputs[str(color_manifest)] = digest(color_manifest)
+        combined = evidence / "fixtures"
+        shutil.copytree(source, combined)
+        (combined / "authored").mkdir()
+        for row in native["Rows"]:
+            path = Path(row["file"]).resolve(strict=True)
+            path.relative_to(colors / "fixtures")
+            if digest(path) != row["sha256"]:
+                raise ValueError("Authored color input changed")
+            inputs[str(path)] = row["sha256"]
+            destination = combined / "authored" / path.name
+            shutil.copy2(path, destination)
+            case = {"path": "authored/" + path.name, "sha256": row["sha256"], "expectation": "refuse" if row["hdr"] else "convert"}
+            if not row["hdr"]:
+                facts = row["info"]
+                case.update(width=facts["width"], height=facts["height"], bits=facts["bits"], alpha=False,
+                            requiresCopy=bool(facts["flags"] & 2048))
+            corpus["cases"].append(case)
+        source = combined
+        manifest = evidence / "combined-corpus.json"
+        manifest.write_text(json.dumps(corpus, indent=2))
+        inputs[str(manifest)] = digest(manifest)
+        inputs.update({str(path): digest(path) for path in source.rglob("*") if path.is_file()})
     (evidence / "inputs.json").write_text(json.dumps(inputs, indent=2))
     print("HEIF interoperability evidence:", evidence, flush=True)
 

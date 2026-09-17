@@ -5,6 +5,12 @@ Status: local engineering evidence, 2026-09-16; commercial redistribution and
 production adoption remain open. The [input evaluation](heif-input-evaluation.md)
 owns media boundaries. These bundles do not replace reserved candidate 1.1.1.
 
+The later [color and alpha checkpoint](heif-color-fallback.md) owns the current
+ABI-3 payload and revised source/runtime ZIP identities. It adds two source
+patches, passes 16 distribution checks and reuses a verified rebuild of the
+byte-identical revised source kit. The earlier identities and 14-check results
+below are retained history; the release decisions still apply.
+
 
 Retained material
 -----------------

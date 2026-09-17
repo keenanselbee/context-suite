@@ -14,7 +14,8 @@ import zipfile
 TOOLS = Path(__file__).resolve().parent
 ROOT = TOOLS.parents[1]
 SCRATCH = ROOT / ".codex-temp"
-RECIPES = (".gitattributes", "Build-HeifEngine.py", "source-inputs.json", "libheif-de265-push-errors.patch")
+RECIPES = (".gitattributes", "Build-HeifEngine.py", "source-inputs.json", "libheif-de265-push-errors.patch",
+           "libheif-hidden-hdr.patch", "libde265-color-signals.patch")
 
 
 def sha(data):
@@ -132,6 +133,8 @@ def expected_runtime(sources):
         "licenses/SourceCopyrightNotices.txt": collection,
         "THIRD-PARTY-NOTICES.txt": (TOOLS / "distribution/THIRD-PARTY-NOTICES.txt").read_bytes(),
         "SOURCE-CHANGES.patch": (TOOLS / "libheif-de265-push-errors.patch").read_bytes(),
+        "SOURCE-HEIF-COLOR.patch": (TOOLS / "libheif-hidden-hdr.patch").read_bytes(),
+        "SOURCE-DE265-COLOR.patch": (TOOLS / "libde265-color-signals.patch").read_bytes(),
     }
     return pins, runtime, count
 

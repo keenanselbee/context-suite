@@ -27,6 +27,8 @@ def main():
         ("patent", "heif-runtime-review.zip", "licenses/AOM.PATENTS.txt", "change"),
         ("product-notice", "heif-runtime-review.zip", "THIRD-PARTY-NOTICES.txt", "change"),
         ("patch", "heif-runtime-review.zip", "SOURCE-CHANGES.patch", "change"),
+        ("hdr-patch", "heif-runtime-review.zip", "SOURCE-HEIF-COLOR.patch", "change"),
+        ("color-patch", "heif-runtime-review.zip", "SOURCE-DE265-COLOR.patch", "remove"),
         ("source", "heif-source-review.zip", ".codex-temp/inputs/libheif.tar.gz", "change"),
         ("recipe", "heif-source-review.zip", "tools/heif-engine/Build-HeifEngine.py", "change"),
         ("aom-artifact", "heif-source-review.zip", ".codex-temp/aom/lib/CORE_RL_aom_.lib", "change"),

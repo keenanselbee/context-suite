@@ -1,0 +1,20 @@
+--- a/libheif/image-items/image_item.cc
++++ b/libheif/image-items/image_item.cc
+@@ -1380,6 +1380,17 @@
+     const auto bitstream_nclx = img->get_color_profile_nclx();
+     if (bitstream_nclx.is_defined()) {
+ 
++      // Context Suite refuses HDR that a container override would hide.
++      // Preserve ordinary container precedence; do not tone-map or retag HDR.
++      if (options.strict_decoding &&
++          (bitstream_nclx.m_transfer_characteristics == 16 ||
++           bitstream_nclx.m_transfer_characteristics == 18) &&
++          heif_nclx.m_transfer_characteristics != bitstream_nclx.m_transfer_characteristics) {
++        return Error(heif_error_Unsupported_feature,
++                     heif_suberror_Unsupported_color_conversion,
++                     "Container colour declaration hides bitstream HDR");
++      }
++
+       // Check whether there is a CICP mismatch between the HEIF colr box and the compressed bitstream
+       // If yes, output a warning.
+ 

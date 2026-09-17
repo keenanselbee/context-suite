@@ -1,9 +1,12 @@
 HEIF Upstream Interoperability
 =============================
 
-Status: partial compatibility evidence, 2026-09-16. Six upstream still images
-convert through the real worker; six color cases remain open. This is not full
-HEIC/AVIF acceptance or production adoption.
+Status: initial interoperability evidence, 2026-09-16. The later
+[color and alpha checkpoint](heif-color-fallback.md) supersedes the color gaps
+below: ten upstream still images convert and two inconsistent-alpha inputs are
+explicitly refused. Its combined corpus passes 659 checks and 104 outputs.
+The original results below remain historical evidence, not current admission.
+Full HEIC/AVIF acceptance and production adoption remain open.
 
 
 Pinned local corpus
@@ -68,10 +71,10 @@ An earlier runner attempt stopped before building because it required an optiona
 `Directory.Build.targets`; absent optional build files are now handled explicitly.
 
 
-Compatibility gaps to resolve
------------------------------
+Initial compatibility gaps
+--------------------------
 
-These refusals pass the current-policy regression, but do not count as accepting
+These refusals passed the initial-policy regression, but did not count as accepting
 the required input expansion:
 
 - `rainbow-451x461.heic` has an ICC profile and no container NCLX. The current

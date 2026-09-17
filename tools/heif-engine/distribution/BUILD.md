@@ -16,14 +16,15 @@ python -B tools/heif-engine/Build-HeifEngine.py --libraries-only `
   --cmake '<Visual Studio CMake path>/cmake.exe'
 ```
 
-The script verifies inputs, extracts fresh bounded sources, applies the patch,
+The script verifies inputs, extracts fresh bounded sources, applies the patches,
 and builds both LGPL DLLs into a new repository-local SDK/payload. This does not
 install system components. It retains command exits, logs and hashes. Rebuilt
 DLLs can have different identities because of compiler/path/build metadata.
 
 The private Context Suite bridge/application source is absent. The original full
 recipe's default mode requires that private checkout; `--libraries-only` does
-not. Rebuilding these libraries alone does not make them accepted by the
+not. The patches preserve NAL-push errors and color codes, and refuse hidden HDR.
+Rebuilding these libraries alone does not make them accepted by the
 application's current hash checks. Modified-library use, product/source terms,
 source delivery, notices, toolchain eligibility and patent review remain release
 decisions. This kit is engineering evidence, not an approved public distribution.

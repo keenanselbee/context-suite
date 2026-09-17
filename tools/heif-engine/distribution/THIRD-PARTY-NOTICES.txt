@@ -7,9 +7,12 @@ Their complete original COPYING documents, including LGPL and GPL texts,
 accompany this local review bundle. Original source archives and the exact
 local error-propagation patch are retained in the source-review kit.
 
-Local change, 2026-09-16: the libheif libde265 adapter propagates failed NAL-push
-results, retaining security-limit and allocation failures. No decoder limit or
-media transformation is changed. libde265 source remains unchanged.
+Local changes, 2026-09-16: the libheif libde265 adapter propagates failed NAL-push
+results, retaining security-limit and allocation failures. Strict decoding also
+refuses container color overrides that hide bitstream HDR. libde265 preserves
+signalled CICP codes instead of replacing newer/reserved values with unspecified;
+the caller remains responsible for validating supported color interpretation.
+The exact source patches accompany this bundle. No resource limit is increased.
 
 libheif statically links the selected AOM 3.15.0 artifact, built from revision
 79de389e4abced53cb6e85b7574826dbc227cd9c of ImageMagick's AOM source repository.

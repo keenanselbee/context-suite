@@ -12,7 +12,7 @@ Pinned decoder build
 
 `Build-HeifEngine.py` verifies the release archives and selected AOM files in
 `source-inputs.json`, extracts fresh bounded source trees, applies the reviewed
-`libheif-de265-push-errors.patch`, and builds libde265, libheif and the private
+NAL-error, color-signal and hidden-HDR patches, and builds libde265, libheif and the private
 bridge. It retains archive/source/patch identities, command exits, logs, a local
 SDK and a three-DLL `payload`. The build does not update application pins or
 register/adopt the engine. The AOM static artifact is verified, not rebuilt.
@@ -140,8 +140,9 @@ buffer bounds, refusals, cancellation and subsequent decoding. It hashes private
 source identities without copying private source into public outputs. The bridge
 reports capabilities; it is not a conversion admission policy, and this test does
 not validate final JPEG/PNG output, publication or application recovery.
-The current bridge ABI is version 2; it reports the primary item type and
-underlying codec separately. Expanded fixture runs also exercise six malformed
+The current bridge ABI is version 3; it reports the primary item type and
+underlying codec separately, plus original and effective color declarations.
+Expanded fixture runs also exercise six malformed
 grid mutations per codec/depth, with a valid grid decode after each refusal.
 
 The private image contract host also accepts a new absolute evidence directory,
@@ -185,9 +186,17 @@ verifies `interop-inputs.json` against local files, then builds/copies the real
 worker and public contract host into fresh scratch. The manifest retains source
 URLs/archive identities; the runner does not download or execute upstream tools.
 It checks conversion/publication, typed refusals, same-worker recovery and source
-preservation. Pending color cases are separate from intentional feature refusals;
-a passing regression does not close those compatibility gaps. See the
+preservation. The manifest separates supported files from intentional feature
+and alpha-alignment refusals; the current color checkpoint resolves the earlier
+pending-color cases. See the
 [upstream record](../../docs/heif-interoperability.md) for results and limits.
+
+`Test-HeifColor.py --bridge '<pinned bridge>' --fixture-evidence '<authored run>'`
+creates and verifies missing/unspecified-color variants. Repeat fixture evidence
+for all three depths. A copied private image host accepts `<new evidence root>
+--heif-color <passing color evidence>` for output fidelity and HDR/copy checks.
+Pass the same `--color-evidence` to the interoperability runner for actual-worker
+publication and recovery. See [the color policy](../../docs/heif-color-fallback.md).
 
 `Test-HeifLoader.py --bridge '<pinned bridge DLL>' --fixture '<authored HEIC>'`
 builds the private image host and creates six disposable copies for valid,

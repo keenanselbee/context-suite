@@ -126,12 +126,18 @@
     {
       "path": "libavif/tests/data/abc_color_irot_alpha_irot.avif",
       "sha256": "B371CC88244A873131E4D10FF9363D71CE4F41CF333BD4A491B38D970D9ABD3B",
-      "expectation": "pending-color"
+      "expectation": "convert",
+      "width": 256,
+      "height": 512,
+      "bits": 8,
+      "alpha": true,
+      "requiresCopy": true
     },
     {
       "path": "libavif/tests/data/abc_color_irot_alpha_NOirot.avif",
       "sha256": "F2C8CD6DED641C68D13B3363417A62288A5EB335870DE8D0B9DA5093865FFB9A",
-      "expectation": "pending-color"
+      "expectation": "refuse",
+      "reason": "Missing alpha rotation association produces misaligned transparency; refuse inconsistent transforms."
     },
     {
       "path": "libavif/tests/data/white_1x1.avif",
@@ -139,7 +145,8 @@
       "expectation": "convert",
       "width": 1,
       "height": 1,
-      "alpha": false
+      "alpha": false,
+      "bits": 8
     },
     {
       "path": "libavif/tests/data/io/kodim03_yuv420_8bpc.avif",
@@ -147,12 +154,14 @@
       "expectation": "convert",
       "width": 768,
       "height": 512,
-      "alpha": false
+      "alpha": false,
+      "bits": 8
     },
     {
       "path": "libavif/tests/data/clap_irot_imir_non_essential.avif",
       "sha256": "33F869FCF2A879913EB394982B8FC03E9A60C25831AA37622DDEFA656FD39FC1",
-      "expectation": "pending-color"
+      "expectation": "refuse",
+      "reason": "Color has crop, rotation and mirror associations while alpha has none; inconsistent alpha transforms are unsupported."
     },
     {
       "path": "libavif/tests/data/color_grid_alpha_nogrid.avif",
@@ -160,7 +169,8 @@
       "expectation": "convert",
       "width": 80,
       "height": 80,
-      "alpha": true
+      "alpha": true,
+      "bits": 8
     },
     {
       "path": "libavif/tests/data/color_grid_alpha_grid_tile_shared_in_dimg.avif",
@@ -183,7 +193,8 @@
       "expectation": "convert",
       "width": 64,
       "height": 64,
-      "alpha": false
+      "alpha": false,
+      "bits": 8
     },
     {
       "path": "libheif/tests/data/clap_cropped.avif",
@@ -191,7 +202,8 @@
       "expectation": "convert",
       "width": 64,
       "height": 64,
-      "alpha": false
+      "alpha": false,
+      "bits": 8
     },
     {
       "path": "libheif/tests/data/clap_cropped_irot_imir.avif",
@@ -199,17 +211,28 @@
       "expectation": "convert",
       "width": 64,
       "height": 64,
-      "alpha": false
+      "alpha": false,
+      "bits": 8
     },
     {
       "path": "libheif/tests/data/conformance_window_padding.heic",
       "sha256": "CF670BAD6021268E85DB1D9E2593A5BE1AA7F2EE1E706AF5E76EE7ABF2A73EC6",
-      "expectation": "pending-color"
+      "expectation": "convert",
+      "width": 1,
+      "height": 1,
+      "bits": 8,
+      "alpha": false,
+      "requiresCopy": true
     },
     {
       "path": "libheif/tests/data/rainbow-451x461.heic",
       "sha256": "4B2CE727F093944975F143BA2B39C4C64511B766D94552F8D51A755916E7F983",
-      "expectation": "pending-color"
+      "expectation": "convert",
+      "width": 451,
+      "height": 461,
+      "bits": 8,
+      "alpha": false,
+      "requiresCopy": false
     },
     {
       "path": "libheif/examples/example.heic",
@@ -219,8 +242,13 @@
     {
       "path": "libheif/examples/example.avif",
       "sha256": "54A0DC31D02B6F5D9D4B66027D4787861B7AF15FFD8FAB8EAB963D10C5411469",
-      "expectation": "pending-color"
+      "expectation": "convert",
+      "width": 800,
+      "height": 533,
+      "bits": 8,
+      "alpha": false,
+      "requiresCopy": true
     }
   ],
-  "scope": "Local upstream interoperability corpus; passing refusals do not close pending color compatibility."
+  "scope": "Local upstream interoperability corpus with verified native color fallback; separate pixel/appearance acceptance remains required."
 }

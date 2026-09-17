@@ -25,6 +25,11 @@ engine packaging must be verified before capability registration. They do not
 add output formats, Optimize presets or a general conversion planner. ALAC
 remains a separate evaluation; see the current broad file support goal.
 
+The isolated HEIF path now preserves ICC-only and bitstream color information,
+uses declared conservative defaults for unspecified color on mandatory copies,
+and refuses hidden HDR or inconsistent alpha transforms. Follow the
+[color policy and evidence](heif-color-fallback.md) before production adoption.
+
 Status: PNG/JPEG/WebP/BMP/TGA conversion, planner, preview and trial-gated publication
 implemented and verified locally for the bounded slice; release checks remain open.
 

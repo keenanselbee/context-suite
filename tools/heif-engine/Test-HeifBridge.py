@@ -20,7 +20,8 @@ def digest(path):
 class Info(ctypes.Structure):
     _fields_ = [(name, ctypes.c_uint32) for name in (
         "abi", "width", "height", "bits", "primaries", "transfer", "matrix", "fullRange",
-        "itemType", "flags", "iccBytes", "exifBytes", "xmpBytes", "codec")]
+        "itemType", "flags", "iccBytes", "exifBytes", "xmpBytes", "codec",
+        "effectivePrimaries", "effectiveTransfer", "effectiveMatrix", "effectiveFullRange")]
 
 
 def grid_mutations(data):
@@ -132,7 +133,9 @@ def main():
                 info = Info()
                 check(native.cs_heif_info(result, ctypes.byref(info), ctypes.sizeof(info)) == 0, "ABI info")
                 facts = row["facts"]
-                check((info.abi, info.width, info.height, info.bits) == (2, facts["width"], facts["height"], facts["sourceLumaBits"]), "Geometry and precision")
+                check((info.abi, info.width, info.height, info.bits) == (3, facts["width"], facts["height"], facts["sourceLumaBits"]), "Geometry and precision")
+                check((info.effectivePrimaries, info.effectiveTransfer, info.effectiveMatrix, info.effectiveFullRange) ==
+                      (info.primaries, info.transfer, info.matrix, info.fullRange), "Explicit color remains unchanged")
                 check(all(getattr(info, key) == value for key, value in facts["sourceNclx"].items()), "Source NCLX")
                 codec = int.from_bytes(b"hvc1" if source.suffix == ".heic" else b"av01", "big")
                 grid = source.stem.endswith("-grid")

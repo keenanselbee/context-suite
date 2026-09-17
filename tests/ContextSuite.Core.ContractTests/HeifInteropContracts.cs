@@ -17,6 +17,7 @@ internal static class HeifInteropContracts
         var checks = new List<string>();
         var reports = new List<object>();
         var gaps = new List<string>();
+        var appearance = new List<object>();
         var originals = new Dictionary<string, (string Hash, DateTime Written)>();
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new NoRecycle());
         await using var worker = new WorkerClient(executable, Path.Combine(root, "workers"));
@@ -27,6 +28,7 @@ internal static class HeifInteropContracts
             var name = row.GetProperty("path").GetString()!;
             var path = Path.Combine(fixtures, name);
             var expectation = row.GetProperty("expectation").GetString();
+            Console.WriteLine($"HEIF corpus: {name} ({expectation})");
             Check(expectation is "convert" or "refuse" or "pending-color", "Declared corpus expectation");
             Check(Hash(path) == row.GetProperty("sha256").GetString(), "Pinned input " + name);
             originals.Add(path, (Hash(path), File.GetLastWriteTimeUtc(path)));
@@ -52,9 +54,12 @@ internal static class HeifInteropContracts
             }
             var facts = await worker.ProbeAsync(new(Guid.NewGuid(), path), default);
             Check(facts.UnsupportedReason is null && facts.Width == row.GetProperty("width").GetUInt32() &&
-                facts.Height == row.GetProperty("height").GetUInt32() && facts.Orientation == 1 && facts.BitDepth == 8,
+                facts.Height == row.GetProperty("height").GetUInt32() && facts.Orientation == 1 && facts.BitDepth == row.GetProperty("bits").GetUInt32(),
                 "Expected transformed geometry and precision " + name);
             Check(facts.HasTransparency == row.GetProperty("alpha").GetBoolean(), "Expected alpha presence " + name);
+            if (row.TryGetProperty("requiresCopy", out var requiresCopy) && requiresCopy.GetBoolean())
+                Check(!ImageConversionPlanner.Create(Guid.NewGuid(), [facts], new(ImageFormat.Png, Metadata: ImageMetadataMode.Automatic), new("convert", new(ReplaceOriginals: true)),
+                    replaceOriginal: true).ReplaceOriginal, "Color assumption keeps upstream original despite overwrite preference");
             if (facts.HasTransparency)
                 Check(!ImageConversionPlanner.Create(Guid.NewGuid(), [facts], new(ImageFormat.Jpeg), new("convert", new())).HasExecutableItems,
                     "Transparent upstream input still requires explicit JPEG matte");
@@ -71,7 +76,7 @@ internal static class HeifInteropContracts
                 var published = await publisher.PublishAsync(reservation, result.Validation);
                 var reopened = await worker.ProbeAsync(new(Guid.NewGuid(), published.OutputPath!), default);
                 Check(published.Outcome == PublicationOutcome.CopyCreated && reopened.Format == target && reopened.Width == facts.Width &&
-                    reopened.Height == facts.Height && reopened.BitDepth == 8 && reopened.ProfileNames.Contains("icc"),
+                    reopened.Height == facts.Height && reopened.BitDepth == (target == ImageFormat.Png && facts.BitDepth > 8 ? 16 : 8) && reopened.ProfileNames.Contains("icc"),
                     "Named output copy reopens with expected facts " + name);
                 Check(reopened.HasTransparency == (target == ImageFormat.Png && facts.HasTransparency), "Output alpha policy " + name);
                 if (Path.GetFileName(path) == "white_1x1.avif")
@@ -85,6 +90,38 @@ internal static class HeifInteropContracts
                     Check(preview.Width == 1 && preview.Height == 1 && preview.BgraPixels.SequenceEqual(sourcePreview.BgraPixels),
                         "Near-white sample survives conversion " + target);
                 }
+                if (target == ImageFormat.Png && Path.GetFileName(path).StartsWith("abc_color_irot_alpha_", StringComparison.Ordinal))
+                {
+                    var referenceFacts = await worker.ProbeAsync(new(Guid.NewGuid(), Path.Combine(fixtures, "libavif/tests/data/abc.png")), default);
+                    var reference = await worker.PreviewAsync(new(referenceFacts), default);
+                    var actual = await worker.PreviewAsync(new(reopened), default);
+                    Check(reference.Width == actual.Height && reference.Height == actual.Width, "Independent PNG reference has inverse rotated dimensions");
+                    double alphaSquares = 0, colorSquares = 0; var colorSamples = 0; var maskDifferences = 0;
+                    for (var y = 0; y < actual.Height; y++)
+                    for (var x = 0; x < actual.Width; x++)
+                    {
+                        // Upstream irot=1 means counterclockwise rotation.
+                        var sourceOffset = checked((int)((x * reference.Width + reference.Width - 1 - y) * 4));
+                        var targetOffset = checked((int)((y * actual.Width + x) * 4));
+                        var expectedAlpha = reference.BgraPixels[sourceOffset + 3];
+                        var actualAlpha = actual.BgraPixels[targetOffset + 3];
+                        alphaSquares += Math.Pow(expectedAlpha - actualAlpha, 2);
+                        if ((expectedAlpha >= 128) != (actualAlpha >= 128)) maskDifferences++;
+                        if (expectedAlpha < 128) continue;
+                        for (var channel = 0; channel < 3; channel++)
+                        {
+                            colorSquares += Math.Pow(reference.BgraPixels[sourceOffset + channel] - actual.BgraPixels[targetOffset + channel], 2);
+                            colorSamples++;
+                        }
+                    }
+                    var pixels = actual.Width * actual.Height;
+                    var alphaRmse = Math.Sqrt(alphaSquares / pixels);
+                    var colorRmse = Math.Sqrt(colorSquares / Math.Max(1, colorSamples));
+                    appearance.Add(new { Source = name, alphaRmse, colorRmse, maskDifferences, pixels });
+                    File.WriteAllText(Path.Combine(root, "appearance.json"), JsonSerializer.Serialize(appearance, new JsonSerializerOptions { WriteIndented = true }));
+                    Check(colorSamples > 1000 && alphaRmse <= 3 && colorRmse <= 5 && maskDifferences <= pixels / 100,
+                        "Rotated alpha and visible color agree with independent source PNG within fixed lossy bounds " + name);
+                }
                 reports.Add(new { Source = name, Target = target.ToString(), published.OutputPath, result.OutputBytes });
             }
         }
@@ -94,7 +131,7 @@ internal static class HeifInteropContracts
         File.WriteAllText(Path.Combine(root, "results.json"), JsonSerializer.Serialize(new
         {
             Passed = true, CompatibilityComplete = gaps.Count == 0, Checks = checks.Count,
-            PendingColorCases = gaps, Outputs = reports, Details = checks
+            PendingColorCases = gaps, Outputs = reports, Appearance = appearance, Details = checks
         }, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"Passed {checks.Count} HEIF interoperability checks; {reports.Count} outputs; {gaps.Count} color compatibility gaps remain.");
 
