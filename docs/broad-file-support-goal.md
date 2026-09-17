@@ -79,7 +79,10 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   and refusal checks against the same corpus. The expanded chroma/range/grid corpus
   now has 186 sources, 3,632 bridge checks and 36 additional malformed-grid refusals.
   The private adapter passes 2,819 checks with 336 JPEG/PNG outputs and independent SDR appearance comparisons;
-  broader variants, menu/worker integration and final packaging remain required.
+  The actual-worker/direct-command slice now passes 1,178 checks with 336 safely
+  published outputs, mixed selections, required matte choice, retry and dispatch
+  recovery. Active-native interruption, broader variants, engine adoption and
+  final packaging remain required.
 - [ ] Implement and verify AIFF/WMA to the existing audio targets under a reviewed
   codec, metadata and fidelity matrix; retain all existing quality-change prompts.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or

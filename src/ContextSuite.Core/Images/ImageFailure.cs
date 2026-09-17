@@ -3,7 +3,7 @@ namespace ContextSuite.Core.Images;
 public enum ImageFailure
 {
     InvalidInput, UnsupportedInput, SourceChanged, FileAccess, ResourceLimit,
-    EngineFailure, ValidationFailed, TimedOut, WorkerTerminated, OfficeDateFidelity
+    EngineFailure, ValidationFailed, TimedOut, WorkerTerminated, OfficeDateFidelity, EngineUnavailable
 }
 
 // Only stable categories cross IPC, never native diagnostics or private metadata.
@@ -20,6 +20,7 @@ public sealed class ImageFailureException(ImageFailure failure, Exception? inner
         ImageFailure.FileAccess => "A required file could not be accessed. Check permissions, available space and file locks.",
         ImageFailure.ResourceLimit => "The image exceeds a processing limit. Try a smaller image.",
         ImageFailure.EngineFailure => "The image engine could not finish. Retry the file or choose another format.",
+        ImageFailure.EngineUnavailable => "The required conversion engine is unavailable. Repair or update Context Suite and try again. Analyze remains available.",
         ImageFailure.ValidationFailed => "The output failed validation and was not published. Try another format or policy.",
         ImageFailure.TimedOut => "The image worker exceeded its time limit. No unvalidated output was published.",
         ImageFailure.WorkerTerminated => "The image worker stopped unexpectedly. This item was not retried; later items can continue.",

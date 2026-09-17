@@ -12,6 +12,12 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args.Length >= 7 && args[0] == "--heif-worker")
+{
+    await HeifWorkerContracts.RunAsync(args[1], args[2], args[3], args[4], args[5], args[6..]);
+    return 0;
+}
+
 if (args is ["--office-worker-failures", var failureWorker, var failureEvidence])
 {
     await OfficeFailureContracts.RunWorkerAsync(failureWorker, failureEvidence);

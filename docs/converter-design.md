@@ -17,8 +17,9 @@ Neither expansion is implemented by the existing image adapters.
 
 The 2026-09-16 goal revision additionally requires HEIC and AVIF input to the
 existing JPEG/PNG commands and AIFF/WMA input to the existing six audio targets.
-HEIC/AVIF now have isolated private-adapter JPEG/PNG evidence; their customer
-commands and packaging remain unavailable. AIFF/WMA remain planned. Their admitted variants,
+HEIC/AVIF now have isolated adapter and actual-worker JPEG/PNG evidence, including
+the existing direct-command workflow. Production capability adoption and packaging
+remain pending. AIFF/WMA remain planned. Their admitted variants,
 color/HDR/alpha or audio precision/layout policies, metadata preservation and
 engine packaging must be verified before capability registration. They do not
 add output formats, Optimize presets or a general conversion planner. ALAC

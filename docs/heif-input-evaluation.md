@@ -1,9 +1,10 @@
 HEIC And AVIF Input Evaluation
 =============================
 
-Status: native decoding and private adapter conversion pass isolated checks,
-including 336 JPEG/PNG outputs; broader fidelity and integration remain open.
-No packaged engine or customer menu capability enabled.
+Status: native, adapter and actual-worker conversion pass isolated checks,
+including 336 JPEG/PNG outputs published by application orchestration. Broader
+fidelity, in-flight interruption and packaging remain open. No production engine
+packaged or capability registration added.
 Owner selected HEIC/AVIF to JPEG/PNG on 2026-09-16.
 
 The existing curated Q16 engine deliberately excludes HEIF and AV1 delegates.
@@ -396,3 +397,70 @@ publication/retry, payload loading safety, missing-engine behavior, production
 packaging, realistic external-file interoperability and human acceptance remain
 required. Arbitrary grids, HDR, nested compositions and conflicting declarations
 are not established as supported by this slice.
+
+
+Actual worker and direct-command verification
+--------------------------------------------
+
+The [worker harness](../tools/heif-engine/Test-HeifWorker.py) builds the existing
+worker and public application contracts sequentially, then copies their exact
+runtime files into fresh repository scratch. The ordinary production worker is
+used with the same named-pipe protocol, Windows lifetime job, source checks,
+output validation and application-owned publication. Additional isolated copies
+omit the HEIF decoder or contain an intentionally altered bridge DLL. No installed
+application, Explorer registration, formal production stage or live license is used.
+
+Final evidence at `.codex-temp/heif-worker/16fd203d74dc4b018339e6134031d702`
+passes **1,178 worker/application checks**. Source, fixture and executable hashes
+are recorded and rechecked; `verified.json` binds the unchanged inputs/payloads
+to the final result. All 168 admitted sources produce both JPEG and PNG, for
+**336 separately validated and published outputs**. The eighteen HDR/collection
+fixtures are typed unsupported refusals. Every output is re-probed for format,
+geometry, precision and ICC presence. Pixel/color fidelity remains established
+by the independently authored decoder and private-adapter suites above; re-probing
+through the same engine is not an independent pixel oracle.
+
+The direct-command and recovery checks cover:
+
+- A mixed HEIC/AVIF/PNG command, with routine PNG conversions requiring no planner
+  and an existing PNG kept unchanged. This verifies the quiet-workflow policy;
+  it is not visible desktop acceptance.
+- A refused HDR file followed by a successful ordinary input in the same command,
+  with attention requested for the refused row.
+- An explicit JPEG matte choice and real-worker preview for transparency, while
+  retaining the existing quality-loss acknowledgement.
+- Collision-safe repeated output, a controlled publication failure, and retry
+  using the original target plus a changed output-folder setting.
+- A stale source digest refused without publication; owned worker death at the
+  dispatch boundary fails the current item and later HEIF work restarts; dispatch
+  cancellation cancels pending work and leaves no output reservations.
+- Thirty-six malformed grids followed by successful decoding in the same worker,
+  with source bytes unchanged.
+- Missing and altered decoder payloads refused before any HEIF native module is
+  loaded. Repeated failures do not prevent ordinary PNG processing in that worker.
+
+These checks exposed and fixed error categorization: unsupported compositions
+and HDR now report an unsupported feature rather than a damaged image. Native
+resource-limit errors retain that category. A missing or invalid optional decoder
+reports an actionable `EngineUnavailable` failure with repair/update guidance;
+the new shared failure category also has document-appropriate Office wording.
+
+The final worker and contract builds have zero warnings/errors. The initial
+manual contract build failed on an array-to-immutable-array call and incurred a
+shared-output copy warning from concurrent builds; those logs are retained.
+The committed harness keeps the builds sequential. Passing intermediate worker
+runs `9731d0bff03d4459961bf96cd4d23465` and
+`1aa24642dcf3485892573bbd19160154` are retained; the final run adds mixed failure,
+collision and changed-settings retry checks. Focused adapter verification still
+passes **2,819 checks** at
+`.codex-temp/heif-conversion/25ce89ed3e3047b8aeaf7318df824ac9`.
+The **942 image contracts** pass at
+`.codex-temp/image-tests/engine-95f7e0758476435c8dc5e6c5f75f2cf4`, and the
+**4,130 foundation contracts** pass in `.codex-temp/heif-worker-foundation.log`.
+
+Remaining integration gates include interruption during active HEIF native work
+(the new fault checks act at dispatch), deadline enforcement under that workload,
+loader path/race coverage beyond missing/altered payloads, independently reviewed
+redistribution and production packaging, capability adoption, realistic-file
+interoperability and visible acceptance. The 1.1.1 stage remains reserved and
+unchanged. None of these isolated runs creates a replacement release candidate.

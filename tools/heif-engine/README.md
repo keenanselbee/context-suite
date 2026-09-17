@@ -122,3 +122,20 @@ tracked with the private implementation, not published from these tools. A repea
 generation must match the embedded profiles byte-for-byte. See the evaluation
 record for identities and the independent appearance checks; the generator adds
 no runtime dependency or machine installation.
+
+
+Actual worker verification
+--------------------------
+
+`Test-HeifWorker.py --bridge '<pinned bridge DLL>' --grid-evidence '<passing
+bridge evidence>' --fixture-evidence '<passing fixture evidence>'` builds and
+copies the real worker and public contract host into a fresh `.codex-temp`
+directory. Repeat `--fixture-evidence` for all three depths. Use the current
+source-bound grid/fixture evidence; the script rejects changed inputs.
+
+It tests the existing named-pipe and direct-command path, safe publication,
+mixed results, matte preview, collision handling, changed-settings retry,
+dispatch cancellation/death, malformed-grid recovery and missing/altered optional
+decoder behavior. Sources and payloads are hashed before and after the run.
+No production stage, installed app, Explorer registration or live license is
+changed. This does not establish active-native interruption or visible usability.
