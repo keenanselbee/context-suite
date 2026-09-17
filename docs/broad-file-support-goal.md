@@ -128,6 +128,11 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   regressions pass 365 and 368 checks respectively.
   Representative/discontinuous timelines, Pro/Lossless/Voice, broader metadata
   and resource/fidelity evidence and actual-worker admission remain required.
+  The [independent Windows-codec evaluation](wma-system-codec-evaluation.md)
+  completes 36 authored observations with only 21 equal decoded extents and
+  eight exact Lossless cases. Standard/Pro/Voice decoding and one Lossless
+  fixture-drain case fail acceptance. Repair/evaluate decoding before admission;
+  neither same-engine agreement nor trimming/padding closes these gates.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

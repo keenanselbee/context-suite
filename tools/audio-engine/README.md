@@ -10,6 +10,11 @@ The later [AIFF adapter matrix](../../docs/aiff-conversion-adapter.md) adds
 The [WMA v1/v2 adapter](../../docs/wma-conversion-adapter.md) adds 283 checks
 and 36 outputs, including protection refusal and exact decoded sample timing.
 Broader variants/timelines, worker integration and customer admission remain open.
+The later [Windows-codec corpus](../../docs/wma-system-codec-evaluation.md)
+provides independent authored sources and decoding. Its 36 observations expose
+sample-extent/fixture-drain failures; the current acceptance result is false.
+Run `Test-WmaSystemCodecs.py '<expanded workspace>'` to reproduce. Its expected
+nonzero result must not be reported as passing WMA support.
 
 The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
 cover tiny recordings, codec-frame boundaries and safe publication/recovery.

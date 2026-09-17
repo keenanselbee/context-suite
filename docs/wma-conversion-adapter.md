@@ -6,6 +6,11 @@ actual-worker admission/publication, representative timing and listening
 acceptance, remaining WMA variants and combined payload adoption are pending.
 The installed application and reserved combined 1.1.1 stage are unchanged.
 
+The later [independent system-codec corpus](wma-system-codec-evaluation.md)
+finds Standard/Pro/Voice sample-extent differences and a Lossless fixture-drain
+failure. Earlier generated-source/same-FFmpeg comparisons below remain scoped
+evidence; they do not establish WMA fidelity or permit customer admission.
+
 This uses the exact expanded seven-file runtime from the
 [restricted input evaluation](audio-expanded-input-evaluation.md). Only that
 evaluation identity admits ASF input; existing production and supplier adapter
