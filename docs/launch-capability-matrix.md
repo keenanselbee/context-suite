@@ -29,8 +29,11 @@ Required compatibility additions selected 2026-09-16:
 | AIFF | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | [Isolated adapter](aiff-conversion-adapter.md) passes 366 checks/68 outputs with PCM/float, three compressed variants, tested text and artwork; broader fidelity, actual-worker integration and packaging pending |
 | WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | The [isolated native repairs](wma-system-codec-evaluation.md) pass 20 Standard sample/extent, 26 Pro extent and 23 Pro stereo sample comparisons; 13 Lossless cases remain exact. All 36 Voice lengths now match, but 32 Voice sample comparisons still fail. The earlier [v1/v2 adapter](wma-conversion-adapter.md) evidence is scoped separately. Broader fidelity, metadata/timelines, customer/worker integration and packaging remain pending |
 
-No output or Optimize capability for these four formats is added. ALAC remains
-a separate evaluation. The [current goal](broad-file-support-goal.md#current-objective-and-completion-plan)
+No output or Optimize capability for these four formats is added.
+The [Windows Voice candidate](wma-voice-windows-evaluation.md)
+passes 36 reference-output comparisons and 12 refusal/ownership checks, but is
+not selected or integrated into production. FFmpeg's Voice failures remain open.
+ALAC remains a separate evaluation. The [current goal](broad-file-support-goal.md#current-objective-and-completion-plan)
 requires implementation and integrated acceptance before completion; the existing
 conversion matrices below describe only implemented capabilities.
 

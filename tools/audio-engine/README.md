@@ -39,6 +39,12 @@ four positive controls and eight exact decoder-error checks on generated copies.
 Run `Test-WmaSystemCodecs.py '<expanded workspace>'` to reproduce. Its expected
 nonzero result must not be reported as passing WMA support.
 
+`Test-WmaVoiceMft.py '<system corpus>' '<Voice refusal corpus>'` evaluates an
+explicit Windows Voice decoder against retained samples from the same system
+codec. It passes 36 exact comparisons, eight malformed-input refusals and four
+ownership/input guards. See [scope and next integration work](../../docs/wma-voice-windows-evaluation.md).
+It neither selects a shipping provider nor fixes the FFmpeg waveform differences.
+
 The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
 cover tiny recordings, codec-frame boundaries and safe publication/recovery.
 See [commands and exact results](../../docs/short-audio-verification.md): the

@@ -157,6 +157,12 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   but 32 Voice waveform comparisons still fail; WMA acceptance remains false.
   Eight exact decoder-error checks and four positive controls pass. The new
   runtime remains isolated, with broader fidelity and application adoption open.
+  An [explicit Windows Voice decoder evaluation](wma-voice-windows-evaluation.md)
+  now passes 36 exact reference outputs, eight malformed-input refusals and four
+  ownership/input guards. It uses the reference's same system codec; it does not
+  fix FFmpeg's 32 waveform failures or clear independent fidelity acceptance.
+  Next define the provider/OS-availability policy and inherited-handle/job boundary,
+  then integrate six-target encoding, metadata and actual-worker recovery.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

@@ -9,6 +9,13 @@ checks and 23 Pro stereo sample checks. The later Voice cache repair passes all
 customer commands and the selected production payload; its required input goal
 is unchanged. The original failed observations below remain part of the record.
 
+The later [explicit Windows Voice decoder evaluation](wma-voice-windows-evaluation.md)
+passes 36 exact reference-output comparisons, eight malformed-input refusals
+and four ownership/input guards. It uses the same Windows codec as the reference
+through explicit orchestration; it is not an independent codec comparison.
+Production provider selection, process/handle integration and broader acceptance
+remain open. The FFmpeg Voice waveform failures below remain unresolved.
+
 
 Method and finite boundary
 --------------------------
