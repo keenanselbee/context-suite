@@ -9,6 +9,29 @@ internal static partial class M4aMetadataContracts
         await PicturesAsync(check);
         await OutputPicturesAsync(check);
         var basic = FileOf();
+        foreach (var language in new[] { "en-us", "zh-Hant", "und", "eng" })
+        {
+            using var languageFile = new MemoryStream(FileOf(tags: [M4aLanguageAtom.Create(language)]));
+            var info = await M4aMetadata.ReadAsync(languageFile, default);
+            check(info.Tags["language"] == language, "M4A full language identifier refines unspecified media code: " + language);
+        }
+        await Reject(FileOf(tags: [M4aLanguageAtom.Create("en-us"), M4aLanguageAtom.Create("und")]), "duplicate freeform language");
+        var knownLanguage = Replace(FileOf(tags: [M4aLanguageAtom.Create("en-us")]), ["moov", "trak", "mdia", "mdhd"], data =>
+        {
+            BinaryPrimitives.WriteUInt16BigEndian(data.AsSpan(20), (ushort)((6 << 10) | (18 << 5) | 1)); return data;
+        });
+        await Reject(knownLanguage, "conflicting known media and complete language declarations");
+        var freeform = M4aLanguageAtom.Create("en-us");
+        foreach (var marker in new[] { "com.apple.iTunes", "language", "en-us" })
+        {
+            var changed = freeform.ToArray(); var offset = changed.AsSpan().IndexOf(Encoding.ASCII.GetBytes(marker)); changed[offset] = 255;
+            await Reject(FileOf(tags: [changed]), "unrecognized or malformed language field " + marker);
+        }
+        foreach (var language in new[] { "", "en/us", "en\0us", "-en", "en-", "en--us", new string('e', 64) })
+        {
+            try { M4aLanguageAtom.Create(language); check(false, "invalid output language"); }
+            catch (NotSupportedException) { check(true, "M4A language syntax/extent refusal"); }
+        }
         using (var stream = new MemoryStream(basic))
         {
             stream.Position = 3; var result = await M4aMetadata.ReadAsync(stream, default);

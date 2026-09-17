@@ -35,6 +35,8 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         if (source.Streams.Count(stream => stream.Kind == "audio") != 1 || source.Streams.Any(stream => stream.Kind != "audio" && !stream.AttachedPicture))
             throw new NotSupportedException("Additional streams or artwork need a preservation plan before conversion.");
         var audio = source.Streams.Single(stream => stream.Kind == "audio");
+        if (audio.Codec == "wmavoice" && (audio.Channels != 1 || audio.SampleRate is not (8000 or 11025 or 16000 or 22050)))
+            throw new NotSupportedException("This WMA Voice profile has no verified conversion policy yet.");
         if (audio.SampleRate is not (>= 8000 and <= 192000) || audio.Channels is not (>= 1 and <= 8))
             throw new NotSupportedException("The sample rate or channel count is outside the current audio policy.");
         if (audio.Channels > 2 && audio.ChannelLayout is not ("2.1" or "quad" or "4.0" or "5.0" or "5.0(side)" or "5.1" or "5.1(side)" or "6.1" or "7.1"))
@@ -49,7 +51,7 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
             "pcm_s32le" or "pcm_s32be" or "pcm_f32le" or "pcm_f32be" => 32, "pcm_f64le" or "pcm_f64be" => 64, _ => (int?)null };
         var floating = audio.Codec is "pcm_f32le" or "pcm_f64le" or "pcm_f32be" or "pcm_f64be";
         var lossy = sourceFormat is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus ||
-            audio.Codec is "pcm_alaw" or "pcm_mulaw" or "adpcm_ima_qt" or "wmav1" or "wmav2";
+            audio.Codec is "pcm_alaw" or "pcm_mulaw" or "adpcm_ima_qt" or "wmav1" or "wmav2" or "wmavoice";
         var targetLossy = target is not (AudioFormat.Wave or AudioFormat.Flac);
         if (!lossy && !floating && sourceBits is not (8 or 16 or 24 or 32))
             throw new NotSupportedException("The source precision must be known and supported before conversion.");
@@ -98,7 +100,9 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         };
         if (target == AudioFormat.Flac && sourceBits == 8 && !already && !lossy)
             notices.Add("This encoder stores 8-bit audio in 16-bit FLAC samples without changing the decoded sound or adding recorded detail.");
-        if (target == AudioFormat.Flac && (floating || lossy))
+        // The selected Windows Voice decoder returns exact PCM16. The fixed
+        // 24-bit FLAC recipe preserves it; no precision reduction is involved.
+        if (target == AudioFormat.Flac && (floating || lossy) && audio.Codec != "wmavoice")
         {
             consent |= AudioConversionConsent.PrecisionReduction;
             notices.Add("FLAC stores this decoded audio at 24-bit integer precision. A floating-point WAV preserves its decoded precision.");
@@ -134,7 +138,7 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         ("ogg", "opus") => AudioFormat.Opus,
         ("aiff", "pcm_s8" or "pcm_s16be" or "pcm_s24be" or "pcm_s32be" or "pcm_s16le" or
             "pcm_f32be" or "pcm_f64be" or "pcm_alaw" or "pcm_mulaw" or "adpcm_ima_qt") => null,
-        ("asf", "wmav1" or "wmav2") => null,
+        ("asf", "wmav1" or "wmav2" or "wmavoice") => null,
         _ => throw new NotSupportedException("This container and audio codec have no verified conversion policy yet.")
     };
 }

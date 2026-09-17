@@ -67,6 +67,20 @@ public static partial class AsfMetadata
             if (name.StartsWith("DRM", StringComparison.OrdinalIgnoreCase) || name.Equals("WM/Protected", StringComparison.OrdinalIgnoreCase))
                 throw new NotSupportedException("WMA protection metadata cannot authorize conversion. Originals were kept.");
             if (name == "WM/Picture" && type == 1) { ReadPicture(bytes); return; }
+            // Source encoder provenance does not describe the recording. New
+            // output owns its bitrate mode and encoder version, as for WM/Tool.
+            if (name == "IsVBR")
+            {
+                if (type != 2 || bytes.Length != (extendedRecord ? 2 : 4) ||
+                    (extendedRecord ? U16(bytes, 0) : U32(bytes, 0)) > 1)
+                    throw new InvalidDataException("ASF bitrate-mode metadata is malformed.");
+                return;
+            }
+            if (name == "MediaFoundationVersion")
+            {
+                if (type != 0 || Text(bytes).Length > 128) throw new InvalidDataException("ASF encoder version is malformed.");
+                return;
+            }
             if (!Names.TryGetValue(name, out var mapped)) { Unsupported.Add("metadata " + name); return; }
             string value;
             if (type == 0) value = Text(bytes);

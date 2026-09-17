@@ -22,6 +22,14 @@ internal static class M4aTags
         var comments = new List<AudioComment>(); var textBytes = 0; var pictureTextBytes = 0;
         foreach (var item in boxes.Read(M4aBoxes.One(children, "ilst")))
         {
+            if (item.Type == "----")
+            {
+                if (comments.Count >= 128) throw new InvalidDataException("M4A metadata exceeds its tag budget.");
+                if (comments.Any(comment => comment.Name == "language"))
+                    throw new NotSupportedException("Repeated M4A language metadata needs an explicit preservation policy.");
+                comments.Add(new("language", M4aLanguageAtom.Read(item.Data, boxes)));
+                continue;
+            }
             if (item.Type == "covr" && pictures is not null)
             {
                 var covers = boxes.Read(item.Data, "data");

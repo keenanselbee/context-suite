@@ -1,7 +1,8 @@
 Explicit Windows Voice Decoder Evaluation
 =========================================
 
-Status: isolated evaluation passes; no production backend selected, 2026-09-17.
+Status: isolated evaluation passes; later optional adapter integration is recorded
+in [Windows Voice conversion](wma-voice-conversion-adapter.md), 2026-09-17.
 The repaired FFmpeg Voice decoder still fails 32 waveform comparisons despite
 matching all tested lengths. An explicitly created Windows Voice decoder now
 matches the retained Windows reference output in all 36 Voice cases. This is a
@@ -130,6 +131,12 @@ certify every internal codec phase or the real application/worker workflow.
 
 Next implementation and acceptance
 ----------------------------------
+
+The later [adapter checkpoint](wma-voice-conversion-adapter.md) implements the
+inherited-handle provider, ASF inventory, six-target encoding and tested metadata
+preservation. It retains explicit optional composition and does not clear the
+broader acceptance/actual-worker/packaging items below. The list describes the
+integration plan at this earlier evaluation boundary.
 
 1. Define the production provider boundary and OS-component availability policy.
    Pin the owned helper payload and record system dependencies separately; do

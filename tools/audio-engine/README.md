@@ -47,6 +47,9 @@ It neither selects a shipping provider nor fixes the FFmpeg waveform differences
 The helper's later `--inherited` mode also passes 52 private process checks using
 the existing read-only snapshot/pipe/job launcher. The linked evaluation records
 the typed sample header, cancellation/owner-death evidence and reproduction.
+The later [private Voice adapter](../../docs/wma-voice-conversion-adapter.md)
+connects that handle mode to the six existing target recipes and preserves the
+tested ASF text, language and artwork. Customer/worker admission remains separate.
 
 The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
 cover tiny recordings, codec-frame boundaries and safe publication/recovery.

@@ -26,6 +26,37 @@ internal static class AsfMetadataContracts
         }
         foreach (var (tag, codec) in new[] { (0x160, "wmav1"), (0x161, "wmav2"), (0x162, "wmapro"), (0x163, "wmalossless"), (0x0a, "wmavoice") })
             check((await Read(FileOf(format: (ushort)tag))).Codec == codec, "ASF inventory: declared codec identification only " + codec);
+        const string bitrateId = "7bf875ce-468d-11d1-8d82-006097c9a2b2", streamId = "14e6a5cb-c672-4332-8399-a96952065b5a",
+            languageId = "7c4346a9-efe0-4bfc-b229-393ede415c85";
+        var streamProperties = new byte[64];
+        BinaryPrimitives.WriteUInt32LittleEndian(streamProperties.AsSpan(16), 8000);
+        BinaryPrimitives.WriteUInt16LittleEndian(streamProperties.AsSpan(48), 1);
+        var languages = new byte[] { 1, 0, 12 }.Concat(Text("en-us")).ToArray();
+        var bitrate = new byte[] { 1, 0, 1, 0, 64, 31, 0, 0 };
+        byte[] StreamFixture(byte[] streamBody, byte[]? languageBody = null, byte[]? rates = null) =>
+            FileOf(extra: Object(bitrateId, rates ?? bitrate), extension: Object(languageId, languageBody ?? languages).Concat(Object(streamId, streamBody)).ToArray());
+        var streamInventory = await Read(StreamFixture(streamProperties)); streamInventory.RequireConversionSupport();
+        check(streamInventory.Tags["language"] == "en-us", "ASF extended stream language is retained as descriptive metadata");
+        foreach (var offset in new[] { 48, 50, 60, 62 })
+        {
+            var changed = streamProperties.ToArray(); changed[offset] = 2;
+            await Reject(StreamFixture(changed), "extended stream identity/language/name/payload " + offset);
+        }
+        var reservedStream = streamProperties.ToArray(); reservedStream[47] = 128;
+        await Reject(StreamFixture(reservedStream), "extended reserved flags");
+        await Reject(StreamFixture(streamProperties[..63]), "truncated extended stream");
+        await Reject(StreamFixture(streamProperties.Concat(new byte[] { 0 }).ToArray()), "unhandled embedded stream");
+        await Reject(StreamFixture(streamProperties, [1, 0, 20, 0]), "truncated language");
+        await Reject(StreamFixture(streamProperties, new byte[] { 1, 0, 12 }.Concat(Text("en/us")).ToArray()), "invalid language syntax");
+        await Reject(StreamFixture(streamProperties, rates: [1, 0, 2, 0, 64, 31, 0, 0]), "bitrate stream mismatch");
+        await Reject(FileOf(extension: Object(languageId, languages)), "unassociated language list");
+        var provenance = await Read(FileOf(extra: Object(ExtendedContent, Descriptors(("IsVBR", (ushort)2, new byte[4]),
+            ("MediaFoundationVersion", (ushort)0, Text("2.112"))))));
+        provenance.RequireConversionSupport();
+        check(provenance.Tags.IsEmpty, "ASF encoder version and bitrate mode are validated technical provenance");
+        await Reject(FileOf(extra: Object(ExtendedContent, Descriptors(("IsVBR", (ushort)2, [2, 0, 0, 0])))), "invalid bitrate-mode boolean");
+        await Reject(FileOf(extra: Object(ExtendedContent, Descriptors(("IsVBR", (ushort)2, [0, 0])))), "truncated bitrate-mode boolean");
+        await Reject(FileOf(extra: Object(ExtendedContent, Descriptors(("MediaFoundationVersion", (ushort)3, new byte[4])))), "invalid encoder-version type");
         var legacy = ContentFields("Title \u00fc", "Artist \u4e2d", "Copyright", "Line 1\nLine 2", "");
         var described = await Read(FileOf(extra: Object(Content, legacy)));
         described.RequireConversionSupport();
@@ -120,6 +151,16 @@ internal static class AsfMetadataContracts
                 check(!plan.AlreadyTarget && plan.RequiredConsent == consent &&
                     (target != AudioFormat.Wave || plan.OutputCodec == "pcm_f32le" && plan.RequiresExactSamples),
                     "WMA plan: input-only conversion retains quality policy " + codec + " / " + target);
+            }
+        foreach (var rate in new[] { 8000, 11025, 16000, 22050 })
+            foreach (var target in Enum.GetValues<AudioFormat>())
+            {
+                var facts = new AudioProbeFacts("asf", null, [new(0, "audio", "wmavoice", rate, 1, 16, null, null, "mono", empty)], empty);
+                var plan = AudioConversionPlan.Create(facts, target);
+                var expected = target is AudioFormat.Wave or AudioFormat.Flac ? AudioConversionConsent.None : AudioConversionConsent.LossyTranscoding;
+                if (target == AudioFormat.Opus) expected |= AudioConversionConsent.Resampling;
+                check(!plan.AlreadyTarget && plan.RequiredConsent == expected && plan.Channels == 1 &&
+                    plan.SampleRate == (target == AudioFormat.Opus ? 48000 : rate), "Voice input-only quality policy " + rate + " / " + target);
             }
         foreach (var codec in new[] { "wmapro", "wmalossless", "wmavoice", "pcm_s16le" })
         {

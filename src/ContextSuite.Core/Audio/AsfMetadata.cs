@@ -31,6 +31,9 @@ public static partial class AsfMetadata
     private static readonly Guid Library = new("44231c94-9498-49d1-a141-1d134e457054");
     private static readonly Guid CodecList = new("86d15240-311d-11d0-a3a4-00a0c90348f6");
     private static readonly Guid Padding = new("1806d474-cadf-4509-a4ba-9aabcb96aae8");
+    private static readonly Guid StreamBitrates = new("7bf875ce-468d-11d1-8d82-006097c9a2b2");
+    private static readonly Guid ExtendedStream = new("14e6a5cb-c672-4332-8399-a96952065b5a");
+    private static readonly Guid Languages = new("7c4346a9-efe0-4bfc-b229-393ede415c85");
     private static readonly Guid SimpleIndex = new("33000890-e5b1-11cf-89f4-00a0c90349cb");
     private static readonly Guid Audio = new("f8699e40-5b4d-11cf-a8fd-00805f5c442b");
     private static readonly Guid NoCorrection = new("20fb5700-5b55-11cf-a8fd-00805f5c442b");
@@ -139,6 +142,8 @@ public static partial class AsfMetadata
                 if (extension)
                 {
                     if (id == Metadata || id == Library) ReadDescriptors(body, id == Library, true);
+                    else if (id == ExtendedStream) ReadExtendedStream(body);
+                    else if (id == Languages) ReadLanguages(body);
                     else Unsupported.Add("header extension " + id);
                 }
                 else if (id == FileProperties) ReadFile(body);
@@ -146,6 +151,7 @@ public static partial class AsfMetadata
                 else if (id == Content) ReadContent(body);
                 else if (id == ExtendedContent) ReadDescriptors(body, false, false);
                 else if (id == CodecList) ReadCodecList(body);
+                else if (id == StreamBitrates) ReadStreamBitrates(body);
                 else if (id == Extension)
                 {
                     if (body.Length < 22 || new Guid(body[..16]) != new Guid("abd3d211-a9ba-11cf-8ee6-00c00c205365") ||
@@ -164,6 +170,7 @@ public static partial class AsfMetadata
                 throw new InvalidDataException("ASF requires matching file properties, one audio stream and header extension.");
             if (_listedCodec is { } listed && listed != FormatTag || _metadataStreams.Any(number => number != 0 && number != StreamNumber))
                 throw new InvalidDataException("ASF codec list or metadata stream references disagree with the audio stream.");
+            RequireExtendedStream();
         }
 
         private void ReadFile(ReadOnlySpan<byte> body)

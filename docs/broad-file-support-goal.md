@@ -167,6 +167,14 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   The refreshed native helper repeats all 48 earlier checks. Provider/OS-availability
   policy, full ASF admission, six-target encoding, metadata and actual-worker
   recovery remain required; the process test does not enable customer commands.
+  The [optional Windows Voice adapter](wma-voice-conversion-adapter.md) now passes
+  339 checks with 222 outputs across the existing six targets. It preserves
+  Windows reference samples in WAV/FLAC, Unicode tags, regional language and
+  artwork, with required consent, helper identity/absence and cleanup checks.
+  The ASF inventory now handles the tested Windows stream/language properties;
+  M4A preserves the full language identifier. Foundation passes 4,363 contracts;
+  prior WMA/AIFF/existing-audio regressions pass. Native availability diagnostics,
+  broader media/resource acceptance, actual-worker integration and packaging remain.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

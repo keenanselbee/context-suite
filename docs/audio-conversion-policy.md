@@ -115,7 +115,7 @@ Private candidate and process ownership
 `AudioEncodingAdapter` verifies and holds read leases on the pinned encoder,
 probe and DLLs. Each native encode/decode uses a bounded owned snapshot. Only its
 read-only file handle and stdout/stderr handles are inherited; the input has no
-customer path. `SeekableAudioProcess` starts suspended, assigns the existing
+customer path. `SeekableMediaProcess` starts suspended, assigns the existing
 kill-on-close/1 GiB Windows job, then resumes parsing. Its explicit handle list
 follows [Windows process-creation guidance](https://learn.microsoft.com/en-us/windows/win32/procthread/creating-processes).
 Input permits only `fd` protocol and the selected demuxers. `FFREPORT` is removed.

@@ -31,8 +31,11 @@ Required compatibility additions selected 2026-09-16:
 
 No output or Optimize capability for these four formats is added.
 The [Windows Voice candidate](wma-voice-windows-evaluation.md)
-passes 36 reference-output comparisons and 12 refusal/ownership checks, but is
-not selected or integrated into production. FFmpeg's Voice failures remain open.
+passes 36 reference-output comparisons and 12 refusal/ownership checks. Its
+[optional private adapter](wma-voice-conversion-adapter.md) passes 339 checks with
+222 outputs, including six-target text/artwork preservation. The provider requires
+explicit composition and is not enabled in customer/worker commands or packaging.
+FFmpeg's Voice failures remain open.
 ALAC remains a separate evaluation. The [current goal](broad-file-support-goal.md#current-objective-and-completion-plan)
 requires implementation and integrated acceptance before completion; the existing
 conversion matrices below describe only implemented capabilities.

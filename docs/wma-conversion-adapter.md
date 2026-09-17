@@ -6,6 +6,11 @@ actual-worker admission/publication, representative timing and listening
 acceptance, remaining WMA variants and combined payload adoption are pending.
 The installed application and reserved combined 1.1.1 stage are unchanged.
 
+The later [Windows Voice adapter](wma-voice-conversion-adapter.md) is a separate
+optional provider using the system codec and the existing six target encoders.
+Its exact source/output, metadata and refusal evidence does not extend this
+earlier v1/v2 runtime to Pro/Lossless or enable customer WMA commands.
+
 Latest isolated native evidence also repairs Standard's retained final frame:
 20 Standard extent/sample comparisons pass in the 71-case system corpus, with
 26 Pro extents, 23 Pro stereo accuracy passes and 13 exact Lossless cases retained.

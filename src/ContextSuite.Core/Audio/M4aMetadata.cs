@@ -123,7 +123,19 @@ public static class M4aMetadata
         }
         var userData = Optional(root, "udta");
         var pictures = preservePictures ? ImmutableArray.CreateBuilder<FlacMetadataBlock>() : null;
-        if (userData is not null) comments.AddRange(M4aTags.Read(userData.Value, boxes, pictures));
+        if (userData is not null)
+        {
+            var tags = M4aTags.Read(userData.Value, boxes, pictures);
+            if (tags.SingleOrDefault(comment => comment.Name == "language") is { } fullLanguage)
+            {
+                // A complete identifier refines an unspecified media-header
+                // code. Conflicting known languages are never discarded.
+                if (comments.Any(comment => comment.Name == "language" && comment.Value != "und" && comment.Value != fullLanguage.Value))
+                    throw new NotSupportedException("M4A language declarations disagree.");
+                comments.RemoveAll(comment => comment.Name == "language");
+            }
+            comments.AddRange(tags);
+        }
         return new(config.Rate, config.Channels, samples, AudioCommentConversion.Read(comments, mapVorbisAliases: false))
         { Pictures = pictures?.ToImmutable() ?? [] };
     }
