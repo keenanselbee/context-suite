@@ -17,6 +17,16 @@
 
 using Microsoft::WRL::ComPtr;
 static FILE* diagnostics = stdout;
+class VoiceUnavailable final : public std::runtime_error {
+public:
+    explicit VoiceUnavailable(const char* operation) : std::runtime_error(operation) { }
+};
+static void RequireAvailable(HRESULT result, const char* operation) {
+    if (FAILED(result)) {
+        std::fprintf(stderr, "%s: 0x%08lx\n", operation, static_cast<unsigned long>(result));
+        throw VoiceUnavailable(operation);
+    }
+}
 
 // Read-only COM view over a held snapshot. It has no path or write operation.
 class SnapshotStream final : public Microsoft::WRL::RuntimeClass<
@@ -161,7 +171,7 @@ static void Decode(const wchar_t* input, bool inherited) {
         throw std::runtime_error("Input is outside the Voice evaluation profiles");
     Require(reader->SetCurrentMediaType(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), nullptr, type.Get()), "Keep compressed reader output");
     ComPtr<IMFTransform> decoder;
-    Require(CoCreateInstance(__uuidof(CWMSPDecMediaObject), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&decoder)), "Create explicit Voice decoder");
+    RequireAvailable(CoCreateInstance(__uuidof(CWMSPDecMediaObject), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&decoder)), "Create explicit Voice decoder");
     DWORD inputs = 0, outputs = 0; Require(decoder->GetStreamCount(&inputs, &outputs), "Get stream counts");
     if (inputs != 1 || outputs != 1) throw std::runtime_error("Unexpected decoder stream count");
     Require(decoder->SetInputType(0, type.Get(), 0), "Set encoded input type");
@@ -217,14 +227,26 @@ static void Decode(const wchar_t* input, bool inherited) {
 int wmain(int count, wchar_t** args) {
     if (count != 2) return 2;
     const bool inherited = std::wcscmp(args[1], L"--inherited") == 0;
-    if (inherited) diagnostics = stderr;
+    const bool availability = std::wcscmp(args[1], L"--availability") == 0;
+    if (inherited || availability) diagnostics = stderr;
     bool com = false, media = false;
     try {
         if (!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32))
             throw std::runtime_error("Cannot restrict DLL search to Windows");
         Require(CoInitializeEx(nullptr, COINIT_MULTITHREADED), "Initialize COM"); com = true;
-        Require(MFStartup(MF_VERSION, MFSTARTUP_FULL), "Start Media Foundation"); media = true;
-        Decode(args[1], inherited);
+        RequireAvailable(MFStartup(MF_VERSION, MFSTARTUP_FULL), "Start Media Foundation"); media = true;
+        if (availability) {
+            BOOL inJob = FALSE;
+            if (!IsProcessInJob(GetCurrentProcess(), nullptr, &inJob) || !inJob)
+                throw std::runtime_error("Availability probing requires a parent-owned job");
+            ComPtr<IMFTransform> decoder;
+            RequireAvailable(CoCreateInstance(__uuidof(CWMSPDecMediaObject), nullptr, CLSCTX_INPROC_SERVER,
+                IID_PPV_ARGS(&decoder)), "Create explicit Voice decoder");
+            constexpr char ready[] = "CSVOICE-AVAILABLE-1\n";
+            DWORD saved = 0;
+            if (!WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), ready, sizeof(ready) - 1, &saved, nullptr) || saved != sizeof(ready) - 1)
+                throw std::runtime_error("Cannot report Voice availability");
+        } else Decode(args[1], inherited);
         HMODULE modules[512]; DWORD used = 0;
         if (!EnumProcessModules(GetCurrentProcess(), modules, sizeof(modules), &used) || used > sizeof(modules))
             throw std::runtime_error("Cannot record modules");
@@ -234,6 +256,9 @@ int wmain(int count, wchar_t** args) {
             std::fwprintf(diagnostics, L"Module: %ls\n", path);
         }
         MFShutdown(); CoUninitialize(); return 0;
+    } catch (const VoiceUnavailable& error) {
+        std::fprintf(stderr, "%s\n", error.what());
+        if (media) MFShutdown(); if (com) CoUninitialize(); return 3;
     } catch (const std::exception& error) {
         std::fprintf(stderr, "%s\n", error.what());
         if (media) MFShutdown(); if (com) CoUninitialize(); return 1;

@@ -13,12 +13,25 @@ Provider and conversion boundary
 `AudioEncodingAdapter` accepts an explicit optional Windows Voice directory.
 The provider requires Windows 11 x64 and retains verified directory and read-only
 file leases on the owned helper. Its selected SHA-256 is
-`2A7B3FE9AB55A8A6AB260246FA53DD19756195A28C1FBF875114BC35B4875904`.
+`AA295AE98450A52E2A3678EFA35BA6027380DECE5815334969B80C2F550C0E5F`.
 The helper uses the operating system's Media Foundation/Voice codec. Windows DLLs
 are not copied into the payload or pinned to one host's hashes. No fallback,
 download, registration or automatic component installation is performed.
-Missing or altered helpers cannot enable Voice input. Missing Windows media
-component behavior and specific availability guidance still require verification.
+Missing or altered helpers cannot enable Voice input. Before a Voice plan is
+returned, the pinned helper now starts Media Foundation and explicitly creates
+the Windows Voice decoder under the existing parent-owned job. This availability
+query does not parse media. Its exact versioned reply is bounded to 64 bytes and
+15 seconds; only success is cached for the provider instance. A later decode
+still checks its own initialization and exit status.
+
+Media Foundation/Voice initialization failures return helper exit code 3.
+That code and the Windows missing-DLL, missing-entry-point and DLL-initialization
+exit statuses produce: "Windows media support for WMA Voice could not start.
+Check Windows media components and try again. Originals were kept." Other
+decoder errors stay distinct. The process launcher preserves cancellation and
+output-limit failures ahead of exit-status mapping. Actual missing-component
+Windows environments still require acceptance; injected statuses do not prove
+that environment behavior.
 
 The initial provider admits mono PCM16-decoded Voice at 8, 11.025, 16 and
 22.05 kHz. It retains the native evaluation's 16 MiB input and 262,144-frame
@@ -122,7 +135,28 @@ the preservation repair. `194242b1b9044bb589d5d83e434c8f9a` repeats all 216 plai
 outputs but requests unavailable artwork extraction from the restricted engine;
 the expanded test now selects the already-pinned supplier used by existing tests.
 
-Remaining work includes native availability diagnostics, broader duration/resource
+The availability revision passes **25 focused availability/launcher checks** in
+`wma-voice-availability-3f7553aca7094c1897ccaa624c1598f3`: real helper startup
+with an empty input, cached success, cancellation/disposal, recovery after a
+failed launch, injected child exit statuses, output limits and active cancellation.
+No Windows components or registrations were changed. Reproduce with the same
+private test host using `--wma-voice-availability '<helper directory>' '<new evidence>'`.
+Native replay `wma-voice-mft-050b5eae61fd4e7392935ef62e987339` passes all
+**48 path checks**; source SHA-256 is
+`B0F6363D15C9137F9D575808748D122DFB136A6C83D4EA964BBE64BA6A5B6620`.
+Process replay `wma-voice-process-d00d46ce94e049dcbdb24b40b6225661` passes
+all **52 inherited-handle/ownership/recovery checks** with this helper.
+The six-target replay `wma-voice-convert-d70c62edb20644c5bccb630a76ba90e6`
+passes **339 checks with 222 outputs** after adding preflight. The initial
+`ae6bcd4a13574d63967386fe5fc06bfb` invocation stopped before conversion because
+it supplied relative runtime paths; the corrected run uses the required absolute
+paths. The managed Release build passes with zero warnings/errors.
+Existing audio replay
+`voice-availability-audio-regression-4f94d0eebe5c4b149bfcadcf2c7d847d` passes
+**368 probe/encoding checks**, including the shared launcher. Public foundation,
+WMA v1/v2 and AIFF matrices above were not rerun for this availability-only change.
+
+Remaining work includes missing-component environment acceptance, broader duration/resource
 and real speech/music/mixed-mode coverage, hostile/discontinuous packet timelines,
 actual worker/direct-command publication and recovery, provider packaging,
 supported Windows environments, listening and combined release acceptance.

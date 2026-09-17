@@ -50,6 +50,11 @@ the typed sample header, cancellation/owner-death evidence and reproduction.
 The later [private Voice adapter](../../docs/wma-voice-conversion-adapter.md)
 connects that handle mode to the six existing target recipes and preserves the
 tested ASF text, language and artwork. Customer/worker admission remains separate.
+Its `--availability` mode checks Media Foundation/Voice startup without media
+parsing, requires a parent-owned job and emits a bounded versioned reply. The
+linked adapter document records the refreshed pin, 25 availability/launcher
+checks and unchanged 48 native/52 process checks. Missing-component Windows
+acceptance remains separate from injected exit-status tests.
 
 The private `--short-audio-matrix` mode and public `--short-audio-direct` mode
 cover tiny recordings, codec-frame boundaries and safe publication/recovery.

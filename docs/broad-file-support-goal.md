@@ -173,8 +173,10 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   artwork, with required consent, helper identity/absence and cleanup checks.
   The ASF inventory now handles the tested Windows stream/language properties;
   M4A preserves the full language identifier. Foundation passes 4,363 contracts;
-  prior WMA/AIFF/existing-audio regressions pass. Native availability diagnostics,
-  broader media/resource acceptance, actual-worker integration and packaging remain.
+  prior WMA/AIFF/existing-audio regressions pass. The later availability preflight
+  passes 25 focused checks, and its rebuilt helper repeats 48 native and 52
+  process checks. Actual missing-component Windows acceptance, broader media/resource
+  acceptance, actual-worker integration and packaging remain.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the
