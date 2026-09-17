@@ -98,8 +98,9 @@ def main():
     parser.add_argument("--expanded-inputs", action="store_true", help="Evaluate AIFF/AIFF-C and ASF/WMA inputs; no additional output codecs")
     parser.add_argument("--wma-pro-tail-repair", action="store_true", help="Evaluate the local terminal-overlap patch in a fresh expanded-input build")
     parser.add_argument("--wma-standard-tail-repair", action="store_true", help="Evaluate the local final-reservoir patch in a fresh expanded-input build")
+    parser.add_argument("--wma-voice-cache-repair", action="store_true", help="Evaluate the local bounded packet-cache patch in a fresh expanded-input build")
     args = parser.parse_args()
-    if (args.wma_pro_tail_repair or args.wma_standard_tail_repair) and not args.expanded_inputs:
+    if (args.wma_pro_tail_repair or args.wma_standard_tail_repair or args.wma_voice_cache_repair) and not args.expanded_inputs:
         raise ValueError("WMA repairs require expanded inputs")
     if os.name != "nt" or sys.version_info < (3, 14):
         raise ValueError("Use Windows x64 with Python 3.14 or later")
@@ -146,7 +147,8 @@ def main():
     patches = []
     effective = {item["path"]: item["sha256"] for item in inventory}
     for enabled, name, target in ((args.wma_pro_tail_repair, "wmapro-terminal-overlap.patch", "libavcodec/wmaprodec.c"),
-                                  (args.wma_standard_tail_repair, "wma-standard-reservoir-tail.patch", "libavcodec/wmadec.c")):
+                                  (args.wma_standard_tail_repair, "wma-standard-reservoir-tail.patch", "libavcodec/wmadec.c"),
+                                  (args.wma_voice_cache_repair, "wma-voice-packet-cache.patch", "libavcodec/wmavoice.c")):
         if not enabled:
             continue
         patch = pathlib.Path(__file__).with_name(name)
@@ -233,6 +235,7 @@ def main():
         "WINDRES=sh " + source_path + "/compat/windows/mswindres", "-j2", "ffmpeg.exe", "ffprobe.exe"]
     version_suffix = "contextsuite-g9b0578816c6f" + ("-wmapro-tail2" if args.wma_pro_tail_repair else "")
     version_suffix += "-wmastandard-tail1" if args.wma_standard_tail_repair else ""
+    version_suffix += "-wmavoice-cache1" if args.wma_voice_cache_repair else ""
     configure = ["sh", short_path(source / "configure"), "--toolchain=msvc", "--arch=x86_64", "--target-os=win32",
         "--extra-version=" + version_suffix,
         "--disable-autodetect", "--disable-everything", "--disable-programs", "--enable-ffmpeg", "--enable-ffprobe",
@@ -273,6 +276,7 @@ def main():
               "expandedInputs": args.expanded_inputs,
               "wmaProTailRepair": args.wma_pro_tail_repair, "patches": patches,
               "wmaStandardTailRepair": args.wma_standard_tail_repair,
+              "wmaVoiceCacheRepair": args.wma_voice_cache_repair,
               "effectiveSourcesSha256": digest(workspace / "effective-sources.json"),
               "source": pins["ffmpeg"], "dependencies": {name: {"directory": str(value[0]), "manifestSha256": digest(value[0] / "dependency-build.json")} for name, value in builds.items()},
               "configure": configure, "make": make_command, "scriptSha256": script_sha256,

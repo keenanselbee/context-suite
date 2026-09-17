@@ -152,6 +152,11 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   Voice extent failures remain. Replay preserves 51 non-Standard outputs exactly.
   The native repair remains isolated; managed pins and customer commands are
   unchanged. Broader fidelity, hostile timelines, worker and adoption gates remain.
+  The later bounded Voice cache repair restores all 36 Voice lengths in a 95-case
+  corpus, now with 95 equal extents. All prior Standard/Pro/Lossless checks pass,
+  but 32 Voice waveform comparisons still fail; WMA acceptance remains false.
+  Eight exact decoder-error checks and four positive controls pass. The new
+  runtime remains isolated, with broader fidelity and application adoption open.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

@@ -45,6 +45,9 @@ decoder fidelity, native review and distribution/adoption remain separate gates.
 evaluation patch for Standard, also requiring expanded inputs and a fresh source
 extraction. It can be combined with the Pro option. Both changes and their
 distinct version suffixes are recorded; neither enables application commands.
+`--wma-voice-cache-repair` likewise applies its bounded packet-cache patch only
+to fresh expanded-input source. It may be combined with the Standard/Pro options.
+It does not clear the separate Voice waveform-fidelity gate or admit a runtime.
 The [dependency runner](audio-dependency-builds.md) and
 [build-tool recipes](audio-build-tools.md) prepare those inputs. The launcher uses
 existing Windows short paths, MSVC's dynamic CRT, explicit local library paths

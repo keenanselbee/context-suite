@@ -4,7 +4,8 @@ Independent WMA Codec Evaluation
 Status: **WMA fidelity not accepted**, 2026-09-17 local date. The Lossless fixture
 writer's packet loss is corrected; 13 Lossless cases now preserve exact source
 samples. Opt-in repairs now pass 20 Standard sample/extent checks, 26 Pro extent
-checks and 23 Pro stereo sample checks. Voice differences remain. WMA stays outside
+checks and 23 Pro stereo sample checks. The later Voice cache repair passes all
+36 Voice extents, but 32 Voice sample comparisons still fail. WMA stays outside
 customer commands and the selected production payload; its required input goal
 is unchanged. The original failed observations below remain part of the record.
 
@@ -47,6 +48,107 @@ against the authored source and independent decoder. All codecs require equal,
 nonempty decoded extents between implementations for this comparison. Prefix
 sample error is reported separately; it never excuses a missing tail. No
 comparison aligns, pads or trims audio to pass.
+
+
+Isolated Voice packet-cache repair
+----------------------------------
+
+The original Voice cache holds 256 bytes, but the decoder requests all remaining
+packet bits, including padding. The copy helper silently refuses an oversized
+copy while the caller records the requested length. At EOF the decoder can then
+read empty or stale cached content and suppress its error. The four one-sample
+fixtures declare speech and one valid sample in their actual packet headers;
+their earlier unsupported-music messages are not evidence that those files
+contain a music-mode frame.
+
+Diagnostic workspace
+`.codex-temp/wma-voice-native-86c4c9ffc59b44acad72969bf3b45a85` contains an owned
+helper using the existing pinned libraries. Its normal mode reproduces all 12
+Voice outputs exactly. Scheduling the final frame directly recovers the four
+one-sample clips and both missing 129-sample tails. This scheduling experiment
+also leaves extra EOF output in two cases and refuses a zero-new-frame packet;
+it is evidence about the cache, not a proposed production workaround. Disabling
+APF in four diagnostic decodes does not resolve the waveform differences.
+The original fixture files and previously selected libraries remain unchanged.
+
+The opt-in [cache patch](../tools/audio-engine/wma-voice-packet-cache.patch)
+allocates room for two declared codec packets, capped by the existing 4 MiB
+block-alignment limit: at most 8 MiB plus decoder padding. It rejects failed
+bit copies, zeros read padding, propagates final-frame errors and frees the
+allocation on decoder close or initialization failure. It is applied only to
+a fresh source extraction using `--expanded-inputs --wma-voice-cache-repair`.
+The default build, production engine pins and customer commands are unchanged.
+
+Before building, the Voice corpus gained 479/480/481 and 959/960/961 source
+lengths at all four rates, for 36 Voice cases and 95 total cases. Voice sample
+comparison now explicitly requires complete authored/Windows extent and the
+same peak `1e-6` / RMS `3e-7` agreement limits used for the repaired codecs.
+These are comparison gates, not permission to normalize, align, trim or pad
+output or a substitute for speech/music listening acceptance. A cache repair
+cannot clear a remaining waveform disagreement merely by matching lengths.
+
+The repaired build is
+`.codex-temp/audio-ffmpeg-9ec011dc8135484f98c2c10d0aedff84`, with suffix
+`contextsuite-g9b0578816c6f-wmapro-tail2-wmastandard-tail1-wmavoice-cache1`.
+Its seven runtime files total 5,056,512 bytes. Voice patch SHA-256 is
+`8BE79DC0C48F7E7E70B7F169D47F080CCDEF21E0A5301657927453D88F2748F1`;
+the modified `libavcodec/wmavoice.c` hash is
+`F4119155E01E2A6A0D07173C6D14F9F19AAA1B025F146D94B808EABA14D56FFC`.
+The original source inventory and both previous patches remain unchanged.
+
+Corpus `wma-system-matrix-31c7ebfcc539400abea9be9722fcd50d` completes **95
+observations, all with equal nonempty extents**. All **36 Voice lengths** match
+both Windows and the authored source. Only the four one-sample Voice cases meet
+the sample limits; **32 Voice waveform comparisons fail**, with peak/RMS errors
+up to about `0.533`/`0.165` in the expanded short-clip corpus. The runner correctly
+returns exit 1 and `accepted: false`. All 20 Standard sample comparisons, 26 Pro
+extents, 23 Pro stereo sample comparisons and 13 exact Lossless cases still pass.
+
+Replay `wma-voice-cache-replay-f86ddc7ccdd14c4a8ea291c2ca4a8673` passes **71
+repair/preservation assertions** against the previous exact files: all 12 Voice
+lengths are restored, their prefixes before the cached final frame are unchanged,
+and all 59 non-Voice outputs are byte-identical. It does not certify Voice samples.
+
+Additional evidence inside this build:
+
+- `build-review-2ce7c934868448dea77d70f30c393c00`: all three source patches,
+  eleven previously reviewed diagnostics and seven hardened PE files.
+- `expanded-inputs-ac676f6b220549d393ad8a2948aed43e`: 27 existing input fixtures.
+- `smoke-57d52a4598b145b8828d05e9bac97f1e`: six targets, artwork and originals.
+
+Thirteen provenance controls pass at
+`.codex-temp/wma-voice-cache-guards-b125cf0efb0443f08dc001284628cfc4`; missing
+expanded-input opt-in is separately refused before dependency access.
+[Test-WmaVoiceRefusals.py](../tools/audio-engine/Test-WmaVoiceRefusals.py) passes
+four positive one-sample controls and eight exact decoder-error checks at
+`.codex-temp/wma-voice-refusals-b80ca6229eac46f1bed63276ae83126c`. It mutates
+only owned copies, checks runtime/source hashes, uses bounded native calls, and
+requires the specific decoder error plus zero output for each refusal. Broader
+malformed/discontinuous input acceptance remains open.
+
+Scratch comparison `wma-voice-cache-refusals-664842a90677468ca2339f93746af065`
+also demonstrates that all eight bad inputs previously exited successfully with
+no samples; the repaired runtime returns the expected decoder errors. Earlier
+attempt `e15cf14f1de14302a1243cbc3b3f9cb9` is invalid evidence because its disabled
+`f32le` muxer failed before decoding. Attempt `d38e71aa5cf845f8b9e4b24c28f14d30`
+reached the decoder but four assertions expected a warning suppressed by
+`-v error`; the final test requires the emitted decode error and exact status.
+Both failed harness attempts are retained, not counted as passing checks.
+
+Reproduce the focused refusal test after the system corpus:
+
+```powershell
+python -B tools/audio-engine/Test-WmaVoiceRefusals.py '<repaired build>' '<completed system corpus>'
+```
+
+No managed adapter, worker pin, installed application or reserved 1.1.1 package
+changed. Managed suites and human listening were not rerun for this native repair.
+
+Microsoft documents distinct speech, music and mixed encoding modes in its
+[Voice codec guidance](https://learn.microsoft.com/en-us/windows/win32/medfound/usingthewindowsmediaaudio9voicecodec).
+The [system Voice decoder](https://learn.microsoft.com/en-us/windows/win32/medfound/windowsmediaaudiovoicedecoder)
+remains an alternative to evaluate independently if native waveform fidelity
+cannot be established; it has not been selected or integrated into the worker.
 
 
 Isolated Standard decoder repair

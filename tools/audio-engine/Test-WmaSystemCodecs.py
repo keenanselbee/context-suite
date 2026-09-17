@@ -46,6 +46,11 @@ STANDARD_TAIL_FRAMES = (511, 512, 513, 1023, 1024, 1025, 2047, 2048,
 # all six original Windows outputs with peak < 5e-7 and RMS < 1.2e-7.
 STANDARD_MAXIMUM_ERROR = 1e-6
 STANDARD_RMS_ERROR = 3e-7
+VOICE_BOUNDARY_FRAMES = (479, 480, 481, 959, 960, 961)
+# A cache repair cannot clear the separate sample-fidelity failure. Freeze the
+# same float-comparison limits before its build; never excuse damaged prefixes.
+VOICE_MAXIMUM_ERROR = 1e-6
+VOICE_RMS_ERROR = 3e-7
 
 
 def digest(path):
@@ -131,6 +136,9 @@ def main():
                 'standardStereo16TailFrames': STANDARD_TAIL_FRAMES,
                 'standardMaximumError': STANDARD_MAXIMUM_ERROR,
                 'standardRmsError': STANDARD_RMS_ERROR,
+                'voiceBoundaryFrames': VOICE_BOUNDARY_FRAMES,
+                'voiceMaximumError': VOICE_MAXIMUM_ERROR,
+                'voiceRmsError': VOICE_RMS_ERROR,
                 'criteria': 'Lossless must match authored samples exactly. Compare complete decoded extents for all codecs; report prefix error separately, never align, trim or pad to pass. Lossy listening quality remains unverified.'}
     (evidence / 'identity.json').write_text(json.dumps(identity, indent=2) + '\n')
     results = []
@@ -142,6 +150,8 @@ def main():
             lengths += PRO_TAIL_FRAMES
         if (codec, rate, channels, bits) == ('standard', 48000, 2, 16):
             lengths += STANDARD_TAIL_FRAMES
+        if codec == 'voice':
+            lengths += VOICE_BOUNDARY_FRAMES
         for frames in lengths:
             name = f'{codec}-{rate}-{channels}-{bits}-{frames}'
             directory = evidence / name
@@ -221,6 +231,12 @@ def main():
                 if codec == 'lossless':
                     item['acceptedLossless'] = all(item[field]['sameExtent'] and item[field]['maximum'] == 0
                                                    for field in ('candidateVsWindows', 'candidateVsAuthored', 'windowsVsAuthored'))
+                if codec == 'voice':
+                    comparison = item['candidateVsWindows']
+                    item['acceptedVoiceSamples'] = (item['acceptedExtent']
+                        and item['candidateFrames'] == frames
+                        and comparison['maximum'] <= VOICE_MAXIMUM_ERROR
+                        and comparison['rms'] <= VOICE_RMS_ERROR)
                 if digest(fixture) != item['wmaSha256'] or digest(directory / 'source.pcm') != item['sourceSha256']:
                     raise ValueError('Fixture changed during comparison')
                 item['status'] = 'observed'
@@ -234,7 +250,8 @@ def main():
             raise ValueError('Candidate changed during evaluation')
     complete = all(item['status'] == 'observed' and item['acceptedExtent']
                    and item.get('acceptedLossless', True) and item.get('acceptedProSamples', True)
-                   and item.get('acceptedStandardSamples', True) for item in results)
+                   and item.get('acceptedStandardSamples', True)
+                   and item.get('acceptedVoiceSamples', True) for item in results)
     (evidence / 'summary.json').write_text(json.dumps({'cases': len(results), 'accepted': complete,
         'observed': sum(item['status'] == 'observed' for item in results),
         'equalExtents': sum(item.get('acceptedExtent', False) for item in results)}, indent=2) + '\n')

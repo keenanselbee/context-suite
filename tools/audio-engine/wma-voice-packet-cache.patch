@@ -1,0 +1,109 @@
+--- a/libavcodec/wmavoice.c
++++ b/libavcodec/wmavoice.c
+@@ -54,8 +54,6 @@
+ #define MAX_SIGNAL_HISTORY   416 ///< maximum excitation signal history
+ #define MAX_SFRAMESIZE       (MAX_FRAMESIZE * MAX_FRAMES)
+                                  ///< maximum number of samples per superframe
+-#define SFRAME_CACHE_MAXSIZE 256 ///< maximum cache size for frame data that
+-                                 ///< was split over two packets
+ #define VLC_NBITS            6   ///< number of bits to read per VLC iteration
+ 
+ /**
+@@ -199,7 +197,7 @@
+                                   ///< to #wmavoice_decode_packet() (since
+                                   ///< they're part of the previous superframe)
+ 
+-    uint8_t sframe_cache[SFRAME_CACHE_MAXSIZE + AV_INPUT_BUFFER_PADDING_SIZE]; ///<
++    uint8_t *sframe_cache; ///<
+                                   ///< cache for superframe data split over
+                                   ///< multiple packets
+     int sframe_cache_size;        ///< set to >0 if we have data from an
+@@ -207,6 +205,7 @@
+                                   ///< packet that spilled over in the current
+                                   ///< packet; specifies the amount of bits in
+                                   ///< #sframe_cache
++    int sframe_cache_capacity;    ///< allocated payload bytes, excluding padding
+     PutBitContext pb;             ///< bitstream writer for #sframe_cache
+ 
+     /**
+@@ -381,6 +380,13 @@
+         return AVERROR_INVALIDDATA;
+     }
+ 
++    /* A final packet includes padding after its last superframe. Retain those
++     * bytes as well as a possible continuation, bounded by two codec packets. */
++    s->sframe_cache_capacity = 2 * ctx->block_align;
++    s->sframe_cache = av_mallocz(s->sframe_cache_capacity + AV_INPUT_BUFFER_PADDING_SIZE);
++    if (!s->sframe_cache)
++        return AVERROR(ENOMEM);
++
+     flags                = AV_RL32(ctx->extradata + 18);
+     s->spillover_bitsize = 3 + av_ceil_log2(ctx->block_align);
+     s->do_apf            =    flags & 0x1;
+@@ -1889,22 +1895,21 @@
+  * @note after calling this function, the current position in the input bit
+  *       I/O context is undefined.
+  */
+-static void copy_bits(PutBitContext *pb,
++static int copy_bits(PutBitContext *pb,
+                       const uint8_t *data, int size,
+                       GetBitContext *gb, int nbits)
+ {
+     int rmn_bytes, rmn_bits;
+ 
+     rmn_bits = rmn_bytes = get_bits_left(gb);
+-    if (rmn_bits < nbits)
+-        return;
+-    if (nbits > put_bits_left(pb))
+-        return;
++    if (nbits < 0 || rmn_bits < nbits || nbits > put_bits_left(pb))
++        return AVERROR_INVALIDDATA;
+     rmn_bits &= 7; rmn_bytes >>= 3;
+     if ((rmn_bits = FFMIN(rmn_bits, nbits)) > 0)
+         put_bits(pb, rmn_bits, get_bits(gb, rmn_bits));
+     ff_copy_bits(pb, data + size - rmn_bytes,
+                  FFMIN(nbits - rmn_bits, rmn_bytes << 3));
++    return 0;
+ }
+ 
+ /**
+@@ -1959,10 +1964,16 @@
+             if (cnt + s->spillover_nbits > avpkt->size * 8) {
+                 s->spillover_nbits = avpkt->size * 8 - cnt;
+             }
+-            copy_bits(&s->pb, buf, size, gb, s->spillover_nbits);
++            if ((res = copy_bits(&s->pb, buf, size, gb, s->spillover_nbits)) < 0)
++                return res;
+             flush_put_bits(&s->pb);
+             s->sframe_cache_size += s->spillover_nbits;
+-            if ((res = synth_superframe(ctx, frame, got_frame_ptr)) == 0 &&
++            memset(s->sframe_cache + ((s->sframe_cache_size + 7) >> 3),
++                   0, AV_INPUT_BUFFER_PADDING_SIZE);
++            res = synth_superframe(ctx, frame, got_frame_ptr);
++            if (res < 0 || (!size && res > 0))
++                return res < 0 ? res : AVERROR_INVALIDDATA;
++            if (res == 0 &&
+                 *got_frame_ptr) {
+                 cnt += s->spillover_nbits;
+                 s->skip_bits_next = cnt & 7;
+@@ -1995,8 +2006,9 @@
+         }
+     } else if ((s->sframe_cache_size = pos) > 0) {
+         /* ... cache it for spillover in next packet */
+-        init_put_bits(&s->pb, s->sframe_cache, SFRAME_CACHE_MAXSIZE);
+-        copy_bits(&s->pb, buf, size, gb, s->sframe_cache_size);
++        init_put_bits(&s->pb, s->sframe_cache, s->sframe_cache_capacity);
++        if ((res = copy_bits(&s->pb, buf, size, gb, s->sframe_cache_size)) < 0)
++            return res;
+         // FIXME bad - just copy bytes as whole and add use the
+         // skip_bits_next field
+     }
+@@ -2007,6 +2019,8 @@
+ static av_cold int wmavoice_decode_end(AVCodecContext *ctx)
+ {
+     WMAVoiceContext *s = ctx->priv_data;
++
++    av_freep(&s->sframe_cache);
+ 
+     if (s->do_apf) {
+         av_tx_uninit(&s->rdft);

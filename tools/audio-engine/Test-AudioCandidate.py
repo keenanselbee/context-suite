@@ -82,6 +82,7 @@ def main():
     print("Audio smoke evidence: " + str(evidence), flush=True)
     suffix = "contextsuite-g9b0578816c6f" + ("-wmapro-tail2" if record.get("wmaProTailRepair") else "")
     suffix += "-wmastandard-tail1" if record.get("wmaStandardTailRepair") else ""
+    suffix += "-wmavoice-cache1" if record.get("wmaVoiceCacheRepair") else ""
     if "--extra-version=" + suffix not in record["configure"]:
         raise ValueError("Candidate version does not match its selected build")
     for name in ("ffmpeg", "ffprobe"):

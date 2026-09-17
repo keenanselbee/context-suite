@@ -31,6 +31,11 @@ extent/sample comparisons, with 62 equal extents in the 71-case corpus. Nine
 Voice extent failures remain. The exact prior files pass 57 repair/preservation
 assertions; all 51 non-Standard outputs are unchanged. This runtime remains an
 isolated experiment, with no managed runtime pin or customer capability change.
+The later `--wma-voice-cache-repair` experiment gives the cache bounded space for
+packet padding and propagates EOF errors. All 95 codec extents now match, including
+36 Voice lengths, but 32 Voice sample comparisons still fail. Run
+`Test-WmaVoiceRefusals.py '<repaired build>' '<completed system corpus>'` for
+four positive controls and eight exact decoder-error checks on generated copies.
 Run `Test-WmaSystemCodecs.py '<expanded workspace>'` to reproduce. Its expected
 nonzero result must not be reported as passing WMA support.
 
