@@ -24,6 +24,26 @@ RECIPE_FILES = ["Build-AudioEngine.py", "Build-AudioDependency.ps1", "Prepare-Au
 DEPENDENCIES = {"opus": "Opus", "ogg_vorbis": "OggVorbis", "lame": "LameStable", "make": "Make", "nasm": "Nasm", "zlib": "Zlib"}
 
 
+def selection(profile):
+    if profile not in ("curated", "expanded"):
+        raise ValueError("Unknown audio distribution profile")
+    pin = json.loads((TOOLS / (profile + "-candidate.json")).read_text())
+    recipes = RECIPE_FILES + [item["path"] for item in pin.get("patches", [])]
+    suffix = "-EXPANDED" if profile == "expanded" else ""
+    return pin, recipes, TOOLS / ("distribution/BUILD" + suffix + ".md"), TOOLS / ("distribution/THIRD-PARTY-NOTICES" + suffix + ".txt")
+
+
+def review_profile(record, pin, profile):
+    if record.get("patches", []) != pin.get("patches", []):
+        raise ValueError("Distribution source patches differ from the selected profile")
+    for key in ("expandedInputs", "wmaProTailRepair", "wmaProMatrixRepair", "wmaStandardTailRepair",
+                "wmaVoiceCacheRepair", "rawAudioTimestampRepair"):
+        if record.get(key, False) is not (profile == "expanded"):
+            raise ValueError("Distribution build selection differs: " + key)
+    if record["source"]["revision"] != pin["sourceRevision"] or record["exitCode"]:
+        raise ValueError("Distribution source revision or completed build differs")
+
+
 def write_json(path, value):
     path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8", newline="\n")
 
@@ -59,7 +79,7 @@ def create_archive(root, path):
     return {"path": path.name, "bytes": path.stat().st_size, "sha256": build_tool.digest(path), "files": files}
 
 
-def collect_source_notices(candidate, dependencies, destination):
+def collect_source_notices(candidate, dependencies, destination, original_content):
     files = {}
     source = candidate / "source"
     prefix = build_tool.short_path(source) + "/"
@@ -78,7 +98,8 @@ def collect_source_notices(candidate, dependencies, destination):
         if name not in original:
             raise ValueError("FFmpeg dependency path is not inventoried: " + name)
         path = source / name
-        if build_tool.digest(path) != original[name]["sha256"]:
+        content = original_content.get(name, path.read_bytes())
+        if hashlib.sha256(content).hexdigest().upper() != original[name]["sha256"]:
             raise ValueError("FFmpeg notice source changed")
         files["ffmpeg/" + name] = path
     targets = {"opus": ["opus"], "ogg_vorbis": ["ogg", "vorbis", "vorbisenc"], "lame": ["mp3lame"], "zlib": ["zlibstatic"]}
@@ -108,7 +129,7 @@ def collect_source_notices(candidate, dependencies, destination):
     comments = re.compile(rb"\A(?:\xef\xbb\xbf)?(?:\s*(?:/\*.*?\*/|//[^\r\n]*(?:\r?\n|$)|;[^\r\n]*(?:\r?\n|$)))+", re.DOTALL)
     notices, report = [], []
     for name, path in sorted(files.items()):
-        content = path.read_bytes()
+        content = original_content.get(name.removeprefix("ffmpeg/"), path.read_bytes()) if name.startswith("ffmpeg/") else path.read_bytes()
         match = comments.match(content)
         header = match.group() if match else b""
         found = bool(re.search(rb"copyright|license|permission|warranty", header, re.IGNORECASE))
@@ -122,7 +143,7 @@ def collect_source_notices(candidate, dependencies, destination):
             raise ValueError("Oversized leading source notice")
         if found:
             notices.append(name + "\n" + "=" * len(name) + "\n" + header.decode("utf-8") + "\n")
-        report.append({"path": name, "sha256": build_tool.digest(path), "noticeFound": found,
+        report.append({"path": name, "sha256": hashlib.sha256(content).hexdigest().upper(), "noticeFound": found,
                        "noticeOffset": content.find(header) if found else None,
                        "noticeSha256": hashlib.sha256(header).hexdigest().upper() if found else None})
     destination.write_text("Source-comment notices from recorded compiler inputs; full file terms remain in source archives.\n\n" +
@@ -134,14 +155,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate", required=True)
     parser.add_argument("--sources", required=True)
+    parser.add_argument("--expanded", action="store_true", help="Review the exact expanded-input runtime and its selected source patches")
     args = parser.parse_args()
     candidate, sources = (build_tool.local_path(value) for value in (args.candidate, args.sources))
-    pin = json.loads((TOOLS / "curated-candidate.json").read_text())
+    profile = "expanded" if args.expanded else "curated"
+    pin, recipes, instructions, notice = selection(profile)
     runtime = json.loads((candidate / "runtime-files.json").read_text())
     if runtime != pin["files"]:
         raise ValueError("Use the exact reviewed curated runtime")
     subprocess.run([sys.executable, "-B", str(TOOLS / "Check-AudioBuild.py"), str(candidate)], check=True)
     record = json.loads((candidate / "build-result.json").read_text())
+    review_profile(record, pin, profile)
     pins = {item["id"]: item for item in json.loads((TOOLS / "source-inputs.json").read_text())["archives"]}
     dependencies = {}
     for name, kind in DEPENDENCIES.items():
@@ -157,6 +181,11 @@ def main():
         path = build_tool.local_path(sources / item["file"])
         if path.stat().st_size != item["bytes"] or build_tool.digest(path) != item["sha256"]:
             raise ValueError("Retained source identity mismatch")
+    original_inventory = {item["path"]: item["sha256"] for item in json.loads((candidate / "source-inventory.json").read_text())}
+    effective = dict(original_inventory)
+    for patch in pin.get("patches", []):
+        effective.update(patch["modifiedSources"])
+    original_content = {}
     with zipfile.ZipFile(sources / pins["ffmpeg"]["file"]) as archive:
         source_count = 0
         for entry in archive.infolist():
@@ -167,8 +196,10 @@ def main():
             name = entry.filename[len(pins["ffmpeg"]["prefix"]):]
             with archive.open(entry) as stream:
                 expected = hashlib.file_digest(stream, "sha256").hexdigest().upper()
-            if build_tool.digest(build_tool.local_path(candidate / "source" / name)) != expected:
+            if expected != original_inventory.get(name) or build_tool.digest(build_tool.local_path(candidate / "source" / name)) != effective[name]:
                 raise ValueError("FFmpeg source differs from the retained archive: " + name)
+            if effective[name] != expected:
+                original_content[name] = archive.read(entry)
             source_count += 1
         if sum(path.is_file() for path in (candidate / "source").rglob("*")) != source_count:
             raise ValueError("FFmpeg source membership changed")
@@ -178,10 +209,10 @@ def main():
     kit, binary = output / "source-kit", output / "runtime"
     for item in inputs:
         copy_verified(sources / item["file"], kit / ".codex-temp/audio-source-retained" / item["file"], item["sha256"])
-    for name in RECIPE_FILES:
+    for name in recipes:
         path = TOOLS / name
         copy_verified(path, kit / "tools/audio-engine" / name, build_tool.digest(path))
-    copy_verified(TOOLS / "distribution/BUILD.md", kit / "BUILD.md", build_tool.digest(TOOLS / "distribution/BUILD.md"))
+    copy_verified(instructions, kit / "BUILD.md", build_tool.digest(instructions))
     for item in runtime:
         copy_verified(candidate / "bin" / item["path"], binary / "bin" / item["path"], item["sha256"])
     licenses = [(candidate / "source/COPYING.LGPLv2.1", "FFmpeg.LGPLv2.1.txt"),
@@ -196,9 +227,8 @@ def main():
     ijg = (candidate / "source/libavcodec/jrevdct.c").read_bytes()
     header = ijg[:ijg.index(b"*/") + 2]
     (binary / "licenses/FFmpeg.IJG.txt").write_bytes(header)
-    copy_verified(TOOLS / "distribution/THIRD-PARTY-NOTICES.txt", binary / "THIRD-PARTY-NOTICES.txt",
-                  build_tool.digest(TOOLS / "distribution/THIRD-PARTY-NOTICES.txt"))
-    notices = collect_source_notices(candidate, dependencies, binary / "licenses/SourceCopyrightNotices.txt")
+    copy_verified(notice, binary / "THIRD-PARTY-NOTICES.txt", build_tool.digest(notice))
+    notices = collect_source_notices(candidate, dependencies, binary / "licenses/SourceCopyrightNotices.txt", original_content)
     write_json(output / "source-notice-inventory.json", notices)
     write_json(binary / "runtime-inventory.json", {"status": "Local review only; no release approval", "files": runtime})
     evidence = output / "evidence"
@@ -206,12 +236,14 @@ def main():
     for name in ("build-inputs.json", "build-result.json", "source-inventory.json", "dependency-files.json", "runtime-files.json",
                  "configure.log", "build.log", "ffmpeg-version.log", "ffprobe-version.log"):
         copy_verified(candidate / name, evidence / name, build_tool.digest(candidate / name))
+    if profile == "expanded":
+        copy_verified(candidate / "effective-sources.json", evidence / "effective-sources.json", record["effectiveSourcesSha256"])
     for name, (directory, _) in dependencies.items():
         for file in ("dependency-build.json", "source-inventory.json", "tests.log"):
             copy_verified(directory / file, evidence / name / file, build_tool.digest(directory / file))
     bundles = [create_archive(kit, output / "audio-source-review.zip"), create_archive(binary, output / "audio-runtime-review.zip")]
     write_json(output / "bundle-inventory.json", {"status": "Local source/runtime review; not production adoption or redistribution clearance",
-               "candidate": pin, "inputs": inputs, "bundles": bundles, "evidence": inventory(evidence),
+               "profile": profile, "candidate": pin, "inputs": inputs, "bundles": bundles, "evidence": inventory(evidence),
                "sourceNoticeInventorySha256": build_tool.digest(output / "source-notice-inventory.json"),
                "scriptSha256": build_tool.digest(pathlib.Path(__file__))})
     print(f"Retained {len(inputs)} source archives and {len(runtime)} runtime files; inventoried {len(notices)} compiler source inputs.")

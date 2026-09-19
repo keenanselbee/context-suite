@@ -412,3 +412,11 @@ Windows writer directory>'`, then run `--verify '<completed matrix build>'
 build>'` exercises sequential patch identity and source-tampering refusals on
 disposable copies. See [surround fidelity evidence](../../docs/wma-pro-surround-repair.md)
 before adopting the candidate; it does not clear broader human or release gates.
+
+`Prepare-AudioDistribution.py --expanded --candidate '<matrix build>' --sources
+'<retained source cache>'` prepares the exact expanded seven-file runtime and
+its five source patches. The extracted source kit rebuilds with
+`Rebuild-AudioSource.ps1 -ExpandedInputs`. `Test-ExpandedAudioPayload.py
+'<expanded review bundle>' '<existing inventoried stage>'` checks disposable
+staging and actual allowlist/refusal boundaries. The separate Windows Voice
+provider is not part of that bundle. See [expanded distribution evidence](../../docs/expanded-audio-distribution.md).

@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "status": "Expanded isolated audio component; Voice provider and release adoption remain separate",
+  "profile": "expanded",
+  "archiveBytes": 2461347,
+  "archiveSha256": "FE1514AF3AC7E9CB43E89E6D84944AF1C84F218F05EF82662F3C8AF5E3C3F63B",
+  "files": [
+    {
+      "path": "ffmpeg.exe",
+      "archivePath": "bin/ffmpeg.exe",
+      "bytes": 394240,
+      "sha256": "A5C61F77EE6D541A1B75F55A02A9C0A33F66C7E972D9932D4D40342EC2D3715D"
+    },
+    {
+      "path": "ffprobe.exe",
+      "archivePath": "bin/ffprobe.exe",
+      "bytes": 164864,
+      "sha256": "5EE15EEF2ED11A4F5C0110F8324FC13A1D4E39B94B0D456261753F03ED8D63C6"
+    },
+    {
+      "path": "avcodec-63.dll",
+      "archivePath": "bin/avcodec-63.dll",
+      "bytes": 2548224,
+      "sha256": "74D3276AFEAE95B354159B8B1266FCA0185A115D0913DDD92C9CAB7A8F7C7BD4"
+    },
+    {
+      "path": "avfilter-12.dll",
+      "archivePath": "bin/avfilter-12.dll",
+      "bytes": 156672,
+      "sha256": "2732CA46D82DCDE2870CD31E3079BFBADB8249A933C8260D59FEAFEA13F87F20"
+    },
+    {
+      "path": "avformat-63.dll",
+      "archivePath": "bin/avformat-63.dll",
+      "bytes": 797696,
+      "sha256": "5B96093AB4D5C74354D12E96AF6AE355538634413F5610B49E0EA0A9E00E8E2D"
+    },
+    {
+      "path": "avutil-61.dll",
+      "archivePath": "bin/avutil-61.dll",
+      "bytes": 866816,
+      "sha256": "7FE2FD137248F65ECDBEFCAC5A4DF34029DB76457426A5FE8B99A6EF2CAC4383"
+    },
+    {
+      "path": "swresample-7.dll",
+      "archivePath": "bin/swresample-7.dll",
+      "bytes": 130048,
+      "sha256": "62BC091A40810E5358F39761D259DF9C5D639C1DFA40BAC82FF52A692BD06A68"
+    },
+    {
+      "path": "licenses/FFmpeg.IJG.txt",
+      "archivePath": "licenses/FFmpeg.IJG.txt",
+      "bytes": 3034,
+      "sha256": "EE552ADE15C696E8E75E9C1AA91193C8299EA3961E3510AB7667F9B3EEA17123"
+    },
+    {
+      "path": "licenses/FFmpeg.LGPLv2.1.txt",
+      "archivePath": "licenses/FFmpeg.LGPLv2.1.txt",
+      "bytes": 26517,
+      "sha256": "246041B6ECF9BC32D718A62C57877C78B5EB397B6467E74ED7AE2626AB189C30"
+    },
+    {
+      "path": "licenses/FFmpeg.LICENSE.md",
+      "archivePath": "licenses/FFmpeg.LICENSE.md",
+      "bytes": 4346,
+      "sha256": "2E1D16C72FD74E12063776371DA757322F8B77589386532F4FD8634BDE7DE1AF"
+    },
+    {
+      "path": "licenses/LAME.COPYING.txt",
+      "archivePath": "licenses/LAME.COPYING.txt",
+      "bytes": 25281,
+      "sha256": "E64F9C5A18F56828C10A575DF13ADE641AA3AF4512A7AFE6C411256943B57AAF"
+    },
+    {
+      "path": "licenses/Ogg.COPYING.txt",
+      "archivePath": "licenses/Ogg.COPYING.txt",
+      "bytes": 1466,
+      "sha256": "D2AB5758336489DA61C12CC5BB757DA5339C4AE9001F9BB0562B4370249AF814"
+    },
+    {
+      "path": "licenses/Opus.COPYING.txt",
+      "archivePath": "licenses/Opus.COPYING.txt",
+      "bytes": 1945,
+      "sha256": "01E1167D54A096D123CF6DFBBEB19587278845C6481D2D66D545669846079551"
+    },
+    {
+      "path": "licenses/SourceCopyrightNotices.txt",
+      "archivePath": "licenses/SourceCopyrightNotices.txt",
+      "bytes": 1142082,
+      "sha256": "3AF9CF055D8B720654CA9889F6BFAA06DC2C69E54CBA40AD67964B6D795A1CC2"
+    },
+    {
+      "path": "licenses/Vorbis.COPYING.txt",
+      "archivePath": "licenses/Vorbis.COPYING.txt",
+      "bytes": 1470,
+      "sha256": "EC1815DB59FCD302846DF949D7424876CB2E2DC5ED1606C5FB0B36787B1CF43A"
+    },
+    {
+      "path": "licenses/zlib.LICENSE.txt",
+      "archivePath": "licenses/zlib.LICENSE.txt",
+      "bytes": 1002,
+      "sha256": "E32FF4E00D9D94930537635291DA39E7E612703334BF6FDE8C7F1686FE8A45A2"
+    },
+    {
+      "path": "runtime-inventory.json",
+      "archivePath": "runtime-inventory.json",
+      "bytes": 1128,
+      "sha256": "4E8FA0CEF3D9DBBEBA99FD7298D643FED3BF5C5EDADCD8F594D15BCF8255FC35"
+    },
+    {
+      "path": "THIRD-PARTY-NOTICES.txt",
+      "archivePath": "THIRD-PARTY-NOTICES.txt",
+      "bytes": 2064,
+      "sha256": "04970A090A624CB17C1F7A033C717F421FD2520EB6B37DFF5143F1D3AF271C42"
+    }
+  ]
+}

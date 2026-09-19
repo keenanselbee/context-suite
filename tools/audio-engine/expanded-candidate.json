@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "status": "Expanded locally verified audio candidate; formal adoption and distribution clearance remain separate",
+  "version": "9.0.1-contextsuite-g9b0578816c6f-wmapro-tail2-wmapro-matrix1-wmastandard-tail1-wmavoice-cache1-rawaudio-ts1",
+  "sourceRevision": "9b0578816c6f94514d330d4f2ae7e44a9fb42692",
+  "buildEvidence": ".codex-temp/audio-ffmpeg-a938e7d84aae48e3b206b11432c7925d",
+  "files": [
+    {
+      "path": "ffmpeg.exe",
+      "bytes": 394240,
+      "sha256": "A5C61F77EE6D541A1B75F55A02A9C0A33F66C7E972D9932D4D40342EC2D3715D"
+    },
+    {
+      "path": "ffprobe.exe",
+      "bytes": 164864,
+      "sha256": "5EE15EEF2ED11A4F5C0110F8324FC13A1D4E39B94B0D456261753F03ED8D63C6"
+    },
+    {
+      "path": "avcodec-63.dll",
+      "bytes": 2548224,
+      "sha256": "74D3276AFEAE95B354159B8B1266FCA0185A115D0913DDD92C9CAB7A8F7C7BD4"
+    },
+    {
+      "path": "avfilter-12.dll",
+      "bytes": 156672,
+      "sha256": "2732CA46D82DCDE2870CD31E3079BFBADB8249A933C8260D59FEAFEA13F87F20"
+    },
+    {
+      "path": "avformat-63.dll",
+      "bytes": 797696,
+      "sha256": "5B96093AB4D5C74354D12E96AF6AE355538634413F5610B49E0EA0A9E00E8E2D"
+    },
+    {
+      "path": "avutil-61.dll",
+      "bytes": 866816,
+      "sha256": "7FE2FD137248F65ECDBEFCAC5A4DF34029DB76457426A5FE8B99A6EF2CAC4383"
+    },
+    {
+      "path": "swresample-7.dll",
+      "bytes": 130048,
+      "sha256": "62BC091A40810E5358F39761D259DF9C5D639C1DFA40BAC82FF52A692BD06A68"
+    }
+  ],
+  "patches": [
+    {
+      "path": "wmapro-terminal-overlap.patch",
+      "sha256": "0DD4F873B78500E3BC6DBC068EBED3388FE61A537FE7CFA9C987F8DE90F86D4F",
+      "modifiedSources": {
+        "libavcodec/wmaprodec.c": "8A277B6BABC7D395F56025F1085D720947C3FE53E59FE0B026F1F8085249ED04"
+      }
+    },
+    {
+      "path": "wmapro-channel-matrix.patch",
+      "sha256": "F74D74519C93BE997C2CD53EC7010748C1049DD2085A0242F389CB637D19744F",
+      "modifiedSources": {
+        "libavcodec/wmaprodec.c": "A7D7DFB028C3538D65531955A043CB585D20B225EB371A3FC8C9459BE1A5258F"
+      }
+    },
+    {
+      "path": "wma-standard-reservoir-tail.patch",
+      "sha256": "356C4F674923E542C22501ADAEBDB29143E3652431AE6915D917DFD17040DAEB",
+      "modifiedSources": {
+        "libavcodec/wmadec.c": "F0C6D70449D578B983FA9EB6C541D230471C95DD5F31B0AC007F0C96B8E4C455"
+      }
+    },
+    {
+      "path": "wma-voice-packet-cache.patch",
+      "sha256": "8BE79DC0C48F7E7E70B7F169D47F080CCDEF21E0A5301657927453D88F2748F1",
+      "modifiedSources": {
+        "libavcodec/wmavoice.c": "F4119155E01E2A6A0D07173C6D14F9F19AAA1B025F146D94B808EABA14D56FFC"
+      }
+    },
+    {
+      "path": "raw-audio-timestamps.patch",
+      "sha256": "0AFB6C8880A5700D95A3D6FE5781BF5A4C98D69ACD23F47D1286D6C8DB7DF221",
+      "modifiedSources": {
+        "libavformat/mux.c": "F2F677182EBE105CB7A80659EFC603E1315172F7C8BE7BB767D0EEB12C9E14CD"
+      }
+    }
+  ],
+  "buildOptions": [
+    "--expanded-inputs",
+    "--wma-pro-tail-repair",
+    "--wma-pro-matrix-repair",
+    "--wma-standard-tail-repair",
+    "--wma-voice-cache-repair",
+    "--raw-audio-timestamp-repair"
+  ]
+}

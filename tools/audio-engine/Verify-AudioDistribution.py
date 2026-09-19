@@ -32,15 +32,18 @@ def verify(value):
     if manifest_path.stat().st_size > 1024 * 1024:
         raise ValueError("Oversized bundle inventory")
     manifest = json.loads(manifest_path.read_text())
-    candidate = json.loads((TOOLS / "curated-candidate.json").read_text())
+    profile = manifest.get("profile", "curated")
+    candidate, recipes, instructions, notice = distribution.selection(profile)
     pins = {item["id"]: item for item in json.loads((TOOLS / "source-inputs.json").read_text())["archives"]
             if item["id"] not in ("supplier-recipe", "lame")}
-    if manifest["candidate"]["files"] != candidate["files"] or manifest["inputs"] != list(pins.values()):
+    if manifest["candidate"] != candidate or manifest["inputs"] != list(pins.values()):
         raise ValueError("Bundle candidate or source identities differ")
     evidence_expected = {"build-inputs.json", "build-result.json", "source-inventory.json", "dependency-files.json", "runtime-files.json",
                          "configure.log", "build.log", "ffmpeg-version.log", "ffprobe-version.log"}
     evidence_expected |= {name + "/" + file for name in distribution.DEPENDENCIES
                           for file in ("dependency-build.json", "source-inventory.json", "tests.log")}
+    if profile == "expanded":
+        evidence_expected.add("effective-sources.json")
     evidence = manifest["evidence"]
     if len(evidence) != len(evidence_expected) or {item["path"] for item in evidence} != evidence_expected:
         raise ValueError("Unexpected build evidence membership")
@@ -48,8 +51,18 @@ def verify(value):
         path = distribution.build_tool.local_path(directory / "evidence" / item["path"])
         if path.stat().st_size != item["bytes"] or distribution.build_tool.digest(path) != item["sha256"]:
             raise ValueError("Build evidence identity mismatch")
+    record = json.loads((directory / "evidence/build-result.json").read_text())
+    distribution.review_profile(record, candidate, profile)
+    if profile == "expanded":
+        effective_path = directory / "evidence/effective-sources.json"
+        original = {item["path"]: item["sha256"] for item in json.loads((directory / "evidence/source-inventory.json").read_text())}
+        for patch in candidate["patches"]:
+            original.update(patch["modifiedSources"])
+        if (distribution.build_tool.digest(effective_path) != record["effectiveSourcesSha256"] or
+                json.loads(effective_path.read_text()) != original):
+            raise ValueError("Expanded effective source inventory differs")
     source_expected = {".codex-temp/audio-source-retained/" + item["file"] for item in pins.values()}
-    source_expected |= {"tools/audio-engine/" + name for name in distribution.RECIPE_FILES} | {"BUILD.md"}
+    source_expected |= {"tools/audio-engine/" + name for name in recipes} | {"BUILD.md"}
     runtime_expected = {"bin/" + item["path"] for item in candidate["files"]}
     runtime_expected |= {"licenses/" + name for name in ROOT_LICENSES}
     runtime_expected |= {"licenses/FFmpeg.IJG.txt", "licenses/SourceCopyrightNotices.txt", "THIRD-PARTY-NOTICES.txt", "runtime-inventory.json"}
@@ -84,16 +97,16 @@ def verify(value):
         if len(data) != pin["bytes"] or sha(data) != pin["sha256"]:
             raise ValueError("Original source archive changed")
         sources[identity] = data
-    for name in distribution.RECIPE_FILES:
+    for name in recipes:
         if sha(contents[(source_name, "tools/audio-engine/" + name)]) != distribution.build_tool.digest(TOOLS / name):
             raise ValueError("Source kit recipe differs from the current reviewed tools")
-    if contents[(source_name, "BUILD.md")] != (TOOLS / "distribution/BUILD.md").read_bytes():
+    if contents[(source_name, "BUILD.md")] != instructions.read_bytes():
         raise ValueError("Source kit build instructions differ")
     for item in candidate["files"]:
         data = contents[(runtime_name, "bin/" + item["path"])]
         if len(data) != item["bytes"] or sha(data) != item["sha256"]:
             raise ValueError("Runtime binary differs from the curated pin")
-    if contents[(runtime_name, "THIRD-PARTY-NOTICES.txt")] != (TOOLS / "distribution/THIRD-PARTY-NOTICES.txt").read_bytes():
+    if contents[(runtime_name, "THIRD-PARTY-NOTICES.txt")] != notice.read_bytes():
         raise ValueError("Runtime notice differs")
     if json.loads(contents[(runtime_name, "runtime-inventory.json")])["files"] != candidate["files"]:
         raise ValueError("Runtime inventory differs")
@@ -157,7 +170,7 @@ def verify(value):
         for archive in archives.values():
             archive.close()
     return {"status": "Local review archive integrity verified; release approval remains separate", "sourceArchives": len(pins),
-            "runtimeFiles": len(candidate["files"]), "sourceInputs": len(notices), "collectedNotices": len(collected)}
+            "profile": profile, "runtimeFiles": len(candidate["files"]), "sourceInputs": len(notices), "collectedNotices": len(collected)}
 
 
 if __name__ == "__main__":

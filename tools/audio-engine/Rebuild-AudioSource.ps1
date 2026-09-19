@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string] $SourceDirectory)
+param([string] $SourceDirectory, [switch] $ExpandedInputs)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 if (-not $SourceDirectory) { $SourceDirectory = Join-Path $repository '.codex-temp/audio-source-retained' }
@@ -14,8 +14,13 @@ foreach ($dependency in @('Opus', 'OggVorbis', 'LameStable', 'Make', 'Nasm', 'Zl
     if ($completed.Count -ne 1) { throw "No unique completed dependency result: $dependency" }
     $builds[$dependency] = $completed[0].Substring($prefix.Length)
 }
+$engineOptions = @()
+if ($ExpandedInputs) {
+    $engineOptions = @('--expanded-inputs', '--wma-pro-tail-repair', '--wma-pro-matrix-repair',
+        '--wma-standard-tail-repair', '--wma-voice-cache-repair', '--raw-audio-timestamp-repair')
+}
 & python -B (Join-Path $PSScriptRoot 'Build-AudioEngine.py') --sources $SourceDirectory --opus $builds.Opus `
-    --ogg-vorbis $builds.OggVorbis --lame $builds.LameStable --make $builds.Make --nasm $builds.Nasm --zlib $builds.Zlib |
+    --ogg-vorbis $builds.OggVorbis --lame $builds.LameStable --make $builds.Make --nasm $builds.Nasm --zlib $builds.Zlib @engineOptions |
     Tee-Object -Variable engineOutput
 if ($LASTEXITCODE -ne 0) { throw 'Retained-source FFmpeg build failed.' }
 $prefix = 'FFmpeg candidate evidence: '

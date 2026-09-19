@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.4**. This update records the finite WMA Pro
-surround decoder repair and isolated worker selection. Optional HEIC/AVIF scratch
+Matrix revision: **2026-09-19.5**. This update records the expanded audio
+source/runtime review and isolated deployment profile. Optional HEIC/AVIF scratch
 packaging and reserved candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
@@ -40,6 +40,12 @@ prompts, access changes and absent providers. Its later metadata checkpoint adds
 173 checks and 42 copies, with 78 independent descriptive-value/cover-pixel
 checks. Broader metadata variants, whole-app publication-crash and visible
 acceptance remain separate.
+The [expanded distribution profile](expanded-audio-distribution.md) retains the
+five patches and verified source/runtime archives. Fifteen archive and fifteen
+deployment checks pass; the extracted kit rebuilds and passes native review,
+121 decoder cases and six-target smoke. Its eighteen-file
+deployment excludes the separately required Windows Voice provider. Final combined
+packaging and source/product terms remain open.
 The [Windows Voice candidate](wma-voice-windows-evaluation.md)
 passes 36 reference-output comparisons and 12 refusal/ownership checks. Its
 [optional private adapter](wma-voice-conversion-adapter.md) passes 339 checks with

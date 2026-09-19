@@ -216,6 +216,12 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   publications and per-channel comparisons. Formal adoption remains open.
   Existing audio regression passes 370 checks, runtime guards pass 23, direct
   commands repeat 211, and the refreshed foundation passes 4,384 contracts.
+  The [expanded distribution profile](expanded-audio-distribution.md) now retains
+  all five patches with the original source archives and seven native files.
+  Fifteen archive and fifteen isolated deployment checks pass, including mixed
+  runtime and partial-copy refusals. The extracted source kit rebuilds with all
+  sixteen dependency tests, native review, 121 decoder cases and six-target smoke
+  passing. Separate Windows Voice packaging and final combined adoption remain required.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

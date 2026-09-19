@@ -28,9 +28,11 @@ def local_path(value):
     return path
 
 
-def selection():
-    record = json.loads((TOOLS / "payload-candidate.json").read_text())
-    candidate = json.loads((TOOLS / "curated-candidate.json").read_text())
+def selection(profile="curated"):
+    if profile not in ("curated", "expanded"):
+        raise ValueError("Unknown audio payload profile")
+    record = json.loads((TOOLS / (("expanded-" if profile == "expanded" else "") + "payload-candidate.json")).read_text())
+    candidate = json.loads((TOOLS / (profile + "-candidate.json")).read_text())
     native = [{key: item[key] for key in ("path", "bytes", "sha256")} for item in record["files"]
               if item["path"] in {entry["path"] for entry in candidate["files"]}]
     if native != candidate["files"]:
@@ -45,7 +47,15 @@ def selection():
 def verify(payload):
     audio = local_path(payload) / "audio-engine"
     local_path(audio)
-    record = selection()
+    probe = local_path(audio / "ffprobe.exe")
+    if not probe.is_file() or probe.stat().st_size > 1024 * 1024:
+        raise ValueError("Audio probe is missing or oversized")
+    probe_hash = digest(probe.read_bytes())
+    records = [selection(profile) for profile in ("curated", "expanded")]
+    matches = [item for item in records if any(entry["path"] == "ffprobe.exe" and entry["sha256"] == probe_hash for entry in item["files"])]
+    if len(matches) != 1:
+        raise ValueError("Audio probe identity is not a reviewed profile")
+    record = matches[0]
     expected = {item["path"]: item for item in record["files"]}
     actual = set()
     for path in audio.rglob("*"):
@@ -71,9 +81,9 @@ def stage(distribution, payload):
     spec = importlib.util.spec_from_file_location("audio_distribution_verifier", TOOLS / "Verify-AudioDistribution.py")
     verifier = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(verifier)
-    verifier.verify(distribution)
+    reviewed = verifier.verify(distribution)
     source = verifier.distribution.build_tool.local_path(distribution) / "audio-runtime-review.zip"
-    record = selection()
+    record = selection(reviewed["profile"])
     if source.stat().st_size != record["archiveBytes"]:
         raise ValueError("Audio runtime archive size differs")
     data = source.read_bytes()

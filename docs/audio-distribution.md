@@ -7,6 +7,12 @@ kit. Explicit isolated production staging is now available; default engine
 adoption and redistribution approval remain open. This work does
 not install tools, change Explorer, publish artifacts or select product terms.
 
+The later [expanded profile](expanded-audio-distribution.md) adds the repaired
+AIFF/WMA candidate with all five source patches and distinct runtime/source
+identities. It does not replace the historical evidence below or include the
+separate Windows Voice provider. Both native profiles have explicit isolated
+staging identities; formal combined adoption remains open.
+
 
 Isolated production packaging
 -----------------------------

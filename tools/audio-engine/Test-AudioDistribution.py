@@ -24,6 +24,8 @@ def main():
     results = [{"case": "original", "result": accepted}]
     cases = ["missing-license", "extra-private-entry", "changed-runtime", "changed-source", "changed-recipe",
              "changed-notice", "duplicate-entry", "changed-evidence", "changed-notice-inventory"]
+    if manifest.get("profile") == "expanded":
+        cases += ["missing-patch", "changed-patch", "changed-profile", "changed-repair-flags", "changed-effective-source"]
     for case in cases:
         directory = root / case
         directory.mkdir()
@@ -37,10 +39,13 @@ def main():
                     data = archive.read(entry)
                     if case == "missing-license" and entry.filename == "licenses/LAME.COPYING.txt":
                         continue
+                    if case == "missing-patch" and entry.filename == "tools/audio-engine/wmapro-channel-matrix.patch":
+                        continue
                     change = ((case == "changed-runtime" and entry.filename == "bin/ffmpeg.exe")
                               or (case == "changed-source" and entry.filename.startswith(".codex-temp/") and entry.filename.endswith(".zip"))
                               or (case == "changed-recipe" and entry.filename == "tools/audio-engine/Build-AudioEngine.py")
-                              or (case == "changed-notice" and entry.filename == "licenses/Opus.COPYING.txt"))
+                              or (case == "changed-notice" and entry.filename == "licenses/Opus.COPYING.txt")
+                              or (case == "changed-patch" and entry.filename == "tools/audio-engine/wmapro-channel-matrix.patch"))
                     if change:
                         data = bytes([data[0] ^ 1]) + data[1:]
                     entries.append((entry, data))
@@ -66,6 +71,23 @@ def main():
         if case == "changed-notice-inventory":
             with (directory / "source-notice-inventory.json").open("ab") as stream:
                 stream.write(b" ")
+        if case == "changed-profile":
+            current["profile"] = "curated"
+        if case in ("changed-repair-flags", "changed-effective-source"):
+            record_path = directory / "evidence/build-result.json"
+            record = json.loads(record_path.read_text())
+            if case == "changed-repair-flags":
+                record["wmaProMatrixRepair"] = False
+            else:
+                effective_path = directory / "evidence/effective-sources.json"
+                effective = json.loads(effective_path.read_text())
+                effective["libavcodec/wmaprodec.c"] = "0" * 64
+                verifier.distribution.write_json(effective_path, effective)
+                record["effectiveSourcesSha256"] = verifier.distribution.build_tool.digest(effective_path)
+            verifier.distribution.write_json(record_path, record)
+            # Rebind the altered evidence inventory to test selected-profile
+            # semantics rather than only its outer file checksums.
+            current["evidence"] = verifier.distribution.inventory(directory / "evidence")
         verifier.distribution.write_json(directory / "bundle-inventory.json", current)
         try:
             verifier.verify(str(directory))
