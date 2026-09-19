@@ -138,6 +138,14 @@ if (args.Length == 4 && args[0] == "--finite-resampling-interruptions")
     Console.WriteLine($"Passed {checks} finite-resampling interruption checks.");
     return 0;
 }
+if (args.Length == 4 && args[0] == "--expanded-audio-recovery")
+{
+    var checks = 0;
+    await AudioInterruptionContracts.ExpandedAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} expanded audio recovery checks.");
+    return 0;
+}
 if (args.Length == 2 && args[0] == "--analysis-mapping")
 {
     var checks = 0;

@@ -1,0 +1,12 @@
+--- a/libavformat/mux.c
++++ b/libavformat/mux.c
+@@ -554,7 +554,8 @@
+         pkt->dts = sti->pts_buffer[0];
+     }
+ 
+-    if (sti->cur_dts && sti->cur_dts != AV_NOPTS_VALUE &&
++    if (!(s->oformat->flags & AVFMT_NOTIMESTAMPS) &&
++        sti->cur_dts && sti->cur_dts != AV_NOPTS_VALUE &&
+         ((!(s->oformat->flags & AVFMT_TS_NONSTRICT) &&
+           st->codecpar->codec_type != AVMEDIA_TYPE_SUBTITLE &&
+           st->codecpar->codec_type != AVMEDIA_TYPE_DATA &&

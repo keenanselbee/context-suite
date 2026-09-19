@@ -5,6 +5,11 @@ Status: disposable worker evaluation, 2026-09-17. Customer menu admission,
 formal engine packaging and combined release acceptance remain pending.
 The installed application and reserved combined 1.1.1 payload are unchanged.
 
+The later [recovery checkpoint](expanded-audio-recovery.md) replaces the repaired
+runtime pin after finding a long Lossless raw-transport diagnostic overflow. Its
+fresh worker repeats all 1,008 checks and 796 publications. Runtime hashes below
+identify this original checkpoint, not the newer loader selection.
+
 This checkpoint connects the [AIFF adapter](aiff-conversion-adapter.md),
 [repaired WMA runtime](wma-system-codec-evaluation.md) and optional
 [Windows Voice provider](wma-voice-conversion-adapter.md) to the real worker,

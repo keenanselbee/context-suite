@@ -190,6 +190,13 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   cases without changing quality bounds; 368 existing audio checks also pass.
   Customer commands, expanded-input interruption/recovery, surround Pro
   agreement, broader fidelity and combined adoption remain open.
+  The [expanded recovery checkpoint](expanded-audio-recovery.md) subsequently
+  finds and repairs long Lossless raw-transport diagnostic overflow without
+  changing samples or error budgets. Its native regression passes 101 checks and
+  a fresh worker repeats 1,008 checks/796 publications. Native interruption,
+  cleanup and retry pass 265 checks covering 30 interrupted operations across
+  five input families; the private regression passes 370 checks including bounded
+  delayed-handle cleanup. Retained failed attempts are recorded separately.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

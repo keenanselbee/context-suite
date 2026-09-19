@@ -382,3 +382,12 @@ and transactional copy publication. It verifies exact runtime/helper identities,
 adds representative AIFF tones, retains boundary refusals and records independent
 WAV comparisons. See [worker evidence and open gates](../../docs/expanded-audio-worker-verification.md).
 This does not update formal staging, the installed app or Explorer registration.
+
+`Test-ExpandedAudioRecovery.py '<successful expanded worker evidence>'
+'<generated-speech duration corpus>'` authors long inputs and verifies actual
+decode/encode interruption and following publication. See the
+[recovery record](../../docs/expanded-audio-recovery.md) for exact scope and results.
+`Build-AudioEngine.py --raw-audio-timestamp-repair` is an explicit expanded-input
+evaluation switch. `Test-RawAudioTimestamps.py '<previous build>' '<new build>'
+'<95-case system corpus>' '<long Lossless fixture directory>'` verifies unchanged
+decoded samples and preserved errors after the timestamp-free transport fix.

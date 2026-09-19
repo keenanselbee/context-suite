@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-17.3**. This update records expanded AIFF/WMA
-worker composition. Optional HEIC/AVIF scratch packaging and reserved
+Matrix revision: **2026-09-19.1**. This update records expanded AIFF/WMA
+worker recovery and the raw-transport timestamp fix. Optional HEIC/AVIF scratch packaging and reserved
 candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
@@ -30,6 +30,11 @@ Required compatibility additions selected 2026-09-16:
 | WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | [Expanded worker](expanded-audio-worker-verification.md) admits the repaired Standard/Pro/Lossless runtime and optional Windows Voice provider for copy publication. Independent Standard/stereo Pro and exact Lossless/Voice comparisons retain their stated bounds; surround Pro sample agreement remains open. FFmpeg Voice is not used. Broader fidelity, metadata/timelines, direct-command/recovery acceptance and packaging remain pending |
 
 No output or Optimize capability for these four formats is added.
+The later [recovery checkpoint](expanded-audio-recovery.md) passes 265 checks
+covering 30 decode/encode interruptions and retries across AIFF, Standard, Pro,
+Lossless and Voice. It also repairs long Lossless raw-transport diagnostic
+overflow and repeats the 1,008-check publication matrix. Direct-command,
+mixed-selection and whole-app publication-crash acceptance remain separate.
 The [Windows Voice candidate](wma-voice-windows-evaluation.md)
 passes 36 reference-output comparisons and 12 refusal/ownership checks. Its
 [optional private adapter](wma-voice-conversion-adapter.md) passes 339 checks with

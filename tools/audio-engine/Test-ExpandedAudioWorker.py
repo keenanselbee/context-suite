@@ -49,7 +49,7 @@ def main():
     expected = {'ffmpeg.exe', 'ffprobe.exe', 'avcodec-63.dll', 'avfilter-12.dll', 'avformat-63.dll', 'avutil-61.dll', 'swresample-7.dll'}
     if len(inventory) != 7 or {row['path'] for row in inventory} != expected:
         raise ValueError('Unexpected repaired runtime inventory')
-    if digest(build / 'bin/ffmpeg.exe') != '466873A38C3846C5D96A839D6A0D4DCF6621290B96F72A4F196A56DD6555E004':
+    if digest(build / 'bin/ffmpeg.exe') != '27159DC409F049BE855DCCAB1A28CC8C7647AB88508A49088424B5D2A5419C93':
         raise ValueError('Use the selected repaired runtime')
     for row in inventory:
         path = build / 'bin' / row['path']

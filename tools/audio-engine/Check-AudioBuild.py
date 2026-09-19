@@ -89,7 +89,8 @@ def review_source_changes(directory, record):
     selected = [(name, target) for enabled, name, target in (
         (record["wmaProTailRepair"], "wmapro-terminal-overlap.patch", "libavcodec/wmaprodec.c"),
         (record["wmaStandardTailRepair"], "wma-standard-reservoir-tail.patch", "libavcodec/wmadec.c"),
-        (record["wmaVoiceCacheRepair"], "wma-voice-packet-cache.patch", "libavcodec/wmavoice.c")) if enabled]
+        (record["wmaVoiceCacheRepair"], "wma-voice-packet-cache.patch", "libavcodec/wmavoice.c"),
+        (record.get("rawAudioTimestampRepair", False), "raw-audio-timestamps.patch", "libavformat/mux.c")) if enabled]
     if len(patches) != len(selected) or (patches and not record["expandedInputs"]):
         raise ValueError("Unselected WMA source patch")
     for entry, (name, target) in zip(patches, selected):
