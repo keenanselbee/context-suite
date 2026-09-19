@@ -9,6 +9,7 @@
     <Compile Include="..\..\tools\office-engine\Probe\ExcelLayoutFixtures.cs" Link="Fixtures\ExcelLayoutFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\OfficeFixtures.cs" Link="Fixtures\OfficeFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\PowerPointSlideFixtures.cs" Link="Fixtures\PowerPointSlideFixtures.cs" />
+    <Compile Include="..\..\tools\office-engine\Probe\PowerPointLayoutFixtures.cs" Link="Fixtures\PowerPointLayoutFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\WordFontStyleFixtures.cs" Link="Fixtures\WordFontStyleFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\WordRevisionFixtures.cs" Link="Fixtures\WordRevisionFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\WordRevisionStructureFixtures.cs" Link="Fixtures\WordRevisionStructureFixtures.cs" />

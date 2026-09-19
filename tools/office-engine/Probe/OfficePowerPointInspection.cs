@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 internal static class OfficePowerPointInspection
 {
-    internal static async Task<int> RunAsync(string reportPath, string qpdf, string pdfium)
+    internal static async Task<int> RunAsync(string reportPath, string qpdf, string pdfium, bool layout = false)
     {
         reportPath = Path.GetFullPath(reportPath);
         if (!reportPath.Contains("\\.codex-temp\\office-execution\\", StringComparison.OrdinalIgnoreCase))
@@ -13,23 +13,27 @@ internal static class OfficePowerPointInspection
         var root = Path.GetDirectoryName(reportPath)!;
         using var report = JsonDocument.Parse(File.ReadAllText(reportPath));
         var data = report.RootElement;
-        if (!data.GetProperty("Passed").GetBoolean() || data.GetProperty("Mode").GetString() != "PowerPointSlides" ||
-            data.GetProperty("Results").GetArrayLength() != 3 || data.GetProperty("Profiles").GetArrayLength() != 3 ||
+        if (!data.GetProperty("Passed").GetBoolean() || data.GetProperty("Mode").GetString() != (layout ? "PowerPointLayout" : "PowerPointSlides") ||
+            data.GetProperty("Results").GetArrayLength() != (layout ? 1 : 3) || data.GetProperty("Profiles").GetArrayLength() != (layout ? 1 : 3) ||
             data.GetProperty("Profiles").EnumerateArray().Any(item => !item.GetProperty("Removed").GetBoolean() || !item.GetProperty("ContextRetired").GetBoolean()))
             throw new IOException("Complete authored PowerPoint publication and cleanup evidence is required.");
-        var folder = Path.Combine(Path.GetDirectoryName(root)!, "slides-inspection-" + Guid.NewGuid().ToString("N"));
+        var folder = Path.Combine(Path.GetDirectoryName(root)!, (layout ? "powerpoint-layout" : "slides") + "-inspection-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(folder);
         var fixtures = Path.Combine(folder, "fixtures"); Directory.CreateDirectory(fixtures);
-        OfficeFixtures.Create(fixtures); PowerPointSlideFixtures.Create(fixtures);
+        OfficeFixtures.Create(fixtures);
+        if (layout) PowerPointLayoutFixtures.Create(fixtures); else PowerPointSlideFixtures.Create(fixtures);
         var expected = new Dictionary<string, int[]>
         {
             ["PowerPoint slides reordered.pptx"] = [3, 1, 2],
             ["PowerPoint slides hidden-ends.pptx"] = [2],
             ["PowerPoint slides notes-excluded.pptx"] = [1, 2, 3]
         };
+        if (layout) expected = new() { [PowerPointLayoutFixtures.Name] = [1, 2, 3] };
         PdfTextReader.Initialize(Path.Combine(Path.GetDirectoryName(pdfium)!, "pdfium.dll"));
         var observations = new List<object>();
         var passed = true;
+        var layoutControls = true;
+        var layoutControlPages = 0;
         foreach (var entry in data.GetProperty("Results").EnumerateArray())
         {
             var source = entry.GetProperty("Path").GetString()!;
@@ -57,21 +61,39 @@ internal static class OfficePowerPointInspection
             using var parsed = JsonDocument.Parse(rendered.Output);
             var render = parsed.RootElement.Clone();
             var pages = render.GetProperty("pages").EnumerateArray().ToArray();
-            var text = PdfTextReader.Read(output);
+            var glyphs = new List<PowerPointLayoutOracle.Glyph[]>();
+            var text = PdfTextReader.Read(output, layout ? (pdfPage, page) => glyphs.Add(PowerPointLayoutOracle.ReadGlyphs(pdfPage, page)) : null);
             File.WriteAllText(Path.Combine(target, "text.json"), JsonSerializer.Serialize(text));
             var geometry = pages.Length == order.Length && pages.All(page =>
                 Math.Abs(page.GetProperty("widthPoints").GetDouble() - 720) < .1 &&
                 Math.Abs(page.GetProperty("heightPoints").GetDouble() - 405) < .1);
-            var matches = Matches(text, order);
+            var layouts = new List<PowerPointLayoutOracle.Observation>();
+            var layoutGuardResults = new List<bool>();
+            if (layout && geometry && text.Length == 3 && glyphs.Count == 3)
+                for (var index = 0; index < 3; index++)
+                {
+                    var page = pages[index];
+                    var pixels = File.ReadAllBytes(Path.Combine(target, $"page-{index + 1}.bgra"));
+                    var width = page.GetProperty("width").GetInt32(); var height = page.GetProperty("height").GetInt32();
+                    var stride = page.GetProperty("stride").GetInt32();
+                    var pageWidth = page.GetProperty("widthPoints").GetDouble(); var pageHeight = page.GetProperty("heightPoints").GetDouble();
+                    layouts.Add(PowerPointLayoutOracle.Inspect(index, text[index], glyphs[index], pixels, width, height, stride, pageWidth, pageHeight));
+                    var guardResult = PowerPointLayoutOracle.NegativeControls(index, text[index], glyphs[index], pixels, width, height, stride, pageWidth, pageHeight);
+                    layoutGuardResults.Add(guardResult);
+                    layoutControls &= guardResult;
+                    layoutControlPages++;
+                }
+            var matches = layout ? layouts.Count == 3 && layouts.All(item => item.Passed) : Matches(text, order);
             passed &= geometry && matches;
             if (Hash(source) != sourceHash || Hash(output) != outputHash ||
                 sourceTime != File.GetLastWriteTimeUtc(source) || outputTime != File.GetLastWriteTimeUtc(output))
                 throw new IOException("Source or PDF changed during inspection.");
             observations.Add(new { Name = name, SourceSha256 = sourceHash, OutputSha256 = outputHash,
-                ExpectedOrder = order, Text = text, TextMatches = matches, GeometryMatches = geometry, Render = render });
+                ExpectedOrder = order, Text = text, TextMatches = layout ? layouts.Count == 3 && layouts.All(item => item.TextMatches) : matches,
+                Layouts = layouts, LayoutControlResults = layoutGuardResults, GeometryMatches = geometry, Render = render });
         }
         if (expected.Count != 0) throw new IOException("Incomplete PowerPoint matrix.");
-        var controls = !Matches(["SLIDE_1_MARKER", "SLIDE_2_MARKER", "SLIDE_3_MARKER"], [3, 1, 2]) &&
+        var controls = layout ? layoutControlPages == 3 && layoutControls : !Matches(["SLIDE_1_MARKER", "SLIDE_2_MARKER", "SLIDE_3_MARKER"], [3, 1, 2]) &&
             !Matches(["SLIDE_1_MARKER", "SLIDE_2_MARKER", "SLIDE_3_MARKER"], [2]) &&
             !Matches(["SLIDE_1_MARKER NOTE_1_MARKER", "SLIDE_2_MARKER", "SLIDE_3_MARKER"], [1, 2, 3]) &&
             !Matches(["SLIDE_1_MARKER extra", "SLIDE_2_MARKER", "SLIDE_3_MARKER"], [1, 2, 3]);
@@ -81,7 +103,8 @@ internal static class OfficePowerPointInspection
             Passed = passed, SourceReport = reportPath, SourceReportSha256 = Hash(reportPath),
             Observations = observations, NegativeTextControls = controls
         }, new JsonSerializerOptions { WriteIndented = true }));
-        Console.WriteLine($"Three PowerPoint publications: slide order, hidden slides, absent notes, page geometry and four negative text controls passed={passed}.");
+        Console.WriteLine(layout ? $"PowerPoint image, diagram/table and typography inspection passed={passed}." :
+            $"Three PowerPoint publications: slide order, hidden slides, absent notes, page geometry and four negative text controls passed={passed}.");
         return passed ? 0 : 1;
     }
 

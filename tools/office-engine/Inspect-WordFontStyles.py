@@ -23,14 +23,15 @@ def main():
     parser.add_argument("--pdf-prepared", type=Path, required=True)
     parser.add_argument("--pdfium-prepared", type=Path, required=True)
     parser.add_argument("--powerpoint-slides", action="store_true", help="Inspect the three authored application PowerPoint slide cases instead.")
+    parser.add_argument("--powerpoint-layout", action="store_true", help="Inspect the authored three-slide image, diagram/table and typography deck.")
     parser.add_argument("--excel-layout", action="store_true", help="Inspect four authored Excel chart/merged/wrapped application exports instead.")
     parser.add_argument("--chart-policy-control", action="store_true", help="With --excel-layout, compare active-content settings only on freshly generated passive workbooks in ordinary bounded jobs.")
     args = parser.parse_args()
-    if args.powerpoint_slides and args.excel_layout:
+    if sum((args.powerpoint_slides, args.excel_layout, args.powerpoint_layout)) > 1:
         parser.error("Choose one inspection scenario.")
     if args.chart_policy_control and not args.excel_layout:
         parser.error("The diagnostic requires --excel-layout.")
-    prefix = "chart-policy" if args.chart_policy_control else "layout" if args.excel_layout else "slides" if args.powerpoint_slides else "style"
+    prefix = "powerpoint-layout" if args.powerpoint_layout else "chart-policy" if args.chart_policy_control else "layout" if args.excel_layout else "slides" if args.powerpoint_slides else "style"
     root = Path(__file__).resolve().parents[2]
     stage = root / ".codex-temp/office-execution" / args.execution_id.hex
     qpdf_root = args.pdf_prepared.resolve(strict=True)
@@ -83,7 +84,7 @@ def main():
             raise RuntimeError("Inspection build failed: " + str(log))
         executable = root / "artifacts/managed/bin/Office.Evaluation/Release/net10.0-windows/Office.Evaluation.exe"
         binaries.update({str(path): digest(path) for path in executable.parent.iterdir() if path.is_file()})
-        result = subprocess.run([str(executable), "--diagnose-excel-chart-policy" if args.chart_policy_control else "--inspect-excel-layout" if args.excel_layout else "--inspect-powerpoint-publications" if args.powerpoint_slides else "--inspect-word-font-styles", str(report), str(qpdf), str(pdfium)],
+        result = subprocess.run([str(executable), "--inspect-powerpoint-layout" if args.powerpoint_layout else "--diagnose-excel-chart-policy" if args.chart_policy_control else "--inspect-excel-layout" if args.excel_layout else "--inspect-powerpoint-publications" if args.powerpoint_slides else "--inspect-word-font-styles", str(report), str(qpdf), str(pdfium)],
                                 cwd=root, stdout=output, stderr=output)
     unchanged = all(digest(root / name) == expected for name, expected in sources.items()) and all(
         digest(Path(name)) == expected for name, expected in binaries.items())

@@ -315,6 +315,11 @@ if (args.Length == 3 && args[0] == "--audio-listening-pack")
     await AudioListeningContracts.RunAsync(args[1], args[2]);
     return 0;
 }
+if (args is ["--office-powerpoint-layout", var presentationWorker, var presentationEvidence])
+{
+    await OfficePowerPointSlideContracts.RunAsync(presentationWorker, presentationEvidence, layout: true);
+    return 0;
+}
 if (args.Length == 3 && args[0] == "--audio-performance")
 {
     await AudioPerformanceContracts.RunAsync(args[1], args[2]);

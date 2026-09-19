@@ -52,6 +52,14 @@ This is isolated ordinary-audio timing evidence, not listening acceptance or
 the final combined-candidate replay. Remaining image/document and optional
 Analyze timing gates stay open.
 
+The [PowerPoint D09 layout corpus](powerpoint-layout-acceptance.md) now has an
+actual application export with seven publication/preservation/cleanup checks.
+Independent image and diagram/table checks pass. Mixed typography retains text,
+placement and embedded font families, but a 20.013-point result exceeds the
+predeclared 0.01-point tolerance for authored 20-point text. D09 stays unaccepted
+pending the explicit rounding-policy decision; human/real-document review and
+the separate Office chart/network gates remain open.
+
 ### Required input additions
 
 | Addition | Required result | Acceptance boundary |

@@ -9,14 +9,15 @@ using Microsoft.Win32;
 
 internal static class OfficePowerPointSlideContracts
 {
-    internal static async Task RunAsync(string workerPath, string evidence)
+    internal static async Task RunAsync(string workerPath, string evidence, bool layout = false)
     {
         var root = Path.GetFullPath(evidence);
         if (!root.Contains("\\.codex-temp\\office-execution\\", StringComparison.OrdinalIgnoreCase) || Directory.Exists(root))
             throw new InvalidDataException("Use fresh isolated PowerPoint slide evidence.");
         var originals = Path.Combine(root, "originals"); Directory.CreateDirectory(originals);
         OfficeFixtures.Create(originals);
-        var names = PowerPointSlideFixtures.Create(originals).Where(item => !item.Name.Contains("notes-control")).Select(item => item.Name).ToArray();
+        var names = layout ? PowerPointLayoutFixtures.Create(originals) :
+            PowerPointSlideFixtures.Create(originals).Where(item => !item.Name.Contains("notes-control")).Select(item => item.Name).ToArray();
         var files = names.Select(name => Path.Combine(originals, name)).ToArray();
         var before = Directory.EnumerateFiles(originals).ToDictionary(path => path,
             path => new { Sha256 = Hash(path), Written = File.GetLastWriteTimeUtc(path) });
@@ -77,10 +78,10 @@ internal static class OfficePowerPointSlideContracts
         Check(profiles.Count == names.Length, "every PowerPoint export has native cleanup evidence");
         File.WriteAllText(Path.Combine(root, "results.json"), JsonSerializer.Serialize(new
         {
-            Passed = reviews.Count == 0, Mode = "PowerPointSlides", Checks = checks,
+            Passed = reviews.Count == 0, Mode = layout ? "PowerPointLayout" : "PowerPointSlides", Checks = checks,
             Results = results, Originals = before, Profiles = profiles, Reviews = reviews
         }, new JsonSerializerOptions { WriteIndented = true }));
-        Check(reviews.Count == 0, "authored Arial presentations need no font review");
+        Check(reviews.Count == 0, "authored presentations using installed fonts need no font review");
         Console.WriteLine($"Passed {checks.Count} PowerPoint slide application checks. Independent PDF inspection remains required.");
 
         void Check(bool condition, string message)

@@ -72,7 +72,7 @@ expected text/page order and independent geometry before scoring export.
 | D06 | Existing calculation/date controls under both modes | Correct values where admitted; known errors blocked; no external refresh |
 | D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Authored layout checks](excel-layout-acceptance.md) currently fail chart preservation; retain chart/value association, no clipping, correct pagination and every capacity page |
 | D08 | Ordinary, hidden/reordered and empty-visible-slide PowerPoint controls | Visible order, no notes/hidden output, clear empty-deck refusal |
-| D09 | PowerPoint image, diagram/table and mixed typography | Placement, complete labels, no unexpected fallback/clipping |
+| D09 | PowerPoint image, diagram/table and mixed typography | [Authored layout evidence](powerpoint-layout-acceptance.md) passes image/table placement and text; aggregate acceptance still fails the declared font-size tolerance |
 | D10 | One approved real DOCX report | Owner/source reference for text, formatting and pagination |
 | D11 | One approved real XLSX workbook | Owner/source reference for areas, displayed values and layout under chosen calculation modes |
 | D12 | One approved real PPTX deck | Owner/source reference for visible content, fonts and layout |

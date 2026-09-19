@@ -52,6 +52,8 @@ if (args is ["--diagnose-excel-chart-policy", var chartReport, var chartQpdf, va
     return await ExcelChartPolicyEvaluation.RunAsync(chartReport, chartQpdf, chartPdfium);
 if (args is ["--inspect-powerpoint-publications", var slideReport, var slideQpdf, var slidePdfium])
     return await OfficePowerPointInspection.RunAsync(slideReport, slideQpdf, slidePdfium);
+if (args is ["--inspect-powerpoint-layout", var presentationReport, var presentationQpdf, var presentationPdfium])
+    return await OfficePowerPointInspection.RunAsync(presentationReport, presentationQpdf, presentationPdfium, layout: true);
 if (args is ["--inspect-word-publications", var wordReport, var wordQpdf, var wordPdfium])
     return await OfficeWordRevisionInspection.RunAsync(wordReport, wordQpdf, wordPdfium);
 if (args is ["--preflight-isolation-fixtures", var preflightFixtures])

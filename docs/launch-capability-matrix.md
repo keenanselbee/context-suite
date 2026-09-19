@@ -1,8 +1,9 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.8**. This update records the
-[Excel chart-loss blocker](excel-layout-acceptance.md) under the
+Matrix revision: **2026-09-19.9**. This update records the
+[PowerPoint layout evidence and rounding-policy gate](powerpoint-layout-acceptance.md)
+alongside the [Excel chart-loss blocker](excel-layout-acceptance.md) under the
 [finite acceptance contract](local-candidate-acceptance.md). Optional HEIC/AVIF scratch
 packaging and reserved candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
