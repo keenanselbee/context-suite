@@ -27,6 +27,10 @@ groups, the human media/workflow review and reference-machine performance limits
 It also identifies unresolved Office network-enforcement evidence explicitly.
 Preparing/binding every review fixture, measuring the final candidate and owner
 acceptance remain unfinished; the contract itself is not a passing test result.
+The [Office isolation refresh](office-isolation-evaluation.md#correlated-network-observation-2026-09-19)
+reproduces the unresolved IPv4/IPv6 timeout under a zero-capability AppContainer.
+Exact process/time/port diagnostics and fourteen query-plan guards now pass;
+affirmative network enforcement still needs attended administrator evidence.
 
 ### Required input additions
 

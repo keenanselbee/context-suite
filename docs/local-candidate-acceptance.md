@@ -150,6 +150,9 @@ loopback/deadline observations. File/token checks and successful exports do not
 prove network denial. Resolve this with a positive ordinary-process control and
 affirmative enforcement evidence for the restricted process, including IPv4/IPv6
 and cleanup. Preserve the original assertions and failed observations.
+The 2026-09-19 fresh probe repeats the timeout result and now binds PID/time/ports.
+Its fourteen query-planner checks do not close this gate; attended administrator
+event/filter collection remains pending.
 
 The final audit identifies the candidate, each A/D/H result, performance samples,
 source/runtime delivery and adoption decisions, preserved originals and reviewed

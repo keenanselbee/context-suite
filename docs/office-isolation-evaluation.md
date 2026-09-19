@@ -4,7 +4,8 @@ Office Process Isolation Evaluation
 Status: authorized AppContainer file/token/content and explicit-environment checks passed; IPv4/IPv6
 attempts reach observation deadlines rather than proven access denial, so the
 combined matrix fails. Profiles were removed. No production isolation claim or
-Office document execution in this probe, updated 2026-09-14.
+Office document execution in this probe. The 2026-09-19 refresh below reproduces
+the network result and adds exact process/time/port query correlation.
 
 A [read-only event reader](../tools/office-engine/Read-OfficeNetworkEvents.ps1)
 is prepared for the unresolved loopback observations. Its dry run produces four
@@ -14,6 +15,12 @@ Dry-run and non-administrator refusal checks leave the evidence directory unchan
 Actual administrator execution awaits separate approval; no event/filter results
 are claimed. It changes no tracing, firewall or exemption settings. The isolation
 probe itself must still run without elevation, with its existing profile permission.
+
+The current reader additionally requires the new observation fields; historical
+observations without them cannot drive a current query. Plan-only inspection
+remains read-only and works on retained current-schema observations. Actual
+collection requires an observation started within nine minutes, keeping its
+attempts inside the fixed ten-minute event query. No tracing is enabled.
 
 Purpose
 -------
@@ -374,3 +381,73 @@ observation deadlines. No network assertion was relaxed, elevated query executed
 Office renderer launched or production payload changed. Future renderer tests
 must verify its own initialization and descendants under this explicit environment;
 this authored helper does not establish Office compatibility.
+
+
+Correlated network observation (2026-09-19)
+-----------------------------------------
+
+Fresh native run `2b78c8413bbf4e439db7c1c5980b8031` builds with x64 `/W4 /WX` and
+repeats the authorized disposable-profile experiment. The ordinary IPv4/IPv6
+controls connect successfully. The isolated child has an actual AppContainer
+token with zero capabilities; both connection attempts again reach the two-second
+observation deadline, returning recorded 10060 with the expiry flags set. The
+combined access matrix therefore still **fails**. No denial assertion changed.
+
+File read/write/content, explicit environment, process/job-memory limits,
+process-count limits, timeout/diagnostic limits and owner-crash cleanup checks
+pass. Both listeners remain reachable afterward. The native cleanup receipt
+reports removal; `.codex-temp/office-network-observation-cleanup.json` separately
+confirms that the exact profile folder and registry mapping are absent. No Office
+renderer, customer document, installed application or Explorer was invoked.
+Full log: `.codex-temp/office-network-observation-84d5672886df4d12a46c2c9715340749.log`.
+
+The probe now records PID, UTC FILETIME bounds and local/remote ports for both
+attempts. Its observed restricted PID is 30132, interval 2026-09-19
+22:25:09.7138055Z through 22:25:13.7372754Z. IPv4 uses local/remote ports
+56898/56887; IPv6 uses 56900/56888. Executable SHA-256:
+`E5B2FAA1115B0E8BB89305EF49CE7566A67AF86544688AA405C7BB71348171B7`.
+These distinguish the isolated attempts from the ordinary controls, which use
+different local ports, even though both run the same executable.
+
+The read-only query planner binds the observation hash, profile, executable,
+PID and time interval. Its four fixed `netsh wfp show` queries now include exact
+ports and application identity; filter queries request verbose results. A
+non-administrator is refused before output creation. Actual collection also
+rejects stale/future observations, rather than suggesting an old attempt lies
+inside the recent-events window. Dry-run output and current local `netsh` help
+confirm the supported query arguments; no WFP event/filter result is available.
+
+[Test-OfficeNetworkPlan.py](../tools/office-engine/Test-OfficeNetworkPlan.py) passes
+**14 checks** at `office-network-plan-tests-11707186a5164e089ee90ef6c690125d`:
+one complete scoped plan, twelve malformed/changed identity controls, and actual
+non-administrator refusal, all without changing the input evidence. Synthetic
+observation copies create no AppContainer profiles and execute no native probe.
+The initial run at `3a8ce717d73e49ac8a3de0a927d2b2a3` caught a logical-grouping
+mistake in the new PowerShell type check. Parenthesizing that check fixes the
+wrong-token refusal; the failed test remains retained. This is diagnostic tooling,
+not a changed product sandbox or a successful network-enforcement test.
+
+Microsoft's [network-isolation diagnosis example](https://techcommunity.microsoft.com/blog/coreinfrastructureandsecurityblog/diagnosing-network-isolation-issues/2511562)
+uses WFP drop events and their responsible filter to identify an AppContainer
+loopback block. Its [WFP access-control documentation](https://learn.microsoft.com/en-us/windows/win32/fwp/access-control)
+distinguishes engine-open rights from event/filter enumeration rights. This
+session is not elevated. The [capability-diagnosis API](https://learn.microsoft.com/en-us/windows/win32/api/netfw/nf-netfw-networkisolationdiagnoseconnectfailureandgetinfo)
+reports missing-capability reasons; a zero reason here does not establish the
+cause of a timed-out connection. Matching event/filter evidence remains needed.
+
+For the next attended diagnostic, run `Test-OfficeIsolation.ps1
+-CreateDisposableProfile` in a normal PowerShell window. Retain its printed
+GUID even if the combined matrix reports failure, and verify cleanup. Within
+nine minutes, run the following in a separate Administrator PowerShell window:
+
+```powershell
+powershell -NoProfile -File 'C:\Repositories\Context Suite\tools\office-engine\Read-OfficeNetworkEvents.ps1' -StagingId '<fresh printed GUID>'
+```
+
+The reader changes no collection/firewall/exemption settings and launches no
+probe. It saves scoped diagnostics only beneath that repository evidence folder.
+Do not elevate the isolation test itself. Empty query output is not a pass;
+inspect matching application/ports/time, drop direction, filter and action before
+drawing a conclusion. An expired observation requires a fresh authorized normal
+probe, not a wider unbounded event query. Production-launcher and actual-renderer
+network behavior remain separate required evidence after this boundary diagnosis.

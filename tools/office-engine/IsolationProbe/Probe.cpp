@@ -105,8 +105,10 @@ DWORD WriteAttempt(const fs::path& path, const std::string& content) {
     if (written != content.size()) return ERROR_WRITE_FAULT;
     return FlushFileBuffers(file.value) ? ERROR_SUCCESS : GetLastError();
 }
-int ConnectAttempt(unsigned short port, bool ipv6 = false, bool* observationExpired = nullptr) {
+int ConnectAttempt(unsigned short port, bool ipv6 = false, bool* observationExpired = nullptr,
+    unsigned short* localPort = nullptr) {
     if (observationExpired) *observationExpired = false;
+    if (localPort) *localPort = 0;
     Socket connection(socket(ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, IPPROTO_TCP));
     if (connection.value == INVALID_SOCKET) return WSAGetLastError();
     u_long nonblocking = 1;
@@ -116,8 +118,16 @@ int ConnectAttempt(unsigned short port, bool ipv6 = false, bool* observationExpi
     sockaddr_in6 address6{};
     address6.sin6_family = AF_INET6; address6.sin6_addr = in6addr_loopback; address6.sin6_port = htons(port);
     const auto target = ipv6 ? reinterpret_cast<sockaddr*>(&address6) : reinterpret_cast<sockaddr*>(&address);
-    if (connect(connection.value, target, ipv6 ? sizeof(address6) : sizeof(address)) == 0) return 0;
+    const auto connected = connect(connection.value, target, ipv6 ? sizeof(address6) : sizeof(address));
     const auto error = WSAGetLastError();
+    if (localPort) {
+        sockaddr_storage local{};
+        int localBytes = sizeof(local);
+        if (getsockname(connection.value, reinterpret_cast<sockaddr*>(&local), &localBytes) == 0)
+            *localPort = ntohs(ipv6 ? reinterpret_cast<sockaddr_in6*>(&local)->sin6_port :
+                reinterpret_cast<sockaddr_in*>(&local)->sin_port);
+    }
+    if (connected == 0) return 0;
     if (error != WSAEWOULDBLOCK) return error;
     fd_set writeSet, errorSet; FD_ZERO(&writeSet); FD_ZERO(&errorSet);
     FD_SET(connection.value, &writeSet); FD_SET(connection.value, &errorSet);
@@ -165,8 +175,16 @@ int Child(const fs::path& root, unsigned short port, unsigned short port6, bool 
     const auto deniedWrite = OpenAttempt(root / L"denied" / L"output.txt", true);
     const auto readOnlyWrite = OpenAttempt(root / L"allowed" / L"input.txt", true);
     bool expired = false, expired6 = false;
-    const auto network = ConnectAttempt(port, false, &expired);
-    const auto network6 = ConnectAttempt(port6, true, &expired6);
+    unsigned short localPort = 0, localPort6 = 0;
+    const auto utcFileTime = [] {
+        FILETIME value{};
+        GetSystemTimeAsFileTime(&value);
+        return (static_cast<ULONGLONG>(value.dwHighDateTime) << 32) | value.dwLowDateTime;
+    };
+    const auto networkStarted = utcFileTime();
+    const auto network = ConnectAttempt(port, false, &expired, &localPort);
+    const auto network6 = ConnectAttempt(port6, true, &expired6, &localPort6);
+    const auto networkEnded = utcFileTime();
     const auto firewall = LoadLibraryExW(L"FirewallAPI.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     Require(firewall != nullptr, "Load system network diagnosis API");
     struct ModuleGuard { HMODULE value; ~ModuleGuard() { FreeLibrary(value); } } moduleGuard{ firewall };
@@ -179,6 +197,10 @@ int Child(const fs::path& root, unsigned short port, unsigned short port6, bool 
     const auto diagnosis = diagnose(L"127.0.0.1", &reason);
     const auto diagnosis6 = diagnose(L"::1", &reason6);
     std::cout << "{\"appContainer\":" << appContainer << ",\"allowedRead\":" << allowedRead
+        << ",\"networkProcessId\":" << GetCurrentProcessId()
+        << ",\"networkStartedFileTime\":" << networkStarted << ",\"networkEndedFileTime\":" << networkEnded
+        << ",\"networkRemotePort\":" << port << ",\"networkRemotePort6\":" << port6
+        << ",\"networkLocalPort\":" << localPort << ",\"networkLocalPort6\":" << localPort6
         << ",\"environmentMatches\":" << (environmentMatches ? "true" : "false")
         << ",\"environmentStorage\":" << (environmentStorage ? "true" : "false")
         << ",\"capabilityCount\":" << capabilityCount << ",\"outputReadback\":" << outputReadback
