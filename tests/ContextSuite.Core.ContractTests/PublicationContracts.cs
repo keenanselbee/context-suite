@@ -6,10 +6,11 @@ using ContextSuite.Core.Settings;
 
 namespace ContextSuite.Core.ContractTests;
 
-internal static class PublicationContracts
+internal static partial class PublicationContracts
 {
     public static async Task RunAsync(string scratch, Action<bool, string> check)
     {
+        await JournalLocksAsync(scratch, check);
         var root = Path.Combine(scratch, "publication-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         var recycler = new RetainingRecycler();

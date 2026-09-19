@@ -391,3 +391,9 @@ decode/encode interruption and following publication. See the
 evaluation switch. `Test-RawAudioTimestamps.py '<previous build>' '<new build>'
 '<95-case system corpus>' '<long Lossless fixture directory>'` verifies unchanged
 decoded samples and preserved errors after the timestamp-free transport fix.
+
+`Test-ExpandedAudioDirect.py '<successful expanded worker evidence>'` builds
+fresh managed components and exercises the existing Convert command workflow
+with seven AIFF/WMA inputs and all six targets. It includes quality decisions,
+access refresh, mixed selections, retry and missing-provider cases. See the
+[direct-command evidence](../../docs/expanded-audio-direct-verification.md).

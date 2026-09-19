@@ -1,12 +1,12 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.1**. This update records expanded AIFF/WMA
-worker recovery and the raw-transport timestamp fix. Optional HEIC/AVIF scratch packaging and reserved
+Matrix revision: **2026-09-19.2**. This update records expanded AIFF/WMA
+direct-command checks and publication-journal recovery. Optional HEIC/AVIF scratch packaging and reserved
 candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
-is incomplete. The newly selected inputs below still require customer integration.
+is incomplete. The newly selected inputs below still require full customer acceptance.
 
 The source baseline and the last packaged candidate are different. Candidate
 **1.1.0** contains images, audio and PDF engines, but no Office engine. Later
@@ -26,21 +26,24 @@ Required compatibility additions selected 2026-09-16:
 | --- | --- | --- |
 | HEIC | JPEG, PNG | Authored SDR adapter/worker, loader, resource-limit, recovery and optional combined-scratch packaging checks pass; broader fidelity, redistribution and formal release adoption pending |
 | AVIF | JPEG, PNG | Authored SDR adapter/worker, loader, recovery and optional combined-scratch packaging checks pass; broader fidelity, redistribution and formal release adoption pending |
-| AIFF | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | [Isolated adapter](aiff-conversion-adapter.md) passes 366 checks/68 outputs with PCM/float, three compressed variants, tested text and artwork. The later [expanded worker](expanded-audio-worker-verification.md) exercises actual copy publication, representative tones and boundary refusals. Broader fidelity, direct-command/recovery acceptance and packaging remain pending |
-| WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | [Expanded worker](expanded-audio-worker-verification.md) admits the repaired Standard/Pro/Lossless runtime and optional Windows Voice provider for copy publication. Independent Standard/stereo Pro and exact Lossless/Voice comparisons retain their stated bounds; surround Pro sample agreement remains open. FFmpeg Voice is not used. Broader fidelity, metadata/timelines, direct-command/recovery acceptance and packaging remain pending |
+| AIFF | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | [Isolated adapter](aiff-conversion-adapter.md) passes 366 checks/68 outputs with PCM/float, three compressed variants, tested text and artwork. The later [expanded worker](expanded-audio-worker-verification.md) exercises actual copy publication, representative tones and boundary refusals. Broader fidelity, visible/recovery acceptance and packaging remain pending |
+| WMA | WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis, Opus | [Expanded worker](expanded-audio-worker-verification.md) admits the repaired Standard/Pro/Lossless runtime and optional Windows Voice provider for copy publication. Independent Standard/stereo Pro and exact Lossless/Voice comparisons retain their stated bounds; surround Pro sample agreement remains open. FFmpeg Voice is not used. Broader fidelity, metadata/timelines, visible/recovery acceptance and packaging remain pending |
 
 No output or Optimize capability for these four formats is added.
 The later [recovery checkpoint](expanded-audio-recovery.md) passes 265 checks
 covering 30 decode/encode interruptions and retries across AIFF, Standard, Pro,
 Lossless and Voice. It also repairs long Lossless raw-transport diagnostic
-overflow and repeats the 1,008-check publication matrix. Direct-command,
-mixed-selection and whole-app publication-crash acceptance remain separate.
+overflow and repeats the 1,008-check publication matrix. The later
+[direct-command checkpoint](expanded-audio-direct-verification.md) passes 211
+checks with seven inputs across all six targets, mixed selections, required
+prompts, access changes and absent providers. Metadata in this composition,
+whole-app publication-crash and visible acceptance remain separate.
 The [Windows Voice candidate](wma-voice-windows-evaluation.md)
 passes 36 reference-output comparisons and 12 refusal/ownership checks. Its
 [optional private adapter](wma-voice-conversion-adapter.md) passes 339 checks with
 222 outputs, including six-target text/artwork preservation. The provider requires
-explicit composition, now available to the disposable worker. Customer commands
-and formal packaging remain pending.
+explicit composition, now verified through disposable-worker direct commands.
+Visible acceptance and formal packaging remain pending.
 FFmpeg's Voice failures remain open.
 ALAC remains a separate evaluation. The [current goal](broad-file-support-goal.md#current-objective-and-completion-plan)
 requires implementation and integrated acceptance before completion; the existing

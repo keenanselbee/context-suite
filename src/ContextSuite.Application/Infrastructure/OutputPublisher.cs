@@ -304,7 +304,27 @@ internal sealed class OutputPublisher(string recordDirectory, IFileRecycler recy
             await JsonSerializer.SerializeAsync(file, reservation.Record);
             file.Flush(true);
         }
-        File.Move(temporary, reservation.RecordPath, overwrite: !createNew);
+        // Windows can report sharing violation or access denied when a reader
+        // denies replacement. Bound retries to this rename; persistent denial
+        // still retains the recovery evidence, including genuine ACL failures.
+        for (var attempt = 0; ; attempt++)
+        {
+            PublicationFiles.RejectLinks(temporary);
+            PublicationFiles.RejectLinks(reservation.RecordPath);
+            try
+            {
+                File.Move(temporary, reservation.RecordPath, overwrite: !createNew);
+                break;
+            }
+            catch (IOException error) when ((error.HResult & 0xffff) == 32 && attempt < 20)
+            {
+                await Task.Delay(100);
+            }
+            catch (UnauthorizedAccessException error) when ((error.HResult & 0xffff) == 5 && attempt < 20)
+            {
+                await Task.Delay(100);
+            }
+        }
     }
 
     private static bool DeleteTemporary(string path)

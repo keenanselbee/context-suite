@@ -197,6 +197,12 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   cleanup and retry pass 265 checks covering 30 interrupted operations across
   five input families; the private regression passes 370 checks including bounded
   delayed-handle cleanup. Retained failed attempts are recorded separately.
+  The [expanded direct-command checkpoint](expanded-audio-direct-verification.md)
+  passes 211 checks across seven inputs and all six targets, including mixed
+  batches, exact quality prompts, access refresh/retry and absent providers.
+  It also corrects transient publication-journal rename denial, with controlled
+  delayed-reader and persistent-lock checks. Metadata through this composition,
+  broader fidelity, visible acceptance and final adoption remain required.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

@@ -310,6 +310,22 @@ if (args.Length == 3 && args[0] == "--audio-listening-pack")
     await AudioListeningContracts.RunAsync(args[1], args[2]);
     return 0;
 }
+if (args.Length == 2 && args[0] == "--publication-journal")
+{
+    var checks = 0;
+    await PublicationContracts.JournalLocksAsync(args[1], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated publication journal checks.");
+    return 0;
+}
+if (args.Length == 4 && args[0] == "--expanded-audio-direct")
+{
+    var checks = 0;
+    await AudioConversionDirectContracts.ExpandedAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated expanded audio direct checks.");
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--expanded-audio-worker")
 {
     await ExpandedAudioWorkerContracts.RunAsync(args[1], args[2], args[3]);
