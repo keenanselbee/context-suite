@@ -73,7 +73,7 @@ internal static class OfficePreparationCrashContracts
                 }
                 if (scenario == "locked")
                 {
-                    using var held = new FileStream(work.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    using var held = await LockCopyAfterExitAsync(work.SourcePath, deadline.Token);
                     var refusal = await OfficeRecoveryCoordinator.RecoverAsync(root, runtime, default);
                     check(refusal.Entries.Single().State == OfficeRecoveryState.ReviewRequired && File.Exists(work.SourcePath),
                         "Office abandoned preparation keeps a locked partial copy for retry");
@@ -104,6 +104,18 @@ internal static class OfficePreparationCrashContracts
     {
         if (Path.GetFullPath(path) != path || !path.Contains("\\.codex-temp\\", StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Use an isolated repository preparation fixture.");
+    }
+
+    private static async Task<FileStream> LockCopyAfterExitAsync(string path, CancellationToken token)
+    {
+        // The source-copy handle can outlive the observed process exit, just as
+        // the journal handle can. Acquire the actual fixture lock before testing recovery.
+        for (var attempt = 0; ; attempt++)
+        {
+            try { return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read); }
+            catch (IOException error) when (attempt < 49 && (error.HResult & 0xffff) is 32 or 33)
+            { await Task.Delay(100, token); }
+        }
     }
 
     private static async Task<OfficeOwnershipJournal> OpenAfterExitAsync(string path, string root, string runtime, CancellationToken token)

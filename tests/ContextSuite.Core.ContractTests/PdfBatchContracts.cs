@@ -31,7 +31,7 @@ internal static class PdfBatchContracts
         Refuses(() => new WorkerCommand(1, Guid.NewGuid(), "pdf-optimize", PdfWork: work, PdfBytes: [1]).Validate(), "mixed PDF payload is refused");
         Refuses(() => new WorkerCommand(1, Guid.NewGuid(), "capabilities", PdfWork: work).Validate(), "unrelated operation cannot carry PDF work");
         Refuses(() => new WorkerCommand(1, Guid.NewGuid(), "pdf-file-probe", PdfFile: new(source.ItemId, source.Path), PdfWork: work).Validate(), "probe cannot carry optimization work");
-        IOperationAccess access = new LocalTrialStore(Path.Combine(scratch, "pdf-batch-trial", "trial.json"));
+        IOperationAccess access = new LocalTrialStore(Path.Combine(scratch, "pdf-batch-trial-" + Guid.NewGuid().ToString("N"), "trial.json"));
         var admitted = await access.AdmitOptimizationAsync(plan.Confirm(), default);
         check(admitted.IsAllowed && admitted.BatchId == plan.BatchId, "PDF batch: confirmed optimization starts the normal local trial");
         await using var worker = new WorkerClient(Path.Combine(scratch, "missing-pdf-worker.exe"));

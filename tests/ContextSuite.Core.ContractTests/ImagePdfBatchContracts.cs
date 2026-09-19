@@ -49,7 +49,7 @@ internal static class ImagePdfBatchContracts
         var denied = await executor.ExecuteAdmittedAsync(plan, new(new(false, "Activate a license."), plan.Plan.BatchId), null, default);
         check(denied.Result.State == OperationState.Failed && denied.Result.Message == "Activate a license." && !Directory.Exists(records),
             "combined PDF: denied admission starts no publication");
-        IOperationAccess trial = new LocalTrialStore(Path.Combine(scratch, "combined-pdf-trial", "trial.json"));
+        IOperationAccess trial = new LocalTrialStore(Path.Combine(scratch, "combined-pdf-trial-" + Guid.NewGuid().ToString("N"), "trial.json"));
         var admission = await trial.AdmitConversionAsync(plan, default);
         check(admission.IsAllowed && admission.BatchId == plan.Plan.BatchId, "combined PDF: confirmed group starts one ordinary trial batch");
 
