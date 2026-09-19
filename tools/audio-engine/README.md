@@ -436,3 +436,11 @@ with the expanded audio option and a fresh staging ID. `Test-WindowsVoiceDistrib
 `Test-ExpandedAudioDirect.py` also accepts the two distribution options to exercise
 freshly staged native files through actual Convert commands. See
 [Voice packaging evidence and open gates](../../docs/windows-voice-distribution.md).
+
+`Prepare-AudioReview.py --audio-engine '<isolated payload>/audio-engine'` now
+verifies either complete curated or expanded staging before copying it into the
+generated listening pack. It records the selected profile and all deployed file
+identities. The pack remains three generated references and fifteen comparisons;
+it does not play sound or claim human/player acceptance. See the
+[current review pack](../../docs/audio-listening-review.md#expanded-runtime-refresh-2026-09-19)
+and [finite acceptance contract](../../docs/local-candidate-acceptance.md).

@@ -20,8 +20,11 @@ retained, pinned audio-engine candidate:
 python -B tools/audio-engine/Prepare-AudioReview.py --audio-engine 'artifacts/production-staging/169f27e246ce43c4808afa9f99e044a3/audio-engine'
 ```
 
-The command verifies the current curated engine pin, builds the current Release
-worker and contract host, and copies the engine into a fresh scratch worker.
+The command verifies the complete curated or expanded audio payload, including
+its optional Voice provider, builds the current Release worker and contract host,
+and copies the verified engine into a fresh scratch worker. Use an `audio-engine`
+directory under isolated production staging or repository scratch; arbitrary
+native directories and partial binary-only copies are not admitted.
 It generates music and transient WAVs plus local Microsoft David or Zira desktop
 speech. An already installed voice is required; it downloads nothing and plays
 nothing through the speakers. Every generated file and test profile stays under
@@ -92,3 +95,25 @@ On 2026-09-16, browser inspection could not run: the in-app browser was
 unavailable and the browser inventory was empty. No visual, keyboard,
 screen-reader, theme, DPI, listening or encoded-player result is claimed.
 The exported notes start unreviewed. No shipping source or formal package changed.
+
+
+Expanded-runtime refresh (2026-09-19)
+-----------------------------------
+
+Run `5d364e6972cf44098f8d58d25db063b1` prepares the same finite fifteen comparisons
+using the current repaired expanded runtime and separately pinned Voice provider.
+Its inputs record the expanded profile and all twenty deployed audio files.
+The source runtime is the worker from the
+[Voice distribution checkpoint](windows-voice-distribution.md), not reserved 1.1.1.
+Both managed builds have zero warnings/errors. All thirty application-owned
+copy publications and existing sample/extent/preservation checks pass; the exit
+receipt confirms unchanged captured inputs. The page writer validates every
+media hash. No playback, visual review or encoded-player acceptance occurred.
+
+Open `.codex-temp/audio-review/5d364e6972cf44098f8d58d25db063b1/pack/review.html`
+for this current generated-reference review. Human/player entries remain
+unreviewed. The pack's input fixtures are WAVE references; the presence of the
+Voice provider does not turn this into AIFF/WMA listening evidence. The separate
+ten expanded-input comparisons and nine real-recording comparisons in
+[H01 of the acceptance contract](local-candidate-acceptance.md#human-media-and-workflows)
+remain to be prepared and reviewed. Final combined-candidate replay remains open.

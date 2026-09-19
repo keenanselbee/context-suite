@@ -2,6 +2,7 @@
 
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import shutil
@@ -17,22 +18,27 @@ def digest(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--audio-engine", type=Path, required=True, help="Pinned audio-engine folder from a retained production candidate.")
+    parser.add_argument("--audio-engine", type=Path, required=True, help="Verified curated or expanded audio-engine folder from isolated staging.")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     engine = args.audio_engine.resolve(strict=True)
-    engine.relative_to(root)
-    pin = json.loads((root / "tools/audio-engine/curated-candidate.json").read_text())
-    for item in pin["files"]:
-        path = engine / item["path"]
-        if path.stat().st_size != item["bytes"] or digest(path) != item["sha256"]:
-            raise RuntimeError("Audio engine differs from the current pin.")
+    spec = importlib.util.spec_from_file_location('audio_payload', root / 'tools/audio-engine/Stage-AudioPayload.py')
+    staging = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(staging)
+    staging.local_path(engine)
+    if engine.name != 'audio-engine':
+        raise ValueError('Use the verified audio-engine directory in an isolated payload')
+    pin = staging.verify(engine.parent)
     stage = root / ".codex-temp/audio-review" / uuid.uuid4().hex
     pack = stage / "pack"
     (pack / "sources").mkdir(parents=True)
     print("Audio review evidence:", stage, flush=True)
     paths = {Path(__file__).resolve(), root / "tools/audio-engine/Create-ReviewSpeech.ps1",
-             root / "tools/audio-engine/Write-AudioReviewPage.py", root / "tools/audio-engine/curated-candidate.json"}
+             root / "tools/audio-engine/Write-AudioReviewPage.py", root / "tools/audio-engine/Stage-AudioPayload.py",
+             root / "tools/audio-engine/WindowsVoiceDistribution.py"}
+    paths.update(root / 'tools/audio-engine' / name for name in
+                 ('curated-candidate.json', 'payload-candidate.json', 'expanded-candidate.json',
+                  'expanded-payload-candidate.json', 'voice-provider-candidate.json', 'WmaVoiceMftProbe.cpp'))
     for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/ContextSuite.Worker", "src/Shared",
                       "proprietary/src/ContextSuite.Private", "tests/ContextSuite.Core.ContractTests", "tools/office-engine/Probe"):
         paths.update(path for path in (root / directory).rglob("*") if
@@ -53,6 +59,7 @@ def main():
         if path.is_file():
             shutil.copy2(path, worker / path.name)
     shutil.copytree(engine, worker / "audio-engine")
+    staging.verify(worker)
     original_engine = {str(path): digest(path) for path in engine.rglob("*") if path.is_file()}
     for name, expected in original_engine.items():
         if digest(worker / "audio-engine" / Path(name).relative_to(engine)) != expected:
@@ -68,6 +75,7 @@ def main():
     if any(digest(root / name) != expected for name, expected in sources.items()):
         raise RuntimeError("Source drift before audio review execution.")
     inputs = {"Sources": sources, "Binaries": binaries, "EngineSource": original_engine,
+              "AudioProfile": pin.get('profile', 'curated'), "AudioPayloadFiles": pin['files'],
               "Speech": {str(path): digest(path) for path in (pack / "sources").iterdir() if path.is_file()}}
     (stage / "inputs.json").write_text(json.dumps(inputs, indent=2))
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
