@@ -44,6 +44,13 @@ def selection(profile="curated"):
     return record
 
 
+def voice_provider():
+    spec = importlib.util.spec_from_file_location("voice_distribution", TOOLS / "WindowsVoiceDistribution.py")
+    provider = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(provider)
+    return provider
+
+
 def verify(payload):
     audio = local_path(payload) / "audio-engine"
     local_path(audio)
@@ -56,6 +63,11 @@ def verify(payload):
     if len(matches) != 1:
         raise ValueError("Audio probe identity is not a reviewed profile")
     record = matches[0]
+    voice = local_path(audio / "voice")
+    if voice.exists():
+        if record.get("profile") != "expanded":
+            raise ValueError("Windows Voice requires the expanded audio profile")
+        record = dict(record, files=record["files"] + voice_provider().selection()["files"])
     expected = {item["path"]: item for item in record["files"]}
     actual = set()
     for path in audio.rglob("*"):
@@ -73,7 +85,7 @@ def verify(payload):
     return record
 
 
-def stage(distribution, payload):
+def stage(distribution, payload, voice_distribution=None):
     target = local_path(payload) / "audio-engine"
     local_path(target)
     if target.exists():
@@ -84,6 +96,11 @@ def stage(distribution, payload):
     reviewed = verifier.verify(distribution)
     source = verifier.distribution.build_tool.local_path(distribution) / "audio-runtime-review.zip"
     record = selection(reviewed["profile"])
+    voice_contents = {}
+    if voice_distribution is not None:
+        if reviewed["profile"] != "expanded":
+            raise ValueError("Windows Voice requires the expanded audio profile")
+        voice_contents = voice_provider().verify(voice_distribution)
     if source.stat().st_size != record["archiveBytes"]:
         raise ValueError("Audio runtime archive size differs")
     data = source.read_bytes()
@@ -98,6 +115,7 @@ def stage(distribution, payload):
             if len(value) != item["bytes"] or digest(value) != item["sha256"]:
                 raise ValueError("Reviewed archive member differs")
             contents[item["path"]] = value
+        contents.update(voice_contents)
         target.mkdir()
         for relative, value in contents.items():
             output = target / relative
@@ -141,15 +159,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--payload", required=True)
     parser.add_argument("--distribution")
+    parser.add_argument("--voice-distribution")
     parser.add_argument("--inventory", action="store_true")
     args = parser.parse_args()
+    if args.voice_distribution and not args.distribution:
+        parser.error("--voice-distribution requires --distribution")
     if args.distribution:
-        stage(args.distribution, args.payload)
-    else:
-        verify(args.payload)
+        stage(args.distribution, args.payload, args.voice_distribution)
+    record = verify(args.payload)
     if args.inventory:
         verify_inventory(args.payload)
-    print("Verified 18 pinned audio payload files; isolated candidate only, not release clearance.")
+    print(f"Verified {len(record['files'])} pinned audio payload files; isolated candidate only, not release clearance.")
 
 
 if __name__ == "__main__":

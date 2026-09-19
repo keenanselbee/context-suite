@@ -1,7 +1,7 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.5**. This update records the expanded audio
+Matrix revision: **2026-09-19.6**. This update records the separate Windows Voice
 source/runtime review and isolated deployment profile. Optional HEIC/AVIF scratch
 packaging and reserved candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
@@ -44,8 +44,11 @@ The [expanded distribution profile](expanded-audio-distribution.md) retains the
 five patches and verified source/runtime archives. Fifteen archive and fifteen
 deployment checks pass; the extracted kit rebuilds and passes native review,
 121 decoder cases and six-target smoke. Its eighteen-file
-deployment excludes the separately required Windows Voice provider. Final combined
-packaging and source/product terms remain open.
+deployment excludes the separately required Windows Voice provider. The subsequent
+[Voice distribution checkpoint](windows-voice-distribution.md) supplies the separate
+host/notice and standalone source kit, with 48 rebuilt native checks, 28
+archive/deployment checks and 211 direct-command checks using both staged bundles.
+Final combined packaging and source/product terms remain open.
 The [Windows Voice candidate](wma-voice-windows-evaluation.md)
 passes 36 reference-output comparisons and 12 refusal/ownership checks. Its
 [optional private adapter](wma-voice-conversion-adapter.md) passes 339 checks with

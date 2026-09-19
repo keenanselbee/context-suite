@@ -420,3 +420,19 @@ its five source patches. The extracted source kit rebuilds with
 '<expanded review bundle>' '<existing inventoried stage>'` checks disposable
 staging and actual allowlist/refusal boundaries. The separate Windows Voice
 provider is not part of that bundle. See [expanded distribution evidence](../../docs/expanded-audio-distribution.md).
+
+`WindowsVoiceDistribution.py --prepare '<selected helper directory>'` creates
+the separate owned Voice source/runtime bundle; `--verify '<review bundle>'`
+checks its exact source, executable, notices and retained acceptance. Its extracted
+kit builds with `Build-WindowsVoice.py`. Use `Test-WmaVoiceMft.py '<system corpus>'
+'<refusal corpus>' --helper '<completed rebuild>'` to replay the native corpus
+without repinning the application.
+
+Pass `--voice-distribution '<Voice bundle>'` alongside the expanded `--distribution`
+to `Stage-AudioPayload.py`, or use `Build-Production.ps1 -VoiceDistributionDirectory`
+with the expanded audio option and a fresh staging ID. `Test-WindowsVoiceDistribution.py
+'<Voice bundle>' '<expanded audio bundle>' '<inventoried image/audio stage>'
+'<curated stage>'` checks archive/deployment boundaries on disposable copies.
+`Test-ExpandedAudioDirect.py` also accepts the two distribution options to exercise
+freshly staged native files through actual Convert commands. See
+[Voice packaging evidence and open gates](../../docs/windows-voice-distribution.md).

@@ -9,8 +9,8 @@ The [surround repair](wma-pro-surround-repair.md) selects the seven-file expande
 runtime. This checkpoint adds its corresponding-source and notice inventory to
 the existing packaging workflow. It preserves the earlier curated profile and
 reserved combined 1.1.1 payload. The separately authored Windows Voice provider
-is not in these archives; provider source/build/deployment remains a distinct
-requirement before the expanded combined candidate is complete.
+is not in these archives; its subsequent [source/build/deployment checkpoint](windows-voice-distribution.md)
+provides a separate verified bundle. Final combined adoption remains required.
 
 
 Explicit profile and source relationship
@@ -115,8 +115,8 @@ evidence. No managed behavior changed in this packaging checkpoint; the prior
 Remaining release work
 ----------------------
 
-Package the Windows Voice provider with its source/build and notices, then compose the fresh
-combined candidate and replay its actual workers. Source delivery, product/source
+Compose the fresh combined candidate with the separately verified Windows Voice
+bundle and replay its actual workers. Source delivery, product/source
 terms, modified-library use with runtime identity checks, Microsoft runtime
 eligibility and intended-market review remain separate adoption decisions. Keep
 human fidelity, visible accessibility, performance and installed lifecycle gates

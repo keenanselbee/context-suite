@@ -28,8 +28,8 @@ implement the newly selected inputs or establish commercial release readiness.
 | HEIC and AVIF input | Convert each admitted input to JPEG or PNG through the existing target commands | Four declared input/output pairs; verify orientation, color, alpha, precision, metadata and dimensions. HDR, sequences and auxiliary images need an explicit supported/refused policy; no silent flattening or tone mapping. Retain the explicit matte choice for transparent-to-JPEG conversion. |
 | AIFF and WMA input | Convert admitted variants to the existing WAV, FLAC, MP3, M4A/AAC, Ogg Vorbis and Opus targets | Publish a variant/codec and target matrix. Verify decoded audio, rate/layout, precision, tags and artwork under existing consent rules. Treat AIFF-C variants, WMA codecs and protected content explicitly; an extension never admits every variant. |
 
-Both additions are required implementation work, not implemented capabilities.
-They add input compatibility, not HEIC/AVIF/AIFF/WMA output or new Optimize
+Both additions require the isolated implementation evidence below plus final
+integrated acceptance. They add input compatibility, not HEIC/AVIF/AIFF/WMA output or new Optimize
 presets. HEIC/AVIF comes first, followed by AIFF/WMA. Evaluate ALAC separately;
 it is not a required addition. A blocked required pair must be reported and
 resolved with the owner, not silently removed from scope.
@@ -221,7 +221,11 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   Fifteen archive and fifteen isolated deployment checks pass, including mixed
   runtime and partial-copy refusals. The extracted source kit rebuilds with all
   sixteen dependency tests, native review, 121 decoder cases and six-target smoke
-  passing. Separate Windows Voice packaging and final combined adoption remain required.
+  passing. The subsequent [Windows Voice distribution checkpoint](windows-voice-distribution.md)
+  provides the separate two-file provider and four-file source kit. Its extracted
+  rebuild passes 48 native checks; 28 bundle/deployment checks pass, including
+  mixed-profile and partial-copy refusals. A fresh managed worker with both staged
+  bundles repeats all 211 direct-command checks. Final combined adoption remains required.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

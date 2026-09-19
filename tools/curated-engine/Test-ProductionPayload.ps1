@@ -28,6 +28,10 @@ if ($AllowAudioCandidate) {
     if ($LASTEXITCODE -ne 0) { throw 'Audio candidate payload verification failed.' }
     $audioSelection = Get-Content -LiteralPath (Join-Path $audioTools 'payload-candidate.json') -Raw | ConvertFrom-Json
     $allowed += @($audioSelection.files | ForEach-Object { 'audio-engine\' + $_.path.Replace('/', '\') })
+    if (Test-Path -LiteralPath (Join-Path $root 'audio-engine\voice')) {
+        $voiceSelection = Get-Content -LiteralPath (Join-Path $audioTools 'voice-provider-candidate.json') -Raw | ConvertFrom-Json
+        $allowed += @($voiceSelection.files | ForEach-Object { 'audio-engine\' + $_.path.Replace('/', '\') })
+    }
 }
 if ($AllowPdfCandidate) {
     $pdfTools = Join-Path (Split-Path $PSScriptRoot -Parent) 'pdf-engine'

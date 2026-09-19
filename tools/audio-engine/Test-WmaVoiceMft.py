@@ -15,9 +15,10 @@ spec.loader.exec_module(system)
 
 
 def main():
-    if len(sys.argv) != 3 or os.name != 'nt' or sys.version_info < (3, 14):
-        raise ValueError('Use Windows/Python 3.14: Test-WmaVoiceMft.py <system corpus> <Voice refusal corpus>')
-    corpus, refusals = (system.smoke.build_tool.local_path(value) for value in sys.argv[1:])
+    if (len(sys.argv) not in (3, 5) or len(sys.argv) == 5 and sys.argv[3] != '--helper'
+            or os.name != 'nt' or sys.version_info < (3, 14)):
+        raise ValueError('Use Windows/Python 3.14: Test-WmaVoiceMft.py <system corpus> <Voice refusal corpus> [--helper <completed owned rebuild>]')
+    corpus, refusals = (system.smoke.build_tool.local_path(value) for value in sys.argv[1:3])
     identity = json.loads((corpus / 'identity.json').read_text())
     if identity['toolSourceSha256'] != system.digest(TOOLS / 'WmaFixtureWriter.cpp'):
         raise ValueError('Use the current owned fixture generator')
@@ -47,17 +48,28 @@ def main():
     vcvars = visual_studio / 'VC/Auxiliary/Build/vcvars64.bat'
     if not vcvars.is_file() or any(c in str(vcvars) + str(evidence) for c in '%!&|^"'):
         raise ValueError('Unsupported native build path')
-    command = evidence / 'build.cmd'
-    command.write_text('@echo off\ncall "' + str(vcvars) + '" 10.0.26100.0\n'
-        'if errorlevel 1 exit /b 1\n'
-        'cl.exe /nologo /W4 /WX /O2 /MT /EHsc /std:c++20 /GS /guard:cf /guard:ehcont WmaVoiceMftProbe.cpp '
-        '/link mfplat.lib mfreadwrite.lib mfuuid.lib mf.lib ole32.lib '
-        '/guard:cf /guard:ehcont /CETCOMPAT /DYNAMICBASE /HIGHENTROPYVA /NXCOMPAT\n'
-        'exit /b %errorlevel%\n')
-    built = system.native(['cmd.exe', '/d', '/c', command], evidence, 60)
-    (evidence / 'build.log').write_bytes(built.stdout + built.stderr)
-    if built.returncode:
-        raise ValueError('Native evaluation tool build failed; see retained log')
+    if len(sys.argv) == 5:
+        helper = system.smoke.build_tool.local_path(sys.argv[4])
+        receipt = json.loads((helper / 'build-result.json').read_text())
+        if (receipt['sourceSha256'] != system.digest(source) or
+                receipt['recipeSha256'] != system.digest(TOOLS / 'Build-WindowsVoice.py') or
+                receipt['executableSha256'] != system.digest(helper / 'WmaVoiceMftProbe.exe') or
+                system.digest(helper / source.name) != system.digest(source) or receipt['exitCode']):
+            raise ValueError('Use the completed owned Windows Voice source rebuild')
+        for name in ('WmaVoiceMftProbe.exe', 'build-result.json', 'build.cmd', 'build.log'):
+            shutil.copy2(helper / name, evidence / name)
+    else:
+        command = evidence / 'build.cmd'
+        command.write_text('@echo off\ncall "' + str(vcvars) + '" 10.0.26100.0\n'
+            'if errorlevel 1 exit /b 1\n'
+            'cl.exe /nologo /W4 /WX /O2 /MT /EHsc /std:c++20 /GS /guard:cf /guard:ehcont WmaVoiceMftProbe.cpp '
+            '/link mfplat.lib mfreadwrite.lib mfuuid.lib mf.lib ole32.lib '
+            '/guard:cf /guard:ehcont /CETCOMPAT /DYNAMICBASE /HIGHENTROPYVA /NXCOMPAT\n'
+            'exit /b %errorlevel%\n')
+        built = system.native(['cmd.exe', '/d', '/c', command], evidence, 60)
+        (evidence / 'build.log').write_bytes(built.stdout + built.stderr)
+        if built.returncode:
+            raise ValueError('Native evaluation tool build failed; see retained log')
     executable = evidence / 'WmaVoiceMftProbe.exe'
     executable_hash = system.digest(executable)
     version = (visual_studio / 'VC/Auxiliary/Build/Microsoft.VCToolsVersion.default.txt').read_text().strip()

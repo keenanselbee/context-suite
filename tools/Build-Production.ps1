@@ -2,11 +2,14 @@
 param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Debug', [switch] $SkipShell,
     [guid] $StagingId = [guid]::Empty, [string] $AudioDistributionDirectory,
     [string] $QpdfPreparedDirectory, [string] $PdfiumPreparedDirectory, [string] $QpdfSourceArchive,
-    [string] $OfficeEngineDirectory, [string] $HeifDistributionDirectory)
+    [string] $OfficeEngineDirectory, [string] $HeifDistributionDirectory, [string] $VoiceDistributionDirectory)
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
 $productVersion = & (Join-Path $PSScriptRoot 'Test-ProductVersion.ps1')
+if ($VoiceDistributionDirectory -and (-not $AudioDistributionDirectory -or $StagingId -eq [guid]::Empty)) {
+    throw 'The Windows Voice candidate requires an expanded audio distribution and a new StagingId.'
+}
 if ($AudioDistributionDirectory -and $StagingId -eq [guid]::Empty) {
     throw 'The audio candidate requires a new StagingId; development and installed payloads must not be changed.'
 }
@@ -53,7 +56,10 @@ if ($StagingId -ne [guid]::Empty) {
     New-Item -ItemType Directory -Path $output -ErrorAction Stop | Out-Null
 }
 if ($AudioDistributionDirectory) {
-    & python -B (Join-Path $PSScriptRoot 'audio-engine\Stage-AudioPayload.py') --distribution $AudioDistributionDirectory --payload $output
+    $audioArguments = @('-B', (Join-Path $PSScriptRoot 'audio-engine\Stage-AudioPayload.py'),
+        '--distribution', $AudioDistributionDirectory, '--payload', $output)
+    if ($VoiceDistributionDirectory) { $audioArguments += @('--voice-distribution', $VoiceDistributionDirectory) }
+    & python @audioArguments
     if ($LASTEXITCODE -ne 0) { throw 'Audio candidate staging failed.' }
 }
 if ($includePdf) {

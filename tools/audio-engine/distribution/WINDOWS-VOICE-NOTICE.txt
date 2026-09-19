@@ -1,0 +1,17 @@
+Context Suite Windows Voice provider
+===================================
+
+This authored host uses Media Foundation and the Windows WMA Voice decoder
+provided by the local Windows installation. Microsoft codec DLLs are not included
+in this payload. Missing or unavailable system components cause a clear refusal;
+the application does not substitute FFmpeg Voice decoding.
+
+The host was built with Microsoft C++ /MT and contains statically linked C/C++
+runtime code. Microsoft tool/runtime eligibility and applicable distribution
+terms remain part of release review. This notice is an engineering record, not
+a license grant or a claim of redistribution clearance.
+
+The companion local source kit retains the authored C++ source, build recipe and
+build instructions. Context Suite source/product terms, notice delivery and
+commercial release approval remain separate. No private application source or
+Windows codec DLL is supplied in that kit.

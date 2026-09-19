@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "status": "Owned Windows Voice provider for isolated staging; final adoption and runtime eligibility remain open",
+  "sourceSha256": "785D6CEA510316D86ADDC6C5CB20BD920F4586D43C03D21F477683A218C78447",
+  "files": [
+    {
+      "path": "voice/WmaVoiceMftProbe.exe",
+      "bytes": 178176,
+      "sha256": "B03029719B338363193C6111A204B144A23EF52947301D6CA5493267C3D0DBA5"
+    },
+    {
+      "path": "voice/NOTICE.txt",
+      "bytes": 942,
+      "sha256": "5419E4ADE6E353DF9E1480255C4CDF402AEC023F9B3E40A87FA3730EF62CB126"
+    }
+  ]
+}

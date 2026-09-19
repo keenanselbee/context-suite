@@ -2,12 +2,13 @@
 
 No Explorer, installation, real licensing, native recycling or customer files.
 """
+import argparse
 import hashlib
+import importlib.util
 import json
 import pathlib
 import shutil
 import subprocess
-import sys
 import uuid
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -22,9 +23,11 @@ def inventory(folder):
     return {str(path.relative_to(folder)): digest(path) for path in folder.rglob('*') if path.is_file()}
 
 
-def run(source, mode='--expanded-audio-direct', manifest=None):
+def run(source, mode='--expanded-audio-direct', manifest=None, distribution=None, voice_distribution=None):
     if mode not in ('--expanded-audio-direct', '--expanded-audio-metadata-direct'):
         raise ValueError('Unknown expanded command test mode')
+    if voice_distribution and not distribution:
+        raise ValueError('Voice distribution requires the expanded audio distribution')
     source = pathlib.Path(source).resolve(strict=True)
     if not source.is_relative_to(ROOT / '.codex-temp'):
         raise ValueError('Use repository-owned worker evidence')
@@ -42,7 +45,13 @@ def run(source, mode='--expanded-audio-direct', manifest=None):
         if result.returncode:
             raise ValueError('Managed build failed; see retained log')
     payload = evidence / 'worker'
-    shutil.copytree(source / 'worker', payload)
+    shutil.copytree(source / 'worker', payload, ignore=shutil.ignore_patterns('audio-engine') if distribution else None)
+    if distribution:
+        spec = importlib.util.spec_from_file_location('audio_payload', ROOT / 'tools/audio-engine/Stage-AudioPayload.py')
+        staging = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(staging)
+        staging.stage(distribution, payload, voice_distribution)
+        staging.verify(payload)
     managed = ROOT / 'artifacts/managed/bin/ContextSuite.Worker/Release/net10.0-windows'
     for path in managed.iterdir():
         if path.is_file():
@@ -66,6 +75,9 @@ def run(source, mode='--expanded-audio-direct', manifest=None):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        raise ValueError('Test-ExpandedAudioDirect.py <successful expanded worker evidence>')
-    run(sys.argv[1])
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('source', help='Successful expanded worker evidence')
+    parser.add_argument('--distribution')
+    parser.add_argument('--voice-distribution')
+    args = parser.parse_args()
+    run(args.source, distribution=args.distribution, voice_distribution=args.voice_distribution)
