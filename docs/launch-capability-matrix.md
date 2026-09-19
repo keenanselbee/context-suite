@@ -1,8 +1,9 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.7**. This update reconciles expanded input admission
-and the [finite acceptance contract](local-candidate-acceptance.md). Optional HEIC/AVIF scratch
+Matrix revision: **2026-09-19.8**. This update records the
+[Excel chart-loss blocker](excel-layout-acceptance.md) under the
+[finite acceptance contract](local-candidate-acceptance.md). Optional HEIC/AVIF scratch
 packaging and reserved candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
@@ -223,7 +224,7 @@ Document transformations
 | Supported PNG/JPEG/WebP/BMP/TGA > PDF | One raster-only PDF 1.7; several images require explicit page-order review; orientation, supported samples/color/alpha and physical dimensions retained | No DDS, OCR or tagged/accessibility PDF; all selected images must qualify; visible order review open |
 | PDF > PNG | One numbered PNG per page, 150 DPI, supported crop/rotation/UserUnit applied | Copies only; retains stored visible appearances, not editable forms, attachments or verifiable signatures; protected/unsupported/oversized inputs can be refused |
 | DOCX > PDF | Separate PDF 1.7 copy per document; final text, tracked markup hidden; source revisions retained | Exact ordinary document content type and matching suffix; broader fields, comments, protection, fonts and pagination open |
-| XLSX > PDF | Separate PDF copy; owner-selected explicit saved-values or recalculation choice retained on retry; external data not refreshed | Known incorrect early-1900 date results blocked; renderer correction deferred, broader fidelity still requires acceptance |
+| XLSX > PDF | Separate PDF copy; owner-selected explicit saved-values or recalculation choice retained on retry; external data not refreshed | Known incorrect early-1900 date results blocked; chart preservation currently fails under the active-content policy; release acceptance remains blocked on fidelity |
 | PPTX > PDF | Separate PDF copy; saved slide order, hidden slides and speaker notes excluded; positively identified zero-visible-slide decks stop before export | Unknown visibility is not treated as an empty deck; broader presentation/media/font/layout fidelity and visible acceptance open |
 | Mixed images and DOCX/XLSX/PPTX > PDF | One reviewed image PDF plus one separate copy per Office document under shared admission | Office documents do not become pages of the combined image PDF |
 | DOC/XLS/PPT; Office templates and macro-enabled variants | None in the current converter | Owner deferred conversion for first release on 2026-09-16; existing analysis remains |

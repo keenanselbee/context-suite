@@ -77,6 +77,11 @@ if (args is ["--office-word-font-styles", var styleWorker, var styleEvidence])
     await OfficeWordFontStyleContracts.RunAsync(styleWorker, styleEvidence);
     return 0;
 }
+if (args is ["--office-excel-layout", var layoutWorker, var layoutEvidence])
+{
+    await OfficeExcelLayoutContracts.RunAsync(layoutWorker, layoutEvidence);
+    return 0;
+}
 if (args is ["--office-powerpoint-slides", var slideWorker, var slideEvidence])
 {
     await OfficePowerPointSlideContracts.RunAsync(slideWorker, slideEvidence);

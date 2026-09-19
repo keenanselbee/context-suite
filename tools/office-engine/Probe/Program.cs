@@ -46,6 +46,10 @@ if (args is ["--inspect-word-body-fonts", var wordFontFixtures])
     return await WordBodyFontEvaluation.RunAsync(wordFontFixtures);
 if (args is ["--inspect-word-font-styles", var fontStyleReport, var fontStyleQpdf, var fontStylePdfium])
     return await OfficeWordFontStyleInspection.RunAsync(fontStyleReport, fontStyleQpdf, fontStylePdfium);
+if (args is ["--inspect-excel-layout", var layoutReport, var layoutQpdf, var layoutPdfium])
+    return await OfficeExcelLayoutInspection.RunAsync(layoutReport, layoutQpdf, layoutPdfium);
+if (args is ["--diagnose-excel-chart-policy", var chartReport, var chartQpdf, var chartPdfium])
+    return await ExcelChartPolicyEvaluation.RunAsync(chartReport, chartQpdf, chartPdfium);
 if (args is ["--inspect-powerpoint-publications", var slideReport, var slideQpdf, var slidePdfium])
     return await OfficePowerPointInspection.RunAsync(slideReport, slideQpdf, slidePdfium);
 if (args is ["--inspect-word-publications", var wordReport, var wordQpdf, var wordPdfium])

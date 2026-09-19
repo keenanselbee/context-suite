@@ -23,8 +23,14 @@ def main():
     parser.add_argument("--pdf-prepared", type=Path, required=True)
     parser.add_argument("--pdfium-prepared", type=Path, required=True)
     parser.add_argument("--powerpoint-slides", action="store_true", help="Inspect the three authored application PowerPoint slide cases instead.")
+    parser.add_argument("--excel-layout", action="store_true", help="Inspect four authored Excel chart/merged/wrapped application exports instead.")
+    parser.add_argument("--chart-policy-control", action="store_true", help="With --excel-layout, compare active-content settings only on freshly generated passive workbooks in ordinary bounded jobs.")
     args = parser.parse_args()
-    prefix = "slides" if args.powerpoint_slides else "style"
+    if args.powerpoint_slides and args.excel_layout:
+        parser.error("Choose one inspection scenario.")
+    if args.chart_policy_control and not args.excel_layout:
+        parser.error("The diagnostic requires --excel-layout.")
+    prefix = "chart-policy" if args.chart_policy_control else "layout" if args.excel_layout else "slides" if args.powerpoint_slides else "style"
     root = Path(__file__).resolve().parents[2]
     stage = root / ".codex-temp/office-execution" / args.execution_id.hex
     qpdf_root = args.pdf_prepared.resolve(strict=True)
@@ -36,6 +42,14 @@ def main():
     if not exit_report["InputsUnchanged"]:
         raise RuntimeError("Native inputs changed; retain the failed evidence.")
     binaries = {}
+    if args.chart_policy_control:
+        runtime = stage / "worker/office-engine/runtime"
+        expected_runtime = {name: value for name, value in read(stage / "inputs.json")["Binaries"].items()
+                            if Path(name).is_relative_to(runtime)}
+        actual_runtime = {str(path): digest(path) for path in runtime.rglob("*") if path.is_file()}
+        if not expected_runtime or actual_runtime != expected_runtime:
+            raise RuntimeError("Diagnostic Office runtime differs from verified execution.")
+        binaries.update(actual_runtime)
     for item in read(qpdf_root / "inventory.json"):
         path = (qpdf_root / "unpacked" / item["path"]).resolve(strict=True)
         path.relative_to(qpdf_root / "unpacked")
@@ -69,7 +83,7 @@ def main():
             raise RuntimeError("Inspection build failed: " + str(log))
         executable = root / "artifacts/managed/bin/Office.Evaluation/Release/net10.0-windows/Office.Evaluation.exe"
         binaries.update({str(path): digest(path) for path in executable.parent.iterdir() if path.is_file()})
-        result = subprocess.run([str(executable), "--inspect-powerpoint-publications" if args.powerpoint_slides else "--inspect-word-font-styles", str(report), str(qpdf), str(pdfium)],
+        result = subprocess.run([str(executable), "--diagnose-excel-chart-policy" if args.chart_policy_control else "--inspect-excel-layout" if args.excel_layout else "--inspect-powerpoint-publications" if args.powerpoint_slides else "--inspect-word-font-styles", str(report), str(qpdf), str(pdfium)],
                                 cwd=root, stdout=output, stderr=output)
     unchanged = all(digest(root / name) == expected for name, expected in sources.items()) and all(
         digest(Path(name)) == expected for name, expected in binaries.items())

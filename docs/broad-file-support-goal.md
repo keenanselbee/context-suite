@@ -32,6 +32,14 @@ reproduces the unresolved IPv4/IPv6 timeout under a zero-capability AppContainer
 Exact process/time/port diagnostics and fourteen query-plan guards now pass;
 affirmative network enforcement still needs attended administrator evidence.
 
+The [Excel layout acceptance](excel-layout-acceptance.md) now exposes a separate
+correctness blocker: all four portrait/landscape and cached/recalculated PDFs
+omit the chart while preserving merged/wrapped cells. Fourteen application
+publication/cleanup checks pass; independent fidelity fails. A passive paired
+control identifies the active-content policy conflict. Preserve that security
+policy until passive charts can render with equivalent enforcement; do not
+remove chart fidelity from the goal or mistake the diagnostic for a product fix.
+
 ### Required input additions
 
 | Addition | Required result | Acceptance boundary |
