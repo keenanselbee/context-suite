@@ -1,0 +1,60 @@
+{
+  "Engine": "LibreOffice 26.2.6 Windows x64",
+  "BuildId": "8221e31b3ac356a1623c672912a3d2b492f7e3d1",
+  "Files": [
+    {
+      "Path": "embeddedobj/source/general/xcreator.cxx",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/embeddedobj/source/general/xcreator.cxx",
+      "Bytes": 18550,
+      "Sha256": "07616F0FE0FB32AC26CC6B845139688B921AD0CECC0377D185D5E9685B8567B6"
+    },
+    {
+      "Path": "embeddedobj/source/commonembedding/xfactory.cxx",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/embeddedobj/source/commonembedding/xfactory.cxx",
+      "Bytes": 19742,
+      "Sha256": "2C2D810C393EBFD0EF1BEAE0B2CC9D17B2D035CF563BDD732F581061E1CC365A"
+    },
+    {
+      "Path": "embeddedobj/source/commonembedding/embedobj.cxx",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/embeddedobj/source/commonembedding/embedobj.cxx",
+      "Bytes": 27466,
+      "Sha256": "5CEFEB2AB7AA0C49B0D5DBA8B1D25F535AD0CD9E0CB12EE6C5002C3D1642E163"
+    },
+    {
+      "Path": "embeddedobj/source/inc/commonembobj.hxx",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/embeddedobj/source/inc/commonembobj.hxx",
+      "Bytes": 17216,
+      "Sha256": "8EEE99689997FAF377E0B7A593AC583A1EFCC2259C088898EADA47BD8A4295E5"
+    },
+    {
+      "Path": "officecfg/registry/data/org/openoffice/Office/Embedding.xcu",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/officecfg/registry/data/org/openoffice/Office/Embedding.xcu",
+      "Bytes": 12916,
+      "Sha256": "A9C2AF25BCD9EC763B225C8792A8FEB2CB89DE9EAE114EC03F1CE4B6094AA073"
+    },
+    {
+      "Path": "include/comphelper/classids.hxx",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/include/comphelper/classids.hxx",
+      "Bytes": 7733,
+      "Sha256": "94375543B662DB736E0399EFD6808FC753C87EB1F3FE7CBA73C674658ADC74C6"
+    },
+    {
+      "Path": "README.md",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/README.md",
+      "Bytes": 7096,
+      "Sha256": "D0FB07C3A049803C38D48216BCE0AC9CE7D75C88C0800DC6AFC0B88D40DF1C6A"
+    },
+    {
+      "Path": "configure.ac",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/configure.ac",
+      "Bytes": 597554,
+      "Sha256": "EDD748F195E0006A0FDACEBB1951BB0414C420114389131CE1D9C2677D2F8A70"
+    },
+    {
+      "Path": "embeddedobj/Library_embobj.mk",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/embeddedobj/Library_embobj.mk",
+      "Bytes": 1543,
+      "Sha256": "6F19367B721E2DBB1493F3B26695E4D29C46CF5F1BF6472D13F86C067EC7329A"
+    }
+  ]
+}

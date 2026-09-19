@@ -1,0 +1,85 @@
+--- a/embeddedobj/source/general/xcreator.cxx
++++ b/embeddedobj/source/general/xcreator.cxx
+@@ -32,6 +32,8 @@
+ #include <cppuhelper/weak.hxx>
+ #include <comphelper/documentconstants.hxx>
+ #include <officecfg/Office/Common.hxx>
++#include <comphelper/classids.hxx>
++#include <tools/globname.hxx>
+ 
+ #include <xcreator.hxx>
+ #include <dummyobject.hxx>
+@@ -46,7 +48,10 @@
+                                             const OUString& sEntName,
+                                             const uno::Sequence< beans::PropertyValue >& lObjArgs )
+ {
+-    if ( officecfg::Office::Common::Security::Scripting::DisableActiveContent::get() )
++    // Context Suite: only a newly created internal chart may bypass this guard.
++    // Imported objects, links and Windows OLE retain their existing refusal paths.
++    if ( officecfg::Office::Common::Security::Scripting::DisableActiveContent::get()
++         && !(aClassID == SvGlobalName(SO3_SCH_CLASSID_60).GetByteSequence()) )
+         throw lang::NoSupportException(u"Active OLE content is disabled!"_ustr);
+     if ( !xStorage.is() )
+         throw lang::IllegalArgumentException( u"No parent storage is provided!"_ustr,
+@@ -59,6 +64,9 @@
+                                             4 );
+ 
+     OUString aEmbedFactory = m_aConfigHelper.GetFactoryNameByClassID( aClassID );
++    if ( officecfg::Office::Common::Security::Scripting::DisableActiveContent::get()
++         && aEmbedFactory != u"com.sun.star.embed.OOoEmbeddedObjectFactory"_ustr )
++        throw lang::NoSupportException(u"Unexpected passive chart factory!"_ustr);
+     if ( aEmbedFactory.isEmpty() )
+     {
+         // use system fallback
+--- a/embeddedobj/source/commonembedding/xfactory.cxx
++++ b/embeddedobj/source/commonembedding/xfactory.cxx
+@@ -28,6 +28,8 @@
+ #include <cppuhelper/weak.hxx>
+ #include <comphelper/documentconstants.hxx>
+ #include <officecfg/Office/Common.hxx>
++#include <comphelper/classids.hxx>
++#include <tools/globname.hxx>
+ 
+ #include "xfactory.hxx"
+ #include <commonembobj.hxx>
+@@ -175,7 +177,9 @@
+                                             const OUString& sEntName,
+                                             const uno::Sequence< beans::PropertyValue >& lObjArgs )
+ {
+-    if ( officecfg::Office::Common::Security::Scripting::DisableActiveContent::get() )
++    // Context Suite: permit only the current internal chart class on the new-object path.
++    if ( officecfg::Office::Common::Security::Scripting::DisableActiveContent::get()
++         && !(aClassID == SvGlobalName(SO3_SCH_CLASSID_60).GetByteSequence()) )
+         throw lang::NoSupportException(u"Active embedded content is disabled!"_ustr);
+     uno::Reference< uno::XInterface > xResult;
+ 
+--- a/embeddedobj/source/commonembedding/embedobj.cxx
++++ b/embeddedobj/source/commonembedding/embedobj.cxx
+@@ -41,6 +41,8 @@
+ #include <comphelper/lok.hxx>
+ #include <sal/log.hxx>
+ #include <officecfg/Office/Common.hxx>
++#include <comphelper/classids.hxx>
++#include <tools/globname.hxx>
+ 
+ #include <vcl/svapp.hxx>
+ 
+@@ -476,11 +478,16 @@
+ 
+ void SAL_CALL OCommonEmbeddedObject::changeState( sal_Int32 nNewState )
+ {
++    ::osl::ResettableMutexGuard aGuard( m_aMutex );
++    // Context Suite: rendering needs RUNNING, never interactive activation or a link.
++    const bool bPassiveChart = nNewState == embed::EmbedStates::RUNNING
++        && m_aClassID == SvGlobalName(SO3_SCH_CLASSID_60).GetByteSequence()
++        && m_aDocServiceName == u"com.sun.star.chart2.ChartDocument"_ustr
++        && !m_bIsLinkURL;
+     if ( officecfg::Office::Common::Security::Scripting::DisableActiveContent::get()
+-        && nNewState != embed::EmbedStates::LOADED )
++        && nNewState != embed::EmbedStates::LOADED && !bPassiveChart )
+         throw embed::UnreachableStateException();
+-    ::osl::ResettableMutexGuard aGuard( m_aMutex );
+     if ( m_bDisposed )
+         throw lang::DisposedException(); // TODO
+ 
+     if ( m_nObjectState == -1 )

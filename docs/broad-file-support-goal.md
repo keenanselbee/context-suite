@@ -39,6 +39,10 @@ publication/cleanup checks pass; independent fidelity fails. A passive paired
 control identifies the active-content policy conflict. Preserve that security
 policy until passive charts can render with equivalent enforcement; do not
 remove chart fidelity from the goal or mistake the diagnostic for a product fix.
+The [renderer repair proposal](office-chart-renderer-repair.md) preserves a draft
+against the exact upstream build with ten static source checks. It is not built
+or adopted; missing native-build prerequisites require separate installation
+authorization, and the full fidelity/security replay remains outstanding.
 
 ### Required input additions
 

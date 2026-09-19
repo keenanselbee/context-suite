@@ -119,6 +119,10 @@ OLE/DDE, macro and process/network/file enforcement evidence, then replay this
 matrix against the corrected isolated host. Other Office chart families need
 corresponding coverage. The existing profile policy and native host are unchanged.
 The unresolved Office network-enforcement gate remains independent and relevant.
+The [targeted renderer proposal](office-chart-renderer-repair.md) now contains
+a pinned draft patch that keeps the active-content policy enabled and narrowly
+permits new internal charts to run. Static checks pass; native compilation,
+enforcement and fidelity remain unverified. The production candidate is unchanged.
 
 The current `OfficeSourcePreflight` checks document identity/variant and selected
 date/font/slide facts; it explicitly is not an active-content safety scan. Its
