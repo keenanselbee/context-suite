@@ -26,6 +26,10 @@ access changes and absent providers. Its metadata checkpoint verifies seven
 authored text/artwork cases through all six targets, with independent tag/pixel
 comparisons and marker/protection refusals. Broader fidelity/timelines and
 metadata variants, visible acceptance and formal packaging remain open.
+The [surround Pro repair](wma-pro-surround-repair.md) meets the existing stereo
+error limits in 29 finite surround cases, without changing decoded extent or
+92 other retained outputs. The actual-worker oracle now applies those limits
+to each channel; broader signal/layout and human acceptance remain required.
 Existing quality, resampling and precision consent rules continue to apply.
 ALAC remains a separate evaluation. See the
 [current goal](broad-file-support-goal.md#current-objective-and-completion-plan).

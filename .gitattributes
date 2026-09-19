@@ -3,3 +3,4 @@ tools/audio-engine/wmapro-terminal-overlap.patch text eol=lf whitespace=-blank-a
 tools/audio-engine/wma-standard-reservoir-tail.patch text eol=lf whitespace=-blank-at-eol
 tools/audio-engine/wma-voice-packet-cache.patch text eol=lf whitespace=-blank-at-eol
 tools/audio-engine/raw-audio-timestamps.patch text eol=lf whitespace=-blank-at-eol
+tools/audio-engine/wmapro-channel-matrix.patch text eol=lf whitespace=-blank-at-eol

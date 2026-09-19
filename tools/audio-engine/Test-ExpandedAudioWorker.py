@@ -49,7 +49,7 @@ def main():
     expected = {'ffmpeg.exe', 'ffprobe.exe', 'avcodec-63.dll', 'avfilter-12.dll', 'avformat-63.dll', 'avutil-61.dll', 'swresample-7.dll'}
     if len(inventory) != 7 or {row['path'] for row in inventory} != expected:
         raise ValueError('Unexpected repaired runtime inventory')
-    if digest(build / 'bin/ffmpeg.exe') != '27159DC409F049BE855DCCAB1A28CC8C7647AB88508A49088424B5D2A5419C93':
+    if digest(build / 'bin/ffmpeg.exe') != 'A5C61F77EE6D541A1B75F55A02A9C0A33F66C7E972D9932D4D40342EC2D3715D':
         raise ValueError('Use the selected repaired runtime')
     for row in inventory:
         path = build / 'bin' / row['path']
@@ -95,9 +95,9 @@ def main():
         if reference.stat().st_size % (unit * row['channels']):
             raise ValueError('Incomplete independent reference sample')
         frames = reference.stat().st_size // (unit * row['channels'])
-        # Surround Pro numeric agreement remains recorded, not accepted; native
-        # evaluation established different kernels beyond the stereo tolerance.
-        tolerance = None if row['codec'] == 'pro' and row['channels'] > 2 else 0 if lossless or row['codec'] == 'voice' else 1e-6
+        # The matrix repair admits surround Pro under the same independently
+        # verified numerical bounds as stereo; no unbounded comparison remains.
+        tolerance = 0 if lossless or row['codec'] == 'voice' else 1e-6
         fixtures.append(dict(Name=name, Path=str(path), Sha256=digest(path),
             Codec={'standard': 'wmav2', 'pro': 'wmapro', 'lossless': 'wmalossless', 'voice': 'wmavoice'}[row['codec']],
             Rate=row['rate'], Channels=row['channels'], Frames=frames, AuthoredFrames=row['sourceFrames'], ReferencePath=str(reference),

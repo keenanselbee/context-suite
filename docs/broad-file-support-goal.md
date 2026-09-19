@@ -208,6 +208,14 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   fixtures. This includes stereo Pro/Lossless, Unicode, regional language,
   exact cover pixels and refusal of unhandled markers/protection. Broader
   variants, listening, environments and combined packaging remain open.
+  The [surround Pro repair](wma-pro-surround-repair.md) now passes 121 finite
+  native cases: 29 surround comparisons meet the existing per-channel limits
+  and 92 prior outputs remain byte-identical. Sequential source-patch checks,
+  seven-file native hardening and the six-target smoke pass. The private pin
+  selects this candidate; fresh worker replay passes 1,008 checks with 796
+  publications and per-channel comparisons. Formal adoption remains open.
+  Existing audio regression passes 370 checks, runtime guards pass 23, direct
+  commands repeat 211, and the refreshed foundation passes 4,384 contracts.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

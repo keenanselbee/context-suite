@@ -1,10 +1,12 @@
 """Review exact native diagnostics and emitted Windows audio hardening metadata."""
 import collections
+import hashlib
 import importlib.util
 import json
 import pathlib
 import re
 import subprocess
+import shutil
 import sys
 import uuid
 
@@ -88,22 +90,53 @@ def review_source_changes(directory, record):
     patches = record["patches"]
     selected = [(name, target) for enabled, name, target in (
         (record["wmaProTailRepair"], "wmapro-terminal-overlap.patch", "libavcodec/wmaprodec.c"),
+        (record.get("wmaProMatrixRepair", False), "wmapro-channel-matrix.patch", "libavcodec/wmaprodec.c"),
         (record["wmaStandardTailRepair"], "wma-standard-reservoir-tail.patch", "libavcodec/wmadec.c"),
         (record["wmaVoiceCacheRepair"], "wma-voice-packet-cache.patch", "libavcodec/wmavoice.c"),
         (record.get("rawAudioTimestampRepair", False), "raw-audio-timestamps.patch", "libavformat/mux.c")) if enabled]
     if len(patches) != len(selected) or (patches and not record["expandedInputs"]):
         raise ValueError("Unselected WMA source patch")
+    steps = []
     for entry, (name, target) in zip(patches, selected):
         patch = TOOLS / name
         if (entry["path"] != patch.name or entry["sha256"] != build_tool.digest(patch)
                 or set(entry["modifiedSources"]) != {target}):
             raise ValueError("WMA source patch identity differs")
         changed = entry["modifiedSources"][target]
-        if changed == expected[target] or changed != build_tool.digest(directory / "source" / target):
+        if changed == expected[target]:
             raise ValueError("WMA effective source differs")
+        steps.append((patch, target, expected[target], changed))
         expected[target] = changed
     if effective != expected:
         raise ValueError("Effective source changes exceed the reviewed patch")
+    # Two selected repairs can affect one file. Reverse their exact patches in
+    # a disposable copy to verify every intermediate identity, not just the last.
+    if steps:
+        replay = directory / ("source-review-" + uuid.uuid4().hex)
+        replay.mkdir()
+        for target in {step[1] for step in steps}:
+            if build_tool.digest(directory / "source" / target) != expected[target]:
+                raise ValueError("WMA effective source differs")
+            destination = replay / target
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(directory / "source" / target, destination)
+        for patch, target, before, after in reversed(steps):
+            if build_tool.digest(replay / target) != after:
+                raise ValueError("WMA patch intermediate source differs")
+            result = subprocess.run(["git", "apply", "--no-index", "--reverse", str(patch)],
+                                    cwd=replay, capture_output=True, text=True, timeout=30)
+            if result.returncode:
+                raise ValueError("WMA patch reversal failed: " + result.stderr)
+            # Git's Windows checkout policy can leave CRLF in the reconstructed
+            # pristine file, whose archive bytes use LF. Restore LF only when
+            # those exact bytes match the recorded pre-patch identity.
+            restored = replay / target
+            if build_tool.digest(restored) != before:
+                original_bytes = restored.read_bytes().replace(b"\r\n", b"\n")
+                if hashlib.sha256(original_bytes).hexdigest().upper() == before:
+                    restored.write_bytes(original_bytes)
+            if build_tool.digest(restored) != before:
+                raise ValueError("WMA patch does not reconstruct its recorded source")
     return patches
 
 

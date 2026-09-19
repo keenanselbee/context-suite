@@ -100,8 +100,9 @@ def main():
     parser.add_argument("--wma-standard-tail-repair", action="store_true", help="Evaluate the local final-reservoir patch in a fresh expanded-input build")
     parser.add_argument("--wma-voice-cache-repair", action="store_true", help="Evaluate the local bounded packet-cache patch in a fresh expanded-input build")
     parser.add_argument("--raw-audio-timestamp-repair", action="store_true", help="Respect timestamp-free raw PCM transport without suppressing decoder diagnostics")
+    parser.add_argument("--wma-pro-matrix-repair", action="store_true", help="Evaluate Q8 reconstruction of transmitted WMA Pro channel matrices")
     args = parser.parse_args()
-    if (args.wma_pro_tail_repair or args.wma_standard_tail_repair or args.wma_voice_cache_repair or args.raw_audio_timestamp_repair) and not args.expanded_inputs:
+    if (args.wma_pro_tail_repair or args.wma_standard_tail_repair or args.wma_voice_cache_repair or args.raw_audio_timestamp_repair or args.wma_pro_matrix_repair) and not args.expanded_inputs:
         raise ValueError("WMA repairs require expanded inputs")
     if os.name != "nt" or sys.version_info < (3, 14):
         raise ValueError("Use Windows x64 with Python 3.14 or later")
@@ -148,6 +149,7 @@ def main():
     patches = []
     effective = {item["path"]: item["sha256"] for item in inventory}
     for enabled, name, target in ((args.wma_pro_tail_repair, "wmapro-terminal-overlap.patch", "libavcodec/wmaprodec.c"),
+                                  (args.wma_pro_matrix_repair, "wmapro-channel-matrix.patch", "libavcodec/wmaprodec.c"),
                                   (args.wma_standard_tail_repair, "wma-standard-reservoir-tail.patch", "libavcodec/wmadec.c"),
                                   (args.wma_voice_cache_repair, "wma-voice-packet-cache.patch", "libavcodec/wmavoice.c"),
                                   (args.raw_audio_timestamp_repair, "raw-audio-timestamps.patch", "libavformat/mux.c")):
@@ -236,6 +238,7 @@ def main():
         "LD=sh " + source_path + "/compat/windows/mslink",
         "WINDRES=sh " + source_path + "/compat/windows/mswindres", "-j2", "ffmpeg.exe", "ffprobe.exe"]
     version_suffix = "contextsuite-g9b0578816c6f" + ("-wmapro-tail2" if args.wma_pro_tail_repair else "")
+    version_suffix += "-wmapro-matrix1" if args.wma_pro_matrix_repair else ""
     version_suffix += "-wmastandard-tail1" if args.wma_standard_tail_repair else ""
     version_suffix += "-wmavoice-cache1" if args.wma_voice_cache_repair else ""
     version_suffix += "-rawaudio-ts1" if args.raw_audio_timestamp_repair else ""
@@ -278,6 +281,7 @@ def main():
     record = {"status": "Configure-only attempt" if args.configure_only else "Unaccepted candidate build attempt",
               "expandedInputs": args.expanded_inputs,
               "wmaProTailRepair": args.wma_pro_tail_repair, "patches": patches,
+              "wmaProMatrixRepair": args.wma_pro_matrix_repair,
               "wmaStandardTailRepair": args.wma_standard_tail_repair,
               "wmaVoiceCacheRepair": args.wma_voice_cache_repair,
               "rawAudioTimestampRepair": args.raw_audio_timestamp_repair,

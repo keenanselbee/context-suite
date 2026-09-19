@@ -1,0 +1,16 @@
+--- a/libavcodec/wmaprodec.c
++++ b/libavcodec/wmaprodec.c
+@@ -795,6 +795,13 @@
+         }
+         offset += i;
+     }
++    /* Transmitted WMA Pro rotations reconstruct Q8 mixing coefficients,
++     * matching the precision of the fixed decorrelation matrices. */
++    if (s->avctx->codec_id == AV_CODEC_ID_WMAPRO) {
++        for (i = 0; i < chgroup->num_channels * chgroup->num_channels; i++)
++            chgroup->decorrelation_matrix[i] =
++                roundf(chgroup->decorrelation_matrix[i] * 256.0f) / 256.0f;
++    }
+ }
+ 
+ /**

@@ -114,6 +114,8 @@ internal static class ExpandedAudioWorkerContracts
         var count = fixture.Frames * fixture.Channels;
         if (reference.Length != count * expectedUnit || samples.Length != count * actualUnit) throw new Exception("Reference extent differs.");
         double peak = 0, square = 0;
+        var channelPeaks = new double[fixture.Channels];
+        var channelSquares = new double[fixture.Channels];
         for (var index = 0; index < count; index++)
         {
             var expected = Read(reference.AsSpan(checked((int)(index * expectedUnit))), expectedUnit, fixture.ReferenceEncoding[0] == 'f');
@@ -121,11 +123,16 @@ internal static class ExpandedAudioWorkerContracts
             var error = Math.Abs(expected - actual);
             if (!double.IsFinite(error)) throw new Exception("Nonfinite published/reference audio.");
             peak = Math.Max(peak, error); square += error * error;
+            var channel = index % fixture.Channels;
+            channelPeaks[channel] = Math.Max(channelPeaks[channel], error);
+            channelSquares[channel] += error * error;
         }
         var rms = Math.Sqrt(square / count);
-        if (fixture.MaximumError is { } maximum && peak > maximum || fixture.RmsError is { } maximumRms && rms > maximumRms)
+        var channelRms = channelSquares.Select(value => Math.Sqrt(value / fixture.Frames)).ToArray();
+        if (fixture.MaximumError is { } maximum && channelPeaks.Any(value => value > maximum) ||
+            fixture.RmsError is { } maximumRms && channelRms.Any(value => value > maximumRms))
             throw new Exception($"Independent WAV sample comparison failed: peak {peak}, RMS {rms}.");
-        return new { peak, rms, frames = fixture.Frames, agreementAccepted = fixture.MaximumError is not null };
+        return new { peak, rms, channelPeaks, channelRms, frames = fixture.Frames, agreementAccepted = fixture.MaximumError is not null };
     }
 
     private static double Read(ReadOnlySpan<byte> bytes, int width, bool floating) => (width, floating) switch

@@ -403,3 +403,12 @@ access refresh, mixed selections, retry and missing-provider cases. See the
 same fresh command payload for seven text/artwork cases and two preservation
 refusals. It independently checks tags and decoded cover pixels in all applicable
 published targets. The supplier must match the pinned evaluation archive.
+
+`Build-AudioEngine.py --wma-pro-matrix-repair` selects the isolated transmitted
+channel-matrix repair with expanded inputs. Prepare the frozen surround corpus
+using `Test-WmaProSurround.py --prepare '<95-case system corpus>' '<explicit-PCM
+Windows writer directory>'`, then run `--verify '<completed matrix build>'
+'<prepared surround evidence>'`. `Test-AudioSourceReview.py '<completed matrix
+build>'` exercises sequential patch identity and source-tampering refusals on
+disposable copies. See [surround fidelity evidence](../../docs/wma-pro-surround-repair.md)
+before adopting the candidate; it does not clear broader human or release gates.

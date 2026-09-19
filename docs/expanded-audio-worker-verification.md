@@ -9,6 +9,10 @@ The later [recovery checkpoint](expanded-audio-recovery.md) replaces the repaire
 runtime pin after finding a long Lossless raw-transport diagnostic overflow. Its
 fresh worker repeats all 1,008 checks and 796 publications. Runtime hashes below
 identify this original checkpoint, not the newer loader selection.
+The subsequent [surround Pro repair](wma-pro-surround-repair.md) repeats all
+1,008 checks and 796 publications with per-channel WAV error limits enforced
+for surround as well as stereo. It supersedes the earlier unaccepted surround
+comparison below; broader fidelity and final candidate adoption remain open.
 
 This checkpoint connects the [AIFF adapter](aiff-conversion-adapter.md),
 [repaired WMA runtime](wma-system-codec-evaluation.md) and optional
