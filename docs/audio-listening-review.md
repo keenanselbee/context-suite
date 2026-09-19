@@ -117,3 +117,12 @@ Voice provider does not turn this into AIFF/WMA listening evidence. The separate
 ten expanded-input comparisons and nine real-recording comparisons in
 [H01 of the acceptance contract](local-candidate-acceptance.md#human-media-and-workflows)
 remain to be prepared and reviewed. Final combined-candidate replay remains open.
+
+The same preparation tool has a separate `--performance` mode for the fixed
+[sixty-operation audio timing workload](audio-performance.md). That mode creates
+benchmark evidence rather than listening comparisons; it does not close H01.
+Its default-mode regression prepares the same fifteen comparisons in
+`audio-review/09de6f5e147a4bb5a0a50a649a91a03d`, repeats all thirty publications
+with unchanged inputs and preserves byte-identical music/transient references.
+That refreshed `pack/review.html` is also ready for human review; no listening,
+playback or visible-worksheet result is claimed.

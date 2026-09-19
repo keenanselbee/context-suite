@@ -1,4 +1,4 @@
-"""Create a local manual listening pack through the current isolated worker and publication flow."""
+"""Prepare listening comparisons or measure audio performance through an isolated worker."""
 
 import argparse
 import hashlib
@@ -19,6 +19,7 @@ def digest(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--audio-engine", type=Path, required=True, help="Verified curated or expanded audio-engine folder from isolated staging.")
+    parser.add_argument("--performance", action="store_true", help="Measure the fixed sixty-operation audio budget matrix instead of preparing listening clips.")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     engine = args.audio_engine.resolve(strict=True)
@@ -64,22 +65,36 @@ def main():
     for name, expected in original_engine.items():
         if digest(worker / "audio-engine" / Path(name).relative_to(engine)) != expected:
             raise RuntimeError("Scratch audio engine copy differs.")
-    speech = subprocess.run(["powershell", "-NoProfile", "-File", str(root / "tools/audio-engine/Create-ReviewSpeech.ps1"),
-                             "-OutputPath", str(pack / "sources/speech.wav")], cwd=root, capture_output=True)
-    (stage / "speech.log").write_bytes(speech.stdout + speech.stderr)
-    if speech.returncode:
-        raise RuntimeError("Local speech fixture generation failed; see speech.log.")
+    if args.performance:
+        machine = subprocess.run(["powershell", "-NoProfile", "-Command",
+            "$cpu = Get-CimInstance Win32_Processor; $system = Get-CimInstance Win32_ComputerSystem; "
+            "[ordered]@{Cpu = @($cpu.Name); PhysicalMemoryBytes = $system.TotalPhysicalMemory; "
+            "LogicalProcessors = $system.NumberOfLogicalProcessors} | ConvertTo-Json"],
+            cwd=root, capture_output=True, timeout=30)
+        (stage / "machine.json").write_bytes(machine.stdout)
+        (stage / "machine.stderr.log").write_bytes(machine.stderr)
+        if machine.returncode:
+            raise RuntimeError("Could not record benchmark hardware; inspect the retained log.")
+        json.loads(machine.stdout)
+    else:
+        speech = subprocess.run(["powershell", "-NoProfile", "-File", str(root / "tools/audio-engine/Create-ReviewSpeech.ps1"),
+                                 "-OutputPath", str(pack / "sources/speech.wav")], cwd=root, capture_output=True)
+        (stage / "speech.log").write_bytes(speech.stdout + speech.stderr)
+        if speech.returncode:
+            raise RuntimeError("Local speech fixture generation failed; see speech.log.")
     host = root / "artifacts/managed/bin/ContextSuite.Core.ContractTests/Release/net10.0-windows/ContextSuite.Core.ContractTests.exe"
     binaries = {str(path): digest(path) for path in host.parent.iterdir() if path.is_file()}
     binaries.update({str(path): digest(path) for path in worker.rglob("*") if path.is_file()})
     if any(digest(root / name) != expected for name, expected in sources.items()):
         raise RuntimeError("Source drift before audio review execution.")
     inputs = {"Sources": sources, "Binaries": binaries, "EngineSource": original_engine,
+              "Mode": "performance" if args.performance else "listening",
               "AudioProfile": pin.get('profile', 'curated'), "AudioPayloadFiles": pin['files'],
               "Speech": {str(path): digest(path) for path in (pack / "sources").iterdir() if path.is_file()}}
     (stage / "inputs.json").write_text(json.dumps(inputs, indent=2))
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
-        run = subprocess.run([str(host), "--audio-listening-pack", str(pack), str(worker / "ContextSuite.Worker.exe")],
+        run = subprocess.run([str(host), "--audio-performance" if args.performance else "--audio-listening-pack",
+                              str(pack), str(worker / "ContextSuite.Worker.exe")],
                              cwd=root, stdout=output, stderr=error)
     unchanged = all(digest(root / name) == expected for name, expected in sources.items()) and all(
         digest(Path(name)) == expected for group in (binaries, original_engine, inputs["Speech"]) for name, expected in group.items())
@@ -87,6 +102,9 @@ def main():
     print((stage / "stdout.log").read_text(errors="replace"), end="", flush=True)
     if run.returncode or not unchanged:
         raise RuntimeError("Audio review preparation failed; inspect retained evidence: " + str(stage))
+    if args.performance:
+        print("Audio performance results:", pack / "performance-results.json", flush=True)
+        return
     subprocess.run([sys.executable, "-B", str(root / "tools/audio-engine/Write-AudioReviewPage.py"), str(pack)],
                    cwd=root, check=True)
     print("Open the local review page:", pack / "review.html", flush=True)

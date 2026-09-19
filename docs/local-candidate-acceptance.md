@@ -141,6 +141,10 @@ observations are not cold-storage measurements. These local review thresholds
 are not customer latency promises. Never reduce validation or isolation to meet
 them. Office dominates package size; do not remove arbitrary pinned runtime files.
 
+The [audio timing harness](audio-performance.md) measures both declared stereo
+rates and all six targets in sixty fresh-worker operations. Its isolated results
+remain separate from final combined-candidate replay and human listening.
+
 
 Safety and completion gates
 ---------------------------

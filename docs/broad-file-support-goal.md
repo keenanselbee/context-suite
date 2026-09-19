@@ -44,6 +44,14 @@ against the exact upstream build with ten static source checks. It is not built
 or adopted; missing native-build prerequisites require separate installation
 authorization, and the full fidelity/security replay remains outstanding.
 
+The [audio performance measurement](audio-performance.md) now passes the declared
+budgets across sixty fresh-worker operations: both stereo rates and all six
+targets, five runs each. The largest median is 4.781 seconds and maximum 4.870
+seconds, below the fixed 15/30-second limits. Originals and inputs are unchanged.
+This is isolated ordinary-audio timing evidence, not listening acceptance or
+the final combined-candidate replay. Remaining image/document and optional
+Analyze timing gates stay open.
+
 ### Required input additions
 
 | Addition | Required result | Acceptance boundary |

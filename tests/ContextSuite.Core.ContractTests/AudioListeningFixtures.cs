@@ -2,10 +2,14 @@ using System.Buffers.Binary;
 
 internal static class AudioListeningFixtures
 {
-    internal static void Create(string path, bool transients)
+    internal static void Create(string path, bool transients, int? sampleRate = null, int? durationSeconds = null)
     {
-        var rate = transients ? 48000 : 44100;
-        var seconds = transients ? 12 : 18;
+        if (transients && (sampleRate is not null || durationSeconds is not null))
+            throw new ArgumentException("The transient reference has a fixed rate and duration.");
+        var rate = sampleRate ?? (transients ? 48000 : 44100);
+        var seconds = durationSeconds ?? (transients ? 12 : 18);
+        if (rate is not (44100 or 48000) || seconds is < 1 or > 60)
+            throw new ArgumentException("Use the bounded review fixture rates and duration.");
         var frames = rate * seconds;
         var bytes = new byte[44 + frames * 6];
         "RIFF"u8.CopyTo(bytes); BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(4), bytes.Length - 8);

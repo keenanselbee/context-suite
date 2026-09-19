@@ -444,3 +444,10 @@ identities. The pack remains three generated references and fifteen comparisons;
 it does not play sound or claim human/player acceptance. See the
 [current review pack](../../docs/audio-listening-review.md#expanded-runtime-refresh-2026-09-19)
 and [finite acceptance contract](../../docs/local-candidate-acceptance.md).
+
+Add `--performance` to measure sixty-second stereo conversion at 44.1/48 kHz,
+five fresh-worker operations per target/rate. The separate
+[audio benchmark](../../docs/audio-performance.md) records application timings,
+source/output identities and managed-worker memory against the predeclared
+15-second median/30-second maximum limits. It generates no listening page and
+does not replace human review or final combined-candidate replay.
