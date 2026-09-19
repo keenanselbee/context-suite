@@ -22,8 +22,10 @@ protection refusal, text/artwork preservation and exact decoded-sample timing.
 The repaired candidate adds Pro/Lossless planning and optional Windows Voice
 worker composition. The [expanded direct-command checks](expanded-audio-direct-verification.md)
 now verify seven inputs through all six targets, required prompts, mixed batches,
-access changes and absent providers. Broader fidelity/timelines, metadata through
-that composition, visible acceptance and formal packaging remain open.
+access changes and absent providers. Its metadata checkpoint verifies seven
+authored text/artwork cases through all six targets, with independent tag/pixel
+comparisons and marker/protection refusals. Broader fidelity/timelines and
+metadata variants, visible acceptance and formal packaging remain open.
 Existing quality, resampling and precision consent rules continue to apply.
 ALAC remains a separate evaluation. See the
 [current goal](broad-file-support-goal.md#current-objective-and-completion-plan).

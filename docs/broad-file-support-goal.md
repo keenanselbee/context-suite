@@ -203,6 +203,11 @@ evidence and an explicit unresolved-decision list, with no ambiguous support cla
   It also corrects transient publication-journal rename denial, with controlled
   delayed-reader and persistent-lock checks. Metadata through this composition,
   broader fidelity, visible acceptance and final adoption remain required.
+  Its subsequent metadata composition check passes 173 command checks with
+  42 copies, plus 78 independent tag/artwork checks across seven AIFF/WMA
+  fixtures. This includes stereo Pro/Lossless, Unicode, regional language,
+  exact cover pixels and refusal of unhandled markers/protection. Broader
+  variants, listening, environments and combined packaging remain open.
 - [ ] Close known correctness gaps in the selected Office/PDF/audio paths, or
   refuse the affected inputs clearly before publishing an incorrect result.
 - [ ] Complete focused regression and actual-engine verification, update the

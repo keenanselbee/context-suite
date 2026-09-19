@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.2**. This update records expanded AIFF/WMA
-direct-command checks and publication-journal recovery. Optional HEIC/AVIF scratch packaging and reserved
+Matrix revision: **2026-09-19.3**. This update records expanded AIFF/WMA
+command metadata/artwork checks. Optional HEIC/AVIF scratch packaging and reserved
 candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
@@ -36,8 +36,10 @@ Lossless and Voice. It also repairs long Lossless raw-transport diagnostic
 overflow and repeats the 1,008-check publication matrix. The later
 [direct-command checkpoint](expanded-audio-direct-verification.md) passes 211
 checks with seven inputs across all six targets, mixed selections, required
-prompts, access changes and absent providers. Metadata in this composition,
-whole-app publication-crash and visible acceptance remain separate.
+prompts, access changes and absent providers. Its later metadata checkpoint adds
+173 checks and 42 copies, with 78 independent descriptive-value/cover-pixel
+checks. Broader metadata variants, whole-app publication-crash and visible
+acceptance remain separate.
 The [Windows Voice candidate](wma-voice-windows-evaluation.md)
 passes 36 reference-output comparisons and 12 refusal/ownership checks. Its
 [optional private adapter](wma-voice-conversion-adapter.md) passes 339 checks with

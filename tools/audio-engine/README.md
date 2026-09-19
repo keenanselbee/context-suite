@@ -397,3 +397,9 @@ fresh managed components and exercises the existing Convert command workflow
 with seven AIFF/WMA inputs and all six targets. It includes quality decisions,
 access refresh, mixed selections, retry and missing-provider cases. See the
 [direct-command evidence](../../docs/expanded-audio-direct-verification.md).
+
+`Test-ExpandedAudioMetadata.py '<worker evidence>' '<AIFF adapter evidence>'
+'<WMA adapter evidence>' '<Voice adapter evidence>' '<supplier bin>'` uses the
+same fresh command payload for seven text/artwork cases and two preservation
+refusals. It independently checks tags and decoded cover pixels in all applicable
+published targets. The supplier must match the pinned evaluation archive.

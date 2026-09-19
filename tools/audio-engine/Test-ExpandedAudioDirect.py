@@ -22,16 +22,16 @@ def inventory(folder):
     return {str(path.relative_to(folder)): digest(path) for path in folder.rglob('*') if path.is_file()}
 
 
-def main():
-    if len(sys.argv) != 2:
-        raise ValueError('Test-ExpandedAudioDirect.py <successful expanded worker evidence>')
-    source = pathlib.Path(sys.argv[1]).resolve(strict=True)
+def run(source, mode='--expanded-audio-direct', manifest=None):
+    if mode not in ('--expanded-audio-direct', '--expanded-audio-metadata-direct'):
+        raise ValueError('Unknown expanded command test mode')
+    source = pathlib.Path(source).resolve(strict=True)
     if not source.is_relative_to(ROOT / '.codex-temp'):
         raise ValueError('Use repository-owned worker evidence')
     expected = json.loads((source / 'payload-identities.json').read_text())
     if inventory(source / 'worker') != expected:
         raise ValueError('Prior worker payload changed')
-    evidence = ROOT / '.codex-temp' / ('expanded-audio-direct-' + uuid.uuid4().hex)
+    evidence = ROOT / '.codex-temp' / (mode.removeprefix('--') + '-' + uuid.uuid4().hex)
     evidence.mkdir()
     print('Expanded direct evidence: ' + str(evidence), flush=True)
     for project in ('src/ContextSuite.Worker/ContextSuite.Worker.csproj',
@@ -49,12 +49,12 @@ def main():
             shutil.copy2(path, payload / path.name)
     # Compose the absent-provider case separately; never mutate a running payload.
     shutil.copytree(payload, evidence / 'worker-no-voice', ignore=shutil.ignore_patterns('voice'))
-    shutil.copy2(source / 'fixtures.json', evidence / 'fixtures.json')
+    shutil.copy2(manifest or source / 'fixtures.json', evidence / 'fixtures.json')
     identities = {name: inventory(evidence / name) for name in ('worker', 'worker-no-voice')}
     (evidence / 'payload-identities.json').write_text(json.dumps(identities, indent=2) + '\n')
     test = ROOT / 'artifacts/managed/bin/ContextSuite.Core.ContractTests/Release/net10.0-windows/ContextSuite.Core.ContractTests.exe'
     with (evidence / 'run.log').open('xb') as log:
-        result = subprocess.run([str(test), '--expanded-audio-direct', str(evidence / 'results'),
+        result = subprocess.run([str(test), mode, str(evidence / 'results'),
                                  str(payload / 'ContextSuite.Worker.exe'), str(evidence / 'fixtures.json')],
                                 cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, timeout=1800)
     if any(inventory(evidence / name) != files for name, files in identities.items()) or inventory(source / 'worker') != expected:
@@ -62,7 +62,10 @@ def main():
     if result.returncode:
         raise ValueError('Direct command checks failed; see retained run.log')
     print((evidence / 'run.log').read_text().splitlines()[-1], flush=True)
+    return evidence
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) != 2:
+        raise ValueError('Test-ExpandedAudioDirect.py <successful expanded worker evidence>')
+    run(sys.argv[1])
