@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.6**. This update records the separate Windows Voice
-source/runtime review and isolated deployment profile. Optional HEIC/AVIF scratch
+Matrix revision: **2026-09-19.7**. This update reconciles expanded input admission
+and the [finite acceptance contract](local-candidate-acceptance.md). Optional HEIC/AVIF scratch
 packaging and reserved candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
@@ -162,7 +162,7 @@ Audio input and output matrix
 
 `C` means implemented with isolated cross-format worker/publication evidence for
 the admitted container/codec and metadata subset. `Unchanged` creates no output
-and does not admit a new paid batch. This is 30 cross-format pairs and six no-ops,
+and does not admit a new paid batch. This includes the original 30 cross-format pairs and six no-ops,
 not a claim that every rate, channel layout and metadata combination works.
 
 | Input container/codec | WAV | FLAC | MP3 | M4A AAC-LC | Ogg Vorbis | Ogg Opus |
@@ -173,9 +173,18 @@ not a claim that every rate, channel layout and metadata combination works.
 | M4A/AAC-LC | C | C | C | Unchanged | C | C |
 | Ogg Vorbis | C | C | C | C | Unchanged | C |
 | Ogg Opus | C | C | C | C | C | Unchanged |
+| Admitted AIFF/AIFF-C, expanded engine only | C | C | C | C | C | C |
+| Admitted ASF WMA Standard/Pro/Lossless, repaired expanded engine | C | C | C | C | C | C |
+| Admitted WMA Voice, separate pinned Windows provider | C | C | C | C | C | C |
 
 The [typed plan](../src/ContextSuite.Core/Audio/AudioConversionPlan.cs) checks
-content, not the filename alone. Raw ADTS `.aac`, ALAC, WMA, AIFF, AU, WavPack,
+content, not the filename alone. The last three rows are input-only additions
+verified in isolated workers and absent from reserved candidate 1.1.1.
+AIFF/AIFF-C admits signed PCM8/16/24/32, NONE, sowt PCM16, big-endian float32/64,
+A-law, mu-law and IMA4 subject to metadata/extent validation. WMA admits v1/v2,
+Pro and Lossless under the repaired runtime; Voice separately requires mono at
+8, 11.025, 16 or 22.05 kHz and the reviewed Windows provider. Every cell retains
+the target rate/channel restrictions below. Raw ADTS `.aac`, ALAC, AU, WavPack,
 MIDI, playlists and audio projects have no admitted conversion pair. A shared
 MP4/Ogg container signature does not admit arbitrary codecs or video streams.
 M4A input specifically requires the reviewed AAC-LC configuration; HE-AAC and

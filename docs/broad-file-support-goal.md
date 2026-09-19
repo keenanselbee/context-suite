@@ -21,6 +21,13 @@ labels do not override the current capability matrix or completed evidence.
 The combined 1.1.1 stage contains all existing engine families; it does not
 implement the newly selected inputs or establish commercial release readiness.
 
+The [local candidate acceptance contract](local-candidate-acceptance.md) now
+defines eight finite automated suite families, twelve Office content/layout
+groups, the human media/workflow review and reference-machine performance limits.
+It also identifies unresolved Office network-enforcement evidence explicitly.
+Preparing/binding every review fixture, measuring the final candidate and owner
+acceptance remain unfinished; the contract itself is not a passing test result.
+
 ### Required input additions
 
 | Addition | Required result | Acceptance boundary |
