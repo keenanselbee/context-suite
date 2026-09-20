@@ -67,6 +67,14 @@ journals and timing samples stay under a fresh
 checks run again afterward. Installation, Explorer registration and live licensing
 are outside this benchmark. Final expanded-candidate replay remains required.
 
+When a candidate contains HEIC/AVIF support, the runner includes the pinned HEIF
+payload checks in its full-package verification and records the HEIF verifier
+and deployment manifest among its source identities. Candidates without HEIF
+retain their original verification. Neither path accepts arbitrary extra files
+or changes the timing limits, exact-worker selection or profile authorization.
+The [shared admission regression](combined-expanded-inputs.md#benchmark-package-admission)
+records valid-package and tamper-refusal evidence separately from timing results.
+
 
 Retained harness attempt
 ------------------------

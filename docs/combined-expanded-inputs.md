@@ -102,6 +102,32 @@ guard evidence is `combined-input-guards/9657fb0068d54736ad2dcb54fd650ed6` under
 These checks do not count as another general foundation or complete media replay.
 
 
+Benchmark package admission
+---------------------------
+
+The Office and PDF timing runners previously omitted HEIF from full-package
+verification, rejecting the expanded package before any measurements. They now
+request the existing pinned HEIF checks when that engine is present, retaining
+original-candidate support and the same file allowlist. Both runners include
+the HEIF verifier and deployment manifest in their source identity snapshots.
+
+`tools/Test-PerformancePayloads.py` checks this boundary with real validators,
+without building a host, running workers or creating Office profiles:
+
+```powershell
+python -B tools/Test-PerformancePayloads.py `
+  --baseline 'artifacts/production-staging/3efa4342aed9435995d8f00b52fead96' `
+  --expanded '.codex-temp/combined-inputs/e549e5e3509942b4b8ec8e0d6545f93a/combined'
+```
+
+Evidence `.codex-temp/performance-payloads/ad89d0a6b5874324b1be78aadef20503`
+passes nine checks: both runners accept the original and expanded packages;
+the prior missing-flag rejection is reproduced; both runners reject a changed
+HEIF library and an unexpected file in a separate disposable copy. Full source
+inventories are checked before and after. This is package-admission evidence,
+not a new performance measurement or final versioned-candidate replay.
+
+
 Remaining acceptance
 --------------------
 

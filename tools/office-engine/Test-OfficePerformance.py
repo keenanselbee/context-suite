@@ -13,6 +13,14 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest().upper()
 
 
+def verify_payload(root, candidate, run):
+    command = ["powershell", "-NoProfile", "-File", str(root / "tools/curated-engine/Test-ProductionPayload.ps1"),
+               "-Payload", str(candidate), "-AllowAudioCandidate", "-AllowPdfCandidate", "-AllowOfficeCandidate"]
+    if (candidate / "heif").is_dir():
+        command.append("-AllowHeifCandidate")
+    run("payload", command)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--production-stage", type=Path, required=True)
@@ -42,8 +50,7 @@ def main():
 
     inventory_command = ["python", "-B", str(root / "tools/audio-engine/Stage-AudioPayload.py"),
                          "--payload", str(candidate), "--inventory"]
-    run("payload", ["powershell", "-NoProfile", "-File", str(root / "tools/curated-engine/Test-ProductionPayload.ps1"),
-                    "-Payload", str(candidate), "-AllowAudioCandidate", "-AllowPdfCandidate", "-AllowOfficeCandidate"])
+    verify_payload(root, candidate, run)
     run("inventory-before", inventory_command)
     paths = {Path(__file__).resolve()}
     for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/Shared",
@@ -52,7 +59,8 @@ def main():
                      path.suffix in (".cs", ".csproj") and not {"bin", "obj"}.intersection(path.parts))
     paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props",
         "Version.props", "global.json", "tools/Require-Private.targets", "tools/curated-engine/Test-ProductionPayload.ps1",
-        "tools/audio-engine/Stage-AudioPayload.py", "tools/office-engine/Stage-OfficePayload.py") if (root / name).is_file())
+        "tools/audio-engine/Stage-AudioPayload.py", "tools/office-engine/Stage-OfficePayload.py",
+        "tools/heif-engine/Stage-HeifPayload.py", "tools/heif-engine/payload-candidate.json") if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
     run("contracts-build", ["dotnet", "build", str(root / "tests/ContextSuite.Core.ContractTests/ContextSuite.Core.ContractTests.csproj"),
                             "-c", "Release", "--no-restore", "--verbosity", "quiet"])

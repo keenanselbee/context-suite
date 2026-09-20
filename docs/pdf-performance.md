@@ -59,6 +59,14 @@ directory. Candidate 1.1.1 may establish the existing PDF baseline but cannot
 establish acceptance of the still-unbuilt candidate with all expanded inputs.
 Installation, Explorer registration, live licensing and recycling are not involved.
 
+Candidates containing HEIC/AVIF support now receive the pinned HEIF verification
+as part of the full-package check. Original candidates without HEIF retain their
+existing checks. The HEIF verifier and deployment manifest are included in source
+identities. This fixes benchmark admission for the expanded candidate without
+changing timing limits, worker selection or the file allowlist.
+The [shared admission regression](combined-expanded-inputs.md#benchmark-package-admission)
+records the original/expanded package checks and tamper refusals.
+
 
 Candidate 1.1.1 measurement (2026-09-19)
 ---------------------------------------
