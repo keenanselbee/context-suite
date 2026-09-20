@@ -107,6 +107,8 @@ owner acceptance. Do not reuse old review results for changed media outputs.
   high-precision SDR gradient), each in HEIC and AVIF, each to JPEG/PNG:
   **16 outputs**. Compare appearance, orientation, alpha/matte and banding against
   retained source references.
+  The [sixteen-output pack](heif-image-review.md) is prepared and passes scoped
+  automated image checks. Human visual/display acceptance remains open.
 - **H03 documents:** D01-D12 plus PDF text/vector, scanned, rotated/cropped and
   transparent-image controls. Review actual pages alongside automated checks.
 - **H04 workflows:** eight scenarios: mixed Analyze with unreadable input; quiet

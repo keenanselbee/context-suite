@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.24)
+project(ContextSuiteHeifReview LANGUAGES CXX)
+set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
+find_package(libheif 1.23.4 EXACT CONFIG REQUIRED)
+add_executable(ContextSuite.Heif.Review Review.cpp)
+target_compile_features(ContextSuite.Heif.Review PRIVATE cxx_std_20)
+target_compile_options(ContextSuite.Heif.Review PRIVATE /W4 /WX /utf-8)
+target_link_libraries(ContextSuite.Heif.Review PRIVATE heif)

@@ -75,6 +75,14 @@ Together with the original fifteen generated comparisons, 25 of 34 H01
 comparisons are prepared. Human listening/player acceptance and the nine
 owner-approved real-recording comparisons remain open.
 
+The [HEIC/AVIF image review pack](heif-image-review.md) prepares all sixteen H02
+outputs from the photograph, oriented geometry, transparency and 12-bit gradient
+scenes. Every direct command passes the fixed scoped pixel, alpha, orientation,
+precision and original-preservation checks against independently prepared
+references. Both gradient PNGs retain 2,560 levels in 16-bit output. The worksheet
+binds notes to exact media hashes; human appearance/display acceptance and final
+combined-candidate replay remain open.
+
 The [PowerPoint D09 layout corpus](powerpoint-layout-acceptance.md) now has an
 actual application export with seven publication/preservation/cleanup checks.
 Independent image and diagram/table checks pass. Mixed typography retains text,

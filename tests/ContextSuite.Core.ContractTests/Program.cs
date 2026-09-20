@@ -27,6 +27,18 @@ if (args is ["--office-performance", "--create-disposable-profiles", var officeP
     return 0;
 }
 
+if (args is ["--heif-review-sources", var heifReviewPack, var heifReviewPhoto])
+{
+    HeifReviewContracts.Prepare(heifReviewPack, heifReviewPhoto);
+    return 0;
+}
+
+if (args is ["--heif-review", var heifReviewEvidence, var heifReviewWorker])
+{
+    await HeifReviewContracts.RunAsync(heifReviewEvidence, heifReviewWorker);
+    return 0;
+}
+
 if (args is ["--heif-performance", var heifPerformanceEvidence, var heifPerformanceWorker, var heifPerformanceFixtures])
 {
     await HeifPerformanceContracts.RunAsync(heifPerformanceEvidence, heifPerformanceWorker, heifPerformanceFixtures);
