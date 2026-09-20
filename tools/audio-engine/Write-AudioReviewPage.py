@@ -8,8 +8,15 @@ from urllib.parse import quote
 
 
 def write_page(pack):
-    report = json.loads((pack / "results.json").read_text())
-    if not report["AutomatedPassed"] or len(report["Sources"]) != 3 or len(report["Comparisons"]) != 15:
+    report_path = pack / "results.json"
+    report = json.loads(report_path.read_text())
+    expanded = report.get("PackKind") == "expanded"
+    names = {"aiff", "standard", "pro", "lossless", "voice"} if expanded else {"music", "transients", "speech"}
+    targets = {"Wave", "Opus"} if expanded else {"Flac", "Mp3", "M4a", "Vorbis", "Opus"}
+    pairs = {(item["Clip"], item["Target"]) for item in report["Comparisons"]}
+    if (not report["AutomatedPassed"] or len(report["Sources"]) != len(names) or
+            {item["Name"] for item in report["Sources"]} != names or
+            len(report["Comparisons"]) != len(names) * len(targets) or pairs != {(name, target) for name in names for target in targets}):
         raise ValueError("A complete automated review pack is required.")
     def media(path, expected):
         path = Path(path).resolve(strict=True)
@@ -23,12 +30,21 @@ def write_page(pack):
         "transients": "Deliberate soft noise impacts every half-second. Placement switches every three seconds; high tones appear from 3–6 seconds, then the final noise fades.",
         "speech": "Local Windows synthetic speech. Compare consonants, S sounds, pauses, and the first and last words. The reference voice is synthetic."
     }
-    recipes = {"Flac": "FLAC · level 8", "Mp3": "MP3 · VBR quality 2", "M4a": "AAC-LC · 192 kb/s",
+    descriptions.update({
+        "aiff": "AIFF PCM24 containing generated melody, bass and percussion. The reference retains the exact authored PCM samples.",
+        "standard": "WMA Standard containing generated transients and stereo placement changes. The reference is the independent Windows decode, including encoded padding.",
+        "pro": "WMA Pro containing generated transients and stereo placement changes. The reference is the independent Windows decode.",
+        "lossless": "WMA Lossless containing generated melody, bass and percussion. The reference retains the exact authored PCM samples.",
+        "voice": "WMA Voice containing local synthetic speech. The reference is the Windows decode; compare words, pauses and the complete tail."
+    })
+    recipes = {"Wave": "WAV · source precision", "Flac": "FLAC · level 8", "Mp3": "MP3 · VBR quality 2", "M4a": "AAC-LC · 192 kb/s",
                "Vorbis": "Vorbis · quality 5", "Opus": "Opus · 160 kb/s VBR, 48 kHz"}
     sections = []
     for source in report["Sources"]:
         name = source["Name"]
         reference = media(source["Path"], source["Sha256"])
+        input_link = (f'<p><a href="{media(source["InputPath"], source["InputSha256"])}" target="_blank" rel="noopener">Open original input</a></p>'
+                      if expanded else "")
         rows = []
         for item in report["Comparisons"]:
             if item["Clip"] != name:
@@ -42,15 +58,20 @@ def write_page(pack):
 <p><a href="{encoded}" target="_blank" rel="noopener">Open encoded file</a> · {item["SampleRate"]:,} Hz · {item["Channels"]} channel(s)</p>
 <label for="audio-{key}">Decoded WAV comparison</label>
 <audio id="audio-{key}" controls preload="none" src="{decoded}"></audio>
-<p class="hint">{html.escape("Exact PCM round-trip verified." if item["ExactPcm"] else notes)}</p>
+<p class="hint">{html.escape("Exact reference samples verified." if item["ExactPcm"] else notes)}</p>
 <div class="ratings"><label>Listening<select name="listening"><option>Not reviewed</option><option>No issue heard</option><option>Issue heard</option></select></label>
 <label>Encoded-file playback<select name="playback"><option>Not tested</option><option>Opened and played</option><option>Problem</option></select></label></div>
 <label>Notes and timestamps<textarea name="notes" rows="2"></textarea></label></article>''')
         sections.append(f'''<section><h2>{html.escape(name.title())}</h2><p>{html.escape(descriptions[name])}</p>
-<p>{source["SampleRate"]:,} Hz · {source["Channels"]} channel(s) · {source["SampleBits"]}-bit PCM · {source["Seconds"]:.2f} seconds</p>
-<div class="reference"><label for="reference-{name}">Original WAV reference</label>
+<p>{source["SampleRate"]:,} Hz · {source["Channels"]} channel(s) · {source["SampleBits"]}-bit {"float" if source.get("FloatingPoint") else "PCM"} · {source["Seconds"]:.2f} seconds</p>{input_link}
+<div class="reference"><label for="reference-{name}">{"Independent WAV reference" if expanded else "Original WAV reference"}</label>
 <audio id="reference-{name}" controls preload="none" src="{reference}"></audio></div>
 <div class="grid">{"".join(rows)}</div></section>''')
+    review_identity = json.dumps({"kind": "expanded" if expanded else "generated",
+        "reportSha256": hashlib.sha256(report_path.read_bytes()).hexdigest().upper(),
+        "sources": [{"name": item["Name"], "referenceSha256": item["Sha256"], "inputSha256": item.get("InputSha256")} for item in report["Sources"]],
+        "comparisons": [{"case": item["Clip"] + "-" + item["Target"], "encodedSha256": item["EncodedSha256"],
+                         "decodedSha256": item["DecodedSha256"]} for item in report["Comparisons"]]}).replace("<", "\\u003c")
     document = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Context Suite audio review</title><style>
 :root{color-scheme:light dark;font:16px/1.5 system-ui,sans-serif}body{max-width:1100px;margin:auto;padding:24px}
@@ -77,7 +98,7 @@ document.addEventListener('play',e=>{if(e.target.tagName==='AUDIO')document.quer
 document.getElementById('download').addEventListener('click',()=>{
 const results=[...document.querySelectorAll('[data-case]')].map(row=>({case:row.dataset.case,listening:row.querySelector('[name=listening]').value,
 playback:row.querySelector('[name=playback]').value,notes:row.querySelector('[name=notes]').value}));
-const content={scope:'Generated Context Suite audio clips; not complete launch acceptance',setup:document.getElementById('setup').value,results};
+const content={scope:'Generated Context Suite audio clips; not complete launch acceptance',pack:''' + review_identity + ''',setup:document.getElementById('setup').value,results};
 const url=URL.createObjectURL(new Blob([JSON.stringify(content,null,2)],{type:'application/json'}));
 const link=document.createElement('a');link.href=url;link.download='context-suite-audio-review.json';link.click();
 setTimeout(()=>URL.revokeObjectURL(url),1000);document.getElementById('saved').textContent='Review notes download requested.';

@@ -4,6 +4,11 @@ Audio Listening Review
 Status: automated pack preparation passed; human listening, player compatibility
 and visual worksheet acceptance remain open.
 
+The [expanded AIFF/WMA pack](expanded-audio-listening-review.md) now supplies ten
+additional WAV/Opus comparisons from five generated sources. It complements this
+original fifteen-comparison pack. The remaining nine real-recording comparisons
+and actual human acceptance are still open under the finite H01 contract.
+
 This review supports the fixed recipes in [audio conversion policy](audio-conversion-policy.md)
 and the [broad file support goal](broad-file-support-goal.md). Generated clips make
 the first comparison repeatable. They do not replace representative real music,

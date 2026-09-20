@@ -68,6 +68,13 @@ medians are 25.618/30.995/23.475 seconds, within the fixed 45-second median and
 Human review and final expanded-candidate replay remain open; timing does not
 resolve the separate Office fidelity and isolation gates.
 
+The [expanded audio listening pack](expanded-audio-listening-review.md) now
+prepares all ten AIFF/WMA WAV/Opus comparisons in H01, with fifteen validated
+publications, independent WAV sample checks and hash-bound review notes.
+Together with the original fifteen generated comparisons, 25 of 34 H01
+comparisons are prepared. Human listening/player acceptance and the nine
+owner-approved real-recording comparisons remain open.
+
 The [PowerPoint D09 layout corpus](powerpoint-layout-acceptance.md) now has an
 actual application export with seven publication/preservation/cleanup checks.
 Independent image and diagram/table checks pass. Mixed typography retains text,

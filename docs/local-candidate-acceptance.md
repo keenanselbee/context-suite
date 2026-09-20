@@ -100,6 +100,9 @@ owner acceptance. Do not reuse old review results for changed media outputs.
   percussion/dense music), each to MP3/AAC/Opus. Total: **34 comparisons**. Review
   starts/ends, transients, noise and channel placement. Open encoded files in an
   intended player; decoded-WAV playback does not prove encoded-player support.
+  The original fifteen and [expanded ten](expanded-audio-listening-review.md)
+  generated comparisons are prepared. All human results and the nine
+  real-recording comparisons remain open.
 - **H02 images:** four scenes (photograph, oriented geometry, transparency,
   high-precision SDR gradient), each in HEIC and AVIF, each to JPEG/PNG:
   **16 outputs**. Compare appearance, orientation, alpha/matte and banding against

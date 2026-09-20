@@ -94,7 +94,7 @@ internal static class ExpandedAudioWorkerContracts
         Console.WriteLine($"Passed {checks.Count} expanded audio worker checks with {results.Count} publications. Evidence: {scratch}");
     }
 
-    private static async Task<object> CompareWaveAsync(string path, Fixture fixture)
+    internal static async Task<object> CompareWaveAsync(string path, Fixture fixture)
     {
         using var source = File.OpenRead(path);
         var inventory = await WaveMetadata.ReadAsync(source, default, true);
