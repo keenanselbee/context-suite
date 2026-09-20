@@ -54,8 +54,8 @@ def prepare(manifest_path):
             path, data = read_local(item["Path"])
             if item["Kind"] not in ("source", "output", "reference", "withheld", "evidence"):
                 raise ValueError("Unknown review artifact kind")
-            if path.suffix.lower() not in (".docx", ".xlsx", ".pptx", ".pdf", ".json"):
-                raise ValueError("Only authored Office, PDF and JSON evidence is supported")
+            if path.suffix.lower() not in (".docx", ".xlsx", ".pptx", ".pdf", ".png", ".json"):
+                raise ValueError("Only authored Office, PDF, PNG and JSON evidence is supported")
             if hashlib.sha256(data).hexdigest().upper() != item["Sha256"]:
                 raise ValueError("Review artifact identity changed: " + str(path))
             if item["Kind"] == "evidence":
@@ -76,6 +76,7 @@ def prepare(manifest_path):
         folder = pack / case["Id"]
         folder.mkdir()
         links = []
+        previews = []
         for index, item in enumerate(case["Files"]):
             source = Path(item["Path"]).absolute()
             name = f"{index + 1}-{item['Kind']}{source.suffix.lower()}"
@@ -85,9 +86,11 @@ def prepare(manifest_path):
                 target.write_bytes(loaded[str(source)])
                 artifacts.append({"Path": relative, "Sha256": item["Sha256"]})
             links.append(f'<li><a href="{relative}" target="_blank" rel="noopener">{html.escape(item["Label"])}</a></li>')
+            if source.suffix.lower() == ".png":
+                previews.append(f'<figure><figcaption>{html.escape(item["Label"])}</figcaption><img src="{relative}" alt="{html.escape(item["Label"])}" loading="lazy"></figure>')
         cards[case["Group"]].append(f'''<details data-case="{case['Id']}" data-automated="{case['Status']}">
 <summary>{html.escape(case['Title'])} <span class="status">{STATUSES[case['Status']]}</span></summary>
-<p>{html.escape(case['Instructions'])}</p><ul>{''.join(links)}</ul>
+<p>{html.escape(case['Instructions'])}</p><ul>{''.join(links)}</ul><div class="previews">{''.join(previews)}</div>
 <label>Human observation<select name="review"><option>Not reviewed</option><option>No additional issue seen</option><option>Issue seen</option></select></label>
 <label>Notes<textarea name="notes" rows="3"></textarea></label></details>''')
     sections = []
@@ -105,10 +108,11 @@ a{color:light-dark(#0647a5,#9bc8ff)}section{border-top:2px solid #888;margin-top
 summary{cursor:pointer;font-weight:600}.status{display:block;font-weight:400}label{display:block;margin:16px 0 8px}
 input,textarea,select,button{font:inherit;padding:8px}input,textarea{width:100%;box-sizing:border-box}textarea{resize:vertical}
 .notice{border:2px solid #888;padding:16px}nav{display:flex;flex-wrap:wrap;gap:16px}button{margin-top:24px}
+.previews{display:flex;flex-wrap:wrap;gap:16px}figure{margin:0;max-width:100%}img{max-width:100%;height:auto;background:repeating-conic-gradient(#aaa 0% 25%,#eee 0% 50%) 0/20px 20px}
 </style><h1>Document review</h1><p class="notice"><strong>Human acceptance is open.</strong>
 These retained authored tests come from several historical workers. This is not the final candidate replay.
 Known failures remain failures regardless of the notes entered here.</p>
-<p>Open each PDF in your intended viewer and compare every page with its source and the stated checks.
+<p>Open each PDF and image in your intended viewer and compare every page with its source and the stated checks.
 Historical rendering controls are not Microsoft Office reference exports. JSON links contain the recorded automated evidence.
 Keep withheld or known-failed PDFs separate from acceptable output. Nothing opens, saves or uploads automatically.</p>
 <p>Record the viewer/version, operating system, monitor/scaling and any source application used.

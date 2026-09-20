@@ -28,9 +28,11 @@ It also identifies unresolved Office network-enforcement evidence explicitly.
 Preparing/binding every review fixture, measuring the final candidate and owner
 acceptance remain unfinished; the contract itself is not a passing test result.
 The [document review worksheet](document-review.md) now gathers 58 historical
-authored cases across D01-D09 with original/PDF identities and explicit failure
-labels. Ten worksheet checks pass; all human observations remain unset. D10-D12,
-the remaining PDF appearance controls and final-candidate review remain open.
+authored cases across D01-D09 and four fresh PDF appearance controls with bound
+original/output identities and explicit failure labels. The PDF controls pass
+21 actual expanded-worker command/pixel checks; ten worksheet checks pass with
+all 62 entries. The scan is synthetic. All human observations remain unset;
+D10-D12 and final-candidate review remain open.
 Desktop inspection is unavailable because the Computer Use native pipe still
 returns error 2; this does not count as visual or accessibility acceptance.
 The [Office isolation refresh](office-isolation-evaluation.md#correlated-network-observation-2026-09-19)

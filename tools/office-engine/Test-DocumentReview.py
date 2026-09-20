@@ -27,6 +27,7 @@ class Page(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         if tag == "a": self.links.append(attrs["href"])
+        if tag == "img": self.links.append(attrs["src"])
         if "data-case" in attrs: self.cases.append((attrs["data-case"], attrs["data-automated"]))
         if tag == "script": self.in_script = True
 
