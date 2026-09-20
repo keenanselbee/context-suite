@@ -75,6 +75,13 @@ spreadsheet calculation choice. Integrated acceptance remains pending.
 The fresh [combined 1.1.1 candidate](docs/combined-office-candidate.md)
 now packages Office alongside image/audio/PDF engines for isolated integration
 checks; fidelity, redistribution and release adoption remain open.
+The later [expanded scratch payload](docs/combined-expanded-inputs.md) adds
+HEIC/AVIF input to JPEG/PNG and AIFF/WMA input to the six existing audio targets.
+Its exact worker passes the recorded 659 HEIF interoperability and 211 expanded
+audio direct-command checks, including validated output copies and preserved
+originals. These additions follow the variant limits in the launch matrix and
+are absent from reserved 1.1.1. Human review, Office fidelity/security, engine
+adoption and one final versioned candidate remain required.
 The [goal record](docs/broad-file-support-goal.md)
 identifies the latest isolated staging and its limited acceptance scope.
 The owner accepted the image utility's simplified UI; screen-reader, additional

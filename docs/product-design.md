@@ -35,10 +35,13 @@ engine families for isolated integration; that build does not establish release
 adoption or complete Office fidelity and visible acceptance.
 
 On 2026-09-16 the owner added HEIC/AVIF input to JPEG/PNG and AIFF/WMA input
-to the existing audio targets to the required local candidate goal. These are
-planned compatibility additions, not current executable capabilities. Exact
-variants, fidelity, metadata, engine distribution and integrated acceptance must
-be verified before enabling them. ALAC remains a separate evaluation. The
+to the existing audio targets to the required local candidate goal. These input
+additions are now implemented in the optional
+[expanded scratch payload](combined-expanded-inputs.md), with recorded image/audio
+worker and copy-publication checks. They are absent from reserved candidate
+1.1.1. The [launch matrix](launch-capability-matrix.md) defines admitted variants
+and refusals; broader fidelity, human review, engine adoption and final integrated
+acceptance remain open. ALAC remains a separate evaluation. The
 [current completion plan](broad-file-support-goal.md#current-objective-and-completion-plan)
 defines scope freeze, implementation, customer acceptance and combined packaging
 milestones, including reviewed commits in both repositories.
@@ -266,8 +269,11 @@ The intended vertical slices are:
 
 Each slice should work from Explorer through validation before the next format
 family substantially expands the product surface.
-TIFF, GIF, ICO, and AVIF remain later candidates; HEIC/HEIF, camera RAW, and SVG
-import require separate scope and redistribution decisions. Decision 0019
+TIFF, GIF and ICO remain later candidates; camera RAW and SVG import require
+separate scope and redistribution decisions. HEIC/AVIF input to JPEG/PNG is now
+required by the owner's 2026-09-16 scope decision and implemented in the expanded
+scratch payload, subject to the declared variant and acceptance limits above.
+This does not admit every HEIF-family variant or add HEIC/AVIF output. Decision 0019
 supersedes the former image-release-before-audio ordering: broad Analyze, common
 audio and agreed document capabilities are now part of the next launch goal.
 See [broad file support](broad-file-support-goal.md) for the active sequence;
