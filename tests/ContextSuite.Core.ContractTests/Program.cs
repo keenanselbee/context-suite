@@ -325,6 +325,11 @@ if (args is ["--office-word-layout", var wordLayoutWorker, var wordLayoutEvidenc
     await OfficeWordLayoutContracts.RunAsync(wordLayoutWorker, wordLayoutEvidence);
     return 0;
 }
+if (args is ["--pdf-performance", var pdfPerformanceEvidence, var pdfPerformanceWorker])
+{
+    await PdfPerformanceContracts.RunAsync(pdfPerformanceEvidence, pdfPerformanceWorker);
+    return 0;
+}
 if (args.Length == 3 && args[0] == "--audio-performance")
 {
     await AudioPerformanceContracts.RunAsync(args[1], args[2]);

@@ -145,6 +145,10 @@ them. Office dominates package size; do not remove arbitrary pinned runtime file
 The [audio timing harness](audio-performance.md) measures both declared stereo
 rates and all six targets in sixty fresh-worker operations. Its isolated results
 remain separate from final combined-candidate replay and human listening.
+The [PDF timing harness](pdf-performance.md) passes both ten-page/image workloads
+in ten fresh-worker operations against preserved candidate 1.1.1. All fifty PNG
+and five PDF copies pass the scoped completeness checks; original and candidate
+identities remain unchanged. Final expanded-candidate replay remains required.
 
 
 Safety and completion gates

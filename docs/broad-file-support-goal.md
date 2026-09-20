@@ -49,8 +49,12 @@ budgets across sixty fresh-worker operations: both stereo rates and all six
 targets, five runs each. The largest median is 4.781 seconds and maximum 4.870
 seconds, below the fixed 15/30-second limits. Originals and inputs are unchanged.
 This is isolated ordinary-audio timing evidence, not listening acceptance or
-the final combined-candidate replay. Remaining image/document and optional
-Analyze timing gates stay open.
+the final combined-candidate replay. The [PDF batch benchmark](pdf-performance.md)
+also passes both declared workloads using the exact preserved 1.1.1 worker:
+ten-page PNG export has a 3.646-second median/4.049-second maximum; ten-image PDF
+creation has a 2.457-second median/2.495-second maximum. All ten runs retain
+originals and candidate identities. Image, Office and optional Analyze timing,
+human review and final expanded-candidate replay remain open.
 
 The [PowerPoint D09 layout corpus](powerpoint-layout-acceptance.md) now has an
 actual application export with seven publication/preservation/cleanup checks.
