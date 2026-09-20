@@ -260,7 +260,7 @@ Its starting workspace size was 7,799,144,415 bytes; the launcher measures growt
 and terminates its own build tree if the approved 100 GiB budget is exceeded.
 The build command, process identity, log, footprint observations and eventual
 exit receipts are retained as `evidence\build-01-*`, `evidence\build-02-*` and
-`evidence\build-03-*`.
+later numbered attempts.
 This is an in-progress build, not a compiled or accepted repair.
 Twelve setup/build script snapshots and their
 hashes are retained under `evidence\bootstrap-scripts`; later launcher revisions
@@ -292,10 +292,31 @@ one-worker restriction remains in place.
 
 After attempt 2 had exited and no owned compiler processes remained, the revised
 chart patch and the Python compatibility adjustment were applied to the owned
-source tree. Attempt 3 is compiling that revision using retained artifacts,
-two outer jobs and the same 100 GiB monitor. `applied-chart.patch` preserves
-the first draft; `applied-chart-v2.patch` identifies the revision used by attempt
-3. The matching-runtime and acceptance gates remain unchanged.
+source tree. Attempt 3 compiled the Python dependency with 10 warnings and zero
+errors; its completion stamp and full log were retained before the build stopped.
+That verifies the compatibility adjustment for this toolchain, not warning-free
+redistribution readiness. The full build was deliberately stopped after its
+compiler log revealed `/MP` still active: Python's project item metadata sets
+`MultiProcessorCompilation=true`, overriding the intended property-based limit.
+Attempt 3's exit 1 records that operator stop, not another compiler failure.
+
+The Python-only compiler environment now appends `/MP1`, retaining the single
+MSBuild worker and the coroutine definition. Microsoft's
+[compiler process-limit documentation](https://learn.microsoft.com/en-us/cpp/build/reference/mp-build-with-multiple-processes?view=msvc-170)
+distinguishes this limit from MSBuild's project count. A disposable two-unit
+compile, including the experimental-coroutine header, passed with those options
+confirmed after Visual Studio environment setup. It did not measure process
+counts or run an executable. The first probe incorrectly expected an override
+warning; that failed assertion and its successful compiler output remain retained.
+Exact recipe changes and probe identities are in
+`evidence\python-compiler-worker-limit.patch` and `.json`; the prior Python log
+is `evidence\build03-python-build.log`.
+
+Attempt 4 is building with the revised chart patch, retained artifacts, two outer
+jobs, one nested compiler worker and the same 100 GiB monitor. Actual subsequent
+Python invocation evidence remains to be inspected. `applied-chart.patch`
+preserves the first draft; `applied-chart-v2.patch` identifies the revision used
+by attempts 3 and 4. The matching-runtime and acceptance gates remain unchanged.
 
 ### Runtime linkage constraint
 
