@@ -1,7 +1,9 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.20**. This update records the
+Matrix revision: **2026-09-19.21**. The current-status reconciliation distinguishes
+reserved 1.1.1 from the expanded scratch payload and updates customer guidance.
+The recorded implementation evidence includes the
 [audio inventoried-payload protection](audio-distribution.md#inventoried-payload-protection-2026-09-19),
 [mixed Office/image PDF replay on the expanded worker](office-direct-command.md#expanded-combined-worker-replay-2026-09-19),
 [combined HEIF/expanded-audio/Voice command replay and package measurement](combined-expanded-inputs.md),
@@ -21,17 +23,15 @@ Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. The newly selected inputs below still require full customer acceptance.
 
-The source baseline and the last packaged candidate are different. Candidate
-**1.1.0** contains images, audio and PDF engines, but no Office engine. Later
-Office command and recovery work is verified in isolated scratch builds. Default
-release packaging still excludes the optional audio/PDF/Office candidates. The
-[explicit Office staging path](office-production-payload.md) is implemented;
-all 33 scratch packaging checks pass with the current host, including copy-failure
-retention and retry refusal. The fresh combined **1.1.1** candidate now includes
-Office; its current evidence is recorded below and in the
-[candidate record](combined-office-candidate.md). Release adoption and complete
-acceptance remain open. A menu label does not establish that a particular build
-can execute the operation.
+The latest reserved candidate is **1.1.1**, containing image, original-audio, PDF
+and Office engines. Its [candidate record](combined-office-candidate.md) preserves
+the exact stage, version receipt and historical passing/failed attempts. The
+earlier **1.1.0** stage lacks Office and remains retained. The later
+[expanded scratch worker](combined-expanded-inputs.md) adds HEIC/AVIF, AIFF/WMA
+and Windows Voice plus the interim Excel chart guard. It is not a new reserved
+release and does not replace 1.1.1. Default release packaging still requires
+explicit selection of optional engines; adoption and full acceptance remain
+open. A menu label does not establish a build's executable capabilities.
 
 Required compatibility additions selected 2026-09-16:
 
@@ -169,6 +169,14 @@ scrub. Animation and meaningful unsupported alpha/HDR structures are not silentl
 flattened. Fixed common-format defaults and DDS choices remain as specified in
 the [converter design](converter-design.md) and [image policy](../src/ContextSuite.Core/Images/ImageConversion.cs).
 
+The expanded input-only HEIC/AVIF path adds JPEG and PNG targets for admitted
+single SDR images and grids with 8/10/12-bit samples. HDR, collections/sequences,
+depth or unsupported auxiliaries and inconsistent alpha transforms are refused.
+Supported orientation, color/ICC and alpha retain the
+[color and fallback rules](heif-color-fallback.md); transparent JPEG output still
+needs an explicit matte. These declared boundaries complete scope definition,
+not human appearance acceptance or a claim about every file with that extension.
+
 
 Audio input and output matrix
 -----------------------------
@@ -284,7 +292,9 @@ passes 43 application checks and 144 independent page comparisons, using the
 unchanged 1 GiB aggregate job cap and bounded flat PDF admission. The
 [failure-guidance update](office-direct-command.md#office-failure-guidance)
 uses document-specific messages and passes eight actual-worker refusal checks.
-Neither checkpoint resolves the outstanding date-fidelity policy.
+The owner's later scope decision retains the calculation choice and known-date
+refusals while deferring renderer correction. Broader spreadsheet fidelity and
+the required chart work remain open; the known-date policy itself is settled.
 Native file/profile ownership and interruption evidence
 also do not by themselves close the separate
 [Office network-isolation evidence](office-isolation-evaluation.md).

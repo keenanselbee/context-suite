@@ -27,6 +27,27 @@ groups, the human media/workflow review and reference-machine performance limits
 It also identifies unresolved Office network-enforcement evidence explicitly.
 Preparing/binding every review fixture, measuring the final candidate and owner
 acceptance remain unfinished; the contract itself is not a passing test result.
+
+The next completion steps are:
+
+1. Resolve the required Office fidelity/security gates: compile and verify the
+   proposed passive-chart repair, settle D09 font-size rounding, and obtain
+   affirmative restricted-process network evidence. The chart build needs the
+   pending prerequisite-install authorization; network collection needs the
+   pending attended administrator step. Chart refusal remains interim protection.
+2. Select the approved real DOCX/XLSX/PPTX and three real recordings, finish their
+   fixed comparisons, and obtain H01-H04 human results. Prepared worksheets and
+   simulated workflows are ready; no human result is inferred from them.
+3. Finish engine adoption/source-delivery and footprint decisions, then compose
+   one fresh versioned candidate and replay A01-A08 plus the declared timing
+   workloads against those exact bytes. Preserve reserved 1.1.1 throughout.
+4. Audit every required result, complete the final public/private checkpoint,
+   and list remaining commercial/environment gates separately. Signing stays
+   deferred; a local candidate is not authorization to install or publish.
+
+Definition work is now reconciled below. Remaining human, fidelity, isolation,
+adoption and final-candidate work keeps the overall goal incomplete.
+
 The [document review worksheet](document-review.md) now gathers 58 historical
 authored cases across D01-D09 and four fresh PDF appearance controls with bound
 original/output identities and explicit failure labels. The PDF controls pass
@@ -156,10 +177,18 @@ Keep new capabilities unavailable when the corresponding engine is absent.
 
 ### Milestone A: freeze acceptance and preserve the baseline
 
-- [ ] Reconcile the capability matrix and current documentation with the combined
+- [x] Reconcile the capability matrix and current documentation with the combined
   1.1.1 evidence, retaining failed attempts and explicitly untested cases.
-- [ ] Record the exact accepted input variants and fixed output policies for the
+  The [launch matrix](launch-capability-matrix.md) separates the verified reserved
+  1.1.1 stage from the later expanded scratch worker. Its version receipt and
+  both inventory identities were rechecked on 2026-09-19; historical full-suite
+  receipts remain historical, not a new execution claim. Customer guidance now
+  reflects that distinction and the interim chart refusal.
+- [x] Record the exact accepted input variants and fixed output policies for the
   existing operations and the four new input families.
+  The [acceptance contract](local-candidate-acceptance.md#capability-freeze) and
+  launch matrix declare the required admission/target boundaries. This completes
+  scope definition, not per-variant fidelity, engine adoption or human acceptance.
 - [x] Resolve Office variant scope and spreadsheet policy: on 2026-09-16 the owner
   selected modern DOCX/XLSX/PPTX only, retained the saved-values/recalculate choice,
   and accepted blocking known incorrect dates while deferring renderer correction.
@@ -167,8 +196,11 @@ Keep new capabilities unavailable when the corresponding engine is absent.
 - [ ] Finish the representative font/layout acceptance corpus. The existing
   allowance for small spacing differences does not permit changed content or
   pagination, and missing-font decisions remain explicit.
-- [ ] Define a finite acceptance corpus and measurable timing/package budgets
-  before evaluating passes. The current uncompressed candidate is about 1.57 GB.
+- [x] Define a finite acceptance corpus and measurable timing/package budgets
+  before evaluating passes. The acceptance contract fixes A01-A08, D01-D12,
+  H01-H04 and performance limits. The expanded scratch payload measures 1.583 GB
+  unpacked and 522.6 MB zipped, below the provisional 1.65-GB engineering ceiling;
+  owner footprint acceptance and final-candidate measurement remain open.
   Keep 245 reviewed catalog descriptions as the baseline; full MIME coverage or
   an ever-growing catalog is not a prerequisite. Every advertised fact still
   needs evidence, and filename hints must remain distinct from content detection.

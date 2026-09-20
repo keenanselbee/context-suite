@@ -1,10 +1,11 @@
 Context Suite Quick Start
 =========================
 
-Draft for the expanded internal candidate. The retained 1.1.0 package includes
-images, audio and PDF tools; Office conversion is tested in separate isolated
-builds. Default release packaging has not adopted the optional engines. Signed
-installation and live license acceptance are pending.
+Draft for internal review. Reserved candidate 1.1.1 includes image, audio, PDF
+and Office engines. The later expanded test build adds HEIC/AVIF and AIFF/WMA
+inputs and refuses affected Excel charts. These builds are still undergoing
+acceptance; this guide does not describe a released or newly installed update.
+Signed installation and live license acceptance remain pending.
 
 Everyday use
 ------------
@@ -69,18 +70,26 @@ file's explanation; renaming its extension does not convert it. Analyze also giv
 identification and common-use descriptions for other readable regular files;
 recognition does not mean conversion is available.
 
+The expanded test build also converts supported HEIC and AVIF images to JPEG or
+PNG. HDR images, image sequences and unsupported extra image data are declined;
+they are not silently flattened. Transparent images still need a background
+choice when converting to JPEG.
+
 In isolated audio testing, Convert also offers **WAV**, **FLAC**, **MP3**,
 **M4A (AAC)**, **Ogg Vorbis** and **Opus**. Routine conversions use fixed settings.
 A short prompt asks before another lossy conversion, required resampling or
 reduced precision. A lossless format cannot restore quality already lost.
 Converting a file to its existing format leaves it unchanged.
+The expanded test build accepts supported AIFF/AIFF-C and WMA inputs for these
+same six output choices. Not every codec, channel layout or metadata field is
+supported, and protected WMA files cannot be converted.
 
 In that same isolated testing, **Auto** and **Lossless** also optimize supported FLAC
 files while preserving decoded audio and admitted metadata. They share the same
 copy settings, batch progress and retry behavior. Balanced and Smallest are PNG
 presets. If the extension does not match the identified content, the app asks you
 to correct the name before optimizing. Normal packaging does not yet include the
-audio engine, although the retained combined 1.1.0 candidate includes it. Raw AAC,
+audio engine, although the reserved combined 1.1.1 candidate includes it. Raw AAC,
 ALAC and other audio codecs can be recognized without being convertible. Video
 processing is not available.
 
@@ -115,12 +124,18 @@ the workbook, or **Recalculate** to evaluate supported formulas locally before
 exporting. Saved values may be out of date; recalculation may change results.
 External data is not refreshed. **Try again** keeps this choice for a failed
 document. These optional Office paths are undergoing isolated acceptance and
-are not included in the reserved packaged candidate. Only ordinary DOCX, XLSX
+are included in candidate 1.1.1. Only ordinary DOCX, XLSX
 and PPTX variants are currently admitted; legacy files, templates and macro-enabled
 documents have no current conversion path. If Context Suite detects affected
 dates before March 1, 1900, it keeps the workbook and asks you to export the PDF
 from Excel. Spreadsheet date fidelity remains under development; broader
 spreadsheet acceptance is incomplete. Analyze remains available.
+
+The expanded test build also declines Excel workbooks whose charts cannot yet
+be preserved, or whose chart information cannot be checked completely. Export
+those files from Excel while this limitation is being resolved. When a document
+uses unavailable fonts, Context Suite offers a choice to save the PDF copy with
+substituted fonts or skip the file. Check its appearance before sharing it.
 
 License and transfer
 --------------------
