@@ -32,8 +32,9 @@ The next completion steps are:
 
 1. Resolve the required Office fidelity/security gates: compile and verify the
    proposed passive-chart repair, settle D09 font-size rounding, and obtain
-   affirmative restricted-process network evidence. The chart build needs the
-   pending prerequisite-install authorization; network collection needs the
+   affirmative restricted-process network evidence. The native chart-build setup
+   was approved on 2026-09-20 and is underway in `G:\ContextSuite-OfficeBuild`;
+   compilation and acceptance remain pending. Network collection needs the
    pending attended administrator step. Chart refusal remains interim protection.
 2. Select the approved real DOCX/XLSX/PPTX and three real recordings, finish their
    fixed comparisons, and obtain H01-H04 human results. Prepared worksheets and
@@ -74,8 +75,10 @@ policy until passive charts can render with equivalent enforcement; do not
 remove chart fidelity from the goal or mistake the diagnostic for a product fix.
 The [renderer repair proposal](office-chart-renderer-repair.md) preserves a draft
 against the exact upstream build with ten static source checks. It is not built
-or adopted; missing native-build prerequisites require separate installation
-authorization, and the full fidelity/security replay remains outstanding.
+or adopted. The owner approved a bounded Cygwin/MSVC setup without WSL; the pinned
+source and toolchain are verified, configuration passed, and a two-job component
+build is underway in the dedicated G: workspace. The full fidelity/security
+replay remains outstanding.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This

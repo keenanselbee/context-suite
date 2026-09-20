@@ -79,13 +79,13 @@ at `C:\cygwin64`; this is not an exhaustive search of other drives.
 
 The earlier proposed WSL/Ubuntu route is superseded by the owner's 2026-09-20
 request to evaluate a less invasive native Windows route. WSL is not a product
-requirement. The owner authorized prerequisite investigation after being told
-that exact setup changes would be presented before installation. No installation
-or Windows feature change has been performed.
+requirement. The owner authorized prerequisite investigation, then approved the
+concrete native setup below on 2026-09-20. Cygwin and standalone build tools are
+now in the approved G: workspace. WSL and Windows features have not been changed.
 
 The earlier investigation kept sources in repository-owned scratch. The proposed
-external build workspace below addresses the reduced space on C: and requires
-specific authorization. Do not delete retained evidence to make room or modify
+external build workspace below addresses the reduced space on C: and has specific
+owner authorization. Do not delete retained evidence to make room or modify
 the installed Context Suite app, Explorer registrations, the reserved 1.1.1
 candidate or existing engine payloads.
 
@@ -114,13 +114,13 @@ Four downloaded text files and SHA-256 provenance are retained in
 No downloaded script or binary was executed. The Windows build wiki was
 unavailable to the research tool; this review does not claim it was read.
 
-### Proposed setup for owner approval
+### Approved setup boundary
 
 - Create only the dedicated external workspace `G:\ContextSuite-OfficeBuild`,
   with `cygwin`, `downloads`, `tools`, `source`, `build`, `temp` and `evidence`
   beneath it. Retain small audit receipts in the repository scratch directory.
   G: avoids consuming the system drive's remaining space. This external path
-  requires explicit authorization under the shared repository rules.
+  received explicit authorization under the shared repository rules.
 - Install a current-user Cygwin subset: upstream-listed autoconf, automake,
   bison, bsdtar, cabextract, flex, gettext-devel, git, gnupg, gperf,
   libxml2-devel, libpng12-devel, make, nasm, openssl, patch, perl, pkg-config,
@@ -142,7 +142,7 @@ unavailable to the research tool; this review does not claim it was read.
   registration, shortcuts, global PATH changes, Windows features or antivirus
   exclusions. Do not elevate setup or modify the installed application.
 - Allow an initial **100 GiB working-space budget**, starting with **two build
-  jobs**. This is a proposed resource allowance, not a measured upstream minimum
+  jobs**. This is an approved resource allowance, not a measured upstream minimum
   or guaranteed final size. Measure download/source/build growth and stop for
   review if more space or tool changes are needed. Full source/dependency setup
   and a first compile may take hours; no duration has been measured here.
@@ -153,7 +153,7 @@ for diagnostics, normally under `HKCU\Software\Cygwin\Installations` for an
 unelevated user. This is explicit in the
 [upstream discussion](https://sourceware.org/pipermail/cygwin-apps/2025-July/044476.html)
 and [runtime source](https://github.com/cygwin/cygwin/blob/main/winsup/cygwin/mm/cygheap.cc).
-Approval must cover that limited user-registry entry as well as the external
+The approval covers that limited user-registry entry as well as the external
 workspace. Do not patch Cygwin or change registry permissions to conceal it.
 Build tools are not a security sandbox; Windows can also retain ordinary process
 and file activity records. No promise of zero machine traces is made.
@@ -164,6 +164,80 @@ dependencies can be built against the retained runtime or require a complete
 matching build; do not assume ABI compatibility. Inspect changes before using
 any result in an isolated test payload. The execution/adoption gates below stay
 unchanged. No new production identity or version is approved by this setup plan.
+
+### Setup execution (2026-09-20)
+
+The official Cygwin setup 2.937 signature verified with the published signing
+fingerprint `56405CF6FCC81574682A5D561A698DE9E2E56300`. Setup exited 0 with
+the approved flags, HTTPS mirror and normal package verification. Its UI stayed
+hidden. Inspection found one runtime installation-path value under
+`HKCU\Software\Cygwin\Installations`; that value points to the approved workspace.
+The corresponding HKLM key was absent. The resolved package inventory is retained in
+`G:\ContextSuite-OfficeBuild\evidence\cygwin-package-versions.txt`.
+
+Native GNU Make 4.4.1 and pkgconf 2.4.3 came from the upstream LibreOffice tool
+location. Meson 1.7.2 came from its release archive. The LODE-listed Ant 1.10.17
+URL returned 404; the current official Ant 1.10.18 archive was acquired instead
+and matched its published SHA-512. Download URLs, lengths and hashes are in
+`evidence\standalone-tool-downloads.json` beneath the approved workspace.
+
+The exact renderer source archive is 346,964,940 bytes, SHA-256
+`7844FC4BD214147AB219012F57F2458A38D544DC8C0A154AF956882D724AF890`.
+All nine separately pinned chart/configuration files match. The first extraction
+stopped safely at an unhandled symbolic link before writing source files. Review
+found 56 links to regular files within the archive; the successful extraction
+materialized those target bytes as files without Windows symlink privileges.
+`evidence\renderer-source.json` records every such path and target. The original
+archive and failed-attempt evidence remain retained.
+
+The draft chart patch applied only to this fresh extracted tree. Evaluation
+configuration requests Visual Studio 2026, existing Java 21, two build jobs and
+the owned dependency cache. Java support remains enabled; optional Java JUnit
+tests, help and dictionaries are excluded from this component-build evaluation.
+Those exclusions do not replace the native/security or application acceptance
+requirements below. Configuration and compilation results are recorded separately;
+setup success alone is not native acceptance or permission to adopt a runtime.
+
+The first configuration attempt failed because Windows Python uppercased the
+`ProgramFiles(x86)` environment key, which Cygwin Perl reads case-sensitively.
+The launcher now preserves that key's spelling in the child process. The second
+attempt found Visual Studio Community 2026, MSVC 14.51.36231, Windows SDK
+10.0.26100.0 and Java 21.0.9, then stopped because Clang was absent. The existing
+Visual Studio LLVM directory contains formatting/analysis tools, not its compiler.
+
+The official standalone LLVM 22.1.8 Windows x64 archive was therefore extracted
+under the approved `tools` directory. Its 862,053,924 bytes match the release's
+SHA-256 `D96C2CC1736F4EB7FA43CB9BBDF56D93551A9AE0A9AADB9C99C3C3B2B712A234`.
+GPG verified its detached signature using the LLVM-published release key
+`FFB3368980F3E6BB5737145A316C56D064CACBA5`. A native compiler/header probe passed;
+its actual include-prefix output is supplied with explicit compiler paths.
+This does not modify Visual Studio, install LLVM globally or disable the
+renderer graphics/PDF dependencies. Receipts and the probe log are retained in
+the workspace evidence directory. Existing .NET and native Python paths are
+also exposed only to the build child; .NET/NuGet caches are directed into the
+approved workspace.
+
+The third configuration attempt reached the upstream antivirus preflight, which
+creates a harmless EICAR test file and fails when antivirus blocks it. That test
+was blocked. No exclusion or Defender setting was changed. A separate recorded
+patch to the owned `configure.ac` omits only the EICAR/exclusion preflight and
+states that antivirus remains enabled. Its exact diff and before/after source
+hashes are retained as `evidence\antivirus-enabled-build.patch` and `.json`.
+This is a build-environment adjustment; it does not relax the renderer's active
+content policy or count as document isolation evidence.
+
+Configuration attempt 4 passed with no `config.warn` entries. The GitHub source
+archive lacks release-generated `sources.ver`, so that metadata was generated
+from the pinned `AC_INIT` version, 26.2.6.3; no extra source submodules are required
+by this configuration. The first `make -j2 Library_embobj` attempt is underway.
+Dependency downloads use upstream HTTPS locations and configured SHA-256 checks.
+Its starting workspace size was 7,799,144,415 bytes; the launcher measures growth
+and terminates its own build tree if the approved 100 GiB budget is exceeded.
+The build command, process identity, log, footprint observations and eventual
+exit receipt are retained as `evidence\build-01-*`. This is an in-progress build,
+not a compiled or accepted repair. Twelve setup/build script snapshots and their
+hashes are retained under `evidence\bootstrap-scripts`; later launcher revisions
+must retain their own identity before use.
 
 
 Required execution before adoption
@@ -188,4 +262,4 @@ Required execution before adoption
 
 If this proposal needs broader object permissions to render, stop and review the
 design rather than expand the exception to arbitrary embedded content. Other
-acceptance work can continue while build prerequisites await authorization.
+acceptance work can continue while the native build and security checks proceed.
