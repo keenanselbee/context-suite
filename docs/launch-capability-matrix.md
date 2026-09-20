@@ -1,7 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.19**. This update records the
+Matrix revision: **2026-09-19.20**. This update records the
+[audio inventoried-payload protection](audio-distribution.md#inventoried-payload-protection-2026-09-19),
 [mixed Office/image PDF replay on the expanded worker](office-direct-command.md#expanded-combined-worker-replay-2026-09-19),
 [combined HEIF/expanded-audio/Voice command replay and package measurement](combined-expanded-inputs.md),
 [interim Excel chart refusal](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19),

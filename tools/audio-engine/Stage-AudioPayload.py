@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 import pathlib
 import stat
 import zipfile
@@ -86,7 +87,12 @@ def verify(payload):
 
 
 def stage(distribution, payload, voice_distribution=None):
-    target = local_path(payload) / "audio-engine"
+    root = local_path(payload)
+    if not root.is_dir():
+        raise ValueError("Create a fresh isolated payload directory first")
+    if os.path.lexists(root / "payload-inventory.json"):
+        raise ValueError("An inventoried payload cannot be changed; use a fresh stage")
+    target = root / "audio-engine"
     local_path(target)
     if target.exists():
         raise ValueError("Audio payload already exists; use a new stage")

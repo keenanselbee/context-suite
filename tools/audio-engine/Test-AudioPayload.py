@@ -24,10 +24,12 @@ def main():
     scratch.mkdir()
     results = ["Complete production payload and inventory accepted"]
 
-    def refused(name, operation):
+    def refused(name, operation, expected=None):
         try:
             operation()
-        except ValueError:
+        except ValueError as error:
+            if expected is not None and expected not in str(error):
+                raise AssertionError("Unexpected refusal for " + name + ": " + str(error)) from error
             results.append(name)
         else:
             raise AssertionError("Expected refusal: " + name)
@@ -57,6 +59,25 @@ def main():
     inventory.write_text(json.dumps([record]))
     payload.verify_inventory(target)
     results.append("Complete synthetic inventory accepted")
+    before_inventory = inventory.read_bytes()
+    refused("Inventoried payload without audio refuses before bundle access",
+            lambda: payload.stage("not-a-bundle", target, "not-a-voice-bundle"), "An inventoried payload cannot be changed")
+    if set(path.name for path in target.iterdir()) != {test_file.name, inventory.name} or test_file.read_bytes() != b"original" or inventory.read_bytes() != before_inventory:
+        raise AssertionError("Inventoried payload changed during staging refusal")
+    results.append("Inventory and original bytes unchanged after staging refusal")
+    for name, directory in (("malformed-inventory", False), ("directory-inventory", True)):
+        frozen = scratch / name; frozen.mkdir()
+        marker = frozen / "payload-inventory.json"
+        if directory:
+            marker.mkdir()
+        else:
+            marker.write_bytes(b"unparseable retained receipt")
+        refused(name + " refuses before bundle access", lambda: payload.stage("not-a-bundle", frozen),
+                "An inventoried payload cannot be changed")
+        if list(frozen.iterdir()) != [marker] or not directory and marker.read_bytes() != b"unparseable retained receipt":
+            raise AssertionError("Staging changed a retained inventory marker")
+    refused("Missing payload directory refuses before bundle access", lambda: payload.stage("not-a-bundle", scratch / "missing"),
+            "Create a fresh isolated payload directory first")
     test_file.write_bytes(b"modified")
     refused("Changed inventoried bytes refused", lambda: payload.verify_inventory(target))
     test_file.write_bytes(b"original")

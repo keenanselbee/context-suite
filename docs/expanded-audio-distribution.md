@@ -88,6 +88,13 @@ failure. The real production allowlist accepts the explicit candidate and
 rejects it without the candidate switch. Both the original combined inventory
 and the disposable candidate inventory pass again after the checks.
 
+The later [inventoried-payload guard](audio-distribution.md#inventoried-payload-protection-2026-09-19)
+closes the case where a verified package without audio could still accept new
+files. The expanded suite now passes 16 checks in
+`expanded-audio-payload-a45bfc6d5ef142b292b4d3fca47a6abd`, including fresh staging
+and refusal of the reviewed bundle against an already inventoried destination.
+Reserved 1.1.1 remains unchanged.
+
 
 Extracted-kit rebuild
 ---------------------

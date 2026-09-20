@@ -62,6 +62,11 @@ profiles/contexts removed, and independent text/geometry/pixel matches for the
 three ordinary Office PDFs. This confirms chart-free Office conversion remains
 usable after the interim chart guard; D07 charts and the wider Office acceptance
 requirements remain unresolved.
+The [audio inventory guard](audio-distribution.md#inventoried-payload-protection-2026-09-19)
+now prevents standalone staging from adding files to an already inventoried
+payload, even when it has no audio directory. The defect is reproduced on a
+disposable fixture; 27 audio and 16 expanded packaging checks pass after the fix,
+with fresh staging retained and the reserved baseline unchanged.
 
 The [audio performance measurement](audio-performance.md) now passes the declared
 budgets across sixty fresh-worker operations: both stereo rates and all six

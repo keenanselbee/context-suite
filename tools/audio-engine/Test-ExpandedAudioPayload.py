@@ -61,6 +61,18 @@ def main():
     altered('extra-library', lambda path: (path / 'unreviewed.dll').write_bytes(b'extra'))
     altered('mixed-profile', lambda path: shutil.copyfile(baseline / 'audio-engine/ffprobe.exe', path / 'ffprobe.exe'))
     refused('existing-payload', lambda: payload.stage(distribution, stage))
+    frozen = root / 'inventoried-without-audio'; frozen.mkdir()
+    frozen_inventory = frozen / 'payload-inventory.json'; frozen_inventory.write_bytes(b'[]')
+    try:
+        payload.stage(distribution, frozen)
+    except ValueError as error:
+        if 'An inventoried payload cannot be changed' not in str(error):
+            raise AssertionError('Inventoried staging failed for the wrong reason') from error
+        results.append('Reviewed expanded bundle refused before changing an inventoried payload without audio')
+    else:
+        raise AssertionError('Inventoried payload accepted expanded audio additions')
+    if list(frozen.iterdir()) != [frozen_inventory] or frozen_inventory.read_bytes() != b'[]':
+        raise AssertionError('Retained inventory changed during refusal')
     refused('development-payload', lambda: payload.verify(payload.ROOT / 'artifacts/production/Release'))
     # An injected copy failure retains its partial owned candidate and refuses
     # an in-place retry. Nothing is silently promoted or deleted.

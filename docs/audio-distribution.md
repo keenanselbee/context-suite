@@ -29,7 +29,9 @@ The reviewed deployment identities are in
 [payload-candidate.json](../tools/audio-engine/payload-candidate.json).
 [Stage-AudioPayload.py](../tools/audio-engine/Stage-AudioPayload.py) checks these
 against the curated binary selection, exact file membership, sizes and hashes.
-It rejects linked paths, development payload paths and existing audio deployments.
+It rejects linked paths, development payload paths, existing audio deployments
+and any payload with an existing inventory marker. The destination must already
+be a fresh directory; staging cannot add audio to a previously inventoried package.
 The normal recursive production inventory includes every staged audio file.
 
 The production allowlist requires explicit `-AllowAudioCandidate` verification.
@@ -71,6 +73,37 @@ conversion/publication and 20 direct conversion/access checks. Results:
 `.codex-temp/audio-production-worker-10ef36f1.log`. The complete staged inventory
 still matched after execution. The earlier 298 private adapter checks and full
 image regression suites were not rerun for these packaging-only changes.
+
+
+Inventoried payload protection: 2026-09-19
+-----------------------------------------
+
+A disposable reproduction exposed a standalone staging gap: a payload with a
+valid inventory but no `audio-engine` directory accepted all 18 expanded audio
+files. Its unchanged inventory then rejected those new files. Evidence
+`.codex-temp/audio-inventory-repro/1a74f16da51444ad8e3521fcc3cf1195` retains the
+original stager hash, added-file list and expected inventory failure. No reserved
+candidate was used as the mutation target.
+
+The stager now checks for any `payload-inventory.json` directory entry before
+reading either audio or Voice bundles. Existing, malformed or directory-shaped
+markers cannot authorize in-place additions. A missing destination directory
+also refuses before bundle access. Existing deployment and partial-copy guards
+remain. Fresh staging still works; a changed package must be composed separately
+and inventoried afterward under the existing version-reservation policy.
+
+All **27 audio payload checks** pass in
+`.codex-temp/audio-payload-tests-77045972e80f49f8bfca8d0281de6d7d`, including
+unchanged original/inventory bytes after refusal, malformed/directory markers,
+missing destinations, previous integrity/large-inventory tests and real build
+entry-point guards. All **16 expanded payload checks** pass in
+`.codex-temp/expanded-audio-payload-a45bfc6d5ef142b292b4d3fca47a6abd`: a reviewed
+bundle stages and verifies into a fresh directory, but cannot add files to an
+already inventoried empty payload. Existing corruption, profile-mixing,
+interrupted-copy and allowlist controls remain passing. The complete reserved
+1.1.1 inventory is reverified unchanged. No runtime binary, engine pin, installed
+application or version receipt changed; this fixes staging policy rather than
+claiming another media-conversion or release-acceptance pass.
 
 
 Reproduce the review
