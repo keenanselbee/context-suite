@@ -229,15 +229,28 @@ content policy or count as document isolation evidence.
 Configuration attempt 4 passed with no `config.warn` entries. The GitHub source
 archive lacks release-generated `sources.ver`, so that metadata was generated
 from the pinned `AC_INIT` version, 26.2.6.3; no extra source submodules are required
-by this configuration. The first `make -j2 Library_embobj` attempt is underway.
+by this configuration. The `make -j2 Library_embobj` evaluation is underway.
 Dependency downloads use upstream HTTPS locations and configured SHA-256 checks.
 Its starting workspace size was 7,799,144,415 bytes; the launcher measures growth
 and terminates its own build tree if the approved 100 GiB budget is exceeded.
 The build command, process identity, log, footprint observations and eventual
-exit receipt are retained as `evidence\build-01-*`. This is an in-progress build,
-not a compiled or accepted repair. Twelve setup/build script snapshots and their
+exit receipts are retained as `evidence\build-01-*` and `evidence\build-02-*`.
+This is an in-progress build, not a compiled or accepted repair.
+Twelve setup/build script snapshots and their
 hashes are retained under `evidence\bootstrap-scripts`; later launcher revisions
 must retain their own identity before use.
+
+The first attempt produced `skialo.dll` and several core libraries, then was
+deliberately stopped after identifying an unbounded nested MSBuild invocation
+in the upstream Python dependency recipe. Its exit 1 is an operator stop, not
+a compiler failure or disk-budget failure. A narrow owned-source patch changes
+that invocation to `/maxcpucount:1 /p:MultiProcessorCompilation=false`, keeping
+the nested work within one outer Make slot. The original recipe matched the
+pinned source archive before editing. The diff, before/after hashes and reason
+are in `evidence\python-build-worker-limit.patch` and `.json`.
+Attempt 2 resumes from the retained build files with two outer jobs and began
+at 10,934,909,627 workspace bytes. The matching-runtime and acceptance gates
+remain unchanged.
 
 ### Runtime linkage constraint
 
