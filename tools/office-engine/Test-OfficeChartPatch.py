@@ -89,6 +89,19 @@ def main():
     begin = 'OOoEmbeddedObjectFactory::createInstanceInitFromEntry('; end = 'OOoEmbeddedObjectFactory::createInstanceInitNew('
     check(before[before.index(begin):before.index(end)] == after[after.index(begin):after.index(end)],
           'existing-entry and media-descriptor creation retain their refusal bodies')
+    create = after[after.index(end):after.index('OOoEmbeddedObjectFactory::createInstanceUserInit(')]
+    construction = create.index('new OCommonEmbeddedObject(')
+    service_guard = create[create.index('// TRUNCATE_INIT'):construction]
+    check('DisableActiveContent::get()' in service_guard and
+          'bool bChartService = false;' in service_guard and
+          'rProperty.Name == "ObjectDocumentServiceName"' in service_guard and
+          'bChartService = (rProperty.Value >>= aDocumentService)' in service_guard and
+          '&& aDocumentService == u"com.sun.star.chart2.ChartDocument"_ustr;' in service_guard and
+          'if ( !bChartService )\n            throw lang::NoSupportException(' in service_guard,
+          'new-object factory checks the configured chart service before construction')
+    check(create.index('GetObjectPropsByClassID(') < create.index('// TRUNCATE_INIT') < construction <
+          create.index('xPersist->setPersistentEntry(') < create.index('embed::EntryInitModes::TRUNCATE_INIT'),
+          'service refusal precedes the direct model-initialization path')
     roundtrip = stage / 'roundtrip'; shutil.copytree(candidate, roundtrip)
     git('apply', '--reverse', '--directory', roundtrip.relative_to(root).as_posix(), str(patch))
     check(all(digest(roundtrip / name) == value for name, value in expected.items()), 'reverse application restores every original byte')

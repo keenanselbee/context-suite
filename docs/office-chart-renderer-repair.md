@@ -26,6 +26,8 @@ changes three upstream embedded-object files:
 
 - Allow only that exact chart class through the **new-object** factory path.
   Require the internal factory; do not allow a Windows OLE fallback.
+- Require the configured chart document service before constructing the object.
+  Missing, malformed or different service values must fail under the policy.
 - Permit only `RUNNING` for that class and chart service, with no link URL.
   Read the object fields while holding the existing mutex.
 - Keep the existing permission to return objects to `LOADED`. Do not permit
@@ -43,6 +45,17 @@ replacement. The existing document preflight is not a whole-package safety scan.
 Neither turning off the broad control nor trusting the file extension is the
 selected repair.
 
+The second draft closes a source-traced initialization gap in the first draft.
+`setPersistentEntry(TRUNCATE_INIT)` calls `InitNewDocument_Impl()` and sets the
+object to `RUNNING` directly, without calling `changeState`. Checking the service
+only in `changeState` was therefore insufficient: a chart class mapped to a
+different document service could create that model first. The factory now checks
+the service before construction. The unchanged `miscobj.cxx` and `persistence.cxx`
+were verified against the full pinned source archive; their hashes and the
+before/after factory identities are retained in
+`G:\ContextSuite-OfficeBuild\evidence\chart-patch-v2.json`. This is a correction
+to the unadopted proposal, not evidence of an installed-app vulnerability.
+
 
 Static verification
 -------------------
@@ -53,19 +66,31 @@ python -B tools/office-engine/Test-OfficeChartPatch.py `
 ```
 
 The tool validates the exact source snapshot, applies the patch to a fresh owned
-copy, checks the chart's configured factory/service, compares untouched refusal
-function bodies, and reverses a separate copy back to the original bytes. It
+copy, checks the chart's configured factory/service and preconstruction guard
+ordering, compares untouched refusal function bodies, and reverses a separate
+copy back to the original bytes. It
 does not compile, install, change production pins or load the renderer.
 
-Ten checks pass in
+The first draft passed ten checks in
 `.codex-temp/office-chart-patch-4725775edd8d4f008a3716a5a231530c/results.json`.
+The tightened second draft passes twelve checks in
+`.codex-temp/office-chart-patch-7f18d6093e7b4a0b93bb706798609f32/results.json`.
+The additional checks inspect source ordering; they do not execute native code.
 The earlier attempt `office-chart-patch-4244ed3959634eb29941f0905aa08a16`
 failed exact restoration because Git converted upstream LF to CRLF. It remains
 retained. Per-command Git settings now preserve upstream line endings; no global
 Git configuration changed. The commit whitespace check also caught a trailing
 blank context line in the patch; extending that hunk to the next source line
 removed the warning without changing the proposed C++ bytes. The fresh static
-replay above passes. These source checks do not prove native behavior.
+replays above pass. These source checks do not prove native behavior.
+
+Ten initial native Cppunit cases are authored in
+`.codex-temp/office-chart-native-draft-02`; the prior eight-case draft is retained.
+The added cases test wrong factory/service mappings with available-model positive
+controls and configuration restoration. They are not compiled, executed or added
+to the live build graph. The draft README records missing link/import cases,
+interactive-state positive controls, profile/timeout verification and separate
+restricted-host/application acceptance. Drafting is not native acceptance.
 
 
 Build prerequisites and authorization
@@ -234,7 +259,8 @@ Dependency downloads use upstream HTTPS locations and configured SHA-256 checks.
 Its starting workspace size was 7,799,144,415 bytes; the launcher measures growth
 and terminates its own build tree if the approved 100 GiB budget is exceeded.
 The build command, process identity, log, footprint observations and eventual
-exit receipts are retained as `evidence\build-01-*` and `evidence\build-02-*`.
+exit receipts are retained as `evidence\build-01-*`, `evidence\build-02-*` and
+`evidence\build-03-*`.
 This is an in-progress build, not a compiled or accepted repair.
 Twelve setup/build script snapshots and their
 hashes are retained under `evidence\bootstrap-scripts`; later launcher revisions
@@ -248,9 +274,28 @@ that invocation to `/maxcpucount:1 /p:MultiProcessorCompilation=false`, keeping
 the nested work within one outer Make slot. The original recipe matched the
 pinned source archive before editing. The diff, before/after hashes and reason
 are in `evidence\python-build-worker-limit.patch` and `.json`.
-Attempt 2 resumes from the retained build files with two outer jobs and began
-at 10,934,909,627 workspace bytes. The matching-runtime and acceptance gates
-remain unchanged.
+Attempt 2 resumed from the retained build files with two outer jobs and began
+at 10,934,909,627 workspace bytes. It later exited 2 after the bundled Python
+UWP projects hit Visual Studio 2026's STL1011 experimental-coroutine deprecation
+error. The last measured footprint was 11,775,159,577 bytes; the budget was not
+exceeded. Completed artifacts and the terminal receipt remain retained.
+
+A build-only adjustment supplies Microsoft's header-documented
+`_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS` definition only to the
+Python dependency's MSBuild invocation through its compiler environment.
+[Microsoft documents this compiler environment mechanism](https://learn.microsoft.com/en-us/cpp/build/reference/cl-environment-variables?view=msvc-170).
+The exact installed header identity, recipe diff and before/after hashes are in
+`evidence\python-coroutine-compatibility.patch` and `.json`. This acknowledges
+that one deprecated API for the evaluation build; it does not edit Visual Studio,
+suppress diagnostics generally or change renderer security policy. The nested
+one-worker restriction remains in place.
+
+After attempt 2 had exited and no owned compiler processes remained, the revised
+chart patch and the Python compatibility adjustment were applied to the owned
+source tree. Attempt 3 is compiling that revision using retained artifacts,
+two outer jobs and the same 100 GiB monitor. `applied-chart.patch` preserves
+the first draft; `applied-chart-v2.patch` identifies the revision used by attempt
+3. The matching-runtime and acceptance gates remain unchanged.
 
 ### Runtime linkage constraint
 

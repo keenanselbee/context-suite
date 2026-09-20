@@ -53,6 +53,31 @@
          throw lang::NoSupportException(u"Active embedded content is disabled!"_ustr);
      uno::Reference< uno::XInterface > xResult;
  
+@@ -192,6 +196,24 @@
+     uno::Sequence< beans::NamedValue > aObject = m_aConfigHelper.GetObjectPropsByClassID( aClassID );
+     if ( !aObject.hasElements() )
+         throw io::IOException(); // unexpected mimetype of the storage
++
++    // TRUNCATE_INIT creates the model and enters RUNNING without changeState.
++    // Validate the configured service before constructing the embedded object.
++    if ( officecfg::Office::Common::Security::Scripting::DisableActiveContent::get() )
++    {
++        bool bChartService = false;
++        for ( const beans::NamedValue& rProperty : aObject )
++        {
++            if ( rProperty.Name == "ObjectDocumentServiceName" )
++            {
++                OUString aDocumentService;
++                bChartService = (rProperty.Value >>= aDocumentService)
++                    && aDocumentService == u"com.sun.star.chart2.ChartDocument"_ustr;
++            }
++        }
++        if ( !bChartService )
++            throw lang::NoSupportException(u"Unexpected passive chart document service!"_ustr);
++    }
+ 
+     xResult.set( static_cast< ::cppu::OWeakObject* > ( new OCommonEmbeddedObject(
+                                              m_xContext,
 --- a/embeddedobj/source/commonembedding/embedobj.cxx
 +++ b/embeddedobj/source/commonembedding/embedobj.cxx
 @@ -41,6 +41,8 @@
