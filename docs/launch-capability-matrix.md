@@ -1,7 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.13**. This update records the
+Matrix revision: **2026-09-19.14**. This update records the
+[Office conversion timing baseline](office-performance.md),
 [12-megapixel HEIC/AVIF timing baseline](heif-performance.md),
 [optional audio/PDF Analyze timing baseline](optional-analyze-performance.md),
 [PDF batch timing baseline](pdf-performance.md),

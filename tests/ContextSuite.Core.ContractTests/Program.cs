@@ -21,6 +21,12 @@ if (args is ["--asf-metadata"])
     return 0;
 }
 
+if (args is ["--office-performance", "--create-disposable-profiles", var officePerformanceEvidence, var officePerformanceWorker])
+{
+    await OfficePerformanceContracts.RunAsync(officePerformanceEvidence, officePerformanceWorker);
+    return 0;
+}
+
 if (args is ["--heif-performance", var heifPerformanceEvidence, var heifPerformanceWorker, var heifPerformanceFixtures])
 {
     await HeifPerformanceContracts.RunAsync(heifPerformanceEvidence, heifPerformanceWorker, heifPerformanceFixtures);

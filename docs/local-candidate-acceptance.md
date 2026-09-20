@@ -158,6 +158,11 @@ The [HEIC/AVIF timing harness](heif-performance.md) passes the four declared
 isolated combined HEIF payload. Maximum median/maximum are 7.297/8.344 seconds;
 all originals and payload identities are unchanged. This closes the isolated
 image timing baseline, not human review or final expanded-candidate replay.
+The [Office timing harness](office-performance.md) passes fifteen commands against
+the preserved 1.1.1 worker. All three ordinary document types meet their fixed
+45/75-second limits, preserve originals and remove disposable native profiles.
+This closes the isolated Office timing baseline; chart fidelity, typography,
+network enforcement, human review and final expanded-candidate replay stay open.
 
 
 Safety and completion gates

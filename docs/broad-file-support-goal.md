@@ -60,8 +60,13 @@ the fixed 2/1-second limits. The [12-megapixel HEIC/AVIF benchmark](heif-perform
 also passes all four input/target pairs in twenty fresh-worker direct commands:
 the largest median is 7.297 seconds and maximum 8.344 seconds, below the fixed
 10/20-second limits. All copies pass scoped image checks and originals/payloads
-are unchanged. Office timing, human review and final expanded-candidate replay
-remain open.
+are unchanged. The [Office timing benchmark](office-performance.md) passes all
+fifteen fresh-worker commands against the preserved 1.1.1 worker, including
+runtime verification and disposable profile cleanup. Word/Excel/PowerPoint
+medians are 25.618/30.995/23.475 seconds, within the fixed 45-second median and
+75-second maximum limits. All originals and candidate identities are unchanged.
+Human review and final expanded-candidate replay remain open; timing does not
+resolve the separate Office fidelity and isolation gates.
 
 The [PowerPoint D09 layout corpus](powerpoint-layout-acceptance.md) now has an
 actual application export with seven publication/preservation/cleanup checks.
