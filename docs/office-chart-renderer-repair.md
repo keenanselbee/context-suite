@@ -239,6 +239,25 @@ not a compiled or accepted repair. Twelve setup/build script snapshots and their
 hashes are retained under `evidence\bootstrap-scripts`; later launcher revisions
 must retain their own identity before use.
 
+### Runtime linkage constraint
+
+Inspection of the expanded combined candidate's
+`office-engine/runtime/program/services/services.rdb` confirms that
+`EmbeddedObjectCreator`, `OOoEmbeddedObjectFactory` and
+`OOoSpecialEmbeddedObjectFactory` load from `mergedlo.dll`. That payload has no
+standalone `embobj` library. The pinned upstream merged-library list also includes
+`embobj` alongside `chart2`, `comphelper` and `vcl`. The observed registrations and
+file membership are retained in
+`G:\ContextSuite-OfficeBuild\evidence\runtime-linkage-inspection.json`.
+
+The current standalone `Library_embobj` build can establish compilation and
+linkage of the proposed source change, but its output is not a replacement for
+the shipped merged library. Native integration and D07 replay require a matching
+rebuilt runtime with a reviewed configuration and component registry. Do not
+copy a standalone DLL into the current candidate or infer ABI compatibility from
+a successful component build. Keep the reserved candidate and current engine
+identities unchanged throughout this evaluation.
+
 
 Required execution before adoption
 ---------------------------------
