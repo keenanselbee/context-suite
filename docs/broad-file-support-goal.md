@@ -56,8 +56,12 @@ creation has a 2.457-second median/2.495-second maximum. All ten runs retain
 originals and candidate identities. The [optional Analyze benchmark](optional-analyze-performance.md)
 passes all seven audio/PDF cases in 35 fresh sessions and 210 commands; first-call
 medians are at most 0.615 seconds and repeated p95 at most 0.052 seconds under
-the fixed 2/1-second limits. Image and Office timing, human review and final
-expanded-candidate replay remain open.
+the fixed 2/1-second limits. The [12-megapixel HEIC/AVIF benchmark](heif-performance.md)
+also passes all four input/target pairs in twenty fresh-worker direct commands:
+the largest median is 7.297 seconds and maximum 8.344 seconds, below the fixed
+10/20-second limits. All copies pass scoped image checks and originals/payloads
+are unchanged. Office timing, human review and final expanded-candidate replay
+remain open.
 
 The [PowerPoint D09 layout corpus](powerpoint-layout-acceptance.md) now has an
 actual application export with seven publication/preservation/cleanup checks.

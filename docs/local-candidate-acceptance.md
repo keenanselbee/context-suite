@@ -153,6 +153,11 @@ The [optional Analyze benchmark](optional-analyze-performance.md) passes the
 seven declared audio/PDF cases with 35 first calls and 175 repeats against the
 exact 1.1.1 worker, retaining bounded facts and read-only behavior. Final-candidate
 replay and environment/human checks remain separate.
+The [HEIC/AVIF timing harness](heif-performance.md) passes the four declared
+12-megapixel input/target pairs in twenty fresh-worker commands against the
+isolated combined HEIF payload. Maximum median/maximum are 7.297/8.344 seconds;
+all originals and payload identities are unchanged. This closes the isolated
+image timing baseline, not human review or final expanded-candidate replay.
 
 
 Safety and completion gates

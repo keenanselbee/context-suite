@@ -21,6 +21,12 @@ if (args is ["--asf-metadata"])
     return 0;
 }
 
+if (args is ["--heif-performance", var heifPerformanceEvidence, var heifPerformanceWorker, var heifPerformanceFixtures])
+{
+    await HeifPerformanceContracts.RunAsync(heifPerformanceEvidence, heifPerformanceWorker, heifPerformanceFixtures);
+    return 0;
+}
+
 if (args is ["--heif-interop", var interopWorker, var interopFixtures, var interopManifest, var interopRoot])
 {
     await HeifInteropContracts.RunAsync(interopWorker, interopFixtures, interopManifest, interopRoot);
