@@ -49,6 +49,14 @@ All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
 prevents the demonstrated incomplete output while preserving Analyze; it does
 not complete D07, approve the renderer patch or change the required chart scope.
 
+The [combined expanded-input checkpoint](combined-expanded-inputs.md) now packages
+HEIC/AVIF, AIFF/WMA and Windows Voice together with the existing engine families.
+The exact scratch worker passes 211 audio command checks and 659 HEIF checks,
+publishing 47 audio and 104 image copies. The complete inventoried payload is
+1.583 GB and its byte-verified local ZIP is 522.6 MB. This closes the combined
+composition gap, not the full A01-A08 replay, owner footprint acceptance, Office
+fidelity/security or the final fresh versioned candidate.
+
 The [audio performance measurement](audio-performance.md) now passes the declared
 budgets across sixty fresh-worker operations: both stereo rates and all six
 targets, five runs each. The largest median is 4.781 seconds and maximum 4.870

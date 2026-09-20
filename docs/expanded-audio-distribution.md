@@ -115,8 +115,11 @@ evidence. No managed behavior changed in this packaging checkpoint; the prior
 Remaining release work
 ----------------------
 
-Compose the fresh combined candidate with the separately verified Windows Voice
-bundle and replay its actual workers. Source delivery, product/source
+The [combined scratch checkpoint](combined-expanded-inputs.md) now composes the
+expanded bundle and Windows Voice alongside HEIF, PDF, Office and existing image
+engines. Its actual worker passes 211 audio command checks with unchanged inputs
+and payload. The complete suite replay and fresh formal versioned candidate
+remain required. Source delivery, product/source
 terms, modified-library use with runtime identity checks, Microsoft runtime
 eligibility and intended-market review remain separate adoption decisions. Keep
 human fidelity, visible accessibility, performance and installed lifecycle gates

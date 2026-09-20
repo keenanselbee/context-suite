@@ -6,6 +6,10 @@ This contract implements Milestones A-D of the [active goal](broad-file-support-
 It preserves required features and distinguishes automated evidence, human
 acceptance and commercial release gates. The final replay must use one fresh
 combined candidate; reserved 1.1.1 remains the immutable earlier baseline.
+The [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
+passes focused image/audio command replay and package measurement. Its 1.583-GB
+unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance
+and the complete final versioned-candidate replay remain open.
 
 
 Capability freeze

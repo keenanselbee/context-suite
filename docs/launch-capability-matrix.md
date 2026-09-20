@@ -1,7 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.17**. This update records the
+Matrix revision: **2026-09-19.18**. This update records the
+[combined HEIF/expanded-audio/Voice command replay and package measurement](combined-expanded-inputs.md),
 [interim Excel chart refusal](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19),
 [sixteen prepared HEIC/AVIF image comparisons](heif-image-review.md),
 [ten prepared AIFF/WMA listening comparisons](expanded-audio-listening-review.md),

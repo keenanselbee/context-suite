@@ -142,6 +142,12 @@ All sixteen existing non-HEIF production packaging regressions also pass at
 Public source-boundary/theme checks and 173 documentation checks pass. General
 foundation/media suites were not rerun for this packaging-only change.
 
+The later [combined expanded-input checkpoint](combined-expanded-inputs.md)
+retains this decoder alongside expanded AIFF/WMA and Windows Voice. The exact
+combined worker repeats all 659 interoperability checks with 104 copies, and
+its full inventory and compressed archive identities pass. Human image review
+and final versioned-candidate acceptance remain open.
+
 The packaging path closes the former missing-HEIF-stager gap. Fresh formal
 versioned staging and complete cross-engine acceptance remain under the active
 [goal](broad-file-support-goal.md). AIFF/WMA, broader real-file fidelity, declared
