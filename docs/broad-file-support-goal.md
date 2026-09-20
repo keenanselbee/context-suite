@@ -27,6 +27,12 @@ groups, the human media/workflow review and reference-machine performance limits
 It also identifies unresolved Office network-enforcement evidence explicitly.
 Preparing/binding every review fixture, measuring the final candidate and owner
 acceptance remain unfinished; the contract itself is not a passing test result.
+The [document review worksheet](document-review.md) now gathers 58 historical
+authored cases across D01-D09 with original/PDF identities and explicit failure
+labels. Ten worksheet checks pass; all human observations remain unset. D10-D12,
+the remaining PDF appearance controls and final-candidate review remain open.
+Desktop inspection is unavailable because the Computer Use native pipe still
+returns error 2; this does not count as visual or accessibility acceptance.
 The [Office isolation refresh](office-isolation-evaluation.md#correlated-network-observation-2026-09-19)
 reproduces the unresolved IPv4/IPv6 timeout under a zero-capability AppContainer.
 Exact process/time/port diagnostics and fourteen query-plan guards now pass;

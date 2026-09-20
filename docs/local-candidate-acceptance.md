@@ -122,6 +122,10 @@ owner acceptance. Do not reuse old review results for changed media outputs.
   automated image checks. Human visual/display acceptance remains open.
 - **H03 documents:** D01-D12 plus PDF text/vector, scanned, rotated/cropped and
   transparent-image controls. Review actual pages alongside automated checks.
+  The [document worksheet](document-review.md) prepares 58 historical authored
+  cases across D01-D09, preserving five failures and two withheld date PDFs.
+  Real documents, the PDF appearance controls, actual human review and the
+  final-candidate replay remain open.
 - **H04 workflows:** eight scenarios: mixed Analyze with unreadable input; quiet
   image conversion; matte choice; audio quality choice; image-PDF order; Office
   calculation/font choices; cancellation/failure/retry; Settings/License changes
