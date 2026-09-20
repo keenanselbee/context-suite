@@ -56,6 +56,12 @@ publishing 47 audio and 104 image copies. The complete inventoried payload is
 1.583 GB and its byte-verified local ZIP is 522.6 MB. This closes the combined
 composition gap, not the full A01-A08 replay, owner footprint acceptance, Office
 fidelity/security or the final fresh versioned candidate.
+The [mixed Office/image PDF replay](office-direct-command.md#expanded-combined-worker-replay-2026-09-19)
+also passes against that exact scratch worker: 15 command checks, all five native
+profiles/contexts removed, and independent text/geometry/pixel matches for the
+three ordinary Office PDFs. This confirms chart-free Office conversion remains
+usable after the interim chart guard; D07 charts and the wider Office acceptance
+requirements remain unresolved.
 
 The [audio performance measurement](audio-performance.md) now passes the declared
 budgets across sixty fresh-worker operations: both stereo rates and all six

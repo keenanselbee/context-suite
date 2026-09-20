@@ -10,6 +10,10 @@ The [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
 unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance
 and the complete final versioned-candidate replay remain open.
+Its [mixed Office/image PDF command replay](office-direct-command.md#expanded-combined-worker-replay-2026-09-19)
+also passes, including publication retry, five profile retirements and independent
+ordinary-document comparisons. This is a scoped A06/A07 result, not their full
+suite completion or Office chart/layout acceptance.
 
 
 Capability freeze

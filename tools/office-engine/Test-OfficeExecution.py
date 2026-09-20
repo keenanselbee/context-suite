@@ -2,6 +2,7 @@
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -14,6 +15,25 @@ import uuid
 def digest(path):
     with path.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest().upper()
+
+
+def packaged_payload(root, selected, scratch):
+    spec = importlib.util.spec_from_file_location("office_payload_paths", root / "tools/heif-engine/Stage-HeifPayload.py")
+    paths = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(paths)
+    payload = paths.local(selected)
+    if scratch:
+        if not payload.is_relative_to(root / ".codex-temp"):
+            raise ValueError("Use an isolated repository scratch payload.")
+    elif payload.parent != root / "artifacts/production-staging" or uuid.UUID(payload.name).hex != payload.name:
+        raise ValueError("Use an isolated production candidate directory.")
+    for name in ("ContextSuite.Worker.exe", "payload-inventory.json", "office-engine", "pdf-engine", "pdf-renderer"):
+        if not (payload / name).exists():
+            raise ValueError("Packaged Office execution requires the worker, inventory and Office/PDF engines.")
+    flags = ["-AllowAudioCandidate", "-AllowPdfCandidate", "-AllowOfficeCandidate"]
+    if (payload / "heif").is_dir():
+        flags.append("-AllowHeifCandidate")
+    return payload, flags
 
 
 def main():
@@ -33,9 +53,12 @@ def main():
     parser.add_argument("--pdf-engine", type=Path)
     parser.add_argument("--pdf-renderer", type=Path)
     parser.add_argument("--retained-worker", type=Path, help="Reuse a scratch worker after matching its top-level files to the fresh build; readers verify their full pinned runtimes.")
-    parser.add_argument("--production-stage", type=Path, help="Run the actual worker in a verified combined image/audio/PDF/Office production candidate without rebuilding or copying it.")
+    packaged = parser.add_mutually_exclusive_group()
+    packaged.add_argument("--production-stage", type=Path, help="Run the actual worker in a verified combined production candidate without rebuilding or copying it.")
+    packaged.add_argument("--scratch-payload", type=Path, help="Run the actual inventoried scratch payload; this does not establish a formal versioned candidate.")
     parser.add_argument("--fixtures", type=Path)
     args = parser.parse_args()
+    selected_payload = args.production_stage or args.scratch_payload
     if not args.create_disposable_profiles:
         parser.error("Explicit disposable Office profile authorization is required.")
     if sum((args.direct, args.cleanup_only, args.font_review, args.word_font_styles, args.word_layout, args.powerpoint_slides, args.powerpoint_layout, args.excel_dates, args.excel_layout)) > 1:
@@ -44,14 +67,14 @@ def main():
         parser.error("The selected mode creates its own authored fixtures; omit --fixtures.")
     if not (args.word_layout or args.word_font_styles or args.powerpoint_slides or args.powerpoint_layout or args.excel_layout) and args.fixtures is None:
         parser.error("--fixtures is required for the selected scenario.")
-    if args.direct and (args.cleanup_only or args.pdf_validator is None and args.retained_worker is None and args.production_stage is None):
+    if args.direct and (args.cleanup_only or args.pdf_validator is None and args.retained_worker is None and selected_payload is None):
         parser.error("Direct mode requires a combined-image validator and cannot use cleanup-only mode.")
-    if args.retained_worker is None and args.production_stage is None and not all((args.office_engine, args.pdf_engine, args.pdf_renderer)):
+    if args.retained_worker is None and selected_payload is None and not all((args.office_engine, args.pdf_engine, args.pdf_renderer)):
         parser.error("Choose all three engine directories or a retained scratch worker.")
     if args.retained_worker is not None and any((args.office_engine, args.pdf_engine, args.pdf_renderer, args.pdf_validator)):
         parser.error("A retained worker uses its own engine directories; omit separate engines.")
-    if args.production_stage is not None and any((args.retained_worker, args.office_engine, args.pdf_engine, args.pdf_renderer, args.pdf_validator)):
-        parser.error("A production stage uses its own worker and engines; omit separate worker/engine paths.")
+    if selected_payload is not None and any((args.retained_worker, args.office_engine, args.pdf_engine, args.pdf_renderer, args.pdf_validator)):
+        parser.error("A packaged payload uses its own worker and engines; omit separate worker/engine paths.")
     root = Path(__file__).resolve().parents[2]
     fixtures = args.fixtures.resolve(strict=True) if args.fixtures else None
     if fixtures is not None:
@@ -60,13 +83,11 @@ def main():
     stage = root / ".codex-temp/office-execution" / uuid.uuid4().hex
     stage.mkdir(parents=True)
     print("Office execution evidence:", stage, flush=True)
-    production = args.production_stage.absolute() if args.production_stage else None
+    production, flags = packaged_payload(root, selected_payload, args.scratch_payload is not None) if selected_payload else (None, [])
     if production is not None:
-        if production.parent != root / "artifacts/production-staging" or uuid.UUID(production.name).hex != production.name:
-            raise ValueError("Use an isolated production candidate directory.")
         for label, command in (
                 ("production-payload", ["powershell", "-NoProfile", "-File", str(root / "tools/curated-engine/Test-ProductionPayload.ps1"),
-                    "-Payload", str(production), "-AllowAudioCandidate", "-AllowPdfCandidate", "-AllowOfficeCandidate"]),
+                    "-Payload", str(production), *flags]),
                 ("production-inventory", ["python", "-B", str(root / "tools/audio-engine/Stage-AudioPayload.py"),
                     "--payload", str(production), "--inventory"])):
             check = subprocess.run(command, cwd=root, capture_output=True)
@@ -83,7 +104,8 @@ def main():
     font_inputs = {str(path): digest(path) for path in (Path(os.environ["WINDIR"]) / "Fonts" / name for name in ("arial.ttf", "msyh.ttc"))} if args.word_layout else {}
     if production is not None:
         for name in ("tools/curated-engine/Test-ProductionPayload.ps1", "tools/audio-engine/Stage-AudioPayload.py",
-                     "tools/office-engine/Stage-OfficePayload.py", "tools/office-engine/payload-candidate.json"):
+                     "tools/office-engine/Stage-OfficePayload.py", "tools/office-engine/payload-candidate.json",
+                     "tools/heif-engine/Stage-HeifPayload.py", "tools/heif-engine/payload-candidate.json"):
             sources[name] = digest(root / name)
     fixture_source = root / "tools/office-engine/Probe/WordFontStyleFixtures.cs"
     if args.word_layout:
@@ -149,8 +171,8 @@ def main():
     binaries.update({str(path): digest(path) for path in worker_root.rglob("*") if path.is_file()})
     receipt = {"Sources": sources, "Fixtures": originals, "Engines": engines, "Binaries": binaries, "Fonts": font_inputs}
     if production is not None:
-        receipt["ProductionStage"] = str(production)
-        receipt["ProductionInventorySha256"] = digest(production / "payload-inventory.json")
+        receipt["ScratchPayload" if args.scratch_payload else "ProductionStage"] = str(production)
+        receipt["PayloadInventorySha256" if args.scratch_payload else "ProductionInventorySha256"] = digest(production / "payload-inventory.json")
     (stage / "inputs.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
     if any(digest(root / name) != expected for name, expected in sources.items()):
         raise RuntimeError("Source drift before execution.")
@@ -186,6 +208,10 @@ def main():
     report = json.loads((stage / "contracts/results.json").read_text(encoding="utf-8"))
     if not report.get("Passed") or len(report.get("Profiles", [])) != (1 if args.word_layout or args.powerpoint_layout else 4 if args.excel_layout else 3 if args.powerpoint_slides else 15 if args.word_font_styles else 13 if args.font_review else 1 if args.cleanup_only else 5 if args.direct else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
         raise RuntimeError("Missing complete execution and cleanup evidence.")
+    (stage / "verified.json").write_text(json.dumps({"Passed": True, "InputsUnchanged": unchanged,
+        "Worker": str(worker_root / "ContextSuite.Worker.exe"), "PackagedExecution": production is not None,
+        "ScratchPayload": args.scratch_payload is not None, "ProfileCount": len(report["Profiles"]),
+        "PayloadInventorySha256": digest(production / "payload-inventory.json") if production else None}, indent=2) + "\n")
 
 
 if __name__ == "__main__":

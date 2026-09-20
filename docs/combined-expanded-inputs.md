@@ -107,8 +107,11 @@ Remaining acceptance
 
 This closes the missing combined HEIF/expanded-audio/Voice composition evidence.
 It does not close all eight automated families in the
-[local acceptance contract](local-candidate-acceptance.md). Office/PDF regression
-replay against this worker, the full expanded worker/metadata/recovery corpus,
+[local acceptance contract](local-candidate-acceptance.md). The
+[mixed Office/image PDF replay](office-direct-command.md#expanded-combined-worker-replay-2026-09-19)
+now passes 15 direct-command checks, five complete disposable profile retirements
+and independent text/geometry/pixel comparison of the three normal Office PDFs.
+The remaining Office/PDF regression suites, full expanded worker/metadata/recovery corpus,
 human media/workflow/environment review, final performance replay and a fresh
 formal versioned candidate remain required.
 

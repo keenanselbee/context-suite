@@ -1,9 +1,11 @@
 Office Direct PDF Command
 =========================
 
-Status: application integration and isolated execution verified; visible
-acceptance remains pending. Optional Office engines remain
-outside the reserved production candidate.
+Status: application integration and isolated execution verified, including the
+expanded combined scratch worker on 2026-09-19. Visible acceptance remains
+pending. Office engines are included in reserved candidate 1.1.1 and the later
+[combined expanded-input payload](combined-expanded-inputs.md); final versioned
+acceptance remains incomplete.
 
 Convert > PDF routes `.docx`, `.xlsx` and `.pptx` selections to document preflight.
 Extensions select the workflow; they do not establish conversion eligibility.
@@ -11,8 +13,9 @@ The application checks the exact content family and variant, source size and
 fingerprint before admitting work. Mislabeled, malformed and unsupported
 documents receive their own result while other eligible files can proceed.
 Legacy, macro-enabled, template and OpenDocument conversion remain outside this
-implemented variant set; broader launch coverage still requires a scope decision
-or implementation and fidelity evidence.
+implemented variant set. The owner selected ordinary modern DOCX/XLSX/PPTX only
+for the first release; the [document design](document-design.md) records that
+scope and the remaining fidelity requirements.
 
 Each Office document produces its own validated PDF copy. Images in the same
 selection form one combined PDF, with a focused page-order review for multiple
@@ -26,7 +29,7 @@ For spreadsheets, the focused **Spreadsheet formulas** window asks for saved
 values or local recalculation. Neither policy is automatically selected. Cancel
 or closing the window cancels unfinished work before this command executes.
 Retries retain the selected calculation policy and use current output settings.
-This prompt does not settle the owner's still-pending preferred customer default.
+The owner selected retaining this explicit choice with no silent default.
 Word retains final text with tracked-change markup hidden under the fixed export
 policy. PowerPoint retains the previously verified visibility policy.
 
@@ -140,6 +143,63 @@ command or the new spreadsheet window through the application dispatcher.
 Visible sizing, keyboard/Escape and screen-reader delivery of the spreadsheet
 choice window have not yet been accepted. Theme/DPI, actual Office command
 shutdown/restart,
-installed shell, broader document fidelity and fresh expanded packaging remain
+installed shell, broader document fidelity and complete final-candidate replay remain
 separate gates. Automated command tests are not visual acceptance or commercial
 release clearance.
+
+
+Expanded combined worker replay: 2026-09-19
+------------------------------------------
+
+`Test-OfficeExecution.py` now accepts `--scratch-payload` as an alternative to
+`--production-stage`. Both modes verify the full engine allowlist and inventory,
+include HEIF verification when present, and execute the supplied worker directly
+without rebuilding or copying it. The scratch mode is restricted to repository
+scratch and explicitly identified in the final receipt; it does not turn the
+payload into a formal versioned candidate. Separate worker/engine overrides
+cannot be mixed with either packaged mode. Disposable native profile use still
+requires its explicit opt-in argument.
+
+```powershell
+python -B .\tools\office-engine\Test-OfficeExecution.py `
+  --create-disposable-profiles --direct `
+  --scratch-payload '<verified combined scratch payload>' `
+  --fixtures '<retained ordinary Office fixture directory>'
+```
+
+The owner's existing disposable-profile authorization covers this run. Evidence
+`.codex-temp/office-execution/36e3d5fd591740899dd9763805983ea0` passes all **15 direct
+execution checks** against the exact worker in
+`combined-inputs/e549e5e3509942b4b8ec8e0d6545f93a/combined` under scratch. The initial
+mixed selection publishes three Office PDFs plus one combined image PDF with
+one access admission and the explicit spreadsheet/image-order choices. Existing
+output names are preserved. An injected Word publication failure produces no
+published file, remains retryable, and a double retry queues exactly one new
+attempt and copy. Originals retain bytes and timestamps. All five actual Office
+exports retire their context directories, native profile folders and registry
+mappings; no worker remains. The complete payload inventory and recorded inputs
+are unchanged afterward.
+
+Independent inspection `inspection-441a1dc285534743a4500d03c7b115ac` under that
+execution directory passes qpdf structure, authored text, declared geometry and
+exact retained-control pixels for the three normal Office PDFs: two Word pages,
+one Excel page and two PowerPoint pages. The source Open XML parts match the
+earlier reference fixtures byte-for-byte. Control PDF identities match the
+previous accepted comparison under `office-isolation/1a880d93be994b9a9a3467bb77aa1ba3/cs41`.
+This is a regression comparison for these ordinary documents, not broad Office
+fidelity or proof of actual page ordering for distinct images in the mixed PDF.
+
+The contract host builds with zero warnings/errors. Eleven selection guards at
+`.codex-temp/office-execution-guards/8a9628e207eb434e998b18bd362fe642` verify exact
+scratch selection, HEIF allowlist selection, path boundaries, required members,
+explicit profile opt-in and incompatible arguments before native work. Run them
+with `python -B .\tools\office-engine\Test-OfficeExecutionGuards.py`.
+The harness takes 138.56 seconds for the five Office exports and its checks;
+this is not a new performance sample or replacement for the declared benchmark.
+The previous 4,439 foundation result was not rerun for this test-tool change.
+
+The [Excel chart restriction](excel-layout-acceptance.md) remains in force; ordinary
+chart-free Excel conversion passes this replay. D07 charts, D09 typography,
+affirmative network enforcement, real documents, visible UI and full A01-A08
+acceptance remain open. Successful disposable profile cleanup is not proof of
+network denial, and hidden command execution is not human usability acceptance.
