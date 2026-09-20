@@ -1,8 +1,8 @@
 Office Chart Renderer Repair
 ============================
 
-Status: draft source patch prepared and statically checked; not compiled,
-executed, adopted or accepted. The [chart-loss regression](excel-layout-acceptance.md)
+Status: revised source patch compiled and linked in the isolated Windows build;
+native behavior not executed, adopted or accepted. The [chart-loss regression](excel-layout-acceptance.md)
 still fails on the current candidate. This proposal keeps chart fidelity in the
 [active goal](broad-file-support-goal.md) and keeps `DisableActiveContent=true`.
 
@@ -84,8 +84,8 @@ blank context line in the patch; extending that hunk to the next source line
 removed the warning without changing the proposed C++ bytes. The fresh static
 replays above pass. These source checks do not prove native behavior.
 
-Thirteen initial native Cppunit cases are authored in
-`.codex-temp/office-chart-native-draft-03`; the prior eight- and ten-case drafts
+Fifteen native Cppunit cases are authored in
+`.codex-temp/office-chart-native-draft-04`; the prior eight-, ten- and thirteen-case drafts
 are retained. They cover wrong factory/service mappings, configuration restoration,
 existing-entry preservation, user initialization and in-memory chart media import,
 with available-model positive controls. The existing-entry router deliberately
@@ -94,10 +94,17 @@ refusal of runnable/interactive states, unchanged `content.xml` bytes and succes
 unrestricted loading through both entry points. This is not a whole-package byte
 comparison or a hostile binary-OLE test.
 
-These cases are not compiled, executed or added to the live build graph. The
-draft README records missing link/binary-OLE cases, interactive-state positive
-controls, profile/timeout verification and separate restricted-host/application
-acceptance. Source inspection confirms the Cppunit recipe recreates its `.user`
+The latest cases add linked-chart creation and user-initialization controls:
+the authored local chart must run when unrestricted, then refuse `RUNNING` with
+the policy restored while preserving its fixture bytes. They use an exact owned
+profile URL; the runner must also verify the filesystem paths before execution.
+The fifteen cases are now added only to the owned evaluation source tree. Their
+compile-only target is running with `gb_SUPPRESS_TESTS=1`, which skips the test
+execution recipe. The source diff, original module file and hashes are retained
+in `G:\ContextSuite-OfficeBuild\evidence\native-tests-01-preparation`.
+They have not executed. Hostile binary-OLE cases, interactive-state positive
+controls, full runner boundary checks and separate restricted-host/application
+acceptance remain open. Source inspection confirms the Cppunit recipe recreates its `.user`
 profile and may recreate a `.core` directory; resolve both inside the owned
 workspace and preserve earlier evidence before a repeat. Drafting and source
 inspection are not native acceptance.
@@ -264,14 +271,14 @@ content policy or count as document isolation evidence.
 Configuration attempt 4 passed with no `config.warn` entries. The GitHub source
 archive lacks release-generated `sources.ver`, so that metadata was generated
 from the pinned `AC_INIT` version, 26.2.6.3; no extra source submodules are required
-by this configuration. The `make -j2 Library_embobj` evaluation is underway.
+by this configuration. The `make -j2 Library_embobj` evaluation has completed.
 Dependency downloads use upstream HTTPS locations and configured SHA-256 checks.
 Its starting workspace size was 7,799,144,415 bytes; the launcher measures growth
 and terminates its own build tree if the approved 100 GiB budget is exceeded.
 The build command, process identity, log, footprint observations and eventual
 exit receipts are retained as `evidence\build-01-*`, `evidence\build-02-*` and
 later numbered attempts.
-This is an in-progress build, not a compiled or accepted repair.
+The fourth attempt compiled the component; this is not an accepted repair.
 Twelve setup/build script snapshots and their
 hashes are retained under `evidence\bootstrap-scripts`; later launcher revisions
 must retain their own identity before use.
@@ -322,7 +329,7 @@ Exact recipe changes and probe identities are in
 `evidence\python-compiler-worker-limit.patch` and `.json`; the prior Python log
 is `evidence\build03-python-build.log`.
 
-Attempt 4 is building with the revised chart patch, retained artifacts, two outer
+Attempt 4 built with the revised chart patch, retained artifacts, two outer
 jobs, one nested compiler worker and the same 100 GiB monitor. The live Python
 parent-shell invocation supplies `_CL_` with `/MP1`, and its MSBuild child command
 contains `/maxcpucount:1`; this observation is retained in
@@ -331,6 +338,42 @@ trace. Python then completed in 2 minutes 52.55 seconds with 10 warnings and zer
 errors, and its dependency completion stamp is present. `applied-chart.patch`
 preserves the first draft; `applied-chart-v2.patch` identifies the revision used
 by attempts 3 and 4. The matching-runtime and acceptance gates remain unchanged.
+
+### Component build and runner checks (2026-09-20)
+
+Attempt 4 exited 0 after 1,916.51 seconds without exceeding the space budget.
+Its last footprint observation was 14,733,955,543 bytes. The resulting x64
+`embobj.dll` is 401,408 bytes with SHA-256
+`0E1FD05F81AC1388DD2C5713795CB6BBBB2B197C8D8D55917EE51EF8A8FC344B`.
+The DLL, component registration and receipt are preserved under
+`G:\ContextSuite-OfficeBuild\evidence\build04-component`. The receipt binds the
+actual three patched sources, configuration, build adjustments and log. This
+establishes compilation and linkage of patch v2, not chart rendering or security.
+HarfBuzz's Ninja 1.13.2 log also confirms joining GNU Make's two-slot Windows
+jobserver; the observation is retained in `evidence\build04-harfbuzz-jobserver.json`.
+
+The authored test runner compiled with zero warnings and errors. Its apphost
+passes all sixteen existing Office process-lifetime contracts, covering literal
+arguments, diagnostics, timeouts, cancellation, descendants, owner crash and
+cleanup. `evidence\chart-runner-process-contracts.json` records the exact apphost
+identity and output. These checks exercise the harness, not chart code. The
+pinned Cppunit source confirms the expected `OK (15)` success-line format; that
+count will still require binding to the actual compiled suite and complete
+matching runtime. Runtime inventory, command/path refusal checks and pre-gbuild
+profile verification remain prerequisites to native execution. The runner is a
+process-lifetime boundary, not a filesystem or network sandbox.
+
+The runner's first .NET SDK startup unexpectedly added its workspace tools
+directory to the user PATH and printed a development-certificate message.
+Inspection found only development certificates dated July; without a pre-build
+store snapshot this is not a complete before/after certificate comparison. No
+certificates were changed or removed. The exact workspace PATH entry was removed,
+with all other entries, ordering and registry value type preserved and readback
+verified. Evidence is in `evidence\runner-dotnet-certificate-observation.json`
+and `evidence\runner-dotnet-path-restoration.json`. Subsequent build/test child
+environments explicitly set `DOTNET_GENERATE_ASPNET_CERTIFICATE=false` and
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`; the older first-use skip variable was
+insufficient. No machine PATH change or installed-app update was made.
 
 ### Runtime linkage constraint
 
