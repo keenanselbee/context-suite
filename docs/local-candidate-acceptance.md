@@ -132,6 +132,11 @@ owner acceptance. Do not reuse old review results for changed media outputs.
   and copy/overwrite preferences. Check names, originals, status, keyboard focus,
   Tab/Shift+Tab and Escape using simulated access and disposable files.
 
+The [manual workflow harness](manual-workflow-review.md) prepares eight reviewed
+command selections plus standalone Settings for these groups. Fresh profiles use
+copied fixtures and TEST-ONLY access. Headless admission passes; visible H04
+results remain pending while desktop control is unavailable.
+
 Record light/dark, 100%/150%/200% scaling, two-monitor movement and screen-reader
 announcements separately. Unavailable checks stay explicitly unverified release
 gates. Hidden-window checks or earlier Tab behavior do not prove these results.

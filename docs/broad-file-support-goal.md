@@ -35,6 +35,10 @@ all 62 entries. The scan is synthetic. All human observations remain unset;
 D10-D12 and final-candidate review remain open.
 Desktop inspection is unavailable because the Computer Use native pipe still
 returns error 2; this does not count as visual or accessibility acceptance.
+The [manual workflow setup](manual-workflow-review.md) now accepts reviewed
+command selections and validates the expanded combined payload. Eight authored
+selections pass isolated copy/request admission; fifteen harness guards pass.
+H04 remains unaccepted until the workflows are actually operated and reviewed.
 The [Office isolation refresh](office-isolation-evaluation.md#correlated-network-observation-2026-09-19)
 reproduces the unresolved IPv4/IPv6 timeout under a zero-capability AppContainer.
 Exact process/time/port diagnostics and fourteen query-plan guards now pass;

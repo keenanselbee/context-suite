@@ -22,6 +22,8 @@ internal static class Program
             return 0;
         }
         if (args is ["--license-workflow-contracts"]) return LicenseWorkflowContracts.RunAsync().GetAwaiter().GetResult();
+        if (args is ["--manual-workflow-contracts"]) return ManualWorkflowContracts.Run();
+        if (args is ["--verify-manual-selection", var reviewedManifest]) return ManualWorkflowContracts.VerifySelection(reviewedManifest);
         var licenseWorkflow = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_LICENSE_WORKFLOW") == "1";
         if (!(licenseWorkflow && args.Length == 0) && (args.Length != 2 || args[0] != "--activation-file")) return 2;
         var configuredRoot = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_ROOT");
@@ -29,6 +31,9 @@ internal static class Program
         if (configuredRoot is null || worker is null) return 2;
         var root = Path.GetFullPath(configuredRoot);
         if (!Directory.Exists(root) || !root.Contains(Path.DirectorySeparatorChar + ".codex-temp" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) return 2;
+        var manualManifest = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_MANUAL_SELECTION");
+        if (manualManifest is not null && (!licenseWorkflow || args.Length != 2)) return 2;
+        using var manualSelection = manualManifest is null ? null : ManualWorkflowSelection.Read(manualManifest);
         using var lifecycle = Environment.GetEnvironmentVariable("CONTEXTSUITE_TEST_OFFICE_LIFECYCLE") is { } lifecycleMode
             ? new OfficeAppLifecycleContracts(root, lifecycleMode) : null;
         lifecycle?.Prepare(Path.GetFullPath(worker));
@@ -42,7 +47,8 @@ internal static class Program
                 if (!string.Equals(Path.GetDirectoryName(path), directory, StringComparison.OrdinalIgnoreCase) ||
                     Path.GetExtension(path) != ".request" || !Guid.TryParseExact(Path.GetFileNameWithoutExtension(path), "D", out var id)) return 2;
                 Directory.CreateDirectory(directory);
-                File.WriteAllText(path, $"ContextSuiteActivation/1\nrequestId={id:D}\noperation=convert\naction=tga\npathCount=1\npath={Path.Combine(root, "fixture.png")}\n");
+                File.WriteAllText(path, manualSelection?.CreateRequest(root, id) ??
+                    $"ContextSuiteActivation/1\nrequestId={id:D}\noperation=convert\naction=tga\npathCount=1\npath={Path.Combine(root, "fixture.png")}\n");
             }
         }
         var app = new App(new ApplicationPaths(Path.Combine(root, "settings.json"), Path.Combine(root, "Access", "trial.json"),
