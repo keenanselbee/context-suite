@@ -339,6 +339,11 @@ if (args is ["--expanded-audio-listening-pack", var expandedReviewPack, var expa
     await ExpandedAudioListeningContracts.RunAsync(expandedReviewPack, expandedReviewWorker, expandedReviewManifest);
     return 0;
 }
+if (args is ["--office-chart-refusal", var chartWorker, var chartEvidence])
+{
+    await OfficeChartRefusalContracts.RunAsync(chartWorker, chartEvidence);
+    return 0;
+}
 
 if (args.Length == 3 && args[0] == "--audio-listening-pack")
 {

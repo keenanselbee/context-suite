@@ -35,6 +35,38 @@ internal static partial class DocumentAnalysisContracts
             Directory.CreateDirectory(Path.GetDirectoryName(path)!); File.WriteAllText(path, "non-executable presence marker");
         }
         var denied = new DirectOfficeAccess(); var prompts = 0; var started = 0; var completed = 0;
+        var chartsDirectory = Path.Combine(stage, "charts");
+        var chartFiles = ExcelLayoutFixtures.Create(chartsDirectory).Select(name => Path.Combine(chartsDirectory, name)).ToArray();
+        var chartBytes = chartFiles.ToDictionary(path => path, File.ReadAllBytes);
+        var chartTimes = chartFiles.ToDictionary(path => path, File.GetLastWriteTimeUtc);
+        var chartAccess = new DirectOfficeAccess();
+        await using (var vm = Create("charts", chartAccess))
+        {
+            var chartPrompts = 0;
+            vm.OfficeCalculationRequested += _ => { chartPrompts++; return Task.FromResult<string?>("cached"); };
+            vm.Admit(Request([.. chartFiles])); await vm.WaitForIdleAsync();
+            check(vm.Rows.Count == 4 && vm.Rows.All(row => row.Result.State == OperationState.Unsupported &&
+                row.Result.Message.Contains("contains charts") && row.Result.Message.Contains("Export the PDF from Excel") &&
+                row.Result.Message.Contains("Analyze remains available")), "Office charts: all four known chart-loss workbooks have actionable direct refusals");
+            check(chartAccess.Admissions == 0 && chartPrompts == 0 && !Directory.Exists(Path.Combine(stage, "charts", "contexts")) &&
+                !Directory.Exists(Path.Combine(stage, "charts", "publications")), "Office charts: refusal precedes calculation, access admission, contexts and publication");
+        }
+        foreach (var file in chartFiles)
+        foreach (var mode in new[] { "cached", "recalculate" })
+        {
+            var context = Path.Combine(stage, "chart-context-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                using var prepared = await OfficeContextPreparation.CreateAsync(context, Path.Combine(Path.GetDirectoryName(worker)!, "office-engine"),
+                    file, "xlsx", mode, default, createContextRoot: true);
+                prepared.RetireUnstarted();
+                check(false, "Office charts: context preparation accepted a known chart-loss workbook");
+            }
+            catch (InvalidDataException error)
+            { check(error.Message.Contains("contains charts") && !Directory.Exists(context), "Office charts: preparation independently refuses before creating a context: " + mode); }
+        }
+        check(chartFiles.All(path => File.ReadAllBytes(path).SequenceEqual(chartBytes[path]) && File.GetLastWriteTimeUtc(path) == chartTimes[path]),
+            "Office charts: application and preparation refusals preserve original bytes and timestamps");
         await using (var vm = Create("denied", denied))
         {
             vm.OfficeCalculationRequested += _ => { prompts++; return Task.FromResult<string?>("recalculate"); };

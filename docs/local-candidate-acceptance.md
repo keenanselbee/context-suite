@@ -13,6 +13,9 @@ Capability freeze
 
 The [launch matrix](launch-capability-matrix.md) owns fixed operations/targets.
 These are admission boundaries, not proof of fidelity for every admitted file.
+The current [Excel chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
+temporarily refuses chart-bearing or incompletely inspected XLSX packages. D07
+still requires preserved charts; refusal is interim protection, not acceptance.
 
 | Family | Required candidate scope | Preservation boundary |
 | --- | --- | --- |

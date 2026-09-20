@@ -44,6 +44,14 @@ early-1900 date results remain blocked, and correcting the renderer itself is
 deferred. This accepts the documented refusal policy, not incorrect output or
 unverified date variants. Broader content/font/layout acceptance remains required.
 
+The current restricted renderer also drops native Excel charts. The shared
+conversion preflight now refuses XLSX chart declarations/relationships and
+incomplete bounded chart inspection before rendering, with guidance to export
+from Excel. Analyze remains available. This conservative interim guard includes
+hidden or unused chart declarations; it does not satisfy the required
+[D07 chart-fidelity acceptance](excel-layout-acceptance.md) or relax active-content
+restrictions. Chart-free admission is not a general fidelity or safety guarantee.
+
 Required analysis
 -----------------
 

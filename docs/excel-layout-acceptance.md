@@ -1,8 +1,10 @@
 Excel Layout Acceptance
 =======================
 
-Status: application checks pass; D07 fidelity fails because the current security
-policy suppresses charts. A paired diagnostic isolates the policy conflict.
+Status: D07 fidelity remains failed because the current security policy suppresses
+charts. The current shared preflight refuses affected XLSX files as an interim
+protection. Earlier publication checks and the paired diagnostic remain evidence
+of the unresolved renderer defect, not current permission to publish these files.
 This is one part of the
 [local acceptance contract](local-candidate-acceptance.md), not general Excel
 fidelity or human acceptance.
@@ -124,8 +126,9 @@ a pinned draft patch that keeps the active-content policy enabled and narrowly
 permits new internal charts to run. Static checks pass; native compilation,
 enforcement and fidelity remain unverified. The production candidate is unchanged.
 
-The current `OfficeSourcePreflight` checks document identity/variant and selected
-date/font/slide facts; it explicitly is not an active-content safety scan. Its
+The current `OfficeSourcePreflight` checks document identity/variant, selected
+date/font/slide facts and the interim Excel chart restriction; it explicitly is
+not an active-content safety scan. Its
 successful result cannot justify enabling embedded content. A repair must retain
 or replace the existing enforcement with verified protection, rather than infer
 that an ordinary DOCX/XLSX/PPTX suffix makes the whole package passive.
@@ -133,3 +136,52 @@ that an ordinary DOCX/XLSX/PPTX suffix makes the whole package passive.
 To reproduce only the policy diagnostic, add `--chart-policy-control` to the
 inspection command above. It generates its own passive workbook and keeps both
 local profiles and outputs as evidence; it accepts no customer document path.
+
+
+Interim chart refusal: 2026-09-19
+--------------------------------
+
+`ExcelChartInspection` uses the existing bounded ZIP reader to inspect content
+types and relationship parts. Ordinary DrawingML and newer chartEx content
+declarations, transitional/strict chart relationships and chartEx relationships
+refuse conversion, including hidden, external or unused declarations. Filenames
+alone do not identify charts. The guard does not open external targets or extract
+parts. It stops after positive chart evidence; otherwise it must finish inspection
+within 128 relationship parts, 256 KiB per part, 1 MiB aggregate expanded XML and
+the existing ZIP read/directory limits. Malformed, ambiguous, DTD-bearing,
+over-depth or over-budget inspection refuses conversion instead of asserting
+that the workbook is chart-free. Cancellation propagates and source leases remain
+open and unchanged. This is a scoped corruption guard, not a complete package or
+embedded-content audit; other Office chart/embedded-object families still need
+separate evidence.
+
+The application, context preparation and private worker all use the shared
+preflight. Direct commands explain that charts cannot currently be preserved,
+suggest exporting from Excel, and retain Analyze. Refusal precedes calculation
+prompts, access admission and publication. Neither calculation mode bypasses it.
+Existing chart-free preflight controls retain their earlier behavior.
+
+Run the dedicated real-worker refusal check from the repository:
+
+```powershell
+python .\tools\office-engine\Test-OfficeChartRefusal.py
+```
+
+It builds fresh scratch managed binaries without a native Office runtime and
+submits the four original D07 fixtures in both calculation modes. Evidence
+`.codex-temp/office-chart-refusal/6b52265351be48cea739b8bb9f29972c` passes
+28 checks: eight worker refusals, unchanged originals/snapshots, no output/native
+profile creation, worker reuse and cleanup. A chart-free control passes preflight
+and reaches the deliberately missing-runtime failure, distinguishing chart
+refusal from an unrelated broken context. Binary hashes remain unchanged.
+Both Release builds have zero warnings/errors. Foundation evidence
+`.codex-temp/office-chart-foundation-bde7e0e2568d49e5865422ec3f59b48c` passes
+4,439 contracts, including direct application refusal, independent preparation
+refusal, declaration/relationship variants and malformed/limit controls.
+
+The original positive `--office-excel-layout` suite and independent chart oracle
+are unchanged. They cannot pass under this interim restriction. D07 remains
+required: restore passive-chart rendering with verified enforcement, then remove
+or narrow this guard based on new fidelity evidence and replay the original
+acceptance. No reserved candidate, installation or native security policy was
+changed by this checkpoint. Final combined-candidate replay remains outstanding.

@@ -40,6 +40,16 @@ public sealed record OfficeSourcePreflight(FileAnalysis Analysis, string? Format
         if (format == "pptx" && analysis.Facts.Any(fact => fact.Id == "document.slides-visible" &&
                 fact.Availability == FactAvailability.Explicit && fact.Integer == 0))
             return new(analysis, format, "This presentation has no visible slides to export. Add or unhide a slide in PowerPoint, then try again. Analyze remains available.");
+        // The current restricted renderer drops native Excel charts. Refuse
+        // affected or incompletely inspected packages before either calculation mode.
+        if (format == "xlsx")
+        {
+            var charts = await ExcelChartInspection.ReadAsync(input, cancellationToken);
+            if (charts.HasCharts)
+                return new(analysis, format, "This workbook contains charts that Context Suite cannot currently preserve. Export the PDF from Excel instead. Analyze remains available.");
+            if (!charts.Complete)
+                return new(analysis, format, "Context Suite could not finish checking this workbook for charts. Export the PDF from Excel instead. Analyze remains available.");
+        }
         // Stop the demonstrated date corruption before either calculation mode.
         // Other dates/formulas and incomplete inspection still need separate
         // fidelity evidence; absence of this refusal is not a rendering permit.

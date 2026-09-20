@@ -13,6 +13,7 @@ internal static partial class DocumentAnalysisContracts
     public static async Task RunAsync(string scratch, Action<bool, string> check)
     {
         await OfficeSourcePreflightContractsAsync(check);
+        await ExcelChartContractsAsync(check);
         await StoredExcelDatesAsync(scratch, check);
         await WordBodyFontsAsync(check);
         await OfficeWordFontStyleContracts.SourcesAsync(scratch, check);

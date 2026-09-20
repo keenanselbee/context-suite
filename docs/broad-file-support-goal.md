@@ -43,6 +43,11 @@ The [renderer repair proposal](office-chart-renderer-repair.md) preserves a draf
 against the exact upstream build with ten static source checks. It is not built
 or adopted; missing native-build prerequisites require separate installation
 authorization, and the full fidelity/security replay remains outstanding.
+The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
+now refuses affected XLSX files or incomplete chart inspection before publication.
+All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
+prevents the demonstrated incomplete output while preserving Analyze; it does
+not complete D07, approve the renderer patch or change the required chart scope.
 
 The [audio performance measurement](audio-performance.md) now passes the declared
 budgets across sixty fresh-worker operations: both stereo rates and all six
