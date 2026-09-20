@@ -6,6 +6,11 @@ the actual Analyze batch coordinator, without displaying a window or starting
 optional media workers. It is a baseline for regression review, not complete
 launch performance acceptance.
 
+The later [optional audio/PDF baseline](optional-analyze-performance.md) passes
+seven cases in 35 fresh application/worker sessions and 210 commands against
+preserved candidate 1.1.1. It measures the optional-worker latency omitted from
+the historical runs below; final expanded-candidate and visible acceptance remain.
+
 Run `powershell -NoProfile -File tools/Benchmark-Analyze.ps1` from the repository.
 The wrapper builds the Release contract host and creates new disposable fixtures
 under `.codex-temp/analyze-benchmark/<guid>`. It records Windows version, CPU,

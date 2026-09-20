@@ -325,6 +325,8 @@ if (args is ["--office-word-layout", var wordLayoutWorker, var wordLayoutEvidenc
     await OfficeWordLayoutContracts.RunAsync(wordLayoutWorker, wordLayoutEvidence);
     return 0;
 }
+if (args is ["--optional-analyze-performance", var optionalAnalyzeSpecification])
+    return await OptionalAnalyzeBenchmark.RunAsync(optionalAnalyzeSpecification);
 if (args is ["--pdf-performance", var pdfPerformanceEvidence, var pdfPerformanceWorker])
 {
     await PdfPerformanceContracts.RunAsync(pdfPerformanceEvidence, pdfPerformanceWorker);

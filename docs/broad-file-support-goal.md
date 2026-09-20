@@ -53,8 +53,11 @@ the final combined-candidate replay. The [PDF batch benchmark](pdf-performance.m
 also passes both declared workloads using the exact preserved 1.1.1 worker:
 ten-page PNG export has a 3.646-second median/4.049-second maximum; ten-image PDF
 creation has a 2.457-second median/2.495-second maximum. All ten runs retain
-originals and candidate identities. Image, Office and optional Analyze timing,
-human review and final expanded-candidate replay remain open.
+originals and candidate identities. The [optional Analyze benchmark](optional-analyze-performance.md)
+passes all seven audio/PDF cases in 35 fresh sessions and 210 commands; first-call
+medians are at most 0.615 seconds and repeated p95 at most 0.052 seconds under
+the fixed 2/1-second limits. Image and Office timing, human review and final
+expanded-candidate replay remain open.
 
 The [PowerPoint D09 layout corpus](powerpoint-layout-acceptance.md) now has an
 actual application export with seven publication/preservation/cleanup checks.

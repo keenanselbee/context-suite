@@ -1,7 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.11**. This update records the
+Matrix revision: **2026-09-19.12**. This update records the
+[optional audio/PDF Analyze timing baseline](optional-analyze-performance.md),
 [PDF batch timing baseline](pdf-performance.md),
 [Word multilingual/anchored-image automated acceptance](word-layout-acceptance.md),
 [PowerPoint layout evidence and rounding-policy gate](powerpoint-layout-acceptance.md)
@@ -321,7 +322,9 @@ available version.
 The [current Analyze benchmark](analyze-performance.md#maximum-selection-refresh-2026-09-16)
 passes authored 256-path and maximum 4,096-path selections with per-file failures,
 preserved originals and bounded inspection. It adds large-selection evidence;
-visible responsiveness, optional-worker latency and true cold storage remain open.
+visible responsiveness and true cold storage remain open. The separate
+[optional-worker latency baseline](optional-analyze-performance.md) now passes
+seven generated audio/PDF cases; final expanded-candidate replay remains required.
 
 Completion still requires:
 

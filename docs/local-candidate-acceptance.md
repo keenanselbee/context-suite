@@ -149,6 +149,10 @@ The [PDF timing harness](pdf-performance.md) passes both ten-page/image workload
 in ten fresh-worker operations against preserved candidate 1.1.1. All fifty PNG
 and five PDF copies pass the scoped completeness checks; original and candidate
 identities remain unchanged. Final expanded-candidate replay remains required.
+The [optional Analyze benchmark](optional-analyze-performance.md) passes the
+seven declared audio/PDF cases with 35 first calls and 175 repeats against the
+exact 1.1.1 worker, retaining bounded facts and read-only behavior. Final-candidate
+replay and environment/human checks remain separate.
 
 
 Safety and completion gates
