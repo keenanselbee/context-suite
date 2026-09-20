@@ -1,7 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.9**. This update records the
+Matrix revision: **2026-09-19.10**. This update records the
+[Word multilingual/anchored-image automated acceptance](word-layout-acceptance.md),
 [PowerPoint layout evidence and rounding-policy gate](powerpoint-layout-acceptance.md)
 alongside the [Excel chart-loss blocker](excel-layout-acceptance.md) under the
 [finite acceptance contract](local-candidate-acceptance.md). Optional HEIC/AVIF scratch

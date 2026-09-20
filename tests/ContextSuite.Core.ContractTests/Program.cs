@@ -320,6 +320,11 @@ if (args is ["--office-powerpoint-layout", var presentationWorker, var presentat
     await OfficePowerPointSlideContracts.RunAsync(presentationWorker, presentationEvidence, layout: true);
     return 0;
 }
+if (args is ["--office-word-layout", var wordLayoutWorker, var wordLayoutEvidence])
+{
+    await OfficeWordLayoutContracts.RunAsync(wordLayoutWorker, wordLayoutEvidence);
+    return 0;
+}
 if (args.Length == 3 && args[0] == "--audio-performance")
 {
     await AudioPerformanceContracts.RunAsync(args[1], args[2]);

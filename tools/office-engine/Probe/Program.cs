@@ -54,6 +54,8 @@ if (args is ["--inspect-powerpoint-publications", var slideReport, var slideQpdf
     return await OfficePowerPointInspection.RunAsync(slideReport, slideQpdf, slidePdfium);
 if (args is ["--inspect-powerpoint-layout", var presentationReport, var presentationQpdf, var presentationPdfium])
     return await OfficePowerPointInspection.RunAsync(presentationReport, presentationQpdf, presentationPdfium, layout: true);
+if (args is ["--inspect-word-layout", var wordLayoutReport, var wordLayoutQpdf, var wordLayoutPdfium])
+    return await OfficeWordLayoutInspection.RunAsync(wordLayoutReport, wordLayoutQpdf, wordLayoutPdfium);
 if (args is ["--inspect-word-publications", var wordReport, var wordQpdf, var wordPdfium])
     return await OfficeWordRevisionInspection.RunAsync(wordReport, wordQpdf, wordPdfium);
 if (args is ["--preflight-isolation-fixtures", var preflightFixtures])

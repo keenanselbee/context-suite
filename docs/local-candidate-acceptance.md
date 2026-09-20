@@ -67,7 +67,7 @@ expected text/page order and independent geometry before scoring export.
 | D01 | Authored two-page Word: table, first/running headers, numbered footer, Latin Unicode | Exact text/two pages and expected element placement |
 | D02 | Existing fifteen Word font/style controls | Existing text/geometry/font/pixel controls and correct font prompt selection |
 | D03 | Existing Word revision/paragraph controls | Final text only, retained source revisions and case-specific spacing allowance |
-| D04 | Word combining accents, RTL/CJK and anchored image | Exact characters/direction/placement; actual glyph/font-program inspection |
+| D04 | Word combining accents, RTL/CJK and anchored image | [Authored export and independent inspection pass](word-layout-acceptance.md): exact characters/direction/placement, glyph/font programs and eight negative controls; human/final-candidate review remains |
 | D05 | Existing five Excel print controls plus ordinary workbook | Areas, breaks, repeated titles, hidden cells/sheets, values and page order |
 | D06 | Existing calculation/date controls under both modes | Correct values where admitted; known errors blocked; no external refresh |
 | D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Authored layout checks](excel-layout-acceptance.md) currently fail chart preservation; retain chart/value association, no clipping, correct pagination and every capacity page |
@@ -82,8 +82,9 @@ pagination under the owner's decision. The existing 0.071-point move-fixture
 allowance is not a blanket tolerance. Missing text, wrong dates, substituted
 fonts, clipping or changed pagination fail. A per-document Save choice accepts
 that explicitly reported font substitution; an empty callback is not proof of
-complete style/glyph fidelity. D04/D07/D09 and real documents still need complete
-evidence; simpler controls do not establish their acceptance.
+complete style/glyph fidelity. D04 has authored automated evidence; D07/D09 and
+real documents still need complete automated evidence. Human and final-candidate
+review remain required; simpler controls do not establish their acceptance.
 
 
 Human media and workflows

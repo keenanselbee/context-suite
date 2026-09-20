@@ -11,6 +11,7 @@
     <Compile Include="..\..\tools\office-engine\Probe\PowerPointSlideFixtures.cs" Link="Fixtures\PowerPointSlideFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\PowerPointLayoutFixtures.cs" Link="Fixtures\PowerPointLayoutFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\WordFontStyleFixtures.cs" Link="Fixtures\WordFontStyleFixtures.cs" />
+    <Compile Include="..\..\tools\office-engine\Probe\WordLayoutFixtures.cs" Link="Fixtures\WordLayoutFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\WordRevisionFixtures.cs" Link="Fixtures\WordRevisionFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\WordRevisionStructureFixtures.cs" Link="Fixtures\WordRevisionStructureFixtures.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\FileAnalysisReader.cs" Link="Runtime\FileAnalysisReader.cs" />

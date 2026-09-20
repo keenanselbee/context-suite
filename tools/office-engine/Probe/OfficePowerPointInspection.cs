@@ -61,8 +61,8 @@ internal static class OfficePowerPointInspection
             using var parsed = JsonDocument.Parse(rendered.Output);
             var render = parsed.RootElement.Clone();
             var pages = render.GetProperty("pages").EnumerateArray().ToArray();
-            var glyphs = new List<PowerPointLayoutOracle.Glyph[]>();
-            var text = PdfTextReader.Read(output, layout ? (pdfPage, page) => glyphs.Add(PowerPointLayoutOracle.ReadGlyphs(pdfPage, page)) : null);
+            var glyphs = new List<OfficeLayoutGlyphs.Glyph[]>();
+            var text = PdfTextReader.Read(output, layout ? (pdfPage, page) => glyphs.Add(OfficeLayoutGlyphs.Read(pdfPage, page)) : null);
             File.WriteAllText(Path.Combine(target, "text.json"), JsonSerializer.Serialize(text));
             var geometry = pages.Length == order.Length && pages.All(page =>
                 Math.Abs(page.GetProperty("widthPoints").GetDouble() - 720) < .1 &&

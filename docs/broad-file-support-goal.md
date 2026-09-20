@@ -60,6 +60,14 @@ predeclared 0.01-point tolerance for authored 20-point text. D09 stays unaccepte
 pending the explicit rounding-policy decision; human/real-document review and
 the separate Office chart/network gates remain open.
 
+The [Word D04 multilingual/anchored-image corpus](word-layout-acceptance.md) now
+passes seven application checks and independent character, direction, placement,
+embedded-font and image checks, with eight negative controls. A corrected
+logical-start fixture preserves the intended RTL right-margin expectation and
+all original tolerances; the initial failed fixture observation is retained.
+This closes authored automated D04 evidence, not owner/real-document acceptance
+or the remaining Office chart/network gates.
+
 ### Required input additions
 
 | Addition | Required result | Acceptance boundary |

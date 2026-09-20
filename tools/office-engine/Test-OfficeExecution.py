@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -21,6 +22,7 @@ def main():
     parser.add_argument("--cleanup-only", action="store_true", help="Exercise one obstructed profile cleanup and retry without launching Office.")
     parser.add_argument("--direct", action="store_true", help="Exercise mixed image/Office PDF commands and Office retry through the application view model.")
     parser.add_argument("--font-review", action="store_true", help="Exercise real missing-font reports, per-file review, refusal and cleanup.")
+    parser.add_argument("--word-layout", action="store_true", help="Export an authored combining-accent, CJK/RTL and anchored-image Word document.")
     parser.add_argument("--word-font-styles", action="store_true", help="Export fifteen authored style/theme controls and verify source selections, review signals and cleanup.")
     parser.add_argument("--powerpoint-slides", action="store_true", help="Export three authored slide-order, hidden-slide and speaker-note cases through the application.")
     parser.add_argument("--powerpoint-layout", action="store_true", help="Export an authored image, diagram/table and mixed-typography presentation.")
@@ -36,11 +38,11 @@ def main():
     args = parser.parse_args()
     if not args.create_disposable_profiles:
         parser.error("Explicit disposable Office profile authorization is required.")
-    if sum((args.direct, args.cleanup_only, args.font_review, args.word_font_styles, args.powerpoint_slides, args.powerpoint_layout, args.excel_dates, args.excel_layout)) > 1:
+    if sum((args.direct, args.cleanup_only, args.font_review, args.word_font_styles, args.word_layout, args.powerpoint_slides, args.powerpoint_layout, args.excel_dates, args.excel_layout)) > 1:
         parser.error("Choose only one execution scenario.")
-    if (args.word_font_styles or args.powerpoint_slides or args.powerpoint_layout or args.excel_layout) and args.fixtures is not None:
+    if (args.word_layout or args.word_font_styles or args.powerpoint_slides or args.powerpoint_layout or args.excel_layout) and args.fixtures is not None:
         parser.error("The selected mode creates its own authored fixtures; omit --fixtures.")
-    if not (args.word_font_styles or args.powerpoint_slides or args.powerpoint_layout or args.excel_layout) and args.fixtures is None:
+    if not (args.word_layout or args.word_font_styles or args.powerpoint_slides or args.powerpoint_layout or args.excel_layout) and args.fixtures is None:
         parser.error("--fixtures is required for the selected scenario.")
     if args.direct and (args.cleanup_only or args.pdf_validator is None and args.retained_worker is None and args.production_stage is None):
         parser.error("Direct mode requires a combined-image validator and cannot use cleanup-only mode.")
@@ -78,11 +80,15 @@ def main():
     paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json", "tools/Require-Private.targets")
                  if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
+    font_inputs = {str(path): digest(path) for path in (Path(os.environ["WINDIR"]) / "Fonts" / name for name in ("arial.ttf", "msyh.ttc"))} if args.word_layout else {}
     if production is not None:
         for name in ("tools/curated-engine/Test-ProductionPayload.ps1", "tools/audio-engine/Stage-AudioPayload.py",
                      "tools/office-engine/Stage-OfficePayload.py", "tools/office-engine/payload-candidate.json"):
             sources[name] = digest(root / name)
     fixture_source = root / "tools/office-engine/Probe/WordFontStyleFixtures.cs"
+    if args.word_layout:
+        path = root / "tools/office-engine/Probe/WordLayoutFixtures.cs"
+        sources[str(path.relative_to(root))] = digest(path)
     if args.word_font_styles:
         sources[str(fixture_source.relative_to(root))] = digest(fixture_source)
     if args.excel_layout:
@@ -141,22 +147,23 @@ def main():
     host = root / "artifacts/managed/bin/ContextSuite.Core.ContractTests/Release/net10.0-windows/ContextSuite.Core.ContractTests.exe"
     binaries = {str(path): digest(path) for path in host.parent.iterdir() if path.is_file()}
     binaries.update({str(path): digest(path) for path in worker_root.rglob("*") if path.is_file()})
-    receipt = {"Sources": sources, "Fixtures": originals, "Engines": engines, "Binaries": binaries}
+    receipt = {"Sources": sources, "Fixtures": originals, "Engines": engines, "Binaries": binaries, "Fonts": font_inputs}
     if production is not None:
         receipt["ProductionStage"] = str(production)
         receipt["ProductionInventorySha256"] = digest(production / "payload-inventory.json")
     (stage / "inputs.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
     if any(digest(root / name) != expected for name, expected in sources.items()):
         raise RuntimeError("Source drift before execution.")
-    print("Starting one disposable PowerPoint layout export." if args.powerpoint_layout else
+    print("Starting one disposable Word multilingual layout export." if args.word_layout else
+          "Starting one disposable PowerPoint layout export." if args.powerpoint_layout else
           "Starting four disposable Excel layout exports." if args.excel_layout else
           "Starting three disposable PowerPoint slide exports." if args.powerpoint_slides else
           "Starting fifteen disposable Word font-style exports." if args.word_font_styles else
           "Starting thirteen disposable font-review exports." if args.font_review else "Starting one disposable profile cleanup/retry check." if args.cleanup_only else
           "Starting five disposable direct-command exports." if args.direct else "Starting six disposable Office exports and application publication checks.", flush=True)
     with (stage / "stdout.log").open("wb") as output, (stage / "stderr.log").open("wb") as error:
-        arguments = [str(host), "--office-powerpoint-layout" if args.powerpoint_layout else "--office-excel-layout" if args.excel_layout else "--office-powerpoint-slides" if args.powerpoint_slides else "--office-word-font-styles",
-                     str(worker_root / "ContextSuite.Worker.exe"), str(stage / "contracts")] if (args.word_font_styles or args.powerpoint_slides or args.powerpoint_layout or args.excel_layout) else [
+        arguments = [str(host), "--office-word-layout" if args.word_layout else "--office-powerpoint-layout" if args.powerpoint_layout else "--office-excel-layout" if args.excel_layout else "--office-powerpoint-slides" if args.powerpoint_slides else "--office-word-font-styles",
+                     str(worker_root / "ContextSuite.Worker.exe"), str(stage / "contracts")] if (args.word_layout or args.word_font_styles or args.powerpoint_slides or args.powerpoint_layout or args.excel_layout) else [
             str(host), "--office-excel-dates" if args.excel_dates else "--office-font-execution" if args.font_review else "--office-execution-cleanup" if args.cleanup_only else "--office-direct-execution" if args.direct else "--office-execution",
             str(worker_root / "ContextSuite.Worker.exe"), str(fixtures), str(stage / "contracts")]
         started = time.perf_counter()
@@ -165,7 +172,7 @@ def main():
     (stage / "timing.json").write_text(json.dumps({"ApplicationSeconds": elapsed,
         "Scope": "Application harness wall time, including authored fixtures and checks; excludes worker staging and final input hashing."}))
     unchanged = all(digest(root / name) == expected for name, expected in sources.items()) and all(
-        digest(Path(name)) == expected for group in (originals, engines, binaries) for name, expected in group.items())
+        digest(Path(name)) == expected for group in (originals, engines, binaries, font_inputs) for name, expected in group.items())
     (stage / "exit.json").write_text(json.dumps({"ExitCode": run.returncode, "InputsUnchanged": unchanged}), encoding="utf-8")
     print((stage / "stdout.log").read_text(encoding="utf-8", errors="replace"), end="", flush=True)
     if run.returncode or not unchanged:
@@ -177,7 +184,7 @@ def main():
         if check.returncode:
             raise RuntimeError("Production inventory changed during Office execution.")
     report = json.loads((stage / "contracts/results.json").read_text(encoding="utf-8"))
-    if not report.get("Passed") or len(report.get("Profiles", [])) != (1 if args.powerpoint_layout else 4 if args.excel_layout else 3 if args.powerpoint_slides else 15 if args.word_font_styles else 13 if args.font_review else 1 if args.cleanup_only else 5 if args.direct else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
+    if not report.get("Passed") or len(report.get("Profiles", [])) != (1 if args.word_layout or args.powerpoint_layout else 4 if args.excel_layout else 3 if args.powerpoint_slides else 15 if args.word_font_styles else 13 if args.font_review else 1 if args.cleanup_only else 5 if args.direct else 6) or not all(profile["Removed"] and profile["ContextRetired"] for profile in report["Profiles"]):
         raise RuntimeError("Missing complete execution and cleanup evidence.")
 
 
