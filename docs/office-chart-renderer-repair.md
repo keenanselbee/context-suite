@@ -84,13 +84,23 @@ blank context line in the patch; extending that hunk to the next source line
 removed the warning without changing the proposed C++ bytes. The fresh static
 replays above pass. These source checks do not prove native behavior.
 
-Ten initial native Cppunit cases are authored in
-`.codex-temp/office-chart-native-draft-02`; the prior eight-case draft is retained.
-The added cases test wrong factory/service mappings with available-model positive
-controls and configuration restoration. They are not compiled, executed or added
-to the live build graph. The draft README records missing link/import cases,
-interactive-state positive controls, profile/timeout verification and separate
-restricted-host/application acceptance. Drafting is not native acceptance.
+Thirteen initial native Cppunit cases are authored in
+`.codex-temp/office-chart-native-draft-03`; the prior eight- and ten-case drafts
+are retained. They cover wrong factory/service mappings, configuration restoration,
+existing-entry preservation, user initialization and in-memory chart media import,
+with available-model positive controls. The existing-entry router deliberately
+returns an inert placeholder: its test requires no model, only the `LOADED` state,
+refusal of runnable/interactive states, unchanged `content.xml` bytes and successful
+unrestricted loading through both entry points. This is not a whole-package byte
+comparison or a hostile binary-OLE test.
+
+These cases are not compiled, executed or added to the live build graph. The
+draft README records missing link/binary-OLE cases, interactive-state positive
+controls, profile/timeout verification and separate restricted-host/application
+acceptance. Source inspection confirms the Cppunit recipe recreates its `.user`
+profile and may recreate a `.core` directory; resolve both inside the owned
+workspace and preserve earlier evidence before a repeat. Drafting and source
+inspection are not native acceptance.
 
 
 Build prerequisites and authorization
@@ -313,8 +323,12 @@ Exact recipe changes and probe identities are in
 is `evidence\build03-python-build.log`.
 
 Attempt 4 is building with the revised chart patch, retained artifacts, two outer
-jobs, one nested compiler worker and the same 100 GiB monitor. Actual subsequent
-Python invocation evidence remains to be inspected. `applied-chart.patch`
+jobs, one nested compiler worker and the same 100 GiB monitor. The live Python
+parent-shell invocation supplies `_CL_` with `/MP1`, and its MSBuild child command
+contains `/maxcpucount:1`; this observation is retained in
+`evidence\build04-python-worker-invocation.json`. It is not a continuous process
+trace. Python then completed in 2 minutes 52.55 seconds with 10 warnings and zero
+errors, and its dependency completion stamp is present. `applied-chart.patch`
 preserves the first draft; `applied-chart-v2.patch` identifies the revision used
 by attempts 3 and 4. The matching-runtime and acceptance gates remain unchanged.
 
