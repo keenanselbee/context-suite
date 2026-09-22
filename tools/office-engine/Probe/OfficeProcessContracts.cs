@@ -76,6 +76,10 @@ internal static class OfficeProcessContracts
             catch (Exception ex) when (expected.IsInstanceOfType(ex))
             {
                 Check(timer.Elapsed < TimeSpan.FromSeconds(10), mode + " refuses and cleans up without waiting for the 60-second deadline");
+                if (mode == "exit")
+                    Check(ex.Message.Contains("stdout:\nfailed stdout control", StringComparison.Ordinal) &&
+                        ex.Message.Contains("stderr:\ndeliberate exit 74", StringComparison.Ordinal),
+                        "nonzero exit preserves both bounded diagnostic streams");
                 reports.Add(new { Mode = mode, Error = ex.GetType().Name, Milliseconds = timer.ElapsedMilliseconds });
             }
         }
@@ -130,7 +134,7 @@ internal static class OfficeProcessContracts
             Console.Write(JsonSerializer.Serialize(new { Arguments = arguments, Environment = Environment.GetEnvironmentVariable("CONTEXTSUITE_PROCESS_CONTROL"), Input = await Console.In.ReadToEndAsync() }));
             Console.Error.Write("stderr control"); return 0;
         }
-        if (mode == "exit") { Console.Error.Write("deliberate exit 74"); return 74; }
+        if (mode == "exit") { Console.Write("failed stdout control"); Console.Error.Write("deliberate exit 74"); return 74; }
         if (mode is "spam" or "unicode-spam")
         {
             Console.OutputEncoding = new System.Text.UTF8Encoding(false);

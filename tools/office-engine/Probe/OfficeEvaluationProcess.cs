@@ -75,7 +75,7 @@ internal static class OfficeEvaluationProcess
             await Task.WhenAll(readers);
             deadline.Token.ThrowIfCancellationRequested();
             Require(QueryExtendedInformation(job, 9, out var usage, (uint)Marshal.SizeOf<ExtendedLimits>(), IntPtr.Zero));
-            if (process.ExitCode != 0) throw new IOException($"Evaluation child exited {process.ExitCode}; process limit bytes {limits.ProcessMemory}, peak process bytes {usage.PeakProcessMemory}, peak job bytes {usage.PeakJobMemory}: {await errors}");
+            if (process.ExitCode != 0) throw new IOException($"Evaluation child exited {process.ExitCode}; process limit bytes {limits.ProcessMemory}, peak process bytes {usage.PeakProcessMemory}, peak job bytes {usage.PeakJobMemory}\nstdout:\n{await output}\nstderr:\n{await errors}");
             var accounting = await Empty(job);
             return new(await output, await errors, process.Id, accounting.TotalProcesses, accounting.ActiveProcesses, timer.ElapsedMilliseconds,
                 (ulong)usage.PeakProcessMemory, (ulong)usage.PeakJobMemory, (ulong)limits.ProcessMemory);
