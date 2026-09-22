@@ -102,6 +102,16 @@ The fifteen cases are now added only to the owned evaluation source tree. Their
 compile-only target is running with `gb_SUPPRESS_TESTS=1`, which skips the test
 execution recipe. The source diff, original module file and hashes are retained
 in `G:\ContextSuite-OfficeBuild\evidence\native-tests-01-preparation`.
+That first test build exited 2 after 5,557.13 seconds on a C2665 type error in
+the authored profile-prefix assertion; no native cases executed. Its last
+footprint observation was 28,819,933,491 bytes, below the approved budget.
+On 2026-09-22 the owner authorized correction and incremental resumption.
+Draft 05 materializes the concatenated prefix as `OUString` before passing it
+to the string-view overload. The same path assertion and all fifteen cases
+remain; the production chart patch is unchanged. Before/after bytes, hashes
+and the narrow diff are in `evidence\native-tests-02-preparation`. Attempt 2
+resumes the existing build with two jobs, the same space monitor and test
+execution suppressed. Compilation success remains unproven until it finishes.
 They have not executed. Hostile binary-OLE cases, interactive-state positive
 controls, full runner boundary checks and separate restricted-host/application
 acceptance remain open. Source inspection confirms the Cppunit recipe recreates its `.user`
