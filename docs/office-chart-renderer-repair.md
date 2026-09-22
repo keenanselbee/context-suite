@@ -1,8 +1,9 @@
 Office Chart Renderer Repair
 ============================
 
-Status: revised source patch compiled and linked in the isolated Windows build;
-native behavior not executed, adopted or accepted. The [chart-loss regression](excel-layout-acceptance.md)
+Status: revised source patch compiled and linked; fifteen authored native cases
+pass in the isolated Windows build. PDF fidelity, restricted-host security and
+adoption remain pending. The [chart-loss regression](excel-layout-acceptance.md)
 still fails on the current candidate. This proposal keeps chart fidelity in the
 [active goal](broad-file-support-goal.md) and keeps `DisableActiveContent=true`.
 
@@ -35,9 +36,8 @@ changes three upstream embedded-object files:
 
 Existing-entry, media-descriptor and user-init import paths stay blocked.
 Windows OLE factories, DDE, external-link update paths, macro controls and Python
-controls are unchanged. This describes the proposed source change, not tested
-runtime enforcement. A forged class ID, unexpected factory/service, linked chart
-or indirect activation must still fail in the eventual native tests.
+controls are unchanged. The native cases below exercise the chart exception;
+they do not establish enforcement of every unchanged path or the restricted host.
 
 The upstream setting blocks both OLE and DDE. The separate `DisableOLEAutomation`
 setting only controls its automation service entry point; it is not an equivalent
@@ -98,9 +98,9 @@ The latest cases add linked-chart creation and user-initialization controls:
 the authored local chart must run when unrestricted, then refuse `RUNNING` with
 the policy restored while preserving its fixture bytes. They use an exact owned
 profile URL; the runner must also verify the filesystem paths before execution.
-The fifteen cases are now added only to the owned evaluation source tree. Their
-compile-only target is running with `gb_SUPPRESS_TESTS=1`, which skips the test
-execution recipe. The source diff, original module file and hashes are retained
+The fifteen cases were added only to the owned evaluation source tree. Their
+compile-only target used `gb_SUPPRESS_TESTS=1`, which skips the test execution
+recipe. The source diff, original module file and hashes are retained
 in `G:\ContextSuite-OfficeBuild\evidence\native-tests-01-preparation`.
 That first test build exited 2 after 5,557.13 seconds on a C2665 type error in
 the authored profile-prefix assertion; no native cases executed. Its last
@@ -110,10 +110,9 @@ Draft 05 materializes the concatenated prefix as `OUString` before passing it
 to the string-view overload. The same path assertion and all fifteen cases
 remain; the production chart patch is unchanged. Before/after bytes, hashes
 and the narrow diff are in `evidence\native-tests-02-preparation`. Attempt 2
-resumes the existing build with two jobs, the same space monitor and test
-execution suppressed. Compilation success remains unproven until it finishes.
-They have not executed. Hostile binary-OLE cases, interactive-state positive
-controls, full runner boundary checks and separate restricted-host/application
+completed with two jobs, the same space monitor and test execution suppressed;
+the subsequent native execution is recorded below. Hostile binary-OLE cases,
+interactive-state positive controls and separate restricted-host/application
 acceptance remain open. Source inspection confirms the Cppunit recipe recreates its `.user`
 profile and may recreate a `.core` directory; resolve both inside the owned
 workspace and preserve earlier evidence before a repeat. Drafting and source
@@ -384,6 +383,53 @@ and `evidence\runner-dotnet-path-restoration.json`. Subsequent build/test child
 environments explicitly set `DOTNET_GENERATE_ASPNET_CERTIFICATE=false` and
 `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`; the older first-use skip variable was
 insufficient. No machine PATH change or installed-app update was made.
+
+### Native compilation and execution (2026-09-22)
+
+Native-test build attempt 2 exited 0 after 2,666.87 seconds. Its last workspace
+measurement was 37,557,262,593 bytes, below the 100 GiB allowance. The compiled
+draft-05 test DLL is 304,128 bytes, SHA-256
+`61CD0A86DB135E0BAA7A9A96DE088D5C27C3AD5EF64F8DA19EF157AA0E200668`.
+`evidence\native-tests-build-02-artifacts.json` binds its source, object, DLL and
+build log. The chart component retains the build-04 identity above.
+
+The reviewed runner verifies the command, exact fifteen case names, fresh owned
+profile and complete membership/hashes of seven runtime/template directories.
+Ten command/inventory guard checks and ten synthetic transcript checks pass.
+The revised process helper retains both bounded diagnostic streams on nonzero
+exit; all seventeen process-lifetime checks pass through runner 07, built with
+zero warnings/errors. These results are in `evidence\native-runner06-guards-8f27cbd296704a4c97ae4f3356529fad`
+and `evidence\chart-runner07-process-contracts.json`. Reparse checks were inspected;
+a live junction refusal test was not performed.
+
+Initial launches exited before any case ran. The isolated `cppunittester`
+exception handler now prints its caught startup exception to stderr as well as
+the upstream logging path. This diagnostic-only source change and executable
+rebuild are retained in `evidence\native-startup-diagnostic-01` and
+`evidence\native-startup-build-01-exit.json`. It exposed the missing `SRC_ROOT`
+environment variable. The successful launcher supplies that and
+`WORKDIR_FOR_BUILD` from the recorded source/build locations. Earlier failed
+receipts and profiles remain retained; they are not chart-case failures.
+
+`evidence\native-chart-run-05\result.json` records all fifteen named cases
+starting and completing, `OK (15)`, and exit 0. The run took 343 ms, observed two
+processes and left zero active children after cleanup. Peak job memory was
+34,697,216 bytes. The bounded runner uses a 120-second deadline, eight-process
+limit and 1 GiB process/job memory limits. It is not a file/network sandbox.
+
+The cases cover restricted native-chart creation and allowed state transitions,
+wrong class/factory/service refusals, existing-entry inert preservation, linked
+chart refusal and blocked media/user initialization with available-model
+controls. Interactive-state refusals pass, but unrestricted interactive positive
+controls with an authored client site remain needed; missing client support
+must not masquerade as policy enforcement. Hostile binary OLE is also untested.
+
+Post-run verification confirms all 5,175 inventoried runtime files, totaling
+634,077,326 bytes, are unchanged. `evidence\native-chart-run-05-postverification.json`
+also binds the managed runner, apphost, sources, launcher, command manifest,
+diagnostic patch and retained successful profile. No installed runtime or
+production engine identity changed. Actual PDF chart rendering, full D07 replay,
+Word/PowerPoint charts and restricted-host security remain separate open gates.
 
 ### Runtime linkage constraint
 

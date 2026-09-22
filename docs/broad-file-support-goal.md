@@ -34,8 +34,9 @@ The next completion steps are:
    proposed passive-chart repair, settle D09 font-size rounding, and obtain
    affirmative restricted-process network evidence. The native chart-build setup
    was approved on 2026-09-20 in `G:\ContextSuite-OfficeBuild`; the patched
-   component now compiles and links. Native tests and a matching runtime are
-   being built; behavior and acceptance remain pending. Network collection needs the
+   component and native test runtime now compile and link, and all fifteen
+   authored native cases pass. PDF rendering and restricted-host acceptance
+   remain pending. Network collection needs the
    pending attended administrator step. Chart refusal remains interim protection.
 2. Select the approved real DOCX/XLSX/PPTX and three real recordings, finish their
    fixed comparisons, and obtain H01-H04 human results. Prepared worksheets and
@@ -77,11 +78,12 @@ remove chart fidelity from the goal or mistake the diagnostic for a product fix.
 The [renderer repair proposal](office-chart-renderer-repair.md) preserves a draft
 against the exact upstream build. Its tightened second draft passes twelve
 static source checks and now compiles and links as an isolated x64 component.
-The owner-approved Cygwin/MSVC setup uses no WSL. A fifteen-case native test target
-is building with test execution suppressed; the bounded runner separately passes
-sixteen process-lifetime checks. The existing candidate uses a merged runtime,
-so the component cannot be substituted into it. A matching rebuilt runtime,
-native behavior tests and full fidelity/security replay remain outstanding.
+The owner-approved Cygwin/MSVC setup uses no WSL. All fifteen authored native
+cases pass on the matching isolated test runtime; the bounded runner separately
+passes seventeen process-lifetime checks. Runtime bytes are verified unchanged
+after execution. The existing candidate uses a merged runtime, so the component
+cannot be substituted into it. Actual PDF export, remaining hostile-object and
+interactive positive controls, and full fidelity/security replay are outstanding.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
