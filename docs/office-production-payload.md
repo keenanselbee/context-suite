@@ -1,10 +1,10 @@
 Office Production Candidate Payload
 ===================================
 
-Status: explicit isolated staging and verification implemented; 33 scratch
-packaging checks pass. [Combined candidate 1.1.1](combined-office-candidate.md)
-now passes a fresh formal build and inventory verification. Integrated workflow
-acceptance, redistribution review and release adoption remain open.
+Status: the source-built application integration selection passes 39 scratch
+packaging checks. [Combined candidate 1.1.1](combined-office-candidate.md) retains
+its historical MSI-based engine and is unchanged. A fresh combined formal
+candidate, integrated acceptance, redistribution review and adoption remain open.
 
 The build can now include the independently prepared Office candidate alongside
 the image/audio/PDF engines. This is an optional packaging path for the existing
@@ -16,22 +16,28 @@ remain separate requirements under the [launch matrix](launch-capability-matrix.
 Pinned input and layout
 ----------------------
 
-[The selection record](../tools/office-engine/payload-candidate.json) pins the
-112,640-byte long-path-aware native host and the canonical 2,276,994-byte runtime
-inventory already enforced by the [private runtime lease](office-runtime-verification.md).
-The inventory's fixed SHA-256 identifies all 19,332 vendor files and their sizes
-and hashes, totaling 1,517,294,910 bytes. Staging checks the upstream archive pin
-against the independent evaluation record and the host against four current
-private source/build-input hashes. It does not copy private source or build receipts.
+[The selection record](../tools/office-engine/payload-candidate.json) now pins the
+rebuilt 112,640-byte native host, three app-local startup DLLs and the canonical
+486,131-byte runtime inventory enforced by the
+[private runtime lease](office-runtime-verification.md).
+The inventory identifies all 3,828 runtime files and their sizes/hashes, totaling
+545,259,841 bytes. Staging checks the archive and inventory pins against the
+[source-runtime record](../tools/office-engine/source-runtime-candidate.json),
+and the host against four current private source/build-input hashes. It does not
+copy private source or build receipts. The retained base archive contains the
+reviewed renderer and an earlier host; the selection explicitly replaces that
+host with the separately rebuilt application host. This is not a claim that the
+new host came from the base archive.
 
-The [calculated-date guard](excel-calculated-date-guard.md) advances the host to
+The historical [calculated-date guard](excel-calculated-date-guard.md) advanced the host to
 completion protocol version 3 and repeats all 33 packaging checks with that pin.
 Evidence is `.codex-temp/office-payload-tests-dfb43ac88ccb4b33a4665fb4be4b749d`.
 The combined scratch check still uses the retained 1.1.0 base managed payload;
 it is not a fresh formal package of the current application and worker.
 
 The input is a complete `office-engine` directory retained from an isolated
-worker evaluation, containing the host, `runtime-files.txt` and `runtime/`.
+worker evaluation, containing the host, three startup DLLs, `runtime-files.txt`
+and `runtime/`.
 An editable copy receipt alone cannot authorize different files: every inventory
 byte and every runtime file must match the committed pins. The full runtime
 retains the supplied `LICENSE.html`, `NOTICE`, `CREDITS.fodt` and other inventoried
@@ -69,7 +75,8 @@ lookup work for the expanded payload.
 
 Before a formal combined stage, finalize the version under the existing reserved
 payload policy. Version **1.1.0** remains tied to its original image/audio/PDF
-bytes; a changed formal payload needs **1.1.1** or the next available version.
+bytes; **1.1.1** is also reserved. A changed formal payload needs the next
+available version.
 The scratch test below exercises the packaging path without reserving a product
 version or modifying an installed or retained stage:
 
@@ -138,6 +145,32 @@ assemblies; this test does not establish that the current application and all
 engines have been packaged or executed together. Repository boundary, theme and
 165-document checks pass; managed/media execution was not rerun for this test-only
 change.
+
+
+Source-built selection verification, 2026-09-23
+------------------------------------------------
+
+The run `.codex-temp/office-payload-tests-ce77a211249c4021a8ff4d8f3785fb92`
+passes **39 checks**, including missing and same-length corruption of each of
+the three host-adjacent DLLs, exact membership, partial-copy retention, junction
+refusal, opt-in guards and the combined production allowlist. The source is
+`.codex-temp/office-repaired-application/a38f188ec7ed45c192e64535b64d63e2/application-engine`;
+the base remains the read-only reserved 1.1.0 stage. All source/base identities
+are unchanged. The combined scratch copy contains historical managed binaries
+and is not an executable acceptance result for the current paired selection.
+
+The previous run `office-payload-tests-35afd5114ea445b08d193947f26b8566`
+reached the final combined allowlist and failed on `office-engine/msvcp140.dll`.
+The Office verifier already pinned and checked all three startup dependencies;
+the outer production allowlist now includes only those selected names after
+successful Office verification. Extra files remain refused. The failed copy and
+log are retained. Historical MSI isolation-copy verification uses a separate
+[evaluation record](../tools/office-engine/msi-runtime-evaluation.json) rather
+than silently applying the new runtime inventory to old evidence.
+
+The [runtime lease checks](office-runtime-verification.md) and
+[actual Word publication/inspection](word-layout-acceptance.md#source-built-application-replay-2026-09-23)
+provide separate scoped evidence. The Excel chart guard remains in place.
 
 
 Remaining acceptance

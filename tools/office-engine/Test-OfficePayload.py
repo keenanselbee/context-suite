@@ -31,7 +31,7 @@ def main():
     results = []
     record = payload.selection()
     input_paths = [Path(__file__).resolve(), TOOLS / "Stage-OfficePayload.py", TOOLS / "payload-candidate.json",
-                   TOOLS / "evaluation.json", TOOLS / "Write-OfficeRuntimeInventory.py",
+                   TOOLS / "source-runtime-candidate.json",
                    payload.ROOT / "proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
                    payload.ROOT / "tools/Build-Production.ps1", payload.ROOT / "tools/curated-engine/Test-ProductionPayload.ps1"]
     input_paths.extend(payload.ROOT / item["path"] for item in record["host"]["sources"])
@@ -59,13 +59,17 @@ def main():
         passed(name)
 
     lease = (payload.ROOT / "proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs").read_text()
-    writer = (TOOLS / "Write-OfficeRuntimeInventory.py").read_text()
+    provenance = json.loads((TOOLS / "source-runtime-candidate.json").read_bytes())
     for value in (record["host"]["sha256"], record["inventory"]["sha256"], str(record["host"]["bytes"]),
                   str(record["inventory"]["bytes"]), str(record["inventory"]["files"]), str(record["inventory"]["runtimeBytes"])):
         if value not in lease:
             raise AssertionError("Office packaging pin differs from the private runtime lease.")
-    if record["inventory"]["sha256"] not in writer or record["archiveSha256"] not in writer:
+    if (record["inventory"]["sha256"] != provenance["inventorySha256"] or
+            record["archiveSha256"] != provenance["archiveSha256"]):
         raise AssertionError("Office packaging pin differs from the independently prepared inventory.")
+    for dependency in record["hostDependencies"]:
+        if any(str(dependency[key]) not in lease for key in ("path", "bytes", "sha256")):
+            raise AssertionError("Office startup dependency pin differs from the private runtime lease.")
     passed("Packaging pins agree with private lease and prepared inventory")
 
     combined = scratch / "combined"
@@ -91,12 +95,15 @@ def main():
     changes = [
         ("Changed host", "ContextSuite.OfficeHost.exe", b"changed"),
         ("Changed inventory", "runtime-files.txt", b"changed"),
-        ("Missing runtime library", "runtime/program/mergedlo.dll", None),
+        ("Missing runtime library", "runtime/program/sofficeapp.dll", None),
         ("Changed vendor notice", "runtime/NOTICE", b"changed"),
         ("Same length vendor notice corruption", "runtime/NOTICE", b"x" * (engine / "runtime/NOTICE").stat().st_size),
         ("Extra runtime file", "runtime/unreviewed.dll", b"extra"),
         ("Extra host neighbor", "unreviewed.dll", b"extra"),
     ]
+    for dependency in record["hostDependencies"]:
+        changes.extend((("Missing " + dependency["path"], dependency["path"], None),
+                        ("Changed " + dependency["path"], dependency["path"], b"x" * dependency["bytes"])))
     for name, relative, value in changes:
         path = engine / relative
         backup = scratch / "mutation-backup"

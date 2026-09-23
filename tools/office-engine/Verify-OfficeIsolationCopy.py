@@ -24,7 +24,7 @@ def verify(stage):
         raise ValueError("Office copy receipt exceeds the inspection limit.")
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     runtime = payload.local_path(stage / "runtime/office", scratch_only=True)
-    record = payload.selection()
+    record = json.loads((TOOLS / "msi-runtime-evaluation.json").read_bytes())
     if Path(receipt["destination"]).absolute() != runtime or receipt["archiveSha256"] != record["archiveSha256"]:
         raise ValueError("Office copy receipt identifies another runtime or archive.")
     entries = receipt["Files"]

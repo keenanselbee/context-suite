@@ -1,28 +1,57 @@
 {
-  "engine": "LibreOffice 26.2.6.3, Windows x64",
-  "scope": "Explicit isolated candidate staging only; redistribution and release adoption remain separate.",
-  "archiveSha256": "F9877032FD908BEB9C0DDF06DF4AF5C2E85F419C42E14876C4CCE5AAE5FB2660",
+  "engine": "LibreOffice source-built renderer at 8221e31b3ac356a1623c672912a3d2b492f7e3d1",
+  "scope": "Explicit isolated application integration candidate; full clean rebuild, redistribution and release adoption remain separate.",
+  "archiveSha256": "493A044BA2F5C6F8F50DE72295185DE78E70CA81440CE8E00E80A16956AA8B30",
   "host": {
     "path": "ContextSuite.OfficeHost.exe",
     "bytes": 112640,
-    "sha256": "C01466D70277C56D8AD43E3C9DCAFE2676E3644B3473197C1EAFAFA14F757765",
+    "sha256": "3F5254F6D6188F5B3637C13BFF29520750073D1F88EA3687630EB4DB5E870059",
     "sources": [
-      { "path": "proprietary/src/ContextSuite.OfficeHost.Native/app.manifest", "sha256": "4BED6AE394654B3A06E06156879B0EEE739F7B620C6697243FF596F254D989C4" },
-      { "path": "proprietary/src/ContextSuite.OfficeHost.Native/CMakeLists.txt", "sha256": "E40D252F531E3110C853D4BE40D8388E2B31EFBA83E1CD6662C5BE15AC75C07F" },
-      { "path": "proprietary/src/ContextSuite.OfficeHost.Native/EmbeddedOffice.h", "sha256": "10C46EF9C36C962AB8CEED88DFD7420FB2181E295421BB1D08E7E5F00C32413F" },
-      { "path": "proprietary/src/ContextSuite.OfficeHost.Native/Host.cpp", "sha256": "643902159300DA335871341754F6B68288291172925CECF8E453B8B189154225" }
+      {
+        "path": "proprietary/src/ContextSuite.OfficeHost.Native/app.manifest",
+        "sha256": "4BED6AE394654B3A06E06156879B0EEE739F7B620C6697243FF596F254D989C4"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.OfficeHost.Native/CMakeLists.txt",
+        "sha256": "E40D252F531E3110C853D4BE40D8388E2B31EFBA83E1CD6662C5BE15AC75C07F"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.OfficeHost.Native/EmbeddedOffice.h",
+        "sha256": "BB4A247B0F8E61288284E87BEEB2882545FC973E63A0D3D1CA3D97A890E29AF4"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.OfficeHost.Native/Host.cpp",
+        "sha256": "643902159300DA335871341754F6B68288291172925CECF8E453B8B189154225"
+      }
     ]
   },
   "inventory": {
     "path": "runtime-files.txt",
-    "bytes": 2276994,
-    "sha256": "70DAF53038F8B4E8B5FDF74B6877393616094762C0E0BDC5245D657C16DBCD2D",
-    "files": 19332,
-    "runtimeBytes": 1517294910
+    "bytes": 486131,
+    "sha256": "C0FC7304D818A1A3E6E1F87C72556C2079F5DCD01BA32CC25ED4E4C66DB6CDD4",
+    "files": 3828,
+    "runtimeBytes": 545259841
   },
   "emptyDirectories": [
     "share/uno_packages",
     "share/uno_packages/cache",
     "share/uno_packages/cache/uno_packages"
+  ],
+  "hostDependencies": [
+    {
+      "path": "msvcp140.dll",
+      "bytes": 643512,
+      "sha256": "7C26614E1D733892C2DEAC7E245CE115504B1D80592DD0A01B08E3E5A55F89CA"
+    },
+    {
+      "path": "vcruntime140.dll",
+      "bytes": 178616,
+      "sha256": "D1F4225DF2CD877DBF130D5668A021DCE3F94118455FF5EC952061C30AFC9CE7"
+    },
+    {
+      "path": "vcruntime140_1.dll",
+      "bytes": 50112,
+      "sha256": "A7146C08F89FE5B04541AB507CDB59FF7B44534D4BA3C668A426C6450A03434E"
+    }
   ]
 }

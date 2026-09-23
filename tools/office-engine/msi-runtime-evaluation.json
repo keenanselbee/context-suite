@@ -1,0 +1,13 @@
+{
+  "scope": "Historical MSI extraction and isolation-copy verification only; not the currently selected application renderer.",
+  "archiveSha256": "F9877032FD908BEB9C0DDF06DF4AF5C2E85F419C42E14876C4CCE5AAE5FB2660",
+  "inventory": {
+    "bytes": 2276994,
+    "sha256": "70DAF53038F8B4E8B5FDF74B6877393616094762C0E0BDC5245D657C16DBCD2D"
+  },
+  "emptyDirectories": [
+    "share/uno_packages",
+    "share/uno_packages/cache",
+    "share/uno_packages/cache/uno_packages"
+  ]
+}

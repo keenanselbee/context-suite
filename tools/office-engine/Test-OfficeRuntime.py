@@ -20,6 +20,8 @@ def main():
     parser.add_argument("--host-receipt", type=Path)
     parser.add_argument("--package", type=Path, help="Use a retained scratch worker's office-engine directory.")
     args = parser.parse_args()
+    if args.package is None:
+        parser.error("The source-built candidate requires --package; retained MSI receipts describe the historical engine.")
     root = Path(__file__).resolve().parents[2]
     evidence = root / ".codex-temp/office-runtime" / uuid.uuid4().hex
     evidence.mkdir(parents=True)
@@ -28,7 +30,8 @@ def main():
         if args.copy_receipt is not None or args.host_receipt is not None:
             parser.error("Choose a scratch package or the two preparation receipts.")
         package = args.package.resolve(strict=True)
-        package.relative_to(root / ".codex-temp/office-execution")
+        if not any(package.is_relative_to(root / ".codex-temp" / name) for name in ("office-execution", "office-repaired-application")):
+            parser.error("Use a retained Office execution or repaired-application scratch package.")
         inventory = package / "runtime-files.txt"
         copied = {"destination": str(package / "runtime")}
         host = {"executable": str(package / "ContextSuite.OfficeHost.exe")}
@@ -47,6 +50,7 @@ def main():
              "proprietary/tests/ContextSuite.Pdf.ContractTests/Program.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj",
              "tools/office-engine/Write-OfficeRuntimeInventory.py", "tools/office-engine/Test-OfficeRuntime.py"]
+    names.extend(("tools/office-engine/payload-candidate.json", "tools/office-engine/source-runtime-candidate.json"))
     sources = {name: digest(root / name) for name in names}
     commands = [] if args.package is not None else [
         [sys.executable, str(root / "tools/office-engine/Write-OfficeRuntimeInventory.py"),
@@ -76,7 +80,8 @@ def main():
     if result.returncode or not unchanged:
         raise RuntimeError(f"Office runtime verification failed: {evidence}")
     report = json.loads((evidence / "contracts/results.json").read_text(encoding="utf-8"))
-    if not report["Passed"] or report["RuntimeFiles"] != 19332:
+    selection = json.loads((root / "tools/office-engine/payload-candidate.json").read_bytes())
+    if not report["Passed"] or report["RuntimeFiles"] != selection["inventory"]["files"] or report["RuntimeBytes"] != selection["inventory"]["runtimeBytes"]:
         raise RuntimeError("Missing complete runtime verification evidence.")
     if args.package is not None and report.get("ColocatedPackageChecked") is not True:
         raise RuntimeError("The actual colocated package was not checked.")

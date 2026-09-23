@@ -45,6 +45,8 @@ if ($AllowOfficeCandidate) {
     & python -B (Join-Path $officeTools 'Stage-OfficePayload.py') --payload $root
     if ($LASTEXITCODE -ne 0) { throw 'Office candidate payload verification failed.' }
     $allowed += 'office-engine\ContextSuite.OfficeHost.exe', 'office-engine\runtime-files.txt'
+    $officeSelection = Get-Content -LiteralPath (Join-Path $officeTools 'payload-candidate.json') -Raw | ConvertFrom-Json
+    $allowed += @($officeSelection.hostDependencies | ForEach-Object { 'office-engine\' + $_.path })
     $allowed += @(Get-Content -LiteralPath (Join-Path $root 'office-engine\runtime-files.txt') | ForEach-Object {
         'office-engine\runtime\' + ($_ -split "`t", 3)[0].Replace('/', '\')
     })
@@ -56,7 +58,7 @@ if ($AllowHeifCandidate) {
     $heifSelection = Get-Content -LiteralPath (Join-Path $heifTools 'payload-candidate.json') -Raw | ConvertFrom-Json
     $allowed += @($heifSelection.files | ForEach-Object { 'heif\' + $_.path.Replace('/', '\') })
 }
-# Office has over 19,000 files. Keep membership lookup linear in payload size.
+# Office has thousands of files. Keep membership lookup linear in payload size.
 $allowedSet = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 foreach ($name in $allowed) { [void]$allowedSet.Add($name) }
 foreach ($file in Get-ChildItem -LiteralPath $root -Recurse -File) {

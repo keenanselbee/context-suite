@@ -52,8 +52,9 @@ def identity(path, pin):
 
 def selection():
     record = json.loads((TOOLS / "payload-candidate.json").read_text(encoding="utf-8"))
-    upstream = json.loads((TOOLS / "evaluation.json").read_text(encoding="utf-8"))
-    if record["archiveSha256"] != upstream["archiveSha256"]:
+    upstream = json.loads((TOOLS / "source-runtime-candidate.json").read_text(encoding="utf-8"))
+    if (record["archiveSha256"] != upstream["archiveSha256"] or
+            record["inventory"]["sha256"] != upstream["inventorySha256"]):
         raise ValueError("Office archive selection differs from the reviewed candidate.")
     return record
 
@@ -66,6 +67,11 @@ def membership(engine, record):
     if hashlib.sha256(data).hexdigest().upper() != record["inventory"]["sha256"]:
         raise ValueError("Office inventory changed while reading.")
     files = {record["host"]["path"]: record["host"], record["inventory"]["path"]: record["inventory"]}
+    for dependency in record["hostDependencies"]:
+        name = dependency["path"]
+        if Path(name).name != name or ":" in name or "\\" in name or name in files:
+            raise ValueError("Invalid pinned Office host dependency path.")
+        files[name] = dependency
     directories = {"runtime", *("runtime/" + name for name in record["emptyDirectories"])}
     names, total = [], 0
     for line in data.decode("utf-8").splitlines():
@@ -155,7 +161,7 @@ def main():
         stage(args.payload, args.engine_directory)
     else:
         verify(local_path(args.payload) / "office-engine")
-    print("Verified 19,332 Office runtime files, host, inventory and exact directories; release approval remains separate.")
+    print(f"Verified {selection()['inventory']['files']:,} Office runtime files, host dependencies and exact directories; release approval remains separate.")
 
 
 if __name__ == "__main__":

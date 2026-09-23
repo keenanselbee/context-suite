@@ -18,7 +18,7 @@ if (-not $visualStudio) { throw 'Visual Studio x64 C++ tools are required.' }
 $cmake = Join-Path $visualStudio 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe'
 & $cmake -S $snapshot -B $build -G 'Visual Studio 18 2026' -A x64 '-DCMAKE_SYSTEM_VERSION=10.0.26100.0'
 if ($LASTEXITCODE) { throw 'Office host configuration failed.' }
-& $cmake --build $build --config Release --target ContextSuite.OfficeHost -- /m /p:ImportDirectoryBuildProps=false /p:ImportDirectoryBuildTargets=false /verbosity:minimal
+& $cmake --build $build --config Release --target ContextSuite.OfficeHost -- /m:1 /p:ImportDirectoryBuildProps=false /p:ImportDirectoryBuildTargets=false /verbosity:minimal
 if ($LASTEXITCODE) { throw 'Office host build failed.' }
 $executable = Join-Path $build 'bin\Release\ContextSuite.OfficeHost.exe'
 [ordered]@{

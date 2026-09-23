@@ -23,7 +23,8 @@ def main():
     stage = root / ".codex-temp/office-runtime" / uuid.uuid4().hex
     stage.mkdir(parents=True)
     print("Office runtime timing evidence:", stage, flush=True)
-    paths = {Path(__file__).resolve(), root / "proprietary/tests/ContextSuite.Image.ContractTests/PngFixture.cs"}
+    paths = {Path(__file__).resolve(), root / "proprietary/tests/ContextSuite.Image.ContractTests/PngFixture.cs",
+             root / "tools/office-engine/payload-candidate.json", root / "tools/office-engine/source-runtime-candidate.json"}
     for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/Shared",
                       "proprietary/src/ContextSuite.Private", "proprietary/tests/ContextSuite.Pdf.ContractTests"):
         paths.update(path for path in (root / directory).rglob("*") if
@@ -32,7 +33,7 @@ def main():
                                          "Version.props", "global.json", "tools/Require-Private.targets") if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
     project = root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
-    build = subprocess.run(["dotnet", "build", str(project), "-c", "Release", "--no-restore", "--verbosity", "quiet"],
+    build = subprocess.run(["dotnet", "build", str(project), "-c", "Release", "--no-restore", "--verbosity", "quiet", "-maxcpucount:1"],
                            cwd=root, capture_output=True)
     (stage / "build.log").write_bytes(build.stdout + build.stderr)
     if build.returncode:
@@ -53,7 +54,8 @@ def main():
     if run.returncode or not unchanged:
         raise RuntimeError("Runtime timing failed; inspect retained evidence: " + str(stage))
     report = json.loads((stage / "contracts/results.json").read_text())
-    if not report["Passed"] or report["Files"] != 19332 or report["Bytes"] != 1517294910:
+    selection = json.loads((root / "tools/office-engine/payload-candidate.json").read_bytes())
+    if not report["Passed"] or report["Files"] != selection["inventory"]["files"] or report["Bytes"] != selection["inventory"]["runtimeBytes"]:
         raise RuntimeError("Incomplete runtime timing evidence.")
 
 

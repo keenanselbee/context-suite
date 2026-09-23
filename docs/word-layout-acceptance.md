@@ -151,3 +151,24 @@ passes 4,384 contracts. Six parser/authorization/scenario guards pass in
 `word-layout-guards-7ab17ea3f07a4f78a92303afc97d034c`. Release builds have zero
 warnings/errors; repository validation passes 192 documentation files. No
 production behavior, installed app or reserved candidate payload is changed.
+
+
+Source-built application replay, 2026-09-23
+------------------------------------------
+
+The [paired runtime selection](office-runtime-verification.md#source-built-application-selection-2026-09-23)
+repeats D04 through a freshly built application worker at
+`.codex-temp/office-execution/dec1c8897aeb4588b5361965a93f5a51`.
+The application publishes a validated 31,691-byte PDF copy, preserves the source
+and retires its operation context and disposable Windows profile. The normal
+font decision path needs no substitution prompt for this fixture. The receipt
+binds the actual worker and native runtime; this is not a formal packaged-worker
+or final-candidate result.
+
+Independent qpdf/PDFium inspection passes in
+`word-layout-inspection-receipt-02b96bdd2eca472fa0046e48e00a5c0d.json` within that
+execution directory. The unchanged character, accent, CJK/RTL direction,
+geometry, embedded-font, anchored-image and eight negative-control assertions
+pass. Both execution and inspection retain unchanged recorded inputs; Release
+builds report zero warnings/errors. This replay adds automated evidence only:
+human review, real documents and final-candidate acceptance remain open.

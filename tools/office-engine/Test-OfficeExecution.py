@@ -101,6 +101,9 @@ def main():
     paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json", "tools/Require-Private.targets")
                  if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
+    for name in ("tools/office-engine/Test-OfficeExecution.py", "tools/office-engine/payload-candidate.json",
+                 "tools/office-engine/source-runtime-candidate.json"):
+        sources[name] = digest(root / name)
     font_inputs = {str(path): digest(path) for path in (Path(os.environ["WINDIR"]) / "Fonts" / name for name in ("arial.ttf", "msyh.ttc"))} if args.word_layout else {}
     if production is not None:
         for name in ("tools/curated-engine/Test-ProductionPayload.ps1", "tools/audio-engine/Stage-AudioPayload.py",
@@ -124,7 +127,7 @@ def main():
                            ("contracts", "tests/ContextSuite.Core.ContractTests/ContextSuite.Core.ContractTests.csproj")):
         if production is not None and label == "worker":
             continue
-        build = subprocess.run(["dotnet", "build", str(root / project), "-c", "Release", "--no-restore", "--verbosity", "quiet"], cwd=root, capture_output=True)
+        build = subprocess.run(["dotnet", "build", str(root / project), "-c", "Release", "--no-restore", "--verbosity", "quiet", "-maxcpucount:1"], cwd=root, capture_output=True)
         (stage / (label + "-build.log")).write_bytes(build.stdout + build.stderr)
         if build.returncode:
             raise RuntimeError("Build failed before profile creation: " + label)

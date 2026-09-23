@@ -18,8 +18,9 @@ read sharing only and without following a leaf reparse point, and validates each
 opened handle's resolved path, attributes and link count. Generic media-file
 opening and other engines are unchanged.
 
-All 19,332 files and 1,517,294,910 bytes are still hashed against the pinned
-inventory. Exact directory membership is checked before and after execution.
+The historical MSI runtime's 19,332 files and 1,517,294,910 bytes were all hashed
+against the pinned inventory. The current source-built selection likewise hashes
+every selected file. Exact directory membership is checked before and after execution.
 The hash algorithm, cancellation checks, handle lifetime, per-document worker
 shutdown and AppContainer profile lifecycle are unchanged. There is no persistent
 trust cache or reduced verification policy.
@@ -50,8 +51,28 @@ After evidence: `.codex-temp/office-runtime/bec8deb944c9467c84dd4f51f3f7594b`.
 Both bind source and executable inputs, pass all 19,332 hashes, and preserve the
 runtime. No Office process or Windows profile is created by this measurement.
 
-Native file safety
-------------------
+Source-built runtime timing, 2026-09-23
+--------------------------------------
+
+The safety evidence below predates the source-built selection. Its subsequent
+[69-check replay](office-runtime-verification.md#source-built-application-selection-2026-09-23)
+includes the three app-local startup DLLs and actual colocated package.
+
+The replay at `.codex-temp/office-runtime/1f50cb4e2ffb47f7aaa14c84347dfde8`
+passes all 3,828 file hashes and 545,259,841 runtime bytes. Complete acquisition
+takes 3.619 seconds, ordinary reopening 2.778 seconds, asynchronous hashing
+2.120 seconds and block hashing 1.491 seconds. Source, managed, host and inventory
+identities remain unchanged. The runner now records both selection JSON files
+and compares the result against their current counts rather than historical MSI
+constants. Its build uses one MSBuild worker.
+
+This is one cached component measurement while the separate native build was
+running. It is not an isolated performance comparison or the required five-run
+application workload. No Office process or Windows profile is created.
+
+
+Historical native file safety
+-----------------------------
 
 All **45 runtime contracts** pass at
 `.codex-temp/office-runtime/7601d881af124a8f9b3e29e56198d740`. The fifteen new checks

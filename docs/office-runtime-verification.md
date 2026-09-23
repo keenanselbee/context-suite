@@ -5,13 +5,13 @@ Status: candidate payload leases verified; subsequent worker, command and
 [optional staging](office-production-payload.md) integration are recorded
 separately. Expanded release acceptance remains incomplete.
 
-The private runtime verifier pins the evaluated native host and the complete
-LibreOffice 26.2.6.3 file inventory before returning a lease. It reads and hashes
-all 19,332 runtime files (1,517,294,910 bytes), checks exact membership including
+The private runtime verifier now pins the source-built integration candidate
+described below before returning a lease. The historical MSI-based selection
+hashed all 19,332 runtime files (1,517,294,910 bytes), checking membership including
 the three expected empty package-cache directories, and rejects linked entries.
 The source is the independently prepared candidate, never `reference/`.
 
-The currently pinned host is 112,640 bytes with SHA-256
+The preceding MSI-based host was 112,640 bytes with SHA-256
 `C01466D70277C56D8AD43E3C9DCAFE2676E3644B3473197C1EAFAFA14F757765`.
 The earlier font-reporting host is 110,592 bytes with SHA-256
 `D8FE02337D606C3ECD17F3919F7D6F1208BB3085A142339A7ECFAC69100F5662`;
@@ -23,7 +23,7 @@ The original verifier evidence below used the preceding 103,936-byte host,
 See the [interruption investigation](office-worker-interruption.md) for the
 intermediate diagnostic host and the [directory-boundary correction](office-path-boundary.md)
 for that manifest, evidence and remaining platform limitation.
-The canonical UTF-8 inventory is 2,276,994 bytes with SHA-256
+That historical canonical UTF-8 inventory is 2,276,994 bytes with SHA-256
 `70DAF53038F8B4E8B5FDF74B6877393616094762C0E0BDC5245D657C16DBCD2D`.
 Each line is relative path, byte count and uppercase SHA-256, separated by tabs;
 paths are sorted ordinally and lines end with LF. The inventory writer accepts
@@ -55,15 +55,13 @@ Combine it with the [application profile owner](office-profile-ownership.md) and
 
 The host directory is also checked before runtime acquisition and during every
 membership recheck. The pinned host and inventory must share a directory;
-unexpected sibling files (including startup DLLs), directories and links are
+unexpected sibling files, directories and links are
 refused. A colocated runtime directory is allowed and retains the complete
 runtime verification above. Separate runtime storage remains supported for the
-isolated component harness. The existing host/runtime pins are unchanged.
+isolated component harness.
 
-This establishes a closed host-file list before adding the repaired renderer's
-three app-local startup dependencies. Those DLL identities and read leases must
-be added together with the paired runtime selection; this checkpoint does not
-adopt them or claim that the repaired renderer is ready for application use.
+The source-built selection adds exactly three app-local startup dependencies,
+with pinned sizes/hashes and read leases acquired before host membership checks.
 As with runtime directories, post-acquisition additions can be detected at the
 recheck; directory handles do not prevent creation of a new child.
 
@@ -96,6 +94,42 @@ selection, startup dependency pins/leases and full application replay remain
 required; the existing chart refusal is unchanged.
 
 
+Source-built application selection, 2026-09-23
+----------------------------------------------
+
+The paired selection now uses the reviewed source-built renderer and a newly
+built 112,640-byte application host with SHA-256
+`3F5254F6D6188F5B3637C13BFF29520750073D1F88EA3687630EB4DB5E870059`.
+The host loads the renderer entry point from `sofficeapp.dll` and Windows loop
+exports from `vcllo.dll`, using the existing restricted loader flags. The host
+build is `.codex-temp/office-host/5193108da1ce449c964cb429295accfa`; its receipt
+binds all four native source/build inputs. The historical host is not relabeled
+as a build of the changed source.
+
+The 486,131-byte inventory has SHA-256
+`C0FC7304D818A1A3E6E1F87C72556C2079F5DCD01BA32CC25ED4E4C66DB6CDD4`
+and pins 3,828 runtime files totaling 545,259,841 bytes. The three package-cache
+directories remain required. `msvcp140.dll`, `vcruntime140.dll` and
+`vcruntime140_1.dll` are pinned beside the host as well as in the runtime.
+The [packaging selection](../tools/office-engine/payload-candidate.json) records
+their exact sizes and hashes. No system runtime installation is performed.
+
+The final focused replay at
+`.codex-temp/office-runtime/12df574f3445457288a5dec7880825d2` passes **69 checks**.
+It covers missing/corrupt startup dependencies, retained read sharing, released
+handles after failure/success, unexpected host entries and actual colocated
+package membership. Source, managed and inventory identities remain unchanged.
+The preceding 69-check run `5ed1d6762b8c491c96f32aa7bc956f26` predates recording
+both selection JSON identities in the public runner.
+
+The [Word layout replay](word-layout-acceptance.md#source-built-application-replay-2026-09-23)
+also passes actual application publication and independent PDF inspection.
+This is isolated application integration, not completed engine adoption:
+the native rebuild, chart/application matrix, recovery, affirmative network
+enforcement, redistribution and final-candidate replay remain open. The Excel
+chart refusal is unchanged, and reserved 1.1.0/1.1.1 payloads are untouched.
+
+
 Repeatable verification
 -----------------------
 
@@ -103,17 +137,17 @@ From the public repository, with the private checkout and restored dependencies:
 
 ```powershell
 python .\tools\office-engine\Test-OfficeRuntime.py `
-  --copy-receipt <retained-office-copy.json> `
-  --host-receipt <retained-office-host-build.json>
+  --package '<retained repaired-application or execution directory>/office-engine'
 ```
 
-This creates a new `.codex-temp/office-runtime/<guid>` evidence directory, writes
-the pinned inventory, builds the private contract harness and runs it. Only
+This creates a new `.codex-temp/office-runtime/<guid>` evidence directory, reads
+the pinned inventory, builds the private contract harness and runs it. Historical
+MSI copy/build receipts cannot select the new runtime. Only
 authored scratch fixtures and host/inventory copies are changed. The retained
 runtime is read, hashed and opened for sharing assertions without writing bytes.
 No Office process, Windows profile, installation or Explorer change is involved.
 
-The final run at `337d125099524baea180562d7a69bae3` passes **30 checks** with a
+The historical run at `337d125099524baea180562d7a69bae3` passes **30 checks** with a
 Release build reporting zero warnings and errors. Checks include same-length
 host/inventory corruption, missing files, unexpected files and empty directories,
 missing directories, cancellation before acquisition, exact runtime membership,
