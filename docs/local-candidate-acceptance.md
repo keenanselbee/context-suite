@@ -44,7 +44,9 @@ ZIPs, with exact following-output comparisons and profile/permission cleanup.
 The [managed guard replay](excel-calculated-date-guard.md#managed-validation-interruption-2026-09-23)
 adds deterministic in-progress hash/worksheet cancellation and unchanged date
 decisions across six native copies, with a separate 71-check actual-worker
-validation replay. Resource/security and exact final-candidate gates remain open.
+validation replay. The [production-launcher resource checks](office-resource-enforcement.md)
+now pass actual memory/process refusal, bounded diagnostics, cleanup and following
+controls. Disk/I/O, network and exact final-candidate gates remain open.
 This is separate from the D09 typography decision.
 
 The [packaged Office source record](office-production-payload.md#packaged-source-identity-2026-09-23)

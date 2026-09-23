@@ -67,7 +67,7 @@ int wmain(int argc, wchar_t** argv) {
     if (argc != 1 || !GetEnvironmentVariableW(L"CS_OFFICE_FORMAT", format, 32)) return 6;
     if (std::wstring(format) == L"docx" || std::wstring(format) == L"xlsx") {
         const bool output = std::wstring(format) == L"docx";
-        const std::string flood(output ? 4097 : 65537, 'x');
+        const std::string flood(output ? 36 * 1024 + 1 : 65537, 'x');
         DWORD written = 0;
         if (!WriteFile(GetStdHandle(output ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE), flood.data(),
             static_cast<DWORD>(flood.size()), &written, nullptr) || written != flood.size()) return 7;

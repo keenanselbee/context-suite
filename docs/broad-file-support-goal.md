@@ -66,8 +66,10 @@ The next completion steps are:
    and controlled unfinished-workbook stops now have independent comparisons.
    The managed workbook guard also has in-progress cancellation coverage.
    Ordinary internal charts are admitted; newer/external charts, incomplete
-   chart inspection and recognized DDE retain protective refusals. Resource
-   exhaustion, exact final-candidate replay, D09 rounding and affirmative network
+   chart inspection and recognized DDE retain protective refusals. The bounded
+   [launcher resource replay](office-resource-enforcement.md) passes memory/process
+   limits, diagnostics and cleanup. Disk/I/O failure behavior, exact final-candidate
+   replay, D09 rounding and affirmative network
    enforcement still need their evidence or decisions. Network collection needs
    the pending attended administrator step. Reuse the completed native build
    unless a native input actually changes.
