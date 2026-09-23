@@ -160,6 +160,14 @@ preserve saved values and make no further requests. All 5,202 input hashes and
 process cleanup pass. Earlier harness timeout/asynchronous-read failures remain
 recorded. This closes the native DDE availability/control gap, not the failed
 OOXML DDE matrix or whole-document AppContainer acceptance.
+The subsequent [automatic document-macro control](office-chart-renderer-repair.md#automatic-document-macro-control-2026-09-22)
+passes all nineteen native cases, including a document-local text-changing macro
+that automatically runs only in the unrestricted control. The same saved fixture
+passes the actual restricted host: its PDF retains the original text, inputs are
+unchanged and the native profile is removed. Public admission separately refuses
+this ODF document despite its `.docx` name. This closes that scoped automatic-macro
+control, not OOXML VBA compatibility, embedded OLE documents, network enforcement
+or final-candidate acceptance.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This

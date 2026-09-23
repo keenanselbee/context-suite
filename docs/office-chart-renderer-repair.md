@@ -790,6 +790,50 @@ failed and the source refusal remains required. Macro/embedded-object document
 controls, file/network/process boundaries, application chart replay, engine
 adoption and final-candidate acceptance remain separate gates.
 
+### Automatic document-macro control (2026-09-22)
+
+Native draft 22 adds a nineteenth case using an authored Writer document whose
+Basic macro only changes its own body from `MACRO BLOCKED` to `MACRO EXECUTED`.
+It performs no file, network or process operation. The saved document binds
+`OnLoadFinished` to a document-local `StarBasic` macro. Four fresh hidden loads
+check restricted settings, unrestricted automatic execution, `NEVER_EXECUTE`
+with otherwise permissive settings, and restored restrictions. Imported macro
+source, event binding, effective execution permission and exact body text are
+checked. Direct invocation is only a diagnostic: it cannot substitute for the
+required automatic positive control.
+
+Earlier native runs 15, 17, 18 and 19 retain failed automatic-trigger evidence.
+The pinned engine suppresses `OnLoad` for hidden loads; the later Script binding
+also relies on a visible frame for document dispatch. The final fixture uses
+the load-finished event and document-bound Basic dispatch. Intermediate compile
+and link failures are retained. These corrections change the test fixture and
+its build recipe, not the engine patch or production security policy.
+
+Build 19 succeeds, and
+`G:\ContextSuite-OfficeBuild\evidence\native-chart-run-20\result.json`
+passes all nineteen cases in 1,267 ms with two processes, zero remaining children
+and 47,890,432 bytes peak job memory. Runner 10 requires all nineteen exact names
+and `OK (19)`; its ten transcript and ten command/inventory guards pass. The
+unchanged process helper retains its prior lifetime evidence. Postverification
+confirms all 5,202 runtime/template inputs unchanged, totaling 638,727,281 bytes.
+
+`G:\ContextSuite-OfficeBuild\evidence\macro-host-export-01\results.json`
+then passes the same saved fixture through the unchanged real AppContainer
+launcher/profile owner and the evaluation host. A fresh copied runtime matches
+the native control. Independent qpdf/PDFium checks require one Letter page and
+exact text `MACRO BLOCKED`; the host call takes 623 ms. The source/snapshot and
+all 4,112 runtime/verifier inputs retain their identities. Required macro,
+active-content, Python, security-level and OpenCL settings are retained. The
+disposable native profile directory and registry mapping are verified absent.
+
+The fixture contains ODF bytes with a misleading `.docx` name. Actual public
+preflight identifies ODT and refuses conversion; only this isolated engine probe
+deliberately bypasses that admission layer. This establishes a functioning
+automatic document macro and its refusal under the actual restricted host. It
+does not admit ODF/macro-enabled conversion or prove OOXML VBA compatibility,
+arbitrary macro coverage, embedded OLE behavior, network denial, application
+publication or final-candidate acceptance. Those separate gates remain open.
+
 ### Runtime linkage constraint
 
 Inspection of the expanded combined candidate's
