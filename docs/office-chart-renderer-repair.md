@@ -2,8 +2,9 @@ Office Chart Renderer Repair
 ============================
 
 Status: revised source patch compiled and linked; fifteen authored native cases
-pass in the isolated Windows build. PDF fidelity, restricted-host security and
-adoption remain pending. The [chart-loss regression](excel-layout-acceptance.md)
+and four passive Excel PDF comparisons pass in the isolated Windows build.
+Application replay, restricted-host security and adoption remain pending.
+The [chart-loss regression](excel-layout-acceptance.md)
 still fails on the current candidate. This proposal keeps chart fidelity in the
 [active goal](broad-file-support-goal.md) and keeps `DisableActiveContent=true`.
 
@@ -428,8 +429,71 @@ Post-run verification confirms all 5,175 inventoried runtime files, totaling
 634,077,326 bytes, are unchanged. `evidence\native-chart-run-05-postverification.json`
 also binds the managed runner, apphost, sources, launcher, command manifest,
 diagnostic patch and retained successful profile. No installed runtime or
-production engine identity changed. Actual PDF chart rendering, full D07 replay,
-Word/PowerPoint charts and restricted-host security remain separate open gates.
+production engine identity changed. At that checkpoint, actual PDF rendering,
+full D07 replay, Word/PowerPoint charts and restricted-host security remained open.
+
+### Matching runtime and passive PDF exports (2026-09-22)
+
+The isolated runtime now includes matching `soffice.bin`, `soffice.exe` and
+`soffice.com` launchers, bootstrap/configuration packages, the full component
+registry and upstream default-profile files. Export-build attempt 1 was stopped
+after multiple outer goals launched independent recursive two-job makes; later
+scripts run one target at a time. Attempt 2 linked all three launchers but exited
+2 on `Package_setup`: the package's registered target is
+`Package_instsetoo_native_setup`. Attempt 3 used the registered package names
+and `Rdb_services`, exiting 0 after 111.97 seconds. These are build-directory
+copies, not a Windows installation. All receipts remain under the approved
+workspace's `evidence\native-export-build-*` paths.
+
+The first PDF attempt exited 77 while initializing a fresh profile, before
+opening a workbook. The partial runtime lacked `instdir/presets`, which the
+pinned `desktop/source/app/userinstall.cxx` requires. Export-build attempt 4
+built the five upstream extras packages owning that directory, exiting 0 after
+151.91 seconds. No initialization bypass or reused customer profile was added.
+The second PDF attempt exported its first workbook but failed the existing
+saved-profile assertion for `AutoCheckEnabled`; that failure is retained.
+
+The owned build has `ENABLE_ONLINE_UPDATE`, `ENABLE_ONLINE_UPDATE_MAR` and
+`ENABLE_EXTENSION_UPDATE` unset. Its updater job configuration and component
+are absent, so the two inapplicable update declarations disappear on profile
+save. The evaluation-only runner now requires that exact build configuration,
+no update-check library and no updater registration in the inventoried registry.
+It checks every retained macro, active-content, Python, security-level, OpenCL
+and calculation setting against the requested profile. Fourteen profile checks
+cover valid output, removal/corruption of all six retained controls and an
+unexpected updater entry. The shared shipping profile verifier is unchanged;
+this is not evidence of network enforcement.
+
+The final runner lives in `.codex-temp/office-chart-export-draft-02`, linked to
+the unchanged authored `ExcelLayoutFixtures` and `ExcelLayoutOracle` sources.
+Its isolated build has zero warnings/errors. It uses fresh profiles, bounded
+ordinary jobs and `DisableActiveContent=true` for all four portrait/landscape
+and saved-values/recalculated workbooks. The pinned renderer schema maps
+saved values to 1 and recalculation to 0; the fixtures' values and caches agree,
+so separate formula/date correctness controls remain required.
+
+`G:\ContextSuite-OfficeBuild\evidence\chart-pdf-export-03\results.json` passes
+all four independent comparisons: qpdf structure, one correctly oriented Letter
+page, expected text and placement, three red bars with the original 1:2:3 height
+tolerance, and category association. The existing negative oracle controls pass.
+Conversions take 545-674 ms, excluding initialization and verification; these
+are tiny diagnostic inputs, not the declared application performance benchmark.
+Every conversion leaves zero active job processes. Original hashes/timestamps
+and all 4,111 inventoried runtime/verifier input files remain unchanged.
+The command, configuration hash, managed runner and source identities are retained
+in the sibling preparation and launch receipts. The build-generated `version.ini`
+has an empty `buildid` because this is an archive checkout; external source and
+file hashes identify the evaluation. Production identity/adoption remains open.
+
+Lossless PNG encodings of all four PDFium rasters are retained in `visual-review`.
+Assistant inspection of the portrait cached and landscape recalculated pages
+shows the three bars, labels, headings and end marker without apparent clipping.
+This is limited artifact inspection, not owner, desktop or accessibility acceptance.
+
+This establishes passive native PDF rendering with the restriction enabled.
+The interim shipping chart guard remains. Actual application publication and
+restricted-host replay, hostile binary OLE, interactive positive controls,
+Word/PowerPoint charts, adoption and final-candidate replay remain required.
 
 ### Runtime linkage constraint
 

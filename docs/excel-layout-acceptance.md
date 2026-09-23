@@ -185,3 +185,22 @@ required: restore passive-chart rendering with verified enforcement, then remove
 or narrow this guard based on new fidelity evidence and replay the original
 acceptance. No reserved candidate, installation or native security policy was
 changed by this checkpoint. Final combined-candidate replay remains outstanding.
+
+
+Isolated renderer repair evidence (2026-09-22)
+---------------------------------------------
+
+The [matching rebuilt renderer](office-chart-renderer-repair.md#matching-runtime-and-passive-pdf-exports-2026-09-22)
+now passes all four authored PDF comparisons with `DisableActiveContent=true`.
+Portrait/landscape and saved-values/recalculated exports retain the expected
+text, page geometry, merged/wrapped cells, three bars and category associations
+under the unchanged independent oracle. Originals and inventoried inputs remain
+unchanged, and all conversion jobs end with zero active processes.
+
+Evidence is `G:\ContextSuite-OfficeBuild\evidence\chart-pdf-export-03` with bound
+preparation/launch receipts and retained earlier failures. This uses ordinary
+bounded jobs and fresh profiles on passive generated workbooks. It is not the
+actual application publication path or restricted-host acceptance; D07 and the
+shipping chart guard remain open until those required checks pass. The renderer
+record also identifies the updater-free evaluation configuration and its separate
+profile verification, which does not alter shipping controls.

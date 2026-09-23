@@ -64,8 +64,9 @@ The next completion steps are:
    affirmative restricted-process network evidence. The native chart-build setup
    was approved on 2026-09-20 in `G:\ContextSuite-OfficeBuild`; the patched
    component and native test runtime now compile and link, and all fifteen
-   authored native cases pass. PDF rendering and restricted-host acceptance
-   remain pending. Network collection needs the
+   authored native cases pass. Four passive native Excel PDF comparisons also
+   pass with active-content blocking enabled; application and restricted-host
+   acceptance remain pending. Network collection needs the
    pending attended administrator step. Chart refusal remains interim protection.
 2. Prepare H01-H04 for consolidated review. Request the real DOCX/XLSX/PPTX and
    three real recordings when their automated comparisons can proceed; record
@@ -113,8 +114,10 @@ The owner-approved Cygwin/MSVC setup uses no WSL. All fifteen authored native
 cases pass on the matching isolated test runtime; the bounded runner separately
 passes seventeen process-lifetime checks. Runtime bytes are verified unchanged
 after execution. The existing candidate uses a merged runtime, so the component
-cannot be substituted into it. Actual PDF export, remaining hostile-object and
-interactive positive controls, and full fidelity/security replay are outstanding.
+cannot be substituted into it. Four native PDF comparisons now preserve the
+required chart/text/page geometry with active-content blocking enabled. Actual
+application replay, remaining hostile-object and interactive positive controls,
+and full restricted-host fidelity/security acceptance are outstanding.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
