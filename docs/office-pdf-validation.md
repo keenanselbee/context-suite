@@ -150,6 +150,33 @@ have zero warnings/errors. No Office export or native profile is created by thes
 runs. Existing native Office recovery evidence remains separate.
 
 
+Calculated-workbook and worker replay, 2026-09-23
+------------------------------------------------
+
+The fresh managed worker at
+`.codex-temp/office-pdf/d05fe4385ee443a7b976908033b48b04/worker` passes all **71 checks**
+after extracting the workbook guard's stream-content stage. The export inputs
+are the three runtime04 following conversions in
+`.codex-temp/office-worker/45bfa7f9b7234457b0d7695a112c0d8c/contracts/cancel/results.json`.
+The runner now records and verifies the XLSX calculated-copy length/hash before
+testing and includes that copy in its unchanged-input audit. Older reports lacking
+the required workbook evidence cannot stand in for current Excel validation.
+
+Ordinary reservations match their candidate PDFs exactly. The existing fourteen
+failure cases retain their refusals, active cancellation/worker loss leave empty
+reservations and cleared scratch, and following requests pass. Release harness
+and worker builds have zero warnings/errors; `exit.json` records exit zero and
+unchanged source, fixture, engine and binary inputs. This executes the pinned PDF
+readers but creates no Office profile or new Office export.
+
+The [105-check workbook guard replay](excel-calculated-date-guard.md#managed-validation-interruption-2026-09-23)
+separately verifies in-progress hashing and worksheet-read cancellation for all
+six retained date cases. The worker's active interruption cases still observe PDF
+snapshot preparation, not that exact worksheet-read boundary or final reservation
+copy. Final combined-candidate execution and broader resource/security acceptance
+remain required; no reserved package or native engine pin changes here.
+
+
 Office batch admission
 ----------------------
 

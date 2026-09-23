@@ -408,3 +408,47 @@ selected runtime. It does not establish an uncontrolled scheduler race, power
 loss, interruption inside a pending kernel I/O call, or the later managed date
 inspection boundary. Remaining validation/resource checks, final packaged-byte
 replay, network evidence and owner acceptance stay open.
+
+
+Managed validation interruption, 2026-09-23
+-----------------------------------------
+
+The private workbook guard now separates its stream-content check from the
+existing checked-file lease, identity admission and five-second deadline. The
+production owner still opens the same file, applies the same linked cancellation
+token, disposes the lease, and translates only its own deadline into a timeout.
+Hash, package, date and refusal rules are unchanged.
+
+[Test-OfficeWorkbookValidation.py](../tools/office-engine/Test-OfficeWorkbookValidation.py)
+passes **105 checks** at
+`.codex-temp/office-workbook-validation/942b5c95f2d441f2a0908302bd19626e`.
+The original six retained native date copies still produce four accepted controls
+and two early-date refusals. For each copy, a transparent stream pauses after
+actual hash bytes and separately during the worksheet read, after hashing and
+style inspection. The test cancels while validation is active, then makes the
+instrumented read return bytes normally. Production validation must propagate
+cancellation; the test does not manufacture that exception at the pause point.
+The caller releases the unchanged checked-file lease, and a following ordinary
+guard call retains the expected accept/refuse result. Missing, altered and
+malformed workbook refusals remain covered.
+
+```powershell
+python -B tools/office-engine/Test-OfficeWorkbookValidation.py `
+  --snapshots '<retained ExcelNativeDateSnapshots evaluation directory>'
+```
+
+The run binds all six fixture hashes, implementation/test sources and managed
+binaries; exit zero and unchanged inputs are recorded. No Office export, native
+build or Windows profile is needed. This is deterministic content-stage
+cancellation evidence using the production validation body, not an observation
+of the packaged worker at that exact worksheet instruction or a live five-second
+deadline test.
+
+The separate [actual-worker PDF validation replay](office-pdf-validation.md#calculated-workbook-and-worker-replay-2026-09-23)
+passes all 71 checks with the refactored guard, including all three ordinary
+Office families, protective refusals, cancellation, worker loss and following
+validation. It binds the retained calculated workbook as well as the source/PDF
+fixtures. Existing native/runtime pins and reserved packages remain unchanged;
+future candidate composition must use the fresh matching managed worker.
+Resource-pressure, network enforcement, exact final-candidate and owner acceptance
+remain separate gates.

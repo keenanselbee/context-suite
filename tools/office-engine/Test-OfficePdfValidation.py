@@ -38,6 +38,13 @@ def main():
             if actual != expected.upper():
                 raise RuntimeError("Retained export differs from its receipt.")
             fixtures[str(file)] = actual
+        if work["Format"] == "xlsx":
+            workbook = context / "output/calculated.xlsx"
+            completion = row["Candidate"]["Completion"]
+            actual = digest(workbook)
+            if workbook.stat().st_size != completion["WorkbookBytes"] or actual != completion["WorkbookSha256"].upper():
+                raise RuntimeError("Retained calculated workbook differs from its completed export.")
+            fixtures[str(workbook)] = actual
     stage = root / ".codex-temp/office-pdf" / uuid.uuid4().hex
     stage.mkdir(parents=True)
     print("Office PDF validation evidence:", stage, flush=True)

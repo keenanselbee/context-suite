@@ -41,8 +41,11 @@ also passes, including cleanup and independent following-output inspection.
 The [controlled unfinished-workbook replay](excel-calculated-date-guard.md#controlled-unfinished-workbook-interruption-2026-09-23)
 passes 42 checks: cancellation, worker loss and deadline expiry retain incomplete
 ZIPs, with exact following-output comparisons and profile/permission cleanup.
-Later managed validation, remaining resource/security and final-candidate gates
-remain open. This is separate from the D09 typography decision.
+The [managed guard replay](excel-calculated-date-guard.md#managed-validation-interruption-2026-09-23)
+adds deterministic in-progress hash/worksheet cancellation and unchanged date
+decisions across six native copies, with a separate 71-check actual-worker
+validation replay. Resource/security and exact final-candidate gates remain open.
+This is separate from the D09 typography decision.
 
 The [packaged Office source record](office-production-payload.md#packaged-source-identity-2026-09-23)
 now binds the reconstructed engine to its source kit, patches, configuration and

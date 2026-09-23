@@ -292,5 +292,7 @@ recovery is recorded in the [separate replay](office-startup-recovery.md#reconst
 The subsequent [controlled unfinished-workbook replay](excel-calculated-date-guard.md#controlled-unfinished-workbook-interruption-2026-09-23)
 passes all three stop modes at an actual incomplete ZIP boundary. Its test-only
 breakpoint is removed and debugger detached before the existing lifetime shutdown
-runs. Production shutdown code and native engine bytes are unchanged; managed
-date-inspection interruption and broader resource/final-candidate checks remain.
+runs. Production shutdown code and native engine bytes are unchanged. The later
+[managed guard tests](excel-calculated-date-guard.md#managed-validation-interruption-2026-09-23)
+cover active hash/worksheet-read cancellation; broader resource/security and exact
+final-candidate checks remain.

@@ -59,18 +59,18 @@ acceptance remain unfinished; the contract itself is not a passing test result.
 
 The next completion steps are:
 
-1. Resolve the required Office fidelity/security gates: compile and verify the
-   proposed passive-chart repair, settle D09 font-size rounding, and obtain
-   affirmative restricted-process network evidence. The native chart-build setup
-   was approved on 2026-09-20 in `G:\ContextSuite-OfficeBuild`; the patched
-   component and native test runtime now compile and link, and all fifteen
-   original authored native cases pass; the later seventeen-case suite adds
-   binary OLE refusal/preservation and strengthens interactive controls.
-   Four passive native Excel PDF comparisons also
-   pass with active-content blocking enabled, including a subsequent replay
-   through the actual restricted host. Application publication and whole-document
-   security acceptance remain pending. Network collection needs the
-   pending attended administrator step. Chart refusal remains interim protection.
+1. Finish the remaining Office fidelity/security acceptance. The native build,
+   22-case reconstructed native replay, source-tree correspondence and scoped
+   restricted-host security controls pass. Runtime04 repairs omitted shape data;
+   ordinary application PDFs, the four Excel chart cases, PDF/startup recovery
+   and controlled unfinished-workbook stops now have independent comparisons.
+   The managed workbook guard also has in-progress cancellation coverage.
+   Ordinary internal charts are admitted; newer/external charts, incomplete
+   chart inspection and recognized DDE retain protective refusals. Resource
+   exhaustion, exact final-candidate replay, D09 rounding and affirmative network
+   enforcement still need their evidence or decisions. Network collection needs
+   the pending attended administrator step. Reuse the completed native build
+   unless a native input actually changes.
 2. Prepare H01-H04 for consolidated review. Request the real DOCX/XLSX/PPTX and
    three real recordings when their automated comparisons can proceed; record
    missing inputs explicitly. Human results remain owner acceptance after this
