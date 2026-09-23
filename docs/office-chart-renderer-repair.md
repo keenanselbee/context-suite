@@ -668,6 +668,39 @@ These two passive chart controls close the scoped Word/PowerPoint rendering gap;
 whole-document hostile-content enforcement, application publication, wider Office
 regressions, engine adoption and final-candidate replay remain required.
 
+### Local external-workbook controls (2026-09-22)
+
+[OfficeExternalLinkFixtures](../tools/office-engine/Probe/OfficeExternalLinkFixtures.cs)
+adds four authored XLSX link cases and a direct-target control. The linking
+workbooks save `123456` in both the formula cell and external-link cache. A real
+generated local target contains `987654`. Cases cross saved-values/recalculated
+conversion with the target directory withheld or explicitly granted read access
+to that disposable AppContainer. No network address, macro or executable content
+is present. The target is outside the source snapshot and ordinary output grants.
+
+`G:\ContextSuite-OfficeBuild\evidence\external-host-export-01\results.json`
+passes all five actual restricted-host exports. Every linked PDF retains `123456`
+and its expected label on one Letter page. Independent inspection of the host's
+calculated workbook requires the same value, a retained formula and external-link
+part, distinguishing saved-data handling from flattening away the expression.
+The direct-target PDF and workbook both contain `987654`, confirming the target
+is a valid Office input with the different value. The granted-target cases show
+that lack of a filesystem grant alone does not explain retaining the saved value.
+
+Host calls take 581-724 ms, excluding setup and independent qpdf/PDFium inspection.
+The source, copied source and target retain their hashes/timestamps. The linked
+evaluation runner builds with zero warnings/errors. Its preparation receipts bind
+the unchanged actual launcher/profile owner, evaluation host and fixture sources.
+The postverification receipt confirms all 4,112 runtime/verifier files and runner
+sources unchanged, with all five native profile directories and registry mappings
+removed. The native host, production runtime pins and shipping guards are unchanged.
+
+This is evidence of no observable external-value refresh for these generated
+local-workbook cases in both calculation modes. It is not proof that the renderer
+made no read attempt, a positive test of unrestricted link refreshing, universal
+external-link coverage or network denial. DDE, macro, embedded-object document
+controls and the remaining process/file/network evidence stay open.
+
 ### Runtime linkage constraint
 
 Inspection of the expanded combined candidate's

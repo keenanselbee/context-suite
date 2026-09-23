@@ -140,6 +140,12 @@ restricted host, with exact text/geometry, the same bar-value rule and category
 association checks. Their expected values were fixed before export; all profiles
 and inputs are verified afterward. This is scoped passive-chart evidence, not
 broad document compatibility or completion of the remaining security gates.
+The subsequent local external-workbook matrix passes four linked exports and
+one direct-target control: both calculation modes preserve the saved value even
+when the differing local target is explicitly readable. Formula/link declarations,
+originals and runtime identities remain intact; all five profiles are removed.
+This closes the scoped no-refresh comparison, not DDE/macro/OLE document coverage
+or affirmative network denial.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
