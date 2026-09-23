@@ -40,6 +40,7 @@ def main():
     project = root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
     names = ["proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
              "proprietary/src/ContextSuite.Private/Office/OfficeDirectoryLeases.cs",
+             "proprietary/src/ContextSuite.Private/IO/RuntimeDirectoryLeases.cs",
              "proprietary/src/ContextSuite.Private/IO/MediaFiles.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeRuntimeContracts.cs",
              "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeRuntimeFileContracts.cs",
@@ -50,7 +51,7 @@ def main():
     commands = [] if args.package is not None else [
         [sys.executable, str(root / "tools/office-engine/Write-OfficeRuntimeInventory.py"),
          str(args.copy_receipt.resolve()), str(inventory)]]
-    commands.append(["dotnet", "build", str(project), "-c", "Release", "--no-restore", "--verbosity", "quiet"])
+    commands.append(["dotnet", "build", str(project), "-c", "Release", "--no-restore", "--verbosity", "quiet", "-maxcpucount:1"])
     for index, command in enumerate(commands):
         result = subprocess.run(command, cwd=root, capture_output=True)
         (evidence / f"prepare-{index}.log").write_bytes(result.stdout + result.stderr)
@@ -77,6 +78,8 @@ def main():
     report = json.loads((evidence / "contracts/results.json").read_text(encoding="utf-8"))
     if not report["Passed"] or report["RuntimeFiles"] != 19332:
         raise RuntimeError("Missing complete runtime verification evidence.")
+    if args.package is not None and report.get("ColocatedPackageChecked") is not True:
+        raise RuntimeError("The actual colocated package was not checked.")
 
 
 if __name__ == "__main__":

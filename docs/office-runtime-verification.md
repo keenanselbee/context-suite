@@ -11,7 +11,9 @@ all 19,332 runtime files (1,517,294,910 bytes), checks exact membership includin
 the three expected empty package-cache directories, and rejects linked entries.
 The source is the independently prepared candidate, never `reference/`.
 
-The current font-reporting host is 110,592 bytes with SHA-256
+The currently pinned host is 112,640 bytes with SHA-256
+`C01466D70277C56D8AD43E3C9DCAFE2676E3644B3473197C1EAFAFA14F757765`.
+The earlier font-reporting host is 110,592 bytes with SHA-256
 `D8FE02337D606C3ECD17F3919F7D6F1208BB3085A142339A7ECFAC69100F5662`;
 see [Office font review](office-font-review.md). The preceding long-path-aware
 host was 104,960 bytes with SHA-256
@@ -50,6 +52,48 @@ created writable memory mappings. It neither grants AppContainer access nor
 creates a profile, admits a document, launches Office or validates/publishes PDF.
 Combine it with the [application profile owner](office-profile-ownership.md) and
 [managed process boundary](office-managed-launcher.md) during worker integration.
+
+The host directory is also checked before runtime acquisition and during every
+membership recheck. The pinned host and inventory must share a directory;
+unexpected sibling files (including startup DLLs), directories and links are
+refused. A colocated runtime directory is allowed and retains the complete
+runtime verification above. Separate runtime storage remains supported for the
+isolated component harness. The existing host/runtime pins are unchanged.
+
+This establishes a closed host-file list before adding the repaired renderer's
+three app-local startup dependencies. Those DLL identities and read leases must
+be added together with the paired runtime selection; this checkpoint does not
+adopt them or claim that the repaired renderer is ready for application use.
+As with runtime directories, post-acquisition additions can be detected at the
+recheck; directory handles do not prevent creation of a new child.
+
+
+Host directory verification, 2026-09-23
+--------------------------------------
+
+The focused replay at
+`.codex-temp/office-runtime/4585b9f9876c40c2b4906e897f305ef2` passes **54 checks**
+with zero Release build warnings/errors and unchanged recorded inputs. It
+verifies the full pinned runtime both with an isolated host copy and in the
+actual colocated scratch package. New cases refuse an unlisted startup DLL,
+refuse a valid inventory stored outside the host directory, verify released
+handles after refusal, and detect a DLL or directory inserted during a lease.
+Restoring the exact host directory restores successful membership verification.
+The harness never executes these authored files or the Office host.
+
+The public runner now records the shared `RuntimeDirectoryLeases.cs` identity
+alongside its Office wrapper and requires the actual colocated-package assertion
+when invoked with `--package`. Its managed build uses one MSBuild worker.
+The first baseline replay at `cafd8794082e47d89164a2748c821893` failed on a stale
+test expectation for the shared path validator's diagnostic. The expectation
+was corrected to its current exact message; path admission was not relaxed.
+The intermediate 53-check run at `f3614f8972fb46a399cf9a573ea85b16` passed before
+the final actual-package assertion was added. All receipts remain retained.
+
+This is runtime-integrity evidence, not rendering or performance acceptance.
+The native source build was active during these checks. Repaired-engine
+selection, startup dependency pins/leases and full application replay remain
+required; the existing chart refusal is unchanged.
 
 
 Repeatable verification
