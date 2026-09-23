@@ -1,7 +1,7 @@
 {
   "engine": "LibreOffice source-built renderer at 8221e31b3ac356a1623c672912a3d2b492f7e3d1",
-  "scope": "Explicit isolated application integration candidate; full clean rebuild, redistribution and release adoption remain separate.",
-  "archiveSha256": "493A044BA2F5C6F8F50DE72295185DE78E70CA81440CE8E00E80A16956AA8B30",
+  "scope": "Isolated application integration candidate from the reconstructed source kit with complete preset-shape resources; final provenance delivery, redistribution and release adoption remain separate.",
+  "archiveSha256": "469821C5CAADA154DBC1E7C7FE277C6C66AE0B004E5E66F0D655BAC9BEDDB8FA",
   "host": {
     "path": "ContextSuite.OfficeHost.exe",
     "bytes": 112640,
@@ -27,10 +27,10 @@
   },
   "inventory": {
     "path": "runtime-files.txt",
-    "bytes": 486131,
-    "sha256": "C0FC7304D818A1A3E6E1F87C72556C2079F5DCD01BA32CC25ED4E4C66DB6CDD4",
-    "files": 3828,
-    "runtimeBytes": 545259841
+    "bytes": 486450,
+    "sha256": "738D1AD2B320A3E1FF6D6E3173CD6B25D5E70C8B707E3B1EBD79220FD0BD738A",
+    "files": 3831,
+    "runtimeBytes": 547045673
   },
   "emptyDirectories": [
     "share/uno_packages",

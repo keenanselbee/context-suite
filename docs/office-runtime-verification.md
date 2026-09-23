@@ -132,6 +132,41 @@ passes all four authored chart cases and narrows refusal to newer/external chart
 and incomplete inspection. Reserved 1.1.0/1.1.1 payloads are untouched.
 
 
+Reconstructed selection with shape resources, 2026-09-23
+--------------------------------------------------------
+
+The current isolated application selection uses reconstructed runtime04 and
+source kit04 from the [source build](office-source-build.md#ooxml-shape-data-packaging-repair).
+The 486,450-byte inventory has SHA-256
+`738D1AD2B320A3E1FF6D6E3173CD6B25D5E70C8B707E3B1EBD79220FD0BD738A`
+and binds 3,831 runtime files totaling 547,045,673 bytes. The application host,
+three adjacent CRT dependencies and required empty directories are unchanged.
+Both public packaging records and the private runtime lease select this identity.
+Its fresh repository copy is
+`.codex-temp/office-repaired-application/8825206a1d11484ca725f28992a67c91/application-engine`.
+
+Runtime verification at `.codex-temp/office-runtime/a91448f9729d4d1fa62a6fdacf4c60f0`
+passes **69 checks** with unchanged inputs. The actual application replay at
+`.codex-temp/office-execution/45172c40ea494afabd97ab556b49910e` passes **43 checks**:
+ordinary Word/Excel/PowerPoint copy publication, collision handling, publication
+failure, pre-publication cancellation and post-publication cleanup retry. All six
+profiles and contexts are retired; original bytes/times and captured inputs are
+unchanged. Release worker and contract builds have zero warnings/errors.
+
+The independent inspection `inspection-521af1fce8b94d4da1c2f52b8f24622e` in that
+run passes structure, authored text, geometry and exact historical control pixels
+for all three PDFs. This closes the ordinary application PowerPoint fill defect
+without relaxing the oracle. The [four-case Excel chart replay](excel-layout-acceptance.md#reconstructed-application-replay-2026-09-23)
+also passes through the current worker and unchanged independent oracle.
+The [PowerPoint layout replay](powerpoint-layout-acceptance.md#reconstructed-application-replay-2026-09-23)
+retains the historical font-size tolerance failure with identical output rasters
+and glyph observations. Earlier failed outputs remain retained. Native
+interruption/owner recovery, broader layout and calculation/date checks still
+require replay against this identity and the final combined candidate. No product
+version, installed application or reserved payload changed; runtime provenance,
+redistribution and adoption remain open.
+
+
 Repeatable verification
 -----------------------
 

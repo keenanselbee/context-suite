@@ -3,13 +3,13 @@
   "architecture": "windows-x86_64",
   "sourceCommit": "8221e31b3ac356a1623c672912a3d2b492f7e3d1",
   "sourceArchiveSha256": "7844FC4BD214147AB219012F57F2458A38D544DC8C0A154AF956882D724AF890",
-  "archiveSha256": "493A044BA2F5C6F8F50DE72295185DE78E70CA81440CE8E00E80A16956AA8B30",
-  "sourceKitManifestSha256": "099024ABFF64DD452F5FC7A959E29EFEE17FB786BF58D989A52B4FF40EAE417A",
-  "sourceKitArchiveSha256": "5A84AC24450726340F2658848FD66DF4B9CF0233278B69DA71B053121ABB826E",
-  "inventorySha256": "C0FC7304D818A1A3E6E1F87C72556C2079F5DCD01BA32CC25ED4E4C66DB6CDD4",
+  "archiveSha256": "469821C5CAADA154DBC1E7C7FE277C6C66AE0B004E5E66F0D655BAC9BEDDB8FA",
+  "sourceKitManifestSha256": "9D0EF709159DC2CCCAD6BE315DB7833032C540507DA55CE0EA656EFC3012AF73",
+  "sourceKitArchiveSha256": "F911DC854D29266182664B0212D6891BD1ABDBAFDD66150F3D02F55653EA2AFA",
+  "inventorySha256": "738D1AD2B320A3E1FF6D6E3173CD6B25D5E70C8B707E3B1EBD79220FD0BD738A",
   "patches": {
     "allow-native-chart-rendering.patch": "E7841F87F62D446B6291F63B0341EA17DB47D3562581BCC80B9E575520845AF2",
     "package-namespace-resolution.patch": "71279141E3706B7EFC770A0F34CF67DA5DB907D74CF8014D94B419C255480300"
   },
-  "purpose": "Isolated application integration candidate. The archive identifies the retained base runtime/CRT bundle; payload-candidate.json independently selects the rebuilt Context Suite host. Clean source-kit rebuild/replay, final provenance delivery and redistribution/adoption remain open. evaluation.json preserves the prior MSI experiment."
+  "purpose": "Isolated application integration candidate from reconstructed source kit04, including the three preset-shape data files. The archive identifies the selected runtime, CRT and current Context Suite host. Full source-tree correspondence and reconstructed native checks pass; final provenance delivery, redistribution and release adoption remain open. evaluation.json preserves the prior MSI experiment."
 }

@@ -253,6 +253,8 @@ publication success does not establish fill fidelity.
 Keep the native safety result separate from this rendering failure. The later
 [shape data packaging repair](office-source-build.md#ooxml-shape-data-packaging-repair)
 identifies omitted preset geometry files and restores exact historical pixels
-through the restricted host without recompiling any native binary. Integrate that
-fresh payload and repeat the relevant worker comparisons before acceptance; the
-failed receipts above retain their original meaning.
+through the restricted host without recompiling any native binary. The later
+[application replay](office-runtime-verification.md#reconstructed-selection-with-shape-resources-2026-09-23)
+selects that payload and passes all three ordinary PDF control-pixel comparisons.
+Repeat the interruption matrix against this identity before accepting recovery
+fidelity; the failed receipts above retain their original meaning.

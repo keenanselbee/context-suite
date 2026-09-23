@@ -133,3 +133,26 @@ Six command-line authorization/scenario guards pass in
 `.codex-temp/powerpoint-layout-guards-bcec9a4db2a04575825dc212811924ce`.
 Repository boundary/theme policy and 191 documentation files pass. These green
 regression checks do not change the explicitly failed D09 fidelity result.
+
+
+Reconstructed application replay, 2026-09-23
+-------------------------------------------
+
+Runtime04 with the complete shape resources repeats the authored deck through
+the actual application at
+`.codex-temp/office-execution/c2be527e3f764f6f8e2128eef772e986`, using worker
+`45172c40ea494afabd97ab556b49910e`. All **seven application checks** pass:
+validated publication, original preservation, no font prompt and complete
+worker/profile/context cleanup. Captured execution inputs are unchanged.
+
+Independent receipt `powerpoint-layout-inspection-receipt-2e180ef58fc0407284bbf4657d5bf02d.json`
+retains **failed aggregate fidelity**. Image and diagram/table pages pass all
+text, placement, font, pixel and negative controls. The typography page preserves
+text, placement and embedded font families/styles but again reports the 20-point
+Arial line as 20.01300048828125 points. The other three font sizes match the
+previous observations above. No tolerance or oracle changed; the pending owner
+decision remains separate from the now-repaired ordinary PowerPoint fill defect.
+`prior-layout-comparison.json` confirms all three rasters, text, render geometry
+and glyph observations exactly match the historical D09 result. Inspection
+inputs are unchanged and all builds have zero warnings/errors.
+This is not final-candidate or human acceptance.

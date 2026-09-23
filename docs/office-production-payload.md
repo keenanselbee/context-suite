@@ -176,6 +176,26 @@ passes the four authored chart cases and retains the narrower unsupported-chart
 and incomplete-inspection guards.
 
 
+Reconstructed shape-resource selection, 2026-09-23
+-------------------------------------------------
+
+The selected runtime04 ZIP is 223,036,511 bytes with SHA-256
+`469821C5CAADA154DBC1E7C7FE277C6C66AE0B004E5E66F0D655BAC9BEDDB8FA`.
+It contains 3,836 files totaling 548,517,003 bytes, including the host, inventory
+and adjacent CRT files. The paired source-kit04 identities are recorded in
+[source-runtime-candidate.json](../tools/office-engine/source-runtime-candidate.json).
+The [runtime verification](office-runtime-verification.md#reconstructed-selection-with-shape-resources-2026-09-23)
+records the application selection and exact ordinary-document pixel comparison.
+
+`.codex-temp/office-payload-tests-7d733a6fab224eb1990bb949e0878c33` passes
+**42 checks**. Three new cases individually remove preset shape geometry,
+adjustment names and VML shape types; each incomplete runtime is refused. Existing
+corruption, membership, partial-copy, path and production-allowlist checks pass.
+The original runtime, reserved 1.1.0 base and captured source inputs are unchanged.
+This packaging-only scratch composition retains historical base assemblies; it
+is not a new formal candidate or evidence for final combined application execution.
+
+
 Remaining acceptance
 --------------------
 

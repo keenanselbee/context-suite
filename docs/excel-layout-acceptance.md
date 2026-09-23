@@ -235,6 +235,21 @@ incomplete evidence. These checks do not establish network enforcement or engine
 redistribution. Reserved candidates 1.1.0 and 1.1.1 remain unchanged.
 
 
+Reconstructed application replay, 2026-09-23
+-------------------------------------------
+
+The reconstructed runtime04 with complete shape resources repeats the four
+authored exports at `.codex-temp/office-execution/8c46526da29b4da381aef4804ba376bb`,
+using the fresh worker from `45172c40ea494afabd97ab556b49910e`. All **14 application
+checks** pass, including both calculation choices, original bytes/timestamps and
+four-profile/context cleanup. Independent receipt
+`layout-inspection-receipt-3aa1a299fcdd4b4b8e38e124bc05ed67.json` passes the same
+chart, value/category, merged/wrapped text, page geometry and negative controls.
+Execution and inspection inputs are unchanged; builds have zero warnings/errors.
+No admission rule or fidelity tolerance changes. This is the current selected
+engine's scoped D07 replay, not human or final combined-candidate acceptance.
+
+
 Isolated renderer repair evidence (2026-09-22)
 ---------------------------------------------
 

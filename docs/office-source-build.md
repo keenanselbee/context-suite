@@ -387,10 +387,12 @@ source extraction, configuration or native compilation was needed. Receipts are
 and `evidence/source-kit-04-standalone/results.json`.
 
 This proves the data repair in the isolated reconstructed payload and updates its
-source-delivery draft. Bind the new runtime identity in application packaging and
-replay relevant actual-worker fidelity/recovery checks before final candidate
-acceptance. The earlier selected paired runtime still lacks these files. Durable
-runtime provenance, distribution terms and adoption remain separate gates.
+source-delivery draft. The later [application selection](office-runtime-verification.md#reconstructed-selection-with-shape-resources-2026-09-23)
+binds runtime04 in packaging and the private lease; ordinary application exports
+now pass exact Word/Excel/PowerPoint control pixels. The earlier failed paired
+outputs remain retained. Replay the remaining fidelity/recovery requirements
+before final candidate acceptance. Durable runtime provenance, distribution
+terms and adoption remain separate gates.
 
 
 Remaining build and adoption work
@@ -404,8 +406,8 @@ compilation, complete source-tree comparison and scoped native/host replays
 above pass. Complete durable source/runtime identity and final packaged-byte
 acceptance before adoption. The paired application recovery replay also exposes
 [missing PowerPoint text-box fill](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23),
-now repaired in the isolated payload above; selected application integration and
-fidelity replay remain required.
+now repaired in the selected application payload above; remaining recovery and
+fidelity requirements still need replay.
 
 Keep the existing runtime and reserved 1.1.1 candidate immutable. The upstream
 archive-derived `version.ini` has an empty build ID; distribution needs a durable
