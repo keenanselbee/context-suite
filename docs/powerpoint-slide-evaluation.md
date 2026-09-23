@@ -234,3 +234,21 @@ errors. Repository boundary, theme-policy and 163-document checks pass. This is
 no-visible-slide handling plus an ordinary-export regression; visible UI,
 screen-reader, theme/DPI, general presentation fidelity and the separate Office
 network-isolation and formal release gates remain open.
+
+
+Paired source-built renderer replay, 2026-09-23
+---------------------------------------------
+
+The current paired application host/renderer passes all **11 application checks**
+at `.codex-temp/office-execution/bbd046b4e4054d63b8330d7d444ff101`.
+Three PDF copies preserve selected slide order, exclude hidden slides and notes,
+and leave original bytes/timestamps unchanged. All three native profiles and
+contexts are removed. Independent receipt
+`slides-inspection-receipt-47ef4465f92048d0a8172c70e2c49812.json` in that run passes
+the three PDF text/page-geometry checks and four negative text controls, with
+unchanged inspector/tool inputs. This does not rerun the empty-deck refusal or
+establish D09 typography, human review or final-candidate acceptance.
+
+The preceding attempt `ce194f27bef1437887e593450cecbbd7` rejected a stale retained
+worker before profile creation; the successful run staged a fresh worker with
+the selected paired engines. No worker-identity check was bypassed.

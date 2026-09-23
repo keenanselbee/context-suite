@@ -10,6 +10,23 @@ establish general Office fidelity or change the renderer.
 The six-document paragraph-mark follow-up below also passes all 16 application
 checks and independent text, line-layout and exact-pixel comparisons.
 
+The paired source-built renderer repeats both matrices successfully on 2026-09-23:
+
+- `.codex-temp/office-execution/525a7f37c5f54f7bbe914444ad64a9a7` passes 30 application
+  checks across thirteen documents. Independent
+  `revision-inspection-1f1fc1ab63d44989ad0afbc43e15e018` passes text and accepted
+  fidelity while retaining the exact-pixel mismatch for moved text under the
+  existing bounded spacing policy.
+- `.codex-temp/office-execution/53ff2fae49fa4718919e04d392ffc23b` passes 16 application
+  checks across six paragraph-mark controls. Independent
+  `revision-inspection-8604800840ca425bbf9e96897a8389b4` passes text, paragraph layout
+  and exact final/control pixel comparisons.
+
+Both runs preserve source bytes/timestamps and captured input identities, publish
+validated copies, and remove all nineteen profiles/contexts. They use the paired
+host/runtime selected for isolated application evaluation, not the reserved
+production package or a completed final-candidate replay. No tolerance changed.
+
 
 Scope
 --------

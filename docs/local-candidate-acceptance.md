@@ -84,12 +84,12 @@ expected text/page order and independent geometry before scoring export.
 | --- | --- | --- |
 | D01 | Authored two-page Word: table, first/running headers, numbered footer, Latin Unicode | Exact text/two pages and expected element placement |
 | D02 | Existing fifteen Word font/style controls | Existing text/geometry/font/pixel controls and correct font prompt selection |
-| D03 | Existing Word revision/paragraph controls | Final text only, retained source revisions and case-specific spacing allowance |
+| D03 | Existing Word revision/paragraph controls | [Paired application replay](word-revision-application.md) passes nineteen documents and independent fidelity checks; existing moved-text spacing allowance retained; final-candidate/human acceptance remains |
 | D04 | Word combining accents, RTL/CJK and anchored image | [Authored export and independent inspection pass](word-layout-acceptance.md): exact characters/direction/placement, glyph/font programs and eight negative controls; human/final-candidate review remains |
 | D05 | Existing five Excel print controls plus ordinary workbook | Areas, breaks, repeated titles, hidden cells/sheets, values and page order |
 | D06 | Existing calculation/date controls under both modes | Correct values where admitted; known errors blocked; no external refresh |
 | D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Four authored chart/layout cases](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23) and [all 48 capacity pages](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23) pass paired application/independent inspection; final-candidate and human acceptance remain |
-| D08 | Ordinary, hidden/reordered and empty-visible-slide PowerPoint controls | Visible order, no notes/hidden output, clear empty-deck refusal |
+| D08 | Ordinary, hidden/reordered and empty-visible-slide PowerPoint controls | [Paired slide replay](powerpoint-slide-evaluation.md#paired-source-built-renderer-replay-2026-09-23) passes visible order and note/hidden exclusion; earlier empty-deck refusal evidence retained; final-candidate/human acceptance remains |
 | D09 | PowerPoint image, diagram/table and mixed typography | [Authored layout evidence](powerpoint-layout-acceptance.md) passes image/table placement and text; aggregate acceptance still fails the declared font-size tolerance |
 | D10 | One approved real DOCX report | Owner/source reference for text, formatting and pagination |
 | D11 | One approved real XLSX workbook | Owner/source reference for areas, displayed values and layout under chosen calculation modes |

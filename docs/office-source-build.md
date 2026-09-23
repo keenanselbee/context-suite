@@ -1,8 +1,8 @@
 Office Renderer Source Build
 ===========================
 
-Status: an isolated source kit is assembled; standalone source preparation and
-fresh configuration pass. Complete clean compilation, native/host replay,
+Status: an isolated source kit is assembled; standalone source preparation,
+fresh configuration, reconstructed compilation and all 22 native cases pass. Host replay,
 durable runtime identity,
 redistribution review and production adoption remain open. This work supports the
 [passive-chart repair](office-chart-renderer-repair.md), not a new Office scope.
@@ -192,8 +192,37 @@ The corrected fifteen-target plan passes against the existing configuration.
 An incremental continuation uses the same compiled tree, toolchain, environment
 and resource limits, with receipts under
 `evidence\source-build-c08e65578faa4f78a191784ffad6dde4`. No source extraction,
-reconfiguration or clean rebuild was requested. Completion, native execution and
-inclusion of the corrected driver in a new source-kit revision remain pending.
+reconfiguration or clean rebuild was requested. This continuation completed with
+exit zero after 591.34 seconds, unchanged inputs and no budget violation. Native
+tests were not executed by the build.
+
+Replay preparation found six hardcoded path sites in the authored native test,
+still referring to the earlier `chart-native` tree. A test-only relocation change
+derives fixture/profile paths from the reviewed gbuild target and validates the
+profile relationship. Its first incremental compilation failed on two C++ API
+type mismatches (`source-build-a53c2025fc6d4ea784fcafa99914ef3c`). The corrected
+test-only build completed in 92.43 seconds with exit zero and unchanged inputs
+at `source-build-2c327426897e48ed98ff49c0a85a6065`.
+The shipping renderer sources are unchanged. Preserve both build receipts and
+the old source kits; the corrected driver and relocated test must be included in
+a new source-kit revision before final delivery.
+
+The actual reconstructed native replay passes all **22 cases** at
+`evidence\reconstructed-native-run-01`. The runner retains the same bounded job,
+separate desktop, exact case-count/transcript, command and inventory requirements;
+its allowed build root points to `source-kit-01`. Ten command/inventory controls
+and ten synthetic transcript checks pass before execution. The tests cover
+passive-chart creation and activation boundaries, native macro/DDE positive and
+blocked controls, inert binary OLE previews in Word/Excel/PowerPoint, and package
+namespace boundaries. All 3,823 shipping runtime files remain unchanged by the
+test-only compilation. Postverification at
+`evidence\reconstructed-native-run-01-postverification.json` confirms all 5,230
+runtime/test/fixture files retain their membership and bytes after execution,
+with zero owned processes left. The local native profile is retained as evidence.
+
+This replay does not establish restricted-host rendering or independent PDF
+fidelity for the reconstructed runtime. Those checks and final source/runtime
+correspondence remain required before adoption or final candidate composition.
 
 
 Standalone kit with build commands
