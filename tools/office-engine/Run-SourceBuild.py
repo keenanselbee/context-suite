@@ -23,13 +23,25 @@ import uuid
 TARGETS = (
     "CppunitTest_embeddedobj_contextsuite",
     "Executable_soffice_bin", "Executable_soffice_exe", "Executable_soffice_com",
-    "Package_setup", "Package_setup_ure", "Package_instsetoo_native_setup",
+    "Package_instsetoo_native_setup",
     "Package_instsetoo_native_setup_ure", "Rdb_services", "Package_extras_cfgusr",
     "Package_extras_autotextuser", "Package_extras_database",
     "Package_extras_databasebiblio", "Package_extras_gallmytheme",
     "Package_readlicense_oo_license", "Package_readlicense_oo_files",
     "Package_readlicense_oo_readmes",
 )
+PACKAGE_DEFINITIONS = {
+    "instsetoo_native_setup": "instsetoo_native/Package_setup.mk",
+    "instsetoo_native_setup_ure": "instsetoo_native/Package_setup_ure.mk",
+    "extras_cfgusr": "extras/Package_cfgusr.mk",
+    "extras_autotextuser": "extras/Package_autotextuser.mk",
+    "extras_database": "extras/Package_database.mk",
+    "extras_databasebiblio": "extras/Package_databasebiblio.mk",
+    "extras_gallmytheme": "extras/Package_gallmytheme.mk",
+    "readlicense_oo_license": "readlicense_oo/Package_license.mk",
+    "readlicense_oo_files": "readlicense_oo/Package_files.mk",
+    "readlicense_oo_readmes": "readlicense_oo/Package_readlicense_oo_readmes.mk",
+}
 WORKSPACE_LIMIT = 100 * 1024**3
 ENVIRONMENT_KEYS = {
     "PATH", "TMPDIR", "DOTNET_CLI_HOME", "NUGET_PACKAGES",
@@ -119,6 +131,16 @@ def preparation(args):
     source = local_path(source_match.group(1))
     if source == workspace or not source.is_relative_to(workspace):
         raise ValueError("Configured sources must be inside the owned workspace.")
+    if [target.removeprefix("Package_") for target in TARGETS if target.startswith("Package_")] != list(PACKAGE_DEFINITIONS):
+        raise ValueError("Package targets differ from their reviewed source definitions.")
+    package_inputs = []
+    for name, relative in PACKAGE_DEFINITIONS.items():
+        path = local_path(source / relative)
+        content = path.read_text(encoding="utf-8")
+        definitions = re.findall(r"\$\(eval\s+\$\(call\s+gb_Package_Package\s*,\s*([^,\s]+)\s*,", content)
+        if definitions != [name]:
+            raise ValueError("Package target is not declared by its source recipe: " + name)
+        package_inputs.append(path)
     python_recipe = source / "external/python3/ExternalProject_python3.mk"
     local_path(python_recipe)
     recipe = python_recipe.read_text(encoding="utf-8")
@@ -153,7 +175,7 @@ def preparation(args):
     script += "    " + shlex.quote(make.as_posix()) + ' -j2 PARALLELISM=2 gb_SUPPRESS_TESTS=1 "$target"\n'
     script += "done\n"
     inputs = {str(path): digest(path) for path in
-              (Path(__file__).resolve(), bash, make, environment_file, build / "config_host.mk", python_recipe)}
+              (Path(__file__).resolve(), bash, make, environment_file, build / "config_host.mk", python_recipe, *package_inputs)}
     return workspace, build, bash, script, inputs
 
 

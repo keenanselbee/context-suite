@@ -35,6 +35,10 @@ def main():
     (build / "config_host.mk").write_text(config, encoding="utf-8")
     (source / "external/python3/ExternalProject_python3.mk").write_text(
         "/MP1 /maxcpucount:1 /p:MultiProcessorCompilation=false\n", encoding="utf-8")
+    for name, relative in driver.PACKAGE_DEFINITIONS.items():
+        path = source / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("$(eval $(call gb_Package_Package," + name + ",authored-fixture))\n", encoding="utf-8")
     environment = {
         "PATH": "/usr/bin:/bin", "TMPDIR": fixture.as_posix() + "/temp",
         "DOTNET_CLI_HOME": (fixture / "dotnet-home").as_posix(),
@@ -61,9 +65,20 @@ def main():
     plan = json.loads(run("valid-plan", "--plan", True).stdout)
     assert plan["Jobs"] == 2 and plan["WorkspaceLimitBytes"] == 100 * 1024**3
     assert plan["Targets"] == list(driver.TARGETS) and not plan["NativeTestsExecuted"]
+    assert len(plan["Targets"]) == 15 and "Package_setup" not in plan["Targets"] and "Package_setup_ure" not in plan["Targets"]
     assert "unset MAKEFLAGS MFLAGS GNUMAKEFLAGS" in plan["Script"]
     assert before == sorted(str(p.relative_to(fixture)) for p in fixture.rglob("*"))
     checks.append("plan-creates-no-build-files")
+    setup = source / "instsetoo_native/Package_setup.mk"
+    setup_original = setup.read_bytes()
+    setup.write_bytes(setup_original.replace(b"instsetoo_native_setup", b"setup"))
+    run("reject-package-filename-as-target", "--plan", False)
+    setup.write_bytes(setup_original)
+    setup.rename(setup.with_suffix(".missing"))
+    run("reject-missing-package-definition", "--plan", False)
+    setup.with_suffix(".missing").rename(setup)
+    assert str(setup) in plan["Inputs"]
+    checks.append("package-definitions-bound-to-plan")
     for label, key, value in [
         ("reject-extra-jobs", "CMAKE_BUILD_PARALLEL_LEVEL", "4"),
         ("reject-external-temp", "TMPDIR", "C:/Windows/Temp"),

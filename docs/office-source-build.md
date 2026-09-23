@@ -148,13 +148,15 @@ Reusable configured-build driver
 [Run-SourceBuild.py](../tools/office-engine/Run-SourceBuild.py) provides a reusable
 execution step for an already configured source tree. Workspace, build, Bash,
 Make and reviewed child-environment JSON paths are explicit. `--plan` validates
-them and prints the fixed seventeen-target command without creating files or
+them and prints the fixed fifteen-target command without creating files or
 launching a build. `--execute` records input/tool hashes, command, process, log,
 workspace measurements and terminal result in a fresh evidence directory.
 
 The driver requires source/build/cache/temp paths inside the owned workspace,
 ordinary paths, two configured jobs, dependency hashing and the bounded Python
-recipe. It clears inherited Make flags, supplies `PARALLELISM=2` explicitly and
+recipe. Each package target must match its source recipe's declared package name;
+those recipes are included in the input hashes. It clears inherited Make flags,
+supplies `PARALLELISM=2` explicitly and
 runs targets sequentially. An OS-held byte lock prevents two instances of this
 driver from using the same configured build; it does not coordinate independent
 manual Make commands or the earlier one-off launcher. Do not start another build
@@ -168,19 +170,30 @@ The environment JSON uses the fixed reviewed export names from the historical
 build script, including child-local tool PATH, temporary/cache locations and the
 existing telemetry/parallelism settings. No machine-wide environment is changed.
 
-[Test-SourceBuild.py](../tools/office-engine/Test-SourceBuild.py) passes sixteen
-checks at `.codex-temp/office-source-build-driver/6272a86d409645199905cff07b4a3ca9`.
+[Test-SourceBuild.py](../tools/office-engine/Test-SourceBuild.py) passes nineteen
+checks at `.codex-temp/office-source-build-driver/62ba8fb1356645f180b43401bf7c3955`.
 Actual Bash/Make run harmless echo/failure targets in a path containing spaces.
 The tests verify no-write planning, invalid limits/cache/temp refusal, inherited
 Make-flag removal, concurrent-driver refusal, exact target order and stopping at
-the first failure with its receipt retained. They run no compiler or Office
+the first failure with its receipt retained. Missing or mismatched package
+definitions are rejected during planning. They run no compiler or Office
 engine and do not establish runtime resource-limit or interruption acceptance.
 
-The read-only plan against the reconstructed configuration also matches all
-seventeen targets and the exact reviewed child environment. After attempt 01
-terminated, this driver resumed the existing tree with that environment. Its
-receipts are under `evidence\source-build-4e24fc1032364d8d81456e7e81273ace`.
-Completion, native execution and inclusion in the final source kit remain pending.
+The earlier seventeen-target run under
+`evidence\source-build-4e24fc1032364d8d81456e7e81273ace` ended with exit 2 after
+11,498 seconds on 2026-09-23. It compiled the native test and three executable
+targets, then stopped because `Package_setup` is not a registered Make target.
+The two invalid filename-derived aliases were removed; the declared targets
+`Package_instsetoo_native_setup` and `Package_instsetoo_native_setup_ure` were
+already present. Inputs remained unchanged and the workspace stayed below its
+100-GiB limit. This is a failed build, not native acceptance.
+
+The corrected fifteen-target plan passes against the existing configuration.
+An incremental continuation uses the same compiled tree, toolchain, environment
+and resource limits, with receipts under
+`evidence\source-build-c08e65578faa4f78a191784ffad6dde4`. No source extraction,
+reconfiguration or clean rebuild was requested. Completion, native execution and
+inclusion of the corrected driver in a new source-kit revision remain pending.
 
 
 Standalone kit with build commands
@@ -205,6 +218,10 @@ Every archive member was read back and matched to its size and hash.
 Both planners run from the kit directory with no repository input dependency.
 Configure options match the successful baseline after changing only the kit
 dependency-cache path, and the build plan retains the same seventeen targets.
+This historical plan includes the two invalid aliases described above; its
+planning result does not establish that all targets can execute. Evaluation 02
+is retained unchanged and must be superseded with the corrected build driver
+before final source delivery.
 No new build directory is created and all kit members remain unchanged.
 `evidence\source-kit-02-standalone\results.json` records this scoped result.
 It uses the existing prepared source, configured build and installed tools;
