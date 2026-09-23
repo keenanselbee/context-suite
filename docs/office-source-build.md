@@ -372,12 +372,25 @@ mapping are removed, and all captured source/runtime/tool inputs are unchanged.
 The first host runner failed on an incorrectly encoded fixture pathname before
 profile creation; its receipt remains. No fidelity tolerance was changed.
 
-This proves the data repair in the isolated reconstructed payload. Update the
-source-kit build helper, bind the new runtime identity in application packaging,
-and replay relevant actual-worker fidelity/recovery checks before final candidate
-acceptance. The earlier selected paired runtime still lacks these files. Source
-kit03 source-tree correspondence remains valid: this change alters the build
-helper and installed data selection, not the upstream source or patches.
+Source kit04 at `tools/office-source-kit-04` now contains the corrected build
+helper from public revision `7a02d1297fa024641362b00b6bfb63c7cae62795`. Its 169 files
+total 1,148,557,627 bytes; manifest SHA-256 is
+`9D0EF709159DC2CCCAD6BE315DB7833032C540507DA55CE0EA656EFC3012AF73`.
+The verified 1,148,584,167-byte ZIP has SHA-256
+`F911DC854D29266182664B0212D6891BD1ABDBAFDD66150F3D02F55653EA2AFA`.
+Only README and the two build-driver files differ from kit03. Every source archive,
+dependency, patch, native addition and preparation helper is unchanged; its
+148,225-file source comparison remains applicable. Standalone configure/build
+plans pass with the seventeen targets and no repository input dependency. No new
+source extraction, configuration or native compilation was needed. Receipts are
+`evidence/office-source-kit-04.json`, `evidence/office-source-kit-04-archive.json`
+and `evidence/source-kit-04-standalone/results.json`.
+
+This proves the data repair in the isolated reconstructed payload and updates its
+source-delivery draft. Bind the new runtime identity in application packaging and
+replay relevant actual-worker fidelity/recovery checks before final candidate
+acceptance. The earlier selected paired runtime still lacks these files. Durable
+runtime provenance, distribution terms and adoption remain separate gates.
 
 
 Remaining build and adoption work
