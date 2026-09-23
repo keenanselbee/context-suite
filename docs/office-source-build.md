@@ -150,7 +150,7 @@ Reusable configured-build driver
 [Run-SourceBuild.py](../tools/office-engine/Run-SourceBuild.py) provides a reusable
 execution step for an already configured source tree. Workspace, build, Bash,
 Make and reviewed child-environment JSON paths are explicit. `--plan` validates
-them and prints the fixed fifteen-target command without creating files or
+them and prints the fixed seventeen-target command without creating files or
 launching a build. `--execute` records input/tool hashes, command, process, log,
 workspace measurements and terminal result in a fresh evidence directory.
 
@@ -322,6 +322,64 @@ The current worker still refuses the known DDE inputs before native access:
 No DDE support, affirmative network-denial result or general fidelity is claimed.
 
 
+OOXML shape data packaging repair
+---------------------------------
+
+The missing PowerPoint fill traced to omitted runtime data, not changed renderer
+code. The CLI diagnostic at `.codex-temp/powerpoint-fill-diagnostic-01` reproduces
+the loss with Evaluation 03. Its ODP export retains the authored `#ddeeff` fill
+but has no preset geometry path. The pinned importer reads
+`share/filter/oox-drawingml-cs-presets`; that directory was absent from the partial
+build payload. Upstream `oox/Package_customshapes.mk` and `oox/Package_generated.mk`
+declare the three required files below.
+
+| Runtime data | Bytes | Source |
+| --- | --- | --- |
+| `oox-drawingml-cs-presets` | 1,696,554 | Verified source tree, `oox/source/drawingml/customshapes/` |
+| `oox-drawingml-adj-names` | 6,288 | Existing `oox/generated/misc` custom-target output |
+| `vml-shape-types` | 126,322 | Existing `oox/generated/misc` custom-target output |
+
+`evidence/shape-resource-regeneration-01/results.json` independently regenerates
+both generated files from the fresh, verified source kit using the existing Perl
+tool. Both match the original build outputs byte-for-byte. The presets file and
+all generator inputs match the completed source-tree comparison. No compiler runs.
+
+The configured-build driver now includes `Package_oox_customshapes` and
+`Package_oox_generated`, with their source recipe declarations in its input hashes.
+Its nineteen boundary/harmless-Make checks pass at
+`.codex-temp/office-source-build-driver/c5246bcfe3ca41bb8f1cbf6d99b760a3`.
+A reviewed dry run selects only those two data packages. Actual execution at
+`evidence/source-build-7d3fc5f31dc143d2b9688e011bbde74b` exits zero in 57.42 seconds;
+`evidence/shape-resource-packages-01-preparation/postverification.json` confirms
+exactly three added data files and all 3,823 earlier build-runtime files unchanged.
+This is a package-copy continuation, not another native compilation. The two-job
+and 100-GiB workspace limits remain; no clean or reconfiguration is performed.
+
+Fresh `tools/office-review-runtime-04` retains every Evaluation 03 compiled binary
+and adds these data files plus its revised inventory. Its 3,831 runtime files total
+547,045,673 bytes; inventory SHA-256 is
+`738D1AD2B320A3E1FF6D6E3173CD6B25D5E70C8B707E3B1EBD79220FD0BD738A`.
+The complete engine ZIP contains 3,836 files, expands to 548,517,003 bytes and is
+223,036,511 bytes compressed, with SHA-256
+`469821C5CAADA154DBC1E7C7FE277C6C66AE0B004E5E66F0D655BAC9BEDDB8FA`.
+Every archive entry was read back and verified. Earlier payloads remain unchanged.
+
+`.codex-temp/powerpoint-fill-diagnostic-02` restores both original control-page
+rasters exactly through the CLI. `.codex-temp/powerpoint-fill-host-02` repeats the
+same exact-pixel, text and two-page result through the actual restricted host,
+retaining macro/active-content policy and source hashes. The native profile and
+mapping are removed, and all captured source/runtime/tool inputs are unchanged.
+The first host runner failed on an incorrectly encoded fixture pathname before
+profile creation; its receipt remains. No fidelity tolerance was changed.
+
+This proves the data repair in the isolated reconstructed payload. Update the
+source-kit build helper, bind the new runtime identity in application packaging,
+and replay relevant actual-worker fidelity/recovery checks before final candidate
+acceptance. The earlier selected paired runtime still lacks these files. Source
+kit03 source-tree correspondence remains valid: this change alters the build
+helper and installed data selection, not the upstream source or patches.
+
+
 Remaining build and adoption work
 --------------------------------
 
@@ -333,7 +391,8 @@ compilation, complete source-tree comparison and scoped native/host replays
 above pass. Complete durable source/runtime identity and final packaged-byte
 acceptance before adoption. The paired application recovery replay also exposes
 [missing PowerPoint text-box fill](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23),
-which remains a required fidelity repair.
+now repaired in the isolated payload above; selected application integration and
+fidelity replay remain required.
 
 Keep the existing runtime and reserved 1.1.1 candidate immutable. The upstream
 archive-derived `version.ini` has an empty build ID; distribution needs a durable

@@ -12,9 +12,11 @@ now pass compilation, 22 native cases and scoped restricted-host chart/preview,
 external-link and macro controls. All 148,225 fresh-kit source files match the
 compiled tree. DDE retains its known refusal. The paired
 [interruption replay](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23)
-passes 90 safety checks but exposes missing PowerPoint text-box fill. That defect,
-remaining file/process/network acceptance, final runtime identity and adoption
-are open.
+passes 90 safety checks but exposes missing PowerPoint text-box fill. The
+[data-only package repair](office-source-build.md#ooxml-shape-data-packaging-repair)
+restores exact control pixels through the restricted host without recompilation.
+Application integration, remaining file/process/network acceptance, final runtime
+identity and adoption are open.
 Reserved candidates retain their original failed chart behavior.
 The [chart-loss regression](excel-layout-acceptance.md) keeps chart fidelity in the
 [active goal](broad-file-support-goal.md) and keeps `DisableActiveContent=true`.

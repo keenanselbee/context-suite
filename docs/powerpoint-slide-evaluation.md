@@ -265,3 +265,9 @@ prior uninterrupted paired application output; it is not caused by interruption.
 The historical exact-pixel comparison remains failed. Restore the authored fill
 and verify it independently before treating paired PowerPoint output as accepted.
 This defect is separate from the pending D09 font-size tolerance decision.
+
+The [isolated shape-data repair](office-source-build.md#ooxml-shape-data-packaging-repair)
+subsequently restores both historical page rasters exactly through the real
+restricted host. The missing preset geometry files are now included in the build
+plan; no native binary or fidelity threshold changed. Application runtime
+selection and its actual-worker replay remain pending.

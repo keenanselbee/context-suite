@@ -33,9 +33,10 @@ newer/external charts and incomplete inspection remain refused. The paired
 also passes; D07 still needs final-candidate and human acceptance. The paired
 [active-PDF interruption matrix](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23)
 passes 90 safety checks, but independent output comparison exposes missing
-PowerPoint text-box fill. That fidelity defect remains a required engineering
-repair, separate from the D09 typography decision. Final-candidate readiness
-is not established by the passing safety checks.
+PowerPoint text-box fill. The [isolated package repair](office-source-build.md#ooxml-shape-data-packaging-repair)
+restores exact historical rasters without native recompilation; application
+integration and worker replay remain required. This is separate from the D09
+typography decision. Passing safety checks alone do not establish readiness.
 
 | Family | Required candidate scope | Preservation boundary |
 | --- | --- | --- |

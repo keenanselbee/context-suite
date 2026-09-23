@@ -29,6 +29,7 @@ TARGETS = (
     "Package_extras_databasebiblio", "Package_extras_gallmytheme",
     "Package_readlicense_oo_license", "Package_readlicense_oo_files",
     "Package_readlicense_oo_readmes",
+    "Package_oox_customshapes", "Package_oox_generated",
 )
 PACKAGE_DEFINITIONS = {
     "instsetoo_native_setup": "instsetoo_native/Package_setup.mk",
@@ -41,6 +42,8 @@ PACKAGE_DEFINITIONS = {
     "readlicense_oo_license": "readlicense_oo/Package_license.mk",
     "readlicense_oo_files": "readlicense_oo/Package_files.mk",
     "readlicense_oo_readmes": "readlicense_oo/Package_readlicense_oo_readmes.mk",
+    "oox_customshapes": "oox/Package_customshapes.mk",
+    "oox_generated": "oox/Package_generated.mk",
 }
 WORKSPACE_LIMIT = 100 * 1024**3
 ENVIRONMENT_KEYS = {

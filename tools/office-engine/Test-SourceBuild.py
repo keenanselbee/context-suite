@@ -65,7 +65,8 @@ def main():
     plan = json.loads(run("valid-plan", "--plan", True).stdout)
     assert plan["Jobs"] == 2 and plan["WorkspaceLimitBytes"] == 100 * 1024**3
     assert plan["Targets"] == list(driver.TARGETS) and not plan["NativeTestsExecuted"]
-    assert len(plan["Targets"]) == 15 and "Package_setup" not in plan["Targets"] and "Package_setup_ure" not in plan["Targets"]
+    assert len(plan["Targets"]) == 17 and "Package_setup" not in plan["Targets"] and "Package_setup_ure" not in plan["Targets"]
+    assert {"Package_oox_customshapes", "Package_oox_generated"} <= set(plan["Targets"])
     assert "unset MAKEFLAGS MFLAGS GNUMAKEFLAGS" in plan["Script"]
     assert before == sorted(str(p.relative_to(fixture)) for p in fixture.rglob("*"))
     checks.append("plan-creates-no-build-files")

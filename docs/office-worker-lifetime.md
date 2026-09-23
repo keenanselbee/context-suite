@@ -250,7 +250,9 @@ paired application publication at `be096d79feb741d3a3834d004c77c700`: the loss
 predates this interruption replay. No tolerance was relaxed and that earlier
 publication success does not establish fill fidelity.
 
-Keep the native safety result separate from this open rendering defect. Locate
-its cause and retain the original fill expectations before final packaging or
-PowerPoint acceptance; a full native rebuild is not justified until a concrete
-source change is identified.
+Keep the native safety result separate from this rendering failure. The later
+[shape data packaging repair](office-source-build.md#ooxml-shape-data-packaging-repair)
+identifies omitted preset geometry files and restores exact historical pixels
+through the restricted host without recompiling any native binary. Integrate that
+fresh payload and repeat the relevant worker comparisons before acceptance; the
+failed receipts above retain their original meaning.
