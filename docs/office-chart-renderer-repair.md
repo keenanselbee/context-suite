@@ -834,6 +834,54 @@ does not admit ODF/macro-enabled conversion or prove OOXML VBA compatibility,
 arbitrary macro coverage, embedded OLE behavior, network denial, application
 publication or final-candidate acceptance. Those separate gates remain open.
 
+### Word embedded-object document controls (2026-09-22)
+
+Three authored DOCX fixtures compare an ordinary image with two binary OLE
+objects carrying the same saved preview. One compound file has a random class
+ID; the other claims the exact chart class ID. Both contain only an inert marker
+stream, with no executable, macro or external target. Windows structured-storage
+APIs independently read their class IDs and marker bytes without activating an
+OLE server. Their preview is a fixed red/green 144-by-72-point rectangle on a
+Letter page, alongside fixed text.
+
+Native draft 24 imports the actual DOCX packages. The image control has no
+embedded object; each OLE document retains exactly one object and its replacement
+graphic. Both objects remain `LOADED`, have no component, expose only that state
+and refuse `RUNNING`, `ACTIVE`, `INPLACE_ACTIVE` and `UI_ACTIVE`. The prior native
+factory availability/storage-boundary positive controls remain in the same suite.
+Build 21 and all twenty native cases pass in
+`G:\ContextSuite-OfficeBuild\evidence\native-chart-run-22\result.json`.
+The native job finishes with zero remaining children. All 5,208 inventoried
+runtime/template/fixture files remain unchanged, totaling 638,773,803 bytes.
+
+`G:\ContextSuite-OfficeBuild\evidence\embedded-host-export-02\results.json`
+passes all three exports through the actual restricted host. Public preflight
+admits the ordinary DOCX packages. Independent qpdf/PDFium checks require exact
+text, one Letter page, correctly sized/positioned red/green regions and identical
+full-page pixels to the image-only control. The oracle also rejects missing,
+swapped, shrunken and shifted previews. Host calls take 510-580 ms. Sources,
+snapshots and all 4,112 runtime/verifier files remain unchanged; all three native
+profile directories and registry mappings are removed.
+
+The first host attempt remains failed raster acceptance. Its image-only VML
+shape had an implicit border absent from the embedded previews. Independent PDF
+inspection found identical image data and placement, but an extra stroke on the
+control. Fixture 02 explicitly disables border/fill for all three shapes. The
+unchanged exact-pixel requirement then passes; the native suite is repeated for
+those exact corrected documents. All three first-attempt profiles are also gone.
+
+`embedded-word-native-host-binding-01.json` verifies the same 3,818 renderer
+files and six fixture/support files across native and restricted-host evidence.
+It also verifies the actual runner's twenty required case names against native
+draft 24, explicitly correcting stale descriptive labels retained in the runner
+draft metadata without rewriting prior receipts.
+
+This closes the scoped Word binary-object inactivity and saved-preview check.
+It does not establish installed OLE-server activation, every object type, Excel
+or PowerPoint embedded-object import, file/network/process enforcement, actual
+application publication or final-candidate acceptance. Production host sources,
+runtime pins and interim refusals remain unchanged.
+
 ### Runtime linkage constraint
 
 Inspection of the expanded combined candidate's

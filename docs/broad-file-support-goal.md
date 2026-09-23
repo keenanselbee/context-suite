@@ -168,6 +168,14 @@ unchanged and the native profile is removed. Public admission separately refuses
 this ODF document despite its `.docx` name. This closes that scoped automatic-macro
 control, not OOXML VBA compatibility, embedded OLE documents, network enforcement
 or final-candidate acceptance.
+The subsequent [Word embedded-object controls](office-chart-renderer-repair.md#word-embedded-object-document-controls-2026-09-22)
+pass in the twenty-case native suite and three actual restricted-host exports.
+Two inert binary objects, including one claiming the chart class, remain
+loaded-only and retain saved previews. Their PDFs match an ordinary image
+control exactly after fixing its unintended default border; the failed first
+attempt remains recorded. Originals, runtime identities and profile cleanup
+pass. Excel/PowerPoint embedded objects and the remaining isolation/application
+and adoption gates are still open.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
