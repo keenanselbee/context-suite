@@ -1,7 +1,7 @@
 Office Chart Renderer Repair
 ============================
 
-Status: revised source patch compiled and linked; fifteen authored native cases
+Status: revised source patch compiled and linked; seventeen authored native cases
 and four passive Excel PDF comparisons pass in the isolated Windows build.
 Application replay, restricted-host security and adoption remain pending.
 The [chart-loss regression](excel-layout-acceptance.md)
@@ -492,8 +492,9 @@ This is limited artifact inspection, not owner, desktop or accessibility accepta
 
 This establishes passive native PDF rendering with the restriction enabled.
 The interim shipping chart guard remains. Actual application publication and
-restricted-host replay, hostile binary OLE,
-Word/PowerPoint charts, adoption and final-candidate replay remain required.
+restricted-host replay, Word/PowerPoint charts, adoption and final-candidate
+replay remain required. The later native OLE checks below cover component-level
+refusal and preservation, not whole-document hostile-input enforcement.
 
 ### Interactive positive controls (2026-09-22)
 
@@ -536,6 +537,53 @@ and hashes for all 5,202 runtime/template files, totaling 638,581,873 bytes, and
 binds the source, runner, command, launcher and retained profile. This closes the
 native interactive-positive-control gap. Binary OLE, actual restricted-host
 enforcement and application/final-candidate replay remain open.
+
+### Binary OLE boundary controls (2026-09-22)
+
+Draft 11 adds two native cases to the existing fifteen. Its build-08 receipt
+records successful compilation and linkage. The test makefile now selects
+installed/common configuration explicitly, declares the Calc/chart UI packages
+and links Windows structured-storage APIs. This removes the earlier mismatch
+between the recipe's sparse test menus and the successful reviewed invocation.
+
+The binary fixture case creates compound files entirely in memory using Windows
+storage APIs. Each contains only an authored inert marker. The test reopens the
+storage and verifies its class ID and marker before passing bytes to UNO. It
+combines a random class ID and the exact native chart class ID with OLE and
+chart media types, covering all four identity/label combinations. Both direct
+factories refuse them; the router retains only a LOADED placeholder with no
+component and refuses all four runnable/interactive states. Copying that
+placeholder preserves the original binary payload exactly, as does the source.
+The fixture uses no executable, external link, OLE server or installed Office app.
+
+The second case instantiates the actual Windows OLE factory and exercises its
+existing-entry, new-object, media, link and user-initialization paths. With the
+restriction enabled, every call throws the policy refusal before touching an
+authored storage barrier. With it disabled, each same call reaches that barrier
+exactly once and throws its distinct sentinel exception. Restoring the
+restriction again prevents all storage access. These positive controls prove
+that available factory dispatch, rather than a missing component or malformed
+object, distinguishes the refusal. They deliberately stop before OLE object
+loading; they do not demonstrate successful OLE server activation or network
+enforcement.
+
+Runner 08 requires the exact seventeen names and `OK (17)`. It builds with zero
+warnings/errors, passes ten synthetic transcript checks, ten command/inventory
+guards and all seventeen existing process-lifetime checks. Its linked process
+helper is unchanged. `evidence\native-chart-run-10\result.json` records all
+seventeen native cases passing in 621 ms, two processes, zero active children
+after cleanup and 42,033,152 bytes peak job memory. All 5,202 inventoried files
+remain unchanged, totaling 638,649,457 bytes, as recorded in
+`evidence\native-chart-run-10-postverification.json`. The preparation and
+postverification receipts bind the draft, compiled DLL, runner and exact command.
+
+This closes the scoped native binary-OLE refusal/preservation gap. Actual
+restricted-host document controls, file/network/process enforcement, application
+publication, Word/PowerPoint charts and final-candidate replay remain required.
+The production host currently loads `mergedlo.dll`; this isolated build exports
+the same embedding hook from `sofficeapp.dll` and Windows loop functions from
+`vcllo.dll`. Export-table inspection alone does not establish host compatibility.
+The production host, runtime pins and shipping chart refusal remain unchanged.
 
 ### Runtime linkage constraint
 

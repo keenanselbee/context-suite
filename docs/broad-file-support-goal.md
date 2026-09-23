@@ -64,7 +64,9 @@ The next completion steps are:
    affirmative restricted-process network evidence. The native chart-build setup
    was approved on 2026-09-20 in `G:\ContextSuite-OfficeBuild`; the patched
    component and native test runtime now compile and link, and all fifteen
-   authored native cases pass. Four passive native Excel PDF comparisons also
+   original authored native cases pass; the later seventeen-case suite adds
+   binary OLE refusal/preservation and strengthens interactive controls.
+   Four passive native Excel PDF comparisons also
    pass with active-content blocking enabled; application and restricted-host
    acceptance remain pending. Network collection needs the
    pending attended administrator step. Chart refusal remains interim protection.
@@ -123,6 +125,11 @@ positive controls, paired with restricted refusals before client callbacks.
 Its separate-desktop and real-menu checks pass; all 5,202 inventoried runtime
 files remain unchanged. Earlier UI-control failures are retained in the repair
 record. This is native API evidence, not desktop usability or host isolation.
+The following seventeen-case native replay also passes four inert binary OLE
+identity/label combinations and five OLE factory paths with observed storage
+boundary controls. Payload copies retain their bytes. This closes the scoped
+native OLE gap; whole-document hostile-input checks under the actual restricted
+host, application replay and engine adoption remain open.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
