@@ -147,6 +147,26 @@ announcements separately. Unavailable checks stay explicitly unverified release
 gates. Hidden-window checks or earlier Tab behavior do not prove these results.
 Installed Explorer acceptance retains its separate authorization boundary.
 
+The historical worksheets are also collected by
+[Prepare-OwnerReview.py](../tools/Prepare-OwnerReview.py). It requires a
+`HistoricalDraft` manifest with four `Packs` entries (`audio`, `expanded-audio`,
+`images`, `documents`), each declaring its scratch `Directory` and complete
+`Files` map of relative paths to `Bytes` and `Sha256`. It verifies every artifact
+and local worksheet link, then copies unchanged worksheets into a fresh scratch
+collection. It opens no viewer and does not perform media conversion.
+
+The retained manifest `.codex-temp/owner-review-inputs-01.json` assembles 288 files
+(340,485,067 bytes): 25 generated audio comparisons, 16 image outputs and 62
+document entries. Document statuses remain 50 passes, five failures, five controls
+and two refusals. The draft index explicitly leaves human and final-candidate
+acceptance unset. [Test-OwnerReview.py](../tools/Test-OwnerReview.py) passes eight
+assembly/identity/refusal checks at
+`.codex-temp/owner-review-checks/c80cc5e0323442708084890ad05713d7`; the collection is
+`.codex-temp/owner-review-draft/6bb4ef7de745406090b6347fa613c702/index.html`.
+Run either tool with the manifest path as its sole argument. These checks do not
+prove visual presentation, worksheet interaction or media fidelity. The final
+candidate still needs refreshed comparisons; this draft cannot clear a gate.
+
 
 Performance and package review limits
 ------------------------------------
