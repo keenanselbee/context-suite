@@ -153,6 +153,13 @@ but this is not a DDE isolation pass. Shared preflight now refuses recognized
 DDE workbooks in both modes; 4,490 foundation and 28 actual-worker DDE-refusal
 checks pass. Originals and runtime inputs remain intact and all five evaluation
 profiles are removed. Required renderer security evidence remains open.
+The subsequent [native DDE control](office-chart-renderer-repair.md#native-dde-policy-control-2026-09-22)
+passes in the expanded eighteen-case native suite: the real Calc link reads the
+authored service value with restriction disabled, while restricted refreshes
+preserve saved values and make no further requests. All 5,202 input hashes and
+process cleanup pass. Earlier harness timeout/asynchronous-read failures remain
+recorded. This closes the native DDE availability/control gap, not the failed
+OOXML DDE matrix or whole-document AppContainer acceptance.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This

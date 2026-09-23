@@ -1,7 +1,7 @@
 Office Chart Renderer Repair
 ============================
 
-Status: revised source patch compiled and linked; seventeen authored native cases
+Status: revised source patch compiled and linked; eighteen authored native cases
 pass. Four Excel and two Word/PowerPoint chart PDF comparisons pass through the
 restricted host in the isolated Windows build.
 Application replay, restricted-host security and adoption remain pending.
@@ -748,6 +748,47 @@ runtime and the same worker remains usable. Evidence is retained under
 The refusal prevents the demonstrated conversion defect. It does not turn the
 failed native DDE matrix into a pass or close whole-document macro/OLE/DDE,
 file/network/process, application chart replay or engine-adoption gates.
+
+### Native DDE policy control (2026-09-22)
+
+Draft 15 adds an eighteenth native case to the existing seventeen. It creates a
+random, data-only DDE service on the same isolated Windows test desktop, serving
+only the authored topic/item and value `987654`. Execute, poke and advise remain
+refused. A real Calc UNO DDE link starts with saved value `123456`. With
+`DisableActiveContent` enabled, explicit refresh retains that value and makes no
+service connection/request. With the policy disabled in this disposable profile,
+refresh reads exactly `987654` and both service counters increase. Restoring the
+restriction and saved value prevents further service calls and preserves `123456`.
+The service shuts down and unregisters before the case completes.
+
+Earlier attempts remain failed evidence. Run 11 hit the runner's 120-second
+limit because the test waited for DDE service startup without processing Windows
+messages. Draft 13 pumps messages during startup/shutdown. Runs 12 and 13 then
+completed but inspected the initial empty asynchronous result too early. Pinned
+`SvDDEObject::GetData` schedules a DDE request before returning that empty value;
+draft 15 processes callbacks and waits at most five seconds for the exact expected
+response. It accepts only the exact authored text or numeric value, not partial
+text or permissive parsing. Both failed completed runs retain unchanged-input
+receipts. None of these harness corrections changes a production source patch or
+loosens active-content restrictions.
+
+Native build 12 compiles and links successfully. The unchanged runner 09 requires
+all eighteen exact case names and `OK (18)`; its ten synthetic transcript checks
+and ten command/inventory guards pass. Its process helper still matches the
+previous seventeen lifetime checks. The fixed receipt
+`G:\ContextSuite-OfficeBuild\evidence\native-chart-run-14\result.json`
+passes all eighteen cases in 664 ms with two processes, zero remaining children
+and 42,307,584 bytes peak job memory. The DDE case takes 86 ms. Its retained trace
+records successful assertions and service shutdown. The postverification receipt
+confirms unchanged membership and hashes for all 5,202 inputs, totaling
+638,692,977 bytes. Prior test profiles are retained in their preparation folders.
+
+This establishes a functioning native DDE path and its policy-controlled refusal
+for the authored link. It does not establish OOXML DDE import/fidelity or the
+whole-document AppContainer result: those failed spreadsheet cases above remain
+failed and the source refusal remains required. Macro/embedded-object document
+controls, file/network/process boundaries, application chart replay, engine
+adoption and final-candidate acceptance remain separate gates.
 
 ### Runtime linkage constraint
 
