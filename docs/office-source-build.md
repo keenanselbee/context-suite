@@ -3,6 +3,7 @@ Office Renderer Source Build
 
 Status: an isolated source kit is assembled; standalone source preparation,
 fresh configuration, reconstructed compilation and all 22 native cases pass.
+All 148,225 fresh kit files now match the compiled source tree exactly.
 Reconstructed restricted-host chart, preview, external-link and macro controls
 also pass; DDE repeats its known fidelity failure and remains refused. Durable runtime identity,
 redistribution review and production adoption remain open. This work supports the
@@ -281,9 +282,12 @@ options match the successful baseline after mapping the kit path, and all fiftee
 build targets match the successful continuation. The planners create no build
 directory and launch no compiler. Receipts are `evidence\office-source-kit-03.json`,
 `evidence\office-source-kit-03-archive.json`, `source\kit-replay-03-preparation.json`
-and `evidence\source-kit-03-standalone\results.json`. A complete byte comparison
-with the previously compiled source tree is tracked separately under
-`evidence\source-kit-03-correspondence`; no result is inferred from preparation alone.
+and `evidence\source-kit-03-standalone\results.json`. The completed comparison at
+`evidence\source-kit-03-correspondence\results.json` verifies all **148,225 files**
+in both the fresh kit03 tree and the compiled kit01 source tree. There are no
+missing files, differing files or generated extras. This binds the delivered
+source bytes to the already completed compilation without another full build;
+it does not by itself establish final runtime packaging or redistribution.
 
 The reconstructed renderer is separately retained at `tools\office-review-runtime-03`
 with the current source-matched application host and the same five app-local CRT
@@ -302,8 +306,12 @@ profile/mapping removal and unchanged input identities. Static inspection of
 unbundled MSVC import. It is not clean-machine or dynamic-loader provenance proof.
 `evidence\chart-host-export-04-postverification.json` adds four live-chart exports
 under both calculation modes: unchanged independent text/geometry/chart controls
-pass and all four page rasters exactly match the earlier baseline. All sixteen
-native profiles/mappings are absent after these runs.
+pass and all four page rasters exactly match the earlier baseline.
+`evidence\chart-host-export-05-postverification.json` adds the remaining two live
+Word/PowerPoint chart exports: unchanged text, geometry, bar-value and category
+checks pass, with exact earlier page rasters. Complete payload membership, runner
+sources and inputs remain unchanged. All eighteen native profiles/mappings are
+absent after these chart and preview runs.
 
 `evidence\reconstructed-security-host-replay-01.json` separately records five
 external-workbook controls and one macro control passing, with ten profile
@@ -321,9 +329,11 @@ The preparation, configure and configured-build commands now accept explicit
 locations and are included in Evaluation 03. Final source delivery remains tied
 to the eventual adopted runtime; changing source/toolchain locations beyond the
 evaluated configuration requires corresponding verification. The reconstructed
-compilation and scoped native/host replays above pass. Complete source/runtime
-correspondence and the final packaged-byte acceptance before adoption; a
-successful extraction or configuration alone is not that evidence.
+compilation, complete source-tree comparison and scoped native/host replays
+above pass. Complete durable source/runtime identity and final packaged-byte
+acceptance before adoption. The paired application recovery replay also exposes
+[missing PowerPoint text-box fill](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23),
+which remains a required fidelity repair.
 
 Keep the existing runtime and reserved 1.1.1 candidate immutable. The upstream
 archive-derived `version.ini` has an empty build ID; distribution needs a durable

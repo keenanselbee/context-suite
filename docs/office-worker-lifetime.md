@@ -196,3 +196,61 @@ exit before permission cleanup. All 81 checks pass, including three subsequent
 ordinary exports with independent PDF inspection. Six recorded named jobs and
 six profiles are absent after recovery and following exports. This uses the
 private test owner; production restart orchestration and publication remain open.
+
+
+Paired source-built interruption replay, 2026-09-23
+-------------------------------------------------
+
+The current paired application worker at
+`.codex-temp/office-execution/bbd046b4e4054d63b8330d7d444ff101/worker` passes
+**90 safety checks across nine active-PDF stop/recovery cells** at
+`.codex-temp/office-worker/db678ec111fa4a5c8fecb2caf42fef08`.
+Cancellation, worker-only loss and the controlled 180-second application deadline
+all stop the exact native host before client return, preserve sources and permit
+a following export through the same client. Measured stop times are 159-364 ms;
+these are diagnostic timings, not the final performance benchmark. The deadline
+is triggered after observed PDF growth, not after waiting 180 wall-clock seconds.
+
+The generated Word/PowerPoint stress files still contain 96 pages. Excel uses the
+unchanged, previously accepted 48-sheet capacity fixture. The first replay,
+`f6d0658c92c84f249504c35318c7afd8`, stopped after Word because the old 96-sheet
+workbook has 194 relationship parts, exceeding the existing chart-inspection
+limit of 128. Diagnostic `9bde0efb8cfe4db5beadd05d345dab70` confirms this preflight
+refusal and a successful ordinary workbook export. The replacement stress input
+has 98 relationship parts. Its copy/source hashes and the other two original
+stress fixtures are bound in `.codex-temp/office-isolation/paired-native-stop-01/preparation.json`.
+No product admission limit or test stop condition changed.
+
+The postverification receipt in the successful run checks source/worker/engine
+identities, all originals and copied sources, and 23 profile folders/mappings
+removed across the matrix, failed first attempt and diagnostic. All 6,098 owned
+runtime/context ACLs are free of these test SIDs. This is active-PDF interruption;
+it does not establish interruption before a calculated workbook ZIP is complete,
+application-owner loss, network denial or final-candidate acceptance.
+
+Independent PDF acceptance remains **failed**. The first inspector requires
+updater settings that this compiled engine does not contain. Its failed receipt
+is retained. The isolated inspector then links the existing updater-free profile
+verifier, requiring the pinned build configuration, absent updater library and
+registration, and all retained macro/active-content/Python/security/OpenCL and
+calculation controls. Its 25 profile contracts pass; the shared verifier and PDF
+oracle are unchanged. The second inspector only adds retained per-family
+comparison details before the same exact-pixel refusal. Inputs and both source
+variations are recorded under `.codex-temp/paired-stop-inspector-01` and `-02`.
+
+`independent-replay-02/result.json` in the successful run records three failed
+mode inspections. All nine PDFs pass qpdf structure, authored text and page
+geometry; the six Word/Excel PDFs also match historical pixels exactly.
+PowerPoint loses the authored `DDEEFF` light-blue text-box fill on both visible
+slides, differing by 123,622 and 123,587 pixels from the earlier control. This is
+not a small typography tolerance issue. The three recovery outputs agree with
+each other. `prior-powerpoint-comparison/result.json` also verifies identical
+OOXML package-part contents and exact pixels against the earlier uninterrupted
+paired application publication at `be096d79feb741d3a3834d004c77c700`: the loss
+predates this interruption replay. No tolerance was relaxed and that earlier
+publication success does not establish fill fidelity.
+
+Keep the native safety result separate from this open rendering defect. Locate
+its cause and retain the original fill expectations before final packaging or
+PowerPoint acceptance; a full native rebuild is not justified until a concrete
+source change is identified.

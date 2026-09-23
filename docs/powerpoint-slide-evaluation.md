@@ -252,3 +252,16 @@ establish D09 typography, human review or final-candidate acceptance.
 The preceding attempt `ce194f27bef1437887e593450cecbbd7` rejected a stale retained
 worker before profile creation; the successful run staged a fresh worker with
 the selected paired engines. No worker-identity check was bypassed.
+
+
+Paired text-box fill regression
+------------------------------
+
+The later [paired interruption comparison](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23)
+finds missing light-blue `DDEEFF` fill on both visible slides of the ordinary
+PowerPoint control. Text and page geometry still match, explaining why the
+scoped slide-order oracle above passes. The same missing fill exists in the
+prior uninterrupted paired application output; it is not caused by interruption.
+The historical exact-pixel comparison remains failed. Restore the authored fill
+and verify it independently before treating paired PowerPoint output as accepted.
+This defect is separate from the pending D09 font-size tolerance decision.
