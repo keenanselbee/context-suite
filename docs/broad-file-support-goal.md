@@ -67,8 +67,9 @@ The next completion steps are:
    original authored native cases pass; the later seventeen-case suite adds
    binary OLE refusal/preservation and strengthens interactive controls.
    Four passive native Excel PDF comparisons also
-   pass with active-content blocking enabled; application and restricted-host
-   acceptance remain pending. Network collection needs the
+   pass with active-content blocking enabled, including a subsequent replay
+   through the actual restricted host. Application publication and whole-document
+   security acceptance remain pending. Network collection needs the
    pending attended administrator step. Chart refusal remains interim protection.
 2. Prepare H01-H04 for consolidated review. Request the real DOCX/XLSX/PPTX and
    three real recordings when their automated comparisons can proceed; record
@@ -128,8 +129,12 @@ record. This is native API evidence, not desktop usability or host isolation.
 The following seventeen-case native replay also passes four inert binary OLE
 identity/label combinations and five OLE factory paths with observed storage
 boundary controls. Payload copies retain their bytes. This closes the scoped
-native OLE gap; whole-document hostile-input checks under the actual restricted
-host, application replay and engine adoption remain open.
+native OLE gap. The subsequent four-case restricted-host Excel replay passes
+the same independent PDF oracle through the unchanged AppContainer launcher and
+profile owner; all four native profiles are removed and inventoried inputs remain
+unchanged. The evaluation host explicitly maps the unmerged runtime libraries.
+Whole-document hostile-input checks, network enforcement, application replay
+and engine adoption remain open.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This

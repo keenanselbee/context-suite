@@ -585,6 +585,47 @@ the same embedding hook from `sofficeapp.dll` and Windows loop functions from
 `vcllo.dll`. Export-table inspection alone does not establish host compatibility.
 The production host, runtime pins and shipping chart refusal remain unchanged.
 
+### Restricted-host chart exports (2026-09-22)
+
+The four existing Excel comparisons now also pass through the actual
+`OfficeSandboxProcess` launcher and `OfficeSandboxOwner` profile owner. The
+evaluation harness links those sources unchanged. It uses a fresh, capability-free
+AppContainer for each workbook, the existing suspended-start/token checks,
+eight-process and 1 GiB job limits, a 120-second deadline, bounded protocol
+channels and whole-job cleanup. Only the copied runtime/input and owned
+output/profile/temp directories receive the required grants.
+
+The evaluation host is a scratch copy of the private host with one explicit
+linkage adaptation: load the embedding hook from `sofficeapp.dll` and the two
+Windows loop functions from `vcllo.dll`. Its token, source/path identity,
+profile and terminal-protocol checks are unchanged. An ordinary-token control
+exits 2 with the required AppContainer refusal. The host and managed harness
+build with zero warnings/errors. Production host sources and runtime pins remain
+unchanged; this is evidence for the isolated unmerged build, not automatic
+adoption of that configuration.
+
+`G:\ContextSuite-OfficeBuild\evidence\chart-host-export-01\results.json` records
+all four portrait/landscape and saved-values/recalculated cases passing with
+active-content blocking enabled. The unchanged qpdf/PDFium oracle verifies
+structure, page geometry, text/placement, the three bars and category association.
+Sources retain their hashes and timestamps, and terminal replies match output
+PDF and calculated-workbook hashes/sizes. Host calls take 635-744 ms; this
+excludes profile preparation and independent verification and is not the full
+application performance benchmark.
+
+The preparation receipt binds the private source copy, library adaptation,
+compiler, runner sources and input manifest. The copied evaluation payload has
+3,819 files totaling 541,260,391 bytes; this is only the host/runtime, not the
+whole product footprint. `evidence\chart-host-export-01-postverification.json`
+confirms unchanged membership/hashes for that payload, all 4,112 verifier/runtime
+inputs and the linked runner sources. All four native profiles and their Windows
+registry mappings are absent after cleanup, with individual removal receipts.
+
+This closes the four-case passive Excel fidelity check through the restricted
+host. It does not close whole-document hostile-input or file/network-denial
+checks, application publication, Word/PowerPoint charts, engine adoption or
+final-candidate acceptance. The shipping chart refusal remains in place.
+
 ### Runtime linkage constraint
 
 Inspection of the expanded combined candidate's

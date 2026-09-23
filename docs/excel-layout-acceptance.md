@@ -204,3 +204,14 @@ actual application publication path or restricted-host acceptance; D07 and the
 shipping chart guard remain open until those required checks pass. The renderer
 record also identifies the updater-free evaluation configuration and its separate
 profile verification, which does not alter shipping controls.
+
+The subsequent [restricted-host replay](office-chart-renderer-repair.md#restricted-host-chart-exports-2026-09-22)
+passes the same four comparisons through the unchanged actual AppContainer
+launcher and profile owner. Evidence is
+`G:\ContextSuite-OfficeBuild\evidence\chart-host-export-01`, with matching
+preparation and postverification receipts. Every original and inventoried input
+is unchanged; all four disposable profiles and registry mappings are removed.
+Only the scratch native host's library mapping changes to match the unmerged
+runtime. This advances restricted-host passive fidelity, but the shipping chart
+guard and D07 application-publication gate remain. Whole-document security,
+network enforcement, adoption and final-candidate replay are separate requirements.
