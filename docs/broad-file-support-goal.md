@@ -184,6 +184,12 @@ identities and all profile cleanup pass. Earlier fixture/geometry errors remain
 recorded. A separate namespace-prefixed content-type load failure was discovered
 and remains an engineering compatibility item; the successful ordinary-form
 fixtures do not close it or the remaining isolation/application/adoption gates.
+The subsequent [namespace repair](office-chart-renderer-repair.md#package-namespace-compatibility-repair-2026-09-22)
+resolves that failure in the evaluation renderer: twenty-two native cases and
+twelve restricted-host exports pass. Prefixed metadata preserves the same
+full-page pixels, object inactivity and previews as the ordinary form. All
+identities and profile cleanup pass. The separate source patch is reviewed and
+reversible; production adoption and the remaining release gates are still open.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This

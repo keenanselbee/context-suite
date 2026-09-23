@@ -1,0 +1,20 @@
+{
+  "Engine": "LibreOffice 26.2.6 Windows x64",
+  "BuildId": "8221e31b3ac356a1623c672912a3d2b492f7e3d1",
+  "Status": "Evaluation repair: native and restricted-host checks pass; not adopted into production.",
+  "Files": [
+    {
+      "Path": "comphelper/source/xml/ofopxmlhelper.cxx",
+      "Url": "https://raw.githubusercontent.com/LibreOffice/core/8221e31b3ac356a1623c672912a3d2b492f7e3d1/comphelper/source/xml/ofopxmlhelper.cxx",
+      "Bytes": 18470,
+      "Sha256": "88F119CD92D44D69B78F3AAAE4C164F0B3E8AA4D5FF29E46B43D290511E445DC",
+      "ProposedBytes": 20138,
+      "ProposedSha256": "05DF81AD032F1F1FC9C21240E60210FACA4F695140F2292876C4A64810C003A1"
+    }
+  ],
+  "Patch": {
+    "Path": "package-namespace-resolution.patch",
+    "Sha256": "71279141E3706B7EFC770A0F34CF67DA5DB907D74CF8014D94B419C255480300"
+  },
+  "Scope": "Resolve package content-type and relationship element namespaces with scoped declarations; retain element depth, required attributes and vocabulary checks. No active-content policy change."
+}

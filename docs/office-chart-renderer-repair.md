@@ -1,8 +1,9 @@
 Office Chart Renderer Repair
 ============================
 
-Status: revised source patch compiled and linked; eighteen authored native cases
-pass. Four Excel and two Word/PowerPoint chart PDF comparisons pass through the
+Status: revised source patch compiled and linked; twenty-two authored native cases
+pass, including a separately reviewed package-namespace compatibility repair.
+Four Excel and two Word/PowerPoint chart PDF comparisons pass through the
 restricted host in the isolated Windows build.
 Application replay, restricted-host security and adoption remain pending.
 The [chart-loss regression](excel-layout-acceptance.md)
@@ -936,6 +937,45 @@ activation, arbitrary object compatibility, namespace-prefix compatibility,
 process/file/network enforcement, actual application publication, engine adoption
 or final-candidate acceptance. Production permissions and source/runtime pins
 remain unchanged.
+
+### Package namespace compatibility repair (2026-09-22)
+
+The [separate one-file patch](../tools/office-engine/patches/package-namespace-resolution.patch)
+repairs the prefix-dependent metadata reader found above. Its
+[source manifest](../tools/office-engine/patches/package-namespace-source.json)
+pins the original file to the same upstream build; the original bytes match the
+retained full source archive. Element names now resolve through scoped namespace
+declarations before matching the content-type or relationship vocabulary.
+Wrong, missing or unbound namespaces are refused. Required attributes, allowed
+elements and the existing two-level structure remain enforced. Active-content
+permissions and the chart exception are unchanged.
+
+Native draft 30/build 27 passes all twenty-two cases in
+`G:\ContextSuite-OfficeBuild\evidence\native-chart-run-25\result.json`:
+2,553 ms, two processes, zero remaining children and 58,290,176 bytes peak job
+memory. New parser controls check equivalent prefixes, child declarations,
+sibling scope restoration, wrong/unbound namespaces, unknown elements, missing
+required attributes and excessive nesting. All nine Word/Excel/PowerPoint object
+fixtures repeat with prefixed content-types and relationships, preserving their
+inactivity and previews. All 5,225 inventoried inputs remain unchanged. Build 26
+failed on a missing generated type header in the test; the corrected header and
+successful repeat are retained without weakening assertions.
+
+The matching `namespace-drawing-host-export-01` and
+`namespace-word-host-export-01` runs pass twelve restricted-host exports,
+including both Excel modes. Each PDF passes text, geometry and preview checks;
+its full-page pixels exactly match the earlier ordinary-namespace baseline.
+`G:\ContextSuite-OfficeBuild\evidence\package-namespace-repair-01-acceptance.json`
+binds the outputs to the same 3,818 renderer files, verifies all 4,112
+runtime/verifier inputs and confirms removal of twelve native profiles and their
+registry mappings. Only `program/comphelper.dll` differs from the preceding
+native renderer inventory. A fresh source replay applies the public patch to the
+exact original and reverses it byte-for-byte.
+
+This resolves the observed namespace compatibility failure in the evaluation
+renderer. It does not adopt that renderer, remove interim application guards or
+close the remaining file/network/process, application-publication and final
+candidate gates. Earlier failed evidence remains retained.
 
 ### Runtime linkage constraint
 

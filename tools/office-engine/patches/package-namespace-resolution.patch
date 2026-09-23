@@ -1,0 +1,131 @@
+--- a/comphelper/source/xml/ofopxmlhelper.cxx
++++ b/comphelper/source/xml/ofopxmlhelper.cxx
+@@ -29,10 +29,11 @@
+ #include <com/sun/star/xml/sax/XDocumentHandler.hpp>
+ #include <com/sun/star/xml/sax/SAXException.hpp>
+ #include <com/sun/star/xml/sax/Writer.hpp>
+ #include <com/sun/star/lang/IllegalArgumentException.hpp>
+ #include <vector>
++#include <map>
+
+ #define RELATIONINFO_FORMAT 0
+ #define CONTENTTYPE_FORMAT  1
+ #define FORMAT_MAX_ID CONTENTTYPE_FORMAT
+
+@@ -48,10 +49,11 @@
+ {
+     sal_uInt16 const m_nFormat; // which format to parse
+
+     css::uno::Sequence< css::uno::Sequence< css::beans::StringPair > > m_aResultSeq;
+     std::vector< OUString > m_aElementsSeq; // stack of elements being parsed
++    std::vector<std::map<OUString, OUString>> m_aNamespaces;
+
+
+ public:
+     css::uno::Sequence< css::uno::Sequence< css::beans::StringPair > > const & GetParsingResult() const;
+
+@@ -300,24 +302,51 @@
+ }
+
+
+ void SAL_CALL OFOPXMLHelper_Impl::startElement( const OUString& aName, const uno::Reference< css::xml::sax::XAttributeList >& xAttribs )
+ {
++    // SAX reports qualified names; resolve each element in its own namespace scope.
++    // Both package vocabularies allow only a root and its immediate children.
++    if (m_aElementsSeq.size() >= 2)
++        throw css::xml::sax::SAXException();
++    auto namespaces = m_aNamespaces.empty() ? std::map<OUString, OUString>()
++                                            : m_aNamespaces.back();
++    for (sal_Int16 index = 0; index < xAttribs->getLength(); ++index)
++    {
++        const OUString attribute = xAttribs->getNameByIndex(index);
++        if (attribute == "xmlns")
++            namespaces[OUString()] = xAttribs->getValueByIndex(index);
++        else if (attribute.startsWith("xmlns:"))
++            namespaces[attribute.copy(6)] = xAttribs->getValueByIndex(index);
++    }
++    const sal_Int32 colon = aName.indexOf(':');
++    const OUString prefix = colon < 0 ? OUString() : aName.copy(0, colon);
++    const OUString localName = colon < 0 ? aName : aName.copy(colon + 1);
++    if (colon == 0 || localName.isEmpty() || localName.indexOf(':') >= 0)
++        throw css::xml::sax::SAXException();
++    const OUString expectedNamespace = m_nFormat == RELATIONINFO_FORMAT
++        ? u"http://schemas.openxmlformats.org/package/2006/relationships"_ustr
++        : u"http://schemas.openxmlformats.org/package/2006/content-types"_ustr;
++    const auto found = namespaces.find(prefix);
++    if (found == namespaces.end() || found->second != expectedNamespace)
++        throw css::xml::sax::SAXException();
++    m_aNamespaces.push_back(std::move(namespaces));
++
+     if ( m_nFormat == RELATIONINFO_FORMAT )
+     {
+-        if ( aName == g_aRelListElement )
++        if ( localName == g_aRelListElement )
+         {
+             sal_Int32 nNewLength = m_aElementsSeq.size() + 1;
+
+             if ( nNewLength != 1 )
+                 throw css::xml::sax::SAXException(); // TODO: this element must be the first level element
+
+             m_aElementsSeq.push_back( aName );
+
+             return; // nothing to do
+         }
+-        else if ( aName == g_aRelElement )
++        else if ( localName == g_aRelElement )
+         {
+             sal_Int32 nNewLength = m_aElementsSeq.size() + 1;
+             if ( nNewLength != 2 )
+                 throw css::xml::sax::SAXException(); // TODO: this element must be the second level element
+
+@@ -364,11 +393,11 @@
+         else
+             throw css::xml::sax::SAXException(); // TODO: no other elements expected!
+     }
+     else if ( m_nFormat == CONTENTTYPE_FORMAT )
+     {
+-        if ( aName == g_aTypesElement )
++        if ( localName == g_aTypesElement )
+         {
+             sal_Int32 nNewLength = m_aElementsSeq.size() + 1;
+
+             if ( nNewLength != 1 )
+                 throw css::xml::sax::SAXException(); // TODO: this element must be the first level element
+@@ -378,11 +407,11 @@
+             if ( !m_aResultSeq.hasElements() )
+                 m_aResultSeq.realloc( 2 );
+
+             return; // nothing to do
+         }
+-        else if ( aName == g_aDefaultElement )
++        else if ( localName == g_aDefaultElement )
+         {
+             sal_Int32 nNewLength = m_aElementsSeq.size() + 1;
+             if ( nNewLength != 2 )
+                 throw css::xml::sax::SAXException(); // TODO: this element must be the second level element
+
+@@ -409,11 +438,11 @@
+             auto pSeq = pResultSeq[0].getArray();
+
+             pSeq[nNewResultLen-1].First = aExtensionValue;
+             pSeq[nNewResultLen-1].Second = aContentTypeValue;
+         }
+-        else if ( aName == g_aOverrideElement )
++        else if ( localName == g_aOverrideElement )
+         {
+             sal_Int32 nNewLength = m_aElementsSeq.size() + 1;
+             if ( nNewLength != 2 )
+                 throw css::xml::sax::SAXException(); // TODO: this element must be the second level element
+
+@@ -460,10 +489,11 @@
+
+         if ( m_aElementsSeq[nLength-1] != aName )
+             throw css::xml::sax::SAXException(); // TODO: unexpected element ended
+
+         m_aElementsSeq.resize( nLength - 1 );
++        m_aNamespaces.pop_back();
+     }
+ }
+
+
+ void SAL_CALL OFOPXMLHelper_Impl::characters( const OUString& /*aChars*/ )
