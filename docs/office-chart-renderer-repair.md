@@ -492,8 +492,50 @@ This is limited artifact inspection, not owner, desktop or accessibility accepta
 
 This establishes passive native PDF rendering with the restriction enabled.
 The interim shipping chart guard remains. Actual application publication and
-restricted-host replay, hostile binary OLE, interactive positive controls,
+restricted-host replay, hostile binary OLE,
 Word/PowerPoint charts, adoption and final-candidate replay remain required.
+
+### Interactive positive controls (2026-09-22)
+
+The three interactive-state cases now use an authored client site backed by a
+real Calc document, window, frame and layout manager. Each first requires the
+restricted request to fail before any client callback and leave the chart in
+RUNNING. With the restriction disabled, the same object must reach ACTIVE,
+INPLACE_ACTIVE or UI_ACTIVE and call the client. It returns to RUNNING, then
+must refuse activation again after the restriction is restored. The UI_ACTIVE
+control also checks the real chart frame, docking area and nonempty menus.
+
+Before creating a container, each case verifies that its thread belongs to
+`LIBO_TEST_DESKTOP`. Upstream desktop creation can silently fail; these tests
+must stop before creating UI on the user's desktop. The runner also removes
+`LIBO_TEST_DEFAULT_DESKTOP` from the child environment. This is native API
+coverage on a separate test desktop, not visible usability acceptance.
+
+Build attempt 3 failed on a missing authored-test `rtl/ref.hxx` include; attempt
+4 compiled the correction. Attempt 5 added the separate-desktop assertion.
+Runs 6 and 7 passed ACTIVE/INPLACE_ACTIVE controls but failed unrestricted
+UI_ACTIVE. Run 8 identified an empty container menu. The upstream
+`registry-user-ui/user-ui.xcd` replaces installed UI paths with sparse unit-test
+configuration. Run 9 retains the installed and common test configuration but
+omits that UI-only override, supplying the matching runtime's actual menus.
+The headless argument, policy assertions and production chart patch are unchanged.
+Earlier failed runs and profiles remain retained.
+
+`evidence\native-chart-run-09\result.json` records all fifteen cases passing,
+including the strengthened controls: exit 0, `OK (15)`, 606 ms, two processes,
+zero active children after cleanup and 41,988,096 bytes peak job memory.
+The draft-10 source and build-07 result are bound by
+`evidence\native-chart-execution-09-preparation\preparation.json`.
+The reviewed command records the exact configuration layers; the draft makefile
+alone still selects the upstream sparse UI override and is insufficient to
+reproduce this successful invocation. Future integration must retain that
+explicit menu configuration.
+
+`evidence\native-chart-run-09-postverification.json` confirms unchanged membership
+and hashes for all 5,202 runtime/template files, totaling 638,581,873 bytes, and
+binds the source, runner, command, launcher and retained profile. This closes the
+native interactive-positive-control gap. Binary OLE, actual restricted-host
+enforcement and application/final-candidate replay remain open.
 
 ### Runtime linkage constraint
 

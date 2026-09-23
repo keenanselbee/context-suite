@@ -116,8 +116,13 @@ passes seventeen process-lifetime checks. Runtime bytes are verified unchanged
 after execution. The existing candidate uses a merged runtime, so the component
 cannot be substituted into it. Four native PDF comparisons now preserve the
 required chart/text/page geometry with active-content blocking enabled. Actual
-application replay, remaining hostile-object and interactive positive controls,
-and full restricted-host fidelity/security acceptance are outstanding.
+application replay, remaining hostile-object checks and full restricted-host
+fidelity/security acceptance are outstanding. The strengthened fifteen-case
+native suite now also passes unrestricted ACTIVE, INPLACE_ACTIVE and UI_ACTIVE
+positive controls, paired with restricted refusals before client callbacks.
+Its separate-desktop and real-menu checks pass; all 5,202 inventoried runtime
+files remain unchanged. Earlier UI-control failures are retained in the repair
+record. This is native API evidence, not desktop usability or host isolation.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
