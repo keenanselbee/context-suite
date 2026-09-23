@@ -4,9 +4,9 @@ using System.Xml.Linq;
 
 namespace ContextSuite.Core.Analysis;
 
-// Conservative conversion guard for the current renderer's chart omission.
+// Conservative admission for the pinned renderer's ordinary internal charts.
 // Includes hidden/unreferenced declarations; this is not a general fidelity scan.
-public sealed record ExcelChartInspection(bool Complete, bool HasCharts, int InspectedBytes)
+public sealed record ExcelChartInspection(bool Complete, bool HasCharts, int InspectedBytes, bool HasUnsupportedCharts = false)
 {
     private const string Types = "http://schemas.openxmlformats.org/package/2006/content-types";
     private const string Relationships = "http://schemas.openxmlformats.org/package/2006/relationships";
@@ -24,6 +24,8 @@ public sealed record ExcelChartInspection(bool Complete, bool HasCharts, int Ins
             if (types.Name != XName.Get("Types", Types)) throw new InvalidDataException("Unexpected content declarations.");
             var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var hasCharts = false;
+            var unsupported = false;
             foreach (var part in types.Elements())
             {
                 token.ThrowIfCancellationRequested();
@@ -45,7 +47,10 @@ public sealed record ExcelChartInspection(bool Complete, bool HasCharts, int Ins
                 }
                 else throw new InvalidDataException("Unknown content declaration.");
                 if (kind is "application/vnd.openxmlformats-officedocument.drawingml.chart+xml" or "application/vnd.ms-office.chartex+xml")
-                    return new(true, true, package.InspectedBytes);
+                {
+                    hasCharts = true;
+                    unsupported |= kind == "application/vnd.ms-office.chartex+xml";
+                }
             }
             var relationships = package.Names.Where(name => name.EndsWith(".rels", StringComparison.OrdinalIgnoreCase)).ToArray();
             if (relationships.Length > 128) throw new InvalidDataException("Chart relationship inspection limit.");
@@ -66,10 +71,15 @@ public sealed record ExcelChartInspection(bool Complete, bool HasCharts, int Ins
                     if (type is "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" or
                         "http://purl.oclc.org/ooxml/officeDocument/relationships/chart" or
                         "http://schemas.microsoft.com/office/2014/relationships/chartEx")
-                        return new(true, true, package.InspectedBytes);
+                    {
+                        hasCharts = true;
+                        var mode = (string?)relationship.Attribute("TargetMode");
+                        unsupported |= type == "http://schemas.microsoft.com/office/2014/relationships/chartEx" ||
+                            mode is not (null or "Internal");
+                    }
                 }
             }
-            return new(true, false, package.InspectedBytes);
+            return new(true, hasCharts, package.InspectedBytes, unsupported);
         }
         catch (Exception error) when (error is IOException or InvalidDataException or XmlException or DecoderFallbackException)
         { return new(false, false, package.InspectedBytes); }

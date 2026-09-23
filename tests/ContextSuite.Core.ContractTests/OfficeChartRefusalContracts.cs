@@ -1,4 +1,6 @@
+using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Analysis;
@@ -7,6 +9,31 @@ using ContextSuite.Core.Office;
 
 internal static class OfficeChartRefusalContracts
 {
+    internal static string[] CreateUnsupportedFixtures(string directory)
+    {
+        var files = ExcelLayoutFixtures.Create(directory).Select(name => Path.Combine(directory, name)).ToArray();
+        for (var index = 0; index < files.Length; index++)
+        {
+            using var archive = ZipFile.Open(files[index], ZipArchiveMode.Update);
+            var part = index == 0 ? "[Content_Types].xml" : "xl/drawings/_rels/drawing1.xml.rels";
+            var entry = archive.GetEntry(part)!;
+            string original;
+            using (var reader = new StreamReader(entry.Open())) original = reader.ReadToEnd();
+            var changed = index switch
+            {
+                0 => original.Replace("application/vnd.openxmlformats-officedocument.drawingml.chart+xml", "application/vnd.ms-office.chartex+xml"),
+                1 => original.Replace("http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart", "http://schemas.microsoft.com/office/2014/relationships/chartEx"),
+                2 => original.Replace("Target=\"../charts/chart1.xml\"", "Target=\"https://example.invalid/chart.xml\" TargetMode=\"External\""),
+                _ => "<Relationships"
+            };
+            if (changed == original) throw new InvalidDataException("Authored unsupported-chart fixture was not changed.");
+            entry.Delete();
+            using var writer = new StreamWriter(archive.CreateEntry(part).Open(), new UTF8Encoding(false));
+            writer.Write(changed);
+        }
+        return files;
+    }
+
     internal static async Task RunAsync(string executable, string evidence)
     {
         var root = Path.GetFullPath(evidence);
@@ -15,7 +42,7 @@ internal static class OfficeChartRefusalContracts
         if (Directory.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "office-engine")))
             throw new InvalidDataException("Use a scratch worker without the native Office engine for this pre-runtime refusal test.");
         var originals = Path.Combine(root, "originals");
-        var files = ExcelLayoutFixtures.Create(originals).Select(name => Path.Combine(originals, name)).ToArray();
+        var files = CreateUnsupportedFixtures(originals);
         var checks = new List<string>();
         await using (var worker = new WorkerClient(executable, Path.Combine(root, "worker")))
         {
@@ -31,8 +58,8 @@ internal static class OfficeChartRefusalContracts
                 File.WriteAllBytes(work.SourcePath, bytes); File.SetAttributes(work.SourcePath, FileAttributes.ReadOnly);
                 var snapshotTime = File.GetLastWriteTimeUtc(work.SourcePath);
                 using (var input = File.OpenRead(work.SourcePath))
-                    Check((await OfficeSourcePreflight.InspectOpenXmlAsync(work.SourcePath, input, default)).Refusal?.Contains("contains charts") == true,
-                        "known chart-loss fixture is identified before worker transport: " + Path.GetFileName(file) + "/" + mode);
+                    Check((await OfficeSourcePreflight.InspectOpenXmlAsync(work.SourcePath, input, default)).Refusal?.Contains("charts") == true,
+                        "unsupported or incomplete chart fixture is identified before worker transport: " + Path.GetFileName(file) + "/" + mode);
                 try { await worker.ExportOfficeAsync(work, default); Check(false, "Worker accepted a chart workbook"); }
                 catch (MediaWorkerException error)
                 { Check(error.Failure == ImageFailure.InvalidInput, "actual worker refuses chart workbook before native runtime access: " + mode); }
@@ -61,7 +88,7 @@ internal static class OfficeChartRefusalContracts
         Check(!Directory.Exists(Path.Combine(root, "worker")) || !Directory.EnumerateFileSystemEntries(Path.Combine(root, "worker")).Any(),
             "worker exits and releases scratch state");
         File.WriteAllText(Path.Combine(root, "results.json"), JsonSerializer.Serialize(new { Passed = true, Checks = checks,
-            Scope = "Interim refusal only. Original D07 chart fidelity acceptance remains required and unresolved." }, new JsonSerializerOptions { WriteIndented = true }));
+            Scope = "Newer/external chart and incomplete-inspection refusals only. Ordinary D07 chart fidelity has separate application and PDF acceptance." }, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"Passed {checks.Count} Office chart-refusal worker checks.");
         void Check(bool condition, string message)
         { if (!condition) throw new InvalidDataException(message); checks.Add(message); Console.WriteLine("PASS: " + message); }

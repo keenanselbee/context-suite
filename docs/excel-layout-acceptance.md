@@ -1,10 +1,12 @@
 Excel Layout Acceptance
 =======================
 
-Status: D07 fidelity remains failed because the current security policy suppresses
-charts. The current shared preflight refuses affected XLSX files as an interim
-protection. Earlier publication checks and the paired diagnostic remain evidence
-of the unresolved renderer defect, not current permission to publish these files.
+Status: the paired source-built renderer passes the four authored application
+publications and unchanged independent chart/layout comparisons. Shared preflight
+now admits ordinary internal charts while retaining newer/external chart and
+incomplete-inspection refusals. The original renderer failures remain below.
+Clean rebuild replay, broader Office safety, capacity, human review and final
+combined-candidate acceptance remain required.
 This is one part of the
 [local acceptance contract](local-candidate-acceptance.md), not general Excel
 fidelity or human acceptance.
@@ -185,6 +187,50 @@ required: restore passive-chart rendering with verified enforcement, then remove
 or narrow this guard based on new fidelity evidence and replay the original
 acceptance. No reserved candidate, installation or native security policy was
 changed by this checkpoint. Final combined-candidate replay remains outstanding.
+
+
+Paired application acceptance (2026-09-23)
+-----------------------------------------
+
+The [paired source-built runtime](office-runtime-verification.md#source-built-application-selection-2026-09-23)
+passes the original four-case application matrix in
+`.codex-temp/office-execution/085d27fb72744defb758f248c7319184`. All **14 application
+checks** pass: both calculation choices, four validated PDF copies, no font
+prompt, preserved original bytes/timestamps and complete worker, journal, context
+and four-profile cleanup. The restrictive native profile and `DisableActiveContent`
+policy remain unchanged; the paired engine implements the narrow native chart
+exception already exercised by the 22-case native and restricted-host evidence.
+
+Independent inspection receipt
+`layout-inspection-receipt-b0aa9e258c954e01a804674674f99dff.json` in that directory
+passes all four text, merged/wrapped layout, chart bar/value/category, orientation
+and negative-control comparisons. No fixture or oracle tolerance changed.
+Execution and inspection inputs remain unchanged; Release builds have zero
+warnings/errors. This closes the four authored chart-loss cases in the isolated
+application path, not all D07 capacity or final packaged-candidate acceptance.
+
+The blanket chart refusal is narrowed to unsupported chartEx declarations or
+relationships, chart relationships whose explicit target mode is not `Internal`,
+and incomplete inspection. Ordinary internal transitional/strict chart
+relationships and DrawingML declarations no longer cause refusal by themselves.
+The bounded reader now finishes all declarations and relationship parts instead
+of returning at the first chart; an ordinary declaration cannot hide a later
+unsupported chart or malformed part. Existing count, size, depth, DTD and
+cancellation boundaries remain. This is admission screening, not a general
+fidelity guarantee or active-content security scan. DDE and early-date refusals
+remain unchanged.
+
+The updated direct/preparation tests preserve actionable refusals for four
+authored variants: chartEx content type, chartEx relationship, external chart
+relationship and malformed relationship XML. Actual worker replay at
+`.codex-temp/office-chart-refusal/5ed4f70a28584f439041dc00428a0d74` passes **28 checks**
+across both calculation modes, with no native runtime, output or profile created.
+The chart-free control still reaches the deliberately absent-runtime failure.
+All **4,505 foundation contracts** pass; the log is
+`.codex-temp/paired-chart-foundation-01.log`. New controls retain the existing
+calculation/access gates for internal charts and refuse late unsupported or
+incomplete evidence. These checks do not establish network enforcement or engine
+redistribution. Reserved candidates 1.1.0 and 1.1.1 remain unchanged.
 
 
 Isolated renderer repair evidence (2026-09-22)

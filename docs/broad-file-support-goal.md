@@ -202,11 +202,16 @@ The [source-build checkpoint](office-source-build.md) now prepares all source
 files from an independent local kit and verifies the canonical UTF-8 build
 recipe and exact upstream dependency selection. Clean compilation/replay and
 source-delivery acceptance remain required.
-The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
-now refuses affected XLSX files or incomplete chart inspection before publication.
-All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
-prevents the demonstrated incomplete output while preserving Analyze; it does
-not complete D07, approve the renderer patch or change the required chart scope.
+The historical [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
+refused affected XLSX files before publication. The
+[paired application replay](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23)
+now passes all four original chart/layout cases and independent PDF comparisons.
+Its narrowed preflight admits ordinary internal charts, retaining newer/external
+chart and incomplete-inspection refusals. All 4,505 foundation contracts and 28
+updated actual-worker refusal checks pass. Word D04 and fifteen style cases also
+pass with the paired selection. Clean source-build replay, capacity, remaining
+safety, network enforcement and final-candidate acceptance stay open; this does
+not complete D07 or approve final renderer adoption.
 
 The [combined expanded-input checkpoint](combined-expanded-inputs.md) now packages
 HEIC/AVIF, AIFF/WMA and Windows Voice together with the existing engine families.

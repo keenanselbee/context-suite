@@ -36,7 +36,7 @@ internal static partial class DocumentAnalysisContracts
         }
         var denied = new DirectOfficeAccess(); var prompts = 0; var started = 0; var completed = 0;
         var chartsDirectory = Path.Combine(stage, "charts");
-        var chartFiles = ExcelLayoutFixtures.Create(chartsDirectory).Select(name => Path.Combine(chartsDirectory, name)).ToArray();
+        var chartFiles = OfficeChartRefusalContracts.CreateUnsupportedFixtures(chartsDirectory);
         var chartBytes = chartFiles.ToDictionary(path => path, File.ReadAllBytes);
         var chartTimes = chartFiles.ToDictionary(path => path, File.GetLastWriteTimeUtc);
         var chartAccess = new DirectOfficeAccess();
@@ -46,8 +46,8 @@ internal static partial class DocumentAnalysisContracts
             vm.OfficeCalculationRequested += _ => { chartPrompts++; return Task.FromResult<string?>("cached"); };
             vm.Admit(Request([.. chartFiles])); await vm.WaitForIdleAsync();
             check(vm.Rows.Count == 4 && vm.Rows.All(row => row.Result.State == OperationState.Unsupported &&
-                row.Result.Message.Contains("contains charts") && row.Result.Message.Contains("Export the PDF from Excel") &&
-                row.Result.Message.Contains("Analyze remains available")), "Office charts: all four known chart-loss workbooks have actionable direct refusals");
+                row.Result.Message.Contains("charts") && row.Result.Message.Contains("Export the PDF from Excel") &&
+                row.Result.Message.Contains("Analyze remains available")), "Office charts: newer/external charts and incomplete inspection have actionable direct refusals");
             check(chartAccess.Admissions == 0 && chartPrompts == 0 && !Directory.Exists(Path.Combine(stage, "charts", "contexts")) &&
                 !Directory.Exists(Path.Combine(stage, "charts", "publications")), "Office charts: refusal precedes calculation, access admission, contexts and publication");
         }
@@ -60,13 +60,25 @@ internal static partial class DocumentAnalysisContracts
                 using var prepared = await OfficeContextPreparation.CreateAsync(context, Path.Combine(Path.GetDirectoryName(worker)!, "office-engine"),
                     file, "xlsx", mode, default, createContextRoot: true);
                 prepared.RetireUnstarted();
-                check(false, "Office charts: context preparation accepted a known chart-loss workbook");
+                check(false, "Office charts: context preparation accepted an unsupported or incomplete chart workbook");
             }
             catch (InvalidDataException error)
-            { check(error.Message.Contains("contains charts") && !Directory.Exists(context), "Office charts: preparation independently refuses before creating a context: " + mode); }
+            { check(error.Message.Contains("charts") && !Directory.Exists(context), "Office charts: preparation independently refuses before creating a context: " + mode); }
         }
         check(chartFiles.All(path => File.ReadAllBytes(path).SequenceEqual(chartBytes[path]) && File.GetLastWriteTimeUtc(path) == chartTimes[path]),
             "Office charts: application and preparation refusals preserve original bytes and timestamps");
+        var internalCharts = Path.Combine(stage, "internal-charts");
+        var internalFiles = ExcelLayoutFixtures.Create(internalCharts).Select(name => Path.Combine(internalCharts, name)).ToImmutableArray();
+        var internalAccess = new DirectOfficeAccess();
+        await using (var vm = Create("internal-chart-admission", internalAccess))
+        {
+            var chartPrompts = 0;
+            vm.OfficeCalculationRequested += _ => { chartPrompts++; return Task.FromResult<string?>("cached"); };
+            vm.Admit(Request(internalFiles)); await vm.WaitForIdleAsync();
+            check(chartPrompts == 1 && internalAccess.Admissions == 1 && internalAccess.Last!.Plan.Sources.Length == 4 &&
+                vm.Rows.All(row => row.Result.State == OperationState.Failed && row.Status.Contains("Activate")),
+                "Office charts: ordinary internal charts reach the existing calculation and access gates");
+        }
         await using (var vm = Create("denied", denied))
         {
             vm.OfficeCalculationRequested += _ => { prompts++; return Task.FromResult<string?>("recalculate"); };

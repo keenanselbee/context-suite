@@ -26,9 +26,10 @@ Capability freeze
 
 The [launch matrix](launch-capability-matrix.md) owns fixed operations/targets.
 These are admission boundaries, not proof of fidelity for every admitted file.
-The current [Excel chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
-temporarily refuses chart-bearing or incompletely inspected XLSX packages. D07
-still requires preserved charts; refusal is interim protection, not acceptance.
+The [paired Excel application replay](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23)
+preserves all four authored charts. Ordinary internal charts are admitted;
+newer/external charts and incomplete inspection remain refused. D07 still needs
+capacity and final-candidate replay; these scoped results are not full acceptance.
 
 | Family | Required candidate scope | Preservation boundary |
 | --- | --- | --- |
@@ -86,7 +87,7 @@ expected text/page order and independent geometry before scoring export.
 | D04 | Word combining accents, RTL/CJK and anchored image | [Authored export and independent inspection pass](word-layout-acceptance.md): exact characters/direction/placement, glyph/font programs and eight negative controls; human/final-candidate review remains |
 | D05 | Existing five Excel print controls plus ordinary workbook | Areas, breaks, repeated titles, hidden cells/sheets, values and page order |
 | D06 | Existing calculation/date controls under both modes | Correct values where admitted; known errors blocked; no external refresh |
-| D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Authored layout checks](excel-layout-acceptance.md) currently fail chart preservation; retain chart/value association, no clipping, correct pagination and every capacity page |
+| D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Four authored application/layout cases pass](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23); retain chart/value association, no clipping, correct pagination and every capacity page on the final candidate |
 | D08 | Ordinary, hidden/reordered and empty-visible-slide PowerPoint controls | Visible order, no notes/hidden output, clear empty-deck refusal |
 | D09 | PowerPoint image, diagram/table and mixed typography | [Authored layout evidence](powerpoint-layout-acceptance.md) passes image/table placement and text; aggregate acceptance still fails the declared font-size tolerance |
 | D10 | One approved real DOCX report | Owner/source reference for text, formatting and pagination |
@@ -218,12 +219,12 @@ network enforcement, human review and final expanded-candidate replay stay open.
 Safety and completion gates
 ---------------------------
 
-The [Excel layout matrix](excel-layout-acceptance.md) exposes silent chart loss
-under the current active-content policy. Four application publications and
-cleanup checks pass, but all four independent fidelity inspections fail. A
-passive paired control restores the chart when that policy is disabled; this
-does not authorize disabling product protections or close D07. Resolve the
-fidelity/security conflict before accepting Office conversion.
+The [Excel layout matrix](excel-layout-acceptance.md) retains the original silent
+chart-loss failures. The paired source-built renderer now passes four application
+publications and independent PDF comparisons with active-content restrictions
+enabled. Native safety, source-build replay, broader Office regressions and the
+final candidate remain separate required evidence; these four PDFs do not close
+the complete Office fidelity/security gate.
 
 The [Office isolation record](office-isolation-evaluation.md) still has unresolved
 loopback/deadline observations. File/token checks and successful exports do not

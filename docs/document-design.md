@@ -44,13 +44,15 @@ early-1900 date results remain blocked, and correcting the renderer itself is
 deferred. This accepts the documented refusal policy, not incorrect output or
 unverified date variants. Broader content/font/layout acceptance remains required.
 
-The current restricted renderer also drops native Excel charts. The shared
-conversion preflight now refuses XLSX chart declarations/relationships and
-incomplete bounded chart inspection before rendering, with guidance to export
-from Excel. Analyze remains available. This conservative interim guard includes
-hidden or unused chart declarations; it does not satisfy the required
-[D07 chart-fidelity acceptance](excel-layout-acceptance.md) or relax active-content
-restrictions. Chart-free admission is not a general fidelity or safety guarantee.
+The paired source-built renderer preserves the four authored Excel chart/layout
+cases through actual application publication and independent PDF inspection.
+Shared conversion preflight admits ordinary internal charts while refusing
+chartEx declarations/relationships, externally linked chart relationships and
+incomplete bounded inspection, with guidance to export from Excel. Analyze
+remains available. The [D07 evidence](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23)
+retains all active-content restrictions and the original failed attempts.
+Capacity replay, broader safety, network enforcement and final-candidate
+acceptance remain open; admission is not a general fidelity or safety guarantee.
 
 Recognized XLSX DDE links and formulas are also refused in both calculation modes.
 The [DDE evaluation](office-chart-renderer-repair.md#dde-fidelity-failure-and-targeted-refusal-2026-09-22)

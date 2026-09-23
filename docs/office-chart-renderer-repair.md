@@ -5,9 +5,11 @@ Status: revised source patch compiled and linked; twenty-two authored native cas
 pass, including a separately reviewed package-namespace compatibility repair.
 Four Excel and two Word/PowerPoint chart PDF comparisons pass through the
 restricted host in the isolated Windows build.
-Application replay, restricted-host security and adoption remain pending.
-The [chart-loss regression](excel-layout-acceptance.md)
-still fails on the current candidate. This proposal keeps chart fidelity in the
+The paired application now passes the four authored Excel chart/layout cases
+and independent PDF comparisons, plus Word layout and fifteen font/style cases.
+Restricted-host security completion, clean source-build replay and adoption
+remain pending. Reserved candidates retain their original failed chart behavior.
+The [chart-loss regression](excel-layout-acceptance.md) keeps chart fidelity in the
 [active goal](broad-file-support-goal.md) and keeps `DisableActiveContent=true`.
 
 
@@ -1110,11 +1112,15 @@ Required execution before adoption
    restricted host, including process/file/network boundaries and cleanup.
    Preserve the unresolved network-enforcement gate rather than treating a
    timeout as denial.
-4. Run the unchanged four-case D07 application/PDF matrix with the patched
-   isolated engine and restrictive profile. Add Word/PowerPoint chart checks;
-   repeat relevant calculation, revision, font, image and interruption regressions.
+4. The unchanged four-case D07 application/PDF matrix now passes with the paired
+   isolated engine and restrictive profile; see
+   [application evidence](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23).
+   Word/PowerPoint charts have restricted-host evidence. Complete their required
+   application/final-candidate replay and relevant calculation, revision, font,
+   image and interruption regressions. Word D04 and fifteen style cases pass.
 5. Review source delivery/notices, packaging impact, performance and human pages
-   before changing native identities or composing the final combined candidate.
+   before final engine adoption or composing the final combined candidate. The
+   isolated application selection has its own explicit source/runtime pins.
 
 If this proposal needs broader object permissions to render, stop and review the
 design rather than expand the exception to arbitrary embedded content. Other

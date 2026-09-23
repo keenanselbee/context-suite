@@ -1,13 +1,13 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-19.21**. The current-status reconciliation distinguishes
+Matrix revision: **2026-09-23.1**. The current-status reconciliation distinguishes
 reserved 1.1.1 from the expanded scratch payload and updates customer guidance.
 The recorded implementation evidence includes the
 [audio inventoried-payload protection](audio-distribution.md#inventoried-payload-protection-2026-09-19),
 [mixed Office/image PDF replay on the expanded worker](office-direct-command.md#expanded-combined-worker-replay-2026-09-19),
 [combined HEIF/expanded-audio/Voice command replay and package measurement](combined-expanded-inputs.md),
-[interim Excel chart refusal](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19),
+[paired Excel chart application replay](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23),
 [sixteen prepared HEIC/AVIF image comparisons](heif-image-review.md),
 [ten prepared AIFF/WMA listening comparisons](expanded-audio-listening-review.md),
 [Office conversion timing baseline](office-performance.md),
@@ -16,7 +16,7 @@ The recorded implementation evidence includes the
 [PDF batch timing baseline](pdf-performance.md),
 [Word multilingual/anchored-image automated acceptance](word-layout-acceptance.md),
 [PowerPoint layout evidence and rounding-policy gate](powerpoint-layout-acceptance.md)
-alongside the [Excel chart-loss blocker](excel-layout-acceptance.md) under the
+alongside the [remaining Excel acceptance](excel-layout-acceptance.md) under the
 [finite acceptance contract](local-candidate-acceptance.md). Optional HEIC/AVIF scratch
 packaging and reserved candidate 1.1.1 capabilities remain separate.
 Catalog schema 1, revision **2026-09-16.3**, **245 records**.
@@ -32,6 +32,12 @@ and Windows Voice plus the interim Excel chart guard. It is not a new reserved
 release and does not replace 1.1.1. Default release packaging still requires
 explicit selection of optional engines; adoption and full acceptance remain
 open. A menu label does not establish a build's executable capabilities.
+
+The later [paired source-built Office selection](office-runtime-verification.md#source-built-application-selection-2026-09-23)
+passes isolated application and independent PDF checks for Word layout/styles
+and the four Excel chart cases. It narrows chart refusal to newer/external charts
+and incomplete inspection. This selection is not yet composed into a fresh
+versioned expanded candidate; clean rebuild, safety and full replay remain open.
 
 Required compatibility additions selected 2026-09-16:
 
@@ -244,7 +250,7 @@ Document transformations
 | Supported PNG/JPEG/WebP/BMP/TGA > PDF | One raster-only PDF 1.7; several images require explicit page-order review; orientation, supported samples/color/alpha and physical dimensions retained | No DDS, OCR or tagged/accessibility PDF; all selected images must qualify; visible order review open |
 | PDF > PNG | One numbered PNG per page, 150 DPI, supported crop/rotation/UserUnit applied | Copies only; retains stored visible appearances, not editable forms, attachments or verifiable signatures; protected/unsupported/oversized inputs can be refused |
 | DOCX > PDF | Separate PDF 1.7 copy per document; final text, tracked markup hidden; source revisions retained | Exact ordinary document content type and matching suffix; broader fields, comments, protection, fonts and pagination open |
-| XLSX > PDF | Separate PDF copy; owner-selected explicit saved-values or recalculation choice retained on retry; external data not refreshed | Known incorrect early-1900 dates, recognized DDE links/formulas, chart declarations/relationships and incomplete chart inspection blocked; passive chart preservation remains required and unresolved under the active-content policy |
+| XLSX > PDF | Separate PDF copy; owner-selected explicit saved-values or recalculation choice retained on retry; external data not refreshed | Known incorrect early-1900 dates, recognized DDE links/formulas, chartEx/external chart relationships and incomplete chart inspection blocked; four ordinary internal chart cases pass paired application/PDF replay with active-content restrictions retained; final acceptance remains open |
 | PPTX > PDF | Separate PDF copy; saved slide order, hidden slides and speaker notes excluded; positively identified zero-visible-slide decks stop before export | Unknown visibility is not treated as an empty deck; broader presentation/media/font/layout fidelity and visible acceptance open |
 | Mixed images and DOCX/XLSX/PPTX > PDF | One reviewed image PDF plus one separate copy per Office document under shared admission | Office documents do not become pages of the combined image PDF |
 | DOC/XLS/PPT; Office templates and macro-enabled variants | None in the current converter | Owner deferred conversion for first release on 2026-09-16; existing analysis remains |
