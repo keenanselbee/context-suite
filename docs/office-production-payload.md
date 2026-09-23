@@ -170,7 +170,10 @@ than silently applying the new runtime inventory to old evidence.
 
 The [runtime lease checks](office-runtime-verification.md) and
 [actual Word publication/inspection](word-layout-acceptance.md#source-built-application-replay-2026-09-23)
-provide separate scoped evidence. The Excel chart guard remains in place.
+provide separate scoped evidence. The subsequent
+[Excel application replay](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23)
+passes the four authored chart cases and retains the narrower unsupported-chart
+and incomplete-inspection guards.
 
 
 Remaining acceptance

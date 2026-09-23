@@ -51,8 +51,9 @@ chartEx declarations/relationships, externally linked chart relationships and
 incomplete bounded inspection, with guidance to export from Excel. Analyze
 remains available. The [D07 evidence](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23)
 retains all active-content restrictions and the original failed attempts.
-Capacity replay, broader safety, network enforcement and final-candidate
-acceptance remain open; admission is not a general fidelity or safety guarantee.
+The paired 48-sheet capacity replay also passes. Broader safety, network
+enforcement and final-candidate acceptance remain open; admission is not a
+general fidelity or safety guarantee.
 
 Recognized XLSX DDE links and formulas are also refused in both calculation modes.
 The [DDE evaluation](office-chart-renderer-repair.md#dde-fidelity-failure-and-targeted-refusal-2026-09-22)

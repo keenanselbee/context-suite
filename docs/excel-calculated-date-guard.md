@@ -289,3 +289,34 @@ These fixes do not establish cancellation before a workbook ZIP finishes, fix
 early-1900 date rendering, complete broader Office fidelity, or provide fresh
 combined release packaging. The resource allowance is a bounded capacity fix,
 not a claim that every admitted 64 MiB workbook can be rendered within it.
+
+
+Paired source-built capacity replay, 2026-09-23
+----------------------------------------------
+
+The [paired renderer selection](office-runtime-verification.md#source-built-application-selection-2026-09-23)
+passes **43 actual application checks** at
+`.codex-temp/office-execution/be096d79feb741d3a3834d004c77c700` using the unchanged
+authored 48-sheet workbook and ordinary Word/PowerPoint controls. Their input
+files match the earlier capacity run's recorded hashes. The normal batch
+publishes three validated PDF copies; subsequent scenarios preserve output-name
+collisions, refuse failed publication, cancel before publication and retry an
+obstructed post-publication cleanup without creating another output. All original
+bytes/timestamps remain unchanged and all six profiles, mappings, contexts and
+journals are removed. This covers the existing publication-boundary scenarios,
+not interruption during native rendering or workbook ZIP output.
+
+Independent inspection in
+`contracts/capacity-inspection-e57dee3f143444a28fba424e33c2b3ff` passes all 48 sheet
+labels, order, Letter page geometries and **144 exact page-pixel comparisons**
+across the retained controls and new application PDF. No tolerance is changed.
+The source-bound wrapper is `.codex-temp/InspectPairedOfficeCapacity01.py`;
+`capacity-replay-cf73341968b84e40b63ba81de436e7e2/result.json` under the execution
+directory records exit zero and unchanged inspection inputs. It verifies the
+three retained control PDF identities against their earlier inspection receipt
+and verifies the independent qpdf/PDFium tools before execution.
+
+Execution and inspection builds have zero warnings/errors. This closes the
+isolated 48-sheet capacity regression for the paired engine. The exact final
+candidate, native interruption/resource behavior, network enforcement, broader
+Office fidelity and owner review remain required.

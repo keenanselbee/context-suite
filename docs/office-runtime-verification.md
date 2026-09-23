@@ -125,9 +125,11 @@ both selection JSON identities in the public runner.
 The [Word layout replay](word-layout-acceptance.md#source-built-application-replay-2026-09-23)
 also passes actual application publication and independent PDF inspection.
 This is isolated application integration, not completed engine adoption:
-the native rebuild, chart/application matrix, recovery, affirmative network
-enforcement, redistribution and final-candidate replay remain open. The Excel
-chart refusal is unchanged, and reserved 1.1.0/1.1.1 payloads are untouched.
+the native rebuild, recovery, affirmative network enforcement, redistribution
+and final-candidate replay remain open. The subsequent
+[Excel application replay](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23)
+passes all four authored chart cases and narrows refusal to newer/external charts
+and incomplete inspection. Reserved 1.1.0/1.1.1 payloads are untouched.
 
 
 Repeatable verification

@@ -209,7 +209,9 @@ now passes all four original chart/layout cases and independent PDF comparisons.
 Its narrowed preflight admits ordinary internal charts, retaining newer/external
 chart and incomplete-inspection refusals. All 4,505 foundation contracts and 28
 updated actual-worker refusal checks pass. Word D04 and fifteen style cases also
-pass with the paired selection. Clean source-build replay, capacity, remaining
+pass with the paired selection. The [48-sheet capacity/recovery replay](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23)
+passes all 43 application checks and every page's exact reference pixels.
+Clean source-build replay and remaining
 safety, network enforcement and final-candidate acceptance stay open; this does
 not complete D07 or approve final renderer adoption.
 

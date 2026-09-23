@@ -5,7 +5,7 @@ Status: the paired source-built renderer passes the four authored application
 publications and unchanged independent chart/layout comparisons. Shared preflight
 now admits ordinary internal charts while retaining newer/external chart and
 incomplete-inspection refusals. The original renderer failures remain below.
-Clean rebuild replay, broader Office safety, capacity, human review and final
+Clean rebuild replay, broader Office safety, human review and final
 combined-candidate acceptance remain required.
 This is one part of the
 [local acceptance contract](local-candidate-acceptance.md), not general Excel
@@ -207,7 +207,9 @@ passes all four text, merged/wrapped layout, chart bar/value/category, orientati
 and negative-control comparisons. No fixture or oracle tolerance changed.
 Execution and inspection inputs remain unchanged; Release builds have zero
 warnings/errors. This closes the four authored chart-loss cases in the isolated
-application path, not all D07 capacity or final packaged-candidate acceptance.
+application path, not final packaged-candidate acceptance. The subsequent
+[paired 48-sheet replay](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23)
+also passes actual publication/recovery and every page's exact reference pixels.
 
 The blanket chart refusal is narrowed to unsupported chartEx declarations or
 relationships, chart relationships whose explicit target mode is not `Internal`,

@@ -28,8 +28,9 @@ The [launch matrix](launch-capability-matrix.md) owns fixed operations/targets.
 These are admission boundaries, not proof of fidelity for every admitted file.
 The [paired Excel application replay](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23)
 preserves all four authored charts. Ordinary internal charts are admitted;
-newer/external charts and incomplete inspection remain refused. D07 still needs
-capacity and final-candidate replay; these scoped results are not full acceptance.
+newer/external charts and incomplete inspection remain refused. The paired
+[48-sheet capacity replay](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23)
+also passes; D07 still needs final-candidate and human acceptance.
 
 | Family | Required candidate scope | Preservation boundary |
 | --- | --- | --- |
@@ -87,7 +88,7 @@ expected text/page order and independent geometry before scoring export.
 | D04 | Word combining accents, RTL/CJK and anchored image | [Authored export and independent inspection pass](word-layout-acceptance.md): exact characters/direction/placement, glyph/font programs and eight negative controls; human/final-candidate review remains |
 | D05 | Existing five Excel print controls plus ordinary workbook | Areas, breaks, repeated titles, hidden cells/sheets, values and page order |
 | D06 | Existing calculation/date controls under both modes | Correct values where admitted; known errors blocked; no external refresh |
-| D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Four authored application/layout cases pass](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23); retain chart/value association, no clipping, correct pagination and every capacity page on the final candidate |
+| D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Four authored chart/layout cases](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23) and [all 48 capacity pages](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23) pass paired application/independent inspection; final-candidate and human acceptance remain |
 | D08 | Ordinary, hidden/reordered and empty-visible-slide PowerPoint controls | Visible order, no notes/hidden output, clear empty-deck refusal |
 | D09 | PowerPoint image, diagram/table and mixed typography | [Authored layout evidence](powerpoint-layout-acceptance.md) passes image/table placement and text; aggregate acceptance still fails the declared font-size tolerance |
 | D10 | One approved real DOCX report | Owner/source reference for text, formatting and pagination |
@@ -99,7 +100,7 @@ pagination under the owner's decision. The existing 0.071-point move-fixture
 allowance is not a blanket tolerance. Missing text, wrong dates, substituted
 fonts, clipping or changed pagination fail. A per-document Save choice accepts
 that explicitly reported font substitution; an empty callback is not proof of
-complete style/glyph fidelity. D04 has authored automated evidence; D07/D09 and
+complete style/glyph fidelity. D04/D07 have authored automated evidence; D09 and
 real documents still need complete automated evidence. Human and final-candidate
 review remain required; simpler controls do not establish their acceptance.
 
