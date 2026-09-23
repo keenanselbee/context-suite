@@ -183,13 +183,45 @@ receipts are under `evidence\source-build-4e24fc1032364d8d81456e7e81273ace`.
 Completion, native execution and inclusion in the final source kit remain pending.
 
 
+Standalone kit with build commands
+----------------------------------
+
+Evaluation 02 at `G:\ContextSuite-OfficeBuild\tools\office-source-kit-02` retains
+the original pinned source/dependency/patch inputs and adds the four public
+configure/build commands and their focused test scripts from public commit
+`a039dd3ad085533d202ebeea6c9445db1df0375e`. Its README gives standalone source
+preparation, explicit settings/environment fields, configure/build commands,
+toolchain requirements and remaining acceptance boundaries. Evaluation 01 and
+its ZIP remain intact; no private implementation is included.
+
+The new kit contains 169 files and 1,148,553,285 bytes. Its manifest SHA-256 is
+`099024ABFF64DD452F5FC7A959E29EFEE17FB786BF58D989A52B4FF40EAE417A`.
+The stored ZIP is 1,148,579,825 bytes, SHA-256
+`5A84AC24450726340F2658848FD66DF4B9CF0233278B69DA71B053121ABB826E`.
+Every archive member was read back and matched to its size and hash.
+`evidence\office-source-kit-02.json` and
+`evidence\office-source-kit-02-archive.json` retain these receipts.
+
+Both planners run from the kit directory with no repository input dependency.
+Configure options match the successful baseline after changing only the kit
+dependency-cache path, and the build plan retains the same seventeen targets.
+No new build directory is created and all kit members remain unchanged.
+`evidence\source-kit-02-standalone\results.json` records this scoped result.
+It uses the existing prepared source, configured build and installed tools;
+it does not claim another source extraction, configuration or completed rebuild.
+
+Final source/runtime correspondence, helper distribution terms, dependency and
+toolchain redistribution review, and the native/restricted-host replay remain
+required. This local archive is not approval to redistribute or adopt the engine.
+
+
 Remaining build and adoption work
 --------------------------------
 
 The preparation, configure and configured-build commands now accept explicit
-locations. Their inclusion and instructions in the final source kit remain
-pending; changing source/toolchain locations beyond the evaluated configuration
-requires corresponding verification. Complete clean
+locations and are included in Evaluation 02. Final source delivery remains tied
+to the eventual adopted runtime; changing source/toolchain locations beyond the
+evaluated configuration requires corresponding verification. Complete clean
 compilation and native/restricted-host replay must bind the rebuilt bytes to
 this source kit. A successful extraction or configuration is not that evidence.
 
