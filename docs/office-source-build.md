@@ -90,12 +90,53 @@ The launch itself is not a pass. The native test target is compiled with executi
 suppressed; required native and restricted-host execution follow separately.
 
 
+Reusable configured-build driver
+--------------------------------
+
+[Run-SourceBuild.py](../tools/office-engine/Run-SourceBuild.py) provides a reusable
+execution step for an already configured source tree. Workspace, build, Bash,
+Make and reviewed child-environment JSON paths are explicit. `--plan` validates
+them and prints the fixed seventeen-target command without creating files or
+launching a build. `--execute` records input/tool hashes, command, process, log,
+workspace measurements and terminal result in a fresh evidence directory.
+
+The driver requires source/build/cache/temp paths inside the owned workspace,
+ordinary paths, two configured jobs, dependency hashing and the bounded Python
+recipe. It clears inherited Make flags, supplies `PARALLELISM=2` explicitly and
+runs targets sequentially. An OS-held byte lock prevents two instances of this
+driver from using the same configured build; it does not coordinate independent
+manual Make commands or the earlier one-off launcher. Do not start another build
+against the active tree. Lock ownership is released when its process exits.
+
+The existing 100-GiB monitor checks before launch and periodically during work.
+Exceeding that budget or interrupting the monitor stops its owned process tree;
+the monitor is not a filesystem quota or a general process sandbox. Compilation
+still suppresses native test execution, which remains a separate acceptance step.
+The environment JSON uses the fixed reviewed export names from the historical
+build script, including child-local tool PATH, temporary/cache locations and the
+existing telemetry/parallelism settings. No machine-wide environment is changed.
+
+[Test-SourceBuild.py](../tools/office-engine/Test-SourceBuild.py) passes sixteen
+checks at `.codex-temp/office-source-build-driver/6272a86d409645199905cff07b4a3ca9`.
+Actual Bash/Make run harmless echo/failure targets in a path containing spaces.
+The tests verify no-write planning, invalid limits/cache/temp refusal, inherited
+Make-flag removal, concurrent-driver refusal, exact target order and stopping at
+the first failure with its receipt retained. They run no compiler or Office
+engine and do not establish runtime resource-limit or interruption acceptance.
+
+The read-only plan against the live reconstructed configuration also matches all
+seventeen targets and the exact reviewed child environment. The driver has not
+started a second renderer build. Full renderer execution through this reusable
+entry point and inclusion in the final source kit remain pending.
+
+
 Remaining build and adoption work
 --------------------------------
 
-Historical scripts preserve actual commands, but contain the original workspace
-paths. A portable guarded rebuild entry point still needs to map source, build,
-tool and dependency paths and retain the two-job/100-GiB limits. Complete clean
+Historical configuration scripts preserve actual commands, but contain the
+original workspace paths. Portable preparation/configuration orchestration still
+needs to map source, tool and dependency paths; the configured-build execution
+step above now accepts explicit locations and retains the limits. Complete clean
 compilation and native/restricted-host replay must bind the rebuilt bytes to
 this source kit. A successful extraction or configuration is not that evidence.
 
