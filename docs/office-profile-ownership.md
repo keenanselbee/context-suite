@@ -255,3 +255,25 @@ and held grant-directory identity checks. Five disposable owner crashes pass
 within 138 native ownership checks; all profiles and grants are removed, including
 the retained case from an initial fixture failure. These are generated ownership
 fixtures; recovery during actual Office rendering remains unverified.
+
+
+Repaired-renderer ownership refresh (2026-09-22)
+------------------------------------------------
+
+The canonical opt-in command passes all 140 current ownership checks at
+`.codex-temp/office-owner/066d49062b3d4c40b4efb95404570a0c`, with actual access
+results under the matching `.codex-temp/office-isolation` directory. Input reads
+and output writes succeed; input writes and withheld reads return error 5.
+After revocation, all four requests return error 5 under the recreated SID.
+Worker-loss cleanup, protected/explicit child entries, bounded sharing-conflict
+recovery and five reopened-journal owner-loss cases pass. The managed Release
+build has zero warnings/errors.
+
+The additional `chart-host-binding.json` verifies unchanged source/build bytes,
+all six distinct profile folders/mappings absent, and six exact shared source
+identities in each of the namespace-repaired Word and drawing host runners.
+Those sources include the application owner, private launcher and private job.
+This connects the fresh ownership evidence to the
+[repaired-renderer evaluation](office-chart-renderer-repair.md#ownership-and-packaging-preparation-2026-09-22).
+The native boundary probe loads no Office engine; its results do not establish
+network denial, real-render interruption, final-candidate or release acceptance.

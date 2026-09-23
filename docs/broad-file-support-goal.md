@@ -190,6 +190,14 @@ twelve restricted-host exports pass. Prefixed metadata preserves the same
 full-page pixels, object inactivity and previews as the ordinary form. All
 identities and profile cleanup pass. The separate source patch is reviewed and
 reversible; production adoption and the remaining release gates are still open.
+The [ownership and packaging refresh](office-chart-renderer-repair.md#ownership-and-packaging-preparation-2026-09-22)
+passes 140 actual ownership/file-access/recovery checks with sources bound to the
+repaired-host runners. Generated notices and app-local runtime dependencies now
+accompany a separately inventoried 547-MB review payload (223-MB ZIP); twelve
+restricted-host exports retain exact baseline pixels and remove every profile.
+All original source files are accounted for, with eight modifications classified
+and reproduced by reversible patches. Production selection is unchanged; network
+evidence, source-kit completion, application replay and final composition remain.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This

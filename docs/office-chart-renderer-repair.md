@@ -977,6 +977,102 @@ renderer. It does not adopt that renderer, remove interim application guards or
 close the remaining file/network/process, application-publication and final
 candidate gates. Earlier failed evidence remains retained.
 
+### Ownership and packaging preparation (2026-09-22)
+
+A fresh `Test-OfficeProfileOwnership.ps1 -CreateDisposableProfile` replay passes
+all 140 checks at
+`.codex-temp/office-owner/066d49062b3d4c40b4efb95404570a0c`.
+The actual private launcher and application owner permit input reads/output
+creation and return Windows access-denied errors for input writes and withheld
+reads. Recreating the same profile SID after cleanup leaves the old input/output
+paths denied. Worker loss stops the retained native child; sharing-conflict,
+residual-child-access and reopened-journal recovery checks also pass.
+
+`chart-host-binding.json` in that evidence directory verifies current sources
+and binaries and binds six owner/job/launcher sources to each namespace-host
+runner. All six distinct test profile folders and registry mappings are absent;
+the suite intentionally creates some identities more than once. This refreshes
+the scoped file-access and ownership/recovery evidence. It does not prove network
+denial or substitute for real-render interruption and application publication.
+
+The partial native build lacked its upstream notice files. Three sequential
+upstream packaging targets now generate/install `license.txt`, `LICENSE.html`,
+`NOTICE`, `CREDITS.fodt` and the English readme inside the isolated `instdir`.
+`G:\ContextSuite-OfficeBuild\evidence\native-notices-01-acceptance.json`
+verifies those five files against their source/generated originals and confirms
+all preceding 3,818 runtime files are unchanged. The complete runtime now has
+3,823 files totaling 544,076,961 bytes. Existing host-test copies remain unchanged;
+their original inventories do not include these later notice additions.
+
+`G:\ContextSuite-OfficeBuild\tools\office-review-runtime-01` is a fresh complete
+copy with the evaluated unmerged host and a sorted, hash-pinned file inventory.
+`evidence\office-review-runtime-01.json` records its identities and one empty
+directory. It is prepared for adoption review, not selected by production pins.
+The upstream archive build still has an empty `version.ini` build ID; source,
+configuration, patch and file hashes currently identify it. Resolve the durable
+distribution identity and source kit before final composition.
+
+The matching ZIP is 222,190,663 bytes; its 3,825 files expand to 544,675,255
+bytes including the host and inventory. Every archived file was read back and
+matched to its reviewed hash, with the empty directory retained. The receipt is
+`evidence\office-review-runtime-01-archive.json`. This is an engine-only footprint,
+not the size or acceptance of the final combined application.
+
+All 140 retained external dependency inputs match the pinned `download.lst`
+hashes; `evidence\dependency-archives-01.json` distinguishes source archives,
+the OpenSymbol font and Java tools. Twelve declared inputs are not downloaded;
+the inventory alone does not establish the final runtime's complete source
+closure or redistribution readiness.
+
+The complete source/archive audit subsequently accounts for all 148,166 regular
+files, with no missing files. Eight modified files divide into four runtime-repair
+files, two build-compatibility files and two native-test files. Three additions
+provide version metadata and the native test source/makefile. All 56 materialized
+archive links match their resolved source targets. The receipts are
+`evidence\source-correspondence-01\results.json` and
+`evidence\source-classification-01\results.json`.
+`evidence\source-delta-replay-01\results.json` verifies byte-exact forward and
+reverse application of all eight modifications against retained archive originals.
+The existing `configure.ac` copy also contains UTF-8-to-Windows-1252 punctuation
+changes in help/comments alongside the intentional antivirus-preflight change.
+That incidental encoding change is recorded, not silently omitted from the
+patches; normalize and revalidate the canonical recipe before source-kit release.
+Source-kit assembly, dependency closure and a reproducible build remain open.
+
+Static inspection of the first review payload found five imported Microsoft
+runtime DLLs available on this machine but absent from that payload. The new
+`tools\office-review-runtime-02` preserves the first copy and adds unmodified
+x64 Visual Studio redistributables, version `14.51.36247.0`, with valid Microsoft
+signatures. Three startup dependencies sit beside the host; all five sit in the
+explicitly searched `runtime\program` directory. Host and preceding engine bytes
+remain unchanged. The five files' transitive imports require no additional MSVC
+DLLs, and static inspection of all 325 native files finds no unbundled MSVC
+imports. System32/API-set observations still describe this machine; this is not
+clean-machine or dynamic-loader provenance evidence.
+
+The app-local deployment option and redistribution conditions are described in
+[Microsoft's deployment guidance](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170)
+and [Visual Studio 2026 redistribution list](https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution).
+Compiler eligibility, license compliance and servicing remain part of adoption
+review. No system runtime installer was run.
+
+The revised engine-only archive contains 3,833 files and expands to 546,730,852
+bytes. Its compressed size is 222,972,095 bytes and SHA-256 is
+`493A044BA2F5C6F8F50DE72295185DE78E70CA81440CE8E00E80A16956AA8B30`.
+Every archived file, including the three host-adjacent runtime DLLs, matches its
+reviewed hash. The archive receipt is
+`evidence\office-review-runtime-02-archive.json`.
+The paired `review-word-host-export-02` and `review-drawing-host-export-02`
+runs pass all twelve exports, including both Excel calculation modes. Text,
+geometry and previews pass; every full-page raster is byte-identical to its
+preceding namespace-host baseline. All runtime/verifier/fixture/runner inputs
+remain unchanged and all twelve profile folders and registry mappings are absent.
+`evidence\office-review-runtime-02-acceptance.json` binds these results to the
+archive and import inspection. This remains isolated host evidence, not actual
+application publication or affirmative network-denial acceptance.
+No compiler installation, production engine adoption, installed-app change or
+reserved-candidate mutation occurred.
+
 ### Runtime linkage constraint
 
 Inspection of the expanded combined candidate's
