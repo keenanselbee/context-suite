@@ -344,6 +344,11 @@ if (args is ["--office-chart-refusal", var chartWorker, var chartEvidence])
     await OfficeChartRefusalContracts.RunAsync(chartWorker, chartEvidence);
     return 0;
 }
+if (args is ["--office-dde-refusal", var ddeWorker, var ddeEvidence])
+{
+    await OfficeDdeRefusalContracts.RunAsync(ddeWorker, ddeEvidence);
+    return 0;
+}
 
 if (args.Length == 3 && args[0] == "--audio-listening-pack")
 {

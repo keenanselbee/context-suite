@@ -44,6 +44,9 @@ public sealed record OfficeSourcePreflight(FileAnalysis Analysis, string? Format
         // affected or incompletely inspected packages before either calculation mode.
         if (format == "xlsx")
         {
+            var dde = await ExcelDdeInspection.ReadAsync(input, cancellationToken);
+            if (dde.HasDde)
+                return new(analysis, format, "This workbook uses DDE links that Context Suite cannot preserve reliably. Export the PDF from Excel instead. Analyze remains available.");
             var charts = await ExcelChartInspection.ReadAsync(input, cancellationToken);
             if (charts.HasCharts)
                 return new(analysis, format, "This workbook contains charts that Context Suite cannot currently preserve. Export the PDF from Excel instead. Analyze remains available.");

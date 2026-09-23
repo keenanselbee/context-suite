@@ -8,6 +8,9 @@
   <ItemGroup>
     <Compile Include="..\..\tools\office-engine\Probe\PdfTextReader.cs" Link="Fixtures\PdfTextReader.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\ExcelLayoutFixtures.cs" Link="Fixtures\ExcelLayoutFixtures.cs" />
+    <Compile Include="..\..\tools\office-engine\Probe\OfficeDdeCanary.cs" Link="Fixtures\OfficeDdeCanary.cs" />
+    <Compile Include="..\..\tools\office-engine\Probe\OfficeDdeFixtures.cs" Link="Fixtures\OfficeDdeFixtures.cs" />
+    <Compile Include="..\..\tools\office-engine\Probe\OfficeExternalLinkFixtures.cs" Link="Fixtures\OfficeExternalLinkFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\OfficeFixtures.cs" Link="Fixtures\OfficeFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\PowerPointSlideFixtures.cs" Link="Fixtures\PowerPointSlideFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\PowerPointLayoutFixtures.cs" Link="Fixtures\PowerPointLayoutFixtures.cs" />

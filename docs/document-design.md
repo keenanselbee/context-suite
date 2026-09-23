@@ -52,6 +52,15 @@ hidden or unused chart declarations; it does not satisfy the required
 [D07 chart-fidelity acceptance](excel-layout-acceptance.md) or relax active-content
 restrictions. Chart-free admission is not a general fidelity or safety guarantee.
 
+Recognized XLSX DDE links and formulas are also refused in both calculation modes.
+The [DDE evaluation](office-chart-renderer-repair.md#dde-fidelity-failure-and-targeted-refusal-2026-09-22)
+shows formula errors after recalculation and does not establish native link
+recognition or general isolation. Bounded preflight detects known declarations
+and calls, retains Analyze and directs conversion to Excel. Incomplete DDE
+inspection remains unknown; this targeted fidelity guard is not a security
+certificate. Macro/OLE/DDE enforcement and the remaining host boundaries still
+require separate evidence.
+
 Required analysis
 -----------------
 

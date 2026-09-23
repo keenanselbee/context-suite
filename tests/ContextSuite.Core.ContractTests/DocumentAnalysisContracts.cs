@@ -14,6 +14,7 @@ internal static partial class DocumentAnalysisContracts
     {
         await OfficeSourcePreflightContractsAsync(check);
         await ExcelChartContractsAsync(check);
+        await ExcelDdeContractsAsync(check);
         await StoredExcelDatesAsync(scratch, check);
         await WordBodyFontsAsync(check);
         await OfficeWordFontStyleContracts.SourcesAsync(scratch, check);

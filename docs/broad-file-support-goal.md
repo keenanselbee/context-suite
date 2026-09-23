@@ -146,6 +146,13 @@ when the differing local target is explicitly readable. Formula/link declaration
 originals and runtime identities remain intact; all five profiles are removed.
 This closes the scoped no-refresh comparison, not DDE/macro/OLE document coverage
 or affirmative network denial.
+The later [DDE evaluation](office-chart-renderer-repair.md#dde-fidelity-failure-and-targeted-refusal-2026-09-22)
+finds a separate defect: recalculated DDE-linked spreadsheets become formula
+errors and native link recognition is unproven. No service contact was observed,
+but this is not a DDE isolation pass. Shared preflight now refuses recognized
+DDE workbooks in both modes; 4,490 foundation and 28 actual-worker DDE-refusal
+checks pass. Originals and runtime inputs remain intact and all five evaluation
+profiles are removed. Required renderer security evidence remains open.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This

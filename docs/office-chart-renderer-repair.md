@@ -701,6 +701,54 @@ made no read attempt, a positive test of unrestricted link refreshing, universal
 external-link coverage or network denial. DDE, macro, embedded-object document
 controls and the remaining process/file/network evidence stay open.
 
+### DDE fidelity failure and targeted refusal (2026-09-22)
+
+[OfficeDdeFixtures](../tools/office-engine/Probe/OfficeDdeFixtures.cs) generates
+four XLSX controls: named and direct DDE formulas under saved-values and
+recalculated export. Each has a saved value of `123456`. The independently
+authored [data-only DDE service](../tools/office-engine/Probe/OfficeDdeCanary.cs)
+returns `987654` for one random service name and fixed topic/item; it refuses
+execute, poke and advise, performs no file/network action and has a bounded
+lifetime. Ordinary client requests before and after export confirm availability.
+
+`G:\ContextSuite-OfficeBuild\evidence\dde-host-export-02\results.json`
+records **failed acceptance**, not a security pass. Both saved-values PDFs retain
+`123456`; recalculation produces `#NAME?` for the named formula and `#N/A` for the
+direct formula. The exported workbooks omit the DDE link part, so native import
+recognition is not established. No renderer connection or request reached the
+service in any case, but that observation does not distinguish enforcement from
+an unavailable DDE path. The ordinary controls each connect and request data.
+An earlier attempt stopped after its first export because the harness assumed
+the missing link part existed; the corrected harness records all four outcomes
+without weakening the original acceptance conditions.
+
+The postverification receipt confirms all 4,112 runtime/verifier inputs and runner
+sources unchanged, service disposal and removal of all five native profiles from
+both attempts. These disposable evaluations do not change the production host,
+runtime identities or active-content policy.
+
+The shared [source preflight](../src/ContextSuite.Core/Analysis/OfficeSourcePreflight.cs)
+now refuses recognized DDE declarations and formulas before either calculation
+mode, with guidance to export from Excel and continued Analyze availability.
+The bounded [inspection](../src/ContextSuite.Core/Analysis/ExcelDdeInspection.cs)
+scans typed external-link, workbook and worksheet parts, including strict and
+transitional namespaces, defined names and direct DDE calls. Quoted literals and
+identifiers are excluded. Malformed or over-budget inspection remains unknown;
+this positive-risk guard is not a complete security scanner or a claim that
+unrecognized packages are safe. General renderer isolation remains mandatory.
+
+All **4,490 foundation contracts** pass, including 51 new DDE checks. Running
+`python -B tools/office-engine/Test-OfficeDdeRefusal.py` passes **28 actual-worker
+checks** with zero-warning/error Release builds. Eight DDE requests (four fixtures
+in both modes) stop before native runtime access, create no output/profile and
+preserve originals/snapshots. A DDE-free control reaches the deliberately absent
+runtime and the same worker remains usable. Evidence is retained under
+`.codex-temp/office-dde-refusal/545f4d7630ef4fa0a5b8a51e2c8600b9`.
+
+The refusal prevents the demonstrated conversion defect. It does not turn the
+failed native DDE matrix into a pass or close whole-document macro/OLE/DDE,
+file/network/process, application chart replay or engine-adoption gates.
+
 ### Runtime linkage constraint
 
 Inspection of the expanded combined candidate's
