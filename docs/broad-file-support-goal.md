@@ -604,6 +604,13 @@ failure is diagnosed above; the subsequent failure-guidance checkpoint also
 corrects its misleading diagnostic wording. Do not count these attempts as
 interruption or Excel fidelity acceptance.
 
+The later [controlled unfinished-workbook replay](excel-calculated-date-guard.md#controlled-unfinished-workbook-interruption-2026-09-23)
+closes the partial-ZIP stop gap on runtime04 with 42 checks and three exact
+following-output comparisons. A test-only write breakpoint holds a genuine
+incomplete workbook; the debugger is removed before normal cancellation,
+worker-loss or deadline shutdown. The earlier timing-only experiments retain
+their failures. Managed validation/resource and final-candidate gates remain.
+
 The [workbook-growth stop checks](excel-calculated-date-guard.md#stops-after-observed-workbook-growth)
 pass 36 cancellation, worker-termination and deadline checks. Six disposable
 profiles/mappings are removed, originals remain unchanged, and three following

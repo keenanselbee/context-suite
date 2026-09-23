@@ -173,6 +173,12 @@ version, installed application or reserved payload changed. The later
 provides durable provenance beside the unchanged engine; redistribution and
 adoption remain open.
 
+The selected runtime also passes the later
+[unfinished-workbook interruption matrix](excel-calculated-date-guard.md#controlled-unfinished-workbook-interruption-2026-09-23):
+three real partial ZIPs remain incomplete after normal lifetime shutdown, and
+all three following PDFs retain exact control pixels. This adds controlled
+serialization-boundary evidence without changing the renderer, host or worker.
+
 
 Repeatable verification
 -----------------------

@@ -345,3 +345,66 @@ commits. The successful replay prepares a new scratch worker with the unchanged
 verified engines; no retained worker or reserved package is overwritten. This
 does not establish incomplete workbook-ZIP interruption, final-candidate or
 human acceptance.
+
+
+Controlled unfinished-workbook interruption, 2026-09-23
+------------------------------------------------------
+
+The optional `--unfinished-workbook-copy` mode in
+[Test-OfficeWorkerStop.py](../tools/office-engine/Test-OfficeWorkerStop.py) now
+passes **42 checks** for cancellation, worker-only termination and controlled
+deadline expiry at
+`.codex-temp/office-worker/4d7003ba5a92494eb1b820e8a6a60948`. It uses the unchanged
+runtime04 worker from the calculated-date replay above and the retained eight-sheet,
+1024-pixel-bitmap fixture. No native binary or production implementation changes.
+
+The private test harness identifies its exact host by executable, creation time
+and owned AppContainer SID. After PDF output starts, a dedicated debugger thread
+installs a hardware execution breakpoint at that process's `WriteFile` entry.
+It checks the write handle's exact workbook path and observes a real ZIP prefix
+without an end record. It then suspends the owned host threads, removes its
+breakpoints and detaches the debugger before requesting the ordinary stop.
+Windows documents suspension during [debug attachment](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-debugactiveprocess)
+and continuation/handle lifetime in [ContinueDebugEvent](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-continuedebugevent).
+The test writes no executable memory, adjusts no privileges, installs nothing,
+and uses no machine-wide debugger setting. Failure is bounded and cleans up the
+identified test host; the retained failed attempts below are not passes.
+
+Every stopped workbook is **32,768 bytes**, still has its exact paused hash and
+lacks the ZIP end record after normal lifetime shutdown. Independent Python ZIP
+inspection rejects all three as incomplete. The worker and exact host have exited
+before the client returns; no candidate is accepted. All three following ordinary
+exports complete through the same client, including valid calculated workbooks.
+Observed stop returns are 170-188 ms; debugger scheduling and the injected deadline
+make these diagnostic observations, not performance or a real 180-second wait.
+
+`independent-replay-01/result.json` verifies the three following PDFs against
+qpdf structure, authored text, geometry and exact historical pixels. The scratch
+inspector selects the existing one-workbook scope of the unchanged PDF oracle
+and retains the 25 compiled-profile policy checks. `postverification.json` binds
+the current test sources, unchanged worker/runtime, originals and copied inputs.
+It independently confirms all **15 profiles and mappings** across failed,
+single-mode and complete attempts absent, and **5,547** runtime/context ACL entries
+free of those test SIDs.
+
+The first real attempt, `af20463535e34a5b951be524fe4fb96d`, captured an incomplete
+workbook but failed when the observer used file-sharing flags incompatible with
+the still-open writer. The observer now reads with explicit read/write/delete
+sharing. `7b91ece6f79c47009651c1dec728dc24` missed the breakpoint, while
+`799ccdc1a24a4fc4948c9139cc86eb78` passed the 14-check cancellation scope.
+`8af81ae30f8843d59413ed89e2c099c6` passed cancellation and worker loss but missed
+deadline capture: diagnostics recorded armed startup threads yet no workbook
+write hits. Installing after PDF output begins avoids the startup context window;
+the fresh complete matrix above passes all three modes. Earlier receipts remain
+failed or scoped, and all their owned profiles are included in cleanup evidence.
+
+The preceding synthetic mechanism check at
+`.codex-temp/workbook-breakpoint/b674620de0bd462aa2b55b907d3a2302` separately shows
+that detached suspension holds an incomplete ZIP, termination retains it, and
+resumption completes a valid ZIP. That synthetic result is not Office acceptance.
+
+This closes controlled interruption of unfinished workbook serialization on the
+selected runtime. It does not establish an uncontrolled scheduler race, power
+loss, interruption inside a pending kernel I/O call, or the later managed date
+inspection boundary. Remaining validation/resource checks, final packaged-byte
+replay, network evidence and owner acceptance stay open.

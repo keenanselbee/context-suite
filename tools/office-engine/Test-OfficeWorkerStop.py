@@ -21,8 +21,11 @@ def main():
     parser.add_argument("--large-fixtures", type=Path, required=True)
     parser.add_argument("--fixtures", type=Path, required=True)
     parser.add_argument("--workbook-copy", action="store_true", help="Stop XLSX exports only after observing the calculated workbook grow.")
+    parser.add_argument("--unfinished-workbook-copy", action="store_true", help="Use a process-local WriteFile breakpoint to hold an incomplete XLSX before normal lifetime shutdown.")
     parser.add_argument("--mode", choices=("all", "cancel", "worker-loss", "deadline", "owner-loss", "startup-recovery", "app-recovery", "diagnostic", "diagnostic-validation"), default="all")
     args = parser.parse_args()
+    if args.unfinished_workbook_copy:
+        args.workbook_copy = True
     if not args.create_disposable_profile:
         parser.error("Explicit disposable profile authorization is required before preparation or execution.")
     if args.workbook_copy and args.mode not in ("all", "cancel", "worker-loss", "deadline"):
@@ -88,6 +91,7 @@ def main():
             raise RuntimeError("Application recovery host build failed before profile creation.")
     managed = root / "artifacts/managed/bin/ContextSuite.Pdf.ContractTests/Release/net10.0/ContextSuite.Pdf.ContractTests.exe"
     receipt = {"sources": sources, "worker": str(worker), "workerFiles": actual, "mode": args.mode, "workbookCopy": args.workbook_copy,
+               "unfinishedWorkbook": args.unfinished_workbook_copy,
                "previousBuildReceipt": str(args.build_receipt.resolve()),
                "previousBuildReceiptSha256": digest(args.build_receipt), "fixtures": fixtures,
                "managedFiles": {path.name: digest(path) for path in managed.parent.iterdir() if path.is_file()}}
@@ -119,7 +123,7 @@ def main():
     # The private adapter validates the complete pinned Office runtime before each launch.
     # Preserve the owner process until its bounded operations and profile cleanup finish.
     with (scratch / "stdout.log").open("wb") as output, (scratch / "stderr.log").open("wb") as error:
-        command = [str(managed), "--office-workbook-stop" if args.workbook_copy else "--office-app-recovery" if args.mode == "app-recovery" else "--office-worker-stop", str(worker),
+        command = [str(managed), "--office-unfinished-workbook-stop" if args.unfinished_workbook_copy else "--office-workbook-stop" if args.workbook_copy else "--office-app-recovery" if args.mode == "app-recovery" else "--office-worker-stop", str(worker),
             str(args.large_fixtures.resolve()), str(args.fixtures.resolve()), str(scratch / "contracts"),
             str(application) if args.mode == "app-recovery" else args.mode]
         result = subprocess.run(command, cwd=root, stdout=output, stderr=error)
@@ -128,8 +132,8 @@ def main():
         raise RuntimeError(f"Office interruption check failed; inspect logs and owned profile receipts before retrying: {scratch}")
     report = json.loads((scratch / "contracts/results.json").read_text(encoding="utf-8"))
     modes = ["cancel", "worker-loss", "deadline"] if args.mode == "all" else [args.mode]
-    expected_checks = 12 * len(modes) if args.workbook_copy else 99 if args.mode in ("startup-recovery", "app-recovery") else 93 if args.mode == "owner-loss" else 30 * len(modes)
-    if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != expected_checks or report.get("WorkbookCopy", False) != args.workbook_copy:
+    expected_checks = (14 if args.unfinished_workbook_copy else 12) * len(modes) if args.workbook_copy else 99 if args.mode in ("startup-recovery", "app-recovery") else 93 if args.mode == "owner-loss" else 30 * len(modes)
+    if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != expected_checks or report.get("WorkbookCopy", False) != args.workbook_copy or report.get("UnfinishedWorkbook", False) != args.unfinished_workbook_copy:
         raise RuntimeError("Missing complete interruption evidence.")
     if any(digest(Path(name)) != expected for name, expected in fixtures.items()):
         raise RuntimeError("An original fixture changed during interruption checks.")
