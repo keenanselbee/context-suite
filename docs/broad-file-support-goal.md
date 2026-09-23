@@ -1,19 +1,48 @@
 Broad File Support Goal
 ======================
 
-Status: incomplete; combined candidate implemented, expanded acceptance pending
-Owner direction: 2026-09-09; scope and completion plan revised 2026-09-16
+Status: incomplete; engineering and automated verification before owner review
+Owner direction: 2026-09-09; review-ready objective approved 2026-09-22
 
 
 Current objective and completion plan
 -------------------------------------
 
-Deliver an accepted local release candidate for Analyze, Convert and Optimize,
-with a fixed, tested capability matrix and simple context-menu operation.
+Prepare an unsigned local candidate for owner review, completing authorized
+engineering and automated verification before the consolidated human review.
+Keep a fixed, tested capability matrix and simple context-menu operation.
 Retain the implemented image, audio, PDF and modern Office actions; add the
 owner-selected HEIC/AVIF image inputs and AIFF/WMA audio inputs. Preserve copies
 by default, explicit safe overwrite settings, quiet success, bounded local
 processing, existing access rules and useful read-only Analyze fallback.
+
+The current execution goal ends at review readiness, not owner acceptance or
+commercial release. Freeze the existing launch matrix; do not add formats or
+grow test volume beyond the acceptance contract except to cover concrete defects
+or missing required coverage. Required engineering failures remain blockers;
+they cannot be relabeled human review to finish the goal.
+
+The review-ready deliverables are:
+
+- A fresh reproducible, inventoried candidate with the required automated
+  A01-A08 suites and declared performance workloads run against its exact bytes.
+- Completed authorized Office repair and security work, with retained failures,
+  strict independent PDF comparisons and explicit external evidence gaps.
+- Verified engine/source correspondence, notices and packaging, with concrete
+  adoption and footprint decisions prepared for the owner.
+- One consolidated review pack containing source/output pairs, expected results,
+  concise workflow instructions and a checklist of actual human observations.
+- Reviewed DIFF/COMMIT checkpoints for task-owned public and private changes,
+  preserving unrelated edits; no push. A final report identifies every remaining
+  owner decision, human/environment check and separate commercial release gate.
+
+Batch owner input where possible and continue independent work while waiting.
+Attended administrator network evidence, the PowerPoint rounding decision,
+approved real documents/recordings and footprint/adoption acceptance remain
+explicit dependencies. Prepare their evidence and instructions before requesting
+the action. Do not invent approval or treat unavailable evidence as a pass.
+Signing stays deferred; installation, Explorer registration, elevation, live
+commerce and publication retain their separate authorization requirements.
 
 This section governs remaining work. The evidence history and original
 implementation milestones below remain useful records, but their older pending
@@ -38,15 +67,17 @@ The next completion steps are:
    authored native cases pass. PDF rendering and restricted-host acceptance
    remain pending. Network collection needs the
    pending attended administrator step. Chart refusal remains interim protection.
-2. Select the approved real DOCX/XLSX/PPTX and three real recordings, finish their
-   fixed comparisons, and obtain H01-H04 human results. Prepared worksheets and
-   simulated workflows are ready; no human result is inferred from them.
+2. Prepare H01-H04 for consolidated review. Request the real DOCX/XLSX/PPTX and
+   three real recordings when their automated comparisons can proceed; record
+   missing inputs explicitly. Human results remain owner acceptance after this
+   engineering goal; no result is inferred from prepared or simulated workflows.
 3. Finish engine adoption/source-delivery and footprint decisions, then compose
    one fresh versioned candidate and replay A01-A08 plus the declared timing
    workloads against those exact bytes. Preserve reserved 1.1.1 throughout.
-4. Audit every required result, complete the final public/private checkpoint,
-   and list remaining commercial/environment gates separately. Signing stays
-   deferred; a local candidate is not authorization to install or publish.
+4. Audit every required automated result, complete the final public/private
+   checkpoint, and deliver the review pack and decision list. Record human,
+   commercial and environment acceptance separately. A review-ready local
+   candidate is not an accepted release or authorization to install or publish.
 
 Definition work is now reconciled below. Remaining human, fidelity, isolation,
 adoption and final-candidate work keeps the overall goal incomplete.

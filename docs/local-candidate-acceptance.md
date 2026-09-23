@@ -6,6 +6,11 @@ This contract implements Milestones A-D of the [active goal](broad-file-support-
 It preserves required features and distinguishes automated evidence, human
 acceptance and commercial release gates. The final replay must use one fresh
 combined candidate; reserved 1.1.1 remains the immutable earlier baseline.
+The owner-approved 2026-09-22 execution goal prepares the candidate for review:
+finish authorized engineering and automated checks, then deliver one review
+pack and decision list. Human acceptance below remains required for release;
+preparation does not mark those results passed. Required engineering failures
+still prevent review readiness, and external evidence dependencies remain named.
 The [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
 unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance
