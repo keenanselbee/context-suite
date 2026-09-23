@@ -98,6 +98,50 @@ incremental resume on 2026-09-23. No source or compiler repair was inferred from
 this environment interruption, and the failed receipt remains intact.
 
 
+Reusable configure entry point
+------------------------------
+
+[Configure-Source.py](../tools/office-engine/Configure-Source.py) accepts a JSON
+settings file followed by `--plan` or `--execute`. The settings contain exactly
+ten absolute local paths: `Workspace`, `Source`, `Build`, `Kit`, `Bash`,
+`Environment`, `Jdk`, `Ant`, `Clang` and `PkgConfig`. `Source` is the prepared
+UTF-8 tree, `Kit` is its complete source-kit directory, and `Environment` is the
+reviewed child-environment JSON described below. JDK and Ant paths are their
+installation roots; Clang and pkg-config paths identify their executables.
+The command uses existing tools and does not install dependencies.
+
+The plan verifies source-kit artifact identities, the preparation receipt and
+the modified/added source identities. It constructs the fixed reviewed options
+with explicit tool, dependency-cache and build paths; it accepts no arbitrary
+extra configure flags. `--plan` prints that plan without creating a build or
+starting configuration. `--execute` requires a fresh build directory, retains
+the plan and log, and checks the recorded inputs again afterward. Configuration
+has a ten-minute deadline and the same 100-GiB workspace monitor; interruption
+stops its owned process tree and preserves a receipt. This step runs compiler
+capability probes but does not run any native build target or renderer.
+
+Keep this command beside `Run-SourceBuild.py`, whose path, hashing and workspace
+helpers it uses. Workspace, source, build, dependency cache and configuration
+remain explicit; no global PATH or machine setting is changed. The original
+historical scripts remain useful provenance, not the portable entry point.
+
+[Test-SourceConfigure.py](../tools/office-engine/Test-SourceConfigure.py) takes the
+same settings path and `--baseline-options <existing-autogen.input>`. It compares
+the actual options, verifies the no-write CLI plan and Bash syntax, and refuses
+out-of-workspace/nested builds, multiline tool paths, unknown settings and an
+existing build directory. These checks do not run configure or compilation.
+
+The eight focused checks pass at
+`evidence\configure-checks-c849ca10fe534ac4ab8a228d71b18257`. Actual configuration
+through this entry point then completes in 120.49 seconds at
+`build\portable-configure-01`, with no `config.warn` entries and all recorded
+inputs unchanged. Its `config_host.mk` and `config_host_lang.mk` match the clean
+build baseline byte-for-byte after mapping only the build-directory path.
+`evidence\source-configure-6beaed1fd6404262a9cc96b3d021c53e` retains the plan,
+launch, log, result and comparison. This uses the same source and installed
+toolchain; it does not establish source relocation or a different toolchain.
+
+
 Reusable configured-build driver
 --------------------------------
 
@@ -142,10 +186,10 @@ Completion, native execution and inclusion in the final source kit remain pendin
 Remaining build and adoption work
 --------------------------------
 
-Historical configuration scripts preserve actual commands, but contain the
-original workspace paths. Portable preparation/configuration orchestration still
-needs to map source, tool and dependency paths; the configured-build execution
-step above now accepts explicit locations and retains the limits. Complete clean
+The preparation, configure and configured-build commands now accept explicit
+locations. Their inclusion and instructions in the final source kit remain
+pending; changing source/toolchain locations beyond the evaluated configuration
+requires corresponding verification. Complete clean
 compilation and native/restricted-host replay must bind the rebuilt bytes to
 this source kit. A successful extraction or configuration is not that evidence.
 
