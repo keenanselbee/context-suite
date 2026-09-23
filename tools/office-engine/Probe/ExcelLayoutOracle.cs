@@ -73,7 +73,7 @@ internal static class ExcelLayoutOracle
     private static bool MatchesText(string text) => Tokens(text).SequenceEqual(Tokens(ExpectedText));
     private static string[] Tokens(string text) => Regex.Split(text.Trim(), @"\s+", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1)).Order(StringComparer.Ordinal).ToArray();
 
-    private static bool MatchesBars(Bar[] bars)
+    internal static bool MatchesBars(Bar[] bars)
     {
         if (bars.Length != 3) return false;
         var heights = bars.Select(bar => bar.Bottom - bar.Top + 1).ToArray();
@@ -85,7 +85,7 @@ internal static class ExcelLayoutOracle
             bars.Max(bar => bar.Right - bar.Left) - bars.Min(bar => bar.Right - bar.Left) <= 2;
     }
 
-    private static Bar[] FindBars(byte[] pixels, int width, int height, int stride)
+    internal static Bar[] FindBars(byte[] pixels, int width, int height, int stride)
     {
         var mask = new bool[width * height];
         for (var y = 0; y < height; y++)
@@ -115,7 +115,7 @@ internal static class ExcelLayoutOracle
         return bars.OrderBy(bar => bar.Left).ToArray();
     }
 
-    private static Box? Find(Glyph[] glyphs, string token, bool last = false)
+    internal static Box? Find(Glyph[] glyphs, string token, bool last = false)
     {
         var text = new string(glyphs.Select(g => g.Character).ToArray());
         var index = last ? text.LastIndexOf(token, StringComparison.Ordinal) : text.IndexOf(token, StringComparison.Ordinal);

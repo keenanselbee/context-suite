@@ -2,7 +2,8 @@ Office Chart Renderer Repair
 ============================
 
 Status: revised source patch compiled and linked; seventeen authored native cases
-and four passive Excel PDF comparisons pass in the isolated Windows build.
+pass. Four Excel and two Word/PowerPoint chart PDF comparisons pass through the
+restricted host in the isolated Windows build.
 Application replay, restricted-host security and adoption remain pending.
 The [chart-loss regression](excel-layout-acceptance.md)
 still fails on the current candidate. This proposal keeps chart fidelity in the
@@ -625,6 +626,47 @@ This closes the four-case passive Excel fidelity check through the restricted
 host. It does not close whole-document hostile-input or file/network-denial
 checks, application publication, Word/PowerPoint charts, engine adoption or
 final-candidate acceptance. The shipping chart refusal remains in place.
+
+### Word and PowerPoint chart controls (2026-09-22)
+
+[OfficeChartFixtures](../tools/office-engine/Probe/OfficeChartFixtures.cs) adds
+one authored DOCX and one single-slide PPTX. Both embed a passive DrawingML chart
+with literal ALPHA/BETA/GAMMA values 10/20/30; neither has a workbook, external
+data target, macro or executable object. The fixtures reuse the independently
+authored package scaffolding and Excel chart XML, replacing cell references with
+literal data. Word uses a Letter page and PowerPoint a 720-by-405-point slide.
+
+[OfficeChartOracle](../tools/office-engine/Probe/OfficeChartOracle.cs) checks
+the exact text tokens, heading/page bounds, chart placement, category-to-bar
+association and the existing three-pixel 1:2:3 height rule. Three unchanged
+Excel oracle helpers are now internal so the new checks share their established
+pixel and glyph logic. A synthetic positive control and six negative controls
+cover missing/extra text, missing bars, incorrect values, displaced categories
+and clipping. Expectations were fixed before the first export.
+
+Attempt `chart-host-export-02` produced the Word PDF but failed the harness's
+Excel-only `OOXMLRecalcMode` expectation. The actual host deliberately writes no
+calculation setting for Word/PowerPoint. Draft runner 03 matches that declared
+policy, retaining mandatory macro, active-content, Python, security-level and
+OpenCL checks. Its 25 profile contracts cover the existing spreadsheet setting
+checks and removal/corruption of all five non-spreadsheet controls. Shipping
+profile verification and production host sources are unchanged.
+
+`G:\ContextSuite-OfficeBuild\evidence\chart-host-export-03\results.json` passes
+both restricted-host conversions and independent qpdf/PDFium comparisons. Host
+calls take 645 ms for Word and 595 ms for PowerPoint, excluding profile setup and
+independent verification. Both builds have zero warnings/errors. Preparation
+receipts bind the generated-fixture/oracle sources, runner and unchanged copied
+runtime. The postverification receipt confirms all 4,112 inventoried inputs and
+runner sources unchanged, with native folders and registry mappings absent for
+both successful profiles and the earlier failed attempt's profile.
+
+Retained lossless PNGs in `visual-review` were inspected by the assistant: both
+pages show the three bars, labels and title without apparent clipping. This is
+limited artifact inspection, not owner acceptance or broad chart compatibility.
+These two passive chart controls close the scoped Word/PowerPoint rendering gap;
+whole-document hostile-content enforcement, application publication, wider Office
+regressions, engine adoption and final-candidate replay remain required.
 
 ### Runtime linkage constraint
 

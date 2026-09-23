@@ -135,6 +135,11 @@ profile owner; all four native profiles are removed and inventoried inputs remai
 unchanged. The evaluation host explicitly maps the unmerged runtime libraries.
 Whole-document hostile-input checks, network enforcement, application replay
 and engine adoption remain open.
+Two subsequent authored Word/PowerPoint chart controls also pass through that
+restricted host, with exact text/geometry, the same bar-value rule and category
+association checks. Their expected values were fixed before export; all profiles
+and inputs are verified afterward. This is scoped passive-chart evidence, not
+broad document compatibility or completion of the remaining security gates.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
