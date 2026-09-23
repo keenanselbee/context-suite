@@ -153,6 +153,32 @@ inspection-probe Release builds have zero warnings/errors. Repository boundary,
 system-theme policy and 161-document checks pass. No new visible-window or
 screen-reader acceptance was performed.
 
+Source-built application replay, 2026-09-23
+------------------------------------------
+
+The source-built renderer replay on 2026-09-23 at
+`.codex-temp/office-execution/6e2012212ebf47ee9ec90f0f1294638f` passes all
+**80 application checks**. All fifteen PDF copies publish; only the two active
+missing-font cases request review. All original bytes/timestamps remain intact,
+and all fifteen native profiles and operation contexts are removed. The fresh
+worker uses the [paired runtime selection](office-runtime-verification.md#source-built-application-selection-2026-09-23);
+its source, engine and binary identities remain unchanged throughout execution.
+
+Independent inspection `style-inspection-6f09d7d1a8f64570abb40ae9b6516b5a`
+passes the fifteen text/geometry cases, available-font controls, exact style
+comparisons and distinct-font negative controls. Receipt
+`style-inspection-receipt-a6a68f4c589343a78d0ebefb10ca3f34.json` binds the
+unchanged inspection sources and PDF readers. Release builds have zero warnings
+and errors. These are the existing assertions, with no new spacing allowance.
+
+Two preparation attempts are retained: `35c634f51f2742fd88d9c63c999cec89`
+refused a directory supplied where a worker executable was required;
+`5785af13a59d42f3ac41140270fc3bbf` refused a pre-commit worker whose bytes differed
+from the new build. Neither reached profile creation or native export. The
+successful run built a fresh worker and copied the verified engines. This is
+isolated application evidence, not a final packaged-candidate or human result.
+
+
 Remaining scope
 ---------------
 
