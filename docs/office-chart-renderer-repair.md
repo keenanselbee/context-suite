@@ -882,6 +882,61 @@ or PowerPoint embedded-object import, file/network/process enforcement, actual
 application publication or final-candidate acceptance. Production host sources,
 runtime pins and interim refusals remain unchanged.
 
+### Excel and PowerPoint embedded-object controls (2026-09-22)
+
+Six authored XLSX/PPTX fixtures extend the same ordinary-image, random-class
+binary object and chart-class binary object comparison to Calc and Impress.
+They reuse the independently checked inert compound bytes and 96-by-48-pixel
+red/green preview. Excel requests automatic object loading/updating, with no
+external target. The host matrix exports each spreadsheet in both calculation
+modes, for nine outputs including the three presentations.
+
+Native draft 28 imports all six documents. It reads
+`EmbeddedObjectNoNewClient`, which avoids requesting a running model or attaching
+a UI client. Each object remains `LOADED`, has no component, exposes only that
+state and refuses all four running/interactive transitions. The original
+96-by-48-pixel replacement graphic must exist; a generic placeholder icon cannot
+satisfy that assertion. Image-only controls contain no embedded object. Build 25
+and all twenty-one cases pass in
+`G:\ContextSuite-OfficeBuild\evidence\native-chart-run-24\result.json`:
+1,754 ms, two processes, zero remaining children and 58,458,112 bytes peak job
+memory. All 5,215 runtime/template/fixture inputs remain unchanged.
+
+`G:\ContextSuite-OfficeBuild\evidence\drawing-host-export-03\results.json`
+passes all nine actual restricted-host exports. Each requires exact text, page
+geometry, preview colors/size/placement and full-page pixels identical to the
+corresponding ordinary-image control in the same calculation mode. Host calls
+take 493-608 ms. Postverification binds all 3,818 renderer files and seven fixture
+files to the successful native replay, verifies all 4,112 host/verifier inputs
+and runner sources unchanged, and confirms all nine native profile directories
+and registry mappings removed. Prior failed host attempts also have verified
+cleanup: one profile in attempt 01 and nine in attempt 02.
+
+The failed attempts remain distinct. The initial presentation serializer emitted
+namespace-prefixed elements in `[Content_Types].xml`; both native Desktop loading
+and the actual host refused the file. The pinned package reader's
+`comphelper/source/xml/ofopxmlhelper.cxx` compares raw element names with
+`Types`, `Default` and `Override`. Equivalent default-namespace declarations load.
+This is a retained renderer compatibility failure, not an invalid expanded XML
+name or a passed isolation check; its engineering disposition remains open.
+
+The next fixture had an incorrect PowerPoint OLE `graphicData` URI ending in
+`presentationml/2006/main/ole`, producing placeholder icons. The corrected URI
+ends in `presentationml/2006/ole`. The preview oracle also incorrectly required
+540 raster rows despite accepting the exported 405.014-point page: at 96 DPI,
+that page rounds up to 541 rows. It now accepts 540 or 541 under the unchanged
+405-point plus 0.1-point geometry check. Size/color/placement and exact-pixel
+requirements remain. The native replay uses the corrected fixtures and the
+stronger original-preview-size assertion. An earlier diagnostic-string compile
+failure is retained separately.
+
+These results close the scoped embedded-object import/inactivity and saved-preview
+checks across Word, Excel and PowerPoint. They do not establish OLE-server
+activation, arbitrary object compatibility, namespace-prefix compatibility,
+process/file/network enforcement, actual application publication, engine adoption
+or final-candidate acceptance. Production permissions and source/runtime pins
+remain unchanged.
+
 ### Runtime linkage constraint
 
 Inspection of the expanded combined candidate's

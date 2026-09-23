@@ -176,6 +176,14 @@ control exactly after fixing its unintended default border; the failed first
 attempt remains recorded. Originals, runtime identities and profile cleanup
 pass. Excel/PowerPoint embedded objects and the remaining isolation/application
 and adoption gates are still open.
+The subsequent [Excel/PowerPoint embedded-object controls](office-chart-renderer-repair.md#excel-and-powerpoint-embedded-object-controls-2026-09-22)
+pass all twenty-one native cases and nine actual-host exports, including both
+spreadsheet modes. Objects remain inactive with original-sized previews, and
+their PDFs match the corresponding image controls exactly. Source/runtime
+identities and all profile cleanup pass. Earlier fixture/geometry errors remain
+recorded. A separate namespace-prefixed content-type load failure was discovered
+and remains an engineering compatibility item; the successful ordinary-form
+fixtures do not close it or the remaining isolation/application/adoption gates.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This
