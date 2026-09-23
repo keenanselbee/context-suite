@@ -160,9 +160,14 @@ without relaxing the oracle. The [four-case Excel chart replay](excel-layout-acc
 also passes through the current worker and unchanged independent oracle.
 The [PowerPoint layout replay](powerpoint-layout-acceptance.md#reconstructed-application-replay-2026-09-23)
 retains the historical font-size tolerance failure with identical output rasters
-and glyph observations. Earlier failed outputs remain retained. Native
-interruption/owner recovery, broader layout and calculation/date checks still
-require replay against this identity and the final combined candidate. No product
+and glyph observations. Earlier failed outputs remain retained. The subsequent
+[native interruption](office-worker-lifetime.md#reconstructed-runtime-interruption-replay-2026-09-23)
+and [application startup recovery](office-startup-recovery.md#reconstructed-runtime-application-recovery-2026-09-23)
+replays pass on this identity, including exact following-output comparisons.
+The [six-case calculated-date replay](excel-calculated-date-guard.md#reconstructed-calculated-date-replay-2026-09-23)
+also preserves the expected copies and protective refusals. Broader layout,
+remaining safety requirements and the final combined candidate still require
+their checks. No product
 version, installed application or reserved payload changed; runtime provenance,
 redistribution and adoption remain open.
 

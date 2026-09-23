@@ -320,3 +320,28 @@ Execution and inspection builds have zero warnings/errors. This closes the
 isolated 48-sheet capacity regression for the paired engine. The exact final
 candidate, native interruption/resource behavior, network enforcement, broader
 Office fidelity and owner review remain required.
+
+
+Reconstructed calculated-date replay, 2026-09-23
+-----------------------------------------------
+
+Runtime04 repeats the six calculated-date cases through the actual application
+at `.codex-temp/office-execution/a836c6d959354c019e50c9bc26e8dd72`. All **32 checks**
+pass: four saved-value/1904-date PDF copies publish, and both recalculated 1900
+variants are withheld with the existing explanation. Original bytes/timestamps
+are unchanged; all six profiles, mappings, contexts, reservations and publication
+journals are removed. Release builds have zero warnings/errors, and captured
+execution inputs are unchanged.
+
+Independent inspection `calculated-inspection-ed02ce4231ee4964a416122adde66656`
+passes all 42 numeric caches, six candidate PDFs, four publications and two
+refusals against the retained ordinary native controls. Geometry and raw pixels
+remain exact, including the known wrong dates in the withheld candidates. This
+verifies the protective refusal, not a repair of the early-date renderer.
+
+Attempt `d5eb8720e9fb472d866f50bfc5aa4967` stopped before profile creation because
+the retained worker differed from the fresh managed build after checkpoint
+commits. The successful replay prepares a new scratch worker with the unchanged
+verified engines; no retained worker or reserved package is overwritten. This
+does not establish incomplete workbook-ZIP interruption, final-candidate or
+human acceptance.

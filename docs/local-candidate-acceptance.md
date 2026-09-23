@@ -31,14 +31,15 @@ preserves all four authored charts. Ordinary internal charts are admitted;
 newer/external charts and incomplete inspection remain refused. The paired
 [48-sheet capacity replay](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23)
 also passes; D07 still needs final-candidate and human acceptance. The paired
-[active-PDF interruption matrix](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23)
-passes 90 safety checks, but independent output comparison exposes missing
-PowerPoint text-box fill. The [isolated package repair](office-source-build.md#ooxml-shape-data-packaging-repair)
+[earlier interruption matrix](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23)
+exposed missing PowerPoint text-box fill. The [package repair](office-source-build.md#ooxml-shape-data-packaging-repair)
 restores exact historical rasters without native recompilation. Its
-[application replay](office-runtime-verification.md#reconstructed-selection-with-shape-resources-2026-09-23)
-now passes ordinary Word/Excel/PowerPoint control pixels and publication checks;
-remaining recovery and final-candidate replay are still required. This is separate from the D09
-typography decision. Passing safety checks alone do not establish readiness.
+[current interruption replay](office-worker-lifetime.md#reconstructed-runtime-interruption-replay-2026-09-23)
+passes all 90 safety checks and exact control pixels for nine following PDFs.
+[Application startup recovery](office-startup-recovery.md#reconstructed-runtime-application-recovery-2026-09-23)
+also passes, including cleanup and independent following-output inspection.
+Incomplete workbook-write, remaining resource/security and final-candidate gates
+remain open. This is separate from the D09 typography decision.
 
 | Family | Required candidate scope | Preservation boundary |
 | --- | --- | --- |

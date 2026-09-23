@@ -295,3 +295,44 @@ so this is not an end-to-end customer conversion or new packaged release. The
 existing candidate remains unchanged. Rendered layout, keyboard behavior,
 screen-reader delivery, other themes/DPI and installed-shell acceptance were not
 tested by these programmatic lifecycle checks.
+
+
+Reconstructed runtime application recovery, 2026-09-23
+-----------------------------------------------------
+
+The current runtime04 replay at
+`.codex-temp/office-worker/7659945f57d743bf9f8ebfbbe4a748b2` passes **99 worker
+checks and 18 application lifecycle checks**. It observes growing Word/Excel/
+PowerPoint PDFs, terminates only the isolated harness owner, then runs the actual
+WPF application's startup recovery. Each recovery waits for the recorded worker
+and host to exit, cleans its profile and preserves the interrupted output without
+publishing it. Repeated scans leave the completed journal and retained output
+unchanged. The three application lifecycles complete in 1.80-2.11 seconds in this
+run; these are observations, not a worst-case performance bound.
+
+The 99-check total includes 66 ordinary following-export checks. Independent
+inspection `inspection-e45979b73874495f863f37e21ca70bda` under `contracts` passes
+all three following PDFs against exact historical text/geometry/pixels. The
+updater-free profile verification retains its existing policy and negative
+controls; no PDF tolerance changes.
+
+The first run `f0366152cf4842499df68beb41aa88c9` completed all three application
+recoveries, then failed a stale following-export assertion requiring journal
+version 3. Application preparation already writes version 4 with five owned
+directory identities. The private test now requires version 4 and those identities;
+product code, journal format and engine bytes are unchanged. Its four profiles
+and mappings were confirmed absent before the fresh replay. That run remains
+failed evidence.
+
+The successful run's `postverification.json` reconciles both attempts: all ten
+profiles/mappings and named jobs are absent; 270 hash-chained journal frames,
+50 grant-directory identities and 50 version-four context-directory identities
+match. All ten source snapshots remain unchanged. The 5,071-entry runtime/context
+ACL scan finds no test SID, and captured successful-run source, worker, host and
+runtime identities are unchanged. All Release builds have zero warnings/errors.
+
+This is actual startup recovery after a harness-owner crash, using a scratch
+worker. It is not a final combined candidate, a complete customer conversion
+crash scenario, incomplete-workbook-write coverage, network-denial evidence or
+visual/assistive-technology acceptance. Installed state and reserved payloads
+remain unchanged.

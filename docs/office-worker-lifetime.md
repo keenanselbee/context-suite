@@ -258,3 +258,33 @@ through the restricted host without recompiling any native binary. The later
 selects that payload and passes all three ordinary PDF control-pixel comparisons.
 Repeat the interruption matrix against this identity before accepting recovery
 fidelity; the failed receipts above retain their original meaning.
+
+
+Reconstructed runtime interruption replay, 2026-09-23
+----------------------------------------------------
+
+Runtime04 and the worker from
+`.codex-temp/office-execution/45172c40ea494afabd97ab556b49910e` pass the same
+**90 safety checks across nine active-PDF interruption cells** at
+`.codex-temp/office-worker/45bfa7f9b7234457b0d7695a112c0d8c`. Cancellation,
+worker-only loss and the controlled deadline each stop the exact native host
+before returning and permit a following conversion through the same client.
+The 96-page Word/PowerPoint and 48-sheet Excel fixtures are unchanged. Stop
+observations are 144-325 ms; this remains diagnostic timing, not final performance
+acceptance or a wall-clock wait for the 180-second deadline.
+
+`independent-replay-01/result.json` now passes all nine following PDFs against
+historical structure, authored text, page geometry and exact control pixels,
+including both PowerPoint text-box fills. The retained inspector binary and PDF
+oracle are unchanged. Its updater-free profile checks use the reconstructed
+build configuration and runtime registration, preserving the 25 policy controls.
+This closes the missing-fill failure for these recovery outputs; the old failed
+receipts are not relabeled.
+
+`postverification.json` verifies unchanged source/worker/runtime and original
+identities, all 18 profiles and mappings absent, and all 5,809 owned runtime/context
+ACL entries free of the test SIDs. The later recovery-harness version assertion
+correction does not alter this run's product implementation or PDF oracle.
+These results do not prove interruption of an incomplete workbook ZIP, native
+network denial, final packaged bytes or owner review. Actual application startup
+recovery is recorded in the [separate replay](office-startup-recovery.md#reconstructed-runtime-application-recovery-2026-09-23).
