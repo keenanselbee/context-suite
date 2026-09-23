@@ -84,6 +84,28 @@ def main():
     payload.stage(combined, source)
     engine = combined / "office-engine"
     passed("Fresh Office copy and complete verification passed")
+    payload.verify_source_record(combined)
+    passed("Exact source build record is packaged beside the engine")
+    source_record = combined / payload.PACKAGED_SOURCE_RECORD
+    original_record = source_record.read_bytes()
+    try:
+        source_record.unlink()
+        refused("Missing source build record refused", lambda: payload.verify_source_record(combined))
+        source_record.write_bytes(b"x" * len(original_record))
+        refused("Same length source build record corruption refused", lambda: payload.verify_source_record(combined))
+        changed = json.loads(original_record)
+        changed["configuration"]["onlineUpdate"] = True
+        source_record.write_text(json.dumps(changed), encoding="utf-8")
+        refused("Changed build policy record refused", lambda: payload.verify_source_record(combined))
+    finally:
+        source_record.write_bytes(original_record)
+    payload.verify_source_record(combined)
+    occupied = scratch / "existing-source-record"
+    occupied.mkdir()
+    (occupied / payload.PACKAGED_SOURCE_RECORD).write_bytes(original_record)
+    refused("Existing source record refused before engine copy", lambda: payload.stage(occupied, source))
+    if (occupied / "office-engine").exists() or (occupied / payload.PACKAGED_SOURCE_RECORD).read_bytes() != original_record:
+        raise AssertionError("Refused stage altered existing source record or created an engine.")
     refused("Existing Office stage refused", lambda: payload.stage(combined, source))
     refused("Overlapping source and destination refused", lambda: payload.stage(source, source))
     refused("Development payload refused", lambda: payload.local_path(payload.ROOT / "artifacts/production/Release"))
@@ -210,6 +232,12 @@ def main():
     powershell("Default allowlist rejects Office", [verifier, "-Payload", str(combined), "-AllowAudioCandidate", "-AllowPdfCandidate"],
                "Unreviewed production file")
     powershell("Combined candidate allowlist passes", [verifier, "-Payload", str(combined), "-AllowAudioCandidate", "-AllowPdfCandidate", "-AllowOfficeCandidate"])
+    try:
+        source_record.unlink()
+        powershell("Production verification requires source record", [verifier, "-Payload", str(combined), "-AllowAudioCandidate", "-AllowPdfCandidate", "-AllowOfficeCandidate"],
+                   "Office candidate payload verification failed")
+    finally:
+        source_record.write_bytes(original_record)
     payload.verify(source)
     if any(payload.digest(base / name) != digest for name, digest in base_inputs.items()) or any(
             payload.digest(payload.ROOT / name) != digest for name, digest in source_inputs.items()):

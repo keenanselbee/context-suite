@@ -1,7 +1,7 @@
 Office Production Candidate Payload
 ===================================
 
-Status: the source-built application integration selection passes 39 scratch
+Status: the source-built application integration selection passes 48 scratch
 packaging checks. [Combined candidate 1.1.1](combined-office-candidate.md) retains
 its historical MSI-based engine and is unchanged. A fresh combined formal
 candidate, integrated acceptance, redistribution review and adoption remain open.
@@ -18,16 +18,23 @@ Pinned input and layout
 
 [The selection record](../tools/office-engine/payload-candidate.json) now pins the
 rebuilt 112,640-byte native host, three app-local startup DLLs and the canonical
-486,131-byte runtime inventory enforced by the
+486,450-byte runtime inventory enforced by the
 [private runtime lease](office-runtime-verification.md).
-The inventory identifies all 3,828 runtime files and their sizes/hashes, totaling
-545,259,841 bytes. Staging checks the archive and inventory pins against the
+The inventory identifies all 3,831 runtime files and their sizes/hashes, totaling
+547,045,673 bytes. Staging checks the archive and inventory pins against the
 [source-runtime record](../tools/office-engine/source-runtime-candidate.json),
 and the host against four current private source/build-input hashes. It does not
-copy private source or build receipts. The retained base archive contains the
-reviewed renderer and an earlier host; the selection explicitly replaces that
-host with the separately rebuilt application host. This is not a claim that the
-new host came from the base archive.
+copy private source or local build receipts. The selected runtime04 archive
+contains this host and the reviewed renderer. Historical selections below used
+an earlier archive with a separately rebuilt host.
+
+Staging also copies the exact public source-runtime record to
+`ContextSuite.OfficeSource.json` beside `office-engine/`. This records the source,
+patches, source kit, configuration, selected toolchain and build receipts without
+embedding machine paths or private source. The 6,274-byte record is required by
+Office-enabled production verification; missing or changed bytes are refused.
+Its LF checkout rule preserves this identity across Git checkouts. It is outside
+the engine inventory, so engine bytes and the private runtime lease are unchanged.
 
 The historical [calculated-date guard](excel-calculated-date-guard.md) advanced the host to
 completion protocol version 3 and repeats all 33 packaging checks with that pin.
@@ -196,11 +203,35 @@ This packaging-only scratch composition retains historical base assemblies; it
 is not a new formal candidate or evidence for final combined application execution.
 
 
+Packaged source identity, 2026-09-23
+----------------------------------
+
+`.codex-temp/office-payload-tests-ae684b8c57c74d7eb1f1d36fd94aae01` passes
+**48 checks**. Six additions verify the exact packaged source record, reject
+missing/corrupt/changed-policy records, preserve a pre-existing record without
+starting an engine copy, and require the record through production verification.
+Source/base bytes and captured inputs remain unchanged. No engine was executed,
+Windows profile created, native build started or reserved package changed.
+
+`python -B tools/office-engine/Test-OfficeSourceRecord.py` adds a fast check without
+copying an engine. Its nine checks pass at
+`.codex-temp/office-source-record/7539d0da80e84cbba119dd84f35ef69d`: stable checkout
+bytes, matching selection, and refusals for a different record version, archive,
+inventory, host hash/size or runtime count/size. The packaged record SHA-256 is
+`030E76B2CB780240C17C6161EC52FF63FFA062ADBC0E41FB7E1D0847C0254001`.
+
+This supplies durable build provenance for future candidate packages, not a
+complete hermetic toolchain inventory, bit-for-bit rebuild claim or distribution
+approval. The [source-build record](office-source-build.md#remaining-build-and-adoption-work)
+keeps final source delivery, notices, tool/runtime eligibility and adoption open.
+
+
 Remaining acceptance
 --------------------
 
-The fresh [combined candidate](combined-office-candidate.md) closes the former
-formal-build gap; its separate workflow results and limits are recorded there.
+The historical [combined candidate](combined-office-candidate.md) closed its
+earlier formal-build gap; it does not contain this reconstructed engine or record.
+A fresh versioned candidate and exact combined execution remain required.
 This checkpoint does not resolve the known early-1900 Excel date errors, broaden
 supported Office variants, prove font/layout fidelity, complete network-isolation
 evidence or approve engine redistribution. Representative image/audio/PDF/Office

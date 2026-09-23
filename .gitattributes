@@ -5,3 +5,5 @@ tools/audio-engine/wma-voice-packet-cache.patch text eol=lf whitespace=-blank-at
 tools/audio-engine/raw-audio-timestamps.patch text eol=lf whitespace=-blank-at-eol
 tools/audio-engine/wmapro-channel-matrix.patch text eol=lf whitespace=-blank-at-eol
 tools/office-engine/patches/allow-native-chart-rendering.patch text eol=lf whitespace=-blank-at-eol
+# This source identity is copied byte-for-byte into candidate packages.
+tools/office-engine/source-runtime-candidate.json text eol=lf

@@ -168,8 +168,10 @@ The [six-case calculated-date replay](excel-calculated-date-guard.md#reconstruct
 also preserves the expected copies and protective refusals. Broader layout,
 remaining safety requirements and the final combined candidate still require
 their checks. No product
-version, installed application or reserved payload changed; runtime provenance,
-redistribution and adoption remain open.
+version, installed application or reserved payload changed. The later
+[packaged source record](office-production-payload.md#packaged-source-identity-2026-09-23)
+provides durable provenance beside the unchanged engine; redistribution and
+adoption remain open.
 
 
 Repeatable verification

@@ -1,4 +1,5 @@
 {
+  "formatVersion": 1,
   "name": "LibreOffice source-built renderer",
   "architecture": "windows-x86_64",
   "sourceCommit": "8221e31b3ac356a1623c672912a3d2b492f7e3d1",
@@ -11,5 +12,126 @@
     "allow-native-chart-rendering.patch": "E7841F87F62D446B6291F63B0341EA17DB47D3562581BCC80B9E575520845AF2",
     "package-namespace-resolution.patch": "71279141E3706B7EFC770A0F34CF67DA5DB907D74CF8014D94B419C255480300"
   },
-  "purpose": "Isolated application integration candidate from reconstructed source kit04, including the three preset-shape data files. The archive identifies the selected runtime, CRT and current Context Suite host. Full source-tree correspondence and reconstructed native checks pass; final provenance delivery, redistribution and release adoption remain open. evaluation.json preserves the prior MSI experiment."
+  "purpose": "Source/build identity for the isolated application candidate and its matching draft source kit. Packaging must retain this exact record beside the engine. Final source delivery, tool/runtime redistribution terms, adoption and release acceptance remain open. evaluation.json preserves the prior MSI experiment.",
+  "derivation": "Modified Context Suite evaluation build from upstream source; not an unmodified upstream-distributed binary.",
+  "sourceUrl": "https://codeload.github.com/LibreOffice/core/tar.gz/8221e31b3ac356a1623c672912a3d2b492f7e3d1",
+  "host": {
+    "path": "ContextSuite.OfficeHost.exe",
+    "bytes": 112640,
+    "sha256": "3F5254F6D6188F5B3637C13BFF29520750073D1F88EA3687630EB4DB5E870059"
+  },
+  "runtime": {
+    "files": 3831,
+    "bytes": 547045673
+  },
+  "sourceKit": {
+    "archive": "office-source-kit-04.zip",
+    "manifest": "source-kit.json",
+    "selectedDependencyArchives": 140,
+    "evaluatedPatchGroups": [
+      {
+        "path": "patches/evaluated/runtime-repair.patch",
+        "bytes": 8962,
+        "sha256": "C8BD70A6C56F2E1BA54B65FE551E97B802CEDDF07E8C71EB491FADBE32B49148"
+      },
+      {
+        "path": "patches/evaluated/build-compatibility.patch",
+        "bytes": 7307,
+        "sha256": "0DF05DEC47CD887DA22440F8AA66C98869C68970FEF455D94B82D6D5B7344123"
+      },
+      {
+        "path": "patches/evaluated/native-test-only.patch",
+        "bytes": 620,
+        "sha256": "D621C5D126240C99831F7E73C5F5DC7B25C9DD8B75C5B12A6CA7788ED933339A"
+      }
+    ],
+    "canonicalConfigureSha256": "383EFE9C5ED474115EAFA8F30FFDCD0E5EE1ED0D0F941890EF58DCFDC3597FBD",
+    "buildHelpers": {
+      "Configure-Source.py": "9DAA51411B1048BDFB88D5DF82124D178CDB8E8CA2F451FD5382868F8AE0625C",
+      "Run-SourceBuild.py": "A4A48D24F894BB6F1323463CF27A21F5C6C1C27D13DD497C173B7D0AECF0E8B6",
+      "Test-SourceConfigure.py": "68C30B20DF17E7239D29CD710BADCA91E92702BC32F7BFF9E61EDFDDAF0169E2",
+      "Test-SourceBuild.py": "D06A862F842E6905227277C22BB164252F4FF3B64B5F49CD0A48B0E5E975B98A"
+    },
+    "buildHelpersPublicRevision": "7a02d1297fa024641362b00b6bfb63c7cae62795",
+    "preparedSourceFiles": 148225,
+    "sourceCorrespondenceSha256": "C90FB0DDD59F66F29F3AD2E3E532D1A644368F62ACA5B0F065F6FE5F7A4A7672"
+  },
+  "configuration": {
+    "host": "x86_64-pc-cygwin",
+    "portableOptions": [
+      "--host=x86_64-pc-cygwin",
+      "--with-visual-studio=2026",
+      "--with-jdk-home=<jdk>",
+      "--with-ant-home=<ant>",
+      "--with-external-tar=<source-kit>/dependencies",
+      "--with-parallelism=2",
+      "--without-junit",
+      "--without-help",
+      "--without-myspell-dicts",
+      "--disable-online-update",
+      "--disable-extension-update",
+      "--with-vendor=Context Suite isolated chart evaluation",
+      "PKG_CONFIG=<pkgconf>",
+      "LO_CLANG_CC=<clang-cl> --target=x86_64-pc-windows-msvc -m64",
+      "LO_CLANG_CXX=<clang-cl> --target=x86_64-pc-windows-msvc -m64",
+      "LO_CLANG_SHOWINCLUDES_PREFIX=Note: including file:"
+    ],
+    "optionsPathSubstitution": "Angle-bracket values are explicit local tool/source-kit paths supplied by Configure-Source.py.",
+    "configHostSha256": "23199C3386564D034007C2A9BFCBD3EACD7866D655616E1E2F6F5BAC998C920B",
+    "autogenInputSha256": "B83DBA369B53E6C80CBAF837F2D1115E2DFE56762F6C9A6443871580F91FD183",
+    "configLogSha256": "5D2BB18E619B0E92FFD56C5CBC356DFE103275A6889986710ED531AE731BE071",
+    "onlineUpdate": false,
+    "extensionUpdate": false,
+    "jobs": 2,
+    "nestedPythonJobs": 1
+  },
+  "toolchain": {
+    "visualStudio": "Community 2026",
+    "msvcToolset": "14.51.36231",
+    "compilerVersion": "19.51.36256",
+    "linkerVersion": "14.51.36256.0",
+    "windowsSdk": "10.0.26100.0",
+    "jdk": "21.0.9",
+    "clang": "22.1.8",
+    "ant": "1.10.18",
+    "pkgconf": "2.4.3",
+    "meson": "1.7.2",
+    "buildTools": [
+      {
+        "name": "Cygwin Bash",
+        "sha256": "DF601377E3C85F60DF06A5A1B3BE87EC2B1892580BE86BD39D51E42C03BEE2B1"
+      },
+      {
+        "name": "GNU Make",
+        "sha256": "3CBF585A213001FBDEDC5269621A3617D5067ABA8F9DC8947054B76F30035E3D",
+        "version": "4.4.1"
+      }
+    ],
+    "scope": "Compiler, linker and JDK versions are recorded by configure; remaining tool versions identify the selected local recipe. Bash/Make hashes match the build receipt. This is not a complete hermetic toolchain inventory or a bit-for-bit reproducibility claim."
+  },
+  "build": {
+    "compilationResultSha256": "D2ED94B90E609090DBA2DCE665EF5B9DAF8C6D9380AE0567B20F346F1C92075F",
+    "compilationPlanSha256": "8A76C6E28B545AE73E3EB36671ACAB9446697A0783876D8B5FDBC92E99E679C9",
+    "targets": [
+      "CppunitTest_embeddedobj_contextsuite",
+      "Executable_soffice_bin",
+      "Executable_soffice_exe",
+      "Executable_soffice_com",
+      "Package_instsetoo_native_setup",
+      "Package_instsetoo_native_setup_ure",
+      "Rdb_services",
+      "Package_extras_cfgusr",
+      "Package_extras_autotextuser",
+      "Package_extras_database",
+      "Package_extras_databasebiblio",
+      "Package_extras_gallmytheme",
+      "Package_readlicense_oo_license",
+      "Package_readlicense_oo_files",
+      "Package_readlicense_oo_readmes",
+      "Package_oox_customshapes",
+      "Package_oox_generated"
+    ],
+    "shapePackagingResultSha256": "5B45B18C89274149A27E9F446F96E6D61F53B12D6BBF76F519247BCC6B0D12ED",
+    "shapePackagingCompiledBinariesChanged": false
+  }
 }

@@ -15,6 +15,8 @@ import stat
 
 TOOLS = Path(__file__).resolve().parent
 ROOT = TOOLS.parents[1]
+SOURCE_RECORD = TOOLS / "source-runtime-candidate.json"
+PACKAGED_SOURCE_RECORD = "ContextSuite.OfficeSource.json"
 
 
 def ordinary(path):
@@ -52,11 +54,19 @@ def identity(path, pin):
 
 def selection():
     record = json.loads((TOOLS / "payload-candidate.json").read_text(encoding="utf-8"))
-    upstream = json.loads((TOOLS / "source-runtime-candidate.json").read_text(encoding="utf-8"))
-    if (record["archiveSha256"] != upstream["archiveSha256"] or
-            record["inventory"]["sha256"] != upstream["inventorySha256"]):
+    upstream = json.loads(SOURCE_RECORD.read_text(encoding="utf-8"))
+    if (upstream["formatVersion"] != 1 or record["archiveSha256"] != upstream["archiveSha256"] or
+            record["inventory"]["sha256"] != upstream["inventorySha256"] or
+            upstream["host"] != {key: record["host"][key] for key in ("path", "bytes", "sha256")} or
+            upstream["runtime"] != {"files": record["inventory"]["files"], "bytes": record["inventory"]["runtimeBytes"]}):
         raise ValueError("Office archive selection differs from the reviewed candidate.")
     return record
+
+
+def verify_source_record(payload):
+    ordinary(SOURCE_RECORD)
+    identity(local_path(payload) / PACKAGED_SOURCE_RECORD,
+             {"bytes": SOURCE_RECORD.stat().st_size, "sha256": digest(SOURCE_RECORD)})
 
 
 def membership(engine, record):
@@ -127,10 +137,16 @@ def stage(payload, engine_directory):
     destination = local_path(root / "office-engine")
     if os.path.lexists(destination):
         raise ValueError("Office payload already exists; use a new stage.")
+    source_target = local_path(root / PACKAGED_SOURCE_RECORD)
+    if os.path.lexists(source_target):
+        raise ValueError("Office source record already exists; use a new stage.")
     source = local_path(engine_directory, scratch_only=True)
     if destination.is_relative_to(source) or source.is_relative_to(destination):
         raise ValueError("Office source and destination must not overlap.")
     files, directories = verify(source)
+    ordinary(SOURCE_RECORD)
+    source_record = SOURCE_RECORD.read_bytes()
+    source_pin = {"bytes": len(source_record), "sha256": hashlib.sha256(source_record).hexdigest().upper()}
     for item in selection()["host"]["sources"]:
         path = ROOT / item["path"]
         ordinary(path)
@@ -150,6 +166,10 @@ def stage(payload, engine_directory):
         if number % 4000 == 0:
             print(f"Copied and verified {number:,} Office payload files.", flush=True)
     verify(destination)
+    with source_target.open("xb") as output:
+        output.write(source_record)
+    identity(source_target, source_pin)
+    verify_source_record(root)
 
 
 def main():
@@ -160,8 +180,10 @@ def main():
     if args.engine_directory:
         stage(args.payload, args.engine_directory)
     else:
-        verify(local_path(args.payload) / "office-engine")
-    print(f"Verified {selection()['inventory']['files']:,} Office runtime files, host dependencies and exact directories; release approval remains separate.")
+        root = local_path(args.payload)
+        verify(root / "office-engine")
+        verify_source_record(root)
+    print(f"Verified {selection()['inventory']['files']:,} Office runtime files, host dependencies, source record and exact directories; release approval remains separate.")
 
 
 if __name__ == "__main__":

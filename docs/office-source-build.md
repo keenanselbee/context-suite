@@ -391,8 +391,9 @@ source-delivery draft. The later [application selection](office-runtime-verifica
 binds runtime04 in packaging and the private lease; ordinary application exports
 now pass exact Word/Excel/PowerPoint control pixels. The earlier failed paired
 outputs remain retained. Replay the remaining fidelity/recovery requirements
-before final candidate acceptance. Durable runtime provenance, distribution
-terms and adoption remain separate gates.
+before final candidate acceptance. The [packaged source identity](office-production-payload.md#packaged-source-identity-2026-09-23)
+now supplies durable runtime provenance; distribution terms and adoption remain
+separate gates.
 
 
 Remaining build and adoption work
@@ -403,17 +404,24 @@ locations and are included in Evaluation 03. Final source delivery remains tied
 to the eventual adopted runtime; changing source/toolchain locations beyond the
 evaluated configuration requires corresponding verification. The reconstructed
 compilation, complete source-tree comparison and scoped native/host replays
-above pass. Complete durable source/runtime identity and final packaged-byte
-acceptance before adoption. The paired application recovery replay also exposes
+above pass. Final packaged-byte acceptance remains required before adoption.
+The earlier paired application recovery replay exposed
 [missing PowerPoint text-box fill](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23),
 now repaired in the selected application payload above; remaining recovery and
 fidelity requirements still need replay.
 
 Keep the existing runtime and reserved 1.1.1 candidate immutable. The upstream
-archive-derived `version.ini` has an empty build ID; distribution needs a durable
-source/configuration/patch/toolchain identity without pretending the modified
-renderer is an unmodified upstream binary. Notices, external tool/runtime
-licensing, final source delivery and adoption remain required.
+archive-derived `version.ini` has an empty build ID. The public
+[source-runtime record](../tools/office-engine/source-runtime-candidate.json)
+now binds source/configuration/patch/toolchain identity and identifies this as a
+modified evaluation build. Packaging requires its exact bytes beside the engine
+as `ContextSuite.OfficeSource.json`. The record includes source-kit04 identities,
+the three evaluated patch groups, portable configure options, actual configure
+and build-receipt hashes, compiler/linker versions, and the data-package repair.
+It adds no native code and does not require another native compilation.
+Selected tool versions are not a complete hermetic toolchain inventory or proof
+of bit-for-bit reproducibility. Notices, external tool/runtime licensing, final
+source delivery and adoption remain required.
 
 The [local candidate contract](local-candidate-acceptance.md) still requires the
 application D07/regression checks, isolation evidence, exact final A01-A08 and

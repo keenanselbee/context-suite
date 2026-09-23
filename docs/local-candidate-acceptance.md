@@ -41,6 +41,12 @@ also passes, including cleanup and independent following-output inspection.
 Incomplete workbook-write, remaining resource/security and final-candidate gates
 remain open. This is separate from the D09 typography decision.
 
+The [packaged Office source record](office-production-payload.md#packaged-source-identity-2026-09-23)
+now binds the reconstructed engine to its source kit, patches, configuration and
+selected toolchain. Packaging refuses a missing or altered record. This advances
+A08 preparation without closing redistribution/adoption or exact final-candidate
+acceptance; no native rebuild or reserved-package change was needed.
+
 | Family | Required candidate scope | Preservation boundary |
 | --- | --- | --- |
 | Existing images/DDS | Existing 27 conditional pairs and fixed PNG presets | Retain color, orientation, matte, DDS choices and smaller-result rules |
