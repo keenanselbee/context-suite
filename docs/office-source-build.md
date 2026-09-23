@@ -2,8 +2,9 @@ Office Renderer Source Build
 ===========================
 
 Status: an isolated source kit is assembled; standalone source preparation,
-fresh configuration, reconstructed compilation and all 22 native cases pass. Host replay,
-durable runtime identity,
+fresh configuration, reconstructed compilation and all 22 native cases pass.
+Reconstructed restricted-host chart, preview, external-link and macro controls
+also pass; DDE repeats its known fidelity failure and remains refused. Durable runtime identity,
 redistribution review and production adoption remain open. This work supports the
 [passive-chart repair](office-chart-renderer-repair.md), not a new Office scope.
 
@@ -220,9 +221,9 @@ test-only compilation. Postverification at
 runtime/test/fixture files retain their membership and bytes after execution,
 with zero owned processes left. The local native profile is retained as evidence.
 
-This replay does not establish restricted-host rendering or independent PDF
-fidelity for the reconstructed runtime. Those checks and final source/runtime
-correspondence remain required before adoption or final candidate composition.
+This native replay alone does not establish restricted-host rendering or
+independent PDF fidelity. The reconstructed host checks below supply scoped
+rendering evidence; final source/runtime correspondence and adoption remain open.
 
 
 Standalone kit with build commands
@@ -261,15 +262,68 @@ toolchain redistribution review, and the native/restricted-host replay remain
 required. This local archive is not approval to redistribute or adopt the engine.
 
 
+Corrected source kit and reconstructed host replay
+--------------------------------------------------
+
+Evaluation 03 at `G:\ContextSuite-OfficeBuild\tools\office-source-kit-03` contains
+the corrected fifteen-target driver and the relocated native test that passes
+all 22 cases. It retains the pinned source archive, 140 dependencies, runtime
+patches and build settings. It contains 169 files and 1,148,556,097 bytes; manifest
+SHA-256 is `934F38439E68893D487D7033EE9895ECE7935F621E3B8B137F7A245332BADAFE`.
+Its 1,148,582,637-byte stored ZIP has SHA-256
+`EE90743371CEA5ADE53CC88144D53958D1C60E18ABA0A81905CC2D54039BE3FE`.
+Every ZIP entry was read back and verified. Kits 01/02 remain unchanged.
+
+Actual standalone preparation into `source\kit-replay-03` passes: 148,166 regular
+archive files, 56 materialized links, eight modifications and three additions.
+Both planners run from the kit without a repository input dependency; configure
+options match the successful baseline after mapping the kit path, and all fifteen
+build targets match the successful continuation. The planners create no build
+directory and launch no compiler. Receipts are `evidence\office-source-kit-03.json`,
+`evidence\office-source-kit-03-archive.json`, `source\kit-replay-03-preparation.json`
+and `evidence\source-kit-03-standalone\results.json`. A complete byte comparison
+with the previously compiled source tree is tracked separately under
+`evidence\source-kit-03-correspondence`; no result is inferred from preparation alone.
+
+The reconstructed renderer is separately retained at `tools\office-review-runtime-03`
+with the current source-matched application host and the same five app-local CRT
+files. Its inventory SHA-256 is
+`F7918C2946A49E858556E7577E9B5459FE04677108F6E0E598D9513FD0F6090D`:
+3,828 runtime files totaling 545,216,509 bytes. The complete engine archive has
+3,833 files, expands to 546,687,520 bytes and compresses to 222,964,245 bytes;
+SHA-256 is `D45C2A23CEB0158D8A7AD42606FF2338CA517210605AFD8ECAAB92F3F5BB038A`.
+This is a separate evaluation payload; application pins and reserved candidates
+are unchanged. Of the runtime files, 509 differ from the earlier compiled tree.
+
+`evidence\office-review-runtime-03-acceptance.json` records twelve actual
+restricted-host Word/Excel/PowerPoint preview exports, exact earlier page rasters,
+profile/mapping removal and unchanged input identities. Static inspection of
+325 native files finds no missing dependency in the reviewed locations or
+unbundled MSVC import. It is not clean-machine or dynamic-loader provenance proof.
+`evidence\chart-host-export-04-postverification.json` adds four live-chart exports
+under both calculation modes: unchanged independent text/geometry/chart controls
+pass and all four page rasters exactly match the earlier baseline. All sixteen
+native profiles/mappings are absent after these runs.
+
+`evidence\reconstructed-security-host-replay-01.json` separately records five
+external-workbook controls and one macro control passing, with ten profile
+removals across those six exports and four failed DDE probes. The DDE cases repeat
+the prior missing-link/recalculation failure; they are not a security pass.
+The current worker still refuses the known DDE inputs before native access:
+28 checks pass at `.codex-temp/office-dde-refusal/5c56ec0c12d846b994f4b251c9ece64d`.
+No DDE support, affirmative network-denial result or general fidelity is claimed.
+
+
 Remaining build and adoption work
 --------------------------------
 
 The preparation, configure and configured-build commands now accept explicit
-locations and are included in Evaluation 02. Final source delivery remains tied
+locations and are included in Evaluation 03. Final source delivery remains tied
 to the eventual adopted runtime; changing source/toolchain locations beyond the
-evaluated configuration requires corresponding verification. Complete clean
-compilation and native/restricted-host replay must bind the rebuilt bytes to
-this source kit. A successful extraction or configuration is not that evidence.
+evaluated configuration requires corresponding verification. The reconstructed
+compilation and scoped native/host replays above pass. Complete source/runtime
+correspondence and the final packaged-byte acceptance before adoption; a
+successful extraction or configuration alone is not that evidence.
 
 Keep the existing runtime and reserved 1.1.1 candidate immutable. The upstream
 archive-derived `version.ini` has an empty build ID; distribution needs a durable

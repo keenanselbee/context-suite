@@ -7,8 +7,11 @@ Four Excel and two Word/PowerPoint chart PDF comparisons pass through the
 restricted host in the isolated Windows build.
 The paired application now passes the four authored Excel chart/layout cases
 and independent PDF comparisons, plus Word layout and fifteen font/style cases.
-Restricted-host security completion, clean source-build replay and adoption
-remain pending. Reserved candidates retain their original failed chart behavior.
+The [reconstructed build and source-kit replay](office-source-build.md#corrected-source-kit-and-reconstructed-host-replay)
+now pass compilation, 22 native cases and scoped restricted-host chart/preview,
+external-link and macro controls. DDE retains its known refusal. Remaining
+file/process/network acceptance, source correspondence and adoption are open.
+Reserved candidates retain their original failed chart behavior.
 The [chart-loss regression](excel-layout-acceptance.md) keeps chart fidelity in the
 [active goal](broad-file-support-goal.md) and keeps `DisableActiveContent=true`.
 
