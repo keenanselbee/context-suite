@@ -81,13 +81,21 @@ cache paths. `evidence\source-kit-configure-01\result.json` and
 `evidence\source-kit-build-01-preparation\preparation.json` retain the result,
 exact inputs, planned targets and path comparison.
 
-The clean build has started under `build\source-kit-01`, with two outer Make jobs,
+The clean build started under `build\source-kit-01`, with two outer Make jobs,
 one nested Python compiler/MSBuild worker, sequential packaging targets and the
 existing 100-GiB workspace monitor. The measured starting workspace is
 45,417,300,012 bytes. Its command, log, footprint and eventual exit receipts use
 `evidence\source-kit-build-01-*` and `evidence\source-kit-build-01.log`.
 The launch itself is not a pass. The native test target is compiled with execution
 suppressed; required native and restricted-host execution follow separately.
+
+Attempt 01 stopped with exit 2 after 1,886.48 seconds. Its OpenSSL compiler command
+returned `0xc000026b`, identified by the installed Windows SDK as
+`STATUS_DLL_INIT_FAILED_LOGOFF`; the parallel Graphite target also stopped.
+The monitor did not exceed its budget (last measurement 47,813,653,641 bytes).
+The terminal receipt and absent original process tree were verified before an
+incremental resume on 2026-09-23. No source or compiler repair was inferred from
+this environment interruption, and the failed receipt remains intact.
 
 
 Reusable configured-build driver
@@ -124,10 +132,11 @@ Make-flag removal, concurrent-driver refusal, exact target order and stopping at
 the first failure with its receipt retained. They run no compiler or Office
 engine and do not establish runtime resource-limit or interruption acceptance.
 
-The read-only plan against the live reconstructed configuration also matches all
-seventeen targets and the exact reviewed child environment. The driver has not
-started a second renderer build. Full renderer execution through this reusable
-entry point and inclusion in the final source kit remain pending.
+The read-only plan against the reconstructed configuration also matches all
+seventeen targets and the exact reviewed child environment. After attempt 01
+terminated, this driver resumed the existing tree with that environment. Its
+receipts are under `evidence\source-build-4e24fc1032364d8d81456e7e81273ace`.
+Completion, native execution and inclusion in the final source kit remain pending.
 
 
 Remaining build and adoption work
