@@ -198,6 +198,10 @@ restricted-host exports retain exact baseline pixels and remove every profile.
 All original source files are accounted for, with eight modifications classified
 and reproduced by reversible patches. Production selection is unchanged; network
 evidence, source-kit completion, application replay and final composition remain.
+The [source-build checkpoint](office-source-build.md) now prepares all source
+files from an independent local kit and verifies the canonical UTF-8 build
+recipe and exact upstream dependency selection. Clean compilation/replay and
+source-delivery acceptance remain required.
 The [interim chart guard](excel-layout-acceptance.md#interim-chart-refusal-2026-09-19)
 now refuses affected XLSX files or incomplete chart inspection before publication.
 All 4,439 foundation contracts and 28 actual-worker refusal checks pass. This

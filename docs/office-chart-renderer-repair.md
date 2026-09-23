@@ -1038,6 +1038,9 @@ changes in help/comments alongside the intentional antivirus-preflight change.
 That incidental encoding change is recorded, not silently omitted from the
 patches; normalize and revalidate the canonical recipe before source-kit release.
 Source-kit assembly, dependency closure and a reproducible build remain open.
+The subsequent [source-build checkpoint](office-source-build.md) verifies the
+canonical UTF-8 recipe, the exact 140-input upstream fetch selection and standalone
+preparation from an assembled source kit. Complete rebuild/adoption remain open.
 
 Static inspection of the first review payload found five imported Microsoft
 runtime DLLs available on this machine but absent from that payload. The new
