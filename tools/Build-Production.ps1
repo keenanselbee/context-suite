@@ -122,6 +122,7 @@ if (-not $SkipShell) {
     Copy-Item -LiteralPath (Join-Path $native 'ContextSuite.Shell.dll') -Destination $output -Force
     & (Join-Path $PSScriptRoot 'New-PrototypeAssets.ps1') -OutputDirectory $output
 }
+& (Join-Path $PSScriptRoot 'release\Write-NoticeIndex.ps1') -Payload $output
 & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload $output `
     -AllowAudioCandidate:([bool]$AudioDistributionDirectory) -AllowPdfCandidate:$includePdf -AllowOfficeCandidate:([bool]$OfficeEngineDirectory) `
     -AllowHeifCandidate:([bool]$HeifDistributionDirectory)

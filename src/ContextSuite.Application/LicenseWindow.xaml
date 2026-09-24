@@ -48,8 +48,17 @@
                 </Button>
                 <TextBlock Text="This clears only the saved activation on this PC. It does not cancel your purchase or reset your trial." TextWrapping="Wrap" Margin="0,8,0,0" />
         </StackPanel>
-        <Button Content="_Close" Click="OnClose" IsCancel="True" HorizontalAlignment="Right" Padding="12,6" Margin="0,16,0,0"
-                AutomationProperties.AutomationId="CloseLicense" />
+        <ui:StatusTextBlock x:Name="NoticeStatus" TextWrapping="Wrap" AutomationProperties.AutomationId="NoticeStatus" />
+        <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Content="Third-party _notices" Click="OnNotices" HorizontalAlignment="Left" Padding="12,6"
+                    AutomationProperties.AutomationId="OpenThirdPartyNotices" />
+            <Button Grid.Column="1" Content="_Close" Click="OnClose" IsCancel="True" Padding="12,6"
+                    AutomationProperties.AutomationId="CloseLicense" />
+        </Grid>
     </StackPanel>
     </ScrollViewer>
 </Window>

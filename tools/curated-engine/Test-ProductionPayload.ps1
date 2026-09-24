@@ -11,7 +11,7 @@ if ($AllowOfficeCandidate -and -not $AllowPdfCandidate) {
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'palette-engine\Test-PaletteEngine.ps1') -Payload $Payload
 $allowed = @('Magick.Native-Q16-x64.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.Core.dll',
     'Magick.NET.Notice.txt', 'ContextSuite.Engine.json', 'ContextSuite.Shell.dll',
-    'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'payload-inventory.json',
+    'THIRD-PARTY-NOTICES.txt', 'ThirdPartyNotices.html', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'payload-inventory.json',
     'ContextSuite.Dds.Native.dll', 'ContextSuite.Dds.Engine.json', 'DirectXTex.License.txt',
     'oxipng.exe', 'ContextSuite.Png.Engine.json', 'Oxipng.License.txt',
     'ContextSuite.Palette.exe', 'ContextSuite.Palette.Engine.json', 'ExoQuant.License.txt', 'Rust.Library.Notices.html')
@@ -80,4 +80,5 @@ foreach ($name in 'Application', 'Worker') {
         }
     }
 }
+& (Join-Path (Split-Path $PSScriptRoot -Parent) 'release\Write-NoticeIndex.ps1') -Payload $root -Verify
 Write-Output 'Production file allowlist, package dependencies and notice presence passed (development payload, not release clearance).'

@@ -63,7 +63,7 @@ Decisions and unfinished work
 | LGPL modified-library use | Select and implement a supported replacement or relinking route; the current fixed identity checks reject changed libraries | Engineering and owner |
 | Source delivery and product terms | Approve actual source-download location, public-source terms and proprietary product terms; bind delivered archives to each released binary version | Owner, then packaging |
 | File-specific notices | Finish component mapping and transitive notice review for the selected PNG, palette, DDS, PDFium and Office inputs; copied root notices do not prove completeness | Engineering/release review |
-| Customer notice access | Add an accessible entry to the bundled notices and final source instructions, preserving the compact Settings/License workflow | Engineering |
+| Customer notice access | [License entry and offline index implemented](bundled-notices.md); compose into the fresh candidate, review actual opening and finish source instructions | Engineering |
 | Adoption and intended markets | Resolve component/codec patent questions and explicitly select the release engines | Owner/release review |
 | Final composition | Build a fresh version, measure the actual footprint and replay A01-A08/performance against its exact bytes | Engineering |
 

@@ -130,7 +130,7 @@ internal static class ViewContracts
             audioContent.Measure(new Size(audio.Width - 16, double.PositiveInfinity));
             Check(audio.SizeToContent == SizeToContent.Height && Math.Abs(audioContent.DesiredSize.Height - audioCollapsedHeight) < 1,
                 "audio decision: closing files restores compact content height");
-            foreach (var (window, id) in new[] { (main, "BatchSummary"), (main, "RecoveryNotice"), (main, "InputNotice"),
+            foreach (var (window, id) in new[] { (main, "BatchSummary"), (main, "RecoveryNotice"), (main, "InputNotice"), (license, "NoticeStatus"),
                 (convert, "ConversionPlanStatus"), (convert, "ConversionPreviewStatus"), (convert, "ConversionTrialStatus"),
                 (optimize, "OptimizationPlanStatus"), (optimize, "OptimizationTrialStatus"), (settings, "SettingsMessage"), (license, "LicenseStatus"), (audio, "AudioConversionStatus"), (windows[6], "ImagePdfOrderStatus") })
             {
@@ -237,6 +237,7 @@ internal static class ViewContracts
                     "settings: expanded content scrolls while Save stays reachable at minimum size in section " + section);
                 copyOptions.IsExpanded = false;
             }
+            RunNoticeContracts(Check);
             var licenseContent = (FrameworkElement)license.Content;
             licenseContent.Measure(new Size(license.Width - 16, double.PositiveInfinity));
             Check(license.SizeToContent == SizeToContent.Height && licenseContent.DesiredSize.Height < 440,
@@ -307,6 +308,46 @@ internal static class ViewContracts
             if (!condition) throw new InvalidOperationException(name);
             passed++; Console.WriteLine("PASS " + name);
         }
+    }
+
+    private static void RunNoticeContracts(Action<bool, string> check)
+    {
+        var root = Path.Combine(AppContext.BaseDirectory, "notice-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        using var model = new LicenseViewModel(new(new UnusedLicenseService(),
+            new LicenseStore(Path.Combine(root, "unused-license.bin"), LicenseEnvironment.Sandbox)));
+        System.Diagnostics.ProcessStartInfo? opened = null;
+        var fail = false;
+        var window = new LicenseWindow(model, root, start =>
+        {
+            if (fail) throw new System.ComponentModel.Win32Exception(1155);
+            opened = start;
+        });
+        try
+        {
+            var button = Find<Button>(window, "OpenThirdPartyNotices");
+            var status = Find<StatusTextBlock>(window, "NoticeStatus");
+            check(button.IsEnabled && button.Focusable &&
+                UIElementAutomationPeer.CreatePeerForElement(button)?.GetName() == "Third-party notices",
+                "notices: named keyboard control works without loaded license state");
+            button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            check(opened is null && status.Text.Contains("missing", StringComparison.Ordinal) && model.Message.Length > 0,
+                "notices: missing bundle is reported without launching a process");
+            var path = Path.Combine(root, "ThirdPartyNotices.html");
+            File.WriteAllText(path, "<!doctype html><title>Test notices</title>");
+            var licenseMessage = model.Message;
+            button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            check(opened?.FileName == path && opened.UseShellExecute && opened.Arguments.Length == 0 &&
+                opened.ArgumentList.Count == 0 && status.Text == "Third-party notices opened." && model.Message == licenseMessage,
+                "notices: opens only the bundled index and preserves license status");
+            fail = true;
+            button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            check(status.Text.Contains("Open ThirdPartyNotices.html", StringComparison.Ordinal) && model.Message == licenseMessage,
+                "notices: unavailable file association has an actionable local fallback");
+            check(!window.IsVisible && !File.Exists(Path.Combine(root, "unused-license.bin")),
+                "notices: tests did not show UI, use a browser or touch licensing storage");
+        }
+        finally { window.Close(); }
     }
 
     private sealed class UnusedLicenseService : ILicenseService

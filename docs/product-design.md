@@ -9,6 +9,10 @@ to copies, with explicit Settings consent for safe replacement on future command
 The implementation follows this scope with owner manual acceptance. Additional
 accessibility/theme/DPI and installed lifecycle coverage remain release gates.
 
+License also provides [access to the bundled third-party notices](bundled-notices.md)
+without activation or an online request. Fresh packaging and human acceptance
+of this entry remain pending; source delivery and redistribution are separate.
+
 Accepted next priority: [broad file support](broad-file-support-goal.md) under
 [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md).
 Analyze must give useful read-only results for every readable regular file,
