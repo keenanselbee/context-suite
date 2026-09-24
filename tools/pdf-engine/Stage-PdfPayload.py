@@ -18,11 +18,13 @@ def digest(data):
     return hashlib.sha256(data).hexdigest().upper()
 
 
-def local_path(value, scratch_only=False):
+def local_path(value, scratch_only=False, verification=False):
     path = pathlib.Path(value).absolute()
     roots = [ROOT / ".codex-temp"]
     if not scratch_only:
         roots.append(ROOT / "artifacts/production-staging")
+        if verification:
+            roots.append(ROOT / "artifacts/release-candidates")
     if ".." in path.parts or not any(path != root and path.is_relative_to(root) for root in roots):
         raise ValueError("Use isolated repository staging and scratch inputs")
     for ancestor in (path, *path.parents):
@@ -48,14 +50,14 @@ def selection():
 
 
 def verify(payload):
-    root = local_path(payload)
+    root = local_path(payload, verification=True)
     record = selection()
     expected = {item["path"]: item for item in record["files"]}
     actual = set()
     for directory in DIRECTORIES:
-        local_path(root / directory)
+        local_path(root / directory, verification=True)
         for path in (root / directory).rglob("*"):
-            local_path(path)
+            local_path(path, verification=True)
             if path.is_file():
                 name = path.relative_to(root).as_posix()
                 if name not in expected:

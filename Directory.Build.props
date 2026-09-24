@@ -11,7 +11,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <BaseOutputPath>$(MSBuildThisFileDirectory)artifacts\managed\bin\$(MSBuildProjectName)\</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)artifacts\managed\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <ContextSuiteManagedBuildRoot Condition="'$(ContextSuiteManagedBuildRoot)' == ''">$(MSBuildThisFileDirectory)artifacts\managed</ContextSuiteManagedBuildRoot>
+    <BaseOutputPath>$(ContextSuiteManagedBuildRoot)\bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(ContextSuiteManagedBuildRoot)\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
   </PropertyGroup>
 </Project>

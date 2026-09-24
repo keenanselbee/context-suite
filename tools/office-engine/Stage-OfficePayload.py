@@ -34,11 +34,13 @@ def ordinary(path):
     return info
 
 
-def local_path(value, scratch_only=False):
+def local_path(value, scratch_only=False, verification=False):
     path = Path(value).absolute()
     roots = [ROOT / ".codex-temp"]
     if not scratch_only:
         roots.append(ROOT / "artifacts/production-staging")
+        if verification:
+            roots.append(ROOT / "artifacts/release-candidates")
     if ".." in path.parts or not any(path != root and path.is_relative_to(root) for root in roots):
         raise ValueError("Use isolated repository staging and scratch inputs.")
     for ancestor in (path, *path.parents):
@@ -71,7 +73,7 @@ def selection():
 
 def verify_source_record(payload):
     ordinary(SOURCE_RECORD)
-    identity(local_path(payload) / PACKAGED_SOURCE_RECORD,
+    identity(local_path(payload, verification=True) / PACKAGED_SOURCE_RECORD,
              {"bytes": SOURCE_RECORD.stat().st_size, "sha256": digest(SOURCE_RECORD)})
 
 
@@ -96,8 +98,8 @@ def component_notice():
 
 
 def verify_notices(payload):
-    identity(local_path(payload) / PACKAGED_NOTICE, supplemental_notice())
-    identity(local_path(payload) / PACKAGED_COMPONENT_NOTICE, component_notice())
+    identity(local_path(payload, verification=True) / PACKAGED_NOTICE, supplemental_notice())
+    identity(local_path(payload, verification=True) / PACKAGED_COMPONENT_NOTICE, component_notice())
 
 
 def membership(engine, record):
@@ -131,7 +133,7 @@ def membership(engine, record):
 
 
 def verify(engine):
-    engine = local_path(engine)
+    engine = local_path(engine, verification=True)
     record = selection()
     identity(engine / record["host"]["path"], record["host"])
     files, directories = membership(engine, record)
@@ -226,7 +228,7 @@ def main():
     if args.engine_directory:
         stage(args.payload, args.engine_directory)
     else:
-        root = local_path(args.payload)
+        root = local_path(args.payload, verification=True)
         verify(root / "office-engine")
         verify_source_record(root)
         verify_notices(root)

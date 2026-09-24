@@ -15,9 +15,11 @@ distribution = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(distribution)
 
 
-def local(value):
+def local(value, verification=False):
     path = Path(value).absolute()
     roots = (ROOT / ".codex-temp", ROOT / "artifacts/production-staging")
+    if verification:
+        roots += (ROOT / "artifacts/release-candidates",)
     if ".." in path.parts or not any(path != root and path.is_relative_to(root) for root in roots):
         raise ValueError("Use isolated repository scratch or production staging")
     for part in (path, *path.parents):
@@ -46,8 +48,8 @@ def selection():
     return record
 
 
-def identity(path, pin):
-    path = local(path)
+def identity(path, pin, verification=False):
+    path = local(path, verification=verification)
     info = path.lstat()
     if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size != pin["bytes"]:
         raise ValueError("HEIF payload size, type or ownership differs: " + str(path))
@@ -57,7 +59,7 @@ def identity(path, pin):
 
 
 def verify(payload):
-    engine = local(local(payload) / "heif")
+    engine = local(local(payload, verification=True) / "heif", verification=True)
     record = selection()
     expected = {item["path"]: item for item in record["files"]}
     directories = {parent.as_posix() for name in expected for parent in Path(name).parents if parent != Path(".")}
@@ -68,7 +70,7 @@ def verify(payload):
 
     for current, child_folders, names in os.walk(engine, followlinks=False, onerror=failed):
         for name in child_folders + names:
-            path = local(Path(current) / name)
+            path = local(Path(current) / name, verification=True)
             relative = path.relative_to(engine).as_posix()
             if path.is_dir():
                 if relative not in directories:
@@ -77,7 +79,7 @@ def verify(payload):
             else:
                 if relative not in expected:
                     raise ValueError("Unexpected HEIF payload file: " + relative)
-                identity(path, expected[relative])
+                identity(path, expected[relative], verification=True)
                 files.add(relative)
     if files != set(expected) or folders != directories:
         raise ValueError("HEIF payload is missing reviewed libraries, notices or directories")

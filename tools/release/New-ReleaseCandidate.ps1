@@ -1,5 +1,7 @@
 [CmdletBinding()]
-param([switch] $AllowDirty)
+param([switch] $AllowDirty, [string] $AudioDistributionDirectory,
+    [string] $QpdfPreparedDirectory, [string] $PdfiumPreparedDirectory, [string] $QpdfSourceArchive,
+    [string] $OfficeEngineDirectory, [string] $HeifDistributionDirectory, [string] $VoiceDistributionDirectory)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $revisions = @()
@@ -13,10 +15,17 @@ foreach ($repo in @($repository, (Join-Path $repository 'proprietary'))) {
     $revisions += $revision
 }
 if ($dirty -and -not $AllowDirty) { throw 'Candidate requires clean public/private checkouts. -AllowDirty is local verification only and records dirty provenance.' }
-# Always build here; a pre-existing development folder is not evidence for these revisions.
+# Reuse DDS only when its binary, source, build definition and notices agree.
+# Rebuild explicitly with Build-DdsEngine.ps1 when that check reports stale inputs.
+# Managed application and shell output still come from a fresh production stage.
 $stagingId = [guid]::NewGuid()
-& (Join-Path $repository 'tools\dds-engine\Build-DdsEngine.ps1')
-& (Join-Path $repository 'tools\Build-Production.ps1') -Configuration Release -StagingId $stagingId
+& (Join-Path $repository 'tools\dds-engine\Test-DdsEngine.ps1') -Payload (Join-Path $repository 'artifacts\engines\dds-win-x64')
+$buildArguments = @{ Configuration = 'Release'; StagingId = $stagingId }
+foreach ($name in 'AudioDistributionDirectory', 'QpdfPreparedDirectory', 'PdfiumPreparedDirectory',
+    'QpdfSourceArchive', 'OfficeEngineDirectory', 'HeifDistributionDirectory', 'VoiceDistributionDirectory') {
+    if ($PSBoundParameters.ContainsKey($name)) { $buildArguments[$name] = $PSBoundParameters[$name] }
+}
+& (Join-Path $repository 'tools\Build-Production.ps1') @buildArguments
 for ($index = 0; $index -lt 2; $index++) {
     $repo = @($repository, (Join-Path $repository 'proprietary'))[$index]
     if ((& git -C $repo rev-parse HEAD) -ne $revisions[$index] -or
@@ -29,6 +38,9 @@ $output = Join-Path $repository ('artifacts\release-candidates\' + [guid]::NewGu
 $candidate = Join-Path $output 'ContextSuite'
 $app = Join-Path $candidate 'app'
 New-Item -ItemType Directory -Path $app -Force | Out-Null
+foreach ($directory in Get-ChildItem -LiteralPath $source -Recurse -Directory) {
+    New-Item -ItemType Directory -Path (Join-Path $app $directory.FullName.Substring($source.Length + 1)) -Force | Out-Null
+}
 foreach ($file in Get-ChildItem -LiteralPath $source -Recurse -File) {
     if ($file.Extension -eq '.pdb' -or $file.Name -eq 'payload-inventory.json') { continue }
     $destination = Join-Path $app $file.FullName.Substring($source.Length + 1)
@@ -57,6 +69,7 @@ $manifest = [ordered]@{
     schema = 1; status = 'unsigned-internal-candidate'; publicCommit = $revisions[0]; privateCommit = $revisions[1];
     dirtySources = $dirty; dotnetSdk = (& dotnet --version); visualCppToolset = $vcVersion;
     configuration = 'Release'; productionStagingId = $stagingId.ToString('N');
+    optionalEngines = (& (Join-Path $PSScriptRoot 'Get-CandidateEngines.ps1') -Payload $app);
     dependencies = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Worker.deps.json') -Raw | ConvertFrom-Json).libraries;
     applicationDependencies = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Application.deps.json') -Raw | ConvertFrom-Json).libraries;
     curatedEngine = (Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Engine.json') -Raw | ConvertFrom-Json);

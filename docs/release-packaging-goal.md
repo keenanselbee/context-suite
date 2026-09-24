@@ -37,8 +37,10 @@ Implemented workflow
    Reject extra entries, paths, duplicates, excessive sizes and any mismatch
    with the independently committed DLL/notice hashes. Never approve a new
    engine hash merely to make CI pass.
-3. Build DDS from pinned source using `tools/dds-engine/Build-DdsEngine.ps1`.
-   Retain its source/bridge/build-definition identity and native hash.
+3. Build DDS from pinned source using `tools/dds-engine/Build-DdsEngine.ps1`
+   when no source-matched cache is available. Retain its source/bridge/build-definition
+   identity and native hash. Candidate packaging verifies and reuses that cache;
+   it never silently rebuilds a stale or modified engine.
 4. Run `tools/release/New-ReleaseCandidate.ps1`. Both repositories must be clean;
    the script builds Release into a unique `artifacts/production-staging/<id>`
    directory, leaving `artifacts/production/Release` unchanged even when registered
@@ -48,13 +50,19 @@ Implemented workflow
    provenance; such output is not an exact committed-source release.
    Staging directories cannot be reused; a repeated identifier is rejected before
    build/copy work. Ordinary development builds retain their existing output path.
+   Candidate managed compilation uses fresh per-stage `bin` and `obj` directories.
+   The [expanded composition workflow](expanded-release-composition.md) accepts
+   all selected audio/Voice, PDF, Office and HEIF inputs without rebuilding those
+   engines and records their selection in the archive manifest.
 5. `release-manifest.json` identifies both commits, SDK/toolset, package
    dependencies, engines and every payload file's length and SHA256. The ZIP
    hash is printed and written to `archive.sha256` separately. The finished ZIP
    is extracted into fresh scratch output and revalidated. Hashes establish
    consistency, not authenticity.
 6. `tools/release/Test-ReleaseCandidate.ps1 -Candidate <directory>` verifies the
-   inventory and source-linked engine/notice guards. It requires the matching
+   inventory, selected optional engines and source-linked engine/notice guards.
+   Read-only engine checks admit the release-candidate directory; staging writes
+   remain restricted to fresh production staging or scratch. It requires the matching
    public/private checkout; it is not a customer-side signature validator.
 
 All output stays under ignored `artifacts/` or `.codex-temp/`. Nothing is

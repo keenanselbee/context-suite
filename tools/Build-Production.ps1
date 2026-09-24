@@ -31,6 +31,11 @@ $output = if ($StagingId -eq [guid]::Empty) { Join-Path $repositoryRoot "artifac
 if ($StagingId -ne [guid]::Empty -and (Test-Path -LiteralPath $output)) {
     throw 'Production staging already exists. Use a new StagingId; existing payloads are never overwritten.'
 }
+$managedBuildRoot = if ($StagingId -eq [guid]::Empty) { Join-Path $repositoryRoot 'artifacts\managed' }
+    else { Join-Path $repositoryRoot ('.codex-temp\managed-staging-' + $StagingId.ToString('N')) }
+if ($StagingId -ne [guid]::Empty -and (Test-Path -LiteralPath $managedBuildRoot)) {
+    throw 'Candidate managed build directory already exists. Use a new StagingId.'
+}
 if ($StagingId -ne [guid]::Empty) {
     $receipts = Join-Path $repositoryRoot 'artifacts\production-version-receipts'
     New-Item -ItemType Directory -Path $receipts -Force | Out-Null
@@ -86,7 +91,9 @@ if (-not (Test-Path -LiteralPath (Join-Path $repositoryRoot 'proprietary\src\Con
 & (Join-Path $PSScriptRoot 'dds-engine\Test-DdsEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\dds-win-x64')
 & (Join-Path $PSScriptRoot 'png-engine\Test-PngEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\png-win-x64')
 & (Join-Path $PSScriptRoot 'palette-engine\Test-PaletteEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\palette-win-x64')
-& dotnet build (Join-Path $repositoryRoot 'ContextSuite.Production.slnx') -c $Configuration --nologo
+# Candidate compilation uses fresh output and intermediate directories, so stale
+# development DLLs/dependency files cannot enter a newly reserved payload.
+& dotnet build (Join-Path $repositoryRoot 'ContextSuite.Production.slnx') -c $Configuration --nologo "-p:ContextSuiteManagedBuildRoot=$managedBuildRoot"
 if ($LASTEXITCODE -ne 0) { throw 'Production foundation build failed.' }
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 $dotnetRoot = Split-Path (Get-Command dotnet -CommandType Application).Source -Parent
@@ -97,7 +104,7 @@ foreach ($entry in @(@('LICENSE.txt', 'DotNet.License.txt'), @('ThirdPartyNotice
 }
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'assets\THIRD-PARTY-NOTICES.txt') -Destination $output -Force
 foreach ($project in @('ContextSuite.Application', 'ContextSuite.Worker')) {
-    $source = Join-Path $repositoryRoot "artifacts\managed\bin\$project\$Configuration\net10.0-windows"
+    $source = Join-Path $managedBuildRoot "bin\$project\$Configuration\net10.0-windows"
     Get-ChildItem -LiteralPath $source -File | Copy-Item -Destination $output -Force
 }
 if (Test-Path -LiteralPath (Join-Path $output 'Magick.NET-Q16-x64.dll')) {

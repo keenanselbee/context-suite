@@ -8,6 +8,21 @@ if ($manifest.schema -ne 1 -or $manifest.status -ne 'unsigned-internal-candidate
     $manifest.publicCommit -notmatch '^[a-f0-9]{40}$' -or $manifest.privateCommit -notmatch '^[a-f0-9]{40}$') {
     throw 'Invalid candidate identity.'
 }
+$engines = & (Join-Path $PSScriptRoot 'Get-CandidateEngines.ps1') -Payload (Join-Path $root 'app')
+if ($manifest.PSObject.Properties.Name -contains 'optionalEngines') {
+    $recorded = $manifest.optionalEngines
+    $names = @('audio', 'pdf', 'office', 'heif', 'voice')
+    if (@($recorded.PSObject.Properties).Count -ne $names.Count -or
+        @($recorded.PSObject.Properties.Name | Where-Object { $_ -notin $names }).Count -or
+        $recorded.audio -isnot [string] -or $recorded.audio -cne $engines.audio) { throw 'Candidate engine selection differs from its payload.' }
+    foreach ($name in 'pdf', 'office', 'heif', 'voice') {
+        if ($recorded.$name -isnot [bool] -or $recorded.$name -ne $engines.$name) {
+            throw 'Candidate engine selection differs from its payload.'
+        }
+    }
+} elseif ($engines.audio -ne 'none' -or $engines.pdf -or $engines.office -or $engines.heif -or $engines.voice) {
+    throw 'Expanded candidates must record their optional engine selection.'
+}
 $expected = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 foreach ($entry in $manifest.files) {
     if ($entry.path -notmatch '^(app/|requirements\.json$|Test-Prerequisites\.ps1$)' -or
@@ -49,5 +64,7 @@ foreach ($tool in 'Analyze', 'Convert', 'Optimize') {
     }
 }
 if (-not $expected.Contains('app/Assets/StoreLogo.png')) { throw 'Missing package logo.' }
-& (Join-Path $repository 'tools\curated-engine\Test-ProductionPayload.ps1') -Payload (Join-Path $root 'app')
+& (Join-Path $repository 'tools\curated-engine\Test-ProductionPayload.ps1') -Payload (Join-Path $root 'app') `
+    -AllowAudioCandidate:($engines.audio -ne 'none') -AllowPdfCandidate:$engines.pdf `
+    -AllowOfficeCandidate:$engines.office -AllowHeifCandidate:$engines.heif
 Write-Output 'Release candidate inventory and source-linked engine guards passed. Hashes are not signatures; installation remains unverified.'

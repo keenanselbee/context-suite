@@ -18,9 +18,11 @@ def digest(data):
     return hashlib.sha256(data).hexdigest().upper()
 
 
-def local_path(value):
+def local_path(value, verification=False):
     path = pathlib.Path(value).absolute()
     roots = (ROOT / "artifacts/production-staging", ROOT / ".codex-temp")
+    if verification:
+        roots += (ROOT / "artifacts/release-candidates",)
     if ".." in path.parts or not any(path != root and path.is_relative_to(root) for root in roots):
         raise ValueError("Use a fresh isolated production stage or repository scratch")
     for ancestor in (path, *path.parents):
@@ -53,9 +55,9 @@ def voice_provider():
 
 
 def verify(payload):
-    audio = local_path(payload) / "audio-engine"
-    local_path(audio)
-    probe = local_path(audio / "ffprobe.exe")
+    audio = local_path(payload, verification=True) / "audio-engine"
+    local_path(audio, verification=True)
+    probe = local_path(audio / "ffprobe.exe", verification=True)
     if not probe.is_file() or probe.stat().st_size > 1024 * 1024:
         raise ValueError("Audio probe is missing or oversized")
     probe_hash = digest(probe.read_bytes())
@@ -64,7 +66,7 @@ def verify(payload):
     if len(matches) != 1:
         raise ValueError("Audio probe identity is not a reviewed profile")
     record = matches[0]
-    voice = local_path(audio / "voice")
+    voice = local_path(audio / "voice", verification=True)
     if voice.exists():
         if record.get("profile") != "expanded":
             raise ValueError("Windows Voice requires the expanded audio profile")
@@ -72,7 +74,7 @@ def verify(payload):
     expected = {item["path"]: item for item in record["files"]}
     actual = set()
     for path in audio.rglob("*"):
-        local_path(path)
+        local_path(path, verification=True)
         if path.is_file():
             relative = path.relative_to(audio).as_posix()
             if relative not in expected:
@@ -132,7 +134,7 @@ def stage(distribution, payload, voice_distribution=None):
 
 
 def verify_inventory(payload):
-    root = local_path(payload)
+    root = local_path(payload, verification=True)
     inventory = root / "payload-inventory.json"
     # The complete Office candidate has over 19,000 pinned runtime files.
     # Keep parsing bounded while admitting the combined production inventory.
@@ -146,7 +148,7 @@ def verify_inventory(payload):
         raise ValueError("Duplicate production inventory entries")
     actual = set()
     for path in root.rglob("*"):
-        local_path(path)
+        local_path(path, verification=True)
         if path.is_file() and path != inventory:
             relative = path.relative_to(root).as_posix()
             if relative not in expected:
