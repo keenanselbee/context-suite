@@ -72,3 +72,24 @@ evidence, actual Office content acceptance and exact final-candidate replay rema
 separate requirements.
 The 128 MiB PDF and 64 MiB calculated-workbook acceptance limits remain
 post-export validation bounds; this test establishes no hard live disk quota.
+
+
+Packaged library replay, 2026-09-24
+---------------------------------
+
+All 61 checks now pass using the exact `ContextSuite.Private.dll` and
+`ContextSuite.Core.dll` shipped in unsigned 1.1.2. The disposable contract host
+retains source-linked application ownership code whose sources match the
+candidate build. The hash-checked resource helper is reused without compilation.
+Evidence is retained at
+`.codex-temp/candidate-112-office-safety-e3c31cf536a047b5bd8744ba6ff059be`,
+with case/profile results under
+`.codex-temp/office-isolation/fc3cc9cedefb4c38abe6dd0c800c36e9`.
+
+This remains a launcher component test: it invokes the shipped private launcher
+with the authored pressure helper, not an Office document. All eleven requests,
+following controls and profile/process/ACL cleanup pass under unchanged limits.
+The captured binaries, sources and candidate membership are unchanged afterward.
+The accompanying [output-denial replay](office-io-failures.md#exact-candidate-replay-2026-09-24)
+uses the exact release worker and native renderer. Neither result establishes
+affirmative network denial or a live disk quota.

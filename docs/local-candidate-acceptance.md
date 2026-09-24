@@ -25,7 +25,11 @@ The six date exports and thirteen font-choice cases now pass application and
 independent inspection against the exact candidate. Five Excel print cases also
 pass all eight page-text/geometry checks and profile cleanup. The exact worker's
 71-check PDF validation suite passes refusals, active interruption and following
-requests. Remaining Office safety evidence reconciliation, provider/source evidence,
+requests. The shipped private launcher now passes 61 resource checks; the exact
+worker passes 65 output-denial/recovery and 90 native interruption checks, with
+independent following-PDF comparisons and complete recorded profile/ACL cleanup.
+Seventeen release-packaging checks, reserved-version refusal and the source/notice
+binding also pass. Remaining startup/workbook and provider evidence reconciliation,
 consolidated review preparation and human acceptance remain open. The earlier
 [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB

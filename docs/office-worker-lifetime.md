@@ -296,3 +296,34 @@ runs. Production shutdown code and native engine bytes are unchanged. The later
 [managed guard tests](excel-calculated-date-guard.md#managed-validation-interruption-2026-09-23)
 cover active hash/worksheet-read cancellation; broader resource/security and exact
 final-candidate checks remain.
+
+
+Exact-candidate interruption replay, 2026-09-24
+---------------------------------------------
+
+The original unsigned 1.1.2 worker now passes all 90 checks across nine active
+PDF stop/recovery cells at
+`.codex-temp/office-worker/784605ee737b4fc0b44e5e21f055a57f`.
+Cancellation, worker loss and controlled deadline expiry each observe a growing
+native PDF, stop the retained native process before return and permit a following
+export. No native or managed rebuild was needed.
+
+The completed verification receipt is
+`.codex-temp/candidate-112-office-interruptions-70100b6c17d44a5e94989bc0755455d5/verification-02/results.json`.
+All nine following PDFs pass independent structure, authored text, page geometry
+and exact control-pixel comparisons. All eighteen profiles and registry mappings
+are absent; 5,809 owned runtime/context ACL entries contain none of the test SIDs.
+Captured candidate files, sources, original/snapshot inputs and membership remain
+unchanged. The contract host uses the shipped Core and Private DLLs.
+
+The initial independent inspection selected the generic inspector, which requires
+an updater setting absent from this reconstructed runtime. That failed receipt
+is retained at the parent evidence directory. The already-verified
+`PairedStopInspector02` checks the selected updater-free build configuration,
+runtime registration and all 25 profile controls, then applies the unchanged PDF
+oracle. Its binary/source identities match the earlier runtime04 receipt. Only
+inspection and cleanup verification were resumed; the 90-check export matrix
+was not rerun. No production setting or PDF tolerance was changed.
+
+Actual application startup recovery, unfinished-workbook interruption and
+affirmative network evidence retain their separately recorded scopes.

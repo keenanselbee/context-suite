@@ -63,6 +63,25 @@ ordinary fixture of each supported Office family. Engine sources and copied
 payloads are hash-checked before execution and after the run.
 
 
+Exact-candidate replay, 2026-09-24
+--------------------------------
+
+All 65 checks now pass against the original release worker in unsigned 1.1.2 at
+`.codex-temp/candidate-112-office-safety-e3c31cf536a047b5bd8744ba6ff059be`.
+Its I/O stage is `.codex-temp/office-io/fa4ad22def494ccc80380d0fea97d1dc`.
+The disposable contract host uses the exact shipped Core and Private DLLs for
+direct refusals; worker refusals and following exports execute the release
+worker. Six real write refusals and three following exports pass, with all nine
+profiles/mappings removed and runtime/context ACLs checked for their test SIDs.
+
+The retained independent inspector passes all three following PDFs against exact
+control text, geometry and pixels in
+`inspection-9c1898b328fb4733b6231d2e79daa6ae`. Its 25 compiled-profile checks also
+pass against the packaged runtime and recorded native build configuration.
+Sources, fixtures, validation tools, candidate files and package membership
+remain unchanged. No managed or native rebuild was needed for this replay.
+
+
 Coverage boundaries
 --------------------
 
@@ -77,5 +96,6 @@ This test neither fills a volume nor simulates a physical disk disappearing.
 It proves actual renderer output-creation refusal and following worker recovery;
 it does not prove every storage device/error mode, a live disk quota, publication
 on a full volume, or a full mid-write disk. The host's PDF/workbook size caps
-remain post-export validation bounds. Final A01/A06/A07 replay still needs the
-exact new packaged bytes.
+remain post-export validation bounds. The exact-candidate replay above closes
+this output-creation and following-export scope; other A01/A06/A07 acceptance and network
+enforcement retain their own evidence requirements.

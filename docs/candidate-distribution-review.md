@@ -43,10 +43,10 @@ The archives total **1,343,773,485 bytes**, including duplicated dependency
 content; this is not a unique-source measurement. The proposed delivery is a separate
 source companion alongside the eventual application download, with an exact
 version/checksum mapping. No hosting, upload or public source URL is configured.
-The archive total is not an application-size measurement. The later
-[archive rehearsal](expanded-release-composition.md) measured approximately
-612 MB unpacked / 241 MB compressed. The fresh version still needs its own
-measurement before owner footprint acceptance.
+The archive total is not an application-size measurement. The fresh
+[1.1.2 candidate](expanded-candidate-1.1.2.md) measures 611,834,443 application
+bytes, 613,033,493 complete extracted bytes and a 241,265,726-byte ZIP. Owner
+footprint acceptance remains open.
 
 The packet preserves every notice linked by the current expanded application
 index in the same relative directory layout. Full production verification binds
@@ -78,15 +78,30 @@ No archive, engine pin or verification condition was relaxed.
 Decisions and unfinished work
 -----------------------------
 
+The 2026-09-24 exact-candidate verification at
+`.codex-temp/candidate-112-release-acceptance-9eac27ed9acc4ac9aec9894e9500e131`
+passes all seventeen release-packaging checks. It also confirms that reusing
+reserved version 1.1.2 is refused before a build or new stage is created.
+The original archive, all 104 source-packet files, nine companion archives,
+64 packaged notice/index matches and existing version receipts remain unchanged.
+Every shipped application member matches the reserved production inventory;
+release packaging intentionally omits that staging inventory and debug symbols.
+
+Two earlier preparation attempts are retained: `5169c30b3ca647c48120ce3a019e4660`
+compared different path separators, and `2e54e42ce23a410f9a1e9e983dd57a4f`
+incorrectly expected the staging inventory inside the release. Both stopped
+before packaging tests. The corrected wrapper follows the existing receipt and
+packaging layout; no packet, archive or assertion was relaxed.
+
 | Item | Concrete next action | Owner |
 | --- | --- | --- |
 | Tool/runtime eligibility | Confirm the project's ownership/use and applicable Microsoft Community/runtime terms; the installed edition alone is not entitlement evidence | Owner |
-| LGPL modified-library use | [HEIF/audio local replacement route implemented and tested](local-library-replacement.md); instructions/generator now collected, fresh candidate inclusion and terms/distribution review remain | Engineering and owner |
+| LGPL modified-library use | [HEIF/audio local replacement route implemented and tested](local-library-replacement.md); instructions/generator collected, replacement support included in 1.1.2, terms/distribution review remains | Engineering and owner |
 | Source delivery and product terms | Approve actual source-download location, public-source terms and proprietary product terms; bind delivered archives to each released binary version | Owner, then packaging |
-| File-specific notices | PNG, DDS/palette, Office Python/components and PDF supplements consolidated and verified; complete exact-candidate release checks | Engineering/release review |
-| Customer notice access | [License entry and offline index implemented](bundled-notices.md); compose into the fresh candidate, review actual opening and finish source instructions | Engineering |
+| File-specific notices | PNG, DDS/palette, Office Python/components and PDF supplements consolidated and matched to 1.1.2; finish recipient-facing delivery decisions | Engineering/release review |
+| Customer notice access | [License entry and offline index implemented](bundled-notices.md) and included in 1.1.2; review actual opening | Owner review |
 | Adoption and intended markets | Resolve component/codec patent questions and explicitly select the release engines | Owner/release review |
-| Final composition | Build a fresh version, measure the actual footprint and replay A01-A08/performance against its exact bytes | Engineering |
+| Final composition | 1.1.2 built and measured; fixed performance passes, remaining A01-A08 reconciliation and consolidated human review stay open | Engineering |
 
 Source availability is distinct from archive integrity. For example, MPL 2.0
 section 3.2 requires covered source availability and instructions for recipients;

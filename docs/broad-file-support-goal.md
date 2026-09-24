@@ -56,7 +56,10 @@ The exact candidate now passes the declared performance workloads and recorded
 media/Analyze suites. Office print, date/font decisions, direct commands,
 recovery/capacity and PDF validation also pass; authored D09 typography remains
 failed at its unchanged tolerance. Remaining safety/source evidence and the
-consolidated review pack still need completion. The linked candidate record owns
+consolidated review pack still need completion. Packaged launcher/resource,
+output-denial and native PDF interruption checks now pass, as do release-package
+guards and exact source/notice binding. Actual startup/workbook and provider
+evidence reconciliation remains separate. The linked candidate record owns
 these current results; earlier scratch evidence below remains historical.
 
 The [local candidate acceptance contract](local-candidate-acceptance.md) now

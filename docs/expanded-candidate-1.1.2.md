@@ -284,6 +284,34 @@ candidate files, test inputs and membership remain unchanged. No Office export
 or profile is created by this validation-only replay. Native interruption,
 startup recovery and resource evidence retain their separately recorded scope.
 
+The packaged-library resource and exact-worker output-denial replay passes at
+`.codex-temp/candidate-112-office-safety-e3c31cf536a047b5bd8744ba6ff059be`.
+All 61 launcher pressure checks use the shipped Private/Core DLLs with the
+retained authored helper. The 65 I/O checks include six real write refusals,
+three following exports and removal of all nine profiles/mappings; 5,036
+runtime/context ACL entries contain none of their SIDs. Independent inspection
+passes the three following PDFs and 25 compiled-profile controls. No rebuild was
+needed, and all captured inputs and candidate membership remain unchanged.
+
+The [native interruption replay](office-worker-lifetime.md#exact-candidate-interruption-replay-2026-09-24)
+passes 90 checks against the release worker. Nine following PDFs pass exact
+independent comparisons; eighteen profiles/mappings are absent and 5,809 owned
+ACL entries are clear of test SIDs. Its final receipt is
+`.codex-temp/candidate-112-office-interruptions-70100b6c17d44a5e94989bc0755455d5/verification-02/results.json`.
+The first independent inspection used the wrong profile variant; its failure is
+retained. The existing updater-free inspector completed verification of the same
+outputs without another native export or a relaxed assertion.
+
+The [release/source verification](candidate-distribution-review.md#decisions-and-unfinished-work)
+passes seventeen packaging checks and a separate reserved-version refusal at
+`.codex-temp/candidate-112-release-acceptance-9eac27ed9acc4ac9aec9894e9500e131`.
+All 104 companion files, nine source archives, 64 packaged notice/index matches,
+reserved production inventory and prior version receipts remain unchanged.
+Missing/altered files, duplicate/unsafe inventory entries and attempted staging
+reuse are refused. This establishes those A08 packaging/source-binding results,
+not recipient delivery or owner adoption. Two preparation-only wrapper errors
+are retained separately; neither changed the candidate or source packet.
+
 Exact A01-A08 completion, consolidated media review, real documents
 and recordings, D09 typography, affirmative attended network evidence, UI/theme/
 DPI/screen-reader observations and separate installed lifecycle/commerce gates
