@@ -18,6 +18,10 @@ DirectXTex library (MIT), pinned to revision
 5ddca91f9ad07308957bd9d4dffe204914a98acb. Its complete license accompanies
 this file as DirectXTex.License.txt. Context Suite's bridge is separate
 authored code; it does not change ownership of the upstream library.
+The bridge also uses DirectXMath 3.19 headers supplied with the Windows SDK.
+DirectXMath carries the same Microsoft copyright and MIT license text retained
+in DirectXTex.License.txt. The selected SDK headers include supplier variants
+of two files compared with the public February 2024 source release.
 
 Lossless PNG optimization uses the separately pinned upstream oxipng 10.1.0
 Windows x64 executable. Its MIT license accompanies this file as

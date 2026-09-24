@@ -4,6 +4,13 @@ Release Redistribution Checklist
 Reviewed: 2026-09-07, with dated additions below. Engineering review, not a legal
 opinion or release approval.
 
+DDS/palette addition, 2026-09-23: [retained source and notice mapping](dds-palette-source-review.md)
+now binds their selected upstream sources, actual build records and unchanged
+binaries. It identifies the SDK DirectXMath variant and adds its explicit
+acknowledgment using the identical existing Microsoft MIT text. The palette
+source-hash discrepancy is exactly one final newline. No native rebuild was
+needed; Microsoft eligibility and commercial adoption remain open.
+
 PNG notice addition, 2026-09-23: the [dependency notice collection](png-dependency-notices.md)
 now retains the pinned source and 50 dependency crates, 92 notice files,
 file-specific copyright lines and the matching Rust standard-library notices.
