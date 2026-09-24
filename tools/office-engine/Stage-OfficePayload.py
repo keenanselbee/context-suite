@@ -20,6 +20,9 @@ PACKAGED_SOURCE_RECORD = "ContextSuite.OfficeSource.json"
 NOTICE_RECORD = TOOLS / "python-notice-review.json"
 NOTICE_FILE = ROOT / "assets/third-party/office/Office.Python.Notices.txt"
 PACKAGED_NOTICE = "Office.Python.Notices.txt"
+COMPONENT_NOTICE_RECORD = TOOLS / "component-notice-review.json"
+COMPONENT_NOTICE_FILE = ROOT / "assets/third-party/office/Office.Dependency.Notices.html"
+PACKAGED_COMPONENT_NOTICE = "Office.Dependency.Notices.html"
 
 
 def ordinary(path):
@@ -81,8 +84,20 @@ def supplemental_notice():
     return record["notice"]
 
 
+def component_notice():
+    ordinary(COMPONENT_NOTICE_RECORD)
+    record = json.loads(COMPONENT_NOTICE_RECORD.read_bytes())
+    selected = json.loads(SOURCE_RECORD.read_bytes())
+    if (record["formatVersion"] != 1 or record["inventorySha256"] != selection()["inventory"]["sha256"] or
+            record["officeSourceKitManifestSha256"] != selected["sourceKitManifestSha256"]):
+        raise ValueError("Supplemental component notices differ from the selected Office runtime/source kit.")
+    identity(COMPONENT_NOTICE_FILE, record["notice"])
+    return record["notice"]
+
+
 def verify_notices(payload):
     identity(local_path(payload) / PACKAGED_NOTICE, supplemental_notice())
+    identity(local_path(payload) / PACKAGED_COMPONENT_NOTICE, component_notice())
 
 
 def membership(engine, record):
@@ -156,13 +171,17 @@ def stage(payload, engine_directory):
     source_target = local_path(root / PACKAGED_SOURCE_RECORD)
     if os.path.lexists(source_target):
         raise ValueError("Office source record already exists; use a new stage.")
-    notice_target = local_path(root / PACKAGED_NOTICE)
-    if os.path.lexists(notice_target):
-        raise ValueError("Office supplemental notices already exist; use a new stage.")
-    notice_pin = supplemental_notice()
-    notice_bytes = NOTICE_FILE.read_bytes()
-    if hashlib.sha256(notice_bytes).hexdigest().upper() != notice_pin["sha256"]:
-        raise ValueError("Office supplemental notices changed while reading.")
+    notices = []
+    for name, source_file, notice_pin in (
+            (PACKAGED_NOTICE, NOTICE_FILE, supplemental_notice()),
+            (PACKAGED_COMPONENT_NOTICE, COMPONENT_NOTICE_FILE, component_notice())):
+        target = local_path(root / name)
+        if os.path.lexists(target):
+            raise ValueError("Office supplemental notices already exist; use a new stage.")
+        data = source_file.read_bytes()
+        if len(data) != notice_pin["bytes"] or hashlib.sha256(data).hexdigest().upper() != notice_pin["sha256"]:
+            raise ValueError("Office supplemental notices changed while reading.")
+        notices.append((target, data))
     source = local_path(engine_directory, scratch_only=True)
     if destination.is_relative_to(source) or source.is_relative_to(destination):
         raise ValueError("Office source and destination must not overlap.")
@@ -193,8 +212,9 @@ def stage(payload, engine_directory):
         output.write(source_record)
     identity(source_target, source_pin)
     verify_source_record(root)
-    with notice_target.open("xb") as output:
-        output.write(notice_bytes)
+    for target, data in notices:
+        with target.open("xb") as output:
+            output.write(data)
     verify_notices(root)
 
 

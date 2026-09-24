@@ -33,6 +33,7 @@ def main():
     input_paths = [Path(__file__).resolve(), TOOLS / "Stage-OfficePayload.py", TOOLS / "payload-candidate.json",
                    TOOLS / "source-runtime-candidate.json",
                    payload.NOTICE_RECORD, payload.NOTICE_FILE,
+                   payload.COMPONENT_NOTICE_RECORD, payload.COMPONENT_NOTICE_FILE,
                    payload.ROOT / "tools/release/Write-NoticeIndex.ps1",
                    payload.ROOT / "proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
                    payload.ROOT / "tools/Build-Production.ps1", payload.ROOT / "tools/curated-engine/Test-ProductionPayload.ps1"]
@@ -80,9 +81,9 @@ def main():
     for name, digest in base_inputs.items():
         if payload.digest(combined / name) != digest:
             raise AssertionError("Base payload copy differs.")
-    # A scratch integration assembly is not a new formal product version. Its
-    # inherited base receipt would be misleading after adding Office.
-    (combined / "payload-inventory.json").unlink()
+    # A scratch integration assembly is not a new formal product version. Remove
+    # any inherited formal receipt; freshly verified scratch bases have none.
+    (combined / "payload-inventory.json").unlink(missing_ok=True)
     payload.stage(combined, source)
     engine = combined / "office-engine"
     passed("Fresh Office copy and complete verification passed")
@@ -111,6 +112,29 @@ def main():
     bad_notice_path.write_text(json.dumps(bad_notice_record), encoding="utf-8")
     with patch.object(payload, "NOTICE_RECORD", bad_notice_path):
         refused("Notices bound to another engine refused", payload.supplemental_notice)
+    component_notice = combined / payload.PACKAGED_COMPONENT_NOTICE
+    original_component_notice = component_notice.read_bytes()
+    try:
+        component_notice.unlink()
+        refused("Missing component notices refused", lambda: payload.verify_notices(combined))
+        component_notice.write_bytes(b"x" * len(original_component_notice))
+        refused("Same length component notice corruption refused", lambda: payload.verify_notices(combined))
+    finally:
+        component_notice.write_bytes(original_component_notice)
+    occupied_component = scratch / "existing-component-notices"
+    occupied_component.mkdir()
+    (occupied_component / payload.PACKAGED_COMPONENT_NOTICE).write_bytes(original_component_notice)
+    refused("Existing component notices refused before engine copy", lambda: payload.stage(occupied_component, source))
+    if ((occupied_component / "office-engine").exists() or
+            (occupied_component / payload.PACKAGED_COMPONENT_NOTICE).read_bytes() != original_component_notice):
+        raise AssertionError("Refused stage altered existing component notices or created an engine.")
+    for field in ("inventorySha256", "officeSourceKitManifestSha256"):
+        changed_notice = json.loads(payload.COMPONENT_NOTICE_RECORD.read_bytes())
+        changed_notice[field] = "0" * 64
+        changed_path = scratch / ("wrong-component-" + field + ".json")
+        changed_path.write_text(json.dumps(changed_notice), encoding="utf-8")
+        with patch.object(payload, "COMPONENT_NOTICE_RECORD", changed_path):
+            refused("Component notices reject changed " + field, payload.component_notice)
     source_record = combined / payload.PACKAGED_SOURCE_RECORD
     original_record = source_record.read_bytes()
     try:

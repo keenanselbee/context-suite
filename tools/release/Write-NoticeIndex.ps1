@@ -33,7 +33,8 @@ foreach ($engine in @(
 }
 if (Test-Path -LiteralPath (Join-Path $root 'office-engine')) {
     $groups['Office documents'] = @('office-engine/runtime/LICENSE.html', 'office-engine/runtime/NOTICE',
-        'office-engine/runtime/CREDITS.fodt', 'office-engine/runtime/readmes/readme_en-US.txt', 'Office.Python.Notices.txt')
+        'office-engine/runtime/CREDITS.fodt', 'office-engine/runtime/readmes/readme_en-US.txt',
+        'Office.Python.Notices.txt', 'Office.Dependency.Notices.html')
 }
 $lines = [Collections.Generic.List[string]]::new()
 $lines.Add(@'

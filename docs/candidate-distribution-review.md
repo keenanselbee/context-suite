@@ -14,6 +14,12 @@ remote assets or private application source. The source kits keep their document
 build inputs; in particular, the HEIF kit retains its selected AOM static artifact.
 This is an engineering review collection, not a complete customer source offer.
 
+Later [PNG](png-dependency-notices.md), [DDS/palette](dds-palette-source-review.md),
+[Office Python](office-python-notices.md), [Office component](office-component-notices.md)
+and [PDF](pdf-dependency-notices.md) checkpoints retain additional source/notice
+evidence. The original packet above has not yet been recomposed with those
+supplements; its counts remain historical.
+
 
 Selected companion archives
 ----------------------------
@@ -62,7 +68,7 @@ Decisions and unfinished work
 | Tool/runtime eligibility | Confirm the project's ownership/use and applicable Microsoft Community/runtime terms; the installed edition alone is not entitlement evidence | Owner |
 | LGPL modified-library use | Select and implement a supported replacement or relinking route; the current fixed identity checks reject changed libraries | Engineering and owner |
 | Source delivery and product terms | Approve actual source-download location, public-source terms and proprietary product terms; bind delivered archives to each released binary version | Owner, then packaging |
-| File-specific notices | [PNG dependency source/notices](png-dependency-notices.md), [DDS/palette mapping](dds-palette-source-review.md), [Office Python notices](office-python-notices.md) and [PDF dependency review](pdf-dependency-notices.md) prepared; finish remaining Office component coverage and release checks | Engineering/release review |
+| File-specific notices | [PNG dependency source/notices](png-dependency-notices.md), [DDS/palette mapping](dds-palette-source-review.md), [Office Python notices](office-python-notices.md), [Office component coverage](office-component-notices.md) and [PDF dependency review](pdf-dependency-notices.md) prepared; consolidate the review packet and complete release checks | Engineering/release review |
 | Customer notice access | [License entry and offline index implemented](bundled-notices.md); compose into the fresh candidate, review actual opening and finish source instructions | Engineering |
 | Adoption and intended markets | Resolve component/codec patent questions and explicitly select the release engines | Owner/release review |
 | Final composition | Build a fresh version, measure the actual footprint and replay A01-A08/performance against its exact bytes | Engineering |

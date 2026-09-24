@@ -17,3 +17,6 @@ tools/office-engine/python-notice-review.json text eol=lf
 assets/third-party/pdf/Qpdf.Dependency.Notices.txt -text whitespace=-blank-at-eol,-blank-at-eof conflict-marker-size=32
 tools/pdf-engine/THIRD-PARTY-NOTICES.txt text eol=lf
 tools/pdf-engine/notice-source-review.json text eol=lf
+# Rendered upstream notice text retains original whitespace and separator lines.
+assets/third-party/office/Office.Dependency.Notices.html -text whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab conflict-marker-size=32
+tools/office-engine/component-notice-review.json text eol=lf

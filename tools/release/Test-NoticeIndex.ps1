@@ -43,12 +43,13 @@ foreach ($selection in @(
 }
 foreach ($file in 'LICENSE.html', 'NOTICE', 'CREDITS.fodt', 'readmes/readme_en-US.txt') { Add-Notice ('office-engine/runtime/' + $file) }
 Add-Notice 'Office.Python.Notices.txt'
+Add-Notice 'Office.Dependency.Notices.html'
 Expect-Refusal { & $generator -Payload $payload -Verify } 'Stale base index rejects newly added components'
 & $generator -Payload $payload
 & $generator -Payload $payload -Verify
 $expanded = [IO.File]::ReadAllText($index)
 $links = [regex]::Matches($expanded, '<a href="([^"]+)">')
-Check ($links.Count -eq 62) 'Expanded build exposes all 62 selected notices and change records'
+Check ($links.Count -eq 63) 'Expanded build exposes all 63 selected notices and change records'
 foreach ($link in $links) {
     $relative = [Uri]::UnescapeDataString($link.Groups[1].Value)
     Check (-not [IO.Path]::IsPathRooted($relative) -and $relative -notmatch '[:\\?#]|(^|/)\.\.(/|$)' -and
