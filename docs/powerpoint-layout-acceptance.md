@@ -1,8 +1,10 @@
 PowerPoint Layout Acceptance
 ============================
 
-Status: application publication/cleanup passes; image and diagram/table checks
-pass, but typography exceeds the predeclared font-size rounding tolerance.
+Status: application publication/cleanup and independent D09 inspection pass.
+On 2026-09-24 the owner approved a fixture-only 0.015-point font-size allowance;
+reinspection of the unchanged candidate PDF passes all three negative-control
+groups. Historical failures under the original 0.01-point limit remain below.
 This covers the image, diagram/table and mixed-typography group in the
 [local acceptance contract](local-candidate-acceptance.md). It complements
 existing slide-order/visibility/notes checks. It is not real-document or human
@@ -36,7 +38,8 @@ pages, no extra labels and the authored three-page geometry under the existing
 non-whitespace character's ink bounds, size, font name/flags, embedding status and
 embedded-program hash. Ink must remain inside its authored box within one point;
 its left edge must start within four points of the declared text origin. Font
-sizes allow 0.01-point numerical variation. Expected families/bold/italic names
+sizes originally allowed 0.01-point numerical variation; the owner-approved
+allowance is now 0.015 points for this D09 fixture only. Expected families/bold/italic names
 must match, fonts must be embedded and the typography slide must contain four
 distinct font programs. Font names alone are not complete font-program fidelity;
 the recorded programs and rendered pages remain available for human review.
@@ -46,9 +49,10 @@ declared rectangles, with at most two pixels of edge variation and at least 97%
 matching area. Color channels allow eight code values of rendering variation.
 Fixed interior regions check the two diagram fills, black connector and table
 fill. Glyph checks preserve the association between table labels and values.
-The verifier must reject extra text, moved glyphs, wrong font names, changed
+The verifier must reject extra text, moved glyphs, wrong font names, out-of-limit
 font sizes and removed image/diagram pixels. Expected bounds and limits are not
-derived from the first output or loosened after a failed export.
+derived from the first output; the later explicit tolerance decision is recorded
+separately from the original failed exports.
 
 
 Execution and inspection
@@ -199,3 +203,23 @@ allowance remains an owner decision; the existing 0.01-point assertion and
 failed aggregate are unchanged. A precision repair would require investigating
 the renderer's storage/export path and regression impact, not merely rebuilding
 the same native inputs.
+
+
+Approved candidate reinspection, 2026-09-24
+-----------------------------------------
+
+The owner explicitly approved the proposed 0.015-point font-size allowance for
+this PowerPoint fixture. Only `PowerPointLayoutOracle.FontMatches` changes; all
+text, page geometry, glyph placement, font family/style/embedding, raster and
+negative-control rules remain. This is not a general Office tolerance change.
+
+Receipt
+`.codex-temp/candidate-112-powerpoint-approved-258c5e2bf0ea41e4ba69a17798addb14/results.json`
+records independent reinspection of the original 1.1.2 PDF, using the pinned
+qpdf/PDFium tools and a fresh managed inspector. Its build has zero warnings and
+errors. All three pages and all three negative-control groups pass. Glyph/text
+observations, source/PDF identities and candidate inventory are unchanged.
+The new inspection is `powerpoint-layout-inspection-43dcb0245e4c43adad66032ab65f476d`;
+the prior failed inspection remains intact. No Office export or native rebuild
+was needed. The [current worksheet](document-review.md) includes this result;
+human review and real-deck acceptance remain separate.

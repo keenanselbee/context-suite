@@ -18,8 +18,9 @@ replays pass their recorded scopes, including audio metadata/artwork and recover
 Generic/optional Analyze and the fixed audio/PDF/HEIF performance workloads also
 pass against the preserved candidate and matching host. All fifteen Office
 performance operations and their profile cleanups pass. Six authored Office
-fidelity suites pass independent final-candidate inspection; D09 still fails its
-unchanged font-size tolerance. Mixed Office commands, publication recovery and
+fidelity suites pass independent final-candidate inspection; D09 now also passes
+reinspection with its owner-approved fixture-only 0.015-point font-size allowance.
+The original failed receipt remains retained. Mixed Office commands, publication recovery and
 48-sheet capacity also pass final-candidate replay and independent PDF checks.
 The six date exports and thirteen font-choice cases now pass application and
 independent inspection against the exact candidate. Five Excel print cases also
@@ -38,7 +39,9 @@ are unperformed. H04 launch instructions now target the matching 1.1.2 stage;
 all eight headless selections pass. Eleven provider entry guards now pass 44
 checks; the shipped HEIF bridge passes 3,820 checks and the Voice components pass
 472 checks. The [owner handoff](candidate-owner-handoff.md) records remaining
-D09, network, real-input and human acceptance work. The earlier
+network, real-input and human acceptance work. Seven real input/reference copies
+are now selected with unchanged-original evidence; their conversions and oracles
+remain unfinished. The earlier
 [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
 unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance
@@ -144,17 +147,18 @@ expected text/page order and independent geometry before scoring export.
 | D06 | Existing calculation/date controls under both modes | [Final-candidate date replay](expanded-candidate-1.1.2.md) passes admitted results and known-error refusals in six cases; no external refresh; human acceptance remains |
 | D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Four authored chart/layout cases](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23) and [all 48 capacity pages](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23) also pass [final-candidate application/independent inspection](expanded-candidate-1.1.2.md); human acceptance remains |
 | D08 | Ordinary, hidden/reordered and empty-visible-slide PowerPoint controls | [Final-candidate replay](expanded-candidate-1.1.2.md) passes visible order and note/hidden exclusion; its matching core host also passes empty/all-hidden refusal before context creation, prompts, access admission and worker startup; human acceptance remains |
-| D09 | PowerPoint image, diagram/table and mixed typography | [Authored layout evidence](powerpoint-layout-acceptance.md) passes image/table placement and text; aggregate acceptance still fails the declared font-size tolerance |
+| D09 | PowerPoint image, diagram/table and mixed typography | [Approved candidate reinspection](powerpoint-layout-acceptance.md#approved-candidate-reinspection-2026-09-24) passes all three pages and negative-control groups under the owner-approved 0.015-point fixture tolerance; earlier failure retained; human review remains |
 | D10 | One approved real DOCX report | Owner/source reference for text, formatting and pagination |
 | D11 | One approved real XLSX workbook | Owner/source reference for areas, displayed values and layout under chosen calculation modes |
 | D12 | One approved real PPTX deck | Owner/source reference for visible content, fonts and layout |
 
 Small character-position differences may preserve content, formatting and
 pagination under the owner's decision. The existing 0.071-point move-fixture
-allowance is not a blanket tolerance. Missing text, wrong dates, substituted
+allowance is not a blanket tolerance. The separately approved D09 0.015-point
+font-size allowance applies only to its fixed fixture. Missing text, wrong dates, substituted
 fonts, clipping or changed pagination fail. A per-document Save choice accepts
 that explicitly reported font substitution; an empty callback is not proof of
-complete style/glyph fidelity. D04/D07 have authored automated evidence; D09 and
+complete style/glyph fidelity. D04/D07/D09 have authored automated evidence;
 real documents still need complete automated evidence. Human and final-candidate
 review remain required; simpler controls do not establish their acceptance.
 
@@ -185,9 +189,10 @@ owner acceptance. Do not reuse old review results for changed media outputs.
   transparent-image controls. Review actual pages alongside automated checks.
   The [current document worksheet](document-review.md#current-candidate-collection-2026-09-24)
   contains 58 candidate Office cases across D01-D09 plus four candidate PDF
-  appearance controls. It preserves the D09 failure and two withheld date PDFs;
-  the repaired chart cases now pass. The scan is synthetic. Real documents,
-  the D09 decision and actual human review remain open.
+  appearance controls. Its updated D09 result passes the owner-approved allowance;
+  the earlier failed receipt and two withheld date PDFs remain retained.
+  The repaired chart cases pass. The scan is synthetic. Selected real-document
+  copies still need conversion/reference comparison; human review remains open.
 - **H04 workflows:** eight scenarios: mixed Analyze with unreadable input; quiet
   image conversion; matte choice; audio quality choice; image-PDF order; Office
   calculation/font choices; cancellation/failure/retry; Settings/License changes

@@ -2,13 +2,25 @@ Expanded Candidate 1.1.2
 ========================
 
 Status: unsigned candidate built and archive verified on 2026-09-23; recorded
-exact-package suites and performance workloads pass except D09 typography.
+exact-package suites and performance workloads pass in their recorded scopes.
+D09 now passes independent reinspection under the owner's fixture-only
+0.015-point allowance; its original failed evidence remains intact.
 Network evidence, real-input preparation and final acceptance remain open.
 This is an internal owner
 review candidate, not release clearance, installation or publication.
 
 The [owner handoff](candidate-owner-handoff.md) collects the current review entry,
 remaining decisions and evidence boundaries. It does not declare goal completion.
+
+The latest review entry is
+`.codex-temp/candidate-112-owner-update-eaf7a669df964f618ec8c591cd87bd5b/review.html`.
+It links the revised 62-case document worksheet (60 scoped automated passes and
+two required date refusals), retained audio/image/workflow pages and seven
+hash-verified real input/reference copies. Their originals remain unchanged.
+Real-input conversion, reference comparison and human review remain unfinished.
+The [D09 receipt](powerpoint-layout-acceptance.md#approved-candidate-reinspection-2026-09-24)
+records the approved reinspection without changing the candidate or old receipts.
+Earlier review collection counts below describe the retained earlier worksheet.
 
 
 Candidate identity

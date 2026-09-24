@@ -33,8 +33,9 @@ Optional engines still require explicit package selection. Full exact-candidate
 acceptance and commercial adoption remain open; a menu label alone does not
 establish executable capabilities. The candidate record now includes passing
 fixed performance workloads, authored Excel print/date/font-choice replay and
-71 exact-worker Office PDF validation checks. D09 typography, remaining safety
-evidence and human/real-document acceptance remain open.
+71 exact-worker Office PDF validation checks. D09 now passes independent
+reinspection under the owner's fixture-only 0.015-point font-size allowance.
+Network evidence and human/real-document acceptance remain open.
 
 The later [paired source-built Office selection](office-runtime-verification.md#source-built-application-selection-2026-09-23)
 passes isolated application and independent PDF checks for Word layout/styles

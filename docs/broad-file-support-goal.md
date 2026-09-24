@@ -37,9 +37,9 @@ The review-ready deliverables are:
   owner decision, human/environment check and separate commercial release gate.
 
 Batch owner input where possible and continue independent work while waiting.
-Attended administrator network evidence, the PowerPoint rounding decision,
-approved real documents/recordings and footprint/adoption acceptance remain
-explicit dependencies. Prepare their evidence and instructions before requesting
+Attended administrator network evidence and footprint/adoption acceptance remain
+explicit dependencies. The owner approved the D09 rounding allowance and local
+discovery/copying of real inputs on 2026-09-24. Prepare evidence and instructions before requesting
 the action. Do not invent approval or treat unavailable evidence as a pass.
 Signing stays deferred; installation, Explorer registration, elevation, live
 commerce and publication retain their separate authorization requirements.
@@ -54,8 +54,10 @@ first exact-worker foundation/audio/PDF replay. Remaining acceptance and
 commercial release readiness are not inferred from package integrity.
 The exact candidate now passes the declared performance workloads and recorded
 media/Analyze suites. Office print, date/font decisions, direct commands,
-recovery/capacity and PDF validation also pass; authored D09 typography remains
-failed at its unchanged tolerance. Affirmative network evidence, real-input
+recovery/capacity and PDF validation also pass; authored D09 typography now passes
+the owner-approved fixture-only 0.015-point allowance on the unchanged PDF.
+All three negative-control groups pass; historical failed evidence remains.
+Affirmative network evidence, real-input
 preparation and owner decisions remain open. Packaged launcher/resource,
 output-denial and native PDF interruption checks now pass, as do release-package
 guards and exact source/notice binding. Exact-candidate startup and unfinished
@@ -63,7 +65,10 @@ workbook recovery now pass, as does the shipped-library managed guard; all
 twelve profiles/mappings and owned permissions are cleaned up. Fresh audio,
 image and PDF review samples are generated with the exact worker, without human
 acceptance. Their consolidated collection now includes 62 current document/PDF
-cases, preserving the D09 failure and two required date refusals. Current H04
+cases; the revised worksheet has 60 scoped passes and two required date refusals,
+with the earlier D09 failure retained separately. Seven real input/reference
+copies now preserve their originals' bytes and last-write times. Their conversion
+and independent comparisons remain. Current H04
 instructions now use the byte-matched 1.1.2 stage; all eight headless selections
 pass. Eleven provider entry guards, the native HEIF bridge and Windows Voice
 component replay now pass their recorded scopes. The
@@ -92,14 +97,15 @@ The next completion steps are:
    [launcher resource replay](office-resource-enforcement.md) passes memory/process
    limits, diagnostics and cleanup. [Output I/O refusal and recovery](office-io-failures.md)
    now pass across all three families, with exact following-output comparisons.
-   The recorded final-candidate safety and fidelity replays now pass except D09.
-   D09 rounding and affirmative network enforcement still need their evidence
-   or decisions. Network collection needs
+   The recorded final-candidate safety and fidelity replays pass in their stated
+   scopes, including approved D09 reinspection. Affirmative network enforcement
+   still needs its evidence. Network collection needs
    the pending attended administrator step. Reuse the completed native build
    unless a native input actually changes.
-2. Prepare H01-H04 for consolidated review. Request the real DOCX/XLSX/PPTX and
-   three real recordings when their automated comparisons can proceed; record
-   missing inputs explicitly. Human results remain owner acceptance after this
+2. Prepare H01-H04 for consolidated review. The selected real DOCX/XLSX/PPTX and
+   three recording copies now need fixed expectations, exact-candidate conversion
+   and independent comparisons. Record missing reference evidence explicitly.
+   Human results remain owner acceptance after this
    engineering goal; no result is inferred from prepared or simulated workflows.
 3. Finish engine adoption/source-delivery and footprint decisions. The
    [source/notice review packet](candidate-distribution-review.md) binds the initial

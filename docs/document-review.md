@@ -2,7 +2,9 @@ Document Review Worksheet
 =========================
 
 Status: 58 Office cases and four PDF appearance controls from candidate 1.1.2
-are prepared for H03 review. Human acceptance is unperformed; D09 remains failed.
+are prepared for H03 review. Human acceptance is unperformed; D09 now passes
+its owner-approved fixture-only 0.015-point font-size allowance. Real document
+copies are selected, with conversion and independent comparison still pending.
 The older historical pack is retained separately. These materials support the
 [local acceptance contract](local-candidate-acceptance.md); it does not replace
 the required real documents or unresolved fidelity work.
@@ -10,6 +12,28 @@ the required real documents or unresolved fidelity work.
 
 Current candidate collection, 2026-09-24
 ---------------------------------------
+
+Open
+`.codex-temp/candidate-112-owner-update-eaf7a669df964f618ec8c591cd87bd5b/review.html`.
+It links the retained 25 generated audio comparisons, sixteen HEIC/AVIF outputs,
+eight workflow instructions and the updated 62-case document/PDF worksheet at
+`.codex-temp/document-review/40132ce6392d45ebb4043e83197b1ec8/review.html`.
+The revised document statuses are **60 scoped automated passes and two required
+date refusals**. D09 uses the new independent inspection on its unchanged
+original/PDF; the older failed report and collection remain untouched.
+
+The revised manifest checks all copied document artifacts and 257 local links.
+The worksheet retains human acceptance as unperformed. Browser appearance,
+notes-download interaction and accessibility remain unverified. The overview
+also links seven privately retained real-input/reference copies: three Office
+documents, three audio candidates and an adjacent workbook PDF. Their hashes and
+original last-write times are unchanged. Their conversion, reference matching,
+content classification and human observations remain unfinished. No selected
+user/course/media file is staged or included in distribution.
+
+
+Earlier candidate collection
+----------------------------
 
 Open
 `.codex-temp/candidate-112-owner-review-05a7185bd7be4aaab425ef39fdd92cc1/review.html`.
@@ -23,7 +47,8 @@ entries retain **59 scoped automated passes, one PowerPoint typography failure
 and two required early-date refusals**. Four repaired chart cases and five print
 cases now use passing candidate application/independent inspection. Historical
 rendering controls remain explicitly labeled references, not Microsoft Office
-exports. The D09 limit remains 0.01 points; no owner approval is inferred.
+exports. That earlier worksheet records the original 0.01-point D09 limit; the
+later explicit approval and revised worksheet above supersede its current status.
 
 `document-inputs.json` binds the selected artifacts, current independent reports,
 candidate hashes and original selection. `manifest.json` identifies every copied
