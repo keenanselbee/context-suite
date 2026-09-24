@@ -13,12 +13,22 @@ headless admission checks do not certify visual usability.
 Prepared local cases
 --------------------
 
-The 2026-09-19 preparation is retained under
-`.codex-temp/manual-workflows/a8da8f5f670043debd81ec1eedfb51c1`.
-Its `verified.json` binds eight command manifests to authored document/image
-fixtures and the generated expanded-audio listening pack. All eight manifests
-pass headless copy/request verification. No app window or worker ran for this
-preparation. The source fixtures remain unchanged.
+The current 1.1.2 preparation is
+`.codex-temp/candidate-112-workflows-aa99d8233a5d4fb296792fffbd93b40d`.
+Its `cases` directory contains eight manifests and copied generated fixtures.
+All 3,972 released application files match the original production stage below;
+the full staged allowlist and inventory also pass verification. The retained
+source-linked WPF host uses the shipped Core DLL and passes ten simulated-license
+checks, fifteen selection checks and all eight headless copy/request preflights.
+No app window or media worker ran; there was no live provider contact. Bound
+source, host, candidate and stage identities remain unchanged.
+
+The [consolidated review collection](document-review.md#current-candidate-collection-2026-09-24)
+now opens at `review.html` and includes a local `workflows.html` with these
+commands and observations. Its workflow supplement preserves the original media
+manifest and verification receipts. The 2026-09-19 fixture selection remains at
+`.codex-temp/manual-workflows/a8da8f5f670043debd81ec1eedfb51c1`; current manifests
+reference fresh copies of those hash-checked generated inputs.
 
 | Manifest | Review after activation where required |
 | --- | --- |
@@ -46,16 +56,19 @@ commands during the session because the router is shared per Windows user.
 From the repository in PowerShell:
 
 ```powershell
-$worker = Join-Path (Get-Location) '.codex-temp\combined-inputs\e549e5e3509942b4b8ec8e0d6545f93a\combined\ContextSuite.Worker.exe'
-$cases = Join-Path (Get-Location) '.codex-temp\manual-workflows\a8da8f5f670043debd81ec1eedfb51c1'
-.\tools\Test-LicenseWorkflow.ps1 -Launch -AllowScratchWorker -WorkerPath $worker -RequestManifest (Join-Path $cases '02-quiet-image.json')
+Set-Location 'C:\Repositories\Context Suite'
+$worker = Join-Path (Get-Location) 'artifacts\production-staging\5d97eab3d78e4e6199717450ad835264\ContextSuite.Worker.exe'
+$cases = Join-Path (Get-Location) '.codex-temp\candidate-112-workflows-aa99d8233a5d4fb296792fffbd93b40d\cases'
+.\tools\Test-LicenseWorkflow.ps1 -Launch -WorkerPath $worker -RequestManifest (Join-Path $cases '02-quiet-image.json')
 ```
 
 Change only the manifest filename for another case. Omit `-Launch` for headless
 preflight. The script verifies the complete payload allowlist, engine identities
 and inventory before building the host and running its checks. This can take a
 few minutes for the Office runtime. It does not reserve or change a release
-version. The existing formal 1.1.1 payload remains preserved.
+version. Both reserved 1.1.1 and 1.1.2 payloads remain preserved. The inventoried
+production stage is used because the release archive intentionally omits the
+staging inventory; all released application bytes have been compared with it.
 
 Every launch creates a fresh isolated profile with default copy settings and an
 expired trial. Use only `TEST-ONLY` in License. An activation failure/result may
@@ -73,7 +86,7 @@ launching another case. Quiet success may close it automatically.
 For standalone Settings:
 
 ```powershell
-.\tools\Test-LicenseWorkflow.ps1 -Launch -Settings -AllowScratchWorker -WorkerPath $worker
+.\tools\Test-LicenseWorkflow.ps1 -Launch -Settings -WorkerPath $worker
 ```
 
 Check tool tabs, expansion/collapse resizing, copy/overwrite wording, Save/Cancel,
@@ -93,8 +106,9 @@ original preservation, prompt clarity, keyboard focus, Tab/Shift+Tab, Escape,
 window resizing and status text. Record screenshots or reproduction steps for
 failures. Do not report a predicted prompt as one that was observed.
 
-The Computer Use connection still fails with native-pipe error 2. No helper was
-started and no configuration was changed. Actual visible H04 review is pending.
+The last recorded Computer Use attempt failed with native-pipe error 2. This
+headless preparation did not retry desktop control, start a helper or change
+configuration. Actual visible H04 review is pending.
 Screen-reader announcements, other themes, 100%/150%/200% scaling and two-monitor
 movement remain unverified unless explicitly exercised. Installed Explorer,
 native installer lifecycle and live licensing have separate acceptance gates.

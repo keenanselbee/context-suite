@@ -12,7 +12,7 @@ Current candidate collection, 2026-09-24
 ---------------------------------------
 
 Open
-`.codex-temp/candidate-112-owner-review-05a7185bd7be4aaab425ef39fdd92cc1/index.html`.
+`.codex-temp/candidate-112-owner-review-05a7185bd7be4aaab425ef39fdd92cc1/review.html`.
 This entry point collects 25 audio comparisons, sixteen HEIC/AVIF outputs and
 62 document/PDF cases. Its unchanged artifact copies total 362,905,660 bytes.
 The document worksheet is `packs/documents/review.html` beneath that directory.
@@ -37,8 +37,13 @@ The retained preparation wrapper reuses the document preparer's artifact and
 worksheet handling, then changes the new page's historical-worker notice to
 identify 1.1.2. It retains overall acceptance as false and all case failures.
 No prior pack or evidence report is changed. Browser appearance, interaction,
-notes download and accessibility remain unverified. Three real recordings,
-D10-D12 documents and the refreshed H04 workflow instructions remain outstanding.
+notes download and accessibility remain unverified. Three real recordings and
+D10-D12 documents remain outstanding. The separate workflow supplement now
+provides [current H04 launch instructions](manual-workflow-review.md), after
+all eight headless selections pass and every released application file matches
+the inventoried stage. Its new overview and workflow pages leave the original
+media index, manifest and verification receipts unchanged. Visible acceptance
+remains unperformed.
 
 
 Historical prepared material

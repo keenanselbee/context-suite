@@ -34,8 +34,9 @@ WPF lifecycle checks; unfinished-workbook shutdown passes 42 checks, and the
 shipped-library managed guard passes 105. All twelve profiles/mappings are
 removed and owned ACLs are clear. Fresh candidate audio/image/PDF review media
 is prepared and collected with 62 current document/PDF cases; human observations
-are unperformed. Provider evidence reconciliation, refreshed H04 instructions,
-real inputs and human acceptance remain open. The earlier
+are unperformed. H04 launch instructions now target the matching 1.1.2 stage;
+all eight headless selections pass. Provider evidence reconciliation, real inputs
+and human acceptance remain open. The earlier
 [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
 unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance

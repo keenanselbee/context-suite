@@ -329,13 +329,46 @@ image outputs and four PDF appearance cases. Automated preparation passes and
 all bound inputs and membership remain unchanged. Audio and image worksheets
 are generated without playback or a human pass. The
 [current collection](document-review.md#current-candidate-collection-2026-09-24)
-is `.codex-temp/candidate-112-owner-review-05a7185bd7be4aaab425ef39fdd92cc1/index.html`.
+is `.codex-temp/candidate-112-owner-review-05a7185bd7be4aaab425ef39fdd92cc1/review.html`.
 It combines those media worksheets and 62 current document/PDF cases: 59 scoped
 automated passes, one D09 failure and two required date refusals. All 400 local
 worksheet links and copied media identities pass verification; the document
 worksheet passes ten existing identity/markup/refusal checks. Human observations
-remain unset. Real recordings/documents and refreshed H04 instructions remain
-unfinished; the historical draft is retained separately.
+remain unset. Real recordings/documents remain unfinished; the historical draft
+is retained separately. The [H04 setup](manual-workflow-review.md) now passes
+headless preparation at
+`.codex-temp/candidate-112-workflows-aa99d8233a5d4fb296792fffbd93b40d`:
+all 3,972 released application files match the inventoried stage, ten simulated
+license and fifteen selection checks pass, and all eight copied command
+selections pass preflight. The consolidated page includes concrete launch
+instructions. No application window or media worker was launched, and no human
+workflow result is inferred.
+
+The six standalone HEIF loader scenarios now pass 25 checks at
+`.codex-temp/candidate-112-heif-loader-0f1250ac90f94699965893952f547755`.
+The retained test body and host are hash-checked; disposable hosts use the exact
+shipped Core/Private DLLs and native HEIF libraries. Valid decode, preloaded foreign
+library, junction, hardlink, extra-file and missing-library cases preserve their
+existing assertions. These are component loader checks, separate from the earlier
+actual-worker replay. All candidate and bound inputs remain unchanged; no build
+was needed.
+
+Missing/altered-provider packaging checks pass at
+`.codex-temp/candidate-112-provider-guards-bcffa68c35484d6f86b0e940d385adf2/verification-02/results.json`.
+One disposable copy of the exact released application payload covers eleven
+entry providers: curated images, DDS, PNG, palette, audio, Voice, qpdf, PDF
+renderer, PDF validator, Office and HEIF. Existing production verifiers reject
+each absent or byte-altered entry and accept its valid/restored controls: 22
+refusals and 22 positive checks. No altered binary executes, and the scratch
+payload is restored exactly. Candidate membership, all captured files and verifier
+sources remain unchanged. Runtime admission/loader evidence is separately scoped.
+
+The first wrapper expected a generic Office membership error for its absent
+host, but the verifier checks that host first and raises `FileNotFoundError` for
+its exact path. The failed wrapper receipt and log remain retained. The follow-up
+verifies that refusal and completes only Office altered/restored and HEIF cases;
+it does not change the verifier, repeat finished cases or treat an unrelated
+exception as acceptance.
 
 Exact A01-A08 reconciliation, consolidated media review, real documents
 and recordings, D09 typography, affirmative attended network evidence, UI/theme/

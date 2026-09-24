@@ -63,9 +63,10 @@ workbook recovery now pass, as does the shipped-library managed guard; all
 twelve profiles/mappings and owned permissions are cleaned up. Fresh audio,
 image and PDF review samples are generated with the exact worker, without human
 acceptance. Their consolidated collection now includes 62 current document/PDF
-cases, preserving the D09 failure and two required date refusals. Provider
-evidence reconciliation, refreshed H04 instructions and owner real inputs remain
-unfinished. The linked candidate record owns
+cases, preserving the D09 failure and two required date refusals. Current H04
+instructions now use the byte-matched 1.1.2 stage; all eight headless selections
+pass. Provider evidence reconciliation and owner real inputs remain unfinished.
+The linked candidate record owns
 these current results; earlier scratch evidence below remains historical.
 
 The [local candidate acceptance contract](local-candidate-acceptance.md) now
