@@ -55,9 +55,11 @@ original application directory is simpler.
 This implementation is newer than reserved candidate 1.1.1 and must be included
 in the next candidate. Retained source-kit `BUILD.md` files predate this route;
 their statement that rebuilt identities are not accepted automatically remains
-true. This explicit opt-in supplies the application path. Source delivery still
-needs to collect these current instructions and the generator alongside the exact
-source/runtime mapping. Retained source archives were not altered.
+true. This explicit opt-in supplies the application path. The
+[consolidated review packet](candidate-distribution-review.md) now includes the
+helper, standalone instructions and source/runtime records. Fresh candidate
+binding and actual recipient delivery remain open. Retained source archives
+were not altered.
 
 
 Manifest and lifetime rules

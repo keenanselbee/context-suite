@@ -1,6 +1,22 @@
 Context Suite Changelog
 =======================
 
+1.1.2 - Unsigned expanded candidate preparation, 2026-09-23
+----------------------------------------------------------
+
+- Prepare one candidate with HEIC/AVIF to JPEG/PNG, AIFF/WMA to the existing
+  six audio targets, and the separate Windows Voice provider.
+- Include the reconstructed Office renderer, ordinary internal chart support,
+  corrected shape resources, and tested recovery/resource/output protections.
+  Retain refusals for unsupported charts, unsafe dates and external behavior.
+- Add source-bound dependency notices and the offline notice index. Permit
+  explicit compatible local HEIF/audio library replacements while preserving
+  default native identities, media validation and copy publication.
+- Isolate managed staging and reuse verified native engines. Preserve reserved
+  1.1.1; exact-candidate suites, performance, human acceptance, network evidence
+  and distribution/commerce decisions remain open. Signing stays deferred.
+
+
 1.1.1 - Local combined candidate, 2026-09-16
 -----------------------------------------
 
