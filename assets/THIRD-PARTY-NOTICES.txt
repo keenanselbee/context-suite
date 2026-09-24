@@ -21,8 +21,11 @@ authored code; it does not change ownership of the upstream library.
 
 Lossless PNG optimization uses the separately pinned upstream oxipng 10.1.0
 Windows x64 executable. Its MIT license accompanies this file as
-Oxipng.License.txt; keep that file with the executable. The product's private
-validation and process adapter are separate authored code.
+Oxipng.License.txt. Its pinned dependency licenses and source-file copyright
+lines accompany this file as Oxipng.ThirdPartyNotices.txt; the matching Rust
+standard-library notices are in Oxipng.Rust.Library.Notices.html. Keep all three
+notice files with the executable. The product's private validation and process
+adapter are separate authored code.
 
 The PNG palette helper uses ExoQuant 0.2.0, revision
 6ef61711b07e58c107decbd4721d9d50e646dac8 (MIT). Its license accompanies

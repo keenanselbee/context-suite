@@ -23,12 +23,13 @@ function Add-Notice([string] $Relative) {
     [IO.File]::WriteAllText($path, 'Disposable notice fixture: ' + $Relative)
 }
 foreach ($name in 'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt',
-    'Magick.NET.Notice.txt', 'DirectXTex.License.txt', 'Oxipng.License.txt', 'ExoQuant.License.txt', 'Rust.Library.Notices.html') { Add-Notice $name }
+    'Magick.NET.Notice.txt', 'DirectXTex.License.txt', 'Oxipng.License.txt', 'Oxipng.ThirdPartyNotices.txt',
+    'Oxipng.Rust.Library.Notices.html', 'ExoQuant.License.txt', 'Rust.Library.Notices.html') { Add-Notice $name }
 & $generator -Payload $payload
 & $generator -Payload $payload -Verify
 $index = Join-Path $payload 'ThirdPartyNotices.html'
 $base = [IO.File]::ReadAllText($index)
-Check (([regex]::Matches($base, '<li><a href=')).Count -eq 8 -and -not $base.Contains('<h2>Audio</h2>')) 'Base build links only its eight bundled notices'
+Check (([regex]::Matches($base, '<li><a href=')).Count -eq 10 -and -not $base.Contains('<h2>Audio</h2>')) 'Base build links only its ten bundled notices'
 foreach ($selection in @(
     @('audio-engine/payload-candidate.json', 'audio-engine/'),
     @('audio-engine/voice-provider-candidate.json', 'audio-engine/'),
@@ -46,7 +47,7 @@ Expect-Refusal { & $generator -Payload $payload -Verify } 'Stale base index reje
 & $generator -Payload $payload -Verify
 $expanded = [IO.File]::ReadAllText($index)
 $links = [regex]::Matches($expanded, '<a href="([^"]+)">')
-Check ($links.Count -eq 56) 'Expanded build exposes all 56 selected notices and change records'
+Check ($links.Count -eq 58) 'Expanded build exposes all 58 selected notices and change records'
 foreach ($link in $links) {
     $relative = [Uri]::UnescapeDataString($link.Groups[1].Value)
     Check (-not [IO.Path]::IsPathRooted($relative) -and $relative -notmatch '[:\\?#]|(^|/)\.\.(/|$)' -and

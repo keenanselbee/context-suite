@@ -7,3 +7,6 @@ tools/audio-engine/wmapro-channel-matrix.patch text eol=lf whitespace=-blank-at-
 tools/office-engine/patches/allow-native-chart-rendering.patch text eol=lf whitespace=-blank-at-eol
 # This source identity is copied byte-for-byte into candidate packages.
 tools/office-engine/source-runtime-candidate.json text eol=lf
+# Preserve the reviewed notice bytes, including upstream/generated whitespace.
+assets/third-party/oxipng/Oxipng.Rust.Library.Notices.html text eol=lf whitespace=-blank-at-eol
+assets/third-party/oxipng/Oxipng.ThirdPartyNotices.txt text eol=lf whitespace=-blank-at-eof

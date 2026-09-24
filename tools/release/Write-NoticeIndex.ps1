@@ -6,7 +6,8 @@ $toolsRoot = Split-Path $PSScriptRoot -Parent
 $root = (Get-Item -LiteralPath $Payload).FullName
 $groups = [ordered]@{
     'Application and image tools' = @('THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt',
-        'Magick.NET.Notice.txt', 'DirectXTex.License.txt', 'Oxipng.License.txt', 'ExoQuant.License.txt', 'Rust.Library.Notices.html')
+        'Magick.NET.Notice.txt', 'DirectXTex.License.txt', 'Oxipng.License.txt', 'Oxipng.ThirdPartyNotices.txt',
+        'Oxipng.Rust.Library.Notices.html', 'ExoQuant.License.txt', 'Rust.Library.Notices.html')
 }
 foreach ($engine in @(
     @{ Directory = 'audio-engine'; Record = 'audio-engine/payload-candidate.json'; Title = 'Audio'; Prefix = 'audio-engine/' },

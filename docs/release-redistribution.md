@@ -4,6 +4,13 @@ Release Redistribution Checklist
 Reviewed: 2026-09-07, with dated additions below. Engineering review, not a legal
 opinion or release approval.
 
+PNG notice addition, 2026-09-23: the [dependency notice collection](png-dependency-notices.md)
+now retains the pinned source and 50 dependency crates, 92 notice files,
+file-specific copyright lines and the matching Rust standard-library notices.
+Fresh packaging requires the two added notice files without changing the
+optimizer executable. Advisory review, Microsoft eligibility, commercial
+adoption and final expanded-package acceptance remain open.
+
 The 2026-09-23 [candidate source/notice packet](candidate-distribution-review.md)
 collects four verified source archives and 54 unchanged notices for owner review.
 It records specific source-delivery, modified-library, tool/runtime and customer

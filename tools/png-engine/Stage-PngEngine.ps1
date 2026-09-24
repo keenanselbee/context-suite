@@ -17,5 +17,6 @@ New-Item -ItemType Directory -Path $output -Force | Out-Null
 Copy-Item (Join-Path $source 'oxipng.exe') (Join-Path $output 'oxipng.exe') -Force
 Copy-Item (Join-Path $source 'LICENSE.txt') (Join-Path $output 'Oxipng.License.txt') -Force
 Copy-Item (Join-Path $PSScriptRoot 'production.json') (Join-Path $output 'ContextSuite.Png.Engine.json') -Force
-& (Join-Path $PSScriptRoot 'Test-PngEngine.ps1') -Payload $output
+Get-ChildItem -LiteralPath (Join-Path $repository 'assets\third-party\oxipng') -File | Copy-Item -Destination $output -Force
+& (Join-Path $PSScriptRoot 'Test-PngEngine.ps1') -Payload $output -RequireDependencyNotices
 Write-Output "Staged pinned PNG development engine. Upstream archive retained at $archive; redistribution review remains required."
