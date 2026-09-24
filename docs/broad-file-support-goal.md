@@ -55,8 +55,8 @@ commercial release readiness are not inferred from package integrity.
 The exact candidate now passes the declared performance workloads and recorded
 media/Analyze suites. Office print, date/font decisions, direct commands,
 recovery/capacity and PDF validation also pass; authored D09 typography remains
-failed at its unchanged tolerance. Remaining safety/source evidence and the
-consolidated review pack still need completion. Packaged launcher/resource,
+failed at its unchanged tolerance. Affirmative network evidence, real-input
+preparation and owner decisions remain open. Packaged launcher/resource,
 output-denial and native PDF interruption checks now pass, as do release-package
 guards and exact source/notice binding. Exact-candidate startup and unfinished
 workbook recovery now pass, as does the shipped-library managed guard; all
@@ -65,7 +65,10 @@ image and PDF review samples are generated with the exact worker, without human
 acceptance. Their consolidated collection now includes 62 current document/PDF
 cases, preserving the D09 failure and two required date refusals. Current H04
 instructions now use the byte-matched 1.1.2 stage; all eight headless selections
-pass. Provider evidence reconciliation and owner real inputs remain unfinished.
+pass. Eleven provider entry guards, the native HEIF bridge and Windows Voice
+component replay now pass their recorded scopes. The
+[owner handoff](candidate-owner-handoff.md) identifies the concrete review entry
+and remaining dependencies; it does not mark the goal complete.
 The linked candidate record owns
 these current results; earlier scratch evidence below remains historical.
 
@@ -89,8 +92,9 @@ The next completion steps are:
    [launcher resource replay](office-resource-enforcement.md) passes memory/process
    limits, diagnostics and cleanup. [Output I/O refusal and recovery](office-io-failures.md)
    now pass across all three families, with exact following-output comparisons.
-   Exact final-candidate replay, D09 rounding and affirmative network
-   enforcement still need their evidence or decisions. Network collection needs
+   The recorded final-candidate safety and fidelity replays now pass except D09.
+   D09 rounding and affirmative network enforcement still need their evidence
+   or decisions. Network collection needs
    the pending attended administrator step. Reuse the completed native build
    unless a native input actually changes.
 2. Prepare H01-H04 for consolidated review. Request the real DOCX/XLSX/PPTX and
@@ -103,9 +107,11 @@ The next completion steps are:
    and PDF supplements now have verification and are consolidated in nine archives.
    [HEIF/audio modified-library support](local-library-replacement.md) now passes
    explicit opt-in and actual-worker checks; recipient instructions/generator
-   are collected, with final delivery and candidate inclusion still open. Then compose
-   one fresh versioned candidate and replay A01-A08 plus the declared timing
-   workloads against those exact bytes. Preserve reserved 1.1.1 throughout.
+   are collected and included in the source companion. Candidate 1.1.2 is already
+   composed and its declared performance workloads pass. Reconcile the recorded
+   A01-A08 evidence without rebuilding unchanged native inputs or repeating
+   passing suites. Delivery/adoption remain owner decisions. Preserve reserved
+   1.1.1 and 1.1.2 throughout; changed packaged bytes require a new version.
 4. Audit every required automated result, complete the final public/private
    checkpoint, and deliver the review pack and decision list. Record human,
    commercial and environment acceptance separately. A review-ready local

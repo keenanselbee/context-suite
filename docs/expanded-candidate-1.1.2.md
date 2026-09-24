@@ -1,9 +1,14 @@
 Expanded Candidate 1.1.2
 ========================
 
-Status: unsigned candidate built and archive verified on 2026-09-23; exact-package
-execution and performance acceptance are in progress. This is an internal owner
+Status: unsigned candidate built and archive verified on 2026-09-23; recorded
+exact-package suites and performance workloads pass except D09 typography.
+Network evidence, real-input preparation and final acceptance remain open.
+This is an internal owner
 review candidate, not release clearance, installation or publication.
+
+The [owner handoff](candidate-owner-handoff.md) collects the current review entry,
+remaining decisions and evidence boundaries. It does not declare goal completion.
 
 
 Candidate identity
@@ -352,6 +357,30 @@ library, junction, hardlink, extra-file and missing-library cases preserve their
 existing assertions. These are component loader checks, separate from the earlier
 actual-worker replay. All candidate and bound inputs remain unchanged; no build
 was needed.
+
+The native bridge replay now passes 3,820 checks over 186 authored inputs at
+`.codex-temp/candidate-112-heif-bridge-74d40ad3c6f5431184f1f6106fe1b5f9`.
+It exercises the existing ABI, decode, resource/refusal and recovery matrix using
+hash-identical copies of the three packaged native libraries. The original
+candidate and bound inputs/membership remain unchanged. This is native component
+evidence, complementing the actual-worker/color replay; no native build ran.
+
+The Windows Voice component replay passes at
+`.codex-temp/candidate-112-voice-e8afc76468a84b7b8c02374c723be766`:
+26 availability, 52 process/ownership, 339 conversion and 55 duration checks,
+with 222 short/metadata and 24 streaming outputs. The managed harness uses the
+shipped Core/Private DLLs, actual packaged encoder and a hash-identical disposable
+Voice helper. All captured inputs and membership remain unchanged. These 472
+checks complement the worker replay; injected availability states do not prove
+behavior on a Windows installation missing the native component.
+
+D08 empty/all-hidden-slide refusal is also present in the current core replay,
+not only historical evidence. `A01-foundation-image.log` records unchanged-source
+and refusal-before-preparation/prompt/admission/worker checks for both cases.
+`DocumentAnalysisContracts.Slides.cs` defines these application/preflight checks;
+no renderer is invoked for a deck known to contain no visible slides. The current
+slide-export comparisons separately cover visible ordering and hidden/note
+exclusion. Neither establishes human presentation acceptance.
 
 Missing/altered-provider packaging checks pass at
 `.codex-temp/candidate-112-provider-guards-bcffa68c35484d6f86b0e940d385adf2/verification-02/results.json`.
