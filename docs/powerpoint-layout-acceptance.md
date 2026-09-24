@@ -6,7 +6,9 @@ pass, but typography exceeds the predeclared font-size rounding tolerance.
 This covers the image, diagram/table and mixed-typography group in the
 [local acceptance contract](local-candidate-acceptance.md). It complements
 existing slide-order/visibility/notes checks. It is not real-document or human
-page acceptance, and does not resolve the separate Excel chart-loss blocker.
+page acceptance. The later [candidate record](expanded-candidate-1.1.2.md)
+contains the repaired Excel charts and current D09 replay; the earlier attempts
+below retain their original observations.
 
 
 Fixed fixture and expectations
@@ -156,3 +158,44 @@ decision remains separate from the now-repaired ordinary PowerPoint fill defect.
 and glyph observations exactly match the historical D09 result. Inspection
 inputs are unchanged and all builds have zero warnings/errors.
 This is not final-candidate or human acceptance.
+
+
+Candidate rounding diagnosis, 2026-09-24
+--------------------------------------
+
+The exact 1.1.2 candidate inspection at
+`.codex-temp/office-execution/104e37134a0c4653af3f350bea74d45d/powerpoint-layout-inspection-ac9048868391402b96151f64640776e0/results.json`
+retains the same four typography sizes and failed font oracle. A read-only
+diagnostic at
+`.codex-temp/candidate-112-powerpoint-rounding-ed20c249b0c843618cf45faa5aa5c529`
+binds that report, the unchanged oracle and five native source/header files by
+hash. It runs no renderer and changes no output, source or tolerance.
+
+The reconstructed source sets the drawing document pool metric to hundredths of
+a millimetre. DrawingML imports character heights as points; the font-height
+item's setter rounds to twips and, for its non-twip representation, converts to
+integer hundredths of a millimetre. The inspected locations are
+`sd/source/core/drawdoc.cxx`,
+`oox/source/drawingml/textcharacterproperties.cxx`,
+`editeng/source/items/textitem.cxx`, `include/tools/UnitConversion.hxx` and
+`include/o3tl/unit_conversion.hxx` in the retained source-kit replay tree.
+
+Converting each authored size through that storage unit, then rounding to three
+decimal places and observing it as a 32-bit float, reproduces every measured
+size exactly:
+
+| Authored points | Integer hundredths of a millimetre | Predicted decimal points | Observed PDFium points |
+| --- | --- | --- | --- |
+| 18 | 635 | 18.000 | 18 |
+| 20 | 706 | 20.013 | 20.01300048828125 |
+| 22 | 776 | 21.997 | 21.996999740600586 |
+| 24 | 847 | 24.009 | 24.009000778198242 |
+
+This supports unit quantization as the explanation, rather than an arbitrary
+allowance fitted to one failing number. It is an inference from source and
+observations, not a traced proof of every runtime conversion. It does not prove
+other font sizes or documents acceptable. The proposed fixture-only 0.015-point
+allowance remains an owner decision; the existing 0.01-point assertion and
+failed aggregate are unchanged. A precision repair would require investigating
+the renderer's storage/export path and regression impact, not merely rebuilding
+the same native inputs.

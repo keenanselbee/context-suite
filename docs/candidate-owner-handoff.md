@@ -40,6 +40,9 @@ Decisions and inputs needed next
    pass. Decide whether this particular fixture may use 0.015 points or needs a
    renderer repair. No tolerance has changed, and the aggregate remains failed.
    The Word moved-text allowance does not authorize this separate change.
+   [Source/arithmetic diagnosis](powerpoint-layout-acceptance.md#candidate-rounding-diagnosis-2026-09-24)
+   now reproduces all four observed font sizes through the renderer's integer
+   storage units; this supports the rounding explanation without changing acceptance.
 2. **Office network evidence:** arrange the attended procedure in
    [Office isolation](office-isolation-evaluation.md). A fresh normal-user probe
    needs a separate, read-only Administrator event query within nine minutes.
