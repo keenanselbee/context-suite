@@ -4,6 +4,11 @@ Release Redistribution Checklist
 Reviewed: 2026-09-07, with dated additions below. Engineering review, not a legal
 opinion or release approval.
 
+The 2026-09-23 [candidate source/notice packet](candidate-distribution-review.md)
+collects four verified source archives and 54 unchanged notices for owner review.
+It records specific source-delivery, modified-library, tool/runtime and customer
+notice-access work still needed; archive integrity does not close those gates.
+
 HEIF addition, 2026-09-16: isolated HEIC/AVIF decoder source/runtime review
 archives now retain original libheif/libde265 archives and COPYING texts, the
 local libheif patch, selected AOM source/artifacts and separate AOM patent text.

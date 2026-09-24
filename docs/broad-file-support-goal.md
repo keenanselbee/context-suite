@@ -78,7 +78,9 @@ The next completion steps are:
    three real recordings when their automated comparisons can proceed; record
    missing inputs explicitly. Human results remain owner acceptance after this
    engineering goal; no result is inferred from prepared or simulated workflows.
-3. Finish engine adoption/source-delivery and footprint decisions, then compose
+3. Finish engine adoption/source-delivery and footprint decisions. The
+   [source/notice review packet](candidate-distribution-review.md) now binds four
+   source archives and 54 notices, with remaining decisions made explicit. Then compose
    one fresh versioned candidate and replay A01-A08 plus the declared timing
    workloads against those exact bytes. Preserve reserved 1.1.1 throughout.
 4. Audit every required automated result, complete the final public/private
