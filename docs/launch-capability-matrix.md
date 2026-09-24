@@ -1,8 +1,8 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-23.1**. The current-status reconciliation distinguishes
-reserved 1.1.1 from the expanded scratch payload and updates customer guidance.
+Matrix revision: **2026-09-23.2**. The current-status reconciliation distinguishes
+the expanded 1.1.2 candidate from reserved 1.1.1 and earlier scratch evidence.
 The recorded implementation evidence includes the
 [audio inventoried-payload protection](audio-distribution.md#inventoried-payload-protection-2026-09-19),
 [mixed Office/image PDF replay on the expanded worker](office-direct-command.md#expanded-combined-worker-replay-2026-09-19),
@@ -23,21 +23,22 @@ Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. The newly selected inputs below still require full customer acceptance.
 
-The latest reserved candidate is **1.1.1**, containing image, original-audio, PDF
-and Office engines. Its [candidate record](combined-office-candidate.md) preserves
-the exact stage, version receipt and historical passing/failed attempts. The
-earlier **1.1.0** stage lacks Office and remains retained. The later
-[expanded scratch worker](combined-expanded-inputs.md) adds HEIC/AVIF, AIFF/WMA
-and Windows Voice plus the interim Excel chart guard. It is not a new reserved
-release and does not replace 1.1.1. Default release packaging still requires
-explicit selection of optional engines; adoption and full acceptance remain
-open. A menu label does not establish a build's executable capabilities.
+The latest reserved candidate is **1.1.2**, with existing image engines, HEIC/AVIF,
+expanded audio/Voice, PDF and reconstructed Office runtime04. Its
+[candidate record](expanded-candidate-1.1.2.md) binds the exact unsigned archive,
+source packet and remaining acceptance. Reserved **1.1.1** and its
+[historical evidence](combined-office-candidate.md) remain unchanged; earlier
+1.1.0 and [expanded scratch work](combined-expanded-inputs.md) are also retained.
+Optional engines still require explicit package selection. Full exact-candidate
+acceptance and commercial adoption remain open; a menu label alone does not
+establish executable capabilities.
 
 The later [paired source-built Office selection](office-runtime-verification.md#source-built-application-selection-2026-09-23)
 passes isolated application and independent PDF checks for Word layout/styles
 and the four Excel chart cases. It narrows chart refusal to newer/external charts
-and incomplete inspection. This selection is not yet composed into a fresh
-versioned expanded candidate; clean rebuild, safety and full replay remain open.
+and incomplete inspection. The reconstructed source/runtime selection is now
+composed into 1.1.2. Exact-candidate replay, affirmative network evidence and
+human acceptance remain open; the completed native build is reusable.
 
 Required compatibility additions selected 2026-09-16:
 
@@ -75,9 +76,10 @@ passes 36 reference-output comparisons and 12 refusal/ownership checks. Its
 explicit composition, now verified through disposable-worker direct commands.
 Visible acceptance and formal packaging remain pending.
 FFmpeg's Voice failures remain open.
-ALAC remains a separate evaluation. The [current goal](broad-file-support-goal.md#current-objective-and-completion-plan)
-requires implementation and integrated acceptance before completion; the existing
-conversion matrices below describe only implemented capabilities.
+ALAC remains a separate evaluation, outside the frozen required additions. The
+[current goal](broad-file-support-goal.md#current-objective-and-completion-plan)
+requires integrated acceptance of the selected scope; the conversion matrices
+below describe only implemented capabilities.
 
 The [HEIF review bundles](heif-distribution.md) pass tampering checks and an
 extracted library-only rebuild. The current decoder repeats focused bridge,

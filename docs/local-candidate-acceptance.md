@@ -11,7 +11,11 @@ finish authorized engineering and automated checks, then deliver one review
 pack and decision list. Human acceptance below remains required for release;
 preparation does not mark those results passed. Required engineering failures
 still prevent review readiness, and external evidence dependencies remain named.
-The [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
+The [expanded 1.1.2 candidate](expanded-candidate-1.1.2.md) is now built and
+archive-verified, with 611,834,443 application bytes and a 241,265,726-byte ZIP.
+Its first exact-worker foundation/baseline-audio/PDF suites pass; the rest of
+this contract, final performance and human acceptance remain open. The earlier
+[combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
 unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance
 and the complete final versioned-candidate replay remain open.
@@ -211,7 +215,7 @@ relabel that run passed. Correctness/resource caps remain separate.
 | 60-second stereo audio at 44.1/48 kHz to each target | 15 s median; 30 s maximum per operation | Five runs per target including inspection, encoding, validation and publication |
 | Ten-page text/vector PDF to PNG; ten images to PDF | 20 s median; 40 s maximum per batch | Five runs each including validation and all publications |
 | Ordinary two-page DOCX, one-page XLSX, two-slide PPTX to PDF | 45 s median; 75 s maximum per document | Five runs each including runtime hashing, profile lifecycle and PDF validation |
-| Complete candidate | Provisional engineering ceiling 1.65 GB decimal unpacked | Exact file/per-engine/total bytes and archive size; owner acceptance of the approximately 1.58-GB footprint remains pending |
+| Complete candidate | Provisional engineering ceiling 1.65 GB decimal unpacked | Exact file/per-engine/total bytes and archive size; 1.1.2 is about 612 MB of application files, with owner footprint acceptance pending |
 
 Record individual timings, hashes, machine/runtime and peak process/job memory
 where obtainable. Keep caches and machine settings unchanged; fresh-process

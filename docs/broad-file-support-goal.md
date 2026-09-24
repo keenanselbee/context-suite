@@ -47,8 +47,11 @@ commerce and publication retain their separate authorization requirements.
 This section governs remaining work. The evidence history and original
 implementation milestones below remain useful records, but their older pending
 labels do not override the current capability matrix or completed evidence.
-The combined 1.1.1 stage contains all existing engine families; it does not
-implement the newly selected inputs or establish commercial release readiness.
+Reserved 1.1.1 remains the earlier baseline. The fresh
+[expanded 1.1.2 archive](expanded-candidate-1.1.2.md) now contains the selected
+inputs and reconstructed Office runtime, with source/notice binding and the
+first exact-worker foundation/audio/PDF replay. Remaining acceptance and
+commercial release readiness are not inferred from package integrity.
 
 The [local candidate acceptance contract](local-candidate-acceptance.md) now
 defines eight finite automated suite families, twelve Office content/layout
