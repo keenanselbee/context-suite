@@ -142,6 +142,55 @@ application uses its separate Windows Voice provider. Candidate and reference
 identities remain unchanged. An earlier wrapper retained an obsolete executable
 path and failed before launching the decoder; its evidence is preserved.
 
+The remaining baseline audio metadata/artwork replay at
+`.codex-temp/candidate-112-audio-artwork-18188557b52b4b3ba147bce1b3d0d42d`
+passes 588 checks across nine suites. These cover WAV text, WAV/MP3/M4A/Ogg
+artwork input, WAV/MP3/M4A artwork output and the FLAC/Ogg direct-command matrix.
+They use the original production-build host and exact release worker; all
+captured package, host and fixture identities are unchanged afterward.
+
+The sequential media performance replay at
+`.codex-temp/candidate-112-media-performance-c978b199d8694144beb5b2d86400ed66`
+passes all 90 declared operations on Windows 11 build 26200, an i9-9900K and
+approximately 32 GiB RAM:
+
+| Workload | Operations | Largest group median | Largest individual time | Median / maximum limit |
+| --- | ---: | ---: | ---: | ---: |
+| 60-second stereo audio, both rates and six targets | 60 | 4.972 s | 5.027 s | 15 / 30 s |
+| Ten-page PDF export and ten-image combined PDF | 10 | 3.304 s | 3.783 s | 20 / 40 s |
+| 12-megapixel HEIC/AVIF to JPEG/PNG | 20 | 7.161 s | 7.476 s | 10 / 20 s |
+
+Each group contains five fresh-worker operations with application validation
+and publication. The existing workload definitions and budgets are unchanged.
+The reports retain individual samples, output/source hashes and managed-worker
+peak memory; they do not measure whole native-job memory, cold storage, visible
+UI responsiveness or human acceptance. All captured package, host and retained
+fixture identities and package/host membership match afterward. The first
+wrapper attempt omitted the audio fixture directory and stopped before media
+conversion; its failed preparation receipt remains retained.
+
+Analyze performance and bounded-read acceptance passes at
+`.codex-temp/candidate-112-analyze-2fb82033bb764dbf8e42f69b9400554a`.
+The original twelve generic cases run in 36 fresh processes with eleven samples
+each, using the unchanged production-build host and the existing fixture/assertion
+code with only its host path redirected. All identity, per-file failure, original
+preservation, inspection, timing and allocation checks pass. The maximum
+4,096-file selection has a 3.802-second first-call median and 3.023-second
+repeated p95, within the existing 8/5-second review budgets. Repeated median
+allocation is 260,350,136 bytes, below the 384-MiB review trigger; this is
+cumulative managed allocation, not retained memory.
+
+The seven optional audio/PDF cases pass 35 fresh sessions and 210 Analyze
+commands against the exact packaged worker. The largest first-call median is
+0.635 seconds; the largest repeated p95 is 0.043 seconds, below the respective
+2/1-second limits. Retained generated fixtures are checked against their earlier
+receipts before copying. Package, host and captured input identities remain
+unchanged. Generic analysis does not start a media worker; optional analysis
+does. Neither benchmark flushes caches or establishes visible UI responsiveness.
+An initial prerequisite check ran before the preceding media wrapper had written
+its final hash-verification receipt and stopped without starting Analyze; the
+completed replay began only after that wrapper exited successfully.
+
 Exact A01-A08/performance completion, consolidated media review, real documents
 and recordings, D09 typography, affirmative attended network evidence, UI/theme/
 DPI/screen-reader observations and separate installed lifecycle/commerce gates

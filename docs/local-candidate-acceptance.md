@@ -13,8 +13,12 @@ preparation does not mark those results passed. Required engineering failures
 still prevent review readiness, and external evidence dependencies remain named.
 The [expanded 1.1.2 candidate](expanded-candidate-1.1.2.md) is now built and
 archive-verified, with 611,834,443 application bytes and a 241,265,726-byte ZIP.
-Its first exact-worker foundation/baseline-audio/PDF suites pass; the rest of
-this contract, final performance and human acceptance remain open. The earlier
+Its exact-worker foundation/image, baseline and expanded audio, PDF and HEIF
+replays pass their recorded scopes, including audio metadata/artwork and recovery.
+Generic/optional Analyze and the fixed audio/PDF/HEIF performance workloads also
+pass against the preserved candidate and matching host. Office final-candidate
+fidelity/performance, remaining provider/source evidence, consolidated review
+preparation and human acceptance remain open. The earlier
 [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
 unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance
