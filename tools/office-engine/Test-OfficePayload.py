@@ -32,6 +32,8 @@ def main():
     record = payload.selection()
     input_paths = [Path(__file__).resolve(), TOOLS / "Stage-OfficePayload.py", TOOLS / "payload-candidate.json",
                    TOOLS / "source-runtime-candidate.json",
+                   payload.NOTICE_RECORD, payload.NOTICE_FILE,
+                   payload.ROOT / "tools/release/Write-NoticeIndex.ps1",
                    payload.ROOT / "proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
                    payload.ROOT / "tools/Build-Production.ps1", payload.ROOT / "tools/curated-engine/Test-ProductionPayload.ps1"]
     input_paths.extend(payload.ROOT / item["path"] for item in record["host"]["sources"])
@@ -86,6 +88,29 @@ def main():
     passed("Fresh Office copy and complete verification passed")
     payload.verify_source_record(combined)
     passed("Exact source build record is packaged beside the engine")
+    payload.verify_notices(combined)
+    passed("Supplemental Python notices are packaged outside the unchanged engine")
+    notice = combined / payload.PACKAGED_NOTICE
+    original_notice = notice.read_bytes()
+    try:
+        notice.unlink()
+        refused("Missing supplemental notices refused", lambda: payload.verify_notices(combined))
+        notice.write_bytes(b"x" * len(original_notice))
+        refused("Same length supplemental notice corruption refused", lambda: payload.verify_notices(combined))
+    finally:
+        notice.write_bytes(original_notice)
+    occupied_notice = scratch / "existing-notices"
+    occupied_notice.mkdir()
+    (occupied_notice / payload.PACKAGED_NOTICE).write_bytes(original_notice)
+    refused("Existing supplemental notices refused before engine copy", lambda: payload.stage(occupied_notice, source))
+    if (occupied_notice / "office-engine").exists() or (occupied_notice / payload.PACKAGED_NOTICE).read_bytes() != original_notice:
+        raise AssertionError("Refused stage altered existing supplemental notices or created an engine.")
+    bad_notice_record = json.loads(payload.NOTICE_RECORD.read_bytes())
+    bad_notice_record["inventorySha256"] = "0" * 64
+    bad_notice_path = scratch / "wrong-notice-record.json"
+    bad_notice_path.write_text(json.dumps(bad_notice_record), encoding="utf-8")
+    with patch.object(payload, "NOTICE_RECORD", bad_notice_path):
+        refused("Notices bound to another engine refused", payload.supplemental_notice)
     source_record = combined / payload.PACKAGED_SOURCE_RECORD
     original_record = source_record.read_bytes()
     try:
@@ -224,6 +249,7 @@ def main():
 
     build = "tools/Build-Production.ps1"
     verifier = "tools/curated-engine/Test-ProductionPayload.ps1"
+    powershell("Refresh index for combined candidate", ["tools/release/Write-NoticeIndex.ps1", "-Payload", str(combined)])
     powershell("No default Office staging", [build, "-OfficeEngineDirectory", "absent"], "Office candidate requires a new StagingId")
     powershell("Office staging requires PDF validation", [build, "-OfficeEngineDirectory", "absent", "-StagingId", str(uuid.uuid4())],
                "Office candidate requires a new StagingId")
@@ -238,6 +264,12 @@ def main():
                    "Office candidate payload verification failed")
     finally:
         source_record.write_bytes(original_record)
+    try:
+        notice.unlink()
+        powershell("Production verification requires supplemental notices", [verifier, "-Payload", str(combined), "-AllowAudioCandidate", "-AllowPdfCandidate", "-AllowOfficeCandidate"],
+                   "Office candidate payload verification failed")
+    finally:
+        notice.write_bytes(original_notice)
     payload.verify(source)
     if any(payload.digest(base / name) != digest for name, digest in base_inputs.items()) or any(
             payload.digest(payload.ROOT / name) != digest for name, digest in source_inputs.items()):

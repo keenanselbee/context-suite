@@ -229,6 +229,10 @@ keeps final source delivery, notices, tool/runtime eligibility and adoption open
 Remaining acceptance
 --------------------
 
+The later [Python notice checkpoint](office-python-notices.md) requires a pinned
+supplemental notice outside the engine and passes 55 payload checks. The runtime
+inventory and native binaries are unchanged; historical stages remain untouched.
+
 The historical [combined candidate](combined-office-candidate.md) closed its
 earlier formal-build gap; it does not contain this reconstructed engine or record.
 A fresh versioned candidate and exact combined execution remain required.

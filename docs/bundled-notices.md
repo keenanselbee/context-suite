@@ -5,8 +5,9 @@ Status: implemented and checked in source on 2026-09-23; fresh candidate
 composition and human acceptance remain pending.
 
 The later [PNG dependency notice checkpoint](png-dependency-notices.md) adds two
-required base notices: current indexes have ten base or 58 expanded links and
-pass 66 index checks. The initial 8/56-link evidence below remains historical.
+required base notices. [Office Python notices](office-python-notices.md) add one
+optional Office file: current indexes have ten base or 59 expanded links and
+pass 67 index checks. The initial 8/56-link evidence below remains historical.
 
 License now includes **Third-party notices**, available without activation or
 online validation. It opens `ThirdPartyNotices.html` beside the application in

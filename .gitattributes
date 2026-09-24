@@ -10,3 +10,6 @@ tools/office-engine/source-runtime-candidate.json text eol=lf
 # Preserve the reviewed notice bytes, including upstream/generated whitespace.
 assets/third-party/oxipng/Oxipng.Rust.Library.Notices.html text eol=lf whitespace=-blank-at-eol
 assets/third-party/oxipng/Oxipng.ThirdPartyNotices.txt text eol=lf whitespace=-blank-at-eof
+# Supplemental Office notices preserve the source texts byte-for-byte.
+assets/third-party/office/Office.Python.Notices.txt -text whitespace=-blank-at-eol,-blank-at-eof
+tools/office-engine/python-notice-review.json text eol=lf

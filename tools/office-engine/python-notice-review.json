@@ -1,0 +1,235 @@
+{
+  "formatVersion": 1,
+  "scope": "Supplemental pip/setuptools source and notice correspondence for the pinned Office runtime; not complete Office redistribution acceptance.",
+  "inventorySha256": "738D1AD2B320A3E1FF6D6E3173CD6B25D5E70C8B707E3B1EBD79220FD0BD738A",
+  "officeSourceKitManifestSha256": "9D0EF709159DC2CCCAD6BE315DB7833032C540507DA55CE0EA656EFC3012AF73",
+  "archives": {
+    "Python-3.12.14.tar.xz": {
+      "bytes": 20820300,
+      "sha256": "5C8462AF5790BAF43A321A1559DBE0DB06D1BE4300FB85FB53C40060668E548A",
+      "url": "https://dev-www.libreoffice.org/src/Python-3.12.14.tar.xz"
+    },
+    "pip-25.0.1.tar.gz": {
+      "url": "https://files.pythonhosted.org/packages/70/53/b309b4a497b09655cb7e07088966881a57d082f48ac3cb54ea729fd2c6cf/pip-25.0.1.tar.gz",
+      "bytes": 1950850,
+      "sha256": "88F96547EA48B940A3A385494E181E29FB8637898F88D88737C5049780F196EA"
+    }
+  },
+  "wheels": {
+    "Lib/ensurepip/_bundled/pip-25.0.1-py3-none-any.whl": {
+      "bytes": 1841526,
+      "sha256": "C46EFD13B6AA8279F33F2864459C8CE587EA6A1A59EE20DE055868D8F7688F7F"
+    },
+    "Lib/test/wheeldata/setuptools-79.0.1-py3-none-any.whl": {
+      "bytes": 1256281,
+      "sha256": "E147C0549F27767BA362F9DA434EAB9C5DC0045D5304FEB602A0AF001089FC51"
+    }
+  },
+  "packageDirectories": [
+    "pip",
+    "setuptools",
+    "pkg_resources",
+    "_distutils_hack"
+  ],
+  "runtimeFiles": 675,
+  "upstreamPackagingChange": {
+    "sourceCommit": "8221e31b3ac356a1623c672912a3d2b492f7e3d1",
+    "recipe": "external/python3/UnpackedTarball_python3.mk",
+    "patch": "external/python3/setuptools.patch.1",
+    "description": "LibreOffice renames the jaraco text fixture from Lorem ipsum.txt to Lorem_ipsum.txt and changes its one Python lookup. Remaining 673 packaged files match bundled wheels exactly."
+  },
+  "notice": {
+    "bytes": 180284,
+    "sha256": "40AC93DD062F4F37BF78E33160CDA1AD3C948B31A7603C78197D2B02A6907BB0"
+  },
+  "notices": {
+    "pip-25.0.1/AUTHORS.txt": {
+      "bytes": 11018,
+      "sha256": "1EACE90552DF4F5941B61A907E20E555E16483AE6127B650BEF5A1A2AF8102C0"
+    },
+    "pip-25.0.1/LICENSE.txt": {
+      "bytes": 1093,
+      "sha256": "634300A669D49AEAE65B12C6C48C924C51A4CDF3D1FF086DC3456DC8BCAA2104"
+    },
+    "pip-25.0.1/src/pip/_vendor/cachecontrol/LICENSE.txt": {
+      "bytes": 558,
+      "sha256": "86EEEE87BE2A43F3FF1F56496F451F69243926F025FEDBB033666C304C4C161B"
+    },
+    "pip-25.0.1/src/pip/_vendor/certifi/LICENSE": {
+      "bytes": 989,
+      "sha256": "E93716DA6B9C0D5A4A1DF60FE695B370F0695603D21F6F83F053E42CFC10CAF7"
+    },
+    "pip-25.0.1/src/pip/_vendor/distlib/LICENSE.txt": {
+      "bytes": 14531,
+      "sha256": "808E10C8A6AB8DEB149FF9B3FB19F447A808094606D712A9CA57FEAD3552599D"
+    },
+    "pip-25.0.1/src/pip/_vendor/distro/LICENSE": {
+      "bytes": 11325,
+      "sha256": "CB5E8E7E5F4A3988E1063C142C60DC2DF75605F4C46515E776E3ACA6DF976E14"
+    },
+    "pip-25.0.1/src/pip/_vendor/idna/LICENSE.md": {
+      "bytes": 1541,
+      "sha256": "A59F0B0EF3635874109A4461CA44FF7A70D50696E814767BFAF721D4C9B0DB0F"
+    },
+    "pip-25.0.1/src/pip/_vendor/msgpack/COPYING": {
+      "bytes": 614,
+      "sha256": "492DEDBA85DA5872F78E6091BCD1FEA474D660D35ACB4DEE964B8AAB3F007427"
+    },
+    "pip-25.0.1/src/pip/_vendor/packaging/LICENSE": {
+      "bytes": 197,
+      "sha256": "CAD1EF5BD340D73E074BA614D26F7DEACA5C7940C3D8C34852E65C4909686C48"
+    },
+    "pip-25.0.1/src/pip/_vendor/packaging/LICENSE.APACHE": {
+      "bytes": 10174,
+      "sha256": "0D542E0C8804E39AA7F37EB00DA5A762149DC682D7829451287E11B938E94594"
+    },
+    "pip-25.0.1/src/pip/_vendor/packaging/LICENSE.BSD": {
+      "bytes": 1344,
+      "sha256": "B70E7E9B742F1CC6F948B34C16AA39FFECE94196364BC88FF0D2180F0028FAC5"
+    },
+    "pip-25.0.1/src/pip/_vendor/pkg_resources/LICENSE": {
+      "bytes": 1023,
+      "sha256": "86DA0F01AEAE46348A3C3D465195DC1CECCDE79F79E87769A64B8DA04B2A4741"
+    },
+    "pip-25.0.1/src/pip/_vendor/platformdirs/LICENSE": {
+      "bytes": 1089,
+      "sha256": "29E0FD62E929850E86EB28C3FDCCF0CEFDF4FA94879011CFFB3D0D4BED6D4DB6"
+    },
+    "pip-25.0.1/src/pip/_vendor/pygments/LICENSE": {
+      "bytes": 1331,
+      "sha256": "A9D66F1D526DF02E29DCE73436D34E56E8632F46C275BBDFFC70569E882F9F17"
+    },
+    "pip-25.0.1/src/pip/_vendor/pyproject_hooks/LICENSE": {
+      "bytes": 1081,
+      "sha256": "1B22B049B5267D6DFC23A67BF4A84D8EC04B9FDFB1A51D360E42B4342C8B4154"
+    },
+    "pip-25.0.1/src/pip/_vendor/requests/LICENSE": {
+      "bytes": 10142,
+      "sha256": "09E8A9BCEC8067104652C168685AB0931E7868F9C8284B66F5AE6EDAE5F1130B"
+    },
+    "pip-25.0.1/src/pip/_vendor/resolvelib/LICENSE": {
+      "bytes": 751,
+      "sha256": "F388FD38CAD13112C1DC0F669BBE80E7F84541EDBAFB72F3030D2CA7642C3C9D"
+    },
+    "pip-25.0.1/src/pip/_vendor/rich/LICENSE": {
+      "bytes": 1056,
+      "sha256": "DEED7C17A4318158190A3EA239CC879A5A50271CEBB98AE7025F48FBE58DCA15"
+    },
+    "pip-25.0.1/src/pip/_vendor/tomli/LICENSE": {
+      "bytes": 1072,
+      "sha256": "B80816B0D530B8ACCB4C2211783790984A6E3B61922C2B5EE92F3372AB2742FE"
+    },
+    "pip-25.0.1/src/pip/_vendor/tomli/LICENSE-HEADER": {
+      "bytes": 121,
+      "sha256": "97CE9330905A172DDE870EE0361D89BEB95BA3BD0F4545796AA91A8C01A43531"
+    },
+    "pip-25.0.1/src/pip/_vendor/truststore/LICENSE": {
+      "bytes": 1086,
+      "sha256": "33BE7B7E8FA4FD19B1760E1A8ED8A668BDAB852C91B692DD41424BCB725A9FCA"
+    },
+    "pip-25.0.1/src/pip/_vendor/typing_extensions.LICENSE": {
+      "bytes": 13936,
+      "sha256": "3B2F81FE21D181C499C59A256C8E1968455D6689D269AA85373BFB6AF41DA3BF"
+    },
+    "pip-25.0.1/src/pip/_vendor/urllib3/LICENSE.txt": {
+      "bytes": 1115,
+      "sha256": "C37BF186E27CF9DBE9619E55EDFE3CEA7B30091CEB3DA63C7DACBE0E6D77907B"
+    },
+    "setuptools-79.0.1-wheel/setuptools-79.0.1.dist-info/licenses/LICENSE": {
+      "bytes": 1023,
+      "sha256": "86DA0F01AEAE46348A3C3D465195DC1CECCDE79F79E87769A64B8DA04B2A4741"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/autocommand-2.2.2.dist-info/LICENSE": {
+      "bytes": 7634,
+      "sha256": "ADE78D04982D69972D444A8E14A94F87A2334DD3855CC80348EA8E240AA0DF2D"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/backports.tarfile-1.2.0.dist-info/LICENSE": {
+      "bytes": 1023,
+      "sha256": "86DA0F01AEAE46348A3C3D465195DC1CECCDE79F79E87769A64B8DA04B2A4741"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/importlib_metadata-8.0.0.dist-info/LICENSE": {
+      "bytes": 11358,
+      "sha256": "CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/inflect-7.3.1.dist-info/LICENSE": {
+      "bytes": 1023,
+      "sha256": "86DA0F01AEAE46348A3C3D465195DC1CECCDE79F79E87769A64B8DA04B2A4741"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/jaraco.collections-5.1.0.dist-info/LICENSE": {
+      "bytes": 1023,
+      "sha256": "86DA0F01AEAE46348A3C3D465195DC1CECCDE79F79E87769A64B8DA04B2A4741"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/jaraco.context-5.3.0.dist-info/LICENSE": {
+      "bytes": 1023,
+      "sha256": "86DA0F01AEAE46348A3C3D465195DC1CECCDE79F79E87769A64B8DA04B2A4741"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/jaraco.functools-4.0.1.dist-info/LICENSE": {
+      "bytes": 1023,
+      "sha256": "86DA0F01AEAE46348A3C3D465195DC1CECCDE79F79E87769A64B8DA04B2A4741"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/jaraco.text-3.12.1.dist-info/LICENSE": {
+      "bytes": 1023,
+      "sha256": "86DA0F01AEAE46348A3C3D465195DC1CECCDE79F79E87769A64B8DA04B2A4741"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/more_itertools-10.3.0.dist-info/LICENSE": {
+      "bytes": 1053,
+      "sha256": "09F1C8C9E941AF3E584D59641EA9B87D83C0CB0FD007EB5EF391A7E2643C1A46"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/packaging-24.2.dist-info/LICENSE": {
+      "bytes": 197,
+      "sha256": "CAD1EF5BD340D73E074BA614D26F7DEACA5C7940C3D8C34852E65C4909686C48"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/packaging-24.2.dist-info/LICENSE.APACHE": {
+      "bytes": 10174,
+      "sha256": "0D542E0C8804E39AA7F37EB00DA5A762149DC682D7829451287E11B938E94594"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/packaging-24.2.dist-info/LICENSE.BSD": {
+      "bytes": 1344,
+      "sha256": "B70E7E9B742F1CC6F948B34C16AA39FFECE94196364BC88FF0D2180F0028FAC5"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/platformdirs-4.2.2.dist-info/licenses/LICENSE": {
+      "bytes": 1089,
+      "sha256": "29E0FD62E929850E86EB28C3FDCCF0CEFDF4FA94879011CFFB3D0D4BED6D4DB6"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/tomli-2.0.1.dist-info/LICENSE": {
+      "bytes": 1072,
+      "sha256": "B80816B0D530B8ACCB4C2211783790984A6E3B61922C2B5EE92F3372AB2742FE"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/typeguard-4.3.0.dist-info/LICENSE": {
+      "bytes": 1130,
+      "sha256": "6163F7987DFB38D6BC320CE2B70B2F02B862BC41126516D552EF1CD43247E758"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/typing_extensions-4.12.2.dist-info/LICENSE": {
+      "bytes": 13936,
+      "sha256": "3B2F81FE21D181C499C59A256C8E1968455D6689D269AA85373BFB6AF41DA3BF"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/wheel-0.45.1.dist-info/LICENSE.txt": {
+      "bytes": 1107,
+      "sha256": "30C23618679108F3E8EA1D2A658C7CA417BDFC891C98EF1A89FA4FF0C9828654"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/wheel/vendored/packaging/LICENSE": {
+      "bytes": 197,
+      "sha256": "CAD1EF5BD340D73E074BA614D26F7DEACA5C7940C3D8C34852E65C4909686C48"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/wheel/vendored/packaging/LICENSE.APACHE": {
+      "bytes": 10174,
+      "sha256": "0D542E0C8804E39AA7F37EB00DA5A762149DC682D7829451287E11B938E94594"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/wheel/vendored/packaging/LICENSE.BSD": {
+      "bytes": 1344,
+      "sha256": "B70E7E9B742F1CC6F948B34C16AA39FFECE94196364BC88FF0D2180F0028FAC5"
+    },
+    "setuptools-79.0.1-wheel/setuptools/_vendor/zipp-3.19.2.dist-info/LICENSE": {
+      "bytes": 1023,
+      "sha256": "86DA0F01AEAE46348A3C3D465195DC1CECCDE79F79E87769A64B8DA04B2A4741"
+    },
+    "setuptools-79.0.1-wheel/setuptools/config/NOTICE": {
+      "bytes": 493,
+      "sha256": "2DDDF08818297A3B89D43D95FF659D8DA85741108C9136DFA3A4D856C0623BD8"
+    },
+    "setuptools-79.0.1-wheel/setuptools/config/_validate_pyproject/NOTICE": {
+      "bytes": 18737,
+      "sha256": "5D300DBFA643138B013B75AC9CAEEE591F951B8B0EE24288C34CCD926C4780C8"
+    }
+  }
+}

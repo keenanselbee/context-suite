@@ -17,6 +17,9 @@ TOOLS = Path(__file__).resolve().parent
 ROOT = TOOLS.parents[1]
 SOURCE_RECORD = TOOLS / "source-runtime-candidate.json"
 PACKAGED_SOURCE_RECORD = "ContextSuite.OfficeSource.json"
+NOTICE_RECORD = TOOLS / "python-notice-review.json"
+NOTICE_FILE = ROOT / "assets/third-party/office/Office.Python.Notices.txt"
+PACKAGED_NOTICE = "Office.Python.Notices.txt"
 
 
 def ordinary(path):
@@ -67,6 +70,19 @@ def verify_source_record(payload):
     ordinary(SOURCE_RECORD)
     identity(local_path(payload) / PACKAGED_SOURCE_RECORD,
              {"bytes": SOURCE_RECORD.stat().st_size, "sha256": digest(SOURCE_RECORD)})
+
+
+def supplemental_notice():
+    ordinary(NOTICE_RECORD)
+    record = json.loads(NOTICE_RECORD.read_bytes())
+    if record["formatVersion"] != 1 or record["inventorySha256"] != selection()["inventory"]["sha256"]:
+        raise ValueError("Supplemental Python notices differ from the selected Office runtime.")
+    identity(NOTICE_FILE, record["notice"])
+    return record["notice"]
+
+
+def verify_notices(payload):
+    identity(local_path(payload) / PACKAGED_NOTICE, supplemental_notice())
 
 
 def membership(engine, record):
@@ -140,6 +156,13 @@ def stage(payload, engine_directory):
     source_target = local_path(root / PACKAGED_SOURCE_RECORD)
     if os.path.lexists(source_target):
         raise ValueError("Office source record already exists; use a new stage.")
+    notice_target = local_path(root / PACKAGED_NOTICE)
+    if os.path.lexists(notice_target):
+        raise ValueError("Office supplemental notices already exist; use a new stage.")
+    notice_pin = supplemental_notice()
+    notice_bytes = NOTICE_FILE.read_bytes()
+    if hashlib.sha256(notice_bytes).hexdigest().upper() != notice_pin["sha256"]:
+        raise ValueError("Office supplemental notices changed while reading.")
     source = local_path(engine_directory, scratch_only=True)
     if destination.is_relative_to(source) or source.is_relative_to(destination):
         raise ValueError("Office source and destination must not overlap.")
@@ -170,6 +193,9 @@ def stage(payload, engine_directory):
         output.write(source_record)
     identity(source_target, source_pin)
     verify_source_record(root)
+    with notice_target.open("xb") as output:
+        output.write(notice_bytes)
+    verify_notices(root)
 
 
 def main():
@@ -183,7 +209,8 @@ def main():
         root = local_path(args.payload)
         verify(root / "office-engine")
         verify_source_record(root)
-    print(f"Verified {selection()['inventory']['files']:,} Office runtime files, host dependencies, source record and exact directories; release approval remains separate.")
+        verify_notices(root)
+    print(f"Verified {selection()['inventory']['files']:,} Office runtime files, host dependencies, source record, supplemental notices and exact directories; release approval remains separate.")
 
 
 if __name__ == "__main__":
