@@ -82,7 +82,9 @@ The next completion steps are:
    [source/notice review packet](candidate-distribution-review.md) binds the initial
    source archives and notices; later PNG, DDS/palette, Office Python/component
    and PDF supplements now have separate verification and need consolidation.
-   Modified-library support and recipient source delivery remain open. Then compose
+   [HEIF/audio modified-library support](local-library-replacement.md) now passes
+   explicit opt-in and actual-worker checks; its recipient instructions/generator
+   still need inclusion in source delivery and the next candidate. Then compose
    one fresh versioned candidate and replay A01-A08 plus the declared timing
    workloads against those exact bytes. Preserve reserved 1.1.1 throughout.
 4. Audit every required automated result, complete the final public/private

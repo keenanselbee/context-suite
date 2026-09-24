@@ -66,7 +66,7 @@ Decisions and unfinished work
 | Item | Concrete next action | Owner |
 | --- | --- | --- |
 | Tool/runtime eligibility | Confirm the project's ownership/use and applicable Microsoft Community/runtime terms; the installed edition alone is not entitlement evidence | Owner |
-| LGPL modified-library use | Select and implement a supported replacement or relinking route; the current fixed identity checks reject changed libraries | Engineering and owner |
+| LGPL modified-library use | [HEIF/audio local replacement route implemented and tested](local-library-replacement.md); include its instructions/generator in recipient source delivery and the next candidate, then complete terms/distribution review | Engineering and owner |
 | Source delivery and product terms | Approve actual source-download location, public-source terms and proprietary product terms; bind delivered archives to each released binary version | Owner, then packaging |
 | File-specific notices | [PNG dependency source/notices](png-dependency-notices.md), [DDS/palette mapping](dds-palette-source-review.md), [Office Python notices](office-python-notices.md), [Office component coverage](office-component-notices.md) and [PDF dependency review](pdf-dependency-notices.md) prepared; consolidate the review packet and complete release checks | Engineering/release review |
 | Customer notice access | [License entry and offline index implemented](bundled-notices.md); compose into the fresh candidate, review actual opening and finish source instructions | Engineering |
@@ -80,9 +80,12 @@ recipient-facing delivery step. See the [Mozilla license text](https://www.mozil
 
 The bundled HEIF LGPLv3 section 4 and audio LGPLv2.1 section 6 describe
 modified-library/relinking conditions. Their exact texts are in the review
-packet and its original bundles. The current source kits and successful rebuilds
-do not, by themselves, establish a usable application path for modified libraries.
-Do not weaken identity verification silently or claim this gate closed.
+packet and its original bundles. Source kits and successful rebuilds alone do
+not establish a usable application path for modified libraries. The
+[explicit HEIF/audio route](local-library-replacement.md) now passes modified and
+rebuilt library checks through the actual worker while retaining default pins.
+Final candidate inclusion, recipient instructions and terms remain open; this
+technical result does not close distribution review.
 
 The existing [redistribution checklist](release-redistribution.md) still governs
 release decisions. Network enforcement, PowerPoint tolerance, real media,
