@@ -105,6 +105,43 @@ is never damaged. All bound inputs and package files are unchanged afterward.
 Standalone native/loader evidence remains separately scoped, not falsely counted
 as a fresh packaged-worker run.
 
+The expanded audio replay at
+`.codex-temp/candidate-112-expanded-audio-e042cbedf18440799c119c2f638bba42`
+passes 1,008 worker checks across 144 inputs and six targets, with 796 validated
+copies. The remaining target decisions are the declared layout/rate or excessive
+signal-error refusals; no quality threshold changed. It also passes 173 metadata
+command checks and 265 recovery checks, including all 30 observed native-phase
+interruptions and successful same-source retries. The same production-build host
+and exact release worker ran these suites; package, host and fixture identities
+and package/host membership are unchanged afterward.
+
+Direct-command evidence at
+`.codex-temp/candidate-112-audio-direct-4114eb4f7d7c43ba8b9366220bb1fff4`
+passes 211 checks, including mixed selections, access refresh/retry and absent
+Voice-provider refusal. A test-only optional argument supplies the disposable
+missing-provider worker path. Successful commands still use the release worker;
+no negative-control files are written into the candidate. The test host was
+rebuilt with zero warnings/errors for this argument and paired, in a disposable
+copy, with the exact shipped Core DLL. Production build-source hashes are
+unchanged. Its first preparation stopped before execution because the newly
+compiled Core recorded the later documentation commit in its product version;
+that attempt is retained, not counted as a product failure or pass.
+
+The direct evidence also retains 78 independent supplier-decoder checks on the
+metadata replay's 42 outputs: descriptive values and exact authored RGBA pixels
+in all 36 covers, including partial transparency. The supplier runtime is checked
+against its pinned archive before and after verification. These are scoped
+generated-fixture checks, not human listening acceptance.
+
+The exact packaged audio executables pass the existing 121-case decoder matrix
+at `.codex-temp/candidate-112-surround-e3b9e478c1c044e1bbe6b60200f78fff`:
+29 surround comparisons meet the unchanged per-channel limits, and 92 regression
+outputs remain byte-identical. This native decoder replay is distinct from the
+worker suites and does not approve FFmpeg's known Voice waveform behavior; the
+application uses its separate Windows Voice provider. Candidate and reference
+identities remain unchanged. An earlier wrapper retained an obsolete executable
+path and failed before launching the decoder; its evidence is preserved.
+
 Exact A01-A08/performance completion, consolidated media review, real documents
 and recordings, D09 typography, affirmative attended network evidence, UI/theme/
 DPI/screen-reader observations and separate installed lifecycle/commerce gates

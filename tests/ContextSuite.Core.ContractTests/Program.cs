@@ -398,11 +398,12 @@ if (args.Length == 4 && args[0] == "--expanded-audio-metadata-direct")
     Console.WriteLine($"Passed {checks} isolated expanded audio metadata checks.");
     return 0;
 }
-if (args.Length == 4 && args[0] == "--expanded-audio-direct")
+if (args.Length is 4 or 5 && args[0] == "--expanded-audio-direct")
 {
     var checks = 0;
     await AudioConversionDirectContracts.ExpandedAsync(args[1], args[2], args[3], (condition, message) =>
-    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); },
+        args.Length == 5 ? args[4] : null);
     Console.WriteLine($"Passed {checks} isolated expanded audio direct checks.");
     return 0;
 }

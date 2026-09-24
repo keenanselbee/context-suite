@@ -7,7 +7,8 @@ using ContextSuite.Core.Operations;
 
 internal static partial class AudioConversionDirectContracts
 {
-    public static async Task ExpandedAsync(string scratch, string executable, string manifest, Action<bool, string> check)
+    public static async Task ExpandedAsync(string scratch, string executable, string manifest, Action<bool, string> check,
+        string? missingVoiceExecutable = null)
     {
         if (Directory.Exists(scratch)) throw new IOException("Use new direct-command evidence.");
         var fixtures = JsonSerializer.Deserialize<ExpandedAudioWorkerContracts.Fixture[]>(await File.ReadAllTextAsync(manifest))!;
@@ -105,7 +106,8 @@ internal static partial class AudioConversionDirectContracts
                 Path.GetDirectoryName(retry.Rows[^1].OutputPath) == folder && !retry.CanRetry,
                 "Expanded direct: activation retry retains target, captures settings and suppresses duplicate clicks");
         }
-        var noVoicePath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(executable))!, "worker-no-voice", Path.GetFileName(executable));
+        var noVoicePath = missingVoiceExecutable ??
+            Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(executable))!, "worker-no-voice", Path.GetFileName(executable));
         var missingWorker = new WorkerClient(noVoicePath, Path.Combine(scratch, "missing-voice-workers"));
         await using (var missingVoice = new MainViewModel(missingWorker, new(), publisher, access))
         {
