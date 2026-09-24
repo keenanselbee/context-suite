@@ -29,8 +29,12 @@ requests. The shipped private launcher now passes 61 resource checks; the exact
 worker passes 65 output-denial/recovery and 90 native interruption checks, with
 independent following-PDF comparisons and complete recorded profile/ACL cleanup.
 Seventeen release-packaging checks, reserved-version refusal and the source/notice
-binding also pass. Remaining startup/workbook and provider evidence reconciliation,
-consolidated review preparation and human acceptance remain open. The earlier
+binding also pass. Startup recovery now passes 99 worker and 18 source-linked
+WPF lifecycle checks; unfinished-workbook shutdown passes 42 checks, and the
+shipped-library managed guard passes 105. All twelve profiles/mappings are
+removed and owned ACLs are clear. Fresh candidate audio/image/PDF review media
+is prepared, with human observations unperformed. Provider evidence reconciliation,
+consolidated document/review preparation and human acceptance remain open. The earlier
 [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
 unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance

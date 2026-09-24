@@ -452,3 +452,30 @@ fixtures. Existing native/runtime pins and reserved packages remain unchanged;
 future candidate composition must use the fresh matching managed worker.
 Resource-pressure, network enforcement, exact final-candidate and owner acceptance
 remain separate gates.
+
+
+Exact-candidate workbook replay, 2026-09-24
+------------------------------------------
+
+The preserved 1.1.2 release worker passes all 42 controlled unfinished-workbook
+checks at `.codex-temp/office-worker/bd83434db3e04649980c63db45ebb846`.
+Cancellation, worker loss and controlled deadline expiry retain incomplete ZIPs
+with their paused hashes and no end record. The process-local observer detaches
+before normal shutdown; no candidate is published. All three following ordinary
+exports produce valid workbooks and independently matching PDFs. The retained
+updater-free inspector keeps its existing profile controls and exact PDF oracle.
+
+The managed guard separately passes 105 checks using the shipped Private DLL at
+`.codex-temp/office-workbook-validation/fa7898a4e11f4c95bcd9bdfbb9ac105b`.
+The six retained date copies keep their accept/refuse decisions, and active hash
+and worksheet cancellation releases leases before following requests. This is
+component-level validation evidence, not observation of a packaged-worker
+instruction or an uncontrolled native timing race.
+
+The shared completion receipt is
+`.codex-temp/candidate-112-office-completion-e0f8cd34f8c1433ab797e16993f25f1d`.
+Together with startup recovery, all twelve profiles/mappings are absent and
+5,262 owned ACL entries contain no test SIDs. Bound inputs and candidate
+membership are unchanged. No native rebuild, package replacement, installation
+or Explorer registration occurred. Network enforcement and human acceptance
+remain open.

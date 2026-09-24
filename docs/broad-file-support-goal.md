@@ -58,8 +58,12 @@ recovery/capacity and PDF validation also pass; authored D09 typography remains
 failed at its unchanged tolerance. Remaining safety/source evidence and the
 consolidated review pack still need completion. Packaged launcher/resource,
 output-denial and native PDF interruption checks now pass, as do release-package
-guards and exact source/notice binding. Actual startup/workbook and provider
-evidence reconciliation remains separate. The linked candidate record owns
+guards and exact source/notice binding. Exact-candidate startup and unfinished
+workbook recovery now pass, as does the shipped-library managed guard; all
+twelve profiles/mappings and owned permissions are cleaned up. Fresh audio,
+image and PDF review samples are generated with the exact worker, without human
+acceptance. Provider evidence reconciliation and the consolidated document/review
+pack remain unfinished. The linked candidate record owns
 these current results; earlier scratch evidence below remains historical.
 
 The [local candidate acceptance contract](local-candidate-acceptance.md) now

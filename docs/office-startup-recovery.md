@@ -336,3 +336,24 @@ worker. It is not a final combined candidate, a complete customer conversion
 crash scenario, incomplete-workbook-write coverage, network-denial evidence or
 visual/assistive-technology acceptance. Installed state and reserved payloads
 remain unchanged.
+
+
+Exact-candidate startup replay, 2026-09-24
+-----------------------------------------
+
+Candidate 1.1.2 passes 99 worker recovery checks and 18 WPF lifecycle checks at
+`.codex-temp/office-worker/a6b92ed61610470ba96571790799cde0`.
+Three harness-owner losses occur while native Word/Excel/PowerPoint PDFs are
+growing. Startup recovery and repeated scans preserve unfinished results,
+retire the owned worker/host and profiles, and allow following exports. All
+three following PDFs pass independent text, geometry and exact control pixels.
+
+The worker is the preserved release worker. The freshly built WPF test host
+source-links application lifecycle code and uses the exact shipped Core DLL;
+it does not launch the shipping Application executable or establish visual UI
+acceptance. Its build has zero warnings/errors. The combined completion receipt
+at `.codex-temp/candidate-112-office-completion-e0f8cd34f8c1433ab797e16993f25f1d`
+also covers unfinished-workbook and managed-guard replays: all twelve profiles
+and mappings are absent, 5,262 owned runtime/context ACL entries contain none
+of their test SIDs, and bound input hashes and candidate membership are unchanged.
+Network, installed lifecycle and human acceptance remain separate.

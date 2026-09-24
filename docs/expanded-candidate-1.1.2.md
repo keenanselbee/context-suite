@@ -312,7 +312,26 @@ reuse are refused. This establishes those A08 packaging/source-binding results,
 not recipient delivery or owner adoption. Two preparation-only wrapper errors
 are retained separately; neither changed the candidate or source packet.
 
-Exact A01-A08 completion, consolidated media review, real documents
+The [startup recovery](office-startup-recovery.md#exact-candidate-startup-replay-2026-09-24)
+and [workbook replay](excel-calculated-date-guard.md#exact-candidate-workbook-replay-2026-09-24)
+pass at `.codex-temp/candidate-112-office-completion-e0f8cd34f8c1433ab797e16993f25f1d`:
+99 recovery checks, 18 source-linked WPF lifecycle checks, 42 native unfinished
+workbook checks and 105 shipped-library validation checks. Following exports
+pass independent inspection. All twelve profiles/mappings are absent; 5,262
+owned ACL entries are clear of test SIDs. Bound inputs and membership are
+unchanged. The WPF host is an application-code test host, not visual acceptance
+of the shipping application. No native rebuild was needed.
+
+Fresh human-review media is prepared at
+`.codex-temp/candidate-112-review-media-43ef7289c2aa477088af0d002762fc1c`.
+Its receipt binds the exact release worker, 25 audio comparisons, sixteen HEIF
+image outputs and four PDF appearance cases. Automated preparation passes and
+all bound inputs and membership remain unchanged. Audio and image worksheets
+are generated without playback or a human pass. Consolidated document review,
+real owner recordings/documents and the combined entry point remain unfinished;
+the historical draft must not be represented as this candidate's review pack.
+
+Exact A01-A08 reconciliation, consolidated media review, real documents
 and recordings, D09 typography, affirmative attended network evidence, UI/theme/
 DPI/screen-reader observations and separate installed lifecycle/commerce gates
 remain open. Signing stays deferred. The active goal is not complete.
