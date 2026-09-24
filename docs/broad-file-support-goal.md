@@ -52,6 +52,12 @@ Reserved 1.1.1 remains the earlier baseline. The fresh
 inputs and reconstructed Office runtime, with source/notice binding and the
 first exact-worker foundation/audio/PDF replay. Remaining acceptance and
 commercial release readiness are not inferred from package integrity.
+The exact candidate now passes the declared performance workloads and recorded
+media/Analyze suites. Office print, date/font decisions, direct commands,
+recovery/capacity and PDF validation also pass; authored D09 typography remains
+failed at its unchanged tolerance. Remaining safety/source evidence and the
+consolidated review pack still need completion. The linked candidate record owns
+these current results; earlier scratch evidence below remains historical.
 
 The [local candidate acceptance contract](local-candidate-acceptance.md) now
 defines eight finite automated suite families, twelve Office content/layout

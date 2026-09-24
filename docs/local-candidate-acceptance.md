@@ -21,7 +21,11 @@ performance operations and their profile cleanups pass. Six authored Office
 fidelity suites pass independent final-candidate inspection; D09 still fails its
 unchanged font-size tolerance. Mixed Office commands, publication recovery and
 48-sheet capacity also pass final-candidate replay and independent PDF checks.
-Remaining Office calculation/date and safety coverage, provider/source evidence,
+The six date exports and thirteen font-choice cases now pass application and
+independent inspection against the exact candidate. Five Excel print cases also
+pass all eight page-text/geometry checks and profile cleanup. The exact worker's
+71-check PDF validation suite passes refusals, active interruption and following
+requests. Remaining Office safety evidence reconciliation, provider/source evidence,
 consolidated review preparation and human acceptance remain open. The earlier
 [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
@@ -124,8 +128,8 @@ expected text/page order and independent geometry before scoring export.
 | D02 | Existing fifteen Word font/style controls | Existing text/geometry/font/pixel controls and correct font prompt selection |
 | D03 | Existing Word revision/paragraph controls | [Paired application replay](word-revision-application.md) and [final-candidate replay](expanded-candidate-1.1.2.md) pass nineteen documents and independent fidelity checks; existing moved-text spacing allowance retained; human acceptance remains |
 | D04 | Word combining accents, RTL/CJK and anchored image | [Authored export and independent inspection](word-layout-acceptance.md) also pass [final-candidate replay](expanded-candidate-1.1.2.md): exact characters/direction/placement, glyph/font programs and eight negative controls; human review remains |
-| D05 | Existing five Excel print controls plus ordinary workbook | Areas, breaks, repeated titles, hidden cells/sheets, values and page order |
-| D06 | Existing calculation/date controls under both modes | Correct values where admitted; known errors blocked; no external refresh |
+| D05 | Existing five Excel print controls plus ordinary workbook | [Final-candidate print replay](excel-print-layout-evaluation.md#final-candidate-application-replay-2026-09-23) passes five cases/eight pages; ordinary workbook independently verified in direct/performance replay; human acceptance remains |
+| D06 | Existing calculation/date controls under both modes | [Final-candidate date replay](expanded-candidate-1.1.2.md) passes admitted results and known-error refusals in six cases; no external refresh; human acceptance remains |
 | D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Four authored chart/layout cases](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23) and [all 48 capacity pages](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23) also pass [final-candidate application/independent inspection](expanded-candidate-1.1.2.md); human acceptance remains |
 | D08 | Ordinary, hidden/reordered and empty-visible-slide PowerPoint controls | [Paired slide replay](powerpoint-slide-evaluation.md#paired-source-built-renderer-replay-2026-09-23) and [final-candidate slide replay](expanded-candidate-1.1.2.md) pass visible order and note/hidden exclusion; earlier empty-deck refusal evidence remains separate; human acceptance remains |
 | D09 | PowerPoint image, diagram/table and mixed typography | [Authored layout evidence](powerpoint-layout-acceptance.md) passes image/table placement and text; aggregate acceptance still fails the declared font-size tolerance |

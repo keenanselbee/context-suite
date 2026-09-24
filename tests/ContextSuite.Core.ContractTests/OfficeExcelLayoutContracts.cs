@@ -9,13 +9,17 @@ using Microsoft.Win32;
 
 internal static class OfficeExcelLayoutContracts
 {
-    internal static async Task RunAsync(string workerPath, string evidence)
+    internal static async Task RunAsync(string workerPath, string evidence, string? printFixtures = null)
     {
         var root = Path.GetFullPath(evidence);
         if (!root.Contains("\\.codex-temp\\office-execution\\", StringComparison.OrdinalIgnoreCase) || Directory.Exists(root))
             throw new InvalidDataException("Use fresh isolated Excel layout evidence.");
         var originals = Path.Combine(root, "originals"); Directory.CreateDirectory(originals);
-        var names = ExcelLayoutFixtures.Create(originals);
+        var names = printFixtures is null ? ExcelLayoutFixtures.Create(originals) :
+            new[] { "manual-break", "repeat-title", "fit-one-page", "disjoint-areas", "hidden-cells" }
+                .Select(name => "Excel print " + name + ".xlsx").ToArray();
+        if (printFixtures is not null)
+            foreach (var name in names) File.Copy(Path.Combine(printFixtures, name), Path.Combine(originals, name));
         var files = names.Select(name => Path.Combine(originals, name)).ToArray();
         var before = Directory.EnumerateFiles(originals).ToDictionary(path => path,
             path => new { Sha256 = Hash(path), Written = File.GetLastWriteTimeUtc(path) });
@@ -55,10 +59,11 @@ internal static class OfficeExcelLayoutContracts
                 };
                 await vm.WaitForIdleAsync();
             }
-            Check(prompts.SequenceEqual(new[] { "cached", "recalculate", "cached", "recalculate" }), "each workbook retains its selected calculation mode");
+            Check(prompts.SequenceEqual(printFixtures is null ? new[] { "cached", "recalculate", "cached", "recalculate" } :
+                Enumerable.Repeat("cached", names.Length)), "each workbook retains its selected calculation mode");
             results = vm.Rows.Select(row => row.Result).ToArray();
             File.WriteAllText(Path.Combine(root, "outcomes.json"), JsonSerializer.Serialize(new { Results = results, Reviews = reviews }));
-            Check(results.Select(row => row.Path).SequenceEqual(files), "four commands retain the selected workbook order");
+            Check(results.Select(row => row.Path).SequenceEqual(files), "commands retain the selected workbook order");
             foreach (var result in results)
                 Check(result.State == OperationState.Succeeded && result.Publication is { IsCommitted: true } publication &&
                     File.Exists(publication.OutputPath) && Path.GetDirectoryName(publication.OutputPath) == output &&
@@ -84,7 +89,7 @@ internal static class OfficeExcelLayoutContracts
         Check(profiles.Count == names.Length, "every Excel export has native cleanup evidence");
         File.WriteAllText(Path.Combine(root, "results.json"), JsonSerializer.Serialize(new
         {
-            Passed = reviews.Count == 0, Mode = "ExcelLayout", Checks = checks,
+            Passed = reviews.Count == 0, Mode = printFixtures is null ? "ExcelLayout" : "ExcelPrint", Checks = checks,
             CalculationChoices = prompts, Results = results, Originals = before, Profiles = profiles, Reviews = reviews
         }, new JsonSerializerOptions { WriteIndented = true }));
         Check(reviews.Count == 0, "authored Arial workbooks need no font review");

@@ -339,6 +339,11 @@ if (args is ["--expanded-audio-listening-pack", var expandedReviewPack, var expa
     await ExpandedAudioListeningContracts.RunAsync(expandedReviewPack, expandedReviewWorker, expandedReviewManifest);
     return 0;
 }
+if (args is ["--office-excel-print", var printWorker, var printFixtures, var printEvidence])
+{
+    await OfficeExcelLayoutContracts.RunAsync(printWorker, printEvidence, printFixtures);
+    return 0;
+}
 if (args is ["--office-chart-refusal", var chartWorker, var chartEvidence])
 {
     await OfficeChartRefusalContracts.RunAsync(chartWorker, chartEvidence);

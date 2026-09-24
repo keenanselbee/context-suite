@@ -92,6 +92,41 @@ private-worker and image/audio/PDF regression suites were not rerun for this
 evaluation-only change. No fresh production build or engine adoption is claimed.
 
 
+Final-candidate application replay, 2026-09-23
+---------------------------------------------
+
+The five retained fixtures now pass the actual application command path against
+the exact [1.1.2 candidate](expanded-candidate-1.1.2.md) worker. The test-only
+`--office-excel-print <worker> <fixtures> <evidence>` entry point uses the existing
+Excel command harness with saved values selected for each workbook. It preserves
+the original chart-layout mode and creates no new customer command.
+
+Evidence is retained at
+`.codex-temp/candidate-112-excel-print-b6475b7d4e06401da620548316239d3f`;
+the application stage is
+`.codex-temp/office-execution/7ea36699f41f4acab875f7fe052e33e2`.
+All five commands publish validated copies, preserve source bytes/timestamps and
+retire their native profiles, SID mappings and working contexts. No font review
+is required for these authored workbooks, and disposal leaves no worker or
+publication journal. Sixteen application assertions pass.
+
+The independent `--inspect-excel-print <report> <qpdf> <pdfium>` mode verifies
+source package parts against freshly authored fixtures, publication identities,
+PDF structure and complete page text. All eight pages match the expected
+sequences above and retain Letter geometry. PDFium renders every page at 96 DPI.
+Negative controls reject a missing repeated title, out-of-area text, reversed
+pages, collapsed pagination and a visible hidden row. This is not a claim of
+pixel equivalence with Microsoft Excel or human visual acceptance.
+
+The same rebuilt inspector also passes the existing four-chart layout reports
+without rerendering them through Office. Both managed tools build with zero
+warnings/errors. The disposable application test host uses the exact shipped
+Core DLL; successful exports use the original release worker. Package membership,
+all captured candidate files, sources, tools and retained fixtures remain
+unchanged. The only source changes are test harness/inspection modes; no native
+rebuild or candidate modification occurred.
+
+
 Remaining acceptance
 --------------------
 

@@ -177,6 +177,26 @@ copy. Final combined-candidate execution and broader resource/security acceptanc
 remain required; no reserved package or native engine pin changes here.
 
 
+Final-candidate validator replay, 2026-09-23
+-------------------------------------------
+
+All 71 actual-worker checks now pass against the exact unsigned 1.1.2 worker at
+`.codex-temp/candidate-112-office-validation-37fcd1e943d44b03837ca261d9df6211`.
+The retained three-family inputs above, including the calculated XLSX, match
+their earlier hashes. Fourteen refusal cases, active cancellation/worker loss,
+empty failed reservations, scratch cleanup and successful following requests
+retain their original assertions. No native Office profile or new export is
+created by this replay.
+
+The private contract host was rebuilt with zero warnings/errors into disposable
+scratch and paired with the exact shipped Core DLL. The worker runs directly
+from the release directory. All captured source, input and binary identities,
+plus candidate and test-host membership, remain unchanged. This closes the
+validator's final-candidate replay; native export interruption and network
+enforcement remain separate evidence. See the
+[candidate record](expanded-candidate-1.1.2.md) for the remaining gates.
+
+
 Office batch admission
 ----------------------
 

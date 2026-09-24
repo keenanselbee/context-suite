@@ -251,7 +251,40 @@ pixels, with 144 page comparisons. Candidate, fixtures, inspection inputs and
 captured source identities remain unchanged. This does not repeat or close the
 separate unfinished-write, managed-validation or native network checks.
 
-Exact A01-A08/performance completion, consolidated media review, real documents
+The date and font-decision replay passes at
+`.codex-temp/candidate-112-office-decisions-db7192f5044040c18fc3b5bb6a731c3e`.
+The date suite passes 32 application checks across six exports: saved values and
+the admitted 1904 calculation result publish, while the two known early-1900
+calculation errors remain withheld. Independent calculated-workbook and PDF
+inspection passes. The font-choice suite passes 85 checks across thirteen
+exports, with independent inspection of accepted publications and retained
+decline/refusal behavior. All nineteen native profiles and contexts are removed.
+The original production-build host and exact release worker are used; captured
+package, fixture and inspection identities remain unchanged.
+
+The [five Excel print cases](excel-print-layout-evaluation.md#final-candidate-application-replay-2026-09-23)
+also pass exact-worker publication, source preservation and profile cleanup at
+`.codex-temp/candidate-112-excel-print-b6475b7d4e06401da620548316239d3f`.
+Independent inspection passes complete text/page order, repeated titles,
+hidden/out-of-area exclusions and geometry across all eight PDF pages, with
+negative controls. The existing four-chart inspector regression also passes.
+Test-only modes were added to the managed command host and inspector, both built
+without warnings/errors. The disposable host uses the shipped Core DLL; no
+product or native-engine change occurred. All captured identities and candidate
+membership remain unchanged. These results close the authored D05 print replay
+and D06 date replay, not real-workbook or human acceptance.
+
+The exact release worker also passes all 71 Office PDF validation checks at
+`.codex-temp/candidate-112-office-validation-37fcd1e943d44b03837ca261d9df6211`.
+These cover three retained runtime04 exports, fourteen refusal cases, active
+cancellation/worker loss, empty failed reservations and successful following
+requests. The retained XLSX calculated copy is hash-bound with its source and
+PDF. A freshly built private contract host uses the shipped Core DLL; all
+candidate files, test inputs and membership remain unchanged. No Office export
+or profile is created by this validation-only replay. Native interruption,
+startup recovery and resource evidence retain their separately recorded scope.
+
+Exact A01-A08 completion, consolidated media review, real documents
 and recordings, D09 typography, affirmative attended network evidence, UI/theme/
 DPI/screen-reader observations and separate installed lifecycle/commerce gates
 remain open. Signing stays deferred. The active goal is not complete.
