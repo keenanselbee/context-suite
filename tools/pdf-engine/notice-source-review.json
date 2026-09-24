@@ -1,0 +1,467 @@
+{
+  "formatVersion": 1,
+  "scope": "Retained qpdf dependency notices and PDFium supplier/source notice correspondence; not a reproduced supplier build or redistribution approval.",
+  "payloadArchives": {
+    "qpdf": {
+      "bytes": 28165367,
+      "sha256": "3CD016CD433EF7232E42F4C13348A49CC14907A3C7278EF4F99120593126F7A6"
+    },
+    "pdfium": {
+      "bytes": 3818370,
+      "sha256": "78A17D9A5F14467631C26A3AC8741B27A0471ECC05BD6A119B523598160A0537"
+    },
+    "qpdf-source": {
+      "bytes": 19713921,
+      "sha256": "F045AA277BE2356FF53A89A8622945958291177D2483AFC20EDE7C8A8CD3873C"
+    }
+  },
+  "qpdfLibrary": {
+    "bytes": 7438848,
+    "sha256": "36FE5B2023F244E5785D96B8372DBA26B75EA51B63ADF4D4F1E66AD0AA1C8A61"
+  },
+  "qpdfVersionMarkers": [
+    "libjpeg-turbo version 3.2.0 (build 20260827)",
+    "[ deflate 1.3.2 Copyright 1995-2026 Jean-loup Gailly and Mark Adler ",
+    "openssl-version",
+    "3.6.3"
+  ],
+  "qpdf": {
+    "preamble": "Context Suite - qpdf dependency notices\n=======================================\n\nThe selected qpdf Windows runtime includes libjpeg-turbo 3.2.0, zlib 1.3.2\nand OpenSSL 3.6.3. The original notices below accompany each runtime copy.\nThe separate qpdf LICENSE.txt and NOTICE.md remain applicable.\nThis software is based in part on the work of the Independent JPEG Group.\n\n",
+    "notice": {
+      "bytes": 40570,
+      "sha256": "0B2BE0C1A780C1E9B90D64019EC06BAFC8FEE3BECAD322F3FD0A3A93DB5133AD"
+    },
+    "sources": [
+      {
+        "archive": "libjpeg-turbo-3.2.0.zip",
+        "member": "libjpeg-turbo-3.2.0/LICENSE.md",
+        "bytes": 6077,
+        "sha256": "BA6BCEEBCBA0FDD35488477C2CCA8C4632CE82C74DBFBC87D886CE6FC4433579"
+      },
+      {
+        "archive": "libjpeg-turbo-3.2.0.zip",
+        "member": "libjpeg-turbo-3.2.0/README.ijg",
+        "bytes": 12799,
+        "sha256": "75815E3BF6484201A3C3D17A1BBF10F2E8E3237F84DF10A2357EA896DB2A81D6"
+      },
+      {
+        "archive": "openssl-3.6.3.zip",
+        "member": "openssl-openssl-3.6.3/ACKNOWLEDGEMENTS.md",
+        "bytes": 159,
+        "sha256": "58DEE45791F007CED048114717F86672778FE75C551827C57E760861446CE3C3"
+      },
+      {
+        "archive": "openssl-3.6.3.zip",
+        "member": "openssl-openssl-3.6.3/AUTHORS.md",
+        "bytes": 1022,
+        "sha256": "B9F638DFC06B59C2D3B808186C3B30F713805A5DB390F5B77B1703AC58ACB83E"
+      },
+      {
+        "archive": "openssl-3.6.3.zip",
+        "member": "openssl-openssl-3.6.3/LICENSE.txt",
+        "bytes": 10175,
+        "sha256": "7D5450CB2D142651B8AFA315B5F238EFC805DAD827D91BA367D8516BC9D49E7A"
+      },
+      {
+        "archive": "openssl-3.6.3.zip",
+        "member": "openssl-openssl-3.6.3/README.md",
+        "bytes": 8519,
+        "sha256": "996BFF3A223153B1806B11D09FADF775F7FF12D85574879A3005004F113712FF"
+      },
+      {
+        "archive": "zlib-1.3.2.zip",
+        "member": "zlib-1.3.2/LICENSE",
+        "bytes": 1002,
+        "sha256": "E32FF4E00D9D94930537635291DA39E7E612703334BF6FDE8C7F1686FE8A45A2"
+      }
+    ],
+    "unchangedBinaries": {
+      "pdf-engine/qpdf.exe": "57C003E868FB66CD343FD5AFB91BE8C2277F56434EEA8635762499731BF9F60D",
+      "pdf-engine/qpdf30.dll": "36FE5B2023F244E5785D96B8372DBA26B75EA51B63ADF4D4F1E66AD0AA1C8A61",
+      "pdf-engine/concrt140.dll": "54716F0738AF891F283D213B5C8D11B25896BB8EE3097D301EAE718560CF974E",
+      "pdf-engine/msvcp140.dll": "7C26614E1D733892C2DEAC7E245CE115504B1D80592DD0A01B08E3E5A55F89CA",
+      "pdf-engine/msvcp140_1.dll": "206C931BF90FDAD8816DE3B5E2EF80B2BCAA9406C89ECC05FE6FDDFFE251E982",
+      "pdf-engine/msvcp140_2.dll": "D50D7883F20D1DC6191768D3746F52DD9CAC89C346FFAED5BE1F110C2F34A838",
+      "pdf-engine/msvcp140_atomic_wait.dll": "3D0CBFAA1BF3EECF5A3F4491D2960EE803CB994F30292C6ADC4A07C498F60E2B",
+      "pdf-engine/msvcp140_codecvt_ids.dll": "8A65C7596EF2E6938731F5A1058E7E40145B6D97967CC649231A076B9A608D78",
+      "pdf-engine/vcruntime140.dll": "D1F4225DF2CD877DBF130D5668A021DCE3F94118455FF5EC952061C30AFC9CE7",
+      "pdf-engine/vcruntime140_1.dll": "A7146C08F89FE5B04541AB507CDB59FF7B44534D4BA3C668A426C6450A03434E",
+      "pdf-validator/qpdf30.dll": "36FE5B2023F244E5785D96B8372DBA26B75EA51B63ADF4D4F1E66AD0AA1C8A61",
+      "pdf-validator/concrt140.dll": "54716F0738AF891F283D213B5C8D11B25896BB8EE3097D301EAE718560CF974E",
+      "pdf-validator/msvcp140.dll": "7C26614E1D733892C2DEAC7E245CE115504B1D80592DD0A01B08E3E5A55F89CA",
+      "pdf-validator/msvcp140_1.dll": "206C931BF90FDAD8816DE3B5E2EF80B2BCAA9406C89ECC05FE6FDDFFE251E982",
+      "pdf-validator/msvcp140_2.dll": "D50D7883F20D1DC6191768D3746F52DD9CAC89C346FFAED5BE1F110C2F34A838",
+      "pdf-validator/msvcp140_atomic_wait.dll": "3D0CBFAA1BF3EECF5A3F4491D2960EE803CB994F30292C6ADC4A07C498F60E2B",
+      "pdf-validator/msvcp140_codecvt_ids.dll": "8A65C7596EF2E6938731F5A1058E7E40145B6D97967CC649231A076B9A608D78",
+      "pdf-validator/vcruntime140.dll": "D1F4225DF2CD877DBF130D5668A021DCE3F94118455FF5EC952061C30AFC9CE7",
+      "pdf-validator/vcruntime140_1.dll": "A7146C08F89FE5B04541AB507CDB59FF7B44534D4BA3C668A426C6450A03434E",
+      "pdf-renderer/msvcp140.dll": "7C26614E1D733892C2DEAC7E245CE115504B1D80592DD0A01B08E3E5A55F89CA",
+      "pdf-renderer/vcruntime140.dll": "D1F4225DF2CD877DBF130D5668A021DCE3F94118455FF5EC952061C30AFC9CE7",
+      "pdf-renderer/vcruntime140_1.dll": "A7146C08F89FE5B04541AB507CDB59FF7B44534D4BA3C668A426C6450A03434E",
+      "pdf-renderer/pdfium.dll": "04100C03E41CAC1F979E36E5E26FB860BCB5A7461F53830D3C098716624A27A9",
+      "pdf-renderer/ContextSuite.PdfRenderer.exe": "4D58C3D9DFFCC8973391C93A0612C7DF97D516519BB726F6FEB2A29836485913",
+      "pdf-validator/ContextSuite.ImagePdfValidator.exe": "4BD57D54B4B6BD7C0A56170EEA26CA8DFB7080B429821D513E69829DCD91E073",
+      "pdf-renderer/qpdf30.dll": "36FE5B2023F244E5785D96B8372DBA26B75EA51B63ADF4D4F1E66AD0AA1C8A61",
+      "pdf-renderer/concrt140.dll": "54716F0738AF891F283D213B5C8D11B25896BB8EE3097D301EAE718560CF974E",
+      "pdf-renderer/msvcp140_1.dll": "206C931BF90FDAD8816DE3B5E2EF80B2BCAA9406C89ECC05FE6FDDFFE251E982",
+      "pdf-renderer/msvcp140_2.dll": "D50D7883F20D1DC6191768D3746F52DD9CAC89C346FFAED5BE1F110C2F34A838",
+      "pdf-renderer/msvcp140_atomic_wait.dll": "3D0CBFAA1BF3EECF5A3F4491D2960EE803CB994F30292C6ADC4A07C498F60E2B",
+      "pdf-renderer/msvcp140_codecvt_ids.dll": "8A65C7596EF2E6938731F5A1058E7E40145B6D97967CC649231A076B9A608D78"
+    }
+  },
+  "pdfium": {
+    "branch": "chromium/8044",
+    "observedSourceCommit": "f91ca5a72358bb0b00b4da9481b21fe668157614",
+    "supplierCommit": "5453f3afc4785cbad82c05f6ceb4dabea0cb81a0",
+    "sourceTimestamp": "2026-09-06T21:46:54-07:00",
+    "releaseTimestamp": "2026-09-07T11:53:58Z",
+    "notices": [
+      {
+        "name": "pdfium.txt",
+        "url": "https://pdfium.googlesource.com/pdfium/+/f91ca5a72358bb0b00b4da9481b21fe668157614/LICENSE?format=TEXT",
+        "revision": "f91ca5a72358bb0b00b4da9481b21fe668157614",
+        "transform": "strip-comments",
+        "source": {
+          "bytes": 12896,
+          "sha256": "1FE9DEA718FBD75CF149ADAF4D8A22A4335604D964DDB76D1B45383DEC8668C9"
+        },
+        "notice": {
+          "bytes": 12818,
+          "sha256": "961EACD9633FFF6D051DB7208B755E9210E30EFAC7ADEC3E6A6D52798F0CCF0E"
+        },
+        "matches": true,
+        "sourceMember": "origins/pdfium.txt.source",
+        "shipped": {
+          "bytes": 12818,
+          "sha256": "961EACD9633FFF6D051DB7208B755E9210E30EFAC7ADEC3E6A6D52798F0CCF0E"
+        },
+        "matchPolicy": "exact"
+      },
+      {
+        "name": "agg23.txt",
+        "url": "https://pdfium.googlesource.com/pdfium/+/f91ca5a72358bb0b00b4da9481b21fe668157614/third_party/agg23/agg_array.h?format=TEXT",
+        "revision": "f91ca5a72358bb0b00b4da9481b21fe668157614",
+        "transform": "agg",
+        "source": {
+          "bytes": 12611,
+          "sha256": "05F7077B756F2C4F515245566BF84C1215552E633848FE3C4DE3535A9C1D07F2"
+        },
+        "notice": {
+          "bytes": 725,
+          "sha256": "C110D3EA2AD77467CE0DCFF7D3337E6C8BE8049A5103F4B9BD5FD911A77972E5"
+        },
+        "matches": true,
+        "sourceMember": "origins/agg23.txt.source",
+        "shipped": {
+          "bytes": 725,
+          "sha256": "C110D3EA2AD77467CE0DCFF7D3337E6C8BE8049A5103F4B9BD5FD911A77972E5"
+        },
+        "matchPolicy": "exact"
+      },
+      {
+        "name": "freetype.txt",
+        "url": "https://pdfium.googlesource.com/pdfium/+/f91ca5a72358bb0b00b4da9481b21fe668157614/third_party/freetype/FTL.TXT?format=TEXT",
+        "revision": "f91ca5a72358bb0b00b4da9481b21fe668157614",
+        "transform": "copy",
+        "source": {
+          "bytes": 6741,
+          "sha256": "F4B133E25DF1F86AD3FFEA453AA0E613F0474F34778DBBB3E437E7B2724937D8"
+        },
+        "notice": {
+          "bytes": 6741,
+          "sha256": "F4B133E25DF1F86AD3FFEA453AA0E613F0474F34778DBBB3E437E7B2724937D8"
+        },
+        "matches": true,
+        "sourceMember": "origins/freetype.txt.source",
+        "shipped": {
+          "bytes": 6741,
+          "sha256": "F4B133E25DF1F86AD3FFEA453AA0E613F0474F34778DBBB3E437E7B2724937D8"
+        },
+        "matchPolicy": "exact"
+      },
+      {
+        "name": "lcms.txt",
+        "url": "https://pdfium.googlesource.com/pdfium/+/f91ca5a72358bb0b00b4da9481b21fe668157614/third_party/lcms/include/lcms2.h?format=TEXT",
+        "revision": "f91ca5a72358bb0b00b4da9481b21fe668157614",
+        "transform": "lcms",
+        "source": {
+          "bytes": 108846,
+          "sha256": "FCA5C8C6C65F51B64478BBCF52AFF5C9757B6F8C3FA2A872751E8833A8978434"
+        },
+        "notice": {
+          "bytes": 1353,
+          "sha256": "7312B68C5B25E9BF2B828706FB4E29588F22705112F411FD42E1F7D84C3D139A"
+        },
+        "matches": true,
+        "sourceMember": "origins/lcms.txt.source",
+        "shipped": {
+          "bytes": 1353,
+          "sha256": "7312B68C5B25E9BF2B828706FB4E29588F22705112F411FD42E1F7D84C3D139A"
+        },
+        "matchPolicy": "exact"
+      },
+      {
+        "name": "libopenjpeg.txt",
+        "url": "https://pdfium.googlesource.com/pdfium/+/f91ca5a72358bb0b00b4da9481b21fe668157614/third_party/libopenjpeg/openjpeg.c?format=TEXT",
+        "revision": "f91ca5a72358bb0b00b4da9481b21fe668157614",
+        "transform": "comment",
+        "source": {
+          "bytes": 32224,
+          "sha256": "688B555F028531033D7CDC500DFFE981CD0C826FC07833B1980A64BBDE175250"
+        },
+        "notice": {
+          "bytes": 1794,
+          "sha256": "C5AB0890A737C2DFA7BA675036554F6D17741D98629B0C2A145354D00617E6B2"
+        },
+        "matches": true,
+        "sourceMember": "origins/libopenjpeg.txt.source",
+        "shipped": {
+          "bytes": 1794,
+          "sha256": "C5AB0890A737C2DFA7BA675036554F6D17741D98629B0C2A145354D00617E6B2"
+        },
+        "matchPolicy": "exact"
+      },
+      {
+        "name": "abseil.txt",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/435e7d977fb36fb47854a4c552c0706dad0bd7cf/LICENSE?format=TEXT",
+        "revision": "435e7d977fb36fb47854a4c552c0706dad0bd7cf",
+        "transform": "copy",
+        "source": {
+          "bytes": 11361,
+          "sha256": "C79A7FEA0E3CAC04CD43F20E7B648E5A0FF8FA5344E644B0EE09CA1162B62747"
+        },
+        "notice": {
+          "bytes": 11361,
+          "sha256": "C79A7FEA0E3CAC04CD43F20E7B648E5A0FF8FA5344E644B0EE09CA1162B62747"
+        },
+        "matches": false,
+        "sourceMember": "origins/abseil.txt.source",
+        "shipped": {
+          "bytes": 11564,
+          "sha256": "F54FFF0B905DF5B3464527C652A30E903B172D6DCAB4D89B5E6F105D5E4A4603"
+        },
+        "matchPolicy": "line-endings-only"
+      },
+      {
+        "name": "fast_float.txt",
+        "url": "https://chromium.googlesource.com/external/github.com/fastfloat/fast_float/+/34164f547b7df3f5d794ff67e9f885c36819ebfc/LICENSE-MIT?format=TEXT",
+        "revision": "34164f547b7df3f5d794ff67e9f885c36819ebfc",
+        "transform": "copy",
+        "source": {
+          "bytes": 1079,
+          "sha256": "E562F3F974CED7E69DD1DB77B820B36BCF8F30377F1AA105723FBA449C53C4E6"
+        },
+        "notice": {
+          "bytes": 1079,
+          "sha256": "E562F3F974CED7E69DD1DB77B820B36BCF8F30377F1AA105723FBA449C53C4E6"
+        },
+        "matches": false,
+        "sourceMember": "origins/fast_float.txt.source",
+        "shipped": {
+          "bytes": 1106,
+          "sha256": "BF1B57355FECA8FCE77EE95F48002F8D4789FB71B30EC7599C06CDA4901FBB2B"
+        },
+        "matchPolicy": "line-endings-only"
+      },
+      {
+        "name": "icu.txt",
+        "url": "https://chromium.googlesource.com/chromium/deps/icu/+/8cc91d9b6ab9991802fd208ee03a69714fd0251c/LICENSE?format=TEXT",
+        "revision": "8cc91d9b6ab9991802fd208ee03a69714fd0251c",
+        "transform": "copy",
+        "source": {
+          "bytes": 27718,
+          "sha256": "E55522D81EDC687A341A4411E0776E54CA654E90147F354A90458AACED4116AF"
+        },
+        "notice": {
+          "bytes": 27718,
+          "sha256": "E55522D81EDC687A341A4411E0776E54CA654E90147F354A90458AACED4116AF"
+        },
+        "matches": false,
+        "sourceMember": "origins/icu.txt.source",
+        "shipped": {
+          "bytes": 28286,
+          "sha256": "93679F4389D53B6835D89843F251844FB9BC455B35BAB036D3C8E7ABE497A47A"
+        },
+        "matchPolicy": "line-endings-only"
+      },
+      {
+        "name": "libjpeg_turbo.md",
+        "url": "https://chromium.googlesource.com/chromium/deps/libjpeg_turbo/+/640f254ad0fa03f6b1f29f89b7dd9366f2f6e533/LICENSE.md?format=TEXT",
+        "revision": "640f254ad0fa03f6b1f29f89b7dd9366f2f6e533",
+        "transform": "copy",
+        "source": {
+          "bytes": 5620,
+          "sha256": "96F5B328ADBB78EEAAEC6980D73FD558CB1E4D62560ED615646BC3CF5E532430"
+        },
+        "notice": {
+          "bytes": 5620,
+          "sha256": "96F5B328ADBB78EEAAEC6980D73FD558CB1E4D62560ED615646BC3CF5E532430"
+        },
+        "matches": false,
+        "sourceMember": "origins/libjpeg_turbo.md.source",
+        "shipped": {
+          "bytes": 5755,
+          "sha256": "BE2B2B5AB168BCE87BC3E31F2A5C5ADBA4B7F6E9E51D618E958D1D46972EBD95"
+        },
+        "matchPolicy": "line-endings-only"
+      },
+      {
+        "name": "libjpeg_turbo.ijg",
+        "url": "https://chromium.googlesource.com/chromium/deps/libjpeg_turbo/+/640f254ad0fa03f6b1f29f89b7dd9366f2f6e533/README.ijg?format=TEXT",
+        "revision": "640f254ad0fa03f6b1f29f89b7dd9366f2f6e533",
+        "transform": "copy",
+        "source": {
+          "bytes": 12799,
+          "sha256": "75815E3BF6484201A3C3D17A1BBF10F2E8E3237F84DF10A2357EA896DB2A81D6"
+        },
+        "notice": {
+          "bytes": 12799,
+          "sha256": "75815E3BF6484201A3C3D17A1BBF10F2E8E3237F84DF10A2357EA896DB2A81D6"
+        },
+        "matches": false,
+        "sourceMember": "origins/libjpeg_turbo.ijg.source",
+        "shipped": {
+          "bytes": 13059,
+          "sha256": "DB16A04128171879C60708D171B88D97345A2DD20F9BFC173680A4497C73F704"
+        },
+        "matchPolicy": "line-endings-only"
+      },
+      {
+        "name": "libpng.txt",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/libpng/+/6d5341764ef4e38cbc07d35514a8aa73de50de8a/LICENSE?format=TEXT",
+        "revision": "6d5341764ef4e38cbc07d35514a8aa73de50de8a",
+        "transform": "copy",
+        "source": {
+          "bytes": 5345,
+          "sha256": "BDB0A645EA18C60507D0368379B1AC5474B92255FCC2D115E07486A7672BA526"
+        },
+        "notice": {
+          "bytes": 5345,
+          "sha256": "BDB0A645EA18C60507D0368379B1AC5474B92255FCC2D115E07486A7672BA526"
+        },
+        "matches": false,
+        "sourceMember": "origins/libpng.txt.source",
+        "shipped": {
+          "bytes": 5479,
+          "sha256": "452390433BA0F88AA3E2B122C647741B72A0C117CD6ED7A329B49785AECB5511"
+        },
+        "matchPolicy": "line-endings-only"
+      },
+      {
+        "name": "llvm-libc.txt",
+        "url": "https://chromium.googlesource.com/external/github.com/llvm/llvm-project/libc/+/320824188c37e5c28738b9652a0ca8087c934bc9/LICENSE.TXT?format=TEXT",
+        "revision": "320824188c37e5c28738b9652a0ca8087c934bc9",
+        "transform": "copy",
+        "source": {
+          "bytes": 15140,
+          "sha256": "EBCD9BBF783A73D05C53BA4D586B8D5813DCDF3BBEC50265860CCC885E606F47"
+        },
+        "notice": {
+          "bytes": 15140,
+          "sha256": "EBCD9BBF783A73D05C53BA4D586B8D5813DCDF3BBEC50265860CCC885E606F47"
+        },
+        "matches": false,
+        "sourceMember": "origins/llvm-libc.txt.source",
+        "shipped": {
+          "bytes": 15418,
+          "sha256": "3B6226C32E168C83B891D8D6F0D3C29C2116DC3EF93DC93C307B54F279ECF383"
+        },
+        "matchPolicy": "line-endings-only"
+      },
+      {
+        "name": "simdutf.txt",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/simdutf/+/f7356eed293f8208c40b3c1b344a50bd70971983/LICENSE?format=TEXT",
+        "revision": "f7356eed293f8208c40b3c1b344a50bd70971983",
+        "transform": "copy",
+        "source": {
+          "bytes": 1059,
+          "sha256": "FC8DBC04E03AD4EFC08A647FFE7F995B811A95BC04C0E85A56D5277C6593FA5F"
+        },
+        "notice": {
+          "bytes": 1059,
+          "sha256": "FC8DBC04E03AD4EFC08A647FFE7F995B811A95BC04C0E85A56D5277C6593FA5F"
+        },
+        "matches": false,
+        "sourceMember": "origins/simdutf.txt.source",
+        "shipped": {
+          "bytes": 1077,
+          "sha256": "C172A0BA936FF31230FEBB5DAD869E25CB7C1A07480C7A381BE8CF011BB52719"
+        },
+        "matchPolicy": "line-endings-only"
+      },
+      {
+        "name": "zlib.txt",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/zlib/+/285e94b8fa95ad3b7d16b80798ec8dce6febb8c8/zlib.h?format=TEXT",
+        "revision": "285e94b8fa95ad3b7d16b80798ec8dce6febb8c8",
+        "transform": "zlib",
+        "source": {
+          "bytes": 104484,
+          "sha256": "0FF41598D145693759A8322BB90BC4F2C57DCDCB3635FDF5B2195BF13DF15B54"
+        },
+        "notice": {
+          "bytes": 1332,
+          "sha256": "33FD641C9F3B0E0BE64BC78FEA9E94807674CDD70C48477599226CB8956565FE"
+        },
+        "matches": true,
+        "sourceMember": "origins/zlib.txt.source",
+        "shipped": {
+          "bytes": 1332,
+          "sha256": "33FD641C9F3B0E0BE64BC78FEA9E94807674CDD70C48477599226CB8956565FE"
+        },
+        "matchPolicy": "exact"
+      }
+    ],
+    "shippedFiles": {
+      "args.gn": {
+        "bytes": 216,
+        "sha256": "161BF08999E403B7DA9D924C45B7EE7BC8BEB3038B08F9E174BA6761DD06A976"
+      },
+      "VERSION": {
+        "bytes": 37,
+        "sha256": "BEF414BC84AF4DF6A24F158563EB840AE1A17D1967FA101A7B0AED5421184DE5"
+      },
+      "LICENSE": {
+        "bytes": 1184,
+        "sha256": "8854F4388F1CA13B3AD9BAA42E95F5546B4C0B17109C159256D3ECA7BE39B09B"
+      }
+    },
+    "scope": "Observed branch head predates immutable supplier release. Reviewed source defaults and notice texts correspond; no supplier linker map or independent rebuild is available."
+  },
+  "sourceArchives": {
+    "zlib-1.3.2.zip": {
+      "url": "https://codeload.github.com/madler/zlib/zip/refs/tags/v1.3.2",
+      "bytes": 1671101,
+      "sha256": "31FD9FEE98812ABCF147D0E103BC4D2F983C35A8D7A807A328A299F3A74E0050"
+    },
+    "libjpeg-turbo-3.2.0.zip": {
+      "url": "https://codeload.github.com/libjpeg-turbo/libjpeg-turbo/zip/refs/tags/3.2.0",
+      "bytes": 3003745,
+      "sha256": "1B4C2CB6CBA1CA5E53B9E85EEEAB02154CAB4B70894C96E97A9C747A26D19D63"
+    },
+    "openssl-3.6.3.zip": {
+      "url": "https://codeload.github.com/openssl/openssl/zip/refs/tags/openssl-3.6.3",
+      "bytes": 58782221,
+      "sha256": "E24124CB19D26F2045F53D3EE94871288136242931D001C71646C2403CFEDEE3"
+    },
+    "qpdf-12.4.1.tar.gz": {
+      "bytes": 19713921,
+      "sha256": "F045AA277BE2356FF53A89A8622945958291177D2483AFC20EDE7C8A8CD3873C",
+      "url": "https://github.com/qpdf/qpdf/releases/download/v12.4.1/qpdf-12.4.1.tar.gz"
+    },
+    "pdfium-supplier-source.zip": {
+      "url": "https://codeload.github.com/bblanchon/pdfium-binaries/zip/5453f3afc4785cbad82c05f6ceb4dabea0cb81a0",
+      "bytes": 183856,
+      "sha256": "E4039B9BF09383E6E3E3D352B434D62A0B4C16016E0EE2B8F6002CEB1362AAFE"
+    }
+  },
+  "limitations": [
+    "The historical qpdf vcpkg cache is no longer among the supplier's three retained cache assets. The source recipe and embedded binary version markers identify these notice versions, not exact historical vcpkg patches/compiler inputs.",
+    "PDFium supplier notice collection is based on generated Ninja dependency names. Matching its output and reviewed defaults is not a fresh native build or independent complete linker-map audit.",
+    "Microsoft runtime redistribution eligibility and final source/product terms remain owner/release decisions."
+  ],
+  "evidenceArchive": {
+    "name": "pdfium-notice-evidence.zip",
+    "bytes": 164208,
+    "sha256": "9087F2C9A69D5AD0D2B4C4215F74D2E20BE17ACC6677A6F096126D34B1D6317F"
+  }
+}

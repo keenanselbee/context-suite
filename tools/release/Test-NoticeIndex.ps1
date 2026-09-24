@@ -48,7 +48,7 @@ Expect-Refusal { & $generator -Payload $payload -Verify } 'Stale base index reje
 & $generator -Payload $payload -Verify
 $expanded = [IO.File]::ReadAllText($index)
 $links = [regex]::Matches($expanded, '<a href="([^"]+)">')
-Check ($links.Count -eq 59) 'Expanded build exposes all 59 selected notices and change records'
+Check ($links.Count -eq 62) 'Expanded build exposes all 62 selected notices and change records'
 foreach ($link in $links) {
     $relative = [Uri]::UnescapeDataString($link.Groups[1].Value)
     Check (-not [IO.Path]::IsPathRooted($relative) -and $relative -notmatch '[:\\?#]|(^|/)\.\.(/|$)' -and

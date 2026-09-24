@@ -364,8 +364,8 @@
       "path": "pdf-engine/ContextSuite.Notice.txt",
       "input": "authored",
       "member": "THIRD-PARTY-NOTICES.txt",
-      "bytes": 1089,
-      "sha256": "B45E53A644F781392F21AB3C24CE99C677EB923FABC80F60DFE66856C3263FE9"
+      "bytes": 1424,
+      "sha256": "56EF69A5311EC97123CFD1AF5456BD6E37B96A35225CA64D1AAB484D057946DA"
     },
     {
       "path": "pdf-renderer/qpdf30.dll",
@@ -422,6 +422,27 @@
       "member": "qpdf-12.4.1/NOTICE.md",
       "bytes": 2729,
       "sha256": "B207F65A9E5491195DED63B2941199B19A4D30148871F2742C88EAE7BFC513A6"
+    },
+    {
+      "path": "pdf-engine/Qpdf.Dependency.Notices.txt",
+      "input": "authored",
+      "member": "../../assets/third-party/pdf/Qpdf.Dependency.Notices.txt",
+      "bytes": 40570,
+      "sha256": "0B2BE0C1A780C1E9B90D64019EC06BAFC8FEE3BECAD322F3FD0A3A93DB5133AD"
+    },
+    {
+      "path": "pdf-renderer/Qpdf.Dependency.Notices.txt",
+      "input": "authored",
+      "member": "../../assets/third-party/pdf/Qpdf.Dependency.Notices.txt",
+      "bytes": 40570,
+      "sha256": "0B2BE0C1A780C1E9B90D64019EC06BAFC8FEE3BECAD322F3FD0A3A93DB5133AD"
+    },
+    {
+      "path": "pdf-validator/Qpdf.Dependency.Notices.txt",
+      "input": "authored",
+      "member": "../../assets/third-party/pdf/Qpdf.Dependency.Notices.txt",
+      "bytes": 40570,
+      "sha256": "0B2BE0C1A780C1E9B90D64019EC06BAFC8FEE3BECAD322F3FD0A3A93DB5133AD"
     }
   ]
 }

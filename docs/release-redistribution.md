@@ -4,6 +4,13 @@ Release Redistribution Checklist
 Reviewed: 2026-09-07, with dated additions below. Engineering review, not a legal
 opinion or release approval.
 
+PDF notice addition, 2026-09-23: [qpdf dependency notices and PDFium source mapping](pdf-dependency-notices.md)
+now retain the selected static dependency texts and supplier notice provenance.
+Fresh PDF staging includes exact qpdf supplements beside all three runtime copies
+without changing native bytes. The record distinguishes supplier recipes and
+observed version strings from a reproduced supplier build. Commercial decisions
+and final candidate acceptance remain separate.
+
 DDS/palette addition, 2026-09-23: [retained source and notice mapping](dds-palette-source-review.md)
 now binds their selected upstream sources, actual build records and unchanged
 binaries. It identifies the SDK DirectXMath variant and adds its explicit

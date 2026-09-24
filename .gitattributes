@@ -13,3 +13,7 @@ assets/third-party/oxipng/Oxipng.ThirdPartyNotices.txt text eol=lf whitespace=-b
 # Supplemental Office notices preserve the source texts byte-for-byte.
 assets/third-party/office/Office.Python.Notices.txt -text whitespace=-blank-at-eol,-blank-at-eof
 tools/office-engine/python-notice-review.json text eol=lf
+# Upstream OpenSSL headings use seven equals signs; preserve that source text.
+assets/third-party/pdf/Qpdf.Dependency.Notices.txt -text whitespace=-blank-at-eol,-blank-at-eof conflict-marker-size=32
+tools/pdf-engine/THIRD-PARTY-NOTICES.txt text eol=lf
+tools/pdf-engine/notice-source-review.json text eol=lf

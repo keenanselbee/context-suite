@@ -91,6 +91,12 @@ visible/assistive acceptance and installer lifecycle remain distinct gates.
 Evidence
 --------
 
+The later [dependency notice checkpoint](pdf-dependency-notices.md) adds pinned
+qpdf dependency notices beside all three runtime copies, preserves the selected
+native binaries, and passes 25 payload checks. It also retains PDFium supplier
+recipes and 14 source/notice comparisons. The stages below remain historical;
+they predate the new supplemental notice requirement.
+
 Full managed/native stage
 `artifacts/production-staging/16af9543593945e5a9c9a53c915c7ec7` passed with zero
 managed warnings/errors and complete image/audio/PDF identity, notice, allowlist

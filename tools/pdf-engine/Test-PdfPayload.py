@@ -53,6 +53,7 @@ def main():
     record = payload.verify(source)
     scratch = payload.ROOT / ".codex-temp" / ("pdf-payload-tests-" + uuid.uuid4().hex)
     scratch.mkdir()
+    source_hashes = {item["path"]: payload.digest((source / item["path"]).read_bytes()) for item in record["files"]}
     results = ["Complete pinned PDF deployment accepted"]
     count = imports(source, scratch, record)
     results.append(f"Adjacent dependency closure verified for {count} native files; Windows imports recorded")
@@ -75,6 +76,10 @@ def main():
         ("changed-qpdf-library", "pdf-validator/qpdf30.dll", b"changed"),
         ("missing-renderer-runtime", "pdf-renderer/vcruntime140_1.dll", None),
         ("missing-qpdf-license", "pdf-engine/LICENSE.txt", None),
+        ("missing-qpdf-dependency-notices", "pdf-engine/Qpdf.Dependency.Notices.txt", None),
+        ("missing-renderer-dependency-notices", "pdf-renderer/Qpdf.Dependency.Notices.txt", None),
+        ("changed-validator-dependency-notices", "pdf-validator/Qpdf.Dependency.Notices.txt",
+         b"x" * (source / "pdf-validator/Qpdf.Dependency.Notices.txt").stat().st_size),
         ("changed-qpdf-notice", "pdf-validator/NOTICE.md", b"changed"),
         ("missing-pdfium-notice", "pdf-renderer/licenses/libjpeg_turbo.ijg", None),
         ("extra-runtime", "pdf-renderer/unreviewed.dll", b"extra"),
@@ -117,6 +122,10 @@ def main():
         if result.returncode == 0 or expected not in result.stdout + result.stderr:
             raise AssertionError("Entry-point refusal failed: " + name)
         results.append(name)
+    if source_hashes != {name: payload.digest((source / name).read_bytes()) for name in source_hashes}:
+        raise AssertionError("Original PDF payload changed during tests")
+    results.append("Original PDF source payload identities unchanged")
+    (scratch / "inputs.json").write_text(json.dumps({"Payload": str(source), "Files": source_hashes}, indent=2) + "\n")
     (scratch / "results.json").write_text(json.dumps(results, indent=2) + "\n")
     print(f"{len(results)} PDF payload checks passed: {scratch}")
 
