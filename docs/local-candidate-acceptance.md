@@ -33,8 +33,9 @@ binding also pass. Startup recovery now passes 99 worker and 18 source-linked
 WPF lifecycle checks; unfinished-workbook shutdown passes 42 checks, and the
 shipped-library managed guard passes 105. All twelve profiles/mappings are
 removed and owned ACLs are clear. Fresh candidate audio/image/PDF review media
-is prepared, with human observations unperformed. Provider evidence reconciliation,
-consolidated document/review preparation and human acceptance remain open. The earlier
+is prepared and collected with 62 current document/PDF cases; human observations
+are unperformed. Provider evidence reconciliation, refreshed H04 instructions,
+real inputs and human acceptance remain open. The earlier
 [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
 unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance
@@ -179,10 +180,11 @@ owner acceptance. Do not reuse old review results for changed media outputs.
   automated image checks. Human visual/display acceptance remains open.
 - **H03 documents:** D01-D12 plus PDF text/vector, scanned, rotated/cropped and
   transparent-image controls. Review actual pages alongside automated checks.
-  The [document worksheet](document-review.md) prepares 58 historical authored
-  cases across D01-D09 plus four fresh PDF appearance controls, preserving five
-  failures and two withheld date PDFs. The scan is synthetic. Real documents,
-  actual human review and the final-candidate replay remain open.
+  The [current document worksheet](document-review.md#current-candidate-collection-2026-09-24)
+  contains 58 candidate Office cases across D01-D09 plus four candidate PDF
+  appearance controls. It preserves the D09 failure and two withheld date PDFs;
+  the repaired chart cases now pass. The scan is synthetic. Real documents,
+  the D09 decision and actual human review remain open.
 - **H04 workflows:** eight scenarios: mixed Analyze with unreadable input; quiet
   image conversion; matte choice; audio quality choice; image-PDF order; Office
   calculation/font choices; cancellation/failure/retry; Settings/License changes
@@ -217,7 +219,9 @@ assembly/identity/refusal checks at
 `.codex-temp/owner-review-draft/6bb4ef7de745406090b6347fa613c702/index.html`.
 Run either tool with the manifest path as its sole argument. These checks do not
 prove visual presentation, worksheet interaction or media fidelity. The final
-candidate still needs refreshed comparisons; this draft cannot clear a gate.
+candidate comparisons are now in the separate
+[1.1.2 collection](document-review.md#current-candidate-collection-2026-09-24);
+this historical draft cannot clear a gate.
 
 
 Performance and package review limits

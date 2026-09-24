@@ -327,9 +327,15 @@ Fresh human-review media is prepared at
 Its receipt binds the exact release worker, 25 audio comparisons, sixteen HEIF
 image outputs and four PDF appearance cases. Automated preparation passes and
 all bound inputs and membership remain unchanged. Audio and image worksheets
-are generated without playback or a human pass. Consolidated document review,
-real owner recordings/documents and the combined entry point remain unfinished;
-the historical draft must not be represented as this candidate's review pack.
+are generated without playback or a human pass. The
+[current collection](document-review.md#current-candidate-collection-2026-09-24)
+is `.codex-temp/candidate-112-owner-review-05a7185bd7be4aaab425ef39fdd92cc1/index.html`.
+It combines those media worksheets and 62 current document/PDF cases: 59 scoped
+automated passes, one D09 failure and two required date refusals. All 400 local
+worksheet links and copied media identities pass verification; the document
+worksheet passes ten existing identity/markup/refusal checks. Human observations
+remain unset. Real recordings/documents and refreshed H04 instructions remain
+unfinished; the historical draft is retained separately.
 
 Exact A01-A08 reconciliation, consolidated media review, real documents
 and recordings, D09 typography, affirmative attended network evidence, UI/theme/

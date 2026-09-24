@@ -1,15 +1,48 @@
 Document Review Worksheet
 =========================
 
-Status: 58 historical Office cases and four fresh PDF controls are prepared for
-H03 human review. No human acceptance or final-candidate replay is claimed. This
-pack supports the
+Status: 58 Office cases and four PDF appearance controls from candidate 1.1.2
+are prepared for H03 review. Human acceptance is unperformed; D09 remains failed.
+The older historical pack is retained separately. These materials support the
 [local acceptance contract](local-candidate-acceptance.md); it does not replace
 the required real documents or unresolved fidelity work.
 
 
-Prepared material
------------------
+Current candidate collection, 2026-09-24
+---------------------------------------
+
+Open
+`.codex-temp/candidate-112-owner-review-05a7185bd7be4aaab425ef39fdd92cc1/index.html`.
+This entry point collects 25 audio comparisons, sixteen HEIC/AVIF outputs and
+62 document/PDF cases. Its unchanged artifact copies total 362,905,660 bytes.
+The document worksheet is `packs/documents/review.html` beneath that directory.
+The page does not launch an application, play media or upload anything.
+
+All current outputs come from the preserved 1.1.2 release worker. The 62 document
+entries retain **59 scoped automated passes, one PowerPoint typography failure
+and two required early-date refusals**. Four repaired chart cases and five print
+cases now use passing candidate application/independent inspection. Historical
+rendering controls remain explicitly labeled references, not Microsoft Office
+exports. The D09 limit remains 0.01 points; no owner approval is inferred.
+
+`document-inputs.json` binds the selected artifacts, current independent reports,
+candidate hashes and original selection. `manifest.json` identifies every copied
+worksheet file; `verified.json` confirms all 400 local worksheet links, media
+copies against generation receipts, retained case statuses and unset human
+observations. The existing document worksheet verifier also passes its ten
+identity, markup, download-script syntax and refusal checks at
+`.codex-temp/document-review-checks/63133e4f390d43bfaeec65c4f1132569`.
+
+The retained preparation wrapper reuses the document preparer's artifact and
+worksheet handling, then changes the new page's historical-worker notice to
+identify 1.1.2. It retains overall acceptance as false and all case failures.
+No prior pack or evidence report is changed. Browser appearance, interaction,
+notes download and accessibility remain unverified. Three real recordings,
+D10-D12 documents and the refreshed H04 workflow instructions remain outstanding.
+
+
+Historical prepared material
+----------------------------
 
 Open `.codex-temp/document-review/3673ab009b4e4258a543ed7e7555533a/review.html`.
 The self-contained local pack has 157 files totaling 88,557,075 bytes, including
@@ -41,9 +74,10 @@ Microsoft Office reference exports. The three ordinary documents use the
 The other Office cases retain their original worker/evaluation identities and
 reports. The four new PDF controls use the same expanded worker, as detailed below.
 
-The [chart failures](excel-layout-acceptance.md) remain visible even though current
-preflight refuses chart-bearing XLSX. Refusal is interim protection, not D07
-completion. The [PowerPoint tolerance failure](powerpoint-layout-acceptance.md)
+The [chart failures](excel-layout-acceptance.md) remain visible in this historical
+pack. At that checkpoint preflight refused chart-bearing XLSX; the current
+candidate collection above includes the repaired chart outputs. The
+[PowerPoint tolerance failure](powerpoint-layout-acceptance.md)
 remains failed under its existing 0.01-point limit. The two withheld date PDFs
 are diagnostic artifacts with incorrect dates, never examples of acceptable
 published output. Word's specific move-spacing allowance is not generalized.
@@ -66,8 +100,8 @@ Manual review
    manifest and artifact identities. Nothing uploads or saves automatically.
 
 The worksheet cannot establish source-application fidelity without the required
-reference, or replace D10-D12. Its artifacts precede the final candidate, so any
-changed output requires another review. H04 workflows, installed Explorer,
+reference, or replace D10-D12. Use the current candidate collection above;
+any later changed output requires another review. H04 workflows, installed Explorer,
 screen-reader delivery, themes, DPI levels and multiple monitors remain separate.
 
 

@@ -62,8 +62,10 @@ guards and exact source/notice binding. Exact-candidate startup and unfinished
 workbook recovery now pass, as does the shipped-library managed guard; all
 twelve profiles/mappings and owned permissions are cleaned up. Fresh audio,
 image and PDF review samples are generated with the exact worker, without human
-acceptance. Provider evidence reconciliation and the consolidated document/review
-pack remain unfinished. The linked candidate record owns
+acceptance. Their consolidated collection now includes 62 current document/PDF
+cases, preserving the D09 failure and two required date refusals. Provider
+evidence reconciliation, refreshed H04 instructions and owner real inputs remain
+unfinished. The linked candidate record owns
 these current results; earlier scratch evidence below remains historical.
 
 The [local candidate acceptance contract](local-candidate-acceptance.md) now
