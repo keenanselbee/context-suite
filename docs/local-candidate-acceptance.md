@@ -46,7 +46,9 @@ adds deterministic in-progress hash/worksheet cancellation and unchanged date
 decisions across six native copies, with a separate 71-check actual-worker
 validation replay. The [production-launcher resource checks](office-resource-enforcement.md)
 now pass actual memory/process refusal, bounded diagnostics, cleanup and following
-controls. Disk/I/O, network and exact final-candidate gates remain open.
+controls. [Native output-write refusal and following worker recovery](office-io-failures.md)
+also pass for all three Office families, including independent following-PDF
+comparisons. Network and exact final-candidate gates remain open.
 This is separate from the D09 typography decision.
 
 The [packaged Office source record](office-production-payload.md#packaged-source-identity-2026-09-23)

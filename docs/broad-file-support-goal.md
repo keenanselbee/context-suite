@@ -68,8 +68,9 @@ The next completion steps are:
    Ordinary internal charts are admitted; newer/external charts, incomplete
    chart inspection and recognized DDE retain protective refusals. The bounded
    [launcher resource replay](office-resource-enforcement.md) passes memory/process
-   limits, diagnostics and cleanup. Disk/I/O failure behavior, exact final-candidate
-   replay, D09 rounding and affirmative network
+   limits, diagnostics and cleanup. [Output I/O refusal and recovery](office-io-failures.md)
+   now pass across all three families, with exact following-output comparisons.
+   Exact final-candidate replay, D09 rounding and affirmative network
    enforcement still need their evidence or decisions. Network collection needs
    the pending attended administrator step. Reuse the completed native build
    unless a native input actually changes.

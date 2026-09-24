@@ -35,7 +35,7 @@ records the measured failure, successful comparison and application verification
 Earlier launcher runs below used the original 512 MiB per-process limit.
 
 The default deadline is two minutes; internal callers can shorten it but cannot
-extend it. Stdout is bounded to the 4,096-byte completion protocol and stderr to
+extend it. Stdout is bounded to the current 36 KiB completion protocol and stderr to
 65,536 bytes. Excess data, cancellation and timeout stop the job. All exits stop
 remaining descendants, check zero active job members within five seconds and
 wait for the retained host handle before returning. Pipe consumers are drained
@@ -44,8 +44,10 @@ never returns an accepted completion, and a successful process still needs the
 strict completion protocol and independent PDF validation.
 
 The native host's 128 MiB output check remains a post-export limit. Live staging
-disk bounds, resource-exhaustion acceptance and application-owned publication
-are not supplied by this launcher.
+disk bounds and application-owned publication are not supplied by this launcher.
+The later [resource enforcement checks](office-resource-enforcement.md) verify
+the current production memory/process limits, both channel bounds and cleanup.
+Historical cases below retain their earlier protocol and resource settings.
 
 
 Clean environment correction

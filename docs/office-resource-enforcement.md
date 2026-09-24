@@ -65,8 +65,10 @@ the managed harness. The older ProcessProbe fixture receives the same correction
 No production bound was relaxed to obtain the pass.
 
 This closes the concrete production-launcher pressure gap left by the earlier
-[native isolation experiment](office-isolation-evaluation.md). Disk-full/I/O
-failure behavior, the separate network-denial evidence, actual Office content
-acceptance and exact final-candidate replay are separate requirements.
+[native isolation experiment](office-isolation-evaluation.md). The subsequent
+[output I/O checks](office-io-failures.md) add actual renderer write refusal and
+following worker exports. They do not fill a volume. The separate network-denial
+evidence, actual Office content acceptance and exact final-candidate replay remain
+separate requirements.
 The 128 MiB PDF and 64 MiB calculated-workbook acceptance limits remain
 post-export validation bounds; this test establishes no hard live disk quota.
