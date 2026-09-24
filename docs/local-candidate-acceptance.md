@@ -16,9 +16,13 @@ archive-verified, with 611,834,443 application bytes and a 241,265,726-byte ZIP.
 Its exact-worker foundation/image, baseline and expanded audio, PDF and HEIF
 replays pass their recorded scopes, including audio metadata/artwork and recovery.
 Generic/optional Analyze and the fixed audio/PDF/HEIF performance workloads also
-pass against the preserved candidate and matching host. Office final-candidate
-fidelity/performance, remaining provider/source evidence, consolidated review
-preparation and human acceptance remain open. The earlier
+pass against the preserved candidate and matching host. All fifteen Office
+performance operations and their profile cleanups pass. Six authored Office
+fidelity suites pass independent final-candidate inspection; D09 still fails its
+unchanged font-size tolerance. Mixed Office commands, publication recovery and
+48-sheet capacity also pass final-candidate replay and independent PDF checks.
+Remaining Office calculation/date and safety coverage, provider/source evidence,
+consolidated review preparation and human acceptance remain open. The earlier
 [combined expanded-input scratch checkpoint](combined-expanded-inputs.md)
 passes focused image/audio command replay and package measurement. Its 1.583-GB
 unpacked/522.6-MB compressed size is measured evidence; owner footprint acceptance
@@ -38,8 +42,9 @@ The [paired Excel application replay](excel-layout-acceptance.md#paired-applicat
 preserves all four authored charts. Ordinary internal charts are admitted;
 newer/external charts and incomplete inspection remain refused. The paired
 [48-sheet capacity replay](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23)
-also passes; D07 still needs final-candidate and human acceptance. The paired
-[earlier interruption matrix](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23)
+also passes. The [final-candidate replay](expanded-candidate-1.1.2.md) now passes
+the chart/layout and 48-sheet capacity comparisons; D07 human acceptance remains.
+The paired [earlier interruption matrix](office-worker-lifetime.md#paired-source-built-interruption-replay-2026-09-23)
 exposed missing PowerPoint text-box fill. The [package repair](office-source-build.md#ooxml-shape-data-packaging-repair)
 restores exact historical rasters without native recompilation. Its
 [current interruption replay](office-worker-lifetime.md#reconstructed-runtime-interruption-replay-2026-09-23)
@@ -117,12 +122,12 @@ expected text/page order and independent geometry before scoring export.
 | --- | --- | --- |
 | D01 | Authored two-page Word: table, first/running headers, numbered footer, Latin Unicode | Exact text/two pages and expected element placement |
 | D02 | Existing fifteen Word font/style controls | Existing text/geometry/font/pixel controls and correct font prompt selection |
-| D03 | Existing Word revision/paragraph controls | [Paired application replay](word-revision-application.md) passes nineteen documents and independent fidelity checks; existing moved-text spacing allowance retained; final-candidate/human acceptance remains |
-| D04 | Word combining accents, RTL/CJK and anchored image | [Authored export and independent inspection pass](word-layout-acceptance.md): exact characters/direction/placement, glyph/font programs and eight negative controls; human/final-candidate review remains |
+| D03 | Existing Word revision/paragraph controls | [Paired application replay](word-revision-application.md) and [final-candidate replay](expanded-candidate-1.1.2.md) pass nineteen documents and independent fidelity checks; existing moved-text spacing allowance retained; human acceptance remains |
+| D04 | Word combining accents, RTL/CJK and anchored image | [Authored export and independent inspection](word-layout-acceptance.md) also pass [final-candidate replay](expanded-candidate-1.1.2.md): exact characters/direction/placement, glyph/font programs and eight negative controls; human review remains |
 | D05 | Existing five Excel print controls plus ordinary workbook | Areas, breaks, repeated titles, hidden cells/sheets, values and page order |
 | D06 | Existing calculation/date controls under both modes | Correct values where admitted; known errors blocked; no external refresh |
-| D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Four authored chart/layout cases](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23) and [all 48 capacity pages](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23) pass paired application/independent inspection; final-candidate and human acceptance remain |
-| D08 | Ordinary, hidden/reordered and empty-visible-slide PowerPoint controls | [Paired slide replay](powerpoint-slide-evaluation.md#paired-source-built-renderer-replay-2026-09-23) passes visible order and note/hidden exclusion; earlier empty-deck refusal evidence retained; final-candidate/human acceptance remains |
+| D07 | Excel chart, merged/wrapped cells and 48-sheet capacity | [Four authored chart/layout cases](excel-layout-acceptance.md#paired-application-acceptance-2026-09-23) and [all 48 capacity pages](excel-calculated-date-guard.md#paired-source-built-capacity-replay-2026-09-23) also pass [final-candidate application/independent inspection](expanded-candidate-1.1.2.md); human acceptance remains |
+| D08 | Ordinary, hidden/reordered and empty-visible-slide PowerPoint controls | [Paired slide replay](powerpoint-slide-evaluation.md#paired-source-built-renderer-replay-2026-09-23) and [final-candidate slide replay](expanded-candidate-1.1.2.md) pass visible order and note/hidden exclusion; earlier empty-deck refusal evidence remains separate; human acceptance remains |
 | D09 | PowerPoint image, diagram/table and mixed typography | [Authored layout evidence](powerpoint-layout-acceptance.md) passes image/table placement and text; aggregate acceptance still fails the declared font-size tolerance |
 | D10 | One approved real DOCX report | Owner/source reference for text, formatting and pagination |
 | D11 | One approved real XLSX workbook | Owner/source reference for areas, displayed values and layout under chosen calculation modes |

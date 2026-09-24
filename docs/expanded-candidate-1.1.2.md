@@ -191,6 +191,66 @@ An initial prerequisite check ran before the preceding media wrapper had written
 its final hash-verification receipt and stopped without starting Analyze; the
 completed replay began only after that wrapper exited successfully.
 
+The fifteen Office performance operations pass at
+`.codex-temp/office-performance/695432bb24a34eeeba84bf9698109e01`:
+
+| Ordinary document | Median | Maximum | Median / maximum limit |
+| --- | ---: | ---: | ---: |
+| Two-page DOCX | 6.593 s | 8.567 s | 45 / 75 s |
+| One-page XLSX, saved values | 6.974 s | 7.154 s | 45 / 75 s |
+| Two-slide PPTX | 6.585 s | 6.784 s | 45 / 75 s |
+
+All fifteen PDFs pass the existing page geometry and authored-text checks.
+Every original retains its bytes and timestamp. Each native profile, registry
+mapping and owned working directory is removed; publication and worker scratch
+are empty after disposal. The exact release worker and original production-build
+host are unchanged, together with the captured build sources and package
+membership. Timings include isolation, runtime hashing, validation and
+publication; they do not close broader Office fidelity or network acceptance.
+
+The authored Office fidelity replay is complete at
+`.codex-temp/candidate-112-office-fidelity-215ad0a72310449bac2b8611b22d0aac`,
+but its overall result remains **failed** because D09 still exceeds the existing
+typography tolerance. All 165 application checks and 43 profile/context removals
+pass. Independent qpdf/PDFium inspection reports:
+
+| Suite | Documents | Independent result |
+| --- | ---: | --- |
+| Word font/style controls | 15 | Text, font faces, exact style controls and distinct controls pass |
+| Word tracked changes | 13 | Text and accepted fidelity pass; the existing moved-text exact-pixel difference remains recorded |
+| Word paragraph revisions | 6 | Text, paragraph layout and exact final/control pixels pass |
+| Word multilingual and anchored image | 1 | Combining accents, CJK/RTL placement, font programs, image and negative controls pass |
+| Excel chart/merged/wrapped layout | 4 | Text, chart values/labels, geometry and negative controls pass |
+| PowerPoint slide order/visibility | 3 | Independent slide-content and ordering checks pass |
+| PowerPoint image/table/typography | 1 | Text, placement and image checks pass; font-size and aggregate negative-control acceptance fail |
+
+D09 still measures `20.01300048828125` points for a 20-point run, beyond the
+unchanged 0.01-point limit. The first two pages pass every recorded layout check;
+the third fails `FontsMatch`. The negative-control aggregate also remains false
+because its baseline must first satisfy the same oracle. No tolerance is relaxed,
+and no full Office fidelity pass is claimed. The narrow 0.015-point proposal
+remains an owner decision, separate from the existing Word spacing allowance.
+
+The original production-build host executes the exact release worker. The
+independent managed inspector was built separately with zero warnings/errors;
+its qpdf/PDFium binaries and probe sources were checked against their retained
+identities. Candidate, host, inspector, selected system fonts and captured source
+identities remain unchanged. No native engine build or product change occurred.
+
+The direct-command and recovery/capacity replay passes at
+`.codex-temp/candidate-112-office-commands-b046669959ab441eab89930809fa012c`.
+The mixed image/Office command suite passes 15 checks and retires all five
+profiles. Independent inspection of its three ordinary Office PDFs passes
+structure, authored text, geometry and exact retained control pixels. The
+43-check recovery suite passes output collisions, publication failure,
+pre-publication cancellation and cleanup-warning retry without duplicate
+publication. All six profiles/contexts are retired and originals are unchanged.
+Its 48-sheet workbook passes independent comparisons with three retained
+controls: all four PDFs preserve the authored labels, page geometry and exact
+pixels, with 144 page comparisons. Candidate, fixtures, inspection inputs and
+captured source identities remain unchanged. This does not repeat or close the
+separate unfinished-write, managed-validation or native network checks.
+
 Exact A01-A08/performance completion, consolidated media review, real documents
 and recordings, D09 typography, affirmative attended network evidence, UI/theme/
 DPI/screen-reader observations and separate installed lifecycle/commerce gates
