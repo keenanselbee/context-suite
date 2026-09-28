@@ -1,7 +1,8 @@
 PDF Conversion Improvements Goal
 ================================
 
-Status: implementation in progress; owner-approved scope, 2026-09-28.
+Status: completed in source and committed, 2026-09-28. Installation/release
+packaging remains separate; installed 1.1.3 is unchanged.
 
 The owner requested these improvements after using installed 1.1.3. Existing
 reserved candidates stay unchanged. Installation and publication are separate
@@ -62,3 +63,16 @@ fourteen actual worker/application checks and rendered visual inspection pass.
 The existing 4,506 foundation checks and 112 native filename-availability checks
 also pass. Packaging records pin PdfPig assemblies and upstream notices; no
 new release was staged or installed.
+
+Completion
+----------
+
+All five implementation milestones are complete within the documented supported
+scope. DOCX workflow/public integration is committed as `f147f91`; the private
+extraction, writer and figure fallback are committed as `3c237c4`. The white-page
+milestone is public `d5bc71d` / private `bf42243`; menu filtering is `48782ec`.
+Two additional protected-input worker checks and scratch dependency publication
+checks pass. Remaining limits are product fidelity boundaries recorded in the
+[PDF-to-Word design](pdf-to-docx.md), not unimplemented promises of OCR or exact
+page reconstruction. Unrelated edits, installed files and reserved payloads were
+preserved. No installation, release staging or remote publication was performed.
