@@ -10,6 +10,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include "ConversionTargets.h"
 
 #define RETURN_IF_FAILED(expression) \
     do \
@@ -581,6 +582,26 @@ public:
             return S_OK;
         }
 
+        if (definition_.kind == CommandKind::Convert && role_ == CommandRole::Action)
+        {
+            *state = ECS_HIDDEN;
+            for (DWORD index = 0; index < count; ++index)
+            {
+                IShellItem* item = nullptr;
+                if (FAILED(items->GetItemAt(index, &item)) || item == nullptr) continue;
+                PWSTR name = nullptr;
+                SFGAOF attributes = 0;
+                const bool file = SUCCEEDED(item->GetAttributes(SFGAO_FILESYSTEM | SFGAO_FOLDER, &attributes)) &&
+                    (attributes & SFGAO_FILESYSTEM) && !(attributes & SFGAO_FOLDER);
+                const bool named = file && SUCCEEDED(item->GetDisplayName(SIGDN_PARENTRELATIVEPARSING, &name));
+                const bool applicable = named && name != nullptr &&
+                    ContextSuite::CanConvertFilename(name, preset_);
+                CoTaskMemFree(name);
+                item->Release();
+                if (applicable) { *state = ECS_ENABLED; break; }
+            }
+            return S_OK;
+        }
         *state = ECS_ENABLED;
         return S_OK;
     }

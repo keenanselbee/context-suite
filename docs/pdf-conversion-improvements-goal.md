@@ -30,3 +30,15 @@ Milestones
 
 The owning product/document design and launch matrix must distinguish proposed
 behavior from implemented and verified capabilities throughout this work.
+
+Evidence
+--------
+
+The licensing milestone is committed as public `edabb54` and private `3dc289f`.
+The menu filter now uses filename hints and filesystem/folder attributes only.
+It keeps a target if any selected file might use it, retains DDS representation
+changes and ambiguous Ogg codec choices, and hides PDF output for PDF-only input.
+Content validation remains in the application. Native shell tests pass 104
+availability checks covering PDF, Office, raster, DDS, audio, HEIF, unknown and
+mixed selections, plus existing complete-selection activation contracts. Evidence
+uses `.codex-temp/pdf-goal-shell`; installed 1.1.3 is unchanged.

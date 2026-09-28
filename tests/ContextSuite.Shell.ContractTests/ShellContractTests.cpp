@@ -8,6 +8,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <wrl/client.h>
 
 namespace
 {
@@ -171,6 +172,52 @@ bool TestSettingsChildren(IEnumExplorerCommand* enumerator, IExplorerCommand* ac
     }
     for (auto* child : children) child->Release();
     return valid;
+}
+
+bool TestConversionAvailability(DllGetClassObjectFunction getClassObject, const std::filesystem::path& root)
+{
+    using Microsoft::WRL::ComPtr;
+    ComPtr<IClassFactory> factory;
+    ComPtr<IExplorerCommand> command;
+    if (FAILED(getClassObject(ConvertCommandClsid, IID_PPV_ARGS(&factory))) ||
+        FAILED(factory->CreateInstance(nullptr, IID_PPV_ARGS(&command)))) return false;
+    struct Case { std::vector<std::wstring> names; unsigned mask; };
+    const Case cases[] = {
+        {{L"page.PDF"}, 1u}, {{L"document.docx"}, 1u << 12},
+        {{L"image.png"}, (1u << 12) | 62u}, {{L"page.PDF", L"image.png"}, (1u << 12) | 63u},
+        {{L"unknown.xyz"}, 0u}, {{L"song.MP3"}, (63u << 6) & ~(1u << 8)},
+        {{L"image.avif"}, 3u}, {{L"texture.dds"}, 33u}
+    };
+    for (const auto& test : cases)
+    {
+        std::vector<std::wstring> paths;
+        for (const auto& name : test.names)
+        {
+            paths.push_back((root / name).wstring());
+            std::ofstream file(root / name); file << "Not media: menu checks must not parse it.";
+        }
+        std::vector<wchar_t*> pointers;
+        for (auto& path : paths) pointers.push_back(path.data());
+        ComPtr<IShellItemArray> selection;
+        if (!CreateSelection(static_cast<int>(pointers.size()), pointers.data(), &selection)) return false;
+        ComPtr<IEnumExplorerCommand> enumerator;
+        if (FAILED(command->EnumSubCommands(&enumerator))) return false;
+        for (unsigned target = 0; target < 13; ++target)
+        {
+            ComPtr<IExplorerCommand> child;
+            ULONG fetched = 0;
+            EXPCMDSTATE state = ECS_ENABLED;
+            if (enumerator->Next(1, &child, &fetched) != S_OK || fetched != 1 ||
+                FAILED(child->GetState(selection.Get(), FALSE, &state)) ||
+                state != static_cast<EXPCMDSTATE>((test.mask & (1u << target)) ? ECS_ENABLED : ECS_HIDDEN))
+            {
+                std::wcerr << L"Conversion availability failed for " << test.names[0] << L" target " << target << L".\n";
+                return false;
+            }
+        }
+    }
+    std::wcout << L"104 conversion availability checks passed without reading media.\n";
+    return true;
 }
 
 bool TestCommand(
@@ -356,7 +403,7 @@ int wmain(int argumentCount, wchar_t** arguments)
         {OptimizeCommandClsid, L"Optimize", L"Auto", "optimize", "auto", true},
     };
 
-    bool succeeded = true;
+    bool succeeded = TestConversionAvailability(getClassObject, resultDirectory);
     for (const auto& expectation : expectations)
     {
         const auto resultPath = resultDirectory / (std::string(expectation.operation) + ".shell-result");
