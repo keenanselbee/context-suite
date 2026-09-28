@@ -10,6 +10,8 @@ public sealed record LicenseReply(LicenseReplyState State, string Message, Licen
 public interface ILicenseService
 {
     LicenseEnvironment Environment { get; }
+    Uri? PurchaseUrl => null;
+    Uri? PortalUrl => null;
     Task<LicenseReply> ActivateAsync(string key, Guid installationId, CancellationToken cancellationToken);
     Task<LicenseReply> ValidateAsync(string key, Guid installationId, Guid activationId, CancellationToken cancellationToken);
     Task<LicenseReply> DeactivateAsync(string key, Guid activationId, CancellationToken cancellationToken);

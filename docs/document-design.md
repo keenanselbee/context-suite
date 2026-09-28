@@ -4,6 +4,12 @@ Document Support Design
 Status: bounded package analysis and optional PDF/Office commands implemented;
 expanded fidelity, engine adoption and launch acceptance remain incomplete.
 
+On 2026-09-28 the owner approved best-effort PDF-to-DOCX for text-based PDFs,
+white PDF page PNGs by default with an optional transparent background, and
+applicable conversion-menu targets. These are planned under the
+[PDF improvements goal](pdf-conversion-improvements-goal.md), not existing
+conversion claims. OCR remains outside that goal.
+
 The independent [Office PDF validation component](office-pdf-validation.md)
 checks acknowledged exports with pinned structural and page readers before
 filling an existing reservation. It now has typed worker dispatch, 71 actual-worker

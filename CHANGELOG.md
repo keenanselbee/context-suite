@@ -1,6 +1,15 @@
 Context Suite Changelog
 =======================
 
+1.1.3 - License purchase and management links, 2026-09-28
+-------------------------------------------------------
+
+- Add Purchase... and Manage license to the License window, opening the
+  environment-specific Polar checkout and customer portal on explicit clicks.
+- Enable owner-approved live checkout, retain key activation and pending work,
+  and show a usable address if the browser cannot open. Checkout owns purchase
+  and return instructions; trial dates and license storage remain unchanged.
+
 1.1.2 - Unsigned expanded candidate preparation, 2026-09-23
 ----------------------------------------------------------
 

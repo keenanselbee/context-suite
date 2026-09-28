@@ -6,13 +6,13 @@ namespace ContextSuite.Application;
 public partial class LicenseWindow : Window
 {
     private readonly string _noticePath;
-    private readonly Action<ProcessStartInfo> _openNotice;
+    private readonly Action<ProcessStartInfo> _openExternal;
 
     internal LicenseWindow(LicenseViewModel model, string? noticeDirectory = null, Action<ProcessStartInfo>? openNotice = null)
     {
         InitializeComponent(); DataContext = model;
         _noticePath = Path.Combine(noticeDirectory ?? AppContext.BaseDirectory, "ThirdPartyNotices.html");
-        _openNotice = openNotice ?? (start =>
+        _openExternal = openNotice ?? (start =>
         {
             using var process = Process.Start(start);
         });
@@ -28,6 +28,26 @@ public partial class LicenseWindow : Window
         await ((LicenseViewModel)DataContext).ActivateAsync(key);
     }
     private void OnClose(object sender, RoutedEventArgs e) { Close(); }
+    private void OnPurchase(object sender, RoutedEventArgs e) => OpenLink(((LicenseViewModel)DataContext).PurchaseUrl);
+    private void OnManageLicense(object sender, RoutedEventArgs e) => OpenLink(((LicenseViewModel)DataContext).PortalUrl);
+
+    private void OpenLink(Uri? address)
+    {
+        if (address is not { IsAbsoluteUri: true, Scheme: "https", UserInfo.Length: 0 })
+        {
+            LinkStatus.Text = "This link is unavailable in this build.";
+            return;
+        }
+        try
+        {
+            _openExternal(new ProcessStartInfo(address.AbsoluteUri) { UseShellExecute = true });
+            LinkStatus.Text = "";
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        {
+            LinkStatus.Text = $"The browser could not be opened. Open this address in your browser: {address.AbsoluteUri}";
+        }
+    }
     private void OnNotices(object sender, RoutedEventArgs e)
     {
         if (!File.Exists(_noticePath))
@@ -37,7 +57,7 @@ public partial class LicenseWindow : Window
         }
         try
         {
-            _openNotice(new ProcessStartInfo(_noticePath) { UseShellExecute = true });
+            _openExternal(new ProcessStartInfo(_noticePath) { UseShellExecute = true });
             NoticeStatus.Text = "Third-party notices opened.";
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)

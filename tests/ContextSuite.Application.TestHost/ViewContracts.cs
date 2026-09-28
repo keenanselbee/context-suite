@@ -238,6 +238,7 @@ internal static class ViewContracts
                 copyOptions.IsExpanded = false;
             }
             RunNoticeContracts(Check);
+            RunLicenseLinkContracts(Check);
             var licenseContent = (FrameworkElement)license.Content;
             licenseContent.Measure(new Size(license.Width - 16, double.PositiveInfinity));
             Check(license.SizeToContent == SizeToContent.Height && licenseContent.DesiredSize.Height < 440,
@@ -350,9 +351,51 @@ internal static class ViewContracts
         finally { window.Close(); }
     }
 
+    private static void RunLicenseLinkContracts(Action<bool, string> check)
+    {
+        foreach (var address in new Uri?[] { null, new("http://example.test/buy"), new("file:///C:/test"),
+            new("https://user:secret@example.test/buy"), new("relative", UriKind.Relative), new("https://example.test/buy") })
+        {
+            using var model = new LicenseViewModel(new(new UnusedLicenseService { PurchaseUrl = address, PortalUrl = address },
+                new LicenseStore(Path.Combine(Path.GetTempPath(), "unused-license-links.bin"), LicenseEnvironment.Sandbox)));
+            System.Diagnostics.ProcessStartInfo? opened = null;
+            var fail = false;
+            var window = new LicenseWindow(model, openNotice: start =>
+            {
+                if (fail) throw new System.ComponentModel.Win32Exception(1155);
+                opened = start;
+            });
+            try
+            {
+                window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+                var valid = address?.OriginalString == "https://example.test/buy";
+                foreach (var id in new[] { "PurchaseLicense", "ManageLicense" })
+                {
+                    var button = Find<Button>(window, id);
+                    check(button.IsEnabled == valid && button.Focusable, "license links: availability and keyboard access " + id);
+                    button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    check(valid ? opened?.FileName == address!.AbsoluteUri && opened.UseShellExecute &&
+                        opened.Arguments.Length == 0 && opened.ArgumentList.Count == 0 : opened is null,
+                        "license links: exact HTTPS destination only " + id);
+                }
+                if (valid)
+                {
+                    fail = true;
+                    Find<Button>(window, "PurchaseLicense").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    check(Find<StatusTextBlock>(window, "LicenseLinkStatus").Text.Contains(address!.AbsoluteUri) &&
+                        model.Message == "One purchase unlocks Context Suite and all future updates.",
+                        "license links: browser failure provides address and preserves access status");
+                }
+            }
+            finally { window.Close(); }
+        }
+    }
+
     private sealed class UnusedLicenseService : ILicenseService
     {
         public LicenseEnvironment Environment => LicenseEnvironment.Sandbox;
+        public Uri? PurchaseUrl { get; init; }
+        public Uri? PortalUrl { get; init; }
         public Task<LicenseReply> ActivateAsync(string key, Guid installationId, CancellationToken cancellationToken) => throw new InvalidOperationException("Hidden view must not activate.");
         public Task<LicenseReply> ValidateAsync(string key, Guid installationId, Guid activationId, CancellationToken cancellationToken) => throw new InvalidOperationException("Hidden view must not validate.");
         public Task<LicenseReply> DeactivateAsync(string key, Guid activationId, CancellationToken cancellationToken) => throw new InvalidOperationException("Hidden view must not deactivate.");

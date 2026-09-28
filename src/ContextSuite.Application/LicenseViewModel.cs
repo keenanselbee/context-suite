@@ -11,6 +11,10 @@ internal sealed class LicenseViewModel(PaidLicenseManager manager) : INotifyProp
     private bool _disposed;
     private PaidLicenseStatus? _status;
     private string _message = "One purchase unlocks Context Suite and all future updates.";
+    public Uri? PurchaseUrl => manager.PurchaseUrl;
+    public Uri? PortalUrl => manager.PortalUrl;
+    public bool HasPurchaseLink => PurchaseUrl is { IsAbsoluteUri: true, Scheme: "https", UserInfo.Length: 0 };
+    public bool HasPortalLink => PortalUrl is { IsAbsoluteUri: true, Scheme: "https", UserInfo.Length: 0 };
     public bool CanAct => !_busy && !_disposed;
     public bool CanActivate => CanAct && _status?.State == PaidLicenseState.NotActivated;
     public bool CanValidate => CanAct && _status?.State is PaidLicenseState.Active or PaidLicenseState.Offline or PaidLicenseState.Expired or PaidLicenseState.Unavailable;

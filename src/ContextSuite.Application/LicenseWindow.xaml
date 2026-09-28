@@ -10,7 +10,14 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="24">
         <TextBlock Text="Your Context Suite license" FontSize="24" Margin="0,0,0,12" />
-        <TextBlock Text="Purchase for $5 CAD. All future updates. One active installation, transferable through Polar." TextWrapping="Wrap" />
+        <TextBlock Text="$5 CAD. All future updates. One active installation, transferable through Polar." TextWrapping="Wrap" />
+        <WrapPanel Margin="0,12,0,0">
+            <Button Content="_Purchase..." Click="OnPurchase" IsEnabled="{Binding HasPurchaseLink}" Padding="12,6"
+                    AutomationProperties.AutomationId="PurchaseLicense" />
+            <Button Content="_Manage license..." Click="OnManageLicense" IsEnabled="{Binding HasPortalLink}" Padding="12,6" Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="ManageLicense" />
+        </WrapPanel>
+        <ui:StatusTextBlock x:Name="LinkStatus" TextWrapping="Wrap" AutomationProperties.AutomationId="LicenseLinkStatus" />
         <Label Content="License _key" Target="{Binding ElementName=LicenseKey}" Margin="0,12,0,0" />
         <PasswordBox x:Name="LicenseKey" MaxLength="512" Padding="8" IsEnabled="{Binding CanActivate}"
                      AutomationProperties.Name="License key" AutomationProperties.AutomationId="LicenseKey" />

@@ -4,9 +4,14 @@ Polar Integration Plan
 Status: paid policy accepted; implementation in progress
 Date: 2026-09-06
 
+On 2026-09-28 the owner confirmed live purchase and desktop activation work on
+their computer with installed 1.1.3. This is owner-observed acceptance of those
+flows, not evidence of portal transfer, refunds or clean-machine installation.
+
 The user reports Polar approval and supplied sandbox checkout, confirmation email,
-license grant and benefit-setting screenshots. Desktop activation, download
-delivery and refund flow remain unverified. No live credentials are needed here.
+license grant and benefit-setting screenshots. Owner-confirmed desktop activation
+is recorded above; download delivery and refund flow remain unverified.
+No live credentials are needed here.
 The [accepted paid policy](decisions/0017-paid-access-and-release-candidate.md)
 settles lifetime updates, daily refresh, 30-day offline grace, one active
 installation with transfer and free Analyzer access after trial expiry.
@@ -24,7 +29,9 @@ Product Setup To Confirm
   and prefix CONTEXT remain intended presentation settings. The seven-day app
   trial is separate; owner confirmation is not live API acceptance.
 - Hosted checkout with Polar's default confirmation page; no custom account site.
-- Keep live checkout unpublished until delivery and commercial access pass tests.
+- The owner confirmed working live checkout and authorized the in-app
+  **Purchase...** link on 2026-09-28. This clears that link for local installation;
+  remaining delivery, refund and commercial-release checks are separate.
 
 
 Configuration Reference

@@ -7,6 +7,8 @@ namespace ContextSuite.Application.Infrastructure;
 internal sealed class PaidLicenseManager(ILicenseService service, LicenseStore store, TimeProvider? clock = null)
 {
     private readonly TimeProvider _clock = clock ?? TimeProvider.System;
+    public Uri? PurchaseUrl => service.PurchaseUrl;
+    public Uri? PortalUrl => service.PortalUrl;
 
     // This does no HTTP. A later application timer calls RefreshAsync; quick work
     // within grace can be admitted without waiting for a licensing round trip.
