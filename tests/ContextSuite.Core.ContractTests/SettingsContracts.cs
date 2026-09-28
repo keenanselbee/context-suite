@@ -17,10 +17,12 @@ internal static class SettingsContracts
         check(original.CanSave && original.Revision is null && !original.Settings.Convert.ReplaceOriginals &&
             !original.Settings.Optimize.ReplaceOriginals, "settings: missing file uses copy-only defaults");
         var snapshot = original.Settings.Capture("convert");
-        var changed = original.Settings with { Convert = new(true, directory), PlayCompletionSound = false };
+        var changed = original.Settings with { Convert = new(true, directory), PlayCompletionSound = false, TransparentPdfBackground = true };
         var saved = await store.SaveAsync(changed, original);
         check((await store.LoadAsync()).Settings == changed, "settings: typed roundtrip");
         check(snapshot.Preferences == new ToolSettings(), "settings: captured batch remains unchanged");
+        check(!snapshot.TransparentPdfBackground && changed.Capture("convert").TransparentPdfBackground,
+            "settings: white PDF background defaults and immutable transparency selection");
         check(snapshot.PlayCompletionSound && !changed.Capture("optimize").PlayCompletionSound, "settings: completion mute captured per batch");
         check(!changed.Capture("optimize").Preferences.ReplaceOriginals, "settings: per-tool replacement consent");
         await RejectAsync(() => store.SaveAsync(new(), original), check, "settings: reject stale save");

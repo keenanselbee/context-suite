@@ -75,7 +75,17 @@
                 <TabControl SelectedIndex="{Binding SelectedSection}" IsEnabled="{Binding CanEdit}"
                             AutomationProperties.AutomationId="SettingsSections">
                     <TabItem Header="_Convert" HeaderTemplate="{StaticResource SettingsTabHeader}" AutomationProperties.AutomationId="ConvertSettings">
-                        <ContentControl Content="{Binding Convert}" ContentTemplate="{StaticResource ToolPreferences}" />
+                        <StackPanel>
+                            <ContentControl Content="{Binding Convert}" ContentTemplate="{StaticResource ToolPreferences}" />
+                            <Expander Header="PDF page images" Margin="16,12,16,16" AutomationProperties.AutomationId="PdfImageOptions">
+                                <StackPanel Margin="4,12,4,0">
+                                    <CheckBox Content="Use a _transparent background" IsChecked="{Binding TransparentPdfBackground}"
+                                              AutomationProperties.AutomationId="TransparentPdfBackground" />
+                                    <TextBlock Text="PDF pages use white paper by default. Enable this to keep unpainted areas transparent in PNG copies."
+                                               TextWrapping="Wrap" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
                     </TabItem>
                     <TabItem Header="_Optimize" HeaderTemplate="{StaticResource SettingsTabHeader}" AutomationProperties.AutomationId="OptimizeSettings">
                         <ContentControl Content="{Binding Optimize}" ContentTemplate="{StaticResource ToolPreferences}" />

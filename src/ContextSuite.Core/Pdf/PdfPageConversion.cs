@@ -44,7 +44,7 @@ public sealed class ConfirmedPdfPageConversion
 }
 
 public sealed record PdfPageWork(PdfRasterSource Source, int PageIndex, Guid OutputId, string TemporaryPath,
-    string Policy = PdfRasterProtocol.Policy)
+    string Policy = PdfRasterProtocol.Policy, bool TransparentBackground = false)
 {
     public const int MaximumOutputBytes = 64 * 1024 * 1024;
     public void Validate()

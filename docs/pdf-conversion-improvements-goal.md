@@ -42,3 +42,15 @@ Content validation remains in the application. Native shell tests pass 104
 availability checks covering PDF, Office, raster, DDS, audio, HEIF, unknown and
 mixed selections, plus existing complete-selection activation contracts. Evidence
 uses `.codex-temp/pdf-goal-shell`; installed 1.1.3 is unchanged.
+
+The menu milestone is committed as public `48782ec`.
+The background milestone passes 4,506 foundation contracts, 151 hidden view
+contracts, 35 real-renderer adapter checks and 30 real-worker page/publication
+checks. The latter explicitly verifies opaque default copies and transparent
+copies selected through a captured batch setting. White pixels match the
+separate renderer's white-page reference within one channel level; transparent
+pixels remain exact. An initial long-path test still expected the old implicit
+transparent default; it now requests transparency explicitly and passes.
+Renderer evidence is `.codex-temp/pdf-white-cb1f06595ea9411fb949941655b2d2ec`;
+worker evidence uses `.codex-temp/pdf-background-worker-*`. No reserved candidate
+or installed application was modified.

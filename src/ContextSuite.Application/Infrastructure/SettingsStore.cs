@@ -41,7 +41,8 @@ internal sealed class SettingsStore(string path)
                 {
                     Convert = ReadTool(root, "Convert", schema, ref repaired),
                     Optimize = ReadTool(root, "Optimize", schema, ref repaired),
-                    PlayCompletionSound = !root.TryGetProperty("PlayCompletionSound", out var sound) || sound.ValueKind != JsonValueKind.False
+                    PlayCompletionSound = !root.TryGetProperty("PlayCompletionSound", out var sound) || sound.ValueKind != JsonValueKind.False,
+                    TransparentPdfBackground = root.TryGetProperty("TransparentPdfBackground", out var background) && background.ValueKind == JsonValueKind.True
                 };
                 return new(settings, revision, true, repaired ? "Some settings were invalid and use safe defaults. Save to apply the repaired values." : null);
             }

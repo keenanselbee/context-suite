@@ -22,6 +22,7 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         Convert = new ToolSettingsEditor(loaded.Settings.Convert);
         Optimize = new ToolSettingsEditor(loaded.Settings.Optimize);
         PlayCompletionSound = loaded.Settings.PlayCompletionSound;
+        TransparentPdfBackground = loaded.Settings.TransparentPdfBackground;
         _selectedSection = section == "optimize" ? 1 : 0;
         _message = loaded.Warning ?? "Changes apply the next time you run Convert or Optimize.";
         CanEdit = loaded.CanSave;
@@ -35,6 +36,7 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     public ToolSettingsEditor Convert { get; }
     public ToolSettingsEditor Optimize { get; }
     public bool PlayCompletionSound { get; set; }
+    public bool TransparentPdfBackground { get; set; }
     public bool CanEdit { get; }
     public bool CanAllowReplacement { get; }
     public string ReplacementNotice { get; }
@@ -61,7 +63,8 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         IsSaving = true;
         try
         {
-            var settings = new SuiteSettings { Convert = Convert.Capture(), Optimize = Optimize.Capture(), PlayCompletionSound = PlayCompletionSound };
+            var settings = new SuiteSettings { Convert = Convert.Capture(), Optimize = Optimize.Capture(), PlayCompletionSound = PlayCompletionSound,
+                TransparentPdfBackground = TransparentPdfBackground };
             var result = await _store.SaveAsync(settings, _loaded);
             Message = "Settings saved. Existing batches were not changed.";
             IsSaving = false;

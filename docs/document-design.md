@@ -10,6 +10,13 @@ applicable conversion-menu targets. These are planned under the
 [PDF improvements goal](pdf-conversion-improvements-goal.md), not existing
 conversion claims. OCR remains outside that goal.
 
+The PDF-to-PNG background change is now implemented in source: white paper is
+the default, and Convert Settings has a secondary transparent-background choice.
+The captured batch carries this choice through retry and worker publication.
+Existing settings without the field select white; the optional native renderer
+still produces straight BGRA and the adapter composites white before validation.
+Installed 1.1.3 retains its previous transparent-page behavior.
+
 The independent [Office PDF validation component](office-pdf-validation.md)
 checks acknowledged exports with pinned structural and page readers before
 filling an existing reservation. It now has typed worker dispatch, 71 actual-worker

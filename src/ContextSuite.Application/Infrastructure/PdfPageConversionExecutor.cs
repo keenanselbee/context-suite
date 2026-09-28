@@ -54,7 +54,8 @@ internal sealed class PdfPageConversionExecutor(WorkerClient worker, OutputPubli
                         if (reservation.Record.Source.Sha256 != source.Sha256 || reservation.Record.Source.Length != source.FileBytes)
                             throw new InvalidDataException("PDF changed after planning.");
                         report?.Invoke(source, page.Index, new(source.Path, OperationState.Running, "Rendering and validating page"));
-                        var rendered = await worker.RenderPdfPageAsync(new(source, page.Index, id, reservation.TemporaryPath), token);
+                        var rendered = await worker.RenderPdfPageAsync(new(source, page.Index, id, reservation.TemporaryPath,
+                            TransparentBackground: confirmed.Plan.Settings.TransparentPdfBackground), token);
                         if (outputBytes + rendered.OutputBytes > 2L * 1024 * 1024 * 1024)
                             throw new InvalidDataException("PDF page batch exceeds its output budget.");
                         result = (await publisher.PublishAsync(reservation, rendered.Validation, token)).ToFileResult() with { EngineIdentity = rendered.EngineIdentity };

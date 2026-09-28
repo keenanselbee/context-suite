@@ -47,12 +47,19 @@ internal static class PdfPageWorkflowContracts
             var expected = (page.SourceId == first.ItemId ? first : second).Document.Pages[page.PageIndex];
             check(facts.Width == expected.Width && facts.Height == expected.Height && facts.Format == ImageFormat.Png,
                 "PDF pages: actual published PNG has the planned dimensions");
+            check(!facts.HasTransparency, "PDF pages: default published copy has opaque white paper");
         }
         var denied = await executor.ExecuteAsync(plan, null, default);
         check(!denied.Admission.IsAllowed && denied.Pages.All(page => page.Result.State == OperationState.Failed && page.Result.Publication is null),
             "PDF pages: expired access creates no reservations");
         var fresh = new CountingAccess(new LocalTrialStore(Path.Combine(root, "fresh-trial.json")));
         var freshExecutor = new PdfPageConversionExecutor(worker, publisher, fresh);
+        var transparentPlan = PdfPageConversionPlan.Create(Guid.NewGuid(), [first],
+            new("convert", new(), TransparentPdfBackground: true)).Confirm();
+        var transparent = await freshExecutor.ExecuteAsync(transparentPlan, null, default);
+        var transparentPath = transparent.Pages[0].Result.Publication?.OutputPath;
+        check(transparentPath is not null && (await worker.ProbeAsync(new(Guid.NewGuid(), transparentPath), default)).HasTransparency,
+            "PDF pages: explicit captured transparency reaches the worker and published PNG");
         using var cancelled = new CancellationTokenSource();
         var partial = await freshExecutor.ExecuteAsync(Plan(first), (_, _, row) =>
         { if (row.State == OperationState.Succeeded) cancelled.Cancel(); }, cancelled.Token);

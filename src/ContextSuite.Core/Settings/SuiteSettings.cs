@@ -11,6 +11,7 @@ public sealed record SuiteSettings
     public ToolSettings Convert { get; init; } = new();
     public ToolSettings Optimize { get; init; } = new();
     public bool PlayCompletionSound { get; init; } = true;
+    public bool TransparentPdfBackground { get; init; }
 
     public BatchSettings Capture(string operation)
     {
@@ -21,11 +22,12 @@ public sealed record SuiteSettings
             "analyze" => new ToolSettings(),
             _ => throw new InvalidDataException("Unknown settings section.")
         };
-        return new BatchSettings(operation, preferences, PlayCompletionSound);
+        return new BatchSettings(operation, preferences, PlayCompletionSound, TransparentPdfBackground);
     }
 }
 
-public sealed record BatchSettings(string Operation, ToolSettings Preferences, bool PlayCompletionSound = true)
+public sealed record BatchSettings(string Operation, ToolSettings Preferences, bool PlayCompletionSound = true,
+    bool TransparentPdfBackground = false)
 {
     public OutputPolicy SelectOutput(bool requestReplacement, bool confirmed, bool quickAction,
         bool replacementAvailable)
