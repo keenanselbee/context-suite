@@ -21,7 +21,7 @@ inline bool CanConvertFilename(std::wstring_view name, unsigned target)
     if (raster >= 0) return (target <= 5 && target != static_cast<unsigned>(raster)) || target == 12;
     if (is(L".dds")) return target == 0 || target == 5;
     if (is(L".heic") || is(L".heif") || is(L".avif")) return target <= 1;
-    if (is(L".pdf")) return target == 0;
+    if (is(L".pdf")) return target == 0 || target == 13;
     if (is(L".docx") || is(L".xlsx") || is(L".pptx")) return target == 12;
     if (target < 6 || target > 11) return false;
     const int audio = is(L".wav") || is(L".wave") ? 6 : is(L".flac") ? 7 : is(L".mp3") ? 8 :

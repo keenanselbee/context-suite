@@ -274,3 +274,8 @@ The first release path is intentionally narrow:
 
 Video, documents, cloud processing, AI editing, CD ripping, and arbitrary media
 engine commands are not part of the initial scope.
+
+The latest source changes add [best-effort PDF-to-Word conversion](docs/pdf-to-docx.md),
+white PDF page backgrounds with an optional transparent setting, and
+selection-aware conversion targets. These changes have not replaced installed
+1.1.3 or any reserved candidate.

@@ -9,6 +9,9 @@ $groups = [ordered]@{
         'Magick.NET.Notice.txt', 'DirectXTex.License.txt', 'Oxipng.License.txt', 'Oxipng.ThirdPartyNotices.txt',
         'Oxipng.Rust.Library.Notices.html', 'ExoQuant.License.txt', 'Rust.Library.Notices.html')
 }
+if (Test-Path -LiteralPath (Join-Path $root 'UglyToad.PdfPig.dll')) {
+    $groups['PDF-to-Word'] = @('PdfPig.License.txt', 'PdfPig.Notices.txt')
+}
 foreach ($engine in @(
     @{ Directory = 'audio-engine'; Record = 'audio-engine/payload-candidate.json'; Title = 'Audio'; Prefix = 'audio-engine/' },
     @{ Directory = 'audio-engine/voice'; Record = 'audio-engine/voice-provider-candidate.json'; Title = 'Windows Voice audio'; Prefix = 'audio-engine/' },

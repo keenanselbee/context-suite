@@ -206,6 +206,11 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
 
     private async Task ConvertBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
     {
+        if (request.IsPdfDocxConversion)
+        {
+            await ConvertPdfDocxBatchAsync(request, rows, cancellationToken);
+            return;
+        }
         if (request.IsImagePdfConversion)
         {
             await ConvertPdfBatchAsync(request, rows, cancellationToken);

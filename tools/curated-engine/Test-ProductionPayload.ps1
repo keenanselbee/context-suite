@@ -15,6 +15,14 @@ $allowed = @('Magick.Native-Q16-x64.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.
     'ContextSuite.Dds.Native.dll', 'ContextSuite.Dds.Engine.json', 'DirectXTex.License.txt',
     'oxipng.exe', 'ContextSuite.Png.Engine.json', 'Oxipng.License.txt', 'Oxipng.ThirdPartyNotices.txt', 'Oxipng.Rust.Library.Notices.html',
     'ContextSuite.Palette.exe', 'ContextSuite.Palette.Engine.json', 'ExoQuant.License.txt', 'Rust.Library.Notices.html')
+$docxSelection = Get-Content -LiteralPath (Join-Path (Split-Path $PSScriptRoot -Parent) 'pdf-engine/pdf-docx-engine.json') -Raw | ConvertFrom-Json
+foreach ($entry in $docxSelection.files) {
+    $allowed += $entry.path
+    $file = Join-Path $Payload $entry.path
+    if (-not (Test-Path -LiteralPath $file) -or (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $entry.sha256) {
+        throw "Missing or changed PDF-to-Word dependency: $($entry.path)"
+    }
+}
 foreach ($name in 'Application', 'Worker') {
     foreach ($extension in 'exe', 'dll', 'pdb', 'deps.json', 'runtimeconfig.json') { $allowed += "ContextSuite.$name.$extension" }
 }
@@ -75,7 +83,7 @@ if ((Get-FileHash $selection).Hash -ne (Get-FileHash (Join-Path $root 'ContextSu
 foreach ($name in 'Application', 'Worker') {
     $dependencies = Get-Content (Join-Path $root "ContextSuite.$name.deps.json") -Raw | ConvertFrom-Json
     foreach ($library in $dependencies.libraries.PSObject.Properties) {
-        if ($library.Value.type -eq 'package' -and $library.Name -notin @('Magick.NET-Q16-x64/14.17.1', 'Magick.NET.Core/14.17.1')) {
+        if ($library.Value.type -eq 'package' -and $library.Name -notin @('Magick.NET-Q16-x64/14.17.1', 'Magick.NET.Core/14.17.1', 'PdfPig/0.1.16')) {
             throw "Unreviewed packaged dependency: $($library.Name)"
         }
     }

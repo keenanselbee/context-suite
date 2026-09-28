@@ -47,3 +47,10 @@ their applicable Microsoft terms. Build tools are not included.
 Third-party components retain their own licenses. This notice does not
 license Context Suite source or proprietary application implementations,
 or certify commercial redistribution/patent clearance.
+
+PDF-to-Word text, image and layout extraction uses PdfPig 0.1.16
+(Apache-2.0), revision a7bb35662bbbf405efddad50aedc9bcdcf515afc.
+The unmodified managed assemblies are packaged with PdfPig.License.txt and
+PdfPig.Notices.txt, including the upstream PDFBox/FontBox and Adobe glyph-list
+acknowledgments. Context Suite supplies its own layout reconstruction and
+Word document writer. Keep both notice files with binary distributions.

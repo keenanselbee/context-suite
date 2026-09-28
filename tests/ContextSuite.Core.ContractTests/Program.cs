@@ -473,6 +473,29 @@ if (args.Length == 4 && args[0] == "--pdf-optimization-worker")
     Console.WriteLine($"Passed {checks} isolated PDF optimization workflow checks.");
     return 0;
 }
+if (args.Length == 4 && args[0] == "--pdf-docx-protected")
+{
+    await using var protectedWorker = new WorkerClient(args[2], args[1]);
+    foreach (var name in new[] { "encrypted.pdf", "owner-protected.pdf" })
+    {
+        try
+        {
+            await protectedWorker.ProbePdfDocxAsync(new(Guid.NewGuid(), Path.Combine(args[3], name)), default);
+            throw new Exception("Protected PDF was accepted.");
+        }
+        catch (MediaWorkerException error) when (error.Failure == ContextSuite.Core.Images.ImageFailure.UnsupportedInput)
+        { Console.WriteLine("PASS: PDF-to-Word refuses " + name); }
+    }
+    return 0;
+}
+if (args.Length == 4 && args[0] == "--pdf-docx-worker")
+{
+    var checks = 0;
+    await PdfDocxWorkflowContracts.RunAsync(args[1], args[2], args[3], (condition, message) =>
+    { if (!condition) throw new Exception(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} isolated PDF-to-Word workflow checks.");
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--pdf-page-worker")
 {
     var checks = 0;

@@ -1,0 +1,48 @@
+{
+  "package": "PdfPig",
+  "version": "0.1.16",
+  "framework": "net9.0",
+  "source": "https://github.com/UglyToad/PdfPig",
+  "revision": "a7bb35662bbbf405efddad50aedc9bcdcf515afc",
+  "license": "Apache-2.0",
+  "packageSha512": "clPAR660u7oGMGO0+I4JAq3olrsbIcKO2m3JtAuOow+IbS62Pyfh00GFnG10Ngl2nizTS5+DsCSlndW6sLvNBQ==",
+  "files": [
+    {
+      "path": "UglyToad.PdfPig.Core.dll",
+      "sha256": "CBDD1809EE0F4BA617900845D182E5E67183377FE5848A8D9D1222B3C395116B"
+    },
+    {
+      "path": "UglyToad.PdfPig.dll",
+      "sha256": "C47ABEBDFFEBB6E48A1D40F4C22CE5F673C57558ECDB3187841B728112DEA279"
+    },
+    {
+      "path": "UglyToad.PdfPig.DocumentLayoutAnalysis.dll",
+      "sha256": "C0D1E237EABCB2C741FC7AB7B26C255AF6F5751D1CD7E86D7AE613611F79BC88"
+    },
+    {
+      "path": "UglyToad.PdfPig.Fonts.dll",
+      "sha256": "30521D2AA02252C0097CD3A9B12832368D5C925E1CCB4BC3A5735671BD3D2E1E"
+    },
+    {
+      "path": "UglyToad.PdfPig.Package.dll",
+      "sha256": "3227F79347329B57E50745D2ADE1DEB7CCDFE57DA1D382796283832AAE6EA41A"
+    },
+    {
+      "path": "UglyToad.PdfPig.Tokenization.dll",
+      "sha256": "539D0CA2C7981B9EAF8541E17434911042F7CC73D3ABC24962994BB99472ED3C"
+    },
+    {
+      "path": "UglyToad.PdfPig.Tokens.dll",
+      "sha256": "D6FBD73A520BB961FFCC98030AB686F43C88B03F5B059BA11E3781E0F091433D"
+    },
+    {
+      "path": "PdfPig.License.txt",
+      "sha256": "41CB8DA2815F669A4C657D5E13001BA889D3D1E348972F492CD82DFF90689DA0"
+    },
+    {
+      "path": "PdfPig.Notices.txt",
+      "sha256": "FF09E3E1411F28E7D72A690634E551E0186DC2072741E74484DA73FCC3866646"
+    }
+  ],
+  "noticeNormalization": "Trailing whitespace removed; license and notice text unchanged."
+}

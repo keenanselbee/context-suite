@@ -21,7 +21,11 @@ Analyze must give useful read-only results for every readable regular file,
 including a reviewed offline explanation of common types. Add common audio
 analysis/conversion and lossless FLAC optimization, plus PDF/Office/OpenDocument
 analysis. Selected launch actions include images-to-PDF, PDF pages-to-images,
-PDF optimization and Word/Excel/PowerPoint-to-PDF. Optional PDF optimization has
+PDF optimization and Word/Excel/PowerPoint-to-PDF. The owner-approved
+[PDF improvements](pdf-conversion-improvements-goal.md) add best-effort editable
+[PDF-to-Word copies](pdf-to-docx.md), white-default PNG pages with optional
+transparency, and filename-filtered conversion targets. These changes are
+implemented in source; installed 1.1.3 is unchanged. Optional PDF optimization has
 direct worker/publication coverage; PDF-to-PNG has direct PNG-command coverage
 with per-document summaries and partial-page retries. Renderer release adoption
 and visible acceptance remain pending. Optional Convert > PDF now combines images

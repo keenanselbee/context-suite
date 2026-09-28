@@ -54,3 +54,11 @@ transparent default; it now requests transparency explicitly and passes.
 Renderer evidence is `.codex-temp/pdf-white-cb1f06595ea9411fb949941655b2d2ec`;
 worker evidence uses `.codex-temp/pdf-background-worker-*`. No reserved candidate
 or installed application was modified.
+
+The [PDF-to-Word implementation and evidence](pdf-to-docx.md) now cover editable
+text/basic font properties, reconstructed ruled tables, images, figure fallback,
+source preservation and direct app/worker publication. Fifty-one adapter checks,
+fourteen actual worker/application checks and rendered visual inspection pass.
+The existing 4,506 foundation checks and 112 native filename-availability checks
+also pass. Packaging records pin PdfPig assemblies and upstream notices; no
+new release was staged or installed.

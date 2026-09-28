@@ -103,9 +103,9 @@ bool TestSettingsChildren(IEnumExplorerCommand* enumerator, IExplorerCommand* ac
     {
         const bool optimize = std::string_view(expectation.operation) == "optimize";
         const std::vector<const wchar_t*> titles = optimize ? std::vector<const wchar_t*>{ L"Lossless", L"Balanced", L"Smallest" } :
-            std::vector<const wchar_t*>{ L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS...", L"WAV", L"FLAC", L"MP3", L"M4A (AAC)", L"Ogg Vorbis", L"Opus", L"PDF" };
+            std::vector<const wchar_t*>{ L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS...", L"WAV", L"FLAC", L"MP3", L"M4A (AAC)", L"Ogg Vorbis", L"Opus", L"PDF", L"Word (DOCX)" };
         const std::vector<const char*> actions = optimize ? std::vector<const char*>{ "lossless", "balanced", "smallest" } :
-            std::vector<const char*>{ "jpeg", "webp", "bmp", "tga", "dds", "wav", "flac", "mp3", "m4a", "vorbis", "opus", "pdf" };
+            std::vector<const char*>{ "jpeg", "webp", "bmp", "tga", "dds", "wav", "flac", "mp3", "m4a", "vorbis", "opus", "pdf", "docx" };
         size_t index = 0;
         GUID previous{};
         action->GetCanonicalName(&previous);
@@ -154,7 +154,7 @@ bool TestSettingsChildren(IEnumExplorerCommand* enumerator, IExplorerCommand* ac
     if (extra != nullptr) extra->Release();
 
     IEnumExplorerCommand* clone = nullptr;
-    valid = valid && enumerator->Reset() == S_OK && enumerator->Skip(std::string_view(expectation.operation) == "optimize" ? 4 : 13) == S_OK &&
+    valid = valid && enumerator->Reset() == S_OK && enumerator->Skip(std::string_view(expectation.operation) == "optimize" ? 4 : 14) == S_OK &&
         SUCCEEDED(enumerator->Clone(&clone)) && clone != nullptr;
     if (clone != nullptr)
     {
@@ -183,8 +183,8 @@ bool TestConversionAvailability(DllGetClassObjectFunction getClassObject, const 
         FAILED(factory->CreateInstance(nullptr, IID_PPV_ARGS(&command)))) return false;
     struct Case { std::vector<std::wstring> names; unsigned mask; };
     const Case cases[] = {
-        {{L"page.PDF"}, 1u}, {{L"document.docx"}, 1u << 12},
-        {{L"image.png"}, (1u << 12) | 62u}, {{L"page.PDF", L"image.png"}, (1u << 12) | 63u},
+        {{L"page.PDF"}, 1u | (1u << 13)}, {{L"document.docx"}, 1u << 12},
+        {{L"image.png"}, (1u << 12) | 62u}, {{L"page.PDF", L"image.png"}, (1u << 13) | (1u << 12) | 63u},
         {{L"unknown.xyz"}, 0u}, {{L"song.MP3"}, (63u << 6) & ~(1u << 8)},
         {{L"image.avif"}, 3u}, {{L"texture.dds"}, 33u}
     };
@@ -202,7 +202,7 @@ bool TestConversionAvailability(DllGetClassObjectFunction getClassObject, const 
         if (!CreateSelection(static_cast<int>(pointers.size()), pointers.data(), &selection)) return false;
         ComPtr<IEnumExplorerCommand> enumerator;
         if (FAILED(command->EnumSubCommands(&enumerator))) return false;
-        for (unsigned target = 0; target < 13; ++target)
+        for (unsigned target = 0; target < 14; ++target)
         {
             ComPtr<IExplorerCommand> child;
             ULONG fetched = 0;
@@ -216,7 +216,7 @@ bool TestConversionAvailability(DllGetClassObjectFunction getClassObject, const 
             }
         }
     }
-    std::wcout << L"104 conversion availability checks passed without reading media.\n";
+    std::wcout << L"112 conversion availability checks passed without reading media.\n";
     return true;
 }
 

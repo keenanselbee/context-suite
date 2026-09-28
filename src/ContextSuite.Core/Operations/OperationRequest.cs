@@ -9,7 +9,8 @@ public sealed record OperationRequest(Guid RequestId, string Operation, string A
     public bool IsQuickOptimization => Operation == "optimize" && Action is "auto" or "lossless" or "balanced" or "smallest" or "choose-preset";
     public bool IsQuickAudioConversion => Operation == "convert" && Action is "wav" or "flac" or "mp3" or "m4a" or "vorbis" or "opus";
     public bool IsImagePdfConversion => Operation == "convert" && Action == "pdf";
-    public bool IsQuickConversion => IsQuickAudioConversion || IsImagePdfConversion || Operation == "convert" && Action is "png" or "jpeg" or "webp" or "bmp" or "tga" or "dds";
+    public bool IsPdfDocxConversion => Operation == "convert" && Action == "docx";
+    public bool IsQuickConversion => IsPdfDocxConversion || IsQuickAudioConversion || IsImagePdfConversion || Operation == "convert" && Action is "png" or "jpeg" or "webp" or "bmp" or "tga" or "dds";
     public bool IsQuickAction => IsQuickOptimization || IsQuickConversion;
 
     public void Validate(bool requireExistingFiles = true)

@@ -6,9 +6,10 @@ expanded fidelity, engine adoption and launch acceptance remain incomplete.
 
 On 2026-09-28 the owner approved best-effort PDF-to-DOCX for text-based PDFs,
 white PDF page PNGs by default with an optional transparent background, and
-applicable conversion-menu targets. These are planned under the
-[PDF improvements goal](pdf-conversion-improvements-goal.md), not existing
-conversion claims. OCR remains outside that goal.
+applicable conversion-menu targets. These are implemented in source under the
+[PDF improvements goal](pdf-conversion-improvements-goal.md), with
+[bounded PDF-to-Word fidelity and evidence](pdf-to-docx.md). OCR remains outside
+that goal. No new installed/released version is implied.
 
 The PDF-to-PNG background change is now implemented in source: white paper is
 the default, and Convert Settings has a secondary transparent-background choice.

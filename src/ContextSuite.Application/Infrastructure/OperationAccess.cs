@@ -19,6 +19,8 @@ internal interface IOperationAccess
         throw new NotSupportedException("This access implementation does not admit Office conversions.");
     Task<OperationAdmission> AdmitConversionAsync(ConfirmedImagePdf confirmed, CancellationToken cancellationToken) =>
         throw new NotSupportedException("This access implementation does not admit combined PDF conversion.");
+    Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfDocx confirmed, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("This access implementation does not admit PDF-to-Word conversions.");
     Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfPageConversion confirmed, CancellationToken cancellationToken) =>
         throw new NotSupportedException("This access implementation does not admit PDF page conversions.");
     Task<OperationAdmission> AdmitConversionAsync(ConfirmedAudioConversion confirmed, CancellationToken cancellationToken) =>
@@ -46,6 +48,14 @@ internal sealed class OperationAccess(LocalTrialStore trial, PaidLicenseManager 
     public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedImagePdf confirmed, CancellationToken cancellationToken)
     {
         _ = confirmed.Plan.Confirm(true);
+        var status = await paid.ReadStatusAsync(cancellationToken);
+        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
+        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+    }
+
+    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfDocx confirmed, CancellationToken cancellationToken)
+    {
+        _ = confirmed.Plan.Confirm();
         var status = await paid.ReadStatusAsync(cancellationToken);
         if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
         return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);

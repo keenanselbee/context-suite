@@ -1,6 +1,15 @@
 Context Suite Changelog
 =======================
 
+Unreleased - PDF conversion improvements
+---------------------------------------
+
+- Add best-effort PDF-to-DOCX copies with editable text, ordinary tables and
+  embedded images; retain complex figures as images and report unsupported input.
+- Default PDF page PNGs to white, with optional transparency in Convert Settings.
+- Filter Explorer targets using filename hints and use Manage license...
+  consistently. Existing installed/reserved versions are unchanged.
+
 1.1.3 - License purchase and management links, 2026-09-28
 -------------------------------------------------------
 

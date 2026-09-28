@@ -24,6 +24,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     public bool HasAudioConverter => HasFlacOptimizer;
     public bool HasPdfProbe => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-engine", "qpdf.exe"));
     public bool HasPdfOptimizer => HasPdfProbe;
+    public bool HasPdfDocxConverter => HasPdfRenderer && File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "UglyToad.PdfPig.dll"));
     public bool HasPdfRenderer => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-renderer", "ContextSuite.PdfRenderer.exe"));
     public bool HasImagePdfConverter => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-validator", "ContextSuite.ImagePdfValidator.exe"));
     public bool HasOfficePdfValidator => HasPdfProbe && HasPdfRenderer;
@@ -59,6 +60,29 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             result.OutputBytes is <= 0 or > ImagePdfPlan.MaximumOutputBytes || result.Policy != work.Policy ||
             string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 256)
             throw new InvalidDataException("Invalid combined PDF validation response.");
+        return result;
+    }
+
+    public async Task<PdfDocxSource> ProbePdfDocxAsync(PdfFileProbe request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "pdf-docx-probe", PdfFile: request), token);
+        if (reply.PdfDocxSource is not { } source || source.ItemId != request.ItemId || source.Path != request.Path)
+            throw new InvalidDataException("Invalid PDF-to-Word source response.");
+        source.Validate();
+        return source;
+    }
+
+    public async Task<PdfDocxResult> ConvertPdfDocxAsync(PdfDocxWork work, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "pdf-to-docx", PdfDocx: work), token);
+        if (reply.PdfDocxResult is not { } result || result.Validation is null || result.Validation.ItemId != work.OutputId ||
+            !result.Validation.MatchesPlan || result.Validation.Sha256 is not { Length: 64 } || !result.Validation.Sha256.All(char.IsAsciiHexDigit) ||
+            result.SourceSha256 != work.Source.Sha256 || result.PageCount != work.Source.PageCount || result.TextCharacters != work.Source.TextCharacters ||
+            result.ImageCount != work.Source.ImageCount || result.TableCount is < 0 or > 4096 ||
+            result.FigureCount is < 0 or > 131072 || result.FigureTextCharacters < 0 || result.FigureTextCharacters >= work.Source.TextCharacters ||
+            result.OutputBytes is <= 0 or > PdfDocxWork.MaximumOutputBytes || result.Policy != work.Policy ||
+            string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 256)
+            throw new InvalidDataException("Invalid PDF-to-Word validation response.");
         return result;
     }
 
@@ -235,7 +259,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     {
         command.Validate();
         await _gate.WaitAsync(cancellationToken);
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command is "images-to-pdf" or "office-export" ? 180 : command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" or "office-pdf-validate" ? 120 : 30),
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command is "images-to-pdf" or "office-export" or "pdf-to-docx" ? 180 : command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" or "office-pdf-validate" ? 120 : 30),
             timeProvider ?? TimeProvider.System);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
         try
@@ -274,6 +298,12 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             var reply = await JsonFrames.ReadAsync<WorkerReply>(_pipe!, timeout.Token);
             if (reply.Version != 1 || reply.RequestId != command.RequestId || reply.Capabilities is null)
                 throw new InvalidDataException("The media worker returned an invalid response.");
+            if (command.Command != "pdf-docx-probe" && reply.PdfDocxSource is not null ||
+                command.Command != "pdf-to-docx" && reply.PdfDocxResult is not null ||
+                command.Command is "pdf-docx-probe" or "pdf-to-docx" &&
+                (reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0) ||
+                reply.Failure is not null && (reply.PdfDocxSource is not null || reply.PdfDocxResult is not null))
+                throw new InvalidDataException("The media worker returned contradictory PDF-to-Word data.");
             if (command.Command != "office-pdf-validate" && reply.OfficePdfResult is not null || command.Command == "office-pdf-validate" &&
                 (reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0))
                 throw new InvalidDataException("The media worker returned contradictory Office PDF validation data.");

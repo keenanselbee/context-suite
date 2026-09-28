@@ -54,6 +54,14 @@ try
         try
         {
             if (command.Command == "capabilities") reply = new(1, command.RequestId, catalog.Capabilities.ToArray());
+            else if (command.Command is "pdf-docx-probe" or "pdf-to-docx")
+            {
+                if (command.Command == "pdf-to-docx") pdfRaster ??= new PdfRasterAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-renderer"), args[5]);
+                var docx = new PdfDocxAdapter(pdfRaster);
+                reply = command.Command == "pdf-docx-probe"
+                    ? new(1, command.RequestId, [], PdfDocxSource: await docx.ProbeAsync(command.PdfFile!, lifetime.Token))
+                    : new(1, command.RequestId, [], PdfDocxResult: await docx.ConvertAsync(command.PdfDocx!, lifetime.Token));
+            }
             else if (command.Command == "office-export")
                 reply = new(1, command.RequestId, [], OfficeCandidate: await OfficeFileAdapter.ExportAsync(
                     Path.Combine(AppContext.BaseDirectory, "office-engine"), command.OfficeWork!, command.RequestId, lifetime.Token));
@@ -120,6 +128,7 @@ try
             }
         }
         catch (Exception error) when (error is IOException or InvalidDataException or ArgumentException or InvalidOperationException or NotSupportedException or
+            UglyToad.PdfPig.Core.PdfDocumentFormatException or UglyToad.PdfPig.Exceptions.PdfDocumentEncryptedException or UglyToad.PdfPig.Fonts.InvalidFontFormatException or
             UnauthorizedAccessException or ImageMagick.MagickException or System.Xml.XmlException or TimeoutException or System.ComponentModel.Win32Exception or
             System.Runtime.InteropServices.COMException or TypeInitializationException or DllNotFoundException or EntryPointNotFoundException or BadImageFormatException or OutOfMemoryException or OperationCanceledException)
         {
@@ -128,6 +137,8 @@ try
             {
                 ImageFailureException known => known.Failure,
                 NotSupportedException => ImageFailure.UnsupportedInput,
+                UglyToad.PdfPig.Exceptions.PdfDocumentEncryptedException => ImageFailure.UnsupportedInput,
+                UglyToad.PdfPig.Core.PdfDocumentFormatException or UglyToad.PdfPig.Fonts.InvalidFontFormatException => ImageFailure.InvalidInput,
                 TimeoutException or OperationCanceledException => ImageFailure.TimedOut,
                 InvalidDataException or ArgumentException or System.Xml.XmlException => ImageFailure.InvalidInput,
                 UnauthorizedAccessException or IOException => ImageFailure.FileAccess,

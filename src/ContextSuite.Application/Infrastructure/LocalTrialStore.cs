@@ -34,6 +34,14 @@ internal sealed class LocalTrialStore : IOperationAccess
         return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
     }
 
+    async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedPdfDocx confirmed, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm();
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
     async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedPdfPageConversion confirmed, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(confirmed);

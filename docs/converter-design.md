@@ -13,6 +13,8 @@ and the [broad file support goal](broad-file-support-goal.md): common audio thro
 an explicit tested container/codec input/output matrix. Images-to-PDF, PDF
 pages-to-images and Word/Excel/PowerPoint-to-PDF are selected for launch; exact
 variants, engines and fidelity follow the [document design](document-design.md).
+The later owner-approved [PDF-to-Word workflow](pdf-to-docx.md) adds best-effort
+editable DOCX copies for supported text PDFs; complex figures remain images.
 Neither expansion is implemented by the existing image adapters.
 
 The 2026-09-16 goal revision additionally requires HEIC and AVIF input to the

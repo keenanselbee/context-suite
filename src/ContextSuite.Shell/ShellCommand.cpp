@@ -540,7 +540,8 @@ public:
         if (role_ == CommandRole::Action && definition_.kind == CommandKind::Optimize)
             return DuplicateString(PresetTooltips[preset_], tooltip);
         if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert)
-            return DuplicateString(preset_ == 12 ? L"Create PDF copies from supported images and Office documents; combine selected images; keep all originals" :
+            return DuplicateString(preset_ == 13 ? L"Create an editable Word copy; layout may differ and complex figures remain images; scanned pages need OCR" :
+                preset_ == 12 ? L"Create PDF copies from supported images and Office documents; combine selected images; keep all originals" :
                 preset_ >= 6 ? L"Convert audio using fixed settings; ask before required quality changes" :
                 preset_ == 5 ? L"Choose format, quality and advanced settings" :
                 preset_ == 0 ? L"Convert images to PNG; PDF pages become numbered PNG copies and keep the PDF" :
@@ -649,9 +650,9 @@ private:
     CommandRole role_;
     unsigned preset_;
     static constexpr const wchar_t* ConvertTitles[] = { L"PNG", L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS...",
-        L"WAV", L"FLAC", L"MP3", L"M4A (AAC)", L"Ogg Vorbis", L"Opus", L"PDF" };
+        L"WAV", L"FLAC", L"MP3", L"M4A (AAC)", L"Ogg Vorbis", L"Opus", L"PDF", L"Word (DOCX)" };
     static constexpr const wchar_t* ConvertActions[] = { L"png", L"jpeg", L"webp", L"bmp", L"tga", L"dds",
-        L"wav", L"flac", L"mp3", L"m4a", L"vorbis", L"opus", L"pdf" };
+        L"wav", L"flac", L"mp3", L"m4a", L"vorbis", L"opus", L"pdf", L"docx" };
     static constexpr const wchar_t* PresetTitles[] = { L"Auto", L"Lossless", L"Balanced", L"Smallest" };
     static constexpr const wchar_t* PresetActions[] = { L"auto", L"lossless", L"balanced", L"smallest" };
     static constexpr const wchar_t* PresetTooltips[] = {
@@ -665,7 +666,7 @@ class CommandEnumerator final : public IEnumExplorerCommand
 {
 public:
     explicit CommandEnumerator(CommandKind kind) :
-        kind_(kind), commandCount_(kind == CommandKind::Optimize ? 6 : 15)
+        kind_(kind), commandCount_(kind == CommandKind::Optimize ? 6 : 16)
     {
         ++objectCount;
         const unsigned count = commandCount_ - 2;
@@ -777,7 +778,7 @@ public:
 
 private:
     std::atomic_ulong referenceCount_{1};
-    std::array<ExplorerCommand*, 15> commands_{};
+    std::array<ExplorerCommand*, 16> commands_{};
     CommandKind kind_;
     ULONG commandCount_;
     ULONG position_ = 0;
