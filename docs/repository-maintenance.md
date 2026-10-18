@@ -1,10 +1,10 @@
 Repository Cleanup And Correctness Plan
 =======================================
 
-Status: implementation started on 2026-10-17. The standing instructions are in
-place; correctness review and script improvements are underway. Commits and
-historical cleanup remain pending. This document is not an executable commit
-or deletion proposal.
+Status: implementation started on 2026-10-17. The first maintenance commit and
+verified historical fixture cleanup are complete. Correctness review, follow-up
+guards and feature commit proposals remain underway. This document is not an
+executable commit or deletion proposal.
 
 Keep the repository understandable, preserve working behavior and prevent
 unnecessary output from accumulating. Use existing tools and short records.
@@ -148,6 +148,8 @@ For a historical cleanup pass:
    Recheck original identities, protections and absence of active writers before
    removing exact reviewed entries. Reject out-of-root paths, reparse points,
    protected overlaps and changed selections. Stop on uncertainty.
+   Review read-only attributes before deletion; do not discover a known
+   obstruction midway through a selection or clear attributes broadly.
 4. Preserve receipts and diagnostics if partially completed; resume only after
    rechecking what remains. Verify protected source/payload identities and any
    affected workflow. Report local bytes reclaimed separately from archive

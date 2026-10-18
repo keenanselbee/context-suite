@@ -354,6 +354,10 @@ def cleanup(run, record, protection=None, consumers_reviewed=False):
         fail('Protection manifest changed during restore check; cleanup refused.')
     files = [e for e in record['entries'] if e['kind'] == 'file']
     dirs = [e for e in record['entries'] if e['kind'] == 'dir']
+    # Refuse a known Windows obstruction before any original file is removed.
+    for entry in files:
+        if getattr(ordinary(REPO / Path(entry['path'])), 'st_file_attributes', 0) & 1:
+            fail('Read-only file requires attribute review before cleanup: ' + entry['path'])
     for entry in files:
         path = REPO / Path(entry['path'])
         ancestors(path)

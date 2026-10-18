@@ -132,6 +132,23 @@ try:
     selected.unlink()
     check(not run.exists(), 'successful archive run cleaned')
 
+    if os.name == 'nt':
+        read_only_root = fixture / 'read-only'
+        read_only_root.mkdir()
+        earlier_file = read_only_root / 'a.txt'
+        earlier_file.write_text('keep before obstruction', encoding='utf-8')
+        read_only_file = read_only_root / 'z.txt'
+        read_only_file.write_text('read-only fixture', encoding='utf-8')
+        os.chmod(read_only_file, stat.S_IREAD)
+        selected = manifest('read-only-selection', [str(read_only_root)])
+        call('plan', 'read-only', selected)
+        call('archive', 'read-only', selected)
+        call('cleanup', 'read-only', selected, accepted=False)
+        check(earlier_file.read_text(encoding='utf-8') == 'keep before obstruction' and
+              read_only_file.read_text(encoding='utf-8') == 'read-only fixture',
+              'read-only file refused before deleting any selected file')
+        os.chmod(read_only_file, stat.S_IWRITE)
+
     for label, change in [('mutated', 'mutate'), ('added', 'add'), ('corrupt', 'corrupt')]:
         root = fixture / label
         root.mkdir()
