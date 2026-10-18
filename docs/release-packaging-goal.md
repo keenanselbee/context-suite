@@ -165,6 +165,15 @@ SHA256 in `installer-receipt.json`. The installer-specific preflight is separate
 inventoried and may be newer than the preflight archived in the input candidate.
 The compiler is not part of the customer payload.
 
+The same offline EXE now offers three default-selected tools and requires at
+least one. It derives seven verified component inventories from the complete
+candidate and records their exact payload sizes. Candidates must declare
+`toolSelectionSchema: 1` in `requirements.json`, which the fresh candidate builder
+emits with the selection-aware application. Rebuild older candidates instead of
+patching their immutable receipts. See [optional tool installation](optional-tool-installation.md)
+for the dependency map, tests, and size estimates. Native upgrade admission remains
+closed, including attempts to change a previous selection.
+
 This output is visibly an **internal lifecycle candidate**, not a customer
 release. `-UnsignedInternal` allows compile verification only; the resulting
 installer refuses unsigned/untrusted MSIX packages. Without that flag the builder

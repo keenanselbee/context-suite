@@ -4,7 +4,8 @@ param(
     [Parameter(Mandatory)][string] $InstallDirectory,
     [Parameter(Mandatory)][string] $ResultPath,
     [string] $ReleaseId,
-    [ValidateSet('modern', 'classic')][string] $MenuMode = 'modern'
+    [ValidateSet('modern', 'classic')][string] $MenuMode = 'modern',
+    [string] $Tools = 'Analyze,Convert,Optimize'
 )
 $ErrorActionPreference = 'Stop'
 try {
@@ -12,6 +13,13 @@ try {
     . (Join-Path $PSScriptRoot 'InstallationRecovery.ps1')
     . (Join-Path $PSScriptRoot 'InstallerLifecycle.ps1')
     $metadata = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'installer.json') -Raw | ConvertFrom-Json
+    if ($Action -in 'Check', 'Stage', 'Install') {
+        $release = Read-SuiteInstallerSelection $metadata $PSScriptRoot ($Tools.Split(','))
+        $selected = @(Get-SuiteReleaseTools $release)
+        $metadata.release = $release
+        $selectedPackages = @($metadata.packages | Where-Object { $selected -ccontains $_.name.Split('.')[-1] })
+        if ($selectedPackages.Count -ne $selected.Count) { throw 'Selected identity packages are incomplete.' }
+    }
     $metadata.release | Add-Member -Force NoteProperty menuMode $MenuMode
     if (-not [Environment]::Is64BitProcess -or $env:PROCESSOR_ARCHITECTURE -ne 'AMD64' -or
         [Environment]::OSVersion.Version.Build -lt 26100) { throw 'Windows 11 x64 build 26100 or newer is required.' }
@@ -24,7 +32,7 @@ try {
             Assert-SuiteInstallAvailable $metadata
             Assert-SuiteClassicAvailable
         }
-        foreach ($definition in $metadata.packages) {
+        foreach ($definition in $selectedPackages) {
             $path = Join-Path $PSScriptRoot $definition.file
             $signature = Get-AuthenticodeSignature -LiteralPath $path
             if ((Get-FileHash -LiteralPath $path).Hash -ne $definition.sha256 -or

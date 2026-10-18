@@ -1,6 +1,22 @@
 # Versioned upgrade/repair backend. Dot-sourcing defines functions only.
 # Inno lifecycle orchestration and repository-only tests share this module.
 . (Join-Path $PSScriptRoot 'ClassicShellRegistration.ps1')
+function Get-SuitePackagePrefix {
+    param($Release)
+    $tools = @(Get-SuiteReleaseTools $Release)
+    $names = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $prefixes = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($package in $Release.packages) {
+        if ($package.name -cnotmatch '^([A-Za-z0-9][A-Za-z0-9.-]{2,45})\.(Analyze|Convert|Optimize)$' -or
+            -not $names.Add($Matches[2])) { throw 'Installer identity differs: invalid package identities.' }
+        $prefixes.Add($Matches[1]) | Out-Null
+    }
+    if ($prefixes.Count -ne 1 -or (@($names | Sort-Object) -join '|') -cne (($tools | Sort-Object) -join '|')) {
+        throw 'Installer identity differs: package identities do not match selected tools.'
+    }
+    return @($prefixes)[0]
+}
+
 function Assert-RecoveryPath {
     param([string] $Path)
     $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
@@ -36,10 +52,11 @@ function Read-SuiteRecoveryRelease {
     $release = Read-RecoveryJson (Join-Path $directory 'release.json')
     if ((Get-SuiteMenuMode $release) -eq 'classic' -and
         $release.applicationDirectory -cne (Join-Path $directory 'app')) { throw 'Classic registration path differs from its release.' }
-    if ($release.schema -ne 1 -or $release.id -cne $Id -or
+    $tools = @(Get-SuiteReleaseTools $release)
+    if ($release.schema -notin 1, 2 -or $release.id -cne $Id -or
         $release.version -notmatch '^\d+\.\d+\.\d+\.\d+$' -or
-        [string]::IsNullOrWhiteSpace($release.publisher) -or @($release.packages).Count -ne 3 -or
-        @($release.files).Count -lt 4 -or @($release.files).Count -gt 4096) { throw 'Invalid recovery release descriptor.' }
+        [string]::IsNullOrWhiteSpace($release.publisher) -or @($release.packages).Count -ne $tools.Count -or
+        @($release.files).Count -lt (1 + $tools.Count) -or @($release.files).Count -gt 4096) { throw 'Invalid recovery release descriptor.' }
     if (($release.version.Split('.') | Where-Object { [int]$_ -gt 65535 }).Count) { throw 'Invalid recovery version.' }
     $names = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     $prefixes = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -49,12 +66,16 @@ function Read-SuiteRecoveryRelease {
         if (-not $names.Add($Matches[2]) -or $package.file -cne "packages/$($package.name).msix" -or
             $package.sha256 -notmatch '^[a-fA-F0-9]{64}$') { throw 'Invalid or duplicate recovery package.' }
     }
+    if ((@($names | Sort-Object) -join '|') -cne (($tools | Sort-Object) -join '|')) { throw 'Recovery packages differ from selected tools.' }
     if ($prefixes.Count -ne 1) { throw 'Recovery packages must share an identity prefix.' }
     $paths = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
     foreach ($file in $release.files) {
         if ($file.path -notmatch '^(app|packages)/[a-zA-Z0-9_. /-]+$' -or
             $file.path -match '(^|/)\.\.?(/|$)|[. ](/|$)|//' -or -not $paths.Add($file.path) -or
             $file.sha256 -notmatch '^[a-fA-F0-9]{64}$') { throw 'Unsafe or duplicate recovery inventory path.' }
+        if ($file.path.StartsWith('packages/') -and $file.path -cnotin @($release.packages.file)) {
+            throw 'Recovery inventory contains an unselected package.'
+        }
         if ($VerifyApplication -or $file.path.StartsWith('packages/')) {
             $path = Join-Path $directory $file.path
             Assert-RecoveryPath $path
@@ -62,6 +83,14 @@ function Read-SuiteRecoveryRelease {
         }
     }
     if (-not $paths.Contains('app/ContextSuite.Application.exe')) { throw 'Recovery application is missing from inventory.' }
+    if ($release.schema -eq 2) {
+        if (-not $paths.Contains('app/installation-tools.json')) { throw 'Recovery tool selection is missing from inventory.' }
+        $markerPath = Join-Path $directory 'app/installation-tools.json'
+        $markerEntry = @($release.files | Where-Object path -CEQ 'app/installation-tools.json')[0]
+        $marker = Read-RecoveryJson $markerPath
+        if ((Get-FileHash -LiteralPath $markerPath).Hash -ne $markerEntry.sha256 -or $marker.schema -ne 1 -or
+            ((@(Get-SuiteTools $marker.tools)) -join '|') -cne ($tools -join '|')) { throw 'Recovery tool selection does not match its inventory.' }
+    }
     if ((Get-SuiteMenuMode $release) -eq 'classic' -and -not $paths.Contains('app/ContextSuite.Shell.dll')) {
         throw 'Classic shell DLL is missing from inventory.'
     }
@@ -103,36 +132,39 @@ function Assert-SuiteRecoveryPair {
     param($Previous, $Next)
     if ((Get-SuiteMenuMode $Previous) -ne (Get-SuiteMenuMode $Next)) { throw 'Changing menu mode requires explicit uninstall and reinstall.' }
     if ($Previous.id -ceq $Next.id -or $Previous.publisher -cne $Next.publisher -or
-        (($Previous.packages.name | Sort-Object) -join '|') -cne (($Next.packages.name | Sort-Object) -join '|')) {
+        (Get-SuitePackagePrefix $Previous) -cne (Get-SuitePackagePrefix $Next)) {
         throw 'Recovery requires separate payloads with stable package identities and publisher.'
     }
     if ([version]$Next.version -lt [version]$Previous.version) { throw 'Installer downgrades are not allowed.' }
     if ([version]$Next.version -eq [version]$Previous.version) {
         $before = ($Previous.files | Sort-Object path | ForEach-Object { "$($_.path)=$($_.sha256.ToUpperInvariant())" }) -join '|'
         $after = ($Next.files | Sort-Object path | ForEach-Object { "$($_.path)=$($_.sha256.ToUpperInvariant())" }) -join '|'
-        if ($before -cne $after) { throw 'Same-version repair must use the exact original release inventory.' }
+        if ((@(Get-SuiteReleaseTools $Previous) -join '|') -cne (@(Get-SuiteReleaseTools $Next) -join '|') -or $before -cne $after) { throw 'Same-version repair must use the exact original release inventory.' }
         return 'repair'
     }
     return 'upgrade'
 }
 
 function Get-SuiteRecoveryPackages {
-    param($Release)
+    param($Release, $Other = $Release)
     $packages = @()
-    foreach ($definition in $Release.packages) { $packages += @(Get-AppxPackage -Name $definition.name -ErrorAction Stop) }
+    foreach ($name in @(@($Release.packages.name) + @($Other.packages.name) | Sort-Object -Unique)) {
+        $packages += @(Get-AppxPackage -Name $name -ErrorAction Stop)
+    }
     return $packages
 }
 
 function Assert-SuiteRecoveryOwnership {
-    param($Previous, $Next)
+    param($Previous, $Next, [switch] $PreviousOnly)
     if ((Get-SuiteMenuMode $Previous) -eq 'classic') {
-        if (@(Get-SuiteRecoveryPackages $Previous).Count -ne 0) { throw 'Unexpected modern registrations alongside classic mode.' }
-        Assert-SuiteClassicOwnership $Previous $Next
+        if (@(Get-SuiteRecoveryPackages $Previous $Next).Count -ne 0) { throw 'Unexpected modern registrations alongside classic mode.' }
+        Assert-SuiteClassicOwnership $Previous $Next -PreviousOnly:$PreviousOnly
         return
     }
-    foreach ($package in @(Get-SuiteRecoveryPackages $Previous)) {
-        if ($package.Name -cnotin @($Previous.packages.name) -or $package.Publisher -cne $Previous.publisher -or
-            ([version]$package.Version -ne [version]$Previous.version -and [version]$package.Version -ne [version]$Next.version)) {
+    foreach ($package in @(Get-SuiteRecoveryPackages $Previous $Next)) {
+        $oldOwner = $package.Name -cin @($Previous.packages.name) -and [version]$package.Version -eq [version]$Previous.version
+        $newOwner = -not $PreviousOnly -and $package.Name -cin @($Next.packages.name) -and [version]$package.Version -eq [version]$Next.version
+        if ($package.Publisher -cne $Previous.publisher -or (-not $oldOwner -and -not $newOwner)) {
             throw 'Unexpected registered package owner/version; recovery will not remove it.'
         }
     }
@@ -142,7 +174,7 @@ function Assert-SuiteRecoveryRegistered {
     param($Release)
     if ((Get-SuiteMenuMode $Release) -eq 'classic') { Assert-SuiteClassicRegistered $Release; return }
     $installed = @(Get-SuiteRecoveryPackages $Release)
-    if ($installed.Count -ne 3) { throw 'Recovery registration is incomplete.' }
+    if ($installed.Count -ne @($Release.packages).Count) { throw 'Recovery registration is incomplete.' }
     foreach ($definition in $Release.packages) {
         if (@($installed | Where-Object { $_.Name -ceq $definition.name -and $_.Publisher -ceq $Release.publisher -and
             [version]$_.Version -eq [version]$Release.version }).Count -ne 1) { throw 'Recovery registration verification failed.' }
@@ -153,7 +185,7 @@ function Set-SuiteRecoveryRegistered {
     param([string] $Root, $Previous, $Next, $Desired)
     Assert-SuiteRecoveryOwnership $Previous $Next
     if ((Get-SuiteMenuMode $Desired) -eq 'classic') { Set-SuiteClassicRegistered $Previous $Next $Desired; return }
-    foreach ($package in @(Get-SuiteRecoveryPackages $Previous)) {
+    foreach ($package in @(Get-SuiteRecoveryPackages $Previous $Next)) {
         Remove-AppxPackage -Package $package.PackageFullName -ErrorAction Stop
     }
     $directory = Join-Path $Root "releases\$($Desired.id)"
@@ -226,7 +258,7 @@ function Invoke-SuiteRecovery {
         $mode = Assert-SuiteRecoveryPair $previous $next
         # A new transaction must start from the previous version, never silently
         # adopt an unrelated target-version registration found without a journal.
-        Assert-SuiteRecoveryOwnership $previous $previous
+        Assert-SuiteRecoveryOwnership $previous $next -PreviousOnly
         $journal = [pscustomobject]@{
             schema = 1; phase = 'pending'; previous = $previous.id; next = $next.id; mode = $mode;
             previousHash = (Get-FileHash -LiteralPath (Join-Path $Root "releases\$($previous.id)\release.json")).Hash;

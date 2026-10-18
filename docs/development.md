@@ -18,6 +18,8 @@ Build And Test
 ./tools/Test-Foundation.ps1 -Configuration Release
 ./tools/Test-PrivateBoundary.ps1
 ./tools/Test-ShellPrototype.ps1 -Configuration Release
+./tools/release/Test-InstallerSelections.ps1 # Mocked modern/classic lifecycle; no installation.
+./tools/release/Test-InstallerComponents.ps1 # All seven payload selections; no engine inputs needed.
 
 # Complete foundation, requiring private source and staged curated inputs.
 # See tools/curated-engine/README.md for the reviewed native staging workflow.

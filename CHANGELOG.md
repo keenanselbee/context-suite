@@ -1,6 +1,17 @@
 Context Suite Changelog
 =======================
 
+Unreleased - Optional installation tools
+----------------------------------------
+
+- Select Analyze, Convert, and Optimize in setup, with all three enabled by
+  default and at least one required. Omit Convert-only engines when unselected.
+- Register only selected Explorer commands and reject omitted direct operations.
+  Keep shared Analyze/Optimize dependencies, Settings, and License available.
+- Verify all seven payload selections and mocked registration/recovery paths.
+  Signed native installation and existing-install upgrade/repair remain gated.
+
+
 1.4.8 - Instant Technical details disclosure, 2026-10-16
 -------------------------------------------------------
 

@@ -498,9 +498,13 @@ that determined users may reset local trials or modify binaries. See
 Distribution Direction
 ----------------------
 
-Website downloads use one Inno Setup installer for the application and three
-Explorer identities. Installation is per-user, with bundled offline Microsoft
-runtime prerequisites that may require administrator approval. Settings, trial
+Website downloads use one Inno Setup installer with Analyze, Convert, and Optimize
+selected by default. Users may deselect any tools but must keep at least one.
+Only selected commands and their required shared payload are installed; see
+[optional tool installation](optional-tool-installation.md) for dependencies,
+size estimates, and current acceptance limits. Installation is per-user, with
+bundled offline Microsoft runtime prerequisites that may require administrator
+approval. Settings, trial
 and license data must survive uninstall. Manual installer-based updates come first;
 Microsoft Store distribution is a later option, not a separate app edition.
 The internal installer uses versioned payloads and active-release launch/uninstall.

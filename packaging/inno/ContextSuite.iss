@@ -27,11 +27,21 @@ UninstallDisplayIcon={app}\installation\ContextSuite.ico
 SetupIconFile=payload\installation\ContextSuite.ico
 SetupMutex=ContextSuiteInstaller
 ChangesAssociations=yes
+UsePreviousSetupType=yes
+
+[Types]
+Name: "full"; Description: "All tools (recommended)"
+Name: "custom"; Description: "Choose tools"; Flags: iscustom
+
+[Components]
+Name: "analyze"; Description: "Analyze"; Types: full
+Name: "convert"; Description: "Convert"; Types: full
+Name: "optimize"; Description: "Optimize"; Types: full
 
 [Files]
 Source: "payload\installation\*"; Flags: dontcopy
 Source: "payload\runtimes\*"; Flags: dontcopy
-Source: "payload\release\*"; DestDir: "{app}\releases\{code:GetReleaseId}"; Flags: ignoreversion recursesubdirs createallsubdirs
+#include "ComponentFiles.iss"
 Source: "payload\installation\*"; DestDir: "{app}\installation"; Flags: ignoreversion
 
 [Icons]
@@ -51,6 +61,38 @@ var
   StageId: String;
   LifecycleMutex: THandle;
   MenuPage: TInputOptionWizardPage;
+
+function SelectedTools: String;
+begin
+  Result := '';
+  if WizardIsComponentSelected('analyze') then Result := 'Analyze';
+  if WizardIsComponentSelected('convert') then begin
+    if Result <> '' then Result := Result + ',';
+    Result := Result + 'Convert';
+  end;
+  if WizardIsComponentSelected('optimize') then begin
+    if Result <> '' then Result := Result + ',';
+    Result := Result + 'Optimize';
+  end;
+end;
+
+function SelectionIs(Key: String): Boolean;
+var
+  SelectedKey: String;
+begin
+  SelectedKey := Lowercase(SelectedTools);
+  StringChangeEx(SelectedKey, ',', '-', True);
+  Result := SelectedKey = Key;
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  Result := True;
+  if (CurPageID = wpSelectComponents) and (SelectedTools = '') then begin
+    MsgBox('Select at least one tool to install.', mbError, MB_OK);
+    Result := False;
+  end;
+end;
 
 function SelectedMenuMode: String;
 begin
@@ -144,6 +186,8 @@ begin
     '" -ResultPath "' + ResultFile + '"';
   if StageId <> '' then Arguments := Arguments + ' -ReleaseId "' + StageId + '"';
   Arguments := Arguments + ' -MenuMode ' + SelectedMenuMode;
+  if (Action = 'Check') or (Action = 'Stage') or (Action = 'Install') then
+    Arguments := Arguments + ' -Tools "' + SelectedTools + '"';
   Result := Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
     Arguments, '', SW_HIDE, ewWaitUntilTerminated, Code);
   Result := Result and (Code = 0);
@@ -193,6 +237,10 @@ var
   Detail: AnsiString;
 begin
   Result := '';
+  if SelectedTools = '' then begin
+    Result := 'Select at least one tool to install.';
+    exit;
+  end;
   ExtractTemporaryFiles('{tmp}\*.ps1');
   ExtractTemporaryFiles('{tmp}\*.json');
   ExtractTemporaryFiles('{tmp}\*.msix');

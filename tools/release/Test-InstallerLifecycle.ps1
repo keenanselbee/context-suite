@@ -189,7 +189,7 @@ Assert-RecoveryTest ($script:removeCount -eq 0) 'Foreign first-install journal c
 $inno = Get-Content -LiteralPath (Join-Path $repository 'packaging\inno\ContextSuite.iss') -Raw
 $entry = Get-Content -LiteralPath (Join-Path $repository 'packaging\inno\Invoke-InstallerAction.ps1') -Raw
 $builder = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Build-InnoInstaller.ps1') -Raw
-Assert-RecoveryTest ($inno.Contains('releases\{code:GetReleaseId}') -and $inno.Contains('Launch-Active.ps1')) 'Inno wires versioned extraction and stable launch shortcut'
+Assert-RecoveryTest ($inno.Contains('#include "ComponentFiles.iss"') -and $inno.Contains('Launch-Active.ps1')) 'Inno wires generated component extraction and stable launch shortcut'
 Assert-RecoveryTest ($entry.Contains('Complete-SuiteInstallStage') -and $entry.Contains('Uninstall-SuiteActiveRelease') -and $entry.Contains('Assert-SuiteLifecycleAdmission')) 'Shipping dispatcher wires lifecycle and acceptance gate'
 Assert-RecoveryTest ($builder.Contains("'InstallerLifecycle.ps1'") -and $builder.Contains("'InstallationRecovery.ps1'") -and $builder.Contains('nativeUpgradeAdmission = $false')) 'Builder includes lifecycle helpers and records closed native gate'
 Assert-RecoveryTest ($inno.Contains('function InitializeUninstall') -and $inno.Contains('WaitForSingleObject(LifecycleMutex, 0)') -and $inno.Contains('procedure DeinitializeUninstall')) 'Setup and uninstall share an atomic process-lifetime mutex'

@@ -101,6 +101,7 @@ $vcVersion = (Get-Content -LiteralPath (Join-Path $vs 'VC\Auxiliary\Build\Micros
 $ddsIdentity = Get-Content -LiteralPath (Join-Path $app 'ContextSuite.Dds.Engine.json') -Raw | ConvertFrom-Json
 if ($ddsIdentity.minimumVisualCppRuntime -notmatch '^14\.\d+\.\d+\.\d+$') { throw 'DDS runtime prerequisite evidence is missing.' }
 $requirements = [ordered]@{
+    toolSelectionSchema = 1;
     minimumWindowsBuild = 26100; architecture = 'x64'; deployment = 'framework-dependent';
     desktopRuntime = 'Microsoft.WindowsDesktop.App 10.0.x x64'; minimumVisualCppRuntime = $ddsIdentity.minimumVisualCppRuntime;
     desktopRuntimeUrl = 'https://dotnet.microsoft.com/en-us/download/dotnet/10.0';

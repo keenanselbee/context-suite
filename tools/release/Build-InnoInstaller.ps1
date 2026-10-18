@@ -11,6 +11,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Cannot identify installer source revision.' }
 $installerChanges = @(& git -C $repository status --porcelain=v1 --untracked-files=all)
 if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect installer source state.' }
 $builderHash = (Get-FileHash -LiteralPath $PSCommandPath).Hash
+$selectionBuilder = Join-Path $PSScriptRoot 'New-InstallerSelections.ps1'
+$selectionBuilderHash = (Get-FileHash -LiteralPath $selectionBuilder).Hash
 & (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate $Candidate
 $candidateRoot = (Resolve-Path -LiteralPath $Candidate).Path
 $identityRoot = (Resolve-Path -LiteralPath $IdentityDirectory).Path
@@ -70,6 +72,9 @@ foreach ($input in @($pins.desktopRuntime, $pins.visualCppRuntime)) {
     }
 }
 $requirements = Get-Content -LiteralPath (Join-Path $candidateRoot 'requirements.json') -Raw | ConvertFrom-Json
+if ($requirements.toolSelectionSchema -ne 1) {
+    throw 'Rebuild the application candidate with installed-tool selection support before packaging this installer.'
+}
 if ([version]$pins.visualCppRuntime.version -lt [version]$requirements.minimumVisualCppRuntime) {
     throw 'Bundled Visual C++ runtime is older than the DDS toolset requirement.'
 }
@@ -86,7 +91,7 @@ foreach ($entry in $candidateManifest.files | Where-Object { $_.path.StartsWith(
     if ((Get-FileHash -LiteralPath $copy).Hash -ne $entry.sha256) { throw 'Application changed while staging installer.' }
 }
 foreach ($name in 'ContextSuite.iss', 'Invoke-InstallerAction.ps1', 'ShellRegistration.ps1',
-    'InstallationRecovery.ps1', 'InstallerLifecycle.ps1', 'ClassicShellRegistration.ps1', 'Launch-Active.ps1') {
+    'InstallationRecovery.ps1', 'InstallerLifecycle.ps1', 'ClassicShellRegistration.ps1', 'Launch-Active.ps1', 'InstallComponents.ps1') {
     $destination = if ($name -like '*.iss') { $staging } else { $installation }
     Copy-Item -LiteralPath (Join-Path $repository "packaging\inno\$name") -Destination $destination
 }
@@ -113,7 +118,10 @@ $release = [ordered]@{
     })
 }
 [IO.File]::WriteAllText((Join-Path $releaseDirectory 'release.json'), ($release | ConvertTo-Json -Depth 12), $utf8)
+. $selectionBuilder
+$selections = @(New-SuiteInstallerSelections $release $releaseDirectory $installation (Join-Path $staging 'ComponentFiles.iss'))
 $identity | Add-Member -NotePropertyName release -NotePropertyValue $release
+$identity | Add-Member -NotePropertyName selections -NotePropertyValue $selections
 [IO.File]::WriteAllText((Join-Path $installation 'installer.json'), ($identity | ConvertTo-Json -Depth 12), $utf8)
 # Output path is generated under this repository, not accepted from external metadata.
 if ($output -match '["\r\n]') { throw 'Unsupported build path.' }
@@ -127,7 +135,8 @@ $configuration = @(
 if ($LASTEXITCODE -ne 0) { throw 'Inno compilation failed.' }
 $installer = Join-Path $output "ContextSuite-$($identity.version)-win-x64-internal.exe"
 if ((& git -C $repository rev-parse HEAD) -ne $installerCommit -or
-    (Get-FileHash -LiteralPath $PSCommandPath).Hash -ne $builderHash) {
+    (Get-FileHash -LiteralPath $PSCommandPath).Hash -ne $builderHash -or
+    (Get-FileHash -LiteralPath $selectionBuilder).Hash -ne $selectionBuilderHash) {
     throw 'Installer source changed during compilation; discard this attempt.'
 }
 foreach ($file in Get-ChildItem -LiteralPath (Join-Path $repository 'packaging\inno') -File) {
@@ -139,10 +148,12 @@ foreach ($file in Get-ChildItem -LiteralPath (Join-Path $repository 'packaging\i
 $receipt = [ordered]@{
     schema = 1; status = 'unsigned-internal-lifecycle-candidate'; nativeUpgradeAdmission = $false;
     installerSource = [ordered]@{ publicCommit = $installerCommit; dirtySources = ($installerChanges.Count -ne 0);
-        builderSha256 = $builderHash; applicationCandidateDirtySources = [bool]$candidateManifest.dirtySources };
+        builderSha256 = $builderHash; selectionBuilderSha256 = $selectionBuilderHash;
+        applicationCandidateDirtySources = [bool]$candidateManifest.dirtySources };
     candidateManifestSha256 = $identity.candidateManifestSha256;
     identityReceiptSha256 = (Get-FileHash -LiteralPath (Join-Path $identityRoot 'identity-candidates.json')).Hash;
     unsignedIdentityInputs = [bool]$UnsignedInternal; innoVersion = $pins.inno.version;
+    selections = $selections;
     installerSha256 = (Get-FileHash -LiteralPath $installer).Hash; inputs = $pins;
     sourceFiles = @(Get-ChildItem -LiteralPath $staging -File -Recurse | Sort-Object FullName | ForEach-Object {
         [ordered]@{ path = $_.FullName.Substring($staging.Length + 1); sha256 = (Get-FileHash -LiteralPath $_.FullName).Hash }

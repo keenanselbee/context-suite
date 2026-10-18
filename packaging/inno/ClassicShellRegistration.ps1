@@ -1,5 +1,6 @@
 # Per-user classic IExplorerCommand registration. Fixed leaf keys only: never
 # modify the Windows menu override or recursively delete a shared registry tree.
+. (Join-Path $PSScriptRoot 'InstallComponents.ps1')
 function Get-SuiteMenuMode {
     param($Release)
     $property = $Release.PSObject.Properties['menuMode']
@@ -15,7 +16,7 @@ function Get-SuiteClassicDefinitions {
         Convert = '{C0A78640-7313-4AD7-870C-2F0B838A28C2}'
         Optimize = '{8C4CA2A6-99A2-436A-9021-3D004687FC4C}'
     }
-    foreach ($name in $commands.Keys) {
+    foreach ($name in @(Get-SuiteReleaseTools $Release)) {
         $owner = "$($Release.publisher)|$($Release.id)|$($Release.applicationDirectory)"
         [pscustomobject]@{ Path = "Software\Classes\CLSID\$($commands[$name])\InprocServer32";
             Values = @{ '' = "$($Release.applicationDirectory)\ContextSuite.Shell.dll"; ThreadingModel = 'Apartment'; ContextSuiteOwner = $owner } }
@@ -55,22 +56,23 @@ function Assert-SuiteClassicAvailable {
     }
 }
 function Assert-SuiteClassicOwnership {
-    param($Previous, $Next)
-    $before = @(Get-SuiteClassicDefinitions $Previous)
-    $after = @(Get-SuiteClassicDefinitions $Next)
-    for ($i = 0; $i -lt $before.Count; $i++) {
-        $key = Read-SuiteClassicKey $before[$i].Path
+    param($Previous, $Next, [switch] $PreviousOnly)
+    $before = @{}; $after = @{}
+    foreach ($definition in Get-SuiteClassicDefinitions $Previous) { $before[$definition.Path] = $definition }
+    foreach ($definition in Get-SuiteClassicDefinitions $Next) { $after[$definition.Path] = $definition }
+    foreach ($path in @(@($before.Keys) + @($after.Keys) | Sort-Object -Unique)) {
+        $key = Read-SuiteClassicKey $path
         if ($null -eq $key) { continue }
-        if ($key.Children.Count -ne 0 -or $key.Values.ContextSuiteOwner -cnotin @($before[$i].Values.ContextSuiteOwner, $after[$i].Values.ContextSuiteOwner) -or
-            @($key.Values.Keys | Where-Object { -not $before[$i].Values.ContainsKey($_) }).Count -ne 0) {
-            throw 'Foreign or modified classic registration retained; manual review required.'
-        }
-        # Known values may be absent after interruption, but must never be foreign.
-        foreach ($name in $key.Values.Keys) {
-            if ($key.Values[$name] -cnotin @($before[$i].Values[$name], $after[$i].Values[$name])) {
-                throw 'Modified classic registration retained; manual review required.'
-            }
-        }
+        $allowed = @($before[$path], $(if (-not $PreviousOnly) { $after[$path] }) | Where-Object { $null -ne $_ })
+        # Validate against one complete owner, never mixed values from two releases.
+        $matches = @($allowed | Where-Object {
+            $definition = $_
+            $key.Children.Count -eq 0 -and $key.Values.ContextSuiteOwner -ceq $definition.Values.ContextSuiteOwner -and
+            @($key.Values.Keys | Where-Object {
+                -not $definition.Values.ContainsKey($_) -or $key.Values[$_] -cne $definition.Values[$_]
+            }).Count -eq 0
+        })
+        if ($matches.Count -eq 0) { throw 'Foreign or modified classic registration retained; manual review required.' }
     }
 }
 function Assert-SuiteClassicRegistered {
@@ -85,13 +87,17 @@ function Uninstall-SuiteClassic {
     param($Release)
     Assert-SuiteClassicOwnership $Release $Release
     foreach ($definition in Get-SuiteClassicDefinitions $Release) { Remove-SuiteClassicKey $definition.Path }
-    Assert-SuiteClassicAvailable
+    foreach ($definition in Get-SuiteClassicDefinitions $Release) {
+        if ($null -ne (Read-SuiteClassicKey $definition.Path)) { throw 'Classic registration remains after uninstall.' }
+    }
 }
 function Set-SuiteClassicRegistered {
     param($Previous, $Next, $Desired)
     Assert-SuiteClassicOwnership $Previous $Next
+    foreach ($path in @(@((Get-SuiteClassicDefinitions $Previous).Path) + @((Get-SuiteClassicDefinitions $Next).Path) | Sort-Object -Unique)) {
+        Remove-SuiteClassicKey $path
+    }
     foreach ($definition in Get-SuiteClassicDefinitions $Desired) {
-        Remove-SuiteClassicKey $definition.Path
         Write-SuiteClassicKey $definition.Path $definition.Values
     }
     Assert-SuiteClassicRegistered $Desired

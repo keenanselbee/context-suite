@@ -15,9 +15,10 @@ function Assert-SuiteLifecycleAdmission {
 }
 
 function Assert-SuiteInstallerIdentity {
-    param($Expected, $Actual)
+    param($Expected, $Actual, [switch] $ExactSelection)
     if ($Actual.publisher -cne $Expected.publisher -or
-        (($Actual.packages.name | Sort-Object) -join '|') -cne (($Expected.packages.name | Sort-Object) -join '|')) {
+        (Get-SuitePackagePrefix $Actual) -cne (Get-SuitePackagePrefix $Expected) -or
+        ($ExactSelection -and (@(Get-SuiteReleaseTools $Actual) -join '|') -cne (@(Get-SuiteReleaseTools $Expected) -join '|'))) {
         throw 'Installer identity differs from the managed installation.'
     }
 }
@@ -63,6 +64,7 @@ function Resolve-SuiteLaunch {
 function Start-SuiteInstallStage {
     param([string] $Root, $Incoming, [string] $Id)
     if ($Id -cnotmatch '^[a-f0-9]{32}$') { throw 'Invalid stage ID.' }
+    Get-SuitePackagePrefix $Incoming | Out-Null
     if (Test-Path -LiteralPath $Root) {
         Assert-RecoveryPath $Root
         if (-not (Test-Path -LiteralPath (Join-Path $Root 'active.json'))) {
@@ -88,7 +90,7 @@ function Start-SuiteInstallStage {
         # A failed first install has no active pointer. Keep enough identity
         # information to refuse foreign packages and safely retry unregistration.
         Write-RecoveryJson (Join-Path $Root 'bootstrap.json') ([ordered]@{
-            schema = 1; id = $Id; publisher = $Incoming.publisher;
+            schema = $Incoming.schema; tools = @(Get-SuiteReleaseTools $Incoming); id = $Id; publisher = $Incoming.publisher;
             version = $Incoming.version; packages = $Incoming.packages
             menuMode = (Get-SuiteMenuMode $Incoming); applicationDirectory = (Join-Path $Root "releases\$Id\app")
         })
@@ -108,8 +110,8 @@ function Complete-SuiteInstallStage {
     $directory = Join-Path $Root "releases\$Id"
     $descriptorPath = Join-Path $directory 'release.json'
     $descriptor = Read-RecoveryJson $descriptorPath
-    Assert-SuiteInstallerIdentity $Incoming $descriptor
-    if ($descriptor.version -cne $Incoming.version -or
+    Assert-SuiteInstallerIdentity $Incoming $descriptor -ExactSelection
+    if ($descriptor.schema -ne $Incoming.schema -or $descriptor.version -cne $Incoming.version -or
         (($descriptor.files | Sort-Object path | ConvertTo-Json -Depth 4 -Compress) -cne
          ($Incoming.files | Sort-Object path | ConvertTo-Json -Depth 4 -Compress))) {
         throw 'Staged inventory differs from the installer template.'
@@ -124,10 +126,10 @@ function Complete-SuiteInstallStage {
         return Invoke-SuiteRecovery $Root $Id
     }
     $bootstrap = Read-RecoveryJson (Join-Path $Root 'bootstrap.json')
-    if ($bootstrap.schema -ne 1 -or $bootstrap.id -cne $Id -or $bootstrap.version -cne $next.version) {
+    if ($bootstrap.schema -notin 1, 2 -or $bootstrap.id -cne $Id -or $bootstrap.version -cne $next.version) {
         throw 'First-install journal does not match the staged release.'
     }
-    Assert-SuiteInstallerIdentity $bootstrap $next
+    Assert-SuiteInstallerIdentity $bootstrap $next -ExactSelection
     if ((Get-SuiteMenuMode $bootstrap) -ne (Get-SuiteMenuMode $next)) { throw 'Menu choice changed during installation.' }
     $lockPath = Join-Path $Root 'recovery.lock'
     if (Test-Path -LiteralPath $lockPath) { Assert-RecoveryPath $lockPath }
@@ -190,13 +192,13 @@ function Remove-SuiteActiveRegistrations {
     $markerPath = Join-Path $Root 'uninstall.json'
     if (Test-Path -LiteralPath $markerPath) {
         $release = Read-RecoveryJson $markerPath
-        if ($release.schema -ne 1) { throw 'Invalid uninstall journal.' }
+        if ($release.schema -notin 1, 2) { throw 'Invalid uninstall journal.' }
     } else {
         if (Test-Path -LiteralPath (Join-Path $Root 'active.json')) {
             $release = Get-SuiteActiveRelease $Root
         } else {
             $release = Read-RecoveryJson (Join-Path $Root 'bootstrap.json')
-            if ($release.schema -ne 1) { throw 'Invalid first-install journal.' }
+            if ($release.schema -notin 1, 2) { throw 'Invalid first-install journal.' }
         }
         Assert-SuiteInstallerIdentity $Expected $release
         Write-RecoveryJson $markerPath $release

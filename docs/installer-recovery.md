@@ -18,8 +18,8 @@ override only when its explicit default string is empty, otherwise Windows 11.
 The user can change the selection. Detection is best-effort, not an official
 universal Windows preference API. No global Windows setting is written.
 
-Modern registers the existing three sparse packages. Classic registers six
-fixed current-user leaf keys (three in-process COM servers and three verbs),
+Modern registers only the selected tools' sparse packages. Classic registers two
+fixed current-user leaf keys per selected tool (an in-process COM server and a verb),
 using the same native DLL, selection batching and commands. It does not also
 register modern packages. Ownership markers, expected values and child-key checks
 prevent cleanup of foreign registrations. Only owned leaf keys are removed;
@@ -52,8 +52,8 @@ Recovery contract
 
 - Stage a new payload in a different immutable `releases/<id>` directory. Never
   overwrite the active payload. IDs are 32 hexadecimal characters, not paths.
-- Each release has a bounded descriptor with the same three package names and
-  publisher, a four-part version, a complete application/package file inventory
+- Each release has a bounded descriptor with a stable package-name prefix and
+  publisher, a four-part version, a complete selected application/package inventory
   and SHA256 values. Verify the next payload before registration. Retain signed
   previous MSIX inputs for compensation; repair can replace damaged application
   files using a separate verified copy of the exact same release.
@@ -64,7 +64,7 @@ Recovery contract
   Pin both descriptors' hashes in the journal and reject changed descriptors on
   recovery. Package manifests must match descriptor names/version/publisher.
 - Remove only exact owned old/new package versions for the current Windows user.
-  Register the next three identities against the new application directory,
+  Register the next selection's identities against the new application directory,
   verify them, then commit the active pointer. Do not force-close processes.
 - On failure before commit, restore the previous registrations and retain both
   payloads. If recovery fails, keep a pending journal and report that repair is
@@ -82,8 +82,11 @@ Inno now extracts into `releases/<id>/app` and `releases/<id>/packages`, writes 
 bounded release descriptor, and invokes the shared lifecycle coordinator. Each
 setup process derives a stable 32-hex stage ID from its unique temporary directory;
 this is a directory identifier, not a security hash. Existing stage directories
-are never overwritten. The builder inventories the exact staged application and
-three package files and includes the recovery/lifecycle helpers.
+are never overwritten. The builder verifies the full catalog, then derives exact
+inventories for each tool selection and includes the recovery/lifecycle helpers.
+Selected releases use schema 2 with a hash-inventoried application marker;
+schema 1 retains the legacy all-three contract. See
+[optional tool installation](optional-tool-installation.md).
 
 A stable Start menu shortcut requests a hidden `Launch-Active.ps1` helper,
 which resolves the active executable, checks its hash and refuses pending recovery
@@ -92,8 +95,9 @@ needs native verification. Explorer
 continues using the selected release's sparse-package external location.
 
 First installation records `bootstrap.json` before file extraction. Registration
-commits `active.json` only after all three roots verify. The coordinator can retry
-an interrupted first registration; incomplete extraction cannot register anything.
+commits `active.json` only after every selected registration verifies. The
+coordinator can retry an interrupted first registration; incomplete extraction
+cannot register anything.
 Uninstall uses the active version (even after an attempted newer installation),
 or bootstrap identity when no pointer exists. `uninstall.json` blocks launching
 and enables retries after partial unregistration without resurrecting packages.
