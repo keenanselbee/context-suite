@@ -14,3 +14,6 @@ foreach ($name in @('ContextSuite.Application', 'ContextSuite.Worker')) {
     }
 }
 Write-Output 'Both production projects fail clearly without private implementations.'
+# Both nonzero build exits were expected and validated. Report this test's result
+# explicitly so CI does not propagate the final negative-case build exit code.
+exit 0
