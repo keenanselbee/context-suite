@@ -314,9 +314,16 @@ internal static class AnalysisContracts
         }
         var denied = new FileInfo(Path.Combine(root, "read-denied.txt"));
         await File.WriteAllTextAsync(denied.FullName, "Authored access-denial fixture");
+        // Establish this disposable fixture's ACL before taking the baseline.
+        // Restoring an inherited/legacy ACL can otherwise change Windows control
+        // flags without changing access rules, making binary equality host-dependent.
+        var fixtureSecurity = denied.GetAccessControl();
+        fixtureSecurity.SetAccessRuleProtection(isProtected: true, preserveInheritance: true);
+        denied.SetAccessControl(fixtureSecurity);
         var deniedHash = SHA256.HashData(await File.ReadAllBytesAsync(denied.FullName));
         var deniedTime = File.GetLastWriteTimeUtc(denied.FullName);
         var originalSecurity = denied.GetAccessControl();
+        check(originalSecurity.AreAccessRulesProtected, "analysis: denial fixture uses an isolated access-rule baseline");
         var restrictedSecurity = denied.GetAccessControl();
         using (var identity = WindowsIdentity.GetCurrent())
             restrictedSecurity.AddAccessRule(new FileSystemAccessRule(identity.User!, FileSystemRights.ReadData, AccessControlType.Deny));
@@ -339,9 +346,10 @@ internal static class AnalysisContracts
             denied.SetAccessControl(restoredSecurity);
         }
         var restoredHash = SHA256.HashData(await File.ReadAllBytesAsync(denied.FullName));
-        check(deniedHash.SequenceEqual(restoredHash) && deniedTime == File.GetLastWriteTimeUtc(denied.FullName) &&
-            denied.GetAccessControl().GetSecurityDescriptorBinaryForm().SequenceEqual(originalSecurity.GetSecurityDescriptorBinaryForm()),
-            "analysis: disposable denial fixture retains contents/time and its original access rules");
+        check(deniedHash.SequenceEqual(restoredHash), "analysis: disposable denial fixture retains original contents");
+        check(deniedTime == File.GetLastWriteTimeUtc(denied.FullName), "analysis: disposable denial fixture retains original write time");
+        check(denied.GetAccessControl().GetSecurityDescriptorBinaryForm().SequenceEqual(originalSecurity.GetSecurityDescriptorBinaryForm()),
+            "analysis: disposable denial fixture restores its exact security descriptor");
         var after = SHA256.HashData(await File.ReadAllBytesAsync(binary));
         check(before.SequenceEqual(after) && timestamp == File.GetLastWriteTimeUtc(binary),
             "analysis: source bytes and write timestamp unchanged");

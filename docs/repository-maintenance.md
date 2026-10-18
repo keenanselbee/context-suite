@@ -1,16 +1,40 @@
 Repository Cleanup And Correctness Plan
 =======================================
 
-Status: the maintenance scripts, standing agent rules and independent correctness
-fixes are committed as of 2026-10-17. The selected historical cleanup and
-representative success/failure cleanup behavior are verified. Substantial feature
-work remains uncommitted and preserved for its own reviews; this status does not
-establish a clean working tree or release readiness.
+Status as of 2026-10-17: the maintenance work and reviewed public/private feature
+groups are committed. Public integration commit `4e9c02d` includes the reviewed
+TIFF/GIF retry, video title metadata and workflow payload fixes with their tests
+and source/notice companions. Final editor-ignore and mockup cleanup is committed
+in public `057d04d` and private `e20c2da`.
 
-Reviewed fixes for TIFF/GIF retries, video title metadata and workflow payload
-verification remain with their interdependent feature changes. Keep those fixes,
-their tests and source/notice companions together when preparing the next commit
-groups. This document is not an executable commit or deletion proposal.
+Public commits `2b6ab2e` and `19c6fab` separate documentation from code CI checks,
+remove links to ignored local evidence, add verification closeout rules and
+harden installer-test snapshots and diagnostics. Local public verification passed,
+including 4,932 foundation contracts with a shorter fixture path. Hosted CI must
+be checked separately for the matching commit; deeply nested local fixture paths
+can exceed the existing Office context path limit.
+
+The [hosted run for `19c6fab`](https://github.com/keenanselbee/context-suite/actions/runs/39097730028)
+passed documentation/public-boundary and mocked installer checks. Foundation
+then failed the Analyze denial-fixture preservation assertion, which combines
+file bytes, write time and the restored security descriptor. The failing component
+is not yet isolated; later code checks were skipped. This is a separate open CI
+finding, not evidence that the complete hosted suite passed.
+
+A local follow-up reproduced a descriptor-only mismatch under .NET 10: restoring
+a legacy inherited ACL adds Windows' automatic-inheritance control flag while
+file bytes and write time stay unchanged. The denial fixture now establishes a
+protected ACL baseline, preserving inherited rules as explicit entries, before
+adding its temporary denial. Separate assertions retain exact byte, timestamp,
+and security-descriptor checks. All 960 focused Analyze checks passed locally.
+This demonstrates and fixes a portability failure mode; the hosted log does not
+identify which component failed, so a new run is still required to confirm it.
+
+The selected historical cleanup and representative success/failure cleanup
+behavior are verified. Committed source and local tests do not establish release
+readiness: signing, native installer lifecycle and broader visual/accessibility
+acceptance remain open. This document is not an executable commit or deletion
+proposal; refresh Git state before starting new work.
 
 Keep the repository understandable, preserve working behavior and prevent
 unnecessary output from accumulating. Use existing tools and short records.
@@ -27,8 +51,9 @@ evidence, not a list of disposable files. The local relocation receipts and
 recovery instructions in `artifacts/workspace-archive-20261013` describe the
 earlier archived history; preserve them when classifying subsequent output.
 
-The checkout contains substantial unfinished source, tests and documentation.
-Refresh its actual state before reviewing or committing. Existing documentation
+At the initial scan, the checkout contained substantial uncommitted source, tests
+and documentation; the reviewed groups have since been committed. Refresh its
+actual state before reviewing or committing. Existing documentation
 checks do not establish application correctness. Public and private repositories
 have separate changes and authorization; reviewing one does not review the other.
 Git history does not preserve ignored engines, local evidence or rollback copies.
