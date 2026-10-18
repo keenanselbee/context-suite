@@ -5,6 +5,9 @@ Prerequisites: Windows 11 x64, .NET 10 SDK, and Visual Studio 2026 x64 C++ tools
 with Windows SDK 10.0.26100.0 for the native shell. `global.json` permits installed
 stable .NET 10 feature bands. Run commands from the repository root.
 
+Follow [repository maintenance](repository-maintenance.md) for agent task
+closeout, temporary output, retained evidence and the cleanup/commit plan.
+
 
 Build And Test
 --------------
@@ -47,6 +50,14 @@ matching the native harness convention; use the script, not `dotnet test`.
 Close Context Suite before running activation-router contracts. They acquire
 the same per-user/session pipe to verify single ownership and forwarding.
 Do not run two foundation test harnesses concurrently in one session.
+
+Foundation runs keep a log and result under `.codex-temp/foundation-tests/<run>`.
+Successful runs remove their own disposable `fixtures` directory after recording
+the result; failed runs retain fixtures and diagnostics. Pass `-KeepScratch`
+when investigating a successful run. Existing historical runs remain untouched.
+The focused cleanup guards are `tools/maintenance/Test-FoundationScratch.ps1`
+and `python -B tools/maintenance/Test-WorkspaceHistory.py`; their fixtures are
+isolated from release history.
 
 Open `ContextSuite.Production.slnx` for the managed projects in the IDE.
 Production output is under `artifacts/production/<Configuration>`. The worker

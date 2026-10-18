@@ -3,3 +3,8 @@ reference/
 proprietary/
 .codex-temp/
 artifacts/
+
+# Local Python bytecode and incidental browser diagnostics.
+__pycache__/
+*.pyc
+/debug.log

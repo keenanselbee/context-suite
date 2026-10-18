@@ -117,6 +117,44 @@ Commits
 - Do not stage or commit unrelated changes.
 
 
+Development Cleanup
+-------------------
+
+- Follow [repository maintenance](docs/repository-maintenance.md) for task
+  closeout, retained evidence, historical cleanup and the implementation plan.
+- Put new disposable output in a unique task/run directory under `.codex-temp`.
+  Do not reuse another task's directory or move existing engine inputs merely
+  to fit this convention. Ignored and untracked files are not automatically disposable.
+- As part of authorized implementation or testing, clean only disposable output
+  created by that task after its processes stop and verification succeeds.
+  Confirm the exact resolved path stays inside the owned directory and reject
+  reparse points. Read-only requests still prohibit cleanup writes.
+- Keep active inputs, required evidence and failed/interrupted runs until
+  classified. For retained output, record its purpose, reproduction command and
+  retention reason in an existing receipt or a short local note. Revisit it when
+  its purpose ends; save required evidence before disposing of transient output.
+- Avoid unnecessary storage; there is no fixed GB target or budget process.
+  Reuse useful build inputs and caches, avoid redundant copies, investigate
+  unexpected growth and explain significant leftovers. Measure when useful for
+  cleanup or large builds, not every turn; never remove needed material to shrink
+  a number.
+- Scripts should clean their own successful transient output and report retained
+  failures. Do not add age-based deletion, background sweepers or cleanup of
+  shared roots. Existing retained history requires a separate reviewed selection.
+- Preserve source, private-repository boundaries, reference material, engine
+  pins, source/notices, version receipts, installed and rollback payloads. Never
+  infer deletion permission from size, age, a passing test or a Git commit.
+  Before historical deletion, recheck current dependencies and protections as
+  well as source/archive identities; a changed or incomplete selection must stop.
+- End substantial work with the relevant checks, a review of the task's diff,
+  and a brief report of retained large output or cleanup failures. Keep current
+  status separate from historical milestones. Do not commit or push implicitly.
+- Review correctness before cosmetic cleanup: preserve originals and validated
+  publication, check changed workflows and contracts, and keep evidence tied to
+  the source/engine tested. A clean tree or smaller checkout is not proof of
+  correctness. Fix demonstrated issues without unrelated refactoring.
+
+
 Repository-Specific Notes
 -------------------------
 
