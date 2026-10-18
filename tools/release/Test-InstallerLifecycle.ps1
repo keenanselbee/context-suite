@@ -10,12 +10,22 @@ $backendCount = $script:passed
 
 function Get-InstallationSnapshot {
     param([string] $Root)
+    # Directory write times can settle after fixture creation on Windows.
+    # Retain directory presence and attributes, plus file times and hashes.
     return @(Get-ChildItem -LiteralPath $Root -Recurse -Force | Sort-Object FullName | ForEach-Object {
         [ordered]@{ path = $_.FullName.Substring($Root.Length); directory = $_.PSIsContainer;
-            lastWriteUtc = $_.LastWriteTimeUtc.Ticks; attributes = [int]$_.Attributes;
+            lastWriteUtc = $(if (-not $_.PSIsContainer) { $_.LastWriteTimeUtc.Ticks }); attributes = [int]$_.Attributes;
             hash = $(if (-not $_.PSIsContainer) { (Get-FileHash -LiteralPath $_.FullName).Hash }) }
     }) | ConvertTo-Json -Depth 4 -Compress
 }
+
+New-RecoveryFixture
+$beforeFiles = Get-InstallationSnapshot $fixture.root
+$directory = Get-Item -LiteralPath $fixture.oldDirectory
+$directory.LastWriteTimeUtc = $directory.LastWriteTimeUtc.AddDays(-1)
+Assert-RecoveryTest ((Get-InstallationSnapshot $fixture.root) -ceq $beforeFiles) 'Snapshot ignores directory timestamp drift without losing directory inventory'
+[IO.File]::AppendAllText((Join-Path $fixture.oldDirectory 'app\ContextSuite.Application.exe'), 'changed')
+Assert-RecoveryTest ((Get-InstallationSnapshot $fixture.root) -cne $beforeFiles) 'Snapshot detects changed application bytes'
 
 foreach ($mismatch in 'publisher', 'package-name') {
     foreach ($committedPointer in $false, $true) {
@@ -30,9 +40,30 @@ foreach ($mismatch in 'publisher', 'package-name') {
         $beforePackages = $script:registered | ConvertTo-Json -Depth 4 -Compress
         $beforeCalls = $script:addCount + $script:removeCount
         Expect-RecoveryFailure { Start-SuiteInstallStage $fixture.root $incoming ([guid]::NewGuid().ToString('N')) } 'identity differs'
-        Assert-RecoveryTest ((Get-InstallationSnapshot $fixture.root) -ceq $beforeFiles -and
-            ($script:registered | ConvertTo-Json -Depth 4 -Compress) -ceq $beforePackages -and
-            ($script:addCount + $script:removeCount) -eq $beforeCalls) "Stage rejects $mismatch without any state changes (committed pointer: $committedPointer)"
+        $afterFiles = Get-InstallationSnapshot $fixture.root
+        if ($afterFiles -cne $beforeFiles) {
+            $beforeEntries = @((ConvertFrom-Json -InputObject $beforeFiles))
+            $afterEntries = @((ConvertFrom-Json -InputObject $afterFiles))
+            $beforePaths = @{}; $afterPaths = @{}
+            foreach ($entry in $beforeEntries) { $beforePaths[$entry.path] = $entry }
+            foreach ($entry in $afterEntries) { $afterPaths[$entry.path] = $entry }
+            $changes = [Collections.Generic.List[string]]::new()
+            foreach ($path in @(@($beforePaths.Keys) + @($afterPaths.Keys) | Sort-Object -Unique)) {
+                if (-not $beforePaths.ContainsKey($path) -or -not $afterPaths.ContainsKey($path)) {
+                    $changes.Add("$path presence")
+                } else {
+                    foreach ($field in 'directory', 'lastWriteUtc', 'attributes', 'hash') {
+                        if ($beforePaths[$path].$field -cne $afterPaths[$path].$field) { $changes.Add("$path $field") }
+                    }
+                }
+                if ($changes.Count -ge 5) { break }
+            }
+            if ($changes.Count -eq 0) { $changes.Add('entry ordering or serialization') }
+            throw "Failed: Stage rejects $mismatch without file changes (committed pointer: $committedPointer); snapshot differences: $($changes -join ', ')"
+        }
+        Assert-RecoveryTest $true "Stage rejects $mismatch without file changes (committed pointer: $committedPointer)"
+        Assert-RecoveryTest (($script:registered | ConvertTo-Json -Depth 4 -Compress) -ceq $beforePackages) "Stage rejects $mismatch without registration changes (committed pointer: $committedPointer)"
+        Assert-RecoveryTest (($script:addCount + $script:removeCount) -eq $beforeCalls) "Stage rejects $mismatch without registration calls (committed pointer: $committedPointer)"
     }
 }
 
