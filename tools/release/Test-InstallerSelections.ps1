@@ -124,8 +124,52 @@ Start-SuiteInstallStage $root $fixture.old $id | Out-Null
 Assert-RecoveryTest ((Uninstall-SuiteActiveRelease $root $script:catalog) -eq 'unregistered') 'Partial extraction retains selected bootstrap identity for uninstall'
 $markerPath = Join-Path $fixture.oldDirectory 'app\installation-tools.json'
 Write-RecoveryJson $markerPath ([ordered]@{ schema = 1; tools = @('Convert') })
-Expect-RecoveryFailure { Read-SuiteRecoveryRelease $fixture.root $fixture.old.id } 'tool selection does not match'
+Expect-RecoveryFailure { Read-SuiteRecoveryRelease $fixture.root $fixture.old.id -VerifyToolSelection } 'tool selection does not match'
 Assert-RecoveryTest $true 'Changed installation marker fails before registration'
+foreach ($mode in 'modern', 'classic') {
+    foreach ($damage in 'missing', 'malformed', 'mismatched') {
+        New-SelectionFixture @('Analyze') @('Convert') $mode
+        $markerPath = Join-Path $fixture.oldDirectory 'app\installation-tools.json'
+        if ($damage -eq 'missing') {
+            Assert-RecoveryPath $markerPath
+            [IO.File]::Delete($markerPath)
+        } elseif ($damage -eq 'malformed') {
+            [IO.File]::WriteAllText($markerPath, '{')
+        } else {
+            Write-RecoveryJson $markerPath ([ordered]@{ schema = 1; tools = @('Convert') })
+        }
+        [IO.File]::WriteAllText((Join-Path $fixture.root 'recovery.lock'), '')
+        $label = "$mode/$damage marker"
+        $active = Get-SuiteActiveRelease $fixture.root
+        Assert-RecoveryTest ((@(Get-SuiteReleaseTools $active) -join '|') -ceq 'Analyze') "$label retains descriptor ownership"
+        $launchRejected = $false
+        try { Resolve-SuiteLaunch $fixture.root | Out-Null } catch { $launchRejected = $true }
+        Assert-RecoveryTest $launchRejected "$label refuses launch"
+        $payloadRejected = $false
+        try { Read-SuiteRecoveryRelease $fixture.root $fixture.old.id -VerifyApplication | Out-Null } catch { $payloadRejected = $true }
+        Assert-RecoveryTest $payloadRejected "$label refuses full payload verification"
+        Assert-SuiteRecoveryRegistered $fixture.old
+        Assert-RecoveryTest ((Uninstall-SuiteActiveRelease $fixture.root $script:catalog) -eq 'unregistered' -and
+            $script:registered.Count -eq 0 -and $script:classicKeys.Count -eq 0) "$label permits owned uninstall"
+    }
+    New-SelectionFixture @('Analyze') @('Convert') $mode
+    [IO.File]::WriteAllText((Join-Path $fixture.oldDirectory 'app\installation-tools.json'), '{')
+    $before = @($script:registered, $script:classicKeys) | ConvertTo-Json -Depth 8 -Compress
+    $script:badSignature = $true
+    Expect-RecoveryFailure { Uninstall-SuiteActiveRelease $fixture.root $script:catalog } 'trusted package signatures'
+    $script:badSignature = $false
+    $after = @($script:registered, $script:classicKeys) | ConvertTo-Json -Depth 8 -Compress
+    Assert-RecoveryTest ($before -ceq $after -and -not (Test-Path -LiteralPath (Join-Path $fixture.root 'uninstall.json'))) "$mode damaged marker does not bypass signature ownership"
+
+    New-SelectionFixture @('Analyze') @('Convert') $mode
+    $script:registered = @(); $script:classicKeys = @{}
+    $root = Join-Path $scratch ('damaged-stage-' + [guid]::NewGuid().ToString('N'))
+    $id = Copy-StageFixture $root $fixture.old $fixture.oldDirectory
+    [IO.File]::WriteAllText((Join-Path $root "releases\$id\app\installation-tools.json"), '{')
+    Expect-RecoveryFailure { Complete-SuiteInstallStage $root $fixture.old $id } 'hash mismatch'
+    Assert-RecoveryTest ($script:registered.Count -eq 0 -and $script:classicKeys.Count -eq 0 -and
+        -not (Test-Path -LiteralPath (Join-Path $root 'active.json'))) "$mode damaged staged marker fails before registration"
+}
 New-SelectionFixture @('Analyze') @('Convert') 'modern'
 $fixture.next.version = $fixture.old.version
 Expect-RecoveryFailure { Assert-SuiteRecoveryPair $fixture.old $fixture.next } 'Same-version repair'

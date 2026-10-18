@@ -46,7 +46,7 @@ function Write-RecoveryJson {
 }
 
 function Read-SuiteRecoveryRelease {
-    param([string] $Root, [string] $Id, [switch] $VerifyApplication)
+    param([string] $Root, [string] $Id, [switch] $VerifyApplication, [switch] $VerifyToolSelection)
     if ($Id -cnotmatch '^[a-f0-9]{32}$') { throw 'Invalid release ID.' }
     $directory = Join-Path $Root "releases\$Id"
     $release = Read-RecoveryJson (Join-Path $directory 'release.json')
@@ -85,11 +85,15 @@ function Read-SuiteRecoveryRelease {
     if (-not $paths.Contains('app/ContextSuite.Application.exe')) { throw 'Recovery application is missing from inventory.' }
     if ($release.schema -eq 2) {
         if (-not $paths.Contains('app/installation-tools.json')) { throw 'Recovery tool selection is missing from inventory.' }
-        $markerPath = Join-Path $directory 'app/installation-tools.json'
-        $markerEntry = @($release.files | Where-Object path -CEQ 'app/installation-tools.json')[0]
-        $marker = Read-RecoveryJson $markerPath
-        if ((Get-FileHash -LiteralPath $markerPath).Hash -ne $markerEntry.sha256 -or $marker.schema -ne 1 -or
-            ((@(Get-SuiteTools $marker.tools)) -join '|') -cne ($tools -join '|')) { throw 'Recovery tool selection does not match its inventory.' }
+        # Ownership comes from the descriptor and signed packages. Damaged app
+        # files must not prevent uninstall or repair of that owned installation.
+        if ($VerifyApplication -or $VerifyToolSelection) {
+            $markerPath = Join-Path $directory 'app/installation-tools.json'
+            $markerEntry = @($release.files | Where-Object path -CEQ 'app/installation-tools.json')[0]
+            $marker = Read-RecoveryJson $markerPath
+            if ((Get-FileHash -LiteralPath $markerPath).Hash -ne $markerEntry.sha256 -or $marker.schema -ne 1 -or
+                ((@(Get-SuiteTools $marker.tools)) -join '|') -cne ($tools -join '|')) { throw 'Recovery tool selection does not match its inventory.' }
+        }
     }
     if ((Get-SuiteMenuMode $release) -eq 'classic' -and -not $paths.Contains('app/ContextSuite.Shell.dll')) {
         throw 'Classic shell DLL is missing from inventory.'

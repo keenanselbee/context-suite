@@ -10,6 +10,8 @@ Unreleased - Optional installation tools
   Keep shared Analyze/Optimize dependencies, Settings, and License available.
 - Verify all seven payload selections and mocked registration/recovery paths.
   Signed native installation and existing-install upgrade/repair remain gated.
+- Allow owned uninstallation with a missing or damaged tool-selection marker,
+  while keeping launch, staging, and package ownership validation strict.
 
 
 1.4.8 - Instant Technical details disclosure, 2026-10-16

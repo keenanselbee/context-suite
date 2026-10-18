@@ -37,6 +37,12 @@ available to installed tools. Missing markers retain legacy/development behavior
 malformed markers fail with a reinstall message. The marker is installation
 configuration, not a licensing or anti-tampering boundary. Licensing is unchanged.
 
+The managed installation launcher validates the marker before starting the app.
+Uninstall uses the release descriptor and verified signed packages to establish
+ownership, so a missing, malformed, or changed marker does not trap an installed
+copy. New installation still verifies the complete staged payload before
+registration. Existing-install upgrade/repair admission remains gated.
+
 
 Approximate Installed Sizes
 ---------------------------
@@ -69,7 +75,7 @@ Verification And Remaining Acceptance
 
 Public tests cover selection parsing, command admission, component inventories,
 and mocked modern/classic registration and recovery. All seven combinations remain
-covered. `Test-InstallerSelections.ps1` passes 104 selected-install checks plus
+covered. `Test-InstallerSelections.ps1` passes 132 selected-install checks plus
 104 legacy checks; `Test-ClassicInstaller.ps1` adds 30 classic checks.
 `Test-InstallerComponents.ps1` passes 77 projection checks, or 79 with `-Compile`
 and the pinned local Inno compiler. The latter compiles inert fixtures and never

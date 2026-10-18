@@ -24,12 +24,12 @@ function Assert-SuiteInstallerIdentity {
 }
 
 function Get-SuiteActiveRelease {
-    param([string] $Root)
+    param([string] $Root, [switch] $VerifyToolSelection)
     Assert-RecoveryPath $Root
     if (Test-Path -LiteralPath (Join-Path $Root 'uninstall.json')) { throw 'Uninstall is pending; finish uninstall before launching or updating.' }
     $pointer = Read-RecoveryJson (Join-Path $Root 'active.json')
     if ($pointer.schema -ne 1) { throw 'Invalid active release pointer.' }
-    return Read-SuiteRecoveryRelease $Root $pointer.id
+    return Read-SuiteRecoveryRelease $Root $pointer.id -VerifyToolSelection:$VerifyToolSelection
 }
 
 function Resolve-SuiteLaunch {
@@ -46,7 +46,7 @@ function Resolve-SuiteLaunch {
                 throw 'Installation recovery is pending. Run the supported repair installer before launching.'
             }
         }
-        $release = Get-SuiteActiveRelease $Root
+        $release = Get-SuiteActiveRelease $Root -VerifyToolSelection
         if ($null -ne $journal) {
             $expectedId = if ($journal.phase -eq 'committed') { $journal.next } else { $journal.previous }
             if ($release.id -cne $expectedId) { throw 'Journal and launch pointer disagree.' }
