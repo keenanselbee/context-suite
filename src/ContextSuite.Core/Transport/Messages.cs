@@ -4,6 +4,9 @@ using ContextSuite.Core.Audio;
 using ContextSuite.Core.Analysis;
 using ContextSuite.Core.Pdf;
 using ContextSuite.Core.Office;
+using ContextSuite.Core.Tiff;
+using ContextSuite.Core.Svg;
+using ContextSuite.Core.Gif;
 
 namespace ContextSuite.Core.Transport;
 
@@ -15,7 +18,9 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     byte[]? AudioBytes = null, byte[]? PdfBytes = null, AudioFileProbe? AudioFile = null, FlacOptimizationWork? FlacWork = null,
     AudioFormat? AudioTarget = null, AudioConversionWork? AudioWork = null, PdfFileProbe? PdfFile = null, PdfOptimizationWork? PdfWork = null,
     PdfPageWork? PdfPage = null, ImagePdfWork? ImagePdf = null, OfficeExportWork? OfficeWork = null, OfficePdfWork? OfficePdf = null,
-    PdfDocxWork? PdfDocx = null)
+    PdfDocxWork? PdfDocx = null, TiffProbe? TiffProbe = null, TiffWork? TiffWork = null, TiffPreviewRequest? TiffPreview = null,
+    SvgProbe? SvgProbe = null, SvgWork? SvgWork = null, GifProbe? GifProbe = null, GifWork? GifWork = null,
+    PdfFileProbe? PdfDarkProbe = null, PdfDarkWork? PdfDarkWork = null)
 {
     public const int MaximumAudioProbeBytes = 1024 * 1024;
     // A complete seekable PDF snapshot is required; base64 stays below the IPC frame limit.
@@ -23,6 +28,64 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     public void Validate()
     {
         if (Version != 1 || RequestId == Guid.Empty) throw new InvalidDataException("Invalid worker request identity.");
+        if (Command is "pdf-dark-probe" or "pdf-dark-convert")
+        {
+            if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
+                PdfBytes is not null || AudioFile is not null || FlacWork is not null || AudioTarget is not null || AudioWork is not null ||
+                PdfFile is not null || PdfWork is not null || PdfPage is not null || ImagePdf is not null || OfficeWork is not null ||
+                OfficePdf is not null || PdfDocx is not null || TiffProbe is not null || TiffWork is not null || TiffPreview is not null ||
+                SvgProbe is not null || SvgWork is not null || GifProbe is not null || GifWork is not null)
+                throw new InvalidDataException("Unexpected PDF dark-mode request data.");
+            if (Command == "pdf-dark-probe" && PdfDarkProbe is { } probe && PdfDarkWork is null) probe.Validate();
+            else if (Command == "pdf-dark-convert" && PdfDarkWork is { } work && PdfDarkProbe is null) work.Validate();
+            else throw new InvalidDataException("Invalid PDF dark-mode worker payload.");
+            return;
+        }
+        if (PdfDarkProbe is not null || PdfDarkWork is not null) throw new InvalidDataException("Unexpected PDF dark-mode payload.");
+        if (Command is "gif-probe" or "gif-convert" or "gif-release")
+        {
+            if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
+                PdfBytes is not null || AudioFile is not null || FlacWork is not null || AudioTarget is not null || AudioWork is not null ||
+                PdfFile is not null || PdfWork is not null || PdfPage is not null || ImagePdf is not null || OfficeWork is not null ||
+                OfficePdf is not null || PdfDocx is not null || TiffProbe is not null || TiffWork is not null || TiffPreview is not null ||
+                SvgProbe is not null || SvgWork is not null)
+                throw new InvalidDataException("Unexpected GIF request data.");
+            if (Command == "gif-probe" && GifProbe is { } probe && GifWork is null) probe.Validate();
+            else if (Command == "gif-convert" && GifWork is { } work && GifProbe is null) work.Validate();
+            else if (Command != "gif-release" || GifProbe is not null || GifWork is not null)
+                throw new InvalidDataException("Invalid GIF worker payload.");
+            return;
+        }
+        if (GifProbe is not null || GifWork is not null) throw new InvalidDataException("Unexpected GIF payload.");
+        if (Command is "svg-probe" or "svg-convert")
+        {
+            if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
+                PdfBytes is not null || AudioFile is not null || FlacWork is not null || AudioTarget is not null || AudioWork is not null ||
+                PdfFile is not null || PdfWork is not null || PdfPage is not null || ImagePdf is not null || OfficeWork is not null ||
+                OfficePdf is not null || PdfDocx is not null || TiffProbe is not null || TiffWork is not null || TiffPreview is not null)
+                throw new InvalidDataException("Unexpected SVG request data.");
+            if (Command == "svg-probe" && SvgProbe is { } probe && SvgWork is null) probe.Validate();
+            else if (Command == "svg-convert" && SvgWork is { } work && SvgProbe is null) work.Validate();
+            else throw new InvalidDataException("Invalid SVG worker payload.");
+            return;
+        }
+        if (SvgProbe is not null || SvgWork is not null) throw new InvalidDataException("Unexpected SVG payload.");
+        if (Command is "tiff-probe" or "tiff-convert" or "tiff-preview")
+        {
+            if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
+                PdfBytes is not null || AudioFile is not null || FlacWork is not null || AudioTarget is not null || AudioWork is not null ||
+                PdfFile is not null || PdfWork is not null || PdfPage is not null || ImagePdf is not null || OfficeWork is not null ||
+                OfficePdf is not null || PdfDocx is not null ||
+                (TiffProbe is not null ? 1 : 0) + (TiffWork is not null ? 1 : 0) + (TiffPreview is not null ? 1 : 0) != 1)
+                throw new InvalidDataException("Unexpected TIFF request data.");
+            if (Command == "tiff-probe" && TiffProbe is { } probe && TiffWork is null && TiffPreview is null) probe.Validate();
+            else if (Command == "tiff-convert" && TiffWork is { } work && TiffProbe is null && TiffPreview is null) work.Validate();
+            else if (Command == "tiff-preview" && TiffPreview is { } preview && TiffProbe is null && TiffWork is null) preview.Validate();
+            else throw new InvalidDataException("Invalid TIFF worker payload.");
+            return;
+        }
+        if (TiffProbe is not null || TiffWork is not null || TiffPreview is not null)
+            throw new InvalidDataException("Unexpected TIFF payload.");
         if (Command is "pdf-docx-probe" or "pdf-to-docx")
         {
             if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
@@ -108,11 +171,17 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
             return;
         }
         if (PdfFile is not null || PdfWork is not null) throw new InvalidDataException("Unexpected PDF file payload.");
-        if (Command is "audio-file-probe" or "audio-convert")
+        if (Command is "audio-file-probe" or "video-audio-probe" or "audio-convert")
         {
             if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
                 PdfBytes is not null || FlacWork is not null) throw new InvalidDataException("Unexpected data in audio conversion request.");
-            if (Command == "audio-file-probe")
+            if (Command == "video-audio-probe")
+            {
+                if (AudioWork is not null || AudioTarget is not null || AudioFile is null || AudioFile.ItemId == Guid.Empty ||
+                    !PdfFileProbe.ValidPath(AudioFile.Path) || !VideoAudioSelection.IsVideoPath(AudioFile.Path))
+                    throw new InvalidDataException("Invalid video audio probe source.");
+            }
+            else if (Command == "audio-file-probe")
             {
                 if (AudioWork is not null || AudioTarget is not { } target || !Enum.IsDefined(target) || AudioFile is null ||
                     AudioFile.ItemId == Guid.Empty || string.IsNullOrWhiteSpace(AudioFile.Path) || !Path.IsPathFullyQualified(AudioFile.Path) ||
@@ -181,4 +250,9 @@ public sealed record WorkerReply(int Version, Guid RequestId, MediaCapability[] 
     PdfFileSource? PdfSource = null, PdfWorkResult? PdfResult = null,
     PdfRasterSource? PdfRaster = null, PdfPageResult? PdfPageResult = null, ImagePdfResult? ImagePdfResult = null,
     OfficeExportCandidate? OfficeCandidate = null, OfficePdfResult? OfficePdfResult = null,
-    PdfDocxSource? PdfDocxSource = null, PdfDocxResult? PdfDocxResult = null);
+    PdfDocxSource? PdfDocxSource = null, PdfDocxResult? PdfDocxResult = null,
+    TiffSourceFacts? TiffSource = null, TiffWorkResult? TiffResult = null, ImagePreview? TiffPreview = null,
+    SvgSourceFacts? SvgSource = null, SvgWorkResult? SvgResult = null,
+    GifSourceFacts? GifSource = null, GifWorkResult? GifResult = null,
+    PdfDarkSource? PdfDarkSource = null, PdfDarkResult? PdfDarkResult = null,
+    int? PdfDarkFailurePage = null);

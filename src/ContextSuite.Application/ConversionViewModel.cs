@@ -23,6 +23,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     private readonly IOperationAccess _trial;
     private readonly Guid _batchId;
     private readonly BatchSettings _settings;
+    private readonly bool _replacementAvailable;
     private readonly CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _previewCancellation;
     private Task? _previewTask;
@@ -46,23 +47,42 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
         IReadOnlyList<ConversionSelection> selection, BatchSettings settings, bool replacementAvailable)
     {
         _worker = worker; _trial = trial; _batchId = batchId; _settings = settings;
-        CanReplaceOriginal = replacementAvailable && settings.Preferences.ReplaceOriginals && settings.Preferences.OutputDirectory is null;
+        _replacementAvailable = replacementAvailable && settings.Preferences.ReplaceOriginals && settings.Preferences.OutputDirectory is null;
         _replaceOriginal = CanReplaceOriginal;
         Rows = new(selection.Select(item => new ConversionRow(item)));
         _ddsMips = selection.Any(item => item.Facts?.Texture is not null) ? DdsMipPolicy.Preserve : DdsMipPolicy.Generate;
         _selectedIndex = Math.Max(0, selection.ToList().FindIndex(s => s.Facts?.HasTransparency == true));
+        Formats = worker.HasAvifEncoder ? [.. BaseFormats, new("AVIF — compact image", ImageFormat.Avif)] : BaseFormats;
         ConfirmCommand = new UiCommand(Confirm, () => CanConfirm);
         PreviewCommand = new UiCommand(() => _previewTask = RefreshPreviewAsync(), () => !IsPreviewBusy && SelectedSource is not null);
         RefreshPlan();
     }
 
-    public IReadOnlyList<FormatChoice> Formats { get; } = [new("PNG — lossless", ImageFormat.Png), new("JPEG", ImageFormat.Jpeg), new("WebP", ImageFormat.WebP), new("BMP — 24-bit RGB", ImageFormat.Bmp), new("TGA — true color / alpha", ImageFormat.Tga), new("DDS — game texture", ImageFormat.Dds)];
+    private static readonly IReadOnlyList<FormatChoice> BaseFormats = [new("PNG — lossless", ImageFormat.Png), new("JPEG", ImageFormat.Jpeg), new("WebP", ImageFormat.WebP), new("BMP — 24-bit RGB", ImageFormat.Bmp), new("TGA — true color / alpha", ImageFormat.Tga), new("DDS — game texture", ImageFormat.Dds), new("ICO — Windows icon", ImageFormat.Ico)];
+    public IReadOnlyList<FormatChoice> Formats { get; }
     public IReadOnlyList<string> MatteChoices { get; } = ["Choose a background", "White", "Black", "Custom RGB"];
     public ObservableCollection<ConversionRow> Rows { get; }
     public bool TargetFixed { get; set; }
     public bool NeedsTargetChoice => !TargetFixed;
     public string Heading => Target is { } target ? $"Convert to {target}" : "Choose a format";
-    public ImageFormat? Target { get => _target; set { if (Set(ref _target, value)) { _webPLossless = value == ImageFormat.WebP; if (IsDdsWorkflow && _metadataMode == ImageMetadataMode.Automatic) _metadataMode = ImageMetadataMode.Preserve; RefreshPlan(); Changed(nameof(Heading)); Changed(nameof(NeedsTargetChoice)); } } }
+    public ImageFormat? Target
+    {
+        get => _target;
+        set
+        {
+            if (!Set(ref _target, value)) return;
+            _webPLossless = value == ImageFormat.WebP;
+            if (IsDdsWorkflow && _metadataMode == ImageMetadataMode.Automatic) _metadataMode = ImageMetadataMode.Preserve;
+            if (value == ImageFormat.Ico && _maximumDimension.Length != 0)
+            {
+                _maximumDimension = "";
+                Changed(nameof(MaximumDimension));
+            }
+            RefreshPlan();
+            Changed(nameof(Heading)); Changed(nameof(NeedsTargetChoice));
+            Changed(nameof(CanReplaceOriginal)); Changed(nameof(ReplaceOriginal)); Changed(nameof(ReplacementNotice));
+        }
+    }
     public string Quality { get => _quality; set { if (Set(ref _quality, value)) RefreshPlan(); } }
     public string MaximumDimension { get => _maximumDimension; set { if (Set(ref _maximumDimension, value)) RefreshPlan(); } }
     public bool WebPLossless { get => _webPLossless; set { if (Set(ref _webPLossless, value)) RefreshPlan(); } }
@@ -72,7 +92,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     public ImageMetadataMode MetadataMode { get => _metadataMode; set { if (Set(ref _metadataMode, value)) { Changed(nameof(RemoveMetadata)); RefreshPlan(); } } }
     public int MatteChoice { get => _matteChoice; set { if (Set(ref _matteChoice, value)) RefreshPlan(); } }
     public string CustomMatte { get => _customMatte; set { if (Set(ref _customMatte, value)) RefreshPlan(); } }
-    public bool ReplaceOriginal { get => _replaceOriginal; set { if (Set(ref _replaceOriginal, value)) RefreshPlan(); } }
+    public bool ReplaceOriginal { get => Target is not (ImageFormat.Ico or ImageFormat.Avif) && _replaceOriginal; set { if (Set(ref _replaceOriginal, value)) RefreshPlan(); } }
     public bool WarningsAcknowledged { get => _warningsAcknowledged; set { if (Set(ref _warningsAcknowledged, value)) Changed(nameof(CanConfirm)); } }
     public bool ReplacementConfirmed { get => _replacementConfirmed; set { if (Set(ref _replacementConfirmed, value)) Changed(nameof(CanConfirm)); } }
     public int SelectedIndex
@@ -91,7 +111,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     public bool AccessBlocked => _trialStatus is { CanStart: false };
     public bool HasAccessStatus => _trialStatus?.CanStart != true;
     public bool EffectiveReplacement => _plan?.ReplaceOriginal == true;
-    public bool CanReplaceOriginal { get; }
+    public bool CanReplaceOriginal => Target is not (ImageFormat.Ico or ImageFormat.Avif) && _replacementAvailable;
     public bool HasWarnings => _warnings.Length != 0;
     public bool IsPreviewBusy => _previewBusy;
     public bool CanConfirm => _plan?.HasExecutableItems == true && !_previewBusy &&
@@ -107,11 +127,11 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     public string Warnings => _warnings;
     public string PreviewMessage => _previewMessage;
     public string TrialMessage => _trialStatus?.Message ?? "Checking license and trial status…";
-    public string OutputNotice => ReplaceOriginal && !EffectiveReplacement ? "An original contains information this format cannot keep. A new copy will be saved instead." : EffectiveReplacement
+    public string OutputNotice => Target == ImageFormat.Ico ? "Originals kept. Standard icon sizes are saved as new ICO copies." : Target == ImageFormat.Avif ? "Originals kept. AVIF images are saved as new copies." : ReplaceOriginal && !EffectiveReplacement ? "An original contains information this format cannot keep. A new copy will be saved instead." : EffectiveReplacement
         ? "Publish the converted file, then move its original to the Recycle Bin. A cleanup failure retains the original and is reported. No permanent-delete fallback."
         : IsDdsTarget ? "Keep originals. New names include the texture representation, such as ‘ - BC7-sRGB’; collisions get (2), (3), and so on. Proposed paths are finalized safely at publication." :
             "Originals kept. Save a new ‘ - Converted’ copy beside each file.";
-    public string ReplacementNotice => CanReplaceOriginal ? "Replacement follows your saved Settings choice." :
+    public string ReplacementNotice => Target is ImageFormat.Ico or ImageFormat.Avif ? $"{Target} always creates copies." : CanReplaceOriginal ? "Replacement follows your saved Settings choice." :
         "Replacement is unavailable: it requires permission in Settings, source-folder output, and a verified Windows/NTFS location. Copies remain available.";
     public BitmapSource? BeforePreview => _before;
     public BitmapSource? AfterPreview => _after;
@@ -150,11 +170,11 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     private ImageConversionOptions? Options()
     {
         if (Target is not { } target) return null;
-        uint quality = 90;
+        uint quality = Target == ImageFormat.Avif ? ImageConversionOptions.AvifQuality : 90;
         if (HasQuality && (!uint.TryParse(Quality, NumberStyles.None, CultureInfo.InvariantCulture, out quality) || quality is < 1 or > 100))
             throw new InvalidDataException("Quality must be a whole number from 1 to 100.");
         uint? maximum = null;
-        if (!string.IsNullOrWhiteSpace(MaximumDimension))
+        if (CanResize && !string.IsNullOrWhiteSpace(MaximumDimension))
         {
             if (!uint.TryParse(MaximumDimension, NumberStyles.None, CultureInfo.InvariantCulture, out var dimension) || dimension is 0 or > 16384)
                 throw new InvalidDataException("Maximum dimension must be 1–16,384 pixels, or blank to keep the size.");

@@ -27,6 +27,7 @@ foreach ($tool in 'Analyze', 'Convert', 'Optimize') {
     New-Item -ItemType Directory -Path $folder | Out-Null
     Copy-Item -LiteralPath (Join-Path $root 'app\Assets') -Destination $folder -Recurse
     $document.Save((Join-Path $folder 'AppxManifest.xml'))
+    & (Join-Path $repository 'tools\New-ShellResourceIndex.ps1') -PackageDirectory $folder
     $package = Join-Path $output "$name.msix"
     # External app/DLL paths deliberately live outside this sparse identity package.
     & $makeAppx pack /d $folder /p $package /nv

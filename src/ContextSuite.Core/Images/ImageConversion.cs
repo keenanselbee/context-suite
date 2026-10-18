@@ -5,7 +5,7 @@ using ContextSuite.Core.Dds;
 
 namespace ContextSuite.Core.Images;
 
-public enum ImageFormat { Png, Jpeg, WebP, Bmp, Tga, Dds, Heic, Avif }
+public enum ImageFormat { Png, Jpeg, WebP, Bmp, Tga, Dds, Heic, Avif, Ico }
 public enum ImageMetadataMode { Preserve, RemoveDescriptive, Automatic }
 
 // EXIF-compatible units: 1 = aspect only, 2 = pixels/inch, 3 = pixels/cm.
@@ -43,6 +43,8 @@ public sealed record ImageSourceFacts(Guid ItemId, string Path, string Sha256, l
             ProfileNames.IsDefault || ProfileNames.Length > 32 ||
             ProfileNames.Any(p => string.IsNullOrWhiteSpace(p) || p.Length > 64) || UnsupportedReason?.Length > 1024)
             throw new InvalidDataException("Image facts are incomplete or exceed supported limits.");
+        if (System.IO.Path.GetExtension(Path).Equals(".jfif", StringComparison.OrdinalIgnoreCase) && Format != ImageFormat.Jpeg)
+            throw new InvalidDataException("A JFIF filename requires validated JPEG content.");
     }
 }
 
@@ -50,7 +52,9 @@ public sealed record ImageConversionOptions(ImageFormat Target, uint Quality = 9
     uint? MaximumDimension = null, uint? MatteRgb = null, ImageMetadataMode Metadata = ImageMetadataMode.Preserve,
     DdsConversionOptions? Texture = null, uint? ExtractMip = null)
 {
-    public bool IsLossy => Target == ImageFormat.Jpeg || (Target == ImageFormat.WebP && !WebPLossless) || (Target == ImageFormat.Dds && Texture?.IsCompressed == true);
+    public const uint AvifQuality = 95;
+
+    public bool IsLossy => Target is ImageFormat.Jpeg or ImageFormat.Avif || (Target == ImageFormat.WebP && !WebPLossless) || (Target == ImageFormat.Dds && Texture?.IsCompressed == true);
     public DdsRepresentation? OutputRepresentation => Target != ImageFormat.Dds || Texture is null ? null : new(
         DdsConversionOptions.LinearFormat(Texture.Format) switch
         {
@@ -64,17 +68,21 @@ public sealed record ImageConversionOptions(ImageFormat Target, uint Quality = 9
         (Target != ImageFormat.Dds || Texture is { Channels: 4, Alpha: not (DdsAlphaPolicy.Flatten or DdsAlphaPolicy.Discard) });
     public string Extension => Target switch
     {
-        ImageFormat.Png => "png", ImageFormat.Jpeg => "jpg", ImageFormat.WebP => "webp", ImageFormat.Bmp => "bmp", ImageFormat.Tga => "tga", ImageFormat.Dds => "dds",
+        ImageFormat.Png => "png", ImageFormat.Jpeg => "jpg", ImageFormat.WebP => "webp", ImageFormat.Bmp => "bmp", ImageFormat.Tga => "tga", ImageFormat.Dds => "dds", ImageFormat.Ico => "ico", ImageFormat.Avif => "avif",
         _ => throw new InvalidDataException("Unknown image target.")
     };
 
     public void Validate()
     {
         Texture?.Validate();
+        if (Target == ImageFormat.Ico && (MaximumDimension is not null || Texture is not null || ExtractMip is not null))
+            throw new InvalidDataException("ICO output uses automatic icon sizes and ordinary raster input.");
+        if (Target == ImageFormat.Avif && (Quality != AvifQuality || WebPLossless || Texture is not null || ExtractMip is not null))
+            throw new InvalidDataException("AVIF output uses fixed quality 95 and ordinary raster input.");
         if ((Target == ImageFormat.Dds && Texture is null) || ExtractMip > 14 ||
             (ExtractMip is not null && (Texture is null || Target == ImageFormat.Dds)) || (Texture is not null && MaximumDimension is not null))
             throw new InvalidDataException("DDS conversion requires texture options; mip extraction must be explicit and resizing is not yet implemented.");
-        if (!Enum.IsDefined(Target) || Target is ImageFormat.Heic or ImageFormat.Avif || !Enum.IsDefined(Metadata) || Quality is < 1 or > 100 ||
+        if (!Enum.IsDefined(Target) || Target == ImageFormat.Heic || !Enum.IsDefined(Metadata) || Quality is < 1 or > 100 ||
             MaximumDimension is 0 or > 16384 || MatteRgb > 0xffffff ||
             (WebPLossless && Target != ImageFormat.WebP) || (MatteRgb is not null && SupportsAlpha))
             throw new InvalidDataException("Conversion options are invalid or contradictory.");
@@ -134,7 +142,10 @@ public static class ImageConversionPlanner
         ArgumentNullException.ThrowIfNull(options);
         options.Validate();
         var items = sources.Take(4097).Select(source => PlanItem(source, options)).ToImmutableArray();
-        if (options.Metadata == ImageMetadataMode.Automatic && items.Any(item => AutomaticOmitsMetadata(item.Source, options.Target)))
+        if (options.Target is ImageFormat.Ico or ImageFormat.Avif ||
+            items.Any(item => item.Source.Format == ImageFormat.Ico) ||
+            items.Any(item => Path.GetExtension(item.Source.Path).Equals(".jfif", StringComparison.OrdinalIgnoreCase)) ||
+            options.Metadata == ImageMetadataMode.Automatic && items.Any(item => AutomaticOmitsMetadata(item.Source, options.Target)))
             replaceOriginal = false;
         var plan = new ImageBatchPlan(batchId, options, settings, replaceOriginal, items);
         ValidateBatch(plan);
@@ -149,6 +160,12 @@ public static class ImageConversionPlanner
             plan.Items.Any(i => i?.Source is null || i.Warnings.IsDefault) || plan.Items.Select(i => i.Source.ItemId).Distinct().Count() != plan.Items.Length)
             throw new InvalidDataException("The conversion batch is invalid.");
         plan.Options.Validate();
+        if (plan.ReplaceOriginal && plan.Options.Target is ImageFormat.Ico or ImageFormat.Avif)
+            throw new InvalidDataException("ICO and AVIF conversion always keep the original image.");
+        if (plan.ReplaceOriginal && plan.Items.Any(item => item.Source.Format == ImageFormat.Ico))
+            throw new InvalidDataException("ICO extraction always keeps the original icon.");
+        if (plan.ReplaceOriginal && plan.Items.Any(item => Path.GetExtension(item.Source.Path).Equals(".jfif", StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidDataException("JFIF conversion always keeps the original image.");
         if (plan.ReplaceOriginal && plan.Options.Metadata == ImageMetadataMode.Automatic &&
             plan.Items.Any(item => AutomaticOmitsMetadata(item.Source, plan.Options.Target)))
             throw new InvalidDataException("Automatic metadata omission requires keeping the original.");
@@ -164,7 +181,7 @@ public static class ImageConversionPlanner
 
     public static bool AutomaticOmitsMetadata(ImageSourceFacts source, ImageFormat target) =>
         source.HasOtherMetadata || source.ProfileNames.Any(name => name.ToLowerInvariant() is not ("icc" or "icm")) ||
-        (target is ImageFormat.Bmp or ImageFormat.Tga or ImageFormat.Dds && (source.ProfileNames.Length != 0 || source.Resolution is not null));
+        (target is ImageFormat.Bmp or ImageFormat.Tga or ImageFormat.Dds or ImageFormat.Ico && (source.ProfileNames.Length != 0 || source.Resolution is not null));
 
     private static ImageItemPlan PlanItem(ImageSourceFacts source, ImageConversionOptions options)
     {
@@ -179,9 +196,17 @@ public static class ImageConversionPlanner
             width = Math.Max(1, (uint)Math.Round(width * scale, MidpointRounding.AwayFromZero));
             height = Math.Max(1, (uint)Math.Round(height * scale, MidpointRounding.AwayFromZero));
         }
+        if (options.Target == ImageFormat.Ico)
+            width = height = IconFrameLayout.Create(width, height)[^1].Size;
         var depth = options.Target == ImageFormat.Png && source.BitDepth > 8 ? 16u : 8u;
         var warnings = ImmutableArray.CreateBuilder<OperationWarning>();
         var blocked = source.UnsupportedReason;
+        if (options.Target == ImageFormat.Ico && source.Format is not (ImageFormat.Png or ImageFormat.Jpeg or ImageFormat.WebP or ImageFormat.Bmp or ImageFormat.Tga))
+            blocked ??= "ICO output supports PNG, JPEG, WebP, BMP and TGA input only.";
+        if (options.Target == ImageFormat.Avif && source.Format is not (ImageFormat.Png or ImageFormat.Jpeg or ImageFormat.WebP or ImageFormat.Bmp or ImageFormat.Tga))
+            blocked ??= "AVIF output supports PNG, JPEG, WebP, BMP and TGA input only.";
+        if (source.Format == ImageFormat.Ico && options.Target != ImageFormat.Png)
+            blocked ??= "ICO input supports PNG extraction only.";
         if (source.Format is ImageFormat.Heic or ImageFormat.Avif && options.Target is not (ImageFormat.Jpeg or ImageFormat.Png))
             blocked ??= "HEIC and AVIF input currently support JPEG and PNG output only.";
         if (options.Metadata == ImageMetadataMode.Automatic && (source.Format == ImageFormat.Dds || options.Target == ImageFormat.Dds))
@@ -242,19 +267,23 @@ public static class ImageConversionPlanner
         if (options.Metadata == ImageMetadataMode.Preserve && (source.HasOtherMetadata ||
             source.ProfileNames.Any(p => p.ToLowerInvariant() is not ("icc" or "icm" or "exif" or "xmp"))))
             blocked ??= "Some source metadata cannot be preserved by this conversion. Choose descriptive-metadata removal explicitly.";
-        if (options.Target is ImageFormat.Bmp or ImageFormat.Tga)
+        if (options.Target is ImageFormat.Bmp or ImageFormat.Tga or ImageFormat.Ico)
         {
             if (options.Metadata == ImageMetadataMode.Preserve && (source.Resolution is not null ||
                 source.ProfileNames.Any(p => p.ToLowerInvariant() is not ("icc" or "icm"))))
-                blocked ??= "BMP/TGA output cannot preserve this descriptive metadata or resolution. Choose metadata removal explicitly.";
+                blocked ??= "This output cannot preserve descriptive metadata or resolution. Choose metadata removal explicitly.";
             if (source.ProfileNames.Any(p => p.ToLowerInvariant() is "icc" or "icm"))
-                warnings.Add(new("color-profile-conversion", "BMP/TGA pixels will be converted to sRGB; the embedded color profile is not retained in this output variant."));
-            warnings.Add(new("untagged-srgb", "BMP/TGA output uses untagged sRGB pixels. Programs must interpret it as sRGB; embedded profiles are not supported in this output variant."));
+                warnings.Add(new("color-profile-conversion", "Pixels will be converted to sRGB; the embedded color profile is not retained in this output variant."));
+            warnings.Add(new("untagged-srgb", "This output uses untagged sRGB pixels. Programs must interpret it as sRGB; embedded profiles are not supported in this output variant."));
         }
+        if (options.Target == ImageFormat.Avif && source.ProfileNames.Any(p => p.ToLowerInvariant() is "icc" or "icm"))
+            warnings.Add(new("color-profile-conversion", "Pixels will be converted to sRGB and the AVIF will carry the resulting sRGB color profile."));
         if (source.IsLossy && options.IsLossy)
             warnings.Add(new("lossy-transcode", "This re-encodes already lossy pixels and can introduce further loss."));
         if (source.BitDepth > depth)
-            warnings.Add(new("precision-reduction", "The target reduces channel precision to 8 bits."));
+            warnings.Add(new("precision-reduction", options.Target == ImageFormat.Avif
+                ? "AVIF output uses 8-bit SDR pixels; this source's higher channel precision will be reduced in the new copy."
+                : "The target reduces channel precision to 8 bits."));
         if (options.Metadata == ImageMetadataMode.RemoveDescriptive)
             warnings.Add(new("metadata-removal", "Descriptive metadata, location, resolution/aspect hints and embedded thumbnails will be removed; color interpretation is retained."));
         if (options.Metadata == ImageMetadataMode.Automatic && AutomaticOmitsMetadata(source, options.Target))

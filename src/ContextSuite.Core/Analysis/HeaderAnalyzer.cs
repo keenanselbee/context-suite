@@ -65,6 +65,14 @@ public static class HeaderAnalyzer
             }
             else warnings.Add("A complete PNG image header was not found in the inspected bytes.");
         }
+        else if (bytes.StartsWith(new byte[] { (byte)'I', (byte)'I', 42, 0 }) ||
+                 bytes.StartsWith(new byte[] { (byte)'M', (byte)'M', 0, 42 }))
+        {
+            id = "tiff";
+            evidence.Add("Classic TIFF byte order and signature at the start of the file; page directory and pixel data were not decoded.");
+            facts.Add(new("document.pages", "Image", "Page count", Availability: FactAvailability.Unavailable));
+            facts.Add(new("image.transparency", "Image", "Transparency", Availability: FactAvailability.Unavailable));
+        }
         else if (bytes.StartsWith(new byte[] { 0xff, 0xd8, 0xff }) || bytes.StartsWith("GIF87a"u8) ||
                  bytes.StartsWith("GIF89a"u8) || bytes.StartsWith("BM"u8) ||
                  bytes.Length >= 12 && bytes.StartsWith("RIFF"u8) && bytes.Slice(8, 4).SequenceEqual("WEBP"u8))
@@ -151,6 +159,9 @@ public static class HeaderAnalyzer
             id = "text";
             evidence.Add("The inspected bytes resemble text. Other encodings or application-specific structures may also fit.");
             facts.Add(new("text.encoding", "Text", "Possible encoding", Text: encoding, Availability: FactAvailability.Derived));
+            facts.Add(new("text.lines", "Text", "Lines", Integer: CountLines(text), Availability: FactAvailability.Derived));
+            facts.Add(new("text.lines-complete", "Text", "Entire file counted", Boolean: fileBytes == bytes.Length,
+                Availability: FactAvailability.Derived));
             if (fileBytes == bytes.Length && TryStructuredText(text, facts, warnings) is { } structured)
             {
                 id = structured;
@@ -197,7 +208,7 @@ public static class HeaderAnalyzer
                     : "The filename suggests a different type from the inspected content.");
             }
         }
-        if (bytes.Length < fileBytes) evidence.Add($"Only the first {bytes.Length:N0} bytes were inspected.");
+        if (bytes.Length < fileBytes) evidence.Add($"File identification inspected the first {bytes.Length:N0} bytes.");
         if (id is null)
         {
             evidence.Add(fileBytes == 0 ? "The file is empty; no content signature is available." : "No supported content signature identified this file.");
@@ -216,8 +227,24 @@ public static class HeaderAnalyzer
         encoding = "";
         text = "";
         if (bytes.IsEmpty) return false;
+        var decoder = CreateTextDecoder(bytes, out var skip, out encoding);
+        try
+        {
+            // Do not turn a multi-byte character split at the sampling limit into a failure.
+            var characters = new char[bytes.Length];
+            decoder.Convert(bytes[skip..], characters, !partial, out _, out var count, out _);
+            for (var index = 0; index < count; index++)
+                if (char.IsControl(characters[index]) && characters[index] is not ('\r' or '\n' or '\t' or '\f')) return false;
+            text = new string(characters, 0, count);
+            return count > 0 || skip > 0;
+        }
+        catch (DecoderFallbackException) { return false; }
+    }
+
+    internal static Decoder CreateTextDecoder(ReadOnlySpan<byte> bytes, out int skip, out string encoding)
+    {
         Encoding decoder;
-        var skip = 0;
+        skip = 0;
         if (bytes.StartsWith(new byte[] { 0xff, 0xfe, 0, 0 })) { decoder = new UTF32Encoding(false, false, true); skip = 4; encoding = "UTF-32 little-endian BOM"; }
         else if (bytes.StartsWith(new byte[] { 0, 0, 0xfe, 0xff })) { decoder = new UTF32Encoding(true, false, true); skip = 4; encoding = "UTF-32 big-endian BOM"; }
         else if (bytes.StartsWith(new byte[] { 0xff, 0xfe })) { decoder = new UnicodeEncoding(false, false, true); skip = 2; encoding = "UTF-16 little-endian BOM"; }
@@ -228,17 +255,20 @@ public static class HeaderAnalyzer
             if (bytes.StartsWith(new byte[] { 0xef, 0xbb, 0xbf })) { skip = 3; encoding = "UTF-8 BOM"; }
             else encoding = "UTF-8 compatible (ASCII is also possible)";
         }
-        try
+        return decoder.GetDecoder();
+    }
+
+    private static int CountLines(string text)
+    {
+        if (text.Length == 0) return 0;
+        var lines = 1;
+        for (var index = 0; index < text.Length; index++)
         {
-            // Do not turn a multi-byte character split at the sampling limit into a failure.
-            var characters = new char[bytes.Length];
-            decoder.GetDecoder().Convert(bytes[skip..], characters, !partial, out _, out var count, out _);
-            for (var index = 0; index < count; index++)
-                if (char.IsControl(characters[index]) && characters[index] is not ('\r' or '\n' or '\t' or '\f')) return false;
-            text = new string(characters, 0, count);
-            return count > 0 || skip > 0;
+            if (text[index] is not ('\r' or '\n')) continue;
+            if (text[index] == '\r' && index < text.Length - 1 && text[index + 1] == '\n') index++;
+            if (index < text.Length - 1) lines++;
         }
-        catch (DecoderFallbackException) { return false; }
+        return lines;
     }
 
     private static string? TryStructuredText(string text, ImmutableArray<AnalysisFact>.Builder facts,

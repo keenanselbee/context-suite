@@ -57,8 +57,10 @@ Implemented workflow
 5. `release-manifest.json` identifies both commits, SDK/toolset, package
    dependencies, engines and every payload file's length and SHA256. The ZIP
    hash is printed and written to `archive.sha256` separately. The finished ZIP
-   is extracted into fresh scratch output and revalidated. Hashes establish
-   consistency, not authenticity.
+   is extracted into fresh scratch output and revalidated. After verification
+   and the archive hash receipt succeed, the temporary extraction is removed;
+   failed verification retains it for diagnosis. Cleanup checks its exact path
+   and rejects linked entries. Hashes establish consistency, not authenticity.
 6. `tools/release/Test-ReleaseCandidate.ps1 -Candidate <directory>` verifies the
    inventory, selected optional engines and source-linked engine/notice guards.
    Read-only engine checks admit the release-candidate directory; staging writes

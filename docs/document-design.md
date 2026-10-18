@@ -1,6 +1,35 @@
 Document Support Design
 =======================
 
+The owner-approved [PDF dark-mode goal](pdf-dark-mode-goal.md), 2026-10-10,
+adds a deterministic appearance conversion on mandatory copies. Its native engine,
+worker and direct action are implemented in source. Admission rejects unsupported
+features before publication; text and glyph geometry are independently checked.
+Bounded fidelity and combined-candidate checks pass in unsigned
+[candidate 1.2.7](pdf-dark-mode-review.md); native UI and owner acceptance remain
+separate. The subsequent source-only `pdf-dark-2` native engine now converts the
+complete 50-page lecture through the actual worker, with independently checked
+glyphs, vector geometry, masks and all-page rendered review. Local contrast and
+transparent placement checks remain bounded; retained image panels may remain
+light. This follow-up is not packaged or installed and does not establish
+universal PDF fidelity.
+The later source-only `pdf-dark-3` policy improves compressed diagram images and
+colored panels using bounded spatial/color evidence and local contrast checks.
+It preserves original masks and retains image colors when the new classification
+or contrast guard declines recoloring; no OCR or new engine dependency is added.
+The subsequent `pdf-dark-4` update uses local fill estimates and stronger existing
+ink coverage within colored panels to improve readability, preserving image
+dimensions, masks and neutral image/text contrast behavior.
+The source-only `pdf-dark-5` update refines sparse colored annotation edges
+against paper and locally supported panels; it adds no OCR or reconstruction.
+
+The `pdf-dark-7` [lecture follow-up](pdf-dark-lecture-support-goal.md) adds bounded
+rounded backgrounds, legacy links, local compositing and readability fallbacks,
+plus page-specific unsupported/damaged-source diagnostics. Native review passes
+five original COSC 310 documents / 212 pages and the prior 25-document corpus;
+isolated candidate 1.3.2 passes exact-worker and preservation checks. Source repair
+is not automatic.
+
 Status: bounded package analysis and optional PDF/Office commands implemented;
 expanded fidelity, engine adoption and launch acceptance remain incomplete.
 
@@ -10,6 +39,25 @@ applicable conversion-menu targets. These are implemented in source under the
 [PDF improvements goal](pdf-conversion-improvements-goal.md), with
 [bounded PDF-to-Word fidelity and evidence](pdf-to-docx.md). OCR remains outside
 that goal. No new installed/released version is implied.
+
+The follow-up [FastAPI fidelity goal](fastapi-pdf-docx-goal.md) adds positioned
+editable text, better ruled-table reconstruction and localized images of static
+stamp appearances. Empty associated popups may be omitted only after checking
+their ownership and closed state; annotation content, actions and other
+unsupported behavior still refuse. This is best-effort visual reconstruction,
+not interactive form or review-metadata conversion.
+
+The later Word fidelity pass adds native horizontal/underscore rules, conservative
+prose grouping, heading styles and repeated-footer parts. The blank and filled
+worksheets are checked through Microsoft Word PDF export. Text remains in
+positioned paragraph frames; full manuscript reflow and general form/list
+reconstruction remain outside the achieved fidelity. See the same acceptance
+record for development evidence and installation status.
+
+Localized figure crops retain transparent unpainted paper, including around
+static checkmarks, while keeping explicit white PDF paint. Substituted Minion
+text uses natural width outside narrow table cells. Printed rule colors stay
+source-derived; dark-mode line visibility remains a manual check.
 
 The PDF-to-PNG background change is now implemented in source: white paper is
 the default, and Convert Settings has a secondary transparent-background choice.

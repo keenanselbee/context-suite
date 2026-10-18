@@ -42,7 +42,7 @@ def verify(value):
                          "configure.log", "build.log", "ffmpeg-version.log", "ffprobe-version.log"}
     evidence_expected |= {name + "/" + file for name in distribution.DEPENDENCIES
                           for file in ("dependency-build.json", "source-inventory.json", "tests.log")}
-    if profile == "expanded":
+    if profile in ("expanded", "video"):
         evidence_expected.add("effective-sources.json")
     evidence = manifest["evidence"]
     if len(evidence) != len(evidence_expected) or {item["path"] for item in evidence} != evidence_expected:
@@ -53,7 +53,7 @@ def verify(value):
             raise ValueError("Build evidence identity mismatch")
     record = json.loads((directory / "evidence/build-result.json").read_text())
     distribution.review_profile(record, candidate, profile)
-    if profile == "expanded":
+    if profile in ("expanded", "video"):
         effective_path = directory / "evidence/effective-sources.json"
         original = {item["path"]: item["sha256"] for item in json.loads((directory / "evidence/source-inventory.json").read_text())}
         for patch in candidate["patches"]:

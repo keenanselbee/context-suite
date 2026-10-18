@@ -132,7 +132,7 @@ def main():
         raise RuntimeError(f"Office interruption check failed; inspect logs and owned profile receipts before retrying: {scratch}")
     report = json.loads((scratch / "contracts/results.json").read_text(encoding="utf-8"))
     modes = ["cancel", "worker-loss", "deadline"] if args.mode == "all" else [args.mode]
-    expected_checks = (14 if args.unfinished_workbook_copy else 12) * len(modes) if args.workbook_copy else 99 if args.mode in ("startup-recovery", "app-recovery") else 93 if args.mode == "owner-loss" else 30 * len(modes)
+    expected_checks = (14 if args.unfinished_workbook_copy else 12) * len(modes) if args.workbook_copy else 99 if args.mode in ("startup-recovery", "app-recovery") else 93 if args.mode == "owner-loss" else 34 * len(modes)
     if not report["Passed"] or report["Modes"] != modes or len(report["Checks"]) != expected_checks or report.get("WorkbookCopy", False) != args.workbook_copy or report.get("UnfinishedWorkbook", False) != args.unfinished_workbook_copy:
         raise RuntimeError("Missing complete interruption evidence.")
     if any(digest(Path(name)) != expected for name, expected in fixtures.items()):

@@ -29,7 +29,7 @@ internal sealed class PdfDocxExecutor(WorkerClient worker, OutputPublisher publi
                     var converted = await worker.ConvertPdfDocxAsync(new(source, id, reservation.TemporaryPath), token);
                     result = (await publisher.PublishAsync(reservation, converted.Validation, token)).ToFileResult() with { EngineIdentity = converted.EngineIdentity };
                     if (result.State == OperationState.Succeeded && converted.FigureCount > 0)
-                        result = result with { Message = "Word copy saved. Complex figures and their labels remain images; other text is editable." };
+                        result = result with { Message = "Word copy saved. Complex figures, their labels and stamp appearances remain images; other text is editable." };
                 }
                 catch (OperationCanceledException)
                 {

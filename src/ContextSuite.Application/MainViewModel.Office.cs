@@ -4,6 +4,7 @@ using ContextSuite.Core.Analysis;
 using ContextSuite.Core.Office;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Pdf;
+using ContextSuite.Core.Tiff;
 
 namespace ContextSuite.Application;
 
@@ -25,7 +26,15 @@ internal sealed partial class MainViewModel
     private async Task ConvertPdfBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken token)
     {
         var imageRow = rows.FirstOrDefault(row => row.IsImagePdf);
-        var officeRows = rows.Where(row => !row.IsImagePdf).ToArray();
+        var officeRows = rows.Where(row => !row.IsImagePdf && !IsTiffPath(row.Path)).ToArray();
+        var tiffRows = rows.Where(row => IsTiffPath(row.Path)).ToArray();
+        var tiffSources = new List<TiffSourceFacts>();
+        foreach (var row in tiffRows)
+        {
+            token.ThrowIfCancellationRequested();
+            row.ApplyResult(new(row.Path, OperationState.Running, "Checking TIFF for PDF conversion"));
+            if (await ProbeTiffPdfAsync(row, token) is { } source) tiffSources.Add(source);
+        }
         var sources = new List<OfficeConversionSource>();
         if (officeRows.Length != 0)
         {
@@ -71,6 +80,7 @@ internal sealed partial class MainViewModel
         }
         ConfirmedImagePdf? images = imageRow is null ? null : await PrepareImagesToPdfAsync(request, imageRow, token);
         if (imageRow?.Result.State == OperationState.Cancelled) { CancelUnfinished(); return; }
+        var tiff = await ConfirmTiffAsync(request, rows, tiffSources, TiffTarget.Pdf, null, token);
         if (sources.Any(source => source.Format == "xlsx" && officeRows.Single(row => row.ItemId == source.ItemId).OfficeCalculation is null))
         {
             Summary = "Choose how spreadsheet formulas appear in the PDF. No files changed by this batch.";
@@ -96,9 +106,10 @@ internal sealed partial class MainViewModel
                     "This Office selection contains duplicate files or exceeds its size limit. Select fewer documents without duplicates. Originals kept."));
             }
         }
-        if (images is null && office is null) return;
+        if (images is null && office is null && tiff is null) return;
         token.ThrowIfCancellationRequested();
-        var admission = images is not null ? await trial!.AdmitConversionAsync(images, token) : await trial!.AdmitConversionAsync(office!, token);
+        var admission = images is not null ? await trial!.AdmitConversionAsync(images, token) :
+            office is not null ? await trial!.AdmitConversionAsync(office, token) : await trial!.AdmitConversionAsync(tiff!, token);
         if (images is not null)
             await new ImagePdfExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(images, admission, result =>
             {
@@ -116,6 +127,19 @@ internal sealed partial class MainViewModel
                 byPath[result.Path].ApplyResult(result);
                 if (result.State == OperationState.Running) Summary = result.Message + ": " + Path.GetFileName(result.Path);
             }, token);
+        }
+        if (tiff is not null)
+        {
+            var byId = tiffRows.ToDictionary(row => row.ItemId);
+            var completed = tiffSources.SelectMany(source => byId[source.ItemId].CompletedTiffOutputs
+                .Select(output => (source.ItemId, output.PageIndex, output.OutputBytes)))
+                .ToDictionary(output => (output.ItemId, output.PageIndex), output => output.OutputBytes);
+            await new TiffConversionExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(tiff, admission, (source, index, result) =>
+            {
+                var row = byId[source.ItemId];
+                row.ApplyTiffPage(index, result);
+                Summary = result.State == OperationState.Running ? $"Creating PDF from {row.Name}." : row.Result.Message;
+            }, token, completed);
         }
 
         void CancelUnfinished()

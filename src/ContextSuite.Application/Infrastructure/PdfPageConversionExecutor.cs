@@ -60,13 +60,16 @@ internal sealed class PdfPageConversionExecutor(WorkerClient worker, OutputPubli
                             throw new InvalidDataException("PDF page batch exceeds its output budget.");
                         report?.Invoke(source, page.Index, new(source.Path, OperationState.Running, "Preparing page copy"));
                         var id = Guid.NewGuid();
-                        reservation = await publisher.ReserveAsync(new(id, source.Path, "png", confirmed.Plan.Settings,
+                        reservation = await publisher.ReserveAsync(new(id, source.Path,
+                            confirmed.Plan.Format == PdfPageFormat.Jpeg ? "jpg" : "png", confirmed.Plan.Settings,
                             PageNumber: page.Index + 1), token);
                         if (reservation.Record.Source.Sha256 != source.Sha256 || reservation.Record.Source.Length != source.FileBytes)
                             throw new InvalidDataException("PDF changed after planning.");
                         report?.Invoke(source, page.Index, new(source.Path, OperationState.Running, "Rendering and validating page"));
                         var rendered = await worker.RenderPdfPageAsync(new(source, page.Index, id, reservation.TemporaryPath,
-                            TransparentBackground: confirmed.Plan.Settings.TransparentPdfBackground), token);
+                            confirmed.Plan.Format == PdfPageFormat.Jpeg ? PdfRasterProtocol.JpegPolicy : PdfRasterProtocol.Policy,
+                            confirmed.Plan.Format == PdfPageFormat.Png && confirmed.Plan.Settings.TransparentPdfBackground,
+                            confirmed.Plan.Format), token);
                         if (rendered.OutputBytes > maximumOutputBytes - outputBytes)
                             throw new InvalidDataException("PDF page batch exceeds its output budget.");
                         result = (await publisher.PublishAsync(reservation, rendered.Validation, token)).ToFileResult() with { EngineIdentity = rendered.EngineIdentity };

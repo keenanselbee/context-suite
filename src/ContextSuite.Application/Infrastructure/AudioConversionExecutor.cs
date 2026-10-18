@@ -39,8 +39,11 @@ internal sealed class AudioConversionExecutor(WorkerClient worker, OutputPublish
                     if (reservation.Record.Source.Sha256 != item.Source.Sha256 || reservation.Record.Source.Length != item.Source.FileBytes)
                         throw new InvalidDataException("Audio source changed after planning.");
                     report?.Invoke(item, new(item.Source.Path, OperationState.Running, "Converting and verifying audio"));
-                    var converted = await worker.ConvertAudioAsync(new(item.Source, reservation.TemporaryPath, plan.Target, confirmed.AcceptedConsent), token);
+                    var converted = await worker.ConvertAudioAsync(new(item.Source, reservation.TemporaryPath, plan.Target, confirmed.AcceptedConsent, Wem: plan.Wem), token);
                     result = (await publisher.PublishAsync(reservation, converted.Validation, token)).ToFileResult() with { EngineIdentity = converted.EngineIdentity };
+                    if (item.Source.Video is not null && result.Publication?.IsCommitted == true)
+                        result = result with { Message = result.Message +
+                            " Selected audio extracted. It starts at the track's first decoded sample; its video timing offset is not retained. Original video kept." };
                 }
                 catch (OperationCanceledException)
                 {
@@ -58,7 +61,9 @@ internal sealed class AudioConversionExecutor(WorkerClient worker, OutputPublish
                         var preservation = error is MediaWorkerException { Failure: ImageFailure.ValidationFailed };
                         result = result with { State = unsupported ? OperationState.Unsupported : OperationState.Failed,
                             Message = unsupported ? "This audio has information or a feature that conversion cannot preserve yet. The original was kept." :
-                                preservation ? "The converted audio did not preserve the sound closely enough. Try WAV. The original was kept." :
+                                preservation ? confirmed.Plan.Target == AudioFormat.Wem
+                                    ? "The WEM output did not preserve the sound closely enough. Try PCM16 in Advanced. The original was kept."
+                                    : "The converted audio did not preserve the sound closely enough. Try WAV. The original was kept." :
                                 "Audio conversion failed safely. Check the source and output folder, then try again." };
                     }
                 }

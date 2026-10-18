@@ -42,6 +42,21 @@ $valid = Join-Path $scratch 'valid.zip'
 Compress-Archive -LiteralPath (Join-Path $engine 'Magick.Native-Q16-x64.dll'), (Join-Path $engine 'Magick.NET.Notice.txt') -DestinationPath $valid
 & $import -Archive $valid -ValidateOnly
 $script:passed++
+$engineSelection = Join-Path $PSScriptRoot 'Get-CandidateEngines.ps1'
+$engineFixture = Join-Path $scratch 'image-engine-selection'
+New-Item -ItemType Directory -Path $engineFixture | Out-Null
+if ((& $engineSelection -Payload $engineFixture).imageExpansion) { throw 'Base candidate unexpectedly selects AVIF/SVG.' }
+$script:passed++
+New-Item -ItemType Directory -Path (Join-Path $engineFixture 'avif') | Out-Null
+Expect-Rejection { & $engineSelection -Payload $engineFixture } 'AVIF without SVG'
+Remove-Item -LiteralPath (Join-Path $engineFixture 'avif')
+New-Item -ItemType Directory -Path (Join-Path $engineFixture 'svg') | Out-Null
+Expect-Rejection { & $engineSelection -Payload $engineFixture } 'SVG without AVIF'
+New-Item -ItemType Directory -Path (Join-Path $engineFixture 'avif') | Out-Null
+Expect-Rejection { & $engineSelection -Payload $engineFixture } 'AVIF without HEIF decoder'
+New-Item -ItemType Directory -Path (Join-Path $engineFixture 'heif') | Out-Null
+if (-not (& $engineSelection -Payload $engineFixture).imageExpansion) { throw 'Complete image expansion candidate was not selected.' }
+$script:passed++
 if ($Candidate) {
     & (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate $Candidate
     $script:passed++
@@ -79,6 +94,17 @@ if ($Candidate) {
     $manifest.applicationDependencies = [pscustomobject]@{}
     [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 12))
     Expect-Rejection { & (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate $copy } 'missing application dependency evidence'
+    Copy-Item -LiteralPath (Join-Path $Candidate 'release-manifest.json') -Destination $manifestPath -Force
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    if ($null -eq $manifest.optionalEngines) {
+        $manifest | Add-Member -NotePropertyName 'optionalEngines' -NotePropertyValue ([pscustomobject]@{ imageExpansion = $true })
+    } elseif ($manifest.optionalEngines.imageExpansion) {
+        $manifest.optionalEngines.PSObject.Properties.Remove('imageExpansion')
+    } else {
+        $manifest.optionalEngines | Add-Member -NotePropertyName 'imageExpansion' -NotePropertyValue $true -Force
+    }
+    [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 12))
+    Expect-Rejection { & (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate $copy } 'inconsistent image expansion manifest'
     Copy-Item -LiteralPath (Join-Path $Candidate 'release-manifest.json') -Destination $manifestPath -Force
     $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
     # Deleting a file AND its receipt entry must not bypass required-file checks.

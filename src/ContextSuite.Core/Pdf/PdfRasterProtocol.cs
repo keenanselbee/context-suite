@@ -51,6 +51,7 @@ public static class PdfRasterProtocol
     public const int MaximumInspectionBytes = 32 + MaximumPages * 32;
     public const int MaximumRenderedBytes = 32 + MaximumPagePixels * 4;
     public const string Policy = "pdf-pages-png-150-2";
+    public const string JpegPolicy = "pdf-pages-jpeg-150-q90-1";
 
     public static PdfRasterDocument ReadInspection(ReadOnlySpan<byte> bytes)
     {

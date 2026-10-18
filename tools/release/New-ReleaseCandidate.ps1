@@ -1,8 +1,53 @@
 [CmdletBinding()]
 param([switch] $AllowDirty, [string] $AudioDistributionDirectory,
     [string] $QpdfPreparedDirectory, [string] $PdfiumPreparedDirectory, [string] $QpdfSourceArchive,
-    [string] $OfficeEngineDirectory, [string] $HeifDistributionDirectory, [string] $VoiceDistributionDirectory)
+    [string] $OfficeEngineDirectory, [string] $HeifDistributionDirectory, [string] $VoiceDistributionDirectory,
+    [string] $WemDistributionDirectory, [string] $AvifBuildDirectory, [string] $AvifSourceDirectory,
+    [string] $SvgBuildDirectory, [string] $SvgCargoHome, [string] $PdfDarkBuildDirectory)
 $ErrorActionPreference = 'Stop'
+function Remove-VerifiedArchiveExtraction([string] $Output, [string] $Extraction) {
+    $outputPath = [IO.Path]::GetFullPath($Output).TrimEnd('\')
+    $expected = [IO.Path]::GetFullPath((Join-Path $outputPath 'archive-verification'))
+    $extractionPath = [IO.Path]::GetFullPath($Extraction)
+    if (-not [string]::Equals($extractionPath, $expected, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Archive verification cleanup must target the extraction inside this candidate output.'
+    }
+    $path = $outputPath
+    while ($true) {
+        $item = Get-Item -LiteralPath $path -Force
+        if (-not $item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Unsafe archive verification cleanup directory: $path"
+        }
+        $parent = Split-Path -Path $path -Parent
+        if (-not $parent -or [string]::Equals($parent, $path, [StringComparison]::OrdinalIgnoreCase)) { break }
+        $path = $parent
+    }
+    $item = Get-Item -LiteralPath $extractionPath -Force
+    if (-not $item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw "Unsafe archive verification cleanup directory: $extractionPath"
+    }
+    $pending = [Collections.Generic.Stack[string]]::new()
+    $pending.Push($extractionPath)
+    while ($pending.Count) {
+        foreach ($item in Get-ChildItem -LiteralPath $pending.Pop() -Force) {
+            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                throw "Archive verification extraction contains a reparse point: $($item.FullName)"
+            }
+            if ($item.PSIsContainer) { $pending.Push($item.FullName) }
+        }
+    }
+    Remove-Item -LiteralPath $extractionPath -Recurse -Force
+}
+function Complete-ArchiveVerification([string] $Output, [string] $Extraction,
+    [string] $Archive, [string] $Verifier, [Text.Encoding] $Encoding) {
+    & $Verifier -Candidate (Join-Path $Extraction 'ContextSuite') | Out-Host
+    if (-not (Test-Path -LiteralPath $Archive -PathType Leaf)) { throw 'Candidate archive is missing.' }
+    $archiveHash = (Get-FileHash -LiteralPath $Archive -ErrorAction Stop).Hash
+    if ($archiveHash -notmatch '^[a-fA-F0-9]{64}$') { throw 'Cannot hash candidate archive.' }
+    [IO.File]::WriteAllText((Join-Path $Output 'archive.sha256'), "$archiveHash  ContextSuite-win-x64-unsigned.zip`n", $Encoding)
+    Remove-VerifiedArchiveExtraction -Output $Output -Extraction $Extraction
+    return $archiveHash
+}
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $revisions = @()
 $dirty = $false
@@ -22,7 +67,9 @@ $stagingId = [guid]::NewGuid()
 & (Join-Path $repository 'tools\dds-engine\Test-DdsEngine.ps1') -Payload (Join-Path $repository 'artifacts\engines\dds-win-x64')
 $buildArguments = @{ Configuration = 'Release'; StagingId = $stagingId }
 foreach ($name in 'AudioDistributionDirectory', 'QpdfPreparedDirectory', 'PdfiumPreparedDirectory',
-    'QpdfSourceArchive', 'OfficeEngineDirectory', 'HeifDistributionDirectory', 'VoiceDistributionDirectory') {
+    'QpdfSourceArchive', 'OfficeEngineDirectory', 'HeifDistributionDirectory', 'VoiceDistributionDirectory',
+    'WemDistributionDirectory', 'AvifBuildDirectory', 'AvifSourceDirectory', 'SvgBuildDirectory', 'SvgCargoHome',
+    'PdfDarkBuildDirectory') {
     if ($PSBoundParameters.ContainsKey($name)) { $buildArguments[$name] = $PSBoundParameters[$name] }
 }
 & (Join-Path $repository 'tools\Build-Production.ps1') @buildArguments
@@ -84,8 +131,7 @@ $archive = Join-Path $output 'ContextSuite-win-x64-unsigned.zip'
 Compress-Archive -LiteralPath $candidate -DestinationPath $archive
 $roundtrip = Join-Path $output 'archive-verification'
 Expand-Archive -LiteralPath $archive -DestinationPath $roundtrip
-& (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Candidate (Join-Path $roundtrip 'ContextSuite')
-$archiveHash = (Get-FileHash -LiteralPath $archive).Hash
-[IO.File]::WriteAllText((Join-Path $output 'archive.sha256'), "$archiveHash  ContextSuite-win-x64-unsigned.zip`n", $utf8)
+$archiveHash = Complete-ArchiveVerification -Output $output -Extraction $roundtrip -Archive $archive `
+    -Verifier (Join-Path $PSScriptRoot 'Test-ReleaseCandidate.ps1') -Encoding $utf8
 Write-Output "Candidate archive: $archive"
 Write-Output "SHA256: $archiveHash"

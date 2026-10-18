@@ -64,6 +64,9 @@ internal static class PdfRasterContracts
         var settings = new ContextSuite.Core.Settings.BatchSettings("convert", new(ReplaceOriginals: true));
         var plan = PdfPageConversionPlan.Create(Guid.NewGuid(), [source], settings).Confirm();
         check(plan.Plan.Sources.Single() == source, "PDF raster: confirmed page selection retains source facts with overwrite preference");
+        var jpegPlan = PdfPageConversionPlan.Create(Guid.NewGuid(), [source], settings, PdfPageFormat.Jpeg).Confirm();
+        check(jpegPlan.Plan.Format == PdfPageFormat.Jpeg, "PDF raster: confirmed JPEG selection retains its page format");
+        Reject(() => PdfPageConversionPlan.Create(Guid.NewGuid(), [source], settings, (PdfPageFormat)9), "unknown PDF page format");
         Reject(() => PdfPageConversionPlan.Create(Guid.NewGuid(), [source, source], settings), "duplicate PDF source identity");
         Reject(() => PdfPageConversionPlan.Create(Guid.NewGuid(), [source], settings with { Operation = "optimize" }), "wrong operation settings");
         Reject(() => PdfPageConversionPlan.Create(Guid.NewGuid(), [], settings), "empty PDF selection");
@@ -75,6 +78,13 @@ internal static class PdfRasterContracts
         var work = new PdfPageWork(source, 0, id, Path.Combine(Path.GetDirectoryName(source.Path)!, $".context-suite-{id:N}.tmp"));
         new ContextSuite.Core.Transport.WorkerCommand(1, Guid.NewGuid(), "pdf-render-page", PdfPage: work).Validate();
         check(true, "PDF raster: typed page command accepts a distinct output reservation");
+        var jpegWork = work with { Format = PdfPageFormat.Jpeg, Policy = PdfRasterProtocol.JpegPolicy };
+        new ContextSuite.Core.Transport.WorkerCommand(1, Guid.NewGuid(), "pdf-render-page", PdfPage: jpegWork).Validate();
+        check(true, "PDF raster: JPEG page command retains the fixed quality policy");
+        Reject(() => (jpegWork with { TransparentBackground = true }).Validate(), "JPEG cannot retain transparent paper");
+        Reject(() => (jpegWork with { Policy = PdfRasterProtocol.Policy }).Validate(), "JPEG cannot claim PNG policy");
+        Reject(() => (work with { Format = PdfPageFormat.Jpeg }).Validate(), "JPEG requires its fixed policy");
+        Reject(() => (work with { Format = (PdfPageFormat)9 }).Validate(), "unknown page output format");
         Reject(() => (work with { OutputId = source.ItemId }).Validate(), "source identity cannot identify page output");
         Reject(() => (work with { TemporaryPath = source.Path }).Validate(), "page output cannot target source");
         Reject(() => (work with { Policy = "other" }).Validate(), "unknown page policy");

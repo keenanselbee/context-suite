@@ -27,6 +27,8 @@ REVIEWS = {
     ("libavcodec/vlc.c", 75, "C4334"): "Table bits are bounded to 30 before allocation; the signed 1 shift is representable before pointer arithmetic widens it.",
     ("libavcodec/vlc.c", 340, "C4334"): "Nonzero lengths are checked against at most 32; unsigned 1 shifts by 0..31 before widening to the 64-bit code accumulator.",
     ("libavcodec/vlc.c", 555, "C4334"): "Nonzero lengths are checked against at most 32; unsigned 1 shifts by 0..31 before widening to the 64-bit code accumulator.",
+    ("libavformat/matroskadec.c", 945, "C4334"): "The EBML marker index comes from a byte lookup and is at most 7, so the signed 1 shift is representable before widening.",
+    ("libavformat/matroskadec.c", 1304, "C4334"): "EBML ID reads are limited to four bytes, so 7 * res is at most 28 and the signed 1 shift is representable before widening.",
 }
 HOST_WARNING = "cl : Command line warning D9024 : unrecognized source file type 'ffbuild/bin2c_host.o', object file assumed"
 MESSAGES = {"C4333": "'>>': right shift by too large amount, data loss",

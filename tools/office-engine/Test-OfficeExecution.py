@@ -31,8 +31,12 @@ def packaged_payload(root, selected, scratch):
         if not (payload / name).exists():
             raise ValueError("Packaged Office execution requires the worker, inventory and Office/PDF engines.")
     flags = ["-AllowAudioCandidate", "-AllowPdfCandidate", "-AllowOfficeCandidate"]
-    if (payload / "heif").is_dir():
-        flags.append("-AllowHeifCandidate")
+    for directories, flag in ((("heif",), "-AllowHeifCandidate"),
+                              (("wem-engine",), "-AllowWemCandidate"),
+                              (("pdf-dark",), "-AllowPdfDarkCandidate"),
+                              (("avif", "svg"), "-AllowImageExpansionCandidate")):
+        if any((payload / name).is_dir() for name in directories):
+            flags.append(flag)
     return payload, flags
 
 

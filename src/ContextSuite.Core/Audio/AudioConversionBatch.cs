@@ -9,7 +9,7 @@ public sealed record AudioConversionItem(AudioFileSource Source, AudioConversion
 }
 
 public sealed record AudioConversionBatch(Guid BatchId, AudioFormat Target, BatchSettings Settings, bool ReplaceOriginal,
-    ImmutableArray<AudioConversionItem> Items)
+    ImmutableArray<AudioConversionItem> Items, WemEncodingOptions? Wem = null)
 {
     public bool HasExecutableItems => !Items.IsDefaultOrEmpty && Items.Any(item => item.CanExecute);
     public AudioConversionConsent RequiredConsent => Items.Where(item => item.CanExecute)
@@ -17,29 +17,36 @@ public sealed record AudioConversionBatch(Guid BatchId, AudioFormat Target, Batc
     public ImmutableArray<string> Notices => Items.Where(item => item.CanExecute).SelectMany(item => item.Encoding!.Notices).Distinct().ToImmutableArray();
 
     public static AudioConversionBatch Create(Guid batchId, IEnumerable<AudioFileSource> sources, AudioFormat target,
-        BatchSettings settings, bool replaceOriginal = false)
+        BatchSettings settings, bool replaceOriginal = false, WemEncodingOptions? wem = null)
     {
         if (batchId == Guid.Empty || !Enum.IsDefined(target) || settings?.Operation != "convert" || settings.Preferences is null)
             throw new InvalidDataException("Invalid audio conversion batch, target or settings.");
+        if (target == AudioFormat.Wem) (wem ?? throw new InvalidDataException("Missing WEM encoding options.")).Validate();
+        else if (wem is not null) throw new InvalidDataException("WEM options cannot accompany another target.");
         var items = sources.Take(4097).Select(source =>
         {
             if (source is null) throw new InvalidDataException("Missing audio source.");
             source.Validate();
             AudioConversionPlan? encoding = null; var reason = source.ConversionBlockReason;
-            try { encoding = AudioConversionPlan.Create(source.Facts, target); }
-            catch (NotSupportedException) { reason ??= "This audio cannot use the selected format without changing an unsupported feature."; }
+            try
+            {
+                if (VideoAudioSelection.IsVideoPath(source.Path) && source.Video is null)
+                    throw new NotSupportedException("Select an audio track before extracting it from video.");
+                encoding = AudioConversionPlan.Create(source.Facts, target, wem, source.Video);
+            }
+            catch (NotSupportedException error) { reason ??= target == AudioFormat.Wem ? error.Message : "This audio cannot use the selected format without changing an unsupported feature."; }
             return new AudioConversionItem(source, encoding, reason);
         }).ToImmutableArray();
         if (items.IsEmpty || items.Length > 4096 || items.Select(item => item.Source.ItemId).Distinct().Count() != items.Length)
             throw new InvalidDataException("Invalid audio conversion selection.");
-        return new(batchId, target, settings, replaceOriginal, items);
+        return new(batchId, target, settings, replaceOriginal && items.All(item => item.Source.Video is null), items, wem);
     }
 
     public ConfirmedAudioConversion Confirm(AudioConversionConsent accepted, bool replacementConfirmed, bool replacementAvailable)
     {
         if (Items.IsDefaultOrEmpty || Items.Any(item => item?.Source is null)) throw new InvalidDataException("Missing audio conversion plan.");
-        var expected = Create(BatchId, Items.Select(item => item.Source), Target, Settings, ReplaceOriginal);
-        if (!HasExecutableItems || !expected.Items.Zip(Items).All(pair => pair.First.BlockReason == pair.Second.BlockReason &&
+        var expected = Create(BatchId, Items.Select(item => item.Source), Target, Settings, ReplaceOriginal, Wem);
+        if (!HasExecutableItems || ReplaceOriginal != expected.ReplaceOriginal || !expected.Items.Zip(Items).All(pair => pair.First.BlockReason == pair.Second.BlockReason &&
             Equivalent(pair.First.Encoding, pair.Second.Encoding))) throw new InvalidDataException("Audio conversion plan was changed after planning.");
         foreach (var item in Items.Where(item => item.CanExecute)) item.Encoding!.RequireConsent(accepted);
         Settings.SelectOutput(ReplaceOriginal, replacementConfirmed, false, replacementAvailable);
@@ -61,7 +68,7 @@ public sealed class ConfirmedAudioConversion
 }
 
 public sealed record AudioConversionWork(AudioFileSource Source, string TemporaryPath, AudioFormat Target,
-    AudioConversionConsent AcceptedConsent, string Policy = AudioConversionPlan.CurrentPolicy)
+    AudioConversionConsent AcceptedConsent, string Policy = AudioConversionPlan.CurrentPolicy, WemEncodingOptions? Wem = null)
 {
     public void Validate()
     {
@@ -73,7 +80,9 @@ public sealed record AudioConversionWork(AudioFileSource Source, string Temporar
             Path.GetFileName(TemporaryPath) != $".context-suite-{Source.ItemId:N}.tmp" ||
             string.Equals(Path.GetFullPath(Source.Path), Path.GetFullPath(TemporaryPath), StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Invalid audio conversion work or output reservation.");
-        var plan = AudioConversionPlan.Create(Source.Facts, Target);
+        if (VideoAudioSelection.IsVideoPath(Source.Path) && Source.Video is null)
+            throw new InvalidDataException("Video extraction requires an explicit audio track.");
+        var plan = AudioConversionPlan.Create(Source.Facts, Target, Wem, Source.Video);
         if (plan.AlreadyTarget) throw new InvalidDataException("Same-format audio must remain unchanged without encoding.");
         plan.RequireConsent(AcceptedConsent);
     }

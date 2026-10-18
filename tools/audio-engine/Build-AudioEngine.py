@@ -92,10 +92,12 @@ def main():
     script_sha256 = digest(pathlib.Path(__file__))
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sources", required=True)
+    parser.add_argument("--workspace-root", help="Existing repository scratch directory for fresh build evidence")
     for dependency in ("opus", "ogg-vorbis", "lame", "make", "nasm", "zlib"):
         parser.add_argument("--" + dependency, required=True)
     parser.add_argument("--configure-only", action="store_true")
     parser.add_argument("--expanded-inputs", action="store_true", help="Evaluate AIFF/AIFF-C and ASF/WMA inputs; no additional output codecs")
+    parser.add_argument("--video-audio-inputs", action="store_true", help="Evaluate audio extraction from MP4/MOV/WebM; enable Matroska/WebM demuxing without video decoding")
     parser.add_argument("--wma-pro-tail-repair", action="store_true", help="Evaluate the local terminal-overlap patch in a fresh expanded-input build")
     parser.add_argument("--wma-standard-tail-repair", action="store_true", help="Evaluate the local final-reservoir patch in a fresh expanded-input build")
     parser.add_argument("--wma-voice-cache-repair", action="store_true", help="Evaluate the local bounded packet-cache patch in a fresh expanded-input build")
@@ -116,7 +118,10 @@ def main():
     archive_bytes = source_archive.read_bytes()
     if hashlib.sha256(archive_bytes).hexdigest().upper() != pins["ffmpeg"]["sha256"]:
         raise ValueError("FFmpeg archive identity differs")
-    workspace = SCRATCH / ("audio-ffmpeg-" + uuid.uuid4().hex)
+    workspace_root = local_path(args.workspace_root) if args.workspace_root else SCRATCH
+    if not workspace_root.is_dir():
+        raise ValueError("The workspace root must exist")
+    workspace = workspace_root / ("audio-ffmpeg-" + uuid.uuid4().hex)
     workspace.mkdir()
     print("FFmpeg candidate evidence: " + str(workspace), flush=True)
     source = workspace / "source"
@@ -242,6 +247,7 @@ def main():
     version_suffix += "-wmastandard-tail1" if args.wma_standard_tail_repair else ""
     version_suffix += "-wmavoice-cache1" if args.wma_voice_cache_repair else ""
     version_suffix += "-rawaudio-ts1" if args.raw_audio_timestamp_repair else ""
+    version_suffix += "-videoaudio2" if args.video_audio_inputs else ""
     configure = ["sh", short_path(source / "configure"), "--toolchain=msvc", "--arch=x86_64", "--target-os=win32",
         "--extra-version=" + version_suffix,
         "--disable-autodetect", "--disable-everything", "--disable-programs", "--enable-ffmpeg", "--enable-ffprobe",
@@ -259,6 +265,9 @@ def main():
         additions = {"--enable-decoder=": ",pcm_s8,pcm_s16be,pcm_s24be,pcm_s32be,pcm_f32be,pcm_f64be,pcm_alaw,pcm_mulaw,adpcm_ima_qt,wmav1,wmav2,wmapro,wmalossless,wmavoice",
                      "--enable-demuxer=": ",aiff,asf"}
         configure = [value + next((extra for prefix, extra in additions.items() if value.startswith(prefix)), "") for value in configure]
+    if args.video_audio_inputs:
+        configure = [value + (",matroska" if value.startswith("--enable-demuxer=") else "") for value in configure]
+        configure = [value + (",asetpts" if value.startswith("--enable-filter=") else "") for value in configure]
     shell_script = workspace / "build.sh"
     checker = pathlib.Path(__file__).with_name("Check-AudioConfiguration.py")
     if (source / "RELEASE").read_text().strip() != "9.0.1" or (source / "VERSION").exists():
@@ -267,7 +276,7 @@ def main():
         "export TMP=" + shlex.quote(short_path(temporary)) + " TEMP=" + shlex.quote(short_path(temporary)) +
         " TMPDIR=" + shlex.quote(short_path(temporary)) + "\ncd " + shlex.quote(short_path(build)) + "\n" +
         shlex.join(configure) + " > ../configure.log 2>&1\n" +
-        shlex.join([sys.executable.replace("\\", "/"), short_path(checker), short_path(build), *(["--expanded-inputs"] if args.expanded_inputs else [])]) + " > ../configuration-check.log 2>&1\n" +
+        shlex.join([sys.executable.replace("\\", "/"), short_path(checker), short_path(build), *(["--expanded-inputs"] if args.expanded_inputs else []), *(["--video-audio-inputs"] if args.video_audio_inputs else [])]) + " > ../configuration-check.log 2>&1\n" +
         ("" if args.configure_only else shlex.join(make_command) + " > ../build.log 2>&1\n"), newline="\n")
     vswhere = pathlib.Path(os.environ["ProgramFiles(x86)"]) / "Microsoft Visual Studio/Installer/vswhere.exe"
     visual_studio = subprocess.check_output([str(vswhere), "-latest", "-products", "*", "-requires",
@@ -280,6 +289,7 @@ def main():
         'if errorlevel 1 exit /b 1\n"' + str(bash) + '" --noprofile --norc "' + short_path(shell_script) + '"\nexit /b %errorlevel%\n')
     record = {"status": "Configure-only attempt" if args.configure_only else "Unaccepted candidate build attempt",
               "expandedInputs": args.expanded_inputs,
+              "videoAudioInputs": args.video_audio_inputs,
               "wmaProTailRepair": args.wma_pro_tail_repair, "patches": patches,
               "wmaProMatrixRepair": args.wma_pro_matrix_repair,
               "wmaStandardTailRepair": args.wma_standard_tail_repair,

@@ -74,5 +74,30 @@ internal static class ConversionViewModelContracts
             await Task.Delay(50);
         check(planner.AfterPreview?.PixelWidth == 2 && !planner.WarningsAcknowledged && !File.Exists(trialPath),
             "conversion VM: rapid edits automatically render latest preview without stale consent or trial admission");
+
+        await using var iconPlanner = new ConversionViewModel(worker, trial, Guid.NewGuid(),
+            [new(alpha.ItemId, alpha.Path, alpha, null)], new("convert", new ToolSettings(ReplaceOriginals: true)), true);
+        check(iconPlanner.Formats.Any(format => format.Value == ImageFormat.Avif) == worker.HasAvifEncoder,
+            "conversion VM: AVIF choice follows required encoder and decoder availability");
+        check(iconPlanner.CanReplaceOriginal && iconPlanner.ReplaceOriginal && iconPlanner.CanResize,
+            "conversion VM: stored replacement and ordinary resize remain available before ICO selection");
+        iconPlanner.MaximumDimension = "25";
+        iconPlanner.Target = ImageFormat.Ico;
+        check(!iconPlanner.CanResize && iconPlanner.MaximumDimension == "" && !iconPlanner.CanReplaceOriginal &&
+            !iconPlanner.ReplaceOriginal && !iconPlanner.EffectiveReplacement &&
+            iconPlanner.OutputNotice.Contains("Originals kept", StringComparison.Ordinal) &&
+            iconPlanner.ReplacementNotice.Contains("always creates copies", StringComparison.Ordinal),
+            "conversion VM: ICO clears stale resize and shows mandatory copy policy");
+        iconPlanner.Target = ImageFormat.WebP;
+        check(iconPlanner.CanResize && iconPlanner.CanReplaceOriginal && iconPlanner.ReplaceOriginal && iconPlanner.MaximumDimension == "",
+            "conversion VM: leaving ICO restores stored replacement choice without stale resize");
+        iconPlanner.Target = ImageFormat.Avif;
+        check(!iconPlanner.HasQuality && !iconPlanner.CanReplaceOriginal && !iconPlanner.ReplaceOriginal &&
+            !iconPlanner.EffectiveReplacement && iconPlanner.OutputNotice.Contains("Originals kept", StringComparison.Ordinal) &&
+            iconPlanner.ReplacementNotice.Contains("always creates copies", StringComparison.Ordinal),
+            "conversion VM: AVIF has fixed quality and mandatory copies");
+        iconPlanner.Target = ImageFormat.WebP;
+        check(iconPlanner.CanReplaceOriginal && iconPlanner.ReplaceOriginal,
+            "conversion VM: leaving AVIF restores stored replacement choice");
     }
 }

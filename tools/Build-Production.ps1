@@ -2,7 +2,9 @@
 param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Debug', [switch] $SkipShell,
     [guid] $StagingId = [guid]::Empty, [string] $AudioDistributionDirectory,
     [string] $QpdfPreparedDirectory, [string] $PdfiumPreparedDirectory, [string] $QpdfSourceArchive,
-    [string] $OfficeEngineDirectory, [string] $HeifDistributionDirectory, [string] $VoiceDistributionDirectory)
+    [string] $OfficeEngineDirectory, [string] $HeifDistributionDirectory, [string] $VoiceDistributionDirectory,
+    [string] $WemDistributionDirectory, [string] $AvifBuildDirectory, [string] $AvifSourceDirectory,
+    [string] $SvgBuildDirectory, [string] $SvgCargoHome, [string] $PdfDarkBuildDirectory)
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
@@ -16,10 +18,22 @@ if ($AudioDistributionDirectory -and $StagingId -eq [guid]::Empty) {
 if ($HeifDistributionDirectory -and $StagingId -eq [guid]::Empty) {
     throw 'The HEIF candidate requires a new StagingId; development and installed payloads must not be changed.'
 }
+if ($WemDistributionDirectory -and $StagingId -eq [guid]::Empty) {
+    throw 'The WEM decoder candidate requires a new StagingId; development and installed payloads must not be changed.'
+}
+$includeImageExpansion = [bool]$AvifBuildDirectory -or [bool]$AvifSourceDirectory -or
+    [bool]$SvgBuildDirectory -or [bool]$SvgCargoHome
+if ($includeImageExpansion -and ($StagingId -eq [guid]::Empty -or -not $AvifBuildDirectory -or
+    -not $AvifSourceDirectory -or -not $SvgBuildDirectory -or -not $SvgCargoHome -or -not $HeifDistributionDirectory)) {
+    throw 'AVIF/SVG candidate requires a new StagingId, HEIF decoder and all four pinned build/source inputs.'
+}
 $includePdf = [bool]$QpdfPreparedDirectory -or [bool]$PdfiumPreparedDirectory -or [bool]$QpdfSourceArchive
 if ($includePdf -and ($StagingId -eq [guid]::Empty -or -not $QpdfPreparedDirectory -or
     -not $PdfiumPreparedDirectory -or -not $QpdfSourceArchive)) {
     throw 'The PDF candidate requires a new StagingId, both prepared engines and the pinned qpdf source archive.'
+}
+if ($PdfDarkBuildDirectory -and ($StagingId -eq [guid]::Empty -or -not $includePdf)) {
+    throw 'The PDF dark-mode candidate requires a new StagingId and all PDF candidate inputs.'
 }
 if ($OfficeEngineDirectory -and ($StagingId -eq [guid]::Empty -or -not $includePdf)) {
     throw 'The Office candidate requires a new StagingId and the complete PDF candidate for independent output validation.'
@@ -72,6 +86,10 @@ if ($includePdf) {
         --qpdf-directory $QpdfPreparedDirectory --pdfium-directory $PdfiumPreparedDirectory --qpdf-source $QpdfSourceArchive
     if ($LASTEXITCODE -ne 0) { throw 'PDF candidate staging failed.' }
 }
+if ($PdfDarkBuildDirectory) {
+    & python -B (Join-Path $PSScriptRoot 'pdf-dark-engine\Stage-PdfDarkPayload.py') --payload $output --build-directory $PdfDarkBuildDirectory
+    if ($LASTEXITCODE -ne 0) { throw 'PDF dark-mode candidate staging failed.' }
+}
 if ($OfficeEngineDirectory) {
     & python -B (Join-Path $PSScriptRoot 'office-engine\Stage-OfficePayload.py') --payload $output --engine-directory $OfficeEngineDirectory
     if ($LASTEXITCODE -ne 0) { throw 'Office candidate staging failed.' }
@@ -79,6 +97,16 @@ if ($OfficeEngineDirectory) {
 if ($HeifDistributionDirectory) {
     & python -B (Join-Path $PSScriptRoot 'heif-engine\Stage-HeifPayload.py') --payload $output --distribution $HeifDistributionDirectory
     if ($LASTEXITCODE -ne 0) { throw 'HEIF candidate staging failed.' }
+}
+if ($WemDistributionDirectory) {
+    & python -B (Join-Path $PSScriptRoot 'wem-engine\Stage-WemPayload.py') --payload $output --distribution $WemDistributionDirectory
+    if ($LASTEXITCODE -ne 0) { throw 'WEM decoder candidate staging failed.' }
+}
+if ($includeImageExpansion) {
+    & python -B (Join-Path $PSScriptRoot 'image-expansion-engine\Stage-ImageExpansionPayload.py') --payload $output `
+        --avif-build $AvifBuildDirectory --avif-sources $AvifSourceDirectory `
+        --svg-build $SvgBuildDirectory --cargo-home $SvgCargoHome
+    if ($LASTEXITCODE -ne 0) { throw 'AVIF/SVG candidate staging failed.' }
 }
 $privateProject = Join-Path $repositoryRoot 'proprietary\src\ContextSuite.Private\ContextSuite.Private.csproj'
 if (-not (Test-Path -LiteralPath $privateProject)) {
@@ -128,11 +156,15 @@ if (-not $SkipShell) {
     & (Join-Path $PSScriptRoot 'Build.ps1') -Configuration $Configuration -OutputDirectory $native
     Copy-Item -LiteralPath (Join-Path $native 'ContextSuite.Shell.dll') -Destination $output -Force
     & (Join-Path $PSScriptRoot 'New-PrototypeAssets.ps1') -OutputDirectory $output
+    # Sparse packages resolve resources from ExternalLocation, not from the
+    # registration manifest directory. All three tools share this default map.
+    & (Join-Path $PSScriptRoot 'New-ShellResourceIndex.ps1') -PackageDirectory $output -IndexName ContextSuite
 }
 & (Join-Path $PSScriptRoot 'release\Write-NoticeIndex.ps1') -Payload $output
 & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') -Payload $output `
     -AllowAudioCandidate:([bool]$AudioDistributionDirectory) -AllowPdfCandidate:$includePdf -AllowOfficeCandidate:([bool]$OfficeEngineDirectory) `
-    -AllowHeifCandidate:([bool]$HeifDistributionDirectory)
+    -AllowHeifCandidate:([bool]$HeifDistributionDirectory) -AllowWemCandidate:([bool]$WemDistributionDirectory) `
+    -AllowImageExpansionCandidate:$includeImageExpansion -AllowPdfDarkCandidate:([bool]$PdfDarkBuildDirectory)
 $verifiedVersion = & (Join-Path $PSScriptRoot 'Test-ProductVersion.ps1') -Payload $output
 if ($verifiedVersion -ne $productVersion) { throw 'Product version changed during staging.' }
 $inventory = @(Get-ChildItem -LiteralPath $output -Recurse -File | Where-Object Name -ne 'payload-inventory.json' | ForEach-Object {

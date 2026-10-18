@@ -450,7 +450,7 @@ HRESULT LaunchHost(const std::filesystem::path& requestPath)
     return S_OK;
 }
 
-std::filesystem::path GetCommandIconPath(const CommandDefinition& definition)
+std::filesystem::path GetCommandIconPath(const CommandDefinition& definition, CommandRole role, unsigned preset)
 {
     const std::filesystem::path hostPath = GetHostPath();
     if (hostPath.empty())
@@ -458,8 +458,43 @@ std::filesystem::path GetCommandIconPath(const CommandDefinition& definition)
         return {};
     }
 
-    const std::filesystem::path iconPath = hostPath.parent_path() / L"Assets" / definition.iconFileName;
-    return GetFileAttributesW(iconPath.c_str()) == INVALID_FILE_ATTRIBUTES ? std::filesystem::path{} : iconPath;
+    DWORD lightTheme = 1;
+    DWORD valueSize = sizeof(lightTheme);
+    RegGetValueW(HKEY_CURRENT_USER,
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        L"AppsUseLightTheme", RRF_RT_REG_DWORD, nullptr, &lightTheme, &valueSize);
+    bool useLightGlyph = lightTheme == 0;
+    HIGHCONTRASTW contrast{sizeof(HIGHCONTRASTW)};
+    if (SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(contrast), &contrast, 0) &&
+        (contrast.dwFlags & HCF_HIGHCONTRASTON) != 0)
+    {
+        const COLORREF textColor = GetSysColor(COLOR_MENUTEXT);
+        useLightGlyph = GetRValue(textColor) + GetGValue(textColor) + GetBValue(textColor) > 382;
+    }
+    static constexpr const wchar_t* convertIcons[] = {
+        L"ConvertPng.ico", L"ConvertJpeg.ico", L"ConvertWebp.ico", L"ConvertBmp.ico",
+        L"ConvertTga.ico", L"ConvertDds.ico", L"ConvertWav.ico", L"ConvertFlac.ico",
+        L"ConvertMp3.ico", L"ConvertM4a.ico", L"ConvertOgg.ico", L"ConvertOpus.ico",
+        L"ConvertPdf.ico", L"ConvertDocx.ico", L"ConvertWem.ico", L"ConvertIco.ico", L"ConvertAvif.ico", L"ConvertPdf.ico"
+    };
+    const wchar_t* targetIcon = definition.iconFileName;
+    if (role == CommandRole::Settings) targetIcon = L"Settings.ico";
+    else if (role == CommandRole::Action && definition.kind == CommandKind::Convert && preset < std::size(convertIcons))
+        targetIcon = convertIcons[preset];
+
+    std::filesystem::path iconName = targetIcon;
+    if (useLightGlyph)
+    {
+        iconName = iconName.stem().wstring() + L"Dark.ico";
+    }
+    const std::filesystem::path iconPath = hostPath.parent_path() / L"Assets" / iconName;
+    if (GetFileAttributesW(iconPath.c_str()) != INVALID_FILE_ATTRIBUTES) return iconPath;
+
+    // Partial/older payloads retain the tool's identity when a child asset is absent.
+    std::filesystem::path fallbackName = definition.iconFileName;
+    if (useLightGlyph) fallbackName = fallbackName.stem().wstring() + L"Dark.ico";
+    const std::filesystem::path fallbackPath = hostPath.parent_path() / L"Assets" / fallbackName;
+    return GetFileAttributesW(fallbackPath.c_str()) == INVALID_FILE_ATTRIBUTES ? std::filesystem::path{} : fallbackPath;
 }
 
 class ExplorerCommand final : public IExplorerCommand
@@ -529,7 +564,7 @@ public:
         }
         *icon = nullptr;
         if (role_ == CommandRole::Separator) return E_NOTIMPL;
-        const std::filesystem::path iconPath = GetCommandIconPath(definition_);
+        const std::filesystem::path iconPath = GetCommandIconPath(definition_, role_, preset_);
         return iconPath.empty() ? E_NOTIMPL : DuplicateString(iconPath.wstring(), icon);
     }
 
@@ -541,6 +576,10 @@ public:
             return DuplicateString(PresetTooltips[preset_], tooltip);
         if (role_ == CommandRole::Action && definition_.kind == CommandKind::Convert)
             return DuplicateString(preset_ == 13 ? L"Create an editable Word copy; layout may differ and complex figures remain images; scanned pages need OCR" :
+                preset_ == 14 ? L"Create WEM audio with installed Wwise; match an original WEM or choose an encoding" :
+                preset_ == 15 ? L"Create a Windows icon with standard sizes; keep the original image" :
+                preset_ == 16 ? L"Create a compact AVIF image at fixed quality; keep the original image" :
+                preset_ == 17 ? L"Create a dark reading copy of supported PDFs; keep the original" :
                 preset_ == 12 ? L"Create PDF copies from supported images and Office documents; combine selected images; keep all originals" :
                 preset_ >= 6 ? L"Convert audio using fixed settings; ask before required quality changes" :
                 preset_ == 5 ? L"Choose format, quality and advanced settings" :
@@ -583,9 +622,23 @@ public:
             return S_OK;
         }
 
-        if (definition_.kind == CommandKind::Convert && role_ == CommandRole::Action)
+        if (definition_.kind == CommandKind::Convert || definition_.kind == CommandKind::Optimize)
         {
             *state = ECS_HIDDEN;
+            const auto applicableFilename = [this](std::wstring_view name)
+            {
+                const bool convert = definition_.kind == CommandKind::Convert;
+                if (role_ == CommandRole::Action)
+                    return convert ? ContextSuite::CanConvertFilename(name, preset_) :
+                        ContextSuite::CanOptimizeFilename(name, preset_);
+                // Settings is not a processing action. A root is visible only
+                // when at least one of its real children applies to a file.
+                const unsigned actions = convert ? _countof(ConvertActions) : _countof(PresetActions);
+                for (unsigned action = 0; action < actions; ++action)
+                    if (convert ? ContextSuite::CanConvertFilename(name, action) :
+                        ContextSuite::CanOptimizeFilename(name, action)) return true;
+                return false;
+            };
             for (DWORD index = 0; index < count; ++index)
             {
                 IShellItem* item = nullptr;
@@ -596,7 +649,7 @@ public:
                     (attributes & SFGAO_FILESYSTEM) && !(attributes & SFGAO_FOLDER);
                 const bool named = file && SUCCEEDED(item->GetDisplayName(SIGDN_PARENTRELATIVEPARSING, &name));
                 const bool applicable = named && name != nullptr &&
-                    ContextSuite::CanConvertFilename(name, preset_);
+                    applicableFilename(name);
                 CoTaskMemFree(name);
                 item->Release();
                 if (applicable) { *state = ECS_ENABLED; break; }
@@ -650,9 +703,9 @@ private:
     CommandRole role_;
     unsigned preset_;
     static constexpr const wchar_t* ConvertTitles[] = { L"PNG", L"JPEG", L"WebP (lossless)", L"BMP", L"TGA", L"DDS...",
-        L"WAV", L"FLAC", L"MP3", L"M4A (AAC)", L"Ogg Vorbis", L"Opus", L"PDF", L"Word (DOCX)" };
+        L"WAV", L"FLAC", L"MP3", L"M4A (AAC)", L"Ogg Vorbis", L"Opus", L"PDF", L"Word (DOCX)", L"WEM...", L"ICO", L"AVIF", L"PDF (Dark mode)" };
     static constexpr const wchar_t* ConvertActions[] = { L"png", L"jpeg", L"webp", L"bmp", L"tga", L"dds",
-        L"wav", L"flac", L"mp3", L"m4a", L"vorbis", L"opus", L"pdf", L"docx" };
+        L"wav", L"flac", L"mp3", L"m4a", L"vorbis", L"opus", L"pdf", L"docx", L"wem", L"ico", L"avif", L"pdf-dark" };
     static constexpr const wchar_t* PresetTitles[] = { L"Auto", L"Lossless", L"Balanced", L"Smallest" };
     static constexpr const wchar_t* PresetActions[] = { L"auto", L"lossless", L"balanced", L"smallest" };
     static constexpr const wchar_t* PresetTooltips[] = {
@@ -666,7 +719,7 @@ class CommandEnumerator final : public IEnumExplorerCommand
 {
 public:
     explicit CommandEnumerator(CommandKind kind) :
-        kind_(kind), commandCount_(kind == CommandKind::Optimize ? 6 : 16)
+        kind_(kind), commandCount_(kind == CommandKind::Optimize ? 6 : 20)
     {
         ++objectCount;
         const unsigned count = commandCount_ - 2;
@@ -778,7 +831,7 @@ public:
 
 private:
     std::atomic_ulong referenceCount_{1};
-    std::array<ExplorerCommand*, 16> commands_{};
+    std::array<ExplorerCommand*, 20> commands_{};
     CommandKind kind_;
     ULONG commandCount_;
     ULONG position_ = 0;

@@ -128,6 +128,9 @@ def main():
                             assert item['FileBytes'] == originals[file]['bytes']
                             maximum = 5 * 1024 * 1024 if expected[file] == 'docx' else min(originals[file]['bytes'], 65536)
                             assert 0 <= item['InspectedBytes'] <= maximum
+                            if item['TextBytes'] is not None:
+                                assert 65536 <= item['TextBytes'] <= min(item['FileBytes'], 256 * 1024 * 1024)
+                                assert item['LinesComplete'] and item['TextBytes'] == item['FileBytes']
                 result['WholeProcessMilliseconds'] = elapsed
                 (scratch / (name + f'.run-{index}.json')).write_text(json.dumps(result, indent=2))
                 runs.append(result)
@@ -138,6 +141,7 @@ def main():
                        'RepeatedMedianMs': statistics.median(times), 'RepeatedP95Ms': times[math.ceil(len(times) * .95) - 1],
                        'RepeatedAllocationMedianBytes': statistics.median(sample['ManagedAllocatedBytes'] for sample in warm),
                        'MaximumReportedInspectedBytes': max((file['InspectedBytes'] or 0 for run in runs for sample in run['Samples'] for file in sample['Files'])),
+                       'MaximumTextBytes': max((file['TextBytes'] or 0 for run in runs for sample in run['Samples'] for file in sample['Files'])),
                        'WholeProcessMedianMs': statistics.median(run['WholeProcessMilliseconds'] for run in runs)}
             results.append(summary)
             print(f"{name}: first {summary['FreshFirstCallMedianMs']:.2f} ms; repeated median {summary['RepeatedMedianMs']:.2f} ms, p95 {summary['RepeatedP95Ms']:.2f} ms", flush=True)

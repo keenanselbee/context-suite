@@ -16,7 +16,7 @@ internal sealed class AudioConversionViewModel(AudioConversionBatch plan, IOpera
     private ICommand? _confirmCommand;
     public AudioConversionBatch Plan { get; } = plan;
     public string TargetName => Plan.Target switch
-    { AudioFormat.Wave => "WAV", AudioFormat.Flac => "FLAC", AudioFormat.Mp3 => "MP3", AudioFormat.M4a => "M4A (AAC)", AudioFormat.Vorbis => "Ogg Vorbis", _ => "Opus" };
+    { AudioFormat.Wave => "WAV", AudioFormat.Flac => "FLAC", AudioFormat.Mp3 => "MP3", AudioFormat.M4a => "M4A (AAC)", AudioFormat.Vorbis => "Ogg Vorbis", AudioFormat.Wem => "WEM", _ => "Opus" };
     public string Heading => "Convert to " + TargetName;
     public string FileSummary => Plan.Items.Count(item => item.CanExecute) == 1 ? "1 audio file" : $"{Plan.Items.Count(item => item.CanExecute)} audio files";
     public string QualityChanges
@@ -28,8 +28,14 @@ internal sealed class AudioConversionViewModel(AudioConversionBatch plan, IOpera
                 changes.Add("This audio is already compressed with quality loss. Converting it again can reduce quality further.");
             if (Plan.RequiredConsent.HasFlag(AudioConversionConsent.Resampling))
                 changes.Add("Opus output uses 48,000 Hz audio. Files recorded at a different sample rate will be resampled.");
+            if (Plan.RequiredConsent.HasFlag(AudioConversionConsent.ChannelReduction))
+                changes.Add("MP3 mixes the selected surround audio down to stereo. Choose WAV or FLAC to keep its channels.");
+            if (Plan.RequiredConsent.HasFlag(AudioConversionConsent.MetadataOmission))
+                changes.Add("Chapters and attached artwork will stay in the original video and will not be included in the extracted audio.");
             if (Plan.RequiredConsent.HasFlag(AudioConversionConsent.PrecisionReduction))
-                changes.Add("FLAC will store this decoded audio at 24-bit integer precision. Floating-point WAV preserves its decoded precision. A lossless format cannot restore quality lost in an earlier recording.");
+                changes.Add(Plan.Target == AudioFormat.Wem
+                    ? "WEM conversion prepares this decoded audio at 16-bit integer precision. This reduces floating-point precision and cannot restore quality lost in an earlier recording."
+                    : "FLAC will store this decoded audio at 24-bit integer precision. Floating-point WAV preserves its decoded precision. A lossless format cannot restore quality lost in an earlier recording.");
             return string.Join("\n\n", changes);
         }
     }

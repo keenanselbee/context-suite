@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "host": {
+    "path": "bin/Release/ContextSuite.PdfDark.exe",
+    "bytes": 683008,
+    "sha256": "DEF3416B9529BFA8C1EAD0F8891962BA15FC78913D23AFA958D18E81901E3D0F",
+    "sources": [
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDark.cpp",
+        "sha256": "375E03DA4EFB08817FFC9F9364618ABAE1286822D76E4C3E235CBC592DA3F604"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/CMakeLists.txt",
+        "sha256": "7D0FEBEE747F20812936DC071A77E9EC6E74C0A35D41CB2B038BE56824F7F6B2"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkImagePolicy.h",
+        "sha256": "84C13F76F7D010A29F5E51A568B9666AE77F856402B0B666FFD9733ABEF86A72"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkDiagramPolicy.h",
+        "sha256": "708260ADCD92BD4C862A4146A6E842D662FC4D0830AB443578B593AEFF76E92C"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkStructurePolicy.h",
+        "sha256": "F2F4F668C745D01C6DFC9781AB43C42A23DD8A909FA60044FB9F8057E4326AFC"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkShadingPolicy.h",
+        "sha256": "519ED6646C2D5D363EE8EBE2BAAD749C1C6032C6ED154D0387402C8E0F90901F"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkRetainedImagePolicy.h",
+        "sha256": "4FEBA33E74AA2AAD59B1C5128B50C19A4CC3E618772805787B832714645B9F0A"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkFontPolicy.h",
+        "sha256": "32C1B713A82E88AAD720512F327AB826F36FBF988BAAAA2B0797BF6096C1FBD0"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkSystemFontPolicy.h",
+        "sha256": "E0738750C8EA069C1EE6E66FD81503E3675EF1E6E551087A303CB1CAA1C0C08D"
+      }
+    ]
+  }
+}

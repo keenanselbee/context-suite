@@ -11,7 +11,11 @@ public sealed record SuiteSettings
     public ToolSettings Convert { get; init; } = new();
     public ToolSettings Optimize { get; init; } = new();
     public bool PlayCompletionSound { get; init; } = true;
+    public bool AnalysisDetailsExpanded { get; init; } = true;
     public bool TransparentPdfBackground { get; init; }
+    // A remembered location, not execution authorization or cached compatibility.
+    // The Wwise integration re-inspects the executable before each batch.
+    public string? WwiseConsolePath { get; init; }
 
     public BatchSettings Capture(string operation)
     {

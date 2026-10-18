@@ -43,6 +43,12 @@ internal static class FileAnalysisReader
         deadline.Token.ThrowIfCancellationRequested();
         var analysis = HeaderAnalyzer.Analyze(path, bytes, length);
         if (headerOnly) return analysis;
+        if (analysis.Facts.Any(fact => fact.Id == "text.lines-complete" && fact.Boolean == false))
+        {
+            analysis = await TextLineAnalysis.AddAsync(analysis, bytes, stream, cancellationToken, deadline.Token);
+            VerifyUnchanged(stream, length, modified, cancellationToken);
+            return analysis;
+        }
         if (pdfProbe is not null && analysis.Identity.FormatId == "pdf" && analysis.Identity.Basis == IdentificationBasis.Content)
         {
             if (length > WorkerCommand.MaximumPdfProbeBytes)

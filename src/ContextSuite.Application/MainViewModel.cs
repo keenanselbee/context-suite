@@ -11,6 +11,9 @@ using ContextSuite.Core.Images;
 using ContextSuite.Core.Analysis;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Pdf;
+using ContextSuite.Core.Tiff;
+using ContextSuite.Core.Svg;
+using ContextSuite.Core.Gif;
 
 namespace ContextSuite.Application;
 
@@ -21,6 +24,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     private readonly HashSet<Guid> _received = [];
     private readonly CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _active;
+    private string? _activeOperation;
     private Task? _running;
     private bool _busy;
     private int _batch;
@@ -40,18 +44,22 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         Changed(nameof(RecoveryNotice));
     }
     public bool IsBusy => _busy;
-    public bool HasResults => Rows.Count != 0;
+    public bool IsOperationBusy => Rows.Any(row => row.Operation != "analyze" && row.Result.State is OperationState.Pending or OperationState.Running);
+    public bool HasResults => DisplayRows.Any();
     public bool IsLanding => Rows.Count == 0;
-    public IEnumerable<FileRow> DisplayRows => Rows.Where(row => !row.WasRetried);
+    public IEnumerable<FileRow> DisplayRows => Rows.Where(row => row.Operation != "analyze" && !row.WasRetried);
     private IEnumerable<FileRow> RetryCandidates => Rows.Where(row => row.Operation is "convert" or "optimize")
         .GroupBy(row => row.Operation)
         .SelectMany(tool => tool.GroupBy(row => row.IsImagePdf ? "image-pdf:" + row.ImagePdfRetryId : row.Path, StringComparer.OrdinalIgnoreCase).Select(file => file.Last()))
-        .Where(row => !row.PdfResumeBlocked && !row.ImagePdfRetryBlocked && (row.Result.State == OperationState.Failed && row.Result.Publication?.IsCommitted != true ||
+        .Where(row => !row.PdfResumeBlocked && !row.TiffResumeBlocked && !row.SvgResumeBlocked && !row.GifResumeBlocked && !row.VideoAudioResumeBlocked && !row.ImagePdfRetryBlocked && (row.Result.State == OperationState.Failed && row.Result.Publication?.IsCommitted != true ||
+            row.VideoAudioSource is not null && row.Result.State == OperationState.Cancelled ||
             row.IsImagePdf && row.Result.State == OperationState.Cancelled ||
-            row.HasIncompletePdfPages && row.Result.State is OperationState.Failed or OperationState.Cancelled));
+            row.HasIncompletePdfPages && row.Result.State is OperationState.Failed or OperationState.Cancelled ||
+            row.HasIncompleteTiffPages && row.Result.State is OperationState.Failed or OperationState.Cancelled ||
+            row.HasIncompleteGifFrames && row.Result.State is OperationState.Failed or OperationState.Cancelled));
     public bool CanRetry => !IsBusy && RetryCandidates.Any();
     public bool HasProblems => DisplayRows.Any(row => row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.PartialOutput || row.Result.Publication?.HasWarning == true);
-    public bool ShowDetails => DisplayRows.Any(row => row.Operation == "analyze" ||
+    public bool ShowDetails => DisplayRows.Any(row => row.Operation == "convert" ||
         row.Result.State is OperationState.Failed or OperationState.Unsupported || row.Result.PartialOutput ||
         row.Result.Publication is { CleanupWarning: true } or { HasWarning: true, MetadataWarning: false });
     public string Summary { get => _summary; private set { _summary = value; Changed(); } }
@@ -60,7 +68,11 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     public event Action<string>? SettingsRequested;
     public event Func<ConversionViewModel, CancellationToken, Task<ConfirmedImageBatch?>>? ConversionRequested;
     public event Func<AudioConversionViewModel, CancellationToken, Task<ConfirmedAudioConversion?>>? AudioConversionRequested;
+    public event Func<VideoAudioTrackViewModel, CancellationToken, Task<VideoAudioSelection?>>? VideoAudioTrackRequested;
+    public event Func<CancellationToken, Task<WemEncodingOptions?>>? WemEncodingRequested;
     public event Func<ImagePdfOrderViewModel, CancellationToken, Task<ConfirmedImagePdf?>>? ImagePdfOrderRequested;
+    public event Func<TiffSourceFacts, ImagePreview, CancellationToken, Task<uint?>>? TiffMatteRequested;
+    public event Func<IReadOnlyList<SvgSourceFacts>, ImageFormat, CancellationToken, Task<SvgConversionOptions?>>? SvgSizeRequested;
     public event Func<CancellationToken, Task<string?>>? OfficeCalculationRequested;
     public event Func<ContextSuite.Core.Office.OfficeFontReview, CancellationToken, Task<bool>>? OfficeFontsRequested;
     public event Action<OperationRequest, FileRow[]>? QuickBatchStarted;
@@ -85,23 +97,34 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             return new(1, request.RequestId, false, "The session queue is full. Close it after work finishes and try again.");
         _received.Add(request.RequestId);
         var batchId = ++_batch;
-        var snapshot = Settings.Capture(request.Operation);
+        var retainRetrySettings = retryRows?.FirstOrDefault()?.RetainRetrySettings == true ||
+            request.IsQuickAudioConversion && request.Paths.Any(VideoAudioSelection.IsVideoPath);
+        var snapshot = retryRows is { Length: > 0 } && retainRetrySettings ? retryRows[0].Settings : Settings.Capture(request.Operation);
+        if (retainRetrySettings)
+            snapshot = snapshot with { Preferences = snapshot.Preferences with { ReplaceOriginals = false } };
         var imagePaths = request.IsImagePdfConversion
-            ? request.Paths.Where(path => !IsOfficePdfPath(path)).ToImmutableArray() : [];
+            ? request.Paths.Where(path => !IsOfficePdfPath(path) && !IsTiffPath(path)).ToImmutableArray() : [];
         var imageIndex = imagePaths.IsEmpty ? -1 : request.Paths.IndexOf(imagePaths[0]);
-        var rows = request.Paths.Where((path, index) => !request.IsImagePdfConversion || IsOfficePdfPath(path) || index == imageIndex)
-            .Select(path => new FileRow(batchId, request.Operation, path, snapshot, request.Action)).ToArray();
+        var rows = request.Paths.Where((path, index) => !request.IsImagePdfConversion || IsOfficePdfPath(path) || IsTiffPath(path) || index == imageIndex)
+            .Select(path => new FileRow(batchId, request.Operation, path, snapshot, request.Action)
+                { RetainRetrySettings = retainRetrySettings }).ToArray();
         if (!imagePaths.IsEmpty) rows.First(row => row.Path == imagePaths[0]).ImagePdfPaths = imagePaths;
         if (retryRows is not null)
             foreach (var row in rows)
                 if (retryRows.FirstOrDefault(previous => string.Equals(previous.Path, row.Path, StringComparison.OrdinalIgnoreCase)) is { } previous)
                 {
                     row.ResumePdfFrom(previous);
+                    row.ResumeTiffFrom(previous);
+                    row.ResumeSvgFrom(previous);
+                    row.ResumeGifFrom(previous);
+                    row.VideoAudioSource = previous.VideoAudioSource;
                     row.ResumeImagePdfFrom(previous);
                     row.OfficeCalculation = previous.OfficeCalculation;
                 }
         foreach (var row in rows) Rows.Add(row);
+        AdmitAnalysisPresentation(request.Operation, rows);
         Changed(nameof(HasResults)); Changed(nameof(IsLanding)); Changed(nameof(DisplayRows));
+        Changed(nameof(IsOperationBusy)); Changed(nameof(ShowDetails));
         _pending.Enqueue((request, rows));
         if (!IsBusy) { _busy = true; Changed(nameof(IsBusy)); Changed(nameof(CanRetry)); _running = DrainAsync(); }
         return new(1, request.RequestId, true, "Selection received.");
@@ -114,6 +137,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         {
             using var active = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
             _active = active;
+            _activeOperation = batch.Request.Operation;
             if (batch.Request.IsQuickAction) QuickBatchStarted?.Invoke(batch.Request, batch.Rows);
             try
             {
@@ -154,6 +178,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             finally
             {
                 _active = null;
+                _activeOperation = null;
                 RefreshSummary();
                 if (batch.Request.IsQuickAction) QuickBatchCompleted?.Invoke(batch.Request, batch.Rows);
             }
@@ -174,7 +199,6 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         {
             cancellationToken.ThrowIfCancellationRequested();
             var row = rows[index];
-            Summary = $"Analyzing file {index + 1} of {rows.Length}. No files changed.";
             row.ApplyResult(new(row.Path, OperationState.Running, "Reading file information"));
             try
             {
@@ -206,6 +230,11 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
 
     private async Task ConvertBatchAsync(OperationRequest request, FileRow[] rows, CancellationToken cancellationToken)
     {
+        if (request.IsPdfDarkConversion)
+        {
+            await ConvertPdfDarkBatchAsync(request, rows, cancellationToken);
+            return;
+        }
         if (request.IsPdfDocxConversion)
         {
             await ConvertPdfDocxBatchAsync(request, rows, cancellationToken);
@@ -224,10 +253,20 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         ImageFormat? directTarget = request.IsQuickConversion ? request.Action switch
         {
             "png" => ImageFormat.Png, "jpeg" => ImageFormat.Jpeg, "webp" => ImageFormat.WebP,
-            "bmp" => ImageFormat.Bmp, "tga" => ImageFormat.Tga, "dds" => ImageFormat.Dds, _ => throw new InvalidDataException("Unknown conversion target.")
+            "bmp" => ImageFormat.Bmp, "tga" => ImageFormat.Tga, "dds" => ImageFormat.Dds, "ico" => ImageFormat.Ico, "avif" => ImageFormat.Avif,
+            _ => throw new InvalidDataException("Unknown conversion target.")
         } : null;
+        if (directTarget == ImageFormat.Avif && !worker.HasAvifEncoder)
+        {
+            foreach (var row in rows)
+                row.ApplyResult(new(row.Path, OperationState.Unsupported, "AVIF output is unavailable in this build. Originals were kept."));
+            return;
+        }
         var selection = new List<ConversionSelection>();
         var documents = new List<PdfRasterSource>();
+        var tiffs = new List<TiffSourceFacts>();
+        var svgs = new List<SvgSourceFacts>();
+        var gifs = new List<GifSourceFacts>();
         for (var index = 0; index < rows.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -238,12 +277,53 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             {
                 if (directTarget is not null)
                 {
-                    var header = await FileAnalysisReader.ReadAsync(row.Path, cancellationToken, headerOnly: true);
-                    if (header.Identity is { FormatId: "pdf", Basis: IdentificationBasis.Content })
+                    if (string.Equals(Path.GetExtension(row.Path), ".gif", StringComparison.OrdinalIgnoreCase))
                     {
                         if (directTarget != ImageFormat.Png)
+                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "Choose Convert > PNG to extract all GIF frames. Original kept."));
+                        else
                         {
-                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "To convert PDF pages to images, choose Convert > PNG. The original PDF is kept."));
+                            var source = await worker.ProbeGifAsync(new(row.ItemId, row.Path), cancellationToken);
+                            if (row.BeginGif(source)) gifs.Add(source);
+                        }
+                        continue;
+                    }
+                    if (string.Equals(Path.GetExtension(row.Path), ".svg", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (directTarget is not (ImageFormat.Png or ImageFormat.Jpeg))
+                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "To make an image from SVG, choose Convert > PNG or JPEG. Original kept."));
+                        else if (!worker.HasSvgConverter)
+                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "SVG conversion is unavailable in this build. Original kept."));
+                        else
+                        {
+                            var source = await worker.ProbeSvgAsync(new(row.ItemId, row.Path), cancellationToken);
+                            if (row.BeginSvg(source)) svgs.Add(source);
+                        }
+                        continue;
+                    }
+                    var header = await FileAnalysisReader.ReadAsync(row.Path, cancellationToken, headerOnly: true);
+                    if (IsTiffPath(row.Path) || header.Identity is { FormatId: "tiff", Basis: IdentificationBasis.Content })
+                    {
+                        if (header.Identity is not { FormatId: "tiff", Basis: IdentificationBasis.Content } || !IsTiffPath(row.Path))
+                        {
+                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "TIFF content must use a .tif or .tiff filename. The original was kept."));
+                            continue;
+                        }
+                        if (directTarget is not (ImageFormat.Png or ImageFormat.Jpeg))
+                        {
+                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "For TIFF pages choose Convert > PNG, JPEG, or PDF."));
+                            continue;
+                        }
+                        var source = await worker.ProbeTiffAsync(new(row.ItemId, row.Path), cancellationToken);
+                        row.BeginTiff(source, false);
+                        tiffs.Add(source);
+                        continue;
+                    }
+                    if (header.Identity is { FormatId: "pdf", Basis: IdentificationBasis.Content })
+                    {
+                        if (directTarget is not (ImageFormat.Png or ImageFormat.Jpeg))
+                        {
+                            row.ApplyResult(new(row.Path, OperationState.Unsupported, "To convert PDF pages to images, choose Convert > PNG or JPEG. The original PDF is kept."));
                             continue;
                         }
                         if (!string.Equals(Path.GetExtension(row.Path), ".pdf", StringComparison.OrdinalIgnoreCase))
@@ -284,9 +364,33 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or
                 InvalidOperationException or System.ComponentModel.Win32Exception or System.Text.Json.JsonException)
             {
-                var message = directTarget == ImageFormat.Png && string.Equals(Path.GetExtension(row.Path), ".pdf", StringComparison.OrdinalIgnoreCase)
+                if (row.GifSource is not null)
+                {
+                    row.BlockGifResume("The GIF changed or could not be verified. Start a new Convert command; completed PNG frames were kept.");
+                    continue;
+                }
+                if (row.TiffSourceHash is not null)
+                {
+                    row.BlockTiffResume("The TIFF changed or could not be verified. Start a new Convert command; completed copies were kept.");
+                    continue;
+                }
+                if (row.SvgSource is not null)
+                {
+                    row.BlockSvgResume("The SVG or its fonts could not be verified. Start a new Convert command. Completed copies were kept.");
+                    continue;
+                }
+                if (string.Equals(Path.GetExtension(row.Path), ".svg", StringComparison.OrdinalIgnoreCase))
+                {
+                    row.ApplyResult(new(row.Path, error is MediaWorkerException { Failure: ImageFailure.UnsupportedInput }
+                        ? OperationState.Unsupported : OperationState.Failed,
+                        error is MediaWorkerException { Failure: ImageFailure.ResourceLimit }
+                            ? "This SVG exceeds the rendering limit. Use a smaller or simpler SVG. Original kept."
+                            : "This SVG could not be read safely. Check that it is a supported static SVG. Original kept."));
+                    continue;
+                }
+                var message = directTarget is ImageFormat.Png or ImageFormat.Jpeg && string.Equals(Path.GetExtension(row.Path), ".pdf", StringComparison.OrdinalIgnoreCase)
                     ? error is MediaWorkerException { Failure: ImageFailure.ResourceLimit }
-                        ? "This PDF exceeds a size or page limit for PNG conversion. Try a smaller PDF or fewer pages. The original was kept."
+                        ? "This PDF exceeds a size or page limit for image conversion. Try a smaller PDF or fewer pages. The original was kept."
                         : "This PDF could not be converted. Check that it is available and unprotected; damaged PDFs may not be supported. The original was kept."
                     : error is MediaWorkerException ? error.Message : "Image could not be read. Check the file and retry.";
                 selection.Add(new(row.ItemId, row.Path, null, message));
@@ -295,8 +399,13 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             }
         }
         var (confirmed, cancelled) = await ConfirmImageConversionAsync(request, rows, selection, directTarget, cancellationToken);
-        if (cancelled) return;
-        await ExecuteConversionPlansAsync(request, rows, confirmed, documents, cancellationToken);
+        if (cancelled)
+        {
+            foreach (var row in rows.Where(row => row.Result.State is OperationState.Pending or OperationState.Running))
+                row.ApplyResult(new(row.Path, OperationState.Cancelled, "Conversion cancelled before execution. Originals kept."));
+            return;
+        }
+        await ExecuteConversionPlansAsync(request, rows, confirmed, documents, tiffs, svgs, gifs, cancellationToken);
     }
 
     private async Task<(ConfirmedImageBatch? Plan, bool Cancelled)> ConfirmImageConversionAsync(OperationRequest request,
@@ -315,7 +424,8 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             if (!planner.IsDdsWorkflow)
             {
                 var plan = ImageConversionPlanner.Create(request.RequestId, selection.Where(s => s.Facts is not null).Select(s => s.Facts!),
-                    new(target, WebPLossless: planner.WebPLossless, Metadata: ImageMetadataMode.Automatic), rows[0].Settings,
+                    new(target, Quality: target == ImageFormat.Avif ? ImageConversionOptions.AvifQuality : 90,
+                        WebPLossless: planner.WebPLossless, Metadata: ImageMetadataMode.Automatic), rows[0].Settings,
                     rows[0].Settings.Preferences.ReplaceOriginals && rows[0].Settings.Preferences.OutputDirectory is null && PublicationSupport.ReplacementAvailable);
                 if (!plan.HasExecutableItems && !planner.NeedsBackgroundChoice)
                 {
@@ -453,12 +563,17 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         }
     }
 
-    private void CancelPending()
+    private void CancelPending(bool includeAnalysis = true)
     {
-        _active?.Cancel();
-        while (_pending.TryDequeue(out var batch))
+        if (includeAnalysis || _activeOperation != "analyze") _active?.Cancel();
+        var count = _pending.Count;
+        while (count-- > 0 && _pending.TryDequeue(out var batch))
+        {
+            if (!includeAnalysis && batch.Request.Operation == "analyze")
+            { _pending.Enqueue(batch); continue; }
             foreach (var row in batch.Rows)
                 if (row.Result.State is OperationState.Pending or OperationState.Running) row.ApplyResult(new(row.Path, OperationState.Cancelled, "Cancelled"));
+        }
         RefreshSummary();
     }
 
@@ -486,7 +601,9 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             }
             catch (Exception error) when (error is InvalidDataException or ArgumentException or IOException) { }
         }
-        foreach (var group in available.Where(row => !row.IsImagePdf).GroupBy(row => (row.Operation, row.Action)))
+        foreach (var group in available.Where(row => !row.IsImagePdf).GroupBy(row => (row.Operation, row.Action,
+            RetrySettings: row.RetainRetrySettings ? row.Settings : null,
+            Matte: IsTiffPath(row.Path) ? row.TiffMatteRgb : null, SvgOptions: row.SvgOptions)))
         foreach (var chunk in group.Chunk(OperationRequest.MaximumPaths))
         {
             try
@@ -519,15 +636,31 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         var pending = current.Length - completed - failed - cancelled - unchanged - unsupported;
         var counts = new List<string>();
         if (completed > 0) counts.Add($"{completed} completed" + (warnings > 0 ? $" ({warnings} warnings)" : ""));
-        var alreadyTarget = current.Count(row => row.Operation == "convert" && row.Result.State == OperationState.Unchanged);
-        if (unchanged > alreadyTarget) counts.Add($"{unchanged - alreadyTarget} with no smaller result");
+        var alreadyTarget = current.Count(row => row.Operation == "convert" && row.Action != "pdf-dark" && row.Result.State == OperationState.Unchanged);
+        var alreadyDark = current.Count(row => row.Action == "pdf-dark" && row.Result.State == OperationState.Unchanged);
+        if (unchanged > alreadyTarget + alreadyDark) counts.Add($"{unchanged - alreadyTarget - alreadyDark} with no smaller result");
         if (alreadyTarget > 0) counts.Add($"{alreadyTarget} already in target format");
+        if (alreadyDark > 0) counts.Add($"{alreadyDark} already use the dark palette");
         if (failed > 0) counts.Add($"{failed} failed");
         if (unsupported > 0) counts.Add($"{unsupported} not supported");
         if (cancelled > 0) counts.Add($"{cancelled} cancelled");
         if (pending > 0) counts.Add($"{pending} waiting");
         Summary = counts.Count == 0 ? "Select files in Explorer and choose Analyze, Convert, or Optimize." : string.Join(" · ", counts) + ".";
-        if (current.Any(row => row.Result.Publication?.MetadataWarning == true))
+        var darkWarnings = current.Where(row => row.Action == "pdf-dark" &&
+            row.Result.Publication is { IsCommitted: true, MetadataWarning: true })
+            .Select(row => row.Result.Publication!.Message).ToArray();
+        if (darkWarnings.Any(message => message.Contains("Some images retain their original colors.", StringComparison.Ordinal)))
+            Summary += " Some images retain their original colors.";
+        if (darkWarnings.Any(message => message.Contains("Recovered inconsistent image dimensions using the JPEG and mask data.", StringComparison.Ordinal)))
+            Summary += " Some PDF copies used recovered image dimensions.";
+        if (darkWarnings.Any(message => message.Contains("Recovered malformed drawing coordinates using the validated zero interpretation.", StringComparison.Ordinal)))
+            Summary += " Some PDF copies used recovered drawing coordinates.";
+        if (darkWarnings.Any(message => !message.Contains("Some images retain their original colors.", StringComparison.Ordinal) &&
+            !message.Contains("Recovered inconsistent image dimensions using the JPEG and mask data.", StringComparison.Ordinal) &&
+            !message.Contains("Recovered malformed drawing coordinates using the validated zero interpretation.", StringComparison.Ordinal)))
+            Summary += " Some dark-mode PDF copies completed with warnings; see Files and details.";
+        if (darkWarnings.Length > 0) Summary += " Originals are unchanged.";
+        if (current.Any(row => row.Action != "pdf-dark" && row.Result.Publication?.MetadataWarning == true))
             Summary += " Some metadata was removed from optimized copies. Those originals are unchanged.";
         if (noChanges && counts.Count > 0) Summary += " No files changed.";
         var optimized = current.Where(row => row.Operation == "optimize" && row.Result.Publication?.IsCommitted == true).ToArray();
@@ -537,6 +670,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         Changed(nameof(HasProblems));
         Changed(nameof(ShowDetails));
         Changed(nameof(DisplayRows)); Changed(nameof(CanRetry));
+        Changed(nameof(IsOperationBusy));
     }
 
     private static string RecoveryMessage(OutputPublisher? publisher)
@@ -572,7 +706,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     {
         public event EventHandler? CanExecuteChanged { add { } remove { } }
         public bool CanExecute(object? parameter) => true;
-        public void Execute(object? parameter) { owner.CancelPending(); }
+        public void Execute(object? parameter) { owner.CancelPending(includeAnalysis: false); }
     }
 
     private sealed class OpenSettingsCommand(MainViewModel owner) : ICommand
@@ -593,19 +727,20 @@ internal sealed partial class FileRow(int batch, string operation, string path, 
     public string Path { get; } = path;
     public string Name => IsImagePdf ? $"{ImagePdfPaths.Length} image{(ImagePdfPaths.Length == 1 ? "" : "s")} → PDF" : System.IO.Path.GetFileName(Path);
     public BatchSettings Settings { get; } = settings;
+    internal bool RetainRetrySettings { get; init; }
     public FileResult Result { get; private set; } = new(path, OperationState.Pending, "Pending");
     public FileAnalysis? Analysis { get; private set; }
     public bool HasAnalysis => Analysis is not null;
     public string Status => Result.Message;
-    public string Outcome => PdfPageCount > 0 ? $"{SavedPdfPages} of {PdfPageCount} pages saved" : Result.Publication?.MetadataWarning == true ? "Completed with warning" :
+    public string Outcome => GifSource is not null ? $"{SavedGifFrames} of {GifSource.FrameCount} frames saved" : TiffPageCount > 0 ? $"{SavedTiffPages} of {TiffPageCount} outputs saved" : PdfPageCount > 0 ? $"{SavedPdfPages} of {PdfPageCount} pages saved" : Result.Publication?.MetadataWarning == true ? "Completed with warning" :
         Result.Publication?.HasWarning == true ? "Saved — needs attention" : Result.State switch
     {
-        OperationState.Succeeded => Operation == "analyze" ? Analysis?.Identity.Name ?? "Analyzed" : "Completed", OperationState.Unchanged => Operation == "convert" ? "Already in target format" : "No smaller result",
+        OperationState.Succeeded => Operation == "analyze" ? Analysis?.Identity.Name ?? "Analyzed" : "Completed", OperationState.Unchanged => Action == "pdf-dark" ? "Already uses the dark palette" : Operation == "convert" ? "Already in target format" : "No smaller result",
         OperationState.Unsupported => "Not supported", OperationState.Failed => "Needs attention",
         _ => Result.State.ToString()
     };
     public bool HasOutput => OutputPath.Length > 0;
-    public string Savings => PdfPageCount > 0 ? "—" : Result.Publication is { IsCommitted: true } p && p.SourceBytes > p.OutputBytes
+    public string Savings => PdfPageCount > 0 || TiffPageCount > 0 || GifSource is not null ? "—" : Result.Publication is { IsCommitted: true } p && p.SourceBytes > p.OutputBytes
         ? $"{100.0 * (p.SourceBytes - p.OutputBytes) / p.SourceBytes:F1}%" : "—";
     public string OutputPath => Result.Publication?.OutputPath ?? "";
     public string RetainedOriginalPath => Result.Publication?.RetainedOriginalPath ?? "";
@@ -614,7 +749,7 @@ internal sealed partial class FileRow(int batch, string operation, string path, 
         (Result.EngineIdentity is null ? "" : $"\nEngine / policy: {Result.EngineIdentity}") +
         (OutputPath.Length == 0 ? "" : $"\nOutput: {OutputPath}") +
         (RetainedOriginalPath.Length == 0 ? "" : $"\nRetained original: {RetainedOriginalPath}") +
-        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}") + PdfPageDetails + ImagePdfDetails;
+        (RecoveryRecordPath.Length == 0 ? "" : $"\nRecovery record: {RecoveryRecordPath}") + PdfPageDetails + TiffPageDetails + GifFrameDetails + ImagePdfDetails;
 
     public string AnalysisSummary => Analysis is not { } analysis ? "" :
         $"What it is: {analysis.Identity.Name} ({(analysis.Identity.Basis == IdentificationBasis.Filename ? "filename hint" : analysis.Identity.Confidence.ToString().ToLowerInvariant())})\n" +
@@ -651,6 +786,7 @@ internal sealed partial class FileRow(int batch, string operation, string path, 
     public void ApplyAnalysis(FileAnalysis facts)
     {
         Analysis = facts;
+        AnalysisPresentation = AnalysisSnapshot.Create(facts);
         ApplyResult(new(Path, OperationState.Succeeded, facts.Identity.Name +
             (facts.Warnings.IsEmpty ? "" : $"; {facts.Warnings.Length} warning(s)")));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Analysis)));
@@ -663,7 +799,14 @@ internal sealed partial class FileRow(int batch, string operation, string path, 
         if (SavedPdfPages > 0)
             result = result with { Publication = result.Publication?.IsCommitted == true ? result.Publication : _pdfPages.Values.First(page => page.Publication?.IsCommitted == true).Publication,
                 PartialOutput = SavedPdfPages < PdfPageCount };
+        if (SavedTiffPages > 0)
+            result = result with { Publication = result.Publication?.IsCommitted == true ? result.Publication : TiffResults.First(page => page.Publication?.IsCommitted == true).Publication,
+                PartialOutput = SavedTiffPages < TiffPageCount };
+        if (SavedGifFrames > 0)
+            result = result with { Publication = result.Publication?.IsCommitted == true ? result.Publication : GifFrames.Values.First(frame => frame.Publication?.IsCommitted == true).Publication,
+                PartialOutput = HasIncompleteGifFrames };
         Result = result;
+        if (Operation == "analyze") NotifyAnalysisPresentation();
         foreach (var property in new[] { nameof(Result), nameof(Status), nameof(OutputPath), nameof(RetainedOriginalPath), nameof(RecoveryRecordPath), nameof(ResultDetails), nameof(Outcome), nameof(HasOutput), nameof(Savings), nameof(HasAnalysis), nameof(AnalysisSummary), nameof(AnalysisDetails), nameof(OperationDetails) })
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }

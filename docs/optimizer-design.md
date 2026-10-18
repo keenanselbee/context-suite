@@ -71,10 +71,13 @@ file as successful if it violates the selected quality or capability contract.
 Explorer Experience
 -------------------
 
-**Optimize** is a top-level Explorer command. Its submenu shows only policies
-supported by the complete selection. Direct preset IDs capture the saved output choice;
-the bounded shell currently validates selection count, while content support is
-checked outside Explorer and inapplicable files get per-file explanations.
+**Optimize** is a top-level Explorer command, hidden when no processing preset
+applies to the selection. Auto and Lossless accept PNG, FLAC and PDF filename
+hints; Balanced and Smallest accept PNG only. Settings does not count as a
+processing action. Mixed selections retain presets useful for at least one file.
+Direct preset IDs capture the saved output choice. The bounded shell checks only
+selection metadata and filenames; content support is checked outside Explorer
+and inapplicable files get per-file explanations.
 No manual picker or routine preset planner is exposed. Expired access appears
 as an actionable problem with License and Retry failed; retry retains the
 selected file and preset. Legacy choose-preset activation uses conservative

@@ -3,6 +3,21 @@ param()
 
 $ErrorActionPreference = 'Stop'
 
+if (-not ('ContextSuiteInstalledResourceLookup' -as [type])) {
+    Add-Type -TypeDefinition @'
+using System;
+using System.Text;
+using System.Runtime.InteropServices;
+public static class ContextSuiteInstalledResourceLookup
+{
+    [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
+    public static extern int SHLoadIndirectString(string source, StringBuilder output, uint length, IntPtr reserved);
+}
+'@
+}
+$shell = New-Object -ComObject Shell.Application
+$applications = $shell.NameSpace('shell:AppsFolder')
+
 $commands = @(
     @{
         Name = 'Analyze'
@@ -31,6 +46,31 @@ foreach ($command in $commands) {
     }
 
     $instance = $null
+    if ([version]$package.Version -ge [version]'1.3.7.0') {
+        $manifest = Get-AppxPackageManifest -Package $package.PackageFullName
+        if ($manifest.Package.Applications.Application.VisualElements.BackgroundColor -ne 'transparent') {
+            throw "$($command.Name) still declares a colored icon background."
+        }
+        if ($manifest.Package.Applications.Application.Executable -eq 'ContextSuite.Application.exe') {
+            $appId = $package.PackageFamilyName + '!' + $manifest.Package.Applications.Application.Id
+            $item = $applications.ParseName($appId)
+            $externalLocation = $item.ExtendedProperty('System.AppUserModel.PackageInstallPath')
+            if (-not $externalLocation) { throw "$($command.Name) has no resolved installation directory." }
+            $buffer = [Text.StringBuilder]::new(2048)
+            # Use the package's default map: three sparse identities share one
+            # external app directory. Checking a PRI beside the manifest missed
+            # the 1.3.7 regression because Windows never loaded that file.
+            $uri = 'ms-resource:///Files/Assets/' + $command.Name + 'Square44x44Logo.png'
+            $result = [ContextSuiteInstalledResourceLookup]::SHLoadIndirectString(
+                ('@{' + $package.PackageFullName + '?' + $uri + '}'), $buffer, 2048, [IntPtr]::Zero)
+            $resolved = $buffer.ToString()
+            if ($result -ne 0 -or -not $resolved -or
+                -not $resolved.StartsWith($externalLocation.TrimEnd('\') + '\Assets\', [StringComparison]::OrdinalIgnoreCase) -or
+                -not (Test-Path -LiteralPath $resolved -PathType Leaf)) {
+                throw ("{0} cannot resolve its installed taskbar resource (HRESULT {1:X8})." -f $command.Name, $result)
+            }
+        }
+    }
     try {
         $type = [type]::GetTypeFromCLSID([guid] $command.ClassId, $true)
         $instance = [Activator]::CreateInstance($type)
@@ -45,4 +85,4 @@ foreach ($command in $commands) {
     }
 }
 
-Write-Output 'All three shell identity packages are healthy, and their packaged COM classes activate.'
+Write-Output 'All three shell identity packages are healthy, installed taskbar resources resolve, and packaged COM classes activate.'

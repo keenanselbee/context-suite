@@ -1,0 +1,65 @@
+<Window x:Class="ContextSuite.Application.WemEncodingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:ContextSuite.Application.Infrastructure"
+        Title="Context Suite — Convert to WEM" Width="680" MinWidth="520" MinHeight="480"
+        SizeToContent="Height" WindowStartupLocation="CenterOwner"
+        AutomationProperties.AutomationId="WemEncodingWindow">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="Convert to WEM" FontSize="24" FontWeight="SemiBold" />
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="0,16,0,0">
+                <TextBlock Text="Wwise Authoring installation" FontWeight="SemiBold" />
+                <TextBlock Text="Context Suite needs your installed WwiseConsole to encode WEM. The selected installation is inspected before use."
+                           TextWrapping="Wrap" Margin="0,6,0,8" />
+                <ComboBox ItemsSource="{Binding Installations}" SelectedItem="{Binding SelectedInstallation, Mode=TwoWay}"
+                          DisplayMemberPath="ProductVersion" MinWidth="180" HorizontalAlignment="Left"
+                          IsEnabled="{Binding CanChoose}"
+                          AutomationProperties.AutomationId="WemWwiseVersions" />
+                <TextBlock Text="{Binding InstallationSummary}" TextWrapping="Wrap" Margin="0,6,0,8"
+                           AutomationProperties.AutomationId="WemWwiseInstallation" />
+                <WrapPanel Margin="0,0,0,20">
+                    <Button Content="_Locate WwiseConsole…" Click="OnLocateWwise" IsEnabled="{Binding CanChoose}"
+                            Padding="10,6" Margin="0,0,8,0" AutomationProperties.AutomationId="WemLocateWwise" />
+                    <Button Content="_Get Wwise…" Click="OnGetWwise" Padding="10,6"
+                            AutomationProperties.AutomationId="WemGetWwise" />
+                </WrapPanel>
+
+                <RadioButton GroupName="WemMode" Content="Match original WEM" IsChecked="{Binding MatchOriginal, Mode=TwoWay}"
+                             IsEnabled="{Binding CanChoose}" FontWeight="SemiBold" AutomationProperties.AutomationId="WemMatchOriginal" />
+                <TextBlock Text="Choose an existing WEM to select its codec. The input audio must already have the same sample rate and channel count; Context Suite does not resample it. Encoder version and quality cannot be recovered, and game compatibility is not guaranteed."
+                           TextWrapping="Wrap" Margin="22,6,0,8" />
+                <Button Content="Locate _original WEM…" Click="OnLocateOriginal" IsEnabled="{Binding CanChoose}"
+                        HorizontalAlignment="Left" Padding="10,6" Margin="22,0,0,6"
+                        AutomationProperties.AutomationId="WemLocateOriginal" />
+                <TextBlock Text="{Binding ReferenceSummary}" TextWrapping="Wrap" Margin="22,0,0,18"
+                           AutomationProperties.AutomationId="WemOriginalSummary" />
+
+                <Expander Header="Advanced: choose a codec" IsExpanded="{Binding Advanced, Mode=TwoWay}"
+                          IsEnabled="{Binding CanChoose}" AutomationProperties.AutomationId="WemAdvanced">
+                    <StackPanel Margin="22,8,0,0">
+                        <TextBlock Text="PCM16 or high-quality Vorbis. The input audio's sample rate and channels are retained. Choose a codec explicitly."
+                                   TextWrapping="Wrap" Margin="0,0,0,8" />
+                        <RadioButton GroupName="WemCodec" Content="PCM16" IsChecked="{Binding Pcm16, Mode=TwoWay}"
+                                     Margin="0,0,0,6" AutomationProperties.AutomationId="WemPcm16" />
+                        <RadioButton GroupName="WemCodec" Content="Vorbis (high quality)" IsChecked="{Binding Vorbis, Mode=TwoWay}"
+                                     AutomationProperties.AutomationId="WemVorbis" />
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Margin="0,16,0,0">
+            <ui:StatusTextBlock Text="{Binding Message}" TextWrapping="Wrap"
+                                AutomationProperties.AutomationId="WemEncodingStatus" />
+            <WrapPanel HorizontalAlignment="Right" Margin="0,16,0,0">
+                <Button Content="_Continue" Command="{Binding ContinueCommand}" Padding="12,6" Margin="0,0,8,0"
+                        AutomationProperties.AutomationId="WemContinue" />
+                <Button Content="_Cancel" Click="OnCancel" IsCancel="True" Padding="12,6"
+                        AutomationProperties.AutomationId="WemCancel" />
+            </WrapPanel>
+        </StackPanel>
+    </Grid>
+</Window>

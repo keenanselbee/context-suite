@@ -2,6 +2,7 @@ using System.Text.Json;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Office;
+using ContextSuite.Core.Pdf;
 
 internal static class OfficeFailureContracts
 {
@@ -10,7 +11,15 @@ internal static class OfficeFailureContracts
         var native = new IOException(@"Private engine failure at C:\private\customer.docx");
         foreach (var command in new[] { "office-export", "office-pdf-validate" })
         {
-            var failures = Enum.GetValues<ImageFailure>().Select(failure => new MediaWorkerException(failure, native, command)).ToArray();
+            var officeCategories = Enum.GetValues<ImageFailure>().Where(failure => !PdfDarkFailures.IsFeatureLimit(failure));
+            foreach (var failure in Enum.GetValues<ImageFailure>().Where(PdfDarkFailures.IsFeatureLimit))
+            {
+                var refused = false;
+                try { _ = new MediaWorkerException(failure, command: command); }
+                catch (InvalidDataException) { refused = true; }
+                check(refused, "Office refuses PDF dark-only failure category for " + command);
+            }
+            var failures = officeCategories.Select(failure => new MediaWorkerException(failure, native, command)).ToArray();
             check(failures.All(error => !error.Message.Contains("image", StringComparison.OrdinalIgnoreCase) &&
                 !error.Message.Contains("damaged", StringComparison.OrdinalIgnoreCase) && !error.Message.Contains("private") &&
                 ReferenceEquals(error.InnerException, native)), "Office failures: safe document wording without native paths for " + command);

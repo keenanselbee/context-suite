@@ -30,7 +30,8 @@ public sealed record DdsRepresentation(DdsCompression Compression, TextureTransf
 public static class OutputNames
 {
     public static string Create(string sourcePath, string operation, string targetExtension,
-        int ordinal = 1, DdsRepresentation? representation = null, bool replaceSource = false, int? pageNumber = null, bool combinedPdf = false)
+        int ordinal = 1, DdsRepresentation? representation = null, bool replaceSource = false, int? pageNumber = null, bool combinedPdf = false,
+        int? frameNumber = null, bool pdfDark = false)
     {
         if (operation is not ("convert" or "optimize") || ordinal < 1)
             throw new InvalidDataException("The output operation or collision number is invalid.");
@@ -39,16 +40,31 @@ public static class OutputNames
             throw new InvalidDataException("The target extension is invalid.");
         if (representation is not null && (operation != "convert" || extension != "dds"))
             throw new InvalidDataException("DDS representation names require DDS conversion.");
-        if (pageNumber is not null && (pageNumber is < 1 or > 4096 || operation != "convert" || extension != "png" ||
-            !string.Equals(Path.GetExtension(sourcePath), ".pdf", StringComparison.OrdinalIgnoreCase) || representation is not null || replaceSource))
-            throw new InvalidDataException("Numbered page outputs require PDF-to-PNG copies.");
+        var sourceExtension = Path.GetExtension(sourcePath);
+        if (pdfDark && (operation != "convert" || extension != "pdf" ||
+            !sourceExtension.Equals(".pdf", StringComparison.OrdinalIgnoreCase) || replaceSource ||
+            pageNumber is not null || frameNumber is not null || combinedPdf || representation is not null))
+            throw new InvalidDataException("PDF dark-mode output requires a separate PDF copy.");
+        if (frameNumber is not null && (frameNumber is < 1 or > 4096 || operation != "convert" || extension != "png" ||
+            !sourceExtension.Equals(".gif", StringComparison.OrdinalIgnoreCase) || pageNumber is not null || combinedPdf ||
+            representation is not null || replaceSource))
+            throw new InvalidDataException("Numbered frame outputs require GIF to PNG copies.");
+        var isTiff = sourceExtension.Equals(".tif", StringComparison.OrdinalIgnoreCase) ||
+            sourceExtension.Equals(".tiff", StringComparison.OrdinalIgnoreCase);
+        if (pageNumber is not null && (pageNumber is < 1 or > 4096 || operation != "convert" ||
+            !(isTiff && (extension is "png" or "jpg") ||
+                sourceExtension.Equals(".pdf", StringComparison.OrdinalIgnoreCase) && extension is "png" or "jpg") ||
+            representation is not null || replaceSource))
+            throw new InvalidDataException("Numbered page outputs require PDF or TIFF image copies.");
         var basename = Path.GetFileNameWithoutExtension(sourcePath);
         if (combinedPdf && (operation != "convert" || extension != "pdf" || replaceSource || pageNumber is not null || representation is not null))
             throw new InvalidDataException("Combined PDF names require a PDF copy conversion.");
         if (string.IsNullOrWhiteSpace(basename)) throw new InvalidDataException("The source basename is empty.");
         var suffix = representation?.Suffix ?? (operation == "convert" ? "Converted" : "Optimized");
         if (pageNumber is { } page) suffix = "Page " + page.ToString("D3", CultureInfo.InvariantCulture);
+        if (frameNumber is { } frame) suffix = "Frame " + frame.ToString("D4", CultureInfo.InvariantCulture);
         if (combinedPdf) suffix = "Combined";
+        if (pdfDark) suffix = "Dark Mode";
         var number = ordinal == 1 ? "" : $" ({ordinal.ToString(CultureInfo.InvariantCulture)})";
         var name = $"{basename}{(replaceSource ? "" : " - " + suffix)}{number}.{extension}";
         if (name.Length > 255 || name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)

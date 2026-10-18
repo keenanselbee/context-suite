@@ -123,13 +123,29 @@ internal static class PdfPageDirectContracts
         await using (var vm = Create(otherRoot, new()))
         {
             vm.Admit(new(Guid.NewGuid(), "convert", "jpeg", [pdf])); await vm.WaitForIdleAsync();
-            check(vm.Rows.Single().Result.State == OperationState.Unsupported && vm.Rows.Single().Status.Contains("Convert > PNG"), "PDF page direct: other targets explain supported PNG action");
+            check(vm.Rows.Single().SavedPdfPages == 2 && Directory.GetFiles(otherRoot, "*.jpg").Length == 2 && !vm.HasProblems,
+                "PDF page direct: JPEG saves both pages through the existing result row");
+            vm.Admit(new(Guid.NewGuid(), "convert", "webp", [pdf])); await vm.WaitForIdleAsync();
+            check(vm.Rows.Last().Result.State == OperationState.Unsupported && vm.Rows.Last().Status.Contains("PNG or JPEG"),
+                "PDF page direct: other targets explain supported image actions");
             var renamed = Path.Combine(otherRoot, "renamed.txt"); File.Copy(pdf, renamed);
             vm.Admit(new(Guid.NewGuid(), "convert", "png", [renamed])); await vm.WaitForIdleAsync();
             check(vm.Rows.Last().Result.State == OperationState.Unsupported && vm.Rows.Last().Status.Contains("Rename"), "PDF page direct: content/extension disagreement is explained before rendering");
             vm.Admit(new(Guid.NewGuid(), "convert", "png", [Path.Combine(fixtures, "owner-protected.pdf")])); await vm.WaitForIdleAsync();
             check(vm.Rows.Last().Result.State == OperationState.Failed && vm.Rows.Last().Status.Contains("unprotected") && !vm.Rows.Last().HasOutput,
                 "PDF page direct: protected-file failure uses document guidance and publishes nothing");
+        }
+        var jpegRetryRoot = Path.Combine(root, "jpeg-retry"); Directory.CreateDirectory(jpegRetryRoot);
+        await using (var vm = Create(jpegRetryRoot, new(), new FailSecondOnce()))
+        {
+            vm.Admit(new(Guid.NewGuid(), "convert", "jpeg", [pdf])); await vm.WaitForIdleAsync();
+            var firstCopy = Directory.GetFiles(jpegRetryRoot, "*.jpg").Single();
+            var firstHash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(firstCopy)));
+            check(vm.Rows.Single().SavedPdfPages == 1 && vm.CanRetry, "PDF page direct: partial JPEG result offers retry");
+            vm.RetryFailed(); await vm.WaitForIdleAsync();
+            check(vm.DisplayRows.Single().SavedPdfPages == 2 && Directory.GetFiles(jpegRetryRoot, "*.jpg").Length == 2 &&
+                Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(firstCopy))) == firstHash,
+                "PDF page direct: JPEG retry creates only the unfinished page and preserves the earlier copy");
         }
         check(SHA256.HashData(await File.ReadAllBytesAsync(pdf)).SequenceEqual(hash) && File.ReadAllBytes(bmp).SequenceEqual(bytes), "PDF page direct: source PDF and image stay unchanged");
         await File.WriteAllTextAsync(Path.Combine(root, "pdf-page-direct.json"), JsonSerializer.Serialize(new { pdf, sourceSha256 = Convert.ToHexString(hash), mixedAdmissions = access.Admissions, retryAdmissions = retryAccess.Admissions }));

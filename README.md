@@ -30,7 +30,83 @@ remaining visual acceptance.
 Project Status
 --------------
 
-The current priority is the [broad file support goal](docs/broad-file-support-goal.md):
+Source metadata is **1.4.8**. The last recorded local installation is **1.4.7**
+(2026-10-16); the production executable still reports 1.4.7 on 2026-10-17.
+An isolated **1.4.8** development payload passed workflow inventory, dependency
+and notice checks on 2026-10-17. Later source fixes require their own verification.
+Source changes and historical passing results do not establish a newly verified
+release. Signing, native installer lifecycle, broader visual/accessibility and
+commercial acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).
+The [cleanup and correctness plan](docs/repository-maintenance.md) tracks the
+current maintenance workflow. The dated milestones below retain their original
+evidence and do not describe the current installation unless stated above.
+
+
+Local Milestone History
+-----------------------
+
+Local version **1.4.7** is installed as of 2026-10-16. Analyze now streams text
+line counts, opens Technical details by default, remembers disclosure choices,
+prioritizes file-specific facts and opens expanded at 82% of the current monitor's
+usable height with balanced vertical spacing. This placement runs once; normal
+moving, resizing, snapping and maximizing remain free of ongoing corrections.
+Collapsing Technical details shrinks the normal window; reopening restores its
+previous expanded height where space permits, preserving position and width.
+Maximized windows keep their geometry. Remembered collapsed details open compactly
+at the same starting top as the expanded window, without separate centering.
+The installed build uses the owner's latest transparent triangle PNGs for
+ten Windows icon sizes from 16 to 256 pixels and preserves movement between
+monitors. The emerald-background artwork remains reserved for online pages.
+The complete bundled engine selection, lecture PDF compatibility and expanding
+conversion file-details UI are retained. Default, dark and light taskbar resources
+remain indexed at the external application location with transparent backgrounds.
+The Analyze update passed 4,925 foundation contracts and 951 Analyze checks;
+the shared-starting-position follow-up passed 21 checks in each theme. Broader visible lifecycle
+acceptance remains separate. The installed payload and packaged resource lookup
+checks pass; settings, trial and license files were preserved during installation.
+Previous installed payloads are retained for rollback.
+See the [icon conventions](docs/style-guide.md#shell-integration) and
+[lecture support evidence](docs/pdf-dark-lecture-support-goal.md).
+The owner confirmed on 2026-10-16 that the gray taskbar square is gone after
+reopening 1.3.8. Broader visual/accessibility acceptance remains separate.
+The milestone records below retain their historical package and acceptance scope.
+
+The `pdf-dark-6` [lecture extension](docs/pdf-dark-lecture-support-goal.md) now
+normalizes all 25 topic PDFs (746 pages), including already-dark navy slides,
+tables and eligible diagrams. Real-worker copies, repeat no-ops, preservation
+checks and rendered review pass. The earlier 50-page lecture also passes.
+The isolated 1.3.1 candidate passes exact-worker and payload verification. Installed 1.2.9
+remains unchanged. Protected/interactive or ambiguous PDFs remain unsupported;
+photos and uncertain image regions retain their original appearance.
+Native desktop/accessibility and owner acceptance remain separate.
+
+The `pdf-dark-7` COSC 310 follow-up adds rounded panels, safer overlapping
+text and image handling, readable screenshot fallbacks and page-specific failures.
+Five original lectures (212 pages) pass native conversion and repeat checks;
+three originals still refuse with documented reasons. Candidate 1.3.2 passes
+actual-worker, preservation and payload checks; see the same lecture support goal.
+It is not installed.
+
+The owner-approved image expansion adds ICO and AVIF output from the
+five ordinary raster inputs, classic TIFF to PNG/JPEG/PDF, and static SVG to PNG.
+All four are implemented in the unsigned **1.2.5** review candidate, including
+[bounded SVG rendering](docs/converter-design.md#svg-input-checkpoint-2026-10-09).
+The archive passes fresh-extraction and payload verification; its exact staged
+worker passes 5,064 foundation checks and the recorded existing-feature replay.
+See the [candidate evidence](docs/launch-capability-matrix.md#image-expansion-candidate-125-2026-10-09)
+and [interactive icon/output review](docs/image-expansion-review.md).
+Native Explorer, accessibility, representative-content fidelity and commercial
+acceptance remain open. Preserved combined baseline 1.2.4
+passes the recorded automated workflow and payload checks, including destination
+icons and WEM. See the [baseline checkpoint](docs/launch-capability-matrix.md#image-expansion-baseline-2026-10-09).
+At that checkpoint the installed local application was **1.2.5**; the previous
+1.2.3 payload was retained for rollback. Earlier milestone records retain their
+original evidence and do not establish completion of this expansion.
+
+The older implementation milestones below retain their original package and
+acceptance scope; the 1.2.5 candidate record describes that integration checkpoint.
+
+The preceding [broad file support goal](docs/broad-file-support-goal.md) covers
 useful Analyze results for every readable regular file, an offline common-type
 catalog, common audio, and PDF/document support. The first Analyze source slice
 now handles unknown/empty files, initial header identification and existing DDS
@@ -277,5 +353,20 @@ engine commands are not part of the initial scope.
 
 The latest source changes add [best-effort PDF-to-Word conversion](docs/pdf-to-docx.md),
 white PDF page backgrounds with an optional transparent setting, and
-selection-aware conversion targets. These changes have not replaced installed
-1.1.3 or any reserved candidate.
+selection-aware conversion targets. Installed local version 1.2.3 adds transparent
+figure backgrounds and closer answer-font spacing to these
+changes, native Word rules, grouped prose, heading styles, repeated footers and
+Compact monochrome Explorer icons. Previous installed payloads and
+reserved candidates are preserved.
+
+The [icons and WEM goal](docs/wem-conversion-goal.md) has distinct Convert
+destination icons and both loose WEM-to-WAV and installed-Wwise audio-to-WEM paths
+in source. Native shell, real-engine worker/publication, setup recovery and
+representative BG3 decoding checks pass. The goal records the bounded input
+matrix and remaining native UI/game acceptance; the installed application is
+unchanged.
+
+The subsequent WEM input extension adds MP3 and float32 WAV preparation in the
+same pending-batch workflow, with one quality-consent prompt. It reuses the pinned
+MP3 decoder and installed Wwise, keeps rate/channels and supported WAV loops, and
+removes intermediate audio after use. The installed application remains unchanged.

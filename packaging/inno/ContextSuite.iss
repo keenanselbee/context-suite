@@ -23,7 +23,8 @@ SolidCompression=yes
 CloseApplications=no
 RestartApplications=no
 RestartIfNeededByRun=no
-UninstallDisplayIcon={app}\installation\Analyze.ico
+UninstallDisplayIcon={app}\installation\ContextSuite.ico
+SetupIconFile=payload\installation\ContextSuite.ico
 SetupMutex=ContextSuiteInstaller
 ChangesAssociations=yes
 
@@ -34,7 +35,7 @@ Source: "payload\release\*"; DestDir: "{app}\releases\{code:GetReleaseId}"; Flag
 Source: "payload\installation\*"; DestDir: "{app}\installation"; Flags: ignoreversion
 
 [Icons]
-Name: "{userprograms}\Context Suite"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\installation\Launch-Active.ps1"""; IconFilename: "{app}\installation\Analyze.ico"; Flags: runminimized
+Name: "{userprograms}\Context Suite"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\installation\Launch-Active.ps1"""; IconFilename: "{app}\installation\ContextSuite.ico"; Flags: runminimized
 
 [UninstallDelete]
 ; Exact installer-owned metadata only. Payloads use Inno's accumulated file ledger.

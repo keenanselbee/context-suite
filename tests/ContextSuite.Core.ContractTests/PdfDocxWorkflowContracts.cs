@@ -8,6 +8,33 @@ using ContextSuite.Core.Pdf;
 
 internal static class PdfDocxWorkflowContracts
 {
+    // Opt-in local fidelity evidence: copy the caller's sample into a new
+    // evidence directory, then exercise the actual direct command and publisher.
+    // No personal fixture, installed application state or activation is needed.
+    public static async Task ConvertSampleAsync(string root, string executable, string input)
+    {
+        if (!Path.IsPathFullyQualified(root) || Directory.Exists(root)) throw new IOException("Use a new absolute sample evidence directory.");
+        if (new FileInfo(input).Length is <= 0 or > PdfDocxSource.MaximumSourceBytes) throw new InvalidDataException("Sample exceeds the PDF input limit.");
+        var originalHash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(input)));
+        Directory.CreateDirectory(root);
+        var copy = Path.Combine(root, "Sample.pdf");
+        File.Copy(input, copy);
+        await using var vm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "worker")),
+            new() { Convert = new(OutputDirectory: root) }, new OutputPublisher(Path.Combine(root, "records"), new NoRecycle()),
+            new LocalTrialStore(Path.Combine(root, "trial.json")));
+        vm.ConversionRequested += (_, _) => throw new InvalidOperationException("PDF-to-Word must use the direct command.");
+        vm.Admit(new(Guid.NewGuid(), "convert", "docx", [copy]));
+        await vm.WaitForIdleAsync();
+        var result = vm.Rows.Single().Result;
+        if (result.State != OperationState.Succeeded || result.Publication?.Outcome != PublicationOutcome.CopyCreated ||
+            originalHash != Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(input))) ||
+            originalHash != Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(copy))))
+            throw new InvalidDataException("Sample did not produce a validated copy with unchanged originals: " + result.Message);
+        await File.WriteAllTextAsync(Path.Combine(root, "result.json"), System.Text.Json.JsonSerializer.Serialize(result,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        Console.WriteLine("PASS: actual direct command, worker and publisher; unchanged source. Output: " + result.Publication.OutputPath);
+    }
+
     public static async Task RunAsync(string root, string executable, string fixtures, Action<bool, string> check)
     {
         if (Directory.Exists(root)) throw new IOException("Use a new PDF-to-Word evidence directory.");

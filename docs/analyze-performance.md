@@ -1,6 +1,10 @@
 Analyze Performance Baseline
 ============================
 
+For the current text-counting behavior, see the
+[streaming follow-up](#streaming-text-counts-2026-10-16). Earlier measurements
+below describe the former prefix-only behavior.
+
 The 2026-09-11 local benchmark measures the actual application file reader and
 the actual Analyze batch coordinator, without displaying a window or starting
 optional media workers. It is a baseline for regression review, not complete
@@ -180,3 +184,42 @@ Visible rendering and responsiveness, retained/peak process memory, optional
 audio/PDF workers, true cold storage, other machines and remote/cloud paths
 remain unmeasured. This closes the former small-selection-only evidence gap,
 not the complete performance or expanded release gate.
+Streaming text counts, 2026-10-16
+---------------------------------
+
+Version 1.4.1 counts recognized text beyond the 64 KiB identification prefix,
+up to 256 MiB within the existing five-second read budget. Fixed byte/character
+buffers and an incremental decoder avoid retaining the file or allocating lines.
+Header-only callers retain the smaller budget. Inspection receipts now distinguish
+header/structure bytes from `TextBytes`, and verify completed text scans reach EOF.
+
+The same 12-case benchmark (three fresh processes and 30 repeated samples per
+case) passes with unchanged source fixtures, identities and input ordering:
+
+| Case | First-call median, ms | Repeated median, ms | Repeated p95, ms | Repeated allocated bytes |
+| --- | ---: | ---: | ---: | ---: |
+| 8 MiB JSON, all 8,388,622 bytes counted | 99.10 | 27.88 | 30.88 | 569,064 |
+| 128 MiB binary, still header-only | 66.97 | 0.66 | 2.35 | 239,384 |
+| Mixed eight-file selection | 192.94 | 35.46 | 42.16 | 1,328,176 |
+| Mixed 256-file selection | 408.93 | 250.33 | 302.04 | 18,224,872 |
+| Mixed 4,096-file selection | 4,246.54 | 3,242.83 | 3,620.86 | 289,907,336 |
+
+The large-text p95 exceeds the former 25 ms review trigger because it now scans
+8 MiB rather than 64 KiB. This reviewed cost is acceptable for the owner's
+requested deeper count and tolerance of a few seconds. Allocations remain below
+the existing 1 MiB single-file review trigger. Other cases remain within their
+existing timing/allocation review budgets. These are local observations, not SLAs.
+
+A separate first-call check of the reported 89,758-byte HTML counted 220 lines
+in 100 ms; an independent newline count agrees. An authored 32 MiB text file
+counted 262,144 lines in 197 ms. Process-wide first-call allocation was about
+1.37 MiB in both checks, including initialization; this is not peak memory.
+
+Evidence: `.codex-temp/analyze-benchmark/d4185895c0d0439a85e591a4ac4fc1a4`
+contains the 36 process receipts and source/host hashes. The subsequent source
+change only clarified the identification evidence wording; counting logic is
+unchanged. The 55 focused text checks cover Unicode/BOMs, fragmented reads,
+CR/LF/CRLF boundaries, byte limits, timeout fallback, cancellation, invalid tails,
+unexpected EOF, presentation, header-only routing and source preservation.
+The full-budget cap test uses a synthetic stream rather than a large fixture.
+The existing driver-dependent I/O cancellation limitations still apply.

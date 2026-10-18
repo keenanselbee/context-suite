@@ -5,6 +5,9 @@ using ContextSuite.Core.Images;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Pdf;
 using ContextSuite.Core.Office;
+using ContextSuite.Core.Tiff;
+using ContextSuite.Core.Svg;
+using ContextSuite.Core.Gif;
 
 namespace ContextSuite.Application.Infrastructure;
 
@@ -18,6 +21,24 @@ internal sealed record TrialAdmission(LocalTrialStatus Status, Guid BatchId, Dat
 // Local trial bookkeeping only. No key validation, hidden copies, reset switch or permissive fallback.
 internal sealed class LocalTrialStore : IOperationAccess
 {
+    async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedGifConversion confirmed, CancellationToken cancellationToken)
+    {
+        _ = confirmed.Plan.Confirm();
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+    async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedSvgConversion confirmed, CancellationToken cancellationToken)
+    {
+        _ = confirmed.Plan.Confirm();
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+    async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedTiffConversion confirmed, CancellationToken cancellationToken)
+    {
+        _ = confirmed.Plan.Confirm();
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
     async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedOfficeConversion confirmed, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(confirmed);
@@ -35,6 +56,14 @@ internal sealed class LocalTrialStore : IOperationAccess
     }
 
     async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedPdfDocx confirmed, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm();
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
+    async Task<OperationAdmission> IOperationAccess.AdmitConversionAsync(ConfirmedPdfDark confirmed, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(confirmed);
         _ = confirmed.Plan.Confirm();

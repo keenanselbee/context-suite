@@ -6,6 +6,8 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\src\ContextSuite.Application\VideoAudioTrackViewModel.cs" Link="Runtime\VideoAudioTrackViewModel.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\FileRow.VideoAudio.cs" Link="Runtime\FileRow.VideoAudio.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\PdfTextReader.cs" Link="Fixtures\PdfTextReader.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\ExcelLayoutFixtures.cs" Link="Fixtures\ExcelLayoutFixtures.cs" />
     <Compile Include="..\..\tools\office-engine\Probe\OfficeDdeCanary.cs" Link="Fixtures\OfficeDdeCanary.cs" />
@@ -30,7 +32,11 @@
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\FlacOptimizationExecutor.cs" Link="Runtime\FlacOptimizationExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PdfOptimizationExecutor.cs" Link="Runtime\PdfOptimizationExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PdfPageConversionExecutor.cs" Link="Runtime\PdfPageConversionExecutor.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\TiffConversionExecutor.cs" Link="Runtime\TiffConversionExecutor.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\SvgConversionExecutor.cs" Link="Runtime\SvgConversionExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PdfDocxExecutor.cs" Link="Runtime\PdfDocxExecutor.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PdfDarkExecutor.cs" Link="Runtime\PdfDarkExecutor.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.PdfDark.cs" Link="Runtime\MainViewModel.PdfDark.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.PdfDocx.cs" Link="Runtime\MainViewModel.PdfDocx.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\AudioConversionExecutor.cs" Link="Runtime\AudioConversionExecutor.cs" />
     <ProjectReference Include="..\..\src\ContextSuite.Core\ContextSuite.Core.csproj" />
@@ -56,13 +62,23 @@
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PublicationSupport.cs" Link="Runtime\PublicationSupport.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\SettingsViewModel.cs" Link="Runtime\SettingsViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.cs" Link="Runtime\MainViewModel.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\AnalysisSnapshot.cs" Link="Runtime\AnalysisSnapshot.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Analysis.cs" Link="Runtime\MainViewModel.Analysis.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\FileRow.Analysis.cs" Link="Runtime\FileRow.Analysis.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Audio.cs" Link="Runtime\MainViewModel.Audio.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Pdf.cs" Link="Runtime\MainViewModel.Pdf.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Tiff.cs" Link="Runtime\MainViewModel.Tiff.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.ImagePdf.cs" Link="Runtime\MainViewModel.ImagePdf.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\MainViewModel.Office.cs" Link="Runtime\MainViewModel.Office.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\FileRow.ImagePdf.cs" Link="Runtime\FileRow.ImagePdf.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\FileRow.Pdf.cs" Link="Runtime\FileRow.Pdf.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\FileRow.Tiff.cs" Link="Runtime\FileRow.Tiff.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\FileRow.Svg.cs" Link="Runtime\FileRow.Svg.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\FileRow.Gif.cs" Link="Runtime\FileRow.Gif.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\GifConversionExecutor.cs" Link="Runtime\GifConversionExecutor.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\GifOutputFolder.cs" Link="Runtime\GifOutputFolder.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\AudioConversionViewModel.cs" Link="Runtime\AudioConversionViewModel.cs" />
+    <Compile Include="..\..\src\ContextSuite.Application\WemEncodingViewModel.cs" Link="Runtime\WemEncodingViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ImagePdfOrderViewModel.cs" Link="Runtime\ImagePdfOrderViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.cs" Link="Runtime\ConversionViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\ConversionViewModel.Dds.cs" Link="Runtime\ConversionViewModel.Dds.cs" />

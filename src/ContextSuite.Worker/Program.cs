@@ -7,6 +7,9 @@ using ContextSuite.Private.Images;
 using ContextSuite.Private.Audio;
 using ContextSuite.Private.Pdf;
 using ContextSuite.Private.Office;
+using ContextSuite.Private.Tiff;
+using ContextSuite.Private.Svg;
+using ContextSuite.Private.Gif;
 using ContextSuite.Runtime;
 
 if (args.Length != 6 || args[0] != "--pipe" || args[2] != "--parent" || args[4] != "--scratch" || !Path.IsPathFullyQualified(args[5]) ||
@@ -34,15 +37,20 @@ try
     ImageAdapter? adapter = null;
     AudioProbeAdapter? audio = null;
     AudioFileAdapter? audioFiles = null;
+    WemFileAdapter? wemFiles = null;
+    WwiseFileAdapter? wwiseFiles = null;
     PdfProbeAdapter? pdf = null;
     PdfRasterAdapter? pdfRaster = null;
+    PdfDarkAdapter? pdfDark = null;
     ImagePdfValidator? imagePdfValidator = null;
+    GifAdapter? gif = null;
     try
     {
     while (!lifetime.IsCancellationRequested)
     {
         var command = await JsonFrames.ReadAsync<WorkerCommand>(pipe, lifetime.Token);
         command.Validate();
+        if (command.Command is not ("gif-probe" or "gif-convert")) { gif?.Dispose(); gif = null; }
         if (command.Command == "shutdown") return 0;
         if (command.Command == "engine-info")
         {
@@ -54,6 +62,40 @@ try
         try
         {
             if (command.Command == "capabilities") reply = new(1, command.RequestId, catalog.Capabilities.ToArray());
+            else if (command.Command is "pdf-dark-probe" or "pdf-dark-convert")
+            {
+                pdfDark ??= new PdfDarkAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-dark"), args[5]);
+                reply = command.Command == "pdf-dark-probe"
+                    ? new(1, command.RequestId, [], PdfDarkSource: await pdfDark.ProbeAsync(command.PdfDarkProbe!, lifetime.Token))
+                    : new(1, command.RequestId, [], PdfDarkResult: await pdfDark.ConvertAsync(command.PdfDarkWork!, lifetime.Token));
+            }
+            else if (command.Command == "gif-release") reply = new(1, command.RequestId, []);
+            else if (command.Command is "gif-probe" or "gif-convert")
+            {
+                gif ??= new GifAdapter(args[5]);
+                reply = command.Command == "gif-probe"
+                    ? new(1, command.RequestId, [], GifSource: gif.Probe(command.GifProbe!, lifetime.Token))
+                    : new(1, command.RequestId, [], GifResult: gif.Convert(command.GifWork!, lifetime.Token));
+            }
+            else if (command.Command is "svg-probe" or "svg-convert")
+            {
+                var svg = new SvgAdapter(args[5]);
+                reply = command.Command == "svg-probe"
+                    ? new(1, command.RequestId, [], SvgSource: await svg.ProbeAsync(command.SvgProbe!, lifetime.Token))
+                    : new(1, command.RequestId, [], SvgResult: await svg.ConvertAsync(command.SvgWork!, lifetime.Token));
+            }
+            else if (command.Command is "tiff-probe" or "tiff-convert" or "tiff-preview")
+            {
+                if (command.Command == "tiff-convert" && command.TiffWork!.Options.Target == ContextSuite.Core.Tiff.TiffTarget.Pdf)
+                    imagePdfValidator ??= new ImagePdfValidator(Path.Combine(AppContext.BaseDirectory, "pdf-validator"), args[5]);
+                var tiff = new TiffAdapter(args[5], imagePdfValidator);
+                reply = command.Command switch
+                {
+                    "tiff-probe" => new(1, command.RequestId, [], TiffSource: tiff.Probe(command.TiffProbe!, lifetime.Token)),
+                    "tiff-convert" => new(1, command.RequestId, [], TiffResult: await tiff.ConvertAsync(command.TiffWork!, lifetime.Token)),
+                    _ => new(1, command.RequestId, [], TiffPreview: tiff.Preview(command.TiffPreview!, lifetime.Token))
+                };
+            }
             else if (command.Command is "pdf-docx-probe" or "pdf-to-docx")
             {
                 if (command.Command == "pdf-to-docx") pdfRaster ??= new PdfRasterAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-renderer"), args[5]);
@@ -78,7 +120,25 @@ try
                 imagePdfValidator ??= new ImagePdfValidator(Path.Combine(AppContext.BaseDirectory, "pdf-validator"), args[5]);
                 reply = new(1, command.RequestId, [], ImagePdfResult: await new ImagePdfFileAdapter(adapter, imagePdfValidator).ConvertAsync(command.ImagePdf!, lifetime.Token));
             }
-            else if (command.Command is "flac-probe" or "flac-optimize" or "audio-file-probe" or "audio-convert")
+            else if (command.Command == "audio-file-probe" && command.AudioTarget == ContextSuite.Core.Audio.AudioFormat.Wem ||
+                command.Command == "audio-convert" && command.AudioWork!.Target == ContextSuite.Core.Audio.AudioFormat.Wem)
+            {
+                wwiseFiles ??= new WwiseFileAdapter(Path.Combine(AppContext.BaseDirectory, "wem-engine"), args[5],
+                    Path.Combine(AppContext.BaseDirectory, "audio-engine"));
+                reply = command.Command == "audio-file-probe"
+                    ? new(1, command.RequestId, [], AudioSource: await wwiseFiles.ProbeConversionAsync(command.AudioFile!, lifetime.Token))
+                    : new(1, command.RequestId, [], AudioResult: await wwiseFiles.ConvertAsync(command.AudioWork!, lifetime.Token));
+            }
+            else if (command.Command == "audio-file-probe" &&
+                string.Equals(Path.GetExtension(command.AudioFile!.Path), ".wem", StringComparison.OrdinalIgnoreCase) ||
+                command.Command == "audio-convert" && command.AudioWork!.Source.Facts.Container == "wem")
+            {
+                wemFiles ??= new WemFileAdapter(Path.Combine(AppContext.BaseDirectory, "wem-engine"), args[5]);
+                reply = command.Command == "audio-file-probe"
+                    ? new(1, command.RequestId, [], AudioSource: await wemFiles.ProbeConversionAsync(command.AudioFile!, command.AudioTarget!.Value, lifetime.Token))
+                    : new(1, command.RequestId, [], AudioResult: await wemFiles.ConvertAsync(command.AudioWork!, lifetime.Token));
+            }
+            else if (command.Command is "flac-probe" or "flac-optimize" or "audio-file-probe" or "video-audio-probe" or "audio-convert")
             {
                 var audioDirectory = Path.Combine(AppContext.BaseDirectory, "audio-engine");
                 var voiceDirectory = Path.Combine(audioDirectory, "voice");
@@ -86,6 +146,7 @@ try
                 reply = command.Command switch
                 {
                     "flac-probe" => new(1, command.RequestId, [], AudioSource: await audioFiles.ProbeFlacAsync(command.AudioFile!, lifetime.Token)),
+                    "video-audio-probe" => new(1, command.RequestId, [], AudioSource: await audioFiles.ProbeVideoAsync(command.AudioFile!, lifetime.Token)),
                     "flac-optimize" => new(1, command.RequestId, [], AudioResult: await audioFiles.OptimizeFlacAsync(command.FlacWork!, lifetime.Token)),
                     "audio-file-probe" => new(1, command.RequestId, [], AudioSource: await audioFiles.ProbeConversionAsync(command.AudioFile!, command.AudioTarget!.Value, lifetime.Token)),
                     _ => new(1, command.RequestId, [], AudioResult: await audioFiles.ConvertAsync(command.AudioWork!, lifetime.Token))
@@ -147,12 +208,14 @@ try
                 ImageMagick.MagickCorruptImageErrorException => ImageFailure.InvalidInput,
                 _ => ImageFailure.EngineFailure
             };
-            reply = new(1, command.RequestId, [], Failure: failure);
+            reply = new(1, command.RequestId, [], Failure: failure,
+                PdfDarkFailurePage: command.Command is ("pdf-dark-probe" or "pdf-dark-convert") &&
+                    error is ImageFailureException knownPdf ? knownPdf.PdfDarkPage : null);
         }
         await JsonFrames.WriteAsync(pipe, reply, lifetime.Token);
     }
     }
-    finally { audioFiles?.Dispose(); audio?.Dispose(); pdf?.Dispose(); pdfRaster?.Dispose(); imagePdfValidator?.Dispose(); }
+    finally { gif?.Dispose(); wwiseFiles?.Dispose(); wemFiles?.Dispose(); audioFiles?.Dispose(); audio?.Dispose(); pdf?.Dispose(); pdfRaster?.Dispose(); pdfDark?.Dispose(); imagePdfValidator?.Dispose(); }
     return 0;
 }
 catch (Exception error) when (error is IOException or InvalidDataException or OperationCanceledException or ArgumentException or

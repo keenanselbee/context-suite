@@ -85,6 +85,7 @@ def main():
     suffix += "-wmastandard-tail1" if record.get("wmaStandardTailRepair") else ""
     suffix += "-wmavoice-cache1" if record.get("wmaVoiceCacheRepair") else ""
     suffix += "-rawaudio-ts1" if record.get("rawAudioTimestampRepair") else ""
+    suffix += "-videoaudio2" if record.get("videoAudioInputs") else ""
     if "--extra-version=" + suffix not in record["configure"]:
         raise ValueError("Candidate version does not match its selected build")
     for name in ("ffmpeg", "ffprobe"):

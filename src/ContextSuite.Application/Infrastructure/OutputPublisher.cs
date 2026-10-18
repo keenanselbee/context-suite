@@ -74,7 +74,8 @@ internal sealed class OutputPublisher(string recordDirectory, IFileRecycler recy
                 throw new InvalidDataException("Output item IDs must be unique.");
             var source = PublicationFiles.Normalize(intent.SourcePath);
             _ = OutputNames.Create(source, intent.Settings.Operation, intent.TargetExtension, representation: intent.Dds,
-                replaceSource: intent.ReplaceOriginal, pageNumber: intent.PageNumber, combinedPdf: intent.CombinedPdf);
+                replaceSource: intent.ReplaceOriginal, pageNumber: intent.PageNumber, combinedPdf: intent.CombinedPdf, frameNumber: intent.FrameNumber,
+                pdfDark: intent.PdfDark);
             if (intent.Settings.Operation == "optimize" && !string.Equals(Path.GetExtension(source).TrimStart('.'),
                 intent.TargetExtension.TrimStart('.'), StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException("Optimize must retain the source format.");
@@ -265,7 +266,7 @@ internal sealed class OutputPublisher(string recordDirectory, IFileRecycler recy
         for (var ordinal = 1; ordinal <= 10000; ordinal++)
         {
             var name = OutputNames.Create(intent.SourcePath, intent.Settings.Operation, intent.TargetExtension, ordinal,
-                intent.Dds, intent.ReplaceOriginal, intent.PageNumber, intent.CombinedPdf);
+                intent.Dds, intent.ReplaceOriginal, intent.PageNumber, intent.CombinedPdf, intent.FrameNumber, intent.PdfDark);
             var path = PublicationFiles.Normalize(Path.Combine(directory, name));
             if (!_destinations.Contains(path) && !File.Exists(path) && !Directory.Exists(path)) return path;
         }

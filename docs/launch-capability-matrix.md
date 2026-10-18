@@ -1,8 +1,168 @@
 Expanded Launch Capability Matrix
 =================================
 
-Matrix revision: **2026-09-23.2**. The current-status reconciliation distinguishes
-the expanded 1.1.2 candidate from reserved 1.1.1 and earlier scratch evidence.
+This matrix records dated capability and candidate checkpoints. Its installation
+references describe those checkpoints; see [current project status](../README.md#project-status)
+for the latest source and recorded installed versions. Later lecture-specific PDF
+evidence is recorded in the [lecture support goal](pdf-dark-lecture-support-goal.md).
+Neither a newer version nor a historical pass broadens the tested scope below.
+
+Matrix revision: **2026-10-10.2**. PDF dark-mode candidate **1.2.7** passes
+exact-candidate regression coverage and verified fresh archive extraction.
+It adds one mandatory-copy PDF appearance destination within the
+[documented admission policy](pdf-dark-mode-goal.md#current-admission-policy).
+The complete lecture reference remains unsupported; this is not universal PDF
+recoloring or OCR. See the [review evidence](pdf-dark-mode-review.md). Engineering
+integration and review handoff are complete within those bounds; native UI,
+representative customer fidelity and commercial acceptance remain separate.
+
+The earlier unsigned compatibility candidate **1.2.6**
+implements JFIF input, ICO-to-PNG, PDF-to-JPEG, all GIF frames to PNG,
+SVG-to-JPEG and MP4/MOV/WebM/MKV audio extraction. See the
+[candidate review and exact verification evidence](compatibility-expansion-review.md) and
+[converter design](converter-design.md#compatibility-expansion-approved-2026-10-09).
+Its exact combined-candidate checks and fresh extraction passed. Engineering
+integration and review handoff are complete within the documented variant and
+resource limits; native UI and owner acceptance remain separate. The verified
+installed baseline below remains **1.2.5**.
+
+The previous unsigned review candidate is
+**1.2.5**, containing all four approved image additions. Engineering integration,
+packaging and the review handoff are complete within the documented variant
+bounds. Native UI, owner fidelity and commercial acceptance remain pending.
+Local **1.2.5** is now installed; previous **1.2.3** is retained for rollback and
+reserved baseline **1.2.4** is unchanged. The current
+checkpoint supersedes older status wording without expanding historical evidence.
+
+
+Image Expansion Candidate 1.2.5, 2026-10-09
+-----------------------------------------
+
+Canonical staging `4ceab4687b07416aa76083d63f3e7c31` combines the existing
+image/DDS, audio/Voice, HEIF, PDF/Office, WEM and destination-icon baseline with
+the following additions. All use the existing bounded sequential worker,
+one batch admission and validated copy publication.
+
+| Source | Destination | Tested boundary and behavior |
+| --- | --- | --- |
+| PNG/JPEG/WebP/BMP/TGA | ICO | Automatic standard sizes through 256 pixels, proportional fit, transparent padding and no source enlargement |
+| PNG/JPEG/WebP/BMP/TGA | AVIF | Still SDR, fixed quality 95, exact alpha and bounded visible RGB error through separate HEIF decoding |
+| Classic TIFF | PNG/JPEG/PDF | Admitted ordinary page variants; all pages as numbered images or one ordered PDF per source; explicit JPEG matte and selective retries |
+| Static SVG | PNG | Bounded local rendering, Automatic/custom width, font-substitution disclosure and external-resource refusal |
+
+Exact limits, accepted variants and refusal behavior remain defined by the
+[ICO](converter-design.md#ico-output-checkpoint-2026-10-09),
+[TIFF](converter-design.md#tiff-input-checkpoint-2026-10-09),
+[AVIF](converter-design.md#avif-output-checkpoint-2026-10-09) and
+[SVG](converter-design.md#svg-input-checkpoint-2026-10-09) checkpoints. Only ICO
+and AVIF add destination commands. These entries do not claim unrestricted
+TIFF/SVG support, AVIF animation/HDR or representative-artwork acceptance.
+
+The exact staged worker/application and exact staged Core/Private assemblies
+in the test hosts pass the following combined replay:
+
+| Check group | Passing evidence |
+| --- | --- |
+| Foundation | 5,064 contracts, including ICO workflow/interruption, shared batch/publication, image/DDS/PNG and actual WPF startup/worker cleanup |
+| Existing features | 491 checks: WEM decode 53; Wwise encode including MP3/float32 WAV 56; audio conversion 20, interruption 96, FLAC 14; PDF analysis 11, optimization 17, page conversion 18, page failure 20, images-to-PDF 20, PDF-to-Word 14; Office 15; HEIF interoperability 137 with 20 outputs |
+| Private adapters | ICO 119, TIFF 653, AVIF 108 and SVG 83 |
+| Actual-worker workflows | AVIF 33, TIFF 19 and SVG 11 |
+| Active interruptions | AVIF 14, TIFF 13 and SVG 16; cancellation, worker failure and bounded deadline recovery |
+| SVG renderer | 50 native semantic/adversarial checks and two maximum-canvas pixel/source-preservation cases |
+| Native shell and icons | 476 filename-availability assertions, isolated COM/activation contracts and 336 Windows-decoded icon frames |
+
+The full sequential run is recorded in
+`.codex-temp/ie125-checks-isolated/results.json`; runtime hashes are unchanged
+before/after. The existing-feature report under
+`.codex-temp/image-expansion-125-baseline/a1` records 4,872 unchanged candidate,
+test-host, fixture and source files. Twelve successful suites (395 checks) are
+reused by log hash. The audio interruption suite was rerun alone and passes all
+96 checks in `.codex-temp/ie125-audio-retry.log`.
+
+Retained unsuccessful attempts are not hidden: a simultaneous baseline worker
+made the first foundation startup smoke observe multiple exact-path workers;
+the complete isolated foundation rerun passes. The initial audio interruption
+test missed its live Opus encoder observation; its unchanged isolated rerun
+passes. No product fix or relaxed assertion was needed for either rerun. A HEIF
+summary-parser correction accepts the existing successful log's semicolon
+terminator; that suite was not rerun. The first test-host preflight rejected a
+separately built Core assembly, then the exact staged assemblies were copied
+into the hosts before tests ran.
+
+Receipt `artifacts/production-version-receipts/1.2.5.json` is verified. Inventory
+SHA-256 is `A8692350BFC3AC48174F1555AF03A305ED226867F29E3B93EDA63516E90CB3D0`.
+The unsigned archive has 280,273,558 bytes and SHA-256
+`7B8452405CD3A788F23C94477F5599928FDFCFC71F14A6C9543532EF5B796218`.
+Its path, pinned icon binding and owner checklist are in the
+[review handoff](image-expansion-review.md). Canonical packaging verifies a fresh
+extraction, exact runtime membership, 215 AVIF/SVG runtime/source/recipe/notice
+files, and 281 local notice links across the complete payload. No fonts or
+reference-project binaries/code/assets are shipped. The release manifest
+records dirty public/private source; this is not a commit-addressed release.
+
+The final local evidence index is
+`.codex-temp/image-expansion-125-completion.json`, with a source hash inventory,
+archive identity and retained test-log hashes. Status documentation was finalized
+after packaging without modifying the reserved payload. Earlier native ABI,
+loader, performance and engine provenance results remain the explicitly named
+checkpoint evidence; they are not represented as new combined reruns.
+
+The interactive review supplies actual decoded light/dark icons at four sizes,
+filtered menu examples, the SVG size/font-choice representation and paired
+procedural conversion outputs. Native Explorer, Windows contrast/DPI/keyboard/
+screen-reader behavior, representative customer/game content and commercial
+acceptance remain open. Nothing was installed, registered, signed, committed,
+pushed or published as part of the engineering goal. The subsequent
+owner-requested local installation is recorded in the review handoff.
+
+
+Image Expansion Baseline, 2026-10-09
+----------------------------------
+
+Canonical production staging `efad711c639b4a049e333a3a43e73872` composes existing
+raster/DDS, HEIF, expanded audio/Voice, PDF/Office, Compact destination icons and
+WEM. Receipt `artifacts/production-version-receipts/1.2.4.json` is verified;
+inventory SHA-256 is
+`8999946DFDF30D8AAB26C72D2FC2129C486F8FC7BFD85F0DF0017F886EF02E35`.
+This is a staged baseline, not a published archive or installation.
+
+Recorded automated checks pass: 4,876 foundation contracts; 53 WEM decode and
+56 Wwise encode checks including MP3 and float32 WAV; 20 audio conversion,
+96 audio interruption and 14 FLAC checks; 11 PDF analysis, 17 optimization,
+18 page conversion, 20 page-failure, 20 images-to-PDF and 14 PDF-to-Word checks;
+15 Office direct-execution checks; and 137 HEIF interoperability checks with
+20 outputs. Shell contracts, all 304 icon frames, the full workflow payload
+verifier and repository checks also pass. This is bounded engineering evidence,
+not native UI, human fidelity, game compatibility or commercial acceptance.
+
+Local evidence is retained under
+`.codex-temp/image-expansion-baseline-642de60f5f984cfa92ba45b1c9c8a091`.
+`source-inputs.json` records dirty public/private source hashes;
+`test-amendment.json` records the test-only combined-WEM harness amendment
+after staging, retaining the exact staged Core assembly. The final runner
+record `.codex-temp/ib124-91cff06b5347/test-results.json` reports all checks passed
+and sources unchanged during that run. Its inputs bind earlier successful
+checks by log hashes, rather than claim they were rerun. Earlier failed attempts
+are retained: a test path exceeded the existing path limit, the decoder-only
+WEM harness rejected a combined audio payload, and a PDF fixture path was absent.
+Those test setup issues were corrected before the recorded successful checks.
+
+The subsequent source checkpoints implement ICO output and
+[TIFF to PNG/JPEG/PDF](converter-design.md#tiff-input-checkpoint-2026-10-09)
+with isolated automated evidence, followed by
+[still SDR AVIF output](converter-design.md#avif-output-checkpoint-2026-10-09) and
+[static SVG to PNG](converter-design.md#svg-input-checkpoint-2026-10-09).
+The combined 1.2.5 checkpoint above now records final packaging, regression and
+the review handoff for all four additions. Only ICO and AVIF add destination
+commands. Isolated engine evidence and the HTML review do not establish native
+UI or visual acceptance.
+
+
+Historical Expanded Candidate Evidence
+--------------------------------------
+
+The 2026-09-23 reconciliation distinguished the expanded 1.1.2 candidate from
+reserved 1.1.1 and earlier scratch evidence.
 The recorded implementation evidence includes the
 [audio inventoried-payload protection](audio-distribution.md#inventoried-payload-protection-2026-09-19),
 [mixed Office/image PDF replay on the expanded worker](office-direct-command.md#expanded-combined-worker-replay-2026-09-19),
@@ -23,7 +183,7 @@ Catalog schema 1, revision **2026-09-16.3**, **245 records**.
 Status: implemented candidates and recorded gaps; expanded launch acceptance
 is incomplete. The newly selected inputs below still require full customer acceptance.
 
-The latest reserved candidate is **1.1.2**, with existing image engines, HEIC/AVIF,
+The historical reserved candidate **1.1.2** includes image engines, HEIC/AVIF,
 expanded audio/Voice, PDF and reconstructed Office runtime04. Its
 [candidate record](expanded-candidate-1.1.2.md) binds the exact unsigned archive,
 source packet and remaining acceptance. Reserved **1.1.1** and its

@@ -6,7 +6,8 @@ namespace ContextSuite.Core.Audio;
 
 public sealed record AudioFileProbe(Guid ItemId, string Path);
 public sealed record AudioFileSource(Guid ItemId, string Path, string Sha256, long FileBytes,
-    AudioProbeFacts Facts, string? OptimizationBlockReason = null, string? ConversionBlockReason = null)
+    AudioProbeFacts Facts, string? OptimizationBlockReason = null, string? ConversionBlockReason = null,
+    VideoAudioSelection? Video = null)
 {
     public const long MaximumFileBytes = 512L * 1024 * 1024;
     public void Validate()
@@ -17,6 +18,13 @@ public sealed record AudioFileSource(Guid ItemId, string Path, string Sha256, lo
             OptimizationBlockReason?.Length > 1024 || ConversionBlockReason?.Length > 1024)
             throw new InvalidDataException("Audio source facts are incomplete or exceed their bounds.");
         Facts.Validate();
+        if (Video is not null)
+        {
+            Video.Validate(Facts);
+            if (!VideoAudioSelection.IsVideoPath(Path) ||
+                (System.IO.Path.GetExtension(Path).ToLowerInvariant() is ".webm" or ".mkv") != (Facts.Container == "matroska,webm"))
+                throw new InvalidDataException("Video filename and selected container do not agree.");
+        }
     }
 }
 

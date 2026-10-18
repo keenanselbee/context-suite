@@ -25,11 +25,11 @@ DEPENDENCIES = {"opus": "Opus", "ogg_vorbis": "OggVorbis", "lame": "LameStable",
 
 
 def selection(profile):
-    if profile not in ("curated", "expanded"):
+    if profile not in ("curated", "expanded", "video"):
         raise ValueError("Unknown audio distribution profile")
     pin = json.loads((TOOLS / (profile + "-candidate.json")).read_text())
     recipes = RECIPE_FILES + [item["path"] for item in pin.get("patches", [])]
-    suffix = "-EXPANDED" if profile == "expanded" else ""
+    suffix = {"curated": "", "expanded": "-EXPANDED", "video": "-VIDEO"}[profile]
     return pin, recipes, TOOLS / ("distribution/BUILD" + suffix + ".md"), TOOLS / ("distribution/THIRD-PARTY-NOTICES" + suffix + ".txt")
 
 
@@ -38,8 +38,10 @@ def review_profile(record, pin, profile):
         raise ValueError("Distribution source patches differ from the selected profile")
     for key in ("expandedInputs", "wmaProTailRepair", "wmaProMatrixRepair", "wmaStandardTailRepair",
                 "wmaVoiceCacheRepair", "rawAudioTimestampRepair"):
-        if record.get(key, False) is not (profile == "expanded"):
+        if record.get(key, False) is not (profile in ("expanded", "video")):
             raise ValueError("Distribution build selection differs: " + key)
+    if record.get("videoAudioInputs", False) is not (profile == "video"):
+        raise ValueError("Distribution build selection differs: videoAudioInputs")
     if record["source"]["revision"] != pin["sourceRevision"] or record["exitCode"]:
         raise ValueError("Distribution source revision or completed build differs")
 
@@ -156,9 +158,13 @@ def main():
     parser.add_argument("--candidate", required=True)
     parser.add_argument("--sources", required=True)
     parser.add_argument("--expanded", action="store_true", help="Review the exact expanded-input runtime and its selected source patches")
+    parser.add_argument("--video", action="store_true", help="Review the expanded-input plus MP4/MOV/WebM/MKV audio runtime")
+    parser.add_argument("--workspace-root", help="Existing repository scratch directory for review output")
     args = parser.parse_args()
+    if args.expanded and args.video:
+        raise ValueError("Select one audio distribution profile")
     candidate, sources = (build_tool.local_path(value) for value in (args.candidate, args.sources))
-    profile = "expanded" if args.expanded else "curated"
+    profile = "video" if args.video else "expanded" if args.expanded else "curated"
     pin, recipes, instructions, notice = selection(profile)
     runtime = json.loads((candidate / "runtime-files.json").read_text())
     if runtime != pin["files"]:
@@ -203,7 +209,10 @@ def main():
             source_count += 1
         if sum(path.is_file() for path in (candidate / "source").rglob("*")) != source_count:
             raise ValueError("FFmpeg source membership changed")
-    output = build_tool.SCRATCH / ("audio-distribution-" + uuid.uuid4().hex)
+    workspace_root = build_tool.local_path(args.workspace_root) if args.workspace_root else build_tool.SCRATCH
+    if not workspace_root.is_dir():
+        raise ValueError("The distribution workspace root must exist")
+    output = workspace_root / ("audio-distribution-" + uuid.uuid4().hex)
     output.mkdir()
     print("Audio distribution review: " + str(output), flush=True)
     kit, binary = output / "source-kit", output / "runtime"
@@ -236,7 +245,7 @@ def main():
     for name in ("build-inputs.json", "build-result.json", "source-inventory.json", "dependency-files.json", "runtime-files.json",
                  "configure.log", "build.log", "ffmpeg-version.log", "ffprobe-version.log"):
         copy_verified(candidate / name, evidence / name, build_tool.digest(candidate / name))
-    if profile == "expanded":
+    if profile in ("expanded", "video"):
         copy_verified(candidate / "effective-sources.json", evidence / "effective-sources.json", record["effectiveSourcesSha256"])
     for name, (directory, _) in dependencies.items():
         for file in ("dependency-build.json", "source-inventory.json", "tests.log"):

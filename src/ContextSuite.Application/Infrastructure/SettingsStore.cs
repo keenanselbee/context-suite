@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using ContextSuite.Core.Settings;
+using ContextSuite.Core.Audio;
 
 namespace ContextSuite.Application.Infrastructure;
 
@@ -42,7 +43,9 @@ internal sealed class SettingsStore(string path)
                     Convert = ReadTool(root, "Convert", schema, ref repaired),
                     Optimize = ReadTool(root, "Optimize", schema, ref repaired),
                     PlayCompletionSound = !root.TryGetProperty("PlayCompletionSound", out var sound) || sound.ValueKind != JsonValueKind.False,
-                    TransparentPdfBackground = root.TryGetProperty("TransparentPdfBackground", out var background) && background.ValueKind == JsonValueKind.True
+                    AnalysisDetailsExpanded = !root.TryGetProperty("AnalysisDetailsExpanded", out var details) || details.ValueKind != JsonValueKind.False,
+                    TransparentPdfBackground = root.TryGetProperty("TransparentPdfBackground", out var background) && background.ValueKind == JsonValueKind.True,
+                    WwiseConsolePath = ReadWwiseConsolePath(root, ref repaired)
                 };
                 return new(settings, revision, true, repaired ? "Some settings were invalid and use safe defaults. Save to apply the repaired values." : null);
             }
@@ -67,6 +70,7 @@ internal sealed class SettingsStore(string path)
             throw new InvalidDataException("These settings cannot be saved by this version of Context Suite.");
         ValidateDirectory(settings.Convert.OutputDirectory);
         ValidateDirectory(settings.Optimize.OutputDirectory);
+        ValidateWwiseConsolePath(settings.WwiseConsolePath);
         RejectLinkedAncestors(_path);
         var directory = Path.GetDirectoryName(_path)!;
         Directory.CreateDirectory(directory);
@@ -101,6 +105,31 @@ internal sealed class SettingsStore(string path)
             throw new IOException($"Settings publication was interrupted. Previous settings are retained at {backup}.", error);
         }
         finally { TryDeleteOwnedFile(temporary); }
+    }
+
+    private static string? ReadWwiseConsolePath(JsonElement root, ref bool repaired)
+    {
+        if (!root.TryGetProperty("WwiseConsolePath", out var value) || value.ValueKind == JsonValueKind.Null) return null;
+        if (value.ValueKind == JsonValueKind.String)
+        {
+            try
+            {
+                var path = value.GetString();
+                ValidateWwiseConsolePath(path);
+                return path;
+            }
+            catch (ArgumentException) { }
+        }
+        repaired = true;
+        return null;
+    }
+
+    private static void ValidateWwiseConsolePath(string? path)
+    {
+        if (path is null) return;
+        if (path.Length > 32700 || !string.Equals(Path.GetFileName(path), "WwiseConsole.exe", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Remember the fully qualified WwiseConsole.exe location.");
+        _ = WwiseInstallation.ResolveConsolePath(path);
     }
 
     private static ToolSettings ReadTool(JsonElement root, string name, int schema, ref bool repaired)

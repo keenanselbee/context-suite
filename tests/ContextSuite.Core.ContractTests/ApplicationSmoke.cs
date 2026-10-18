@@ -73,7 +73,14 @@ internal static class ApplicationSmoke
             {
                 foreach (var process in Process.GetProcessesByName("ContextSuite.Worker"))
                 {
-                    if (string.Equals(process.MainModule?.FileName, workerPath, StringComparison.OrdinalIgnoreCase)) workers.Add(process);
+                    var matches = false;
+                    try { matches = string.Equals(process.MainModule?.FileName, workerPath, StringComparison.OrdinalIgnoreCase); }
+                    catch (System.ComponentModel.Win32Exception) { }
+                    catch (InvalidOperationException) { }
+                    // An unrelated inaccessible process or one exiting during
+                    // enumeration must not abort discovery. Our exact worker
+                    // still has to be observed before the deadline below.
+                    if (matches) workers.Add(process);
                     else process.Dispose();
                 }
                 if (workers.Count == 0) await Task.Delay(50, timeout.Token);

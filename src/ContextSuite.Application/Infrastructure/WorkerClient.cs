@@ -7,6 +7,9 @@ using ContextSuite.Core.Audio;
 using ContextSuite.Core.Analysis;
 using ContextSuite.Core.Pdf;
 using ContextSuite.Core.Office;
+using ContextSuite.Core.Tiff;
+using ContextSuite.Core.Svg;
+using ContextSuite.Core.Gif;
 using ContextSuite.Runtime;
 
 namespace ContextSuite.Application.Infrastructure;
@@ -22,11 +25,104 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     public bool HasAudioProbe => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "audio-engine", "ffprobe.exe"));
     public bool HasFlacOptimizer => HasAudioProbe && File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "audio-engine", "ffmpeg.exe"));
     public bool HasAudioConverter => HasFlacOptimizer;
+    public bool HasWemDecoder => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "wem-engine", "vgmstream-cli.exe")) &&
+        File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "wem-engine", "libvorbis.dll"));
     public bool HasPdfProbe => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-engine", "qpdf.exe"));
     public bool HasPdfOptimizer => HasPdfProbe;
+    public bool HasPdfDarkConverter => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-dark", "ContextSuite.PdfDark.exe"));
     public bool HasPdfDocxConverter => HasPdfRenderer && File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "UglyToad.PdfPig.dll"));
     public bool HasPdfRenderer => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-renderer", "ContextSuite.PdfRenderer.exe"));
     public bool HasImagePdfConverter => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "pdf-validator", "ContextSuite.ImagePdfValidator.exe"));
+    public bool HasTiffPdfConverter => HasImagePdfConverter;
+    public bool HasSvgConverter => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "svg", "ContextSuite.Svg.exe"));
+    public bool HasAvifEncoder => File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "avif", "ContextSuite.Avif.Native.dll")) &&
+        File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "heif", "ContextSuite.Heif.Native.dll")) &&
+        File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "heif", "heif.dll")) &&
+        File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "heif", "libde265.dll"));
+
+    public async Task<SvgSourceFacts> ProbeSvgAsync(SvgProbe request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "svg-probe", SvgProbe: request), token);
+        var source = reply.SvgSource ?? throw new InvalidDataException("Missing SVG source response.");
+        source.Validate();
+        if (source.ItemId != request.ItemId || source.Path != request.Path) throw new InvalidDataException("SVG source identity changed.");
+        return source;
+    }
+
+    public async Task<GifSourceFacts> ProbeGifAsync(GifProbe request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "gif-probe", GifProbe: request), token);
+        var source = reply.GifSource ?? throw new InvalidDataException("Missing GIF facts.");
+        source.Validate();
+        if (source.ItemId != request.ItemId || source.Path != request.Path) throw new InvalidDataException("GIF source identity changed.");
+        return source;
+    }
+
+    public async Task<GifWorkResult> ConvertGifAsync(GifWork work, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "gif-convert", GifWork: work), token);
+        var result = reply.GifResult ?? throw new InvalidDataException("Missing GIF frame result.");
+        if (result.Validation is null || result.Validation.ItemId != work.OutputId || !result.Validation.MatchesPlan ||
+            result.Validation.Sha256 is not { Length: 64 } || !result.Validation.Sha256.All(char.IsAsciiHexDigit) ||
+            result.SourceId != work.Source.ItemId || result.SourceSha256 != work.Source.Sha256 || result.FrameIndex != work.FrameIndex ||
+            result.Width != work.Source.Width || result.Height != work.Source.Height || result.OutputBytes is < 1 or > GifWork.MaximumOutputBytes ||
+            string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 256)
+            throw new InvalidDataException("Invalid GIF frame result.");
+        return result;
+    }
+
+    internal async Task ReleaseGifAsync()
+    {
+        if (ProcessId is null) return;
+        try { _ = await SendAsync(new(1, Guid.NewGuid(), "gif-release"), CancellationToken.None); }
+        catch (Exception error) when (error is IOException or InvalidDataException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        { /* SendAsync tears down a failed worker, releasing any source lease. */ }
+    }
+
+    public async Task<SvgWorkResult> ConvertSvgAsync(SvgWork work, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "svg-convert", SvgWork: work), token);
+        var result = reply.SvgResult ?? throw new InvalidDataException("Missing SVG conversion response.");
+        var size = work.Options.GetSize(work.Source);
+        if (result.Validation is null || result.Validation.ItemId != work.OutputId || !result.Validation.MatchesPlan ||
+            result.Validation.Sha256 is not { Length: 64 } || !result.Validation.Sha256.All(char.IsAsciiHexDigit) ||
+            result.SourceId != work.Source.ItemId || result.SourceSha256 != work.Source.Sha256 || result.FontFingerprint != work.Source.FontFingerprint ||
+            result.Format != work.Options.Target ||
+            result.Width != size.Width || result.Height != size.Height || result.OutputBytes is <= 0 or > SvgWork.MaximumOutputBytes ||
+            string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 256)
+            throw new InvalidDataException("Invalid SVG conversion response.");
+        return result;
+    }
+
+    public async Task<TiffSourceFacts> ProbeTiffAsync(TiffProbe request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "tiff-probe", TiffProbe: request), token);
+        var source = reply.TiffSource ?? throw new InvalidDataException("Missing TIFF source response.");
+        source.Validate();
+        if (source.ItemId != request.ItemId || source.Path != request.Path)
+            throw new InvalidDataException("TIFF source identity changed.");
+        return source;
+    }
+
+    public async Task<TiffWorkResult> ConvertTiffAsync(TiffWork work, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "tiff-convert", TiffWork: work), token);
+        var result = reply.TiffResult ?? throw new InvalidDataException("Missing TIFF conversion response.");
+        if (result.Validation is null || result.Validation.ItemId != work.OutputId || !result.Validation.MatchesPlan ||
+            result.SourceId != work.Source.ItemId || result.SourceSha256 != work.Source.Sha256 ||
+            result.PageIndex != work.PageIndex || result.PageCount != (work.Options.Target == TiffTarget.Pdf ? work.Source.Pages.Length : 1) ||
+            result.OutputBytes is <= 0 or > TiffWork.MaximumOutputBytes ||
+            string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 256)
+            throw new InvalidDataException("Invalid TIFF conversion response.");
+        return result;
+    }
+
+    public async Task<ImagePreview> PreviewTiffAsync(TiffPreviewRequest request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "tiff-preview", TiffPreview: request), token);
+        var preview = reply.TiffPreview ?? throw new InvalidDataException("Missing TIFF preview.");
+        return preview;
+    }
     public bool HasOfficePdfValidator => HasPdfProbe && HasPdfRenderer;
     public string OfficeEngineDirectory => Path.Combine(Path.GetDirectoryName(Path.GetFullPath(executable))!, "office-engine");
     public bool HasOfficeConverter => HasOfficePdfValidator && File.Exists(Path.Combine(OfficeEngineDirectory, "ContextSuite.OfficeHost.exe")) &&
@@ -108,6 +204,24 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         return result;
     }
 
+    public async Task<PdfDarkSource> ProbePdfDarkAsync(PdfFileProbe request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "pdf-dark-probe", PdfDarkProbe: request), token);
+        var source = reply.PdfDarkSource ?? throw new InvalidDataException("Missing PDF dark-mode source response.");
+        source.Validate();
+        if (source.ItemId != request.ItemId || source.Path != request.Path)
+            throw new InvalidDataException("PDF dark-mode source does not match the request.");
+        return source;
+    }
+
+    public async Task<PdfDarkResult> ConvertPdfDarkAsync(PdfDarkWork work, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "pdf-dark-convert", PdfDarkWork: work), token);
+        var result = reply.PdfDarkResult ?? throw new InvalidDataException("Missing PDF dark-mode conversion response.");
+        result.Validate(work);
+        return result;
+    }
+
     public async Task<PdfFileSource> ProbePdfFileAsync(PdfFileProbe request, CancellationToken token)
     {
         var reply = await SendAsync(new(1, Guid.NewGuid(), "pdf-file-probe", PdfFile: request), token);
@@ -178,6 +292,20 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 256)
             throw new InvalidDataException("Invalid FLAC validation response.");
         return result;
+    }
+
+    public async Task<AudioFileSource> ProbeVideoAudioAsync(AudioFileProbe request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "video-audio-probe", AudioFile: request), token);
+        if (reply.AudioSource is not { } source || source.Video is not null || reply.AudioResult is not null || reply.Source is not null ||
+            reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0 ||
+            source.ItemId != request.ItemId || source.Path != request.Path)
+            throw new InvalidDataException("Invalid video audio inventory response.");
+        source.Validate();
+        if (source.Facts.Container is not ("mov,mp4,m4a,3gp,3g2,mj2" or "matroska,webm") ||
+            (Path.GetExtension(source.Path).ToLowerInvariant() is ".webm" or ".mkv") != (source.Facts.Container == "matroska,webm"))
+            throw new InvalidDataException("Video container and filename do not agree.");
+        return source;
     }
 
     public async Task<AudioFileSource> ProbeAudioFileAsync(AudioFileProbe request, AudioFormat target, CancellationToken token)
@@ -259,7 +387,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     {
         command.Validate();
         await _gate.WaitAsync(cancellationToken);
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.Command is "images-to-pdf" or "office-export" or "pdf-to-docx" ? 180 : command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" or "office-pdf-validate" ? 120 : 30),
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.AudioWork?.Target == AudioFormat.Wem || command.AudioWork?.Source.Video is not null ? 270 : command.Command == "pdf-dark-convert" ? 240 : command.Command is "images-to-pdf" or "office-export" or "pdf-to-docx" or "pdf-dark-probe" ? 180 : command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" or "office-pdf-validate" or "tiff-probe" or "tiff-convert" or "svg-probe" or "svg-convert" or "gif-probe" or "gif-convert" or "video-audio-probe" ? 120 : 30),
             timeProvider ?? TimeProvider.System);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
         try
@@ -298,6 +426,50 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             var reply = await JsonFrames.ReadAsync<WorkerReply>(_pipe!, timeout.Token);
             if (reply.Version != 1 || reply.RequestId != command.RequestId || reply.Capabilities is null)
                 throw new InvalidDataException("The media worker returned an invalid response.");
+            if (command.Command != "pdf-dark-probe" && reply.PdfDarkSource is not null ||
+                command.Command != "pdf-dark-convert" && reply.PdfDarkResult is not null ||
+                command.Command is "pdf-dark-probe" or "pdf-dark-convert" &&
+                (reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null ||
+                 reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null ||
+                 reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null ||
+                 reply.ImagePdfResult is not null || reply.OfficeCandidate is not null || reply.OfficePdfResult is not null ||
+                 reply.PdfDocxSource is not null || reply.PdfDocxResult is not null || reply.TiffSource is not null ||
+                 reply.TiffResult is not null || reply.TiffPreview is not null || reply.SvgSource is not null ||
+                 reply.SvgResult is not null || reply.GifSource is not null || reply.GifResult is not null || reply.Capabilities.Length != 0) ||
+                reply.Failure is not null && (reply.PdfDarkSource is not null || reply.PdfDarkResult is not null))
+                throw new InvalidDataException("The media worker returned contradictory PDF dark-mode data.");
+            if (command.Command != "gif-probe" && reply.GifSource is not null ||
+                command.Command != "gif-convert" && reply.GifResult is not null ||
+                reply.Failure is not null && (reply.GifSource is not null || reply.GifResult is not null) ||
+                command.Command is "gif-probe" or "gif-convert" or "gif-release" &&
+                (reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null ||
+                 reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null ||
+                 reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null ||
+                 reply.ImagePdfResult is not null || reply.OfficeCandidate is not null || reply.OfficePdfResult is not null ||
+                 reply.PdfDocxSource is not null || reply.PdfDocxResult is not null || reply.TiffSource is not null ||
+                 reply.TiffResult is not null || reply.TiffPreview is not null || reply.SvgSource is not null ||
+                 reply.SvgResult is not null || reply.Capabilities.Length != 0))
+                throw new InvalidDataException("The media worker returned contradictory GIF data.");
+            if (command.Command != "svg-probe" && reply.SvgSource is not null ||
+                command.Command != "svg-convert" && reply.SvgResult is not null ||
+                reply.Failure is not null && (reply.SvgSource is not null || reply.SvgResult is not null) ||
+                command.Command is "svg-probe" or "svg-convert" &&
+                (reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null ||
+                 reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null ||
+                 reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null ||
+                 reply.ImagePdfResult is not null || reply.OfficeCandidate is not null || reply.OfficePdfResult is not null ||
+                 reply.PdfDocxSource is not null || reply.PdfDocxResult is not null || reply.TiffSource is not null ||
+                 reply.TiffResult is not null || reply.TiffPreview is not null || reply.Capabilities.Length != 0))
+                throw new InvalidDataException("The media worker returned contradictory SVG data.");
+            if (command.Command != "tiff-probe" && reply.TiffSource is not null ||
+                command.Command != "tiff-convert" && reply.TiffResult is not null ||
+                command.Command != "tiff-preview" && reply.TiffPreview is not null ||
+                command.Command is "tiff-probe" or "tiff-convert" or "tiff-preview" &&
+                (reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null ||
+                 reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null ||
+                 reply.ImagePdfResult is not null || reply.OfficeCandidate is not null || reply.OfficePdfResult is not null ||
+                 reply.Audio is not null || reply.AudioSource is not null || reply.AudioResult is not null || reply.Capabilities.Length != 0))
+                throw new InvalidDataException("The media worker returned contradictory TIFF data.");
             if (command.Command != "pdf-docx-probe" && reply.PdfDocxSource is not null ||
                 command.Command != "pdf-to-docx" && reply.PdfDocxResult is not null ||
                 command.Command is "pdf-docx-probe" or "pdf-to-docx" &&
@@ -325,14 +497,17 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
                 throw new InvalidDataException("The media worker returned contradictory PDF page data.");
             if (command.Command != "pdf-file-probe" && reply.PdfSource is not null || command.Command != "pdf-optimize" && reply.PdfResult is not null)
                 throw new InvalidDataException("The media worker returned unexpected PDF file data.");
-            if (command.Command is not ("flac-probe" or "audio-file-probe") && reply.AudioSource is not null ||
+            if (command.Command is not ("flac-probe" or "audio-file-probe" or "video-audio-probe") && reply.AudioSource is not null ||
                 command.Command is not ("flac-optimize" or "audio-convert") && reply.AudioResult is not null)
                 throw new InvalidDataException("The media worker returned unexpected file-audio data.");
+            ValidatePdfDarkFailurePage(reply, command.Command);
             if (reply.Failure is { } failure)
             {
-                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null || reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null || reply.ImagePdfResult is not null || reply.OfficeCandidate is not null || reply.OfficePdfResult is not null || reply.Capabilities.Length != 0)
+                if (PdfDarkFailures.IsFeatureLimit(failure) && command.Command is not ("pdf-dark-probe" or "pdf-dark-convert"))
+                    throw new InvalidDataException("Worker returned a PDF dark-mode failure for another operation.");
+                if (!Enum.IsDefined(failure) || reply.Source is not null || reply.ImageResult is not null || reply.Preview is not null || reply.Engine is not null || reply.Audio is not null || reply.Pdf is not null || reply.AudioSource is not null || reply.AudioResult is not null || reply.PdfSource is not null || reply.PdfResult is not null || reply.PdfRaster is not null || reply.PdfPageResult is not null || reply.ImagePdfResult is not null || reply.OfficeCandidate is not null || reply.OfficePdfResult is not null || reply.TiffSource is not null || reply.TiffResult is not null || reply.TiffPreview is not null || reply.Capabilities.Length != 0)
                     throw new InvalidDataException("Worker failure response contains invalid or contradictory data.");
-                throw new MediaWorkerException(failure, command: command.Command);
+                throw new MediaWorkerException(failure, command: command.Command, pdfDarkPage: reply.PdfDarkFailurePage);
             }
             return reply;
         }
@@ -446,6 +621,13 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         }
     }
 
+    internal static void ValidatePdfDarkFailurePage(WorkerReply reply, string command)
+    {
+        if (reply.PdfDarkFailurePage is { } page &&
+            (command is not ("pdf-dark-probe" or "pdf-dark-convert") || reply.Failure is null || page is < 1 or > 512))
+            throw new InvalidDataException("Worker returned invalid PDF dark-mode failure page data.");
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _gate.WaitAsync();
@@ -454,9 +636,12 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     }
 }
 
-internal sealed class MediaWorkerException(ImageFailure failure, Exception? inner = null, string? command = null)
+internal sealed class MediaWorkerException(ImageFailure failure, Exception? inner = null, string? command = null, int? pdfDarkPage = null)
     : IOException(command is "office-export" or "office-pdf-validate"
-        ? OfficeFailureMessages.Describe(failure, command == "office-pdf-validate") : ImageFailureException.Describe(failure), inner)
+        ? OfficeFailureMessages.Describe(failure, command == "office-pdf-validate") :
+        command is "pdf-dark-probe" or "pdf-dark-convert" ? PdfDarkFailures.Describe(failure, pdfDarkPage) :
+        ImageFailureException.Describe(failure), inner)
 {
     public ImageFailure Failure { get; } = failure;
+    public int? PdfDarkPage { get; } = pdfDarkPage;
 }

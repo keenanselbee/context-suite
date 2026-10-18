@@ -19,10 +19,12 @@ public partial class App : System.Windows.Application
     private readonly Func<string, CancellationToken, Task<OperationRequest>> _readActivation;
     private LoadedSettings? _settings;
     private SettingsWindow? _settingsWindow;
+    private AnalyzeWindow? _analyzeWindow;
     private bool _openingSettings;
     private string _requestedSettingsSection = "convert";
     private ConversionWindow? _conversionWindow;
     private AudioConversionWindow? _audioConversionWindow;
+    private WemEncodingWindow? _wemEncodingWindow;
     private ImagePdfOrderWindow? _imagePdfOrderWindow;
     private OfficeCalculationWindow? _officeCalculationWindow;
     private OfficeFontReviewWindow? _officeFontReviewWindow;
@@ -75,6 +77,7 @@ public partial class App : System.Windows.Application
                 return;
             }
             _settings = await _settingsStore.LoadAsync();
+            _analysisDetailsExpanded = _settings.Settings.AnalysisDetailsExpanded;
             var publisher = new OutputPublisher(_paths.Publications, new WindowsFileRecycler(), PublicationSupport.ReplacementAvailable);
             IOperationAccess access = new LocalTrialStore(_paths.Trial);
             if (_licenseService is not null)
@@ -87,7 +90,11 @@ public partial class App : System.Windows.Application
             _viewModel.SettingsRequested += ShowSettings;
             _viewModel.ConversionRequested += ShowConversionAsync;
             _viewModel.AudioConversionRequested += ShowAudioConversionAsync;
+            _viewModel.VideoAudioTrackRequested += ShowVideoAudioTrackAsync;
+            _viewModel.WemEncodingRequested += ShowWemEncodingAsync;
             _viewModel.ImagePdfOrderRequested += ShowImagePdfOrderAsync;
+            _viewModel.TiffMatteRequested += ShowTiffMatteAsync;
+            _viewModel.SvgSizeRequested += ShowSvgSizeAsync;
             _viewModel.OfficeCalculationRequested += ShowOfficeCalculationAsync;
             _viewModel.OfficeFontsRequested += ShowOfficeFontReviewAsync;
             var window = new MainWindow { DataContext = _viewModel };
@@ -119,23 +126,25 @@ public partial class App : System.Windows.Application
                 if (_closing) return new ActivationReply(1, incoming?.RequestId ?? Guid.Empty, false, "Application is closing.");
                 var reply = _viewModel.Admit(incoming);
                 if (reply.Accepted && incoming is null) ShowSettings("convert");
+                else if (reply.Accepted && incoming?.Operation == "analyze") ShowAnalyze();
                 else if (reply.Accepted && incoming?.IsQuickAction != true && incoming?.IsSettingsRequest != true)
                 {
                     _userOpened = true;
                     window.ShowActivated = true;
                     window.Show();
                     if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
-                    if (incoming?.IsSettingsRequest != true) (_officeCalculationWindow as Window ?? _conversionWindow as Window ?? window).Activate();
+                    if (incoming?.IsSettingsRequest != true) (_officeCalculationWindow as Window ?? _wemEncodingWindow as Window ?? _conversionWindow as Window ?? window).Activate();
                 }
                 return reply;
             }).Task);
             _officeRecovery = RecoverOfficeAsync(window);
             var accepted = _viewModel.Admit(request);
             if (!accepted.Accepted) throw new InvalidDataException(accepted.Message);
-            _userOpened = (request is not null && request.IsQuickAction != true && request.IsSettingsRequest != true) ||
+            _userOpened = (request is not null && request.Operation != "analyze" && request.IsQuickAction != true && request.IsSettingsRequest != true) ||
                 !string.IsNullOrEmpty(_viewModel.RecoveryNotice) || _settings.Warning is not null;
             window.ShowActivated = _userOpened;
             if (_userOpened) window.Show();
+            if (request?.Operation == "analyze") ShowAnalyze();
             if (request is null) ShowSettings("convert");
             if (activationPath is not null) ActivationStore.Acknowledge(activationPath);
             ActivationStore.CleanupStale(_paths.ActivationCleanupDirectory);
@@ -163,6 +172,47 @@ public partial class App : System.Windows.Application
         _userOpened = true;
         window.ShowActivated = true;
         window.Show();
+    }
+
+    private void ShowAnalyze()
+    {
+        if (_analyzeWindow is null)
+        {
+            _analyzeWindow = new AnalyzeWindow { DataContext = _viewModel, DetailsExpanded = _analysisDetailsExpanded };
+            _analyzeWindow.DetailsExpandedChanged += expanded =>
+            {
+                _analysisDetailsExpanded = expanded;
+                _analysisPreferenceSave = SaveAnalysisPreferenceAsync(_analysisPreferenceSave, expanded);
+            };
+            _analyzeWindow.Closed += (_, _) => _analyzeWindow = null;
+        }
+        _analyzeWindow.Show();
+        if (_analyzeWindow.WindowState == WindowState.Minimized) _analyzeWindow.WindowState = WindowState.Normal;
+        _analyzeWindow.Activate();
+    }
+
+    private bool _analysisDetailsExpanded = true;
+    private Task _analysisPreferenceSave = Task.CompletedTask;
+
+    private async Task SaveAnalysisPreferenceAsync(Task previous, bool expanded)
+    {
+        await previous;
+        try
+        {
+            // Merge only the disclosure preference into the latest settings.
+            // Serial saves preserve the final choice even after rapid toggles.
+            var latest = await _settingsStore.LoadAsync();
+            if (!latest.CanSave || latest.Warning is not null)
+                throw new IOException("Settings are unavailable.");
+            _settings = latest.Settings.AnalysisDetailsExpanded == expanded ? latest :
+                await _settingsStore.SaveAsync(latest.Settings with { AnalysisDetailsExpanded = expanded }, latest);
+            _viewModel!.Settings = _settings.Settings;
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            if (_analyzeWindow is not null)
+                _analyzeWindow.InputNotice.Text = "This view choice could not be saved. It will be remembered until Context Suite closes.";
+        }
     }
 
     private async Task<string?> ShowOfficeCalculationAsync(CancellationToken token)
@@ -205,7 +255,7 @@ public partial class App : System.Windows.Application
         if (_paidLicense is null || _closing) return;
         if (_licenseWindow is not null) { _licenseWindow.Activate(); return; }
         _licenseWindow = new(new LicenseViewModel(_paidLicense));
-        var owner = _officeFontReviewWindow as Window ?? _officeCalculationWindow as Window ?? _imagePdfOrderWindow as Window ?? _audioConversionWindow as Window ?? _conversionWindow as Window ?? _settingsWindow ?? MainWindow;
+        var owner = _officeFontReviewWindow as Window ?? _officeCalculationWindow as Window ?? _imagePdfOrderWindow as Window ?? _audioConversionWindow as Window ?? _wemEncodingWindow as Window ?? _conversionWindow as Window ?? _settingsWindow ?? MainWindow;
         if (owner.IsVisible) _licenseWindow.Owner = owner;
         _licenseWindow.Closed += async (_, _) =>
         {
@@ -244,12 +294,14 @@ public partial class App : System.Windows.Application
     private async void CheckQuietWindow(object? sender, EventArgs e)
     {
         if (_closing || _viewModel is null) return;
-        if (!_userOpened && _conversionWindow is null && _audioConversionWindow is null && _imagePdfOrderWindow is null && _officeCalculationWindow is null && _officeFontReviewWindow is null && _quiet.ShowProgress(DateTimeOffset.UtcNow)) MainWindow.Show();
-        if (_viewModel.IsBusy || _userOpened || _quiet.NeedsAttention || _settingsWindow is not null || _openingSettings || _licenseWindow is not null) return;
+        if (!_userOpened && _conversionWindow is null && _audioConversionWindow is null && _wemEncodingWindow is null && _imagePdfOrderWindow is null && _officeCalculationWindow is null && _officeFontReviewWindow is null && _quiet.ShowProgress(DateTimeOffset.UtcNow)) MainWindow.Show();
+        if (_viewModel.IsBusy || _userOpened || _quiet.NeedsAttention || _settingsWindow is not null ||
+            _wemEncodingWindow is not null || _openingSettings || _licenseWindow is not null) return;
         MainWindow.Hide();
+        if (_analyzeWindow is not null) return;
         // A bounded refresh may finish quietly before exit so short image jobs do
         // not repeatedly cancel the daily validation and exhaust offline grace.
-        if (!_sounds.IsCompleted || _licenseValidating || !_officeRecovery.IsCompleted || _router!.HasConnectedClient) return;
+        if (!_sounds.IsCompleted || !_analysisPreferenceSave.IsCompleted || _licenseValidating || !_officeRecovery.IsCompleted || _router!.HasConnectedClient) return;
         using var handoff = new ActivationGate();
         if (!handoff.TryEnter()) return;
         _closing = true;
@@ -257,6 +309,7 @@ public partial class App : System.Windows.Application
         _licenseLifetime.Cancel();
         _officeRecoveryLifetime.Cancel();
         await _officeRecovery;
+        await _analysisPreferenceSave;
         if (_licenseRefresh is not null) await _licenseRefresh;
         _router.StopAccepting();
         await _viewModel.DisposeAsync();
@@ -284,6 +337,15 @@ public partial class App : System.Windows.Application
         finally { planner.Confirmed -= Confirmed; _conversionWindow = null; }
     }
 
+    private Task<VideoAudioSelection?> ShowVideoAudioTrackAsync(VideoAudioTrackViewModel decision, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var window = new VideoAudioTrackWindow(decision);
+        if (MainWindow.IsVisible) window.Owner = MainWindow;
+        using var registration = token.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
+        return Task.FromResult(window.ShowDialog() == true ? window.Selection : null);
+    }
+
     private async Task<ConfirmedAudioConversion?> ShowAudioConversionAsync(AudioConversionViewModel decision, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -300,6 +362,34 @@ public partial class App : System.Windows.Application
         finally { decision.Confirmed -= Confirmed; _audioConversionWindow = null; }
     }
 
+    private async Task<WemEncodingOptions?> ShowWemEncodingAsync(CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var completion = new TaskCompletionSource<WemEncodingOptions?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var decision = new WemEncodingViewModel(_viewModel!.Settings.WwiseConsolePath, RememberWwiseConsoleAsync, token);
+        var window = new WemEncodingWindow { DataContext = decision };
+        if (MainWindow.IsVisible) window.Owner = MainWindow;
+        _wemEncodingWindow = window;
+        void Confirmed(WemEncodingOptions options) { completion.TrySetResult(options); window.Close(); }
+        decision.Confirmed += Confirmed;
+        window.Closed += (_, _) => { decision.Dispose(); completion.TrySetResult(null); };
+        window.Show();
+        using var registration = token.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
+        try { await decision.InitializeAsync(); return await completion.Task; }
+        finally { decision.Confirmed -= Confirmed; _wemEncodingWindow = null; }
+    }
+
+    private async Task RememberWwiseConsoleAsync(string path, CancellationToken token)
+    {
+        var latest = await _settingsStore.LoadAsync(token);
+        if (!latest.CanSave)
+            throw new IOException(latest.Warning ?? "Settings are unavailable; the Wwise location could not be saved.");
+        var saved = string.Equals(latest.Settings.WwiseConsolePath, path, StringComparison.OrdinalIgnoreCase)
+            ? latest : await _settingsStore.SaveAsync(latest.Settings with { WwiseConsolePath = path }, latest, token);
+        _settings = saved;
+        _viewModel!.Settings = saved.Settings;
+    }
+
     private async Task<ConfirmedImagePdf?> ShowImagePdfOrderAsync(ImagePdfOrderViewModel decision, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -314,6 +404,26 @@ public partial class App : System.Windows.Application
         using var registration = token.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
         try { await decision.RefreshAccessAsync(); return await completion.Task; }
         finally { decision.Confirmed -= Confirmed; _imagePdfOrderWindow = null; }
+    }
+
+    private Task<uint?> ShowTiffMatteAsync(ContextSuite.Core.Tiff.TiffSourceFacts source,
+        ContextSuite.Core.Images.ImagePreview preview, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var window = new TiffMatteWindow(Path.GetFileName(source.Path), preview);
+        if (MainWindow.IsVisible) window.Owner = MainWindow;
+        using var registration = token.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
+        return Task.FromResult(window.ShowDialog() == true ? window.MatteRgb : null);
+    }
+
+    private Task<ContextSuite.Core.Svg.SvgConversionOptions?> ShowSvgSizeAsync(
+        IReadOnlyList<ContextSuite.Core.Svg.SvgSourceFacts> sources, ContextSuite.Core.Images.ImageFormat target, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var window = new SvgSizeWindow(sources, target);
+        if (MainWindow.IsVisible) window.Owner = MainWindow;
+        using var registration = token.Register(() => Dispatcher.BeginInvoke(() => window.Close()));
+        return Task.FromResult(window.ShowDialog() == true ? window.Options : null);
     }
 
     private async void ShowSettings(string section)
@@ -353,6 +463,20 @@ public partial class App : System.Windows.Application
     {
         e.Cancel = true;
         if (_closing || _viewModel is null) return;
+        if (_analyzeWindow is not null)
+        {
+            if (_viewModel.IsOperationBusy)
+            {
+                if (MessageBox.Show(MainWindow, "Cancel pending conversions and optimizations and close these results? Completed results will not be undone. Analyze will stay open.",
+                    "Context Suite", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+                _viewModel.CancelCommand.Execute(null);
+            }
+            // Closing results leaves the independent inspector and its analysis alive.
+            _userOpened = false;
+            _quiet.DismissAttention();
+            MainWindow.Hide();
+            return;
+        }
         if (_viewModel.IsBusy && MessageBox.Show("Cancel pending work and exit? Completed results will not be undone.",
             "Context Suite", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
         _closing = true;
@@ -360,6 +484,7 @@ public partial class App : System.Windows.Application
         _licenseLifetime.Cancel();
         _officeRecoveryLifetime.Cancel();
         await _officeRecovery;
+        await _analysisPreferenceSave;
         if (_licenseRefresh is not null) await _licenseRefresh;
         _router!.StopAccepting();
         await _viewModel.DisposeAsync();

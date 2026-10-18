@@ -6,10 +6,15 @@ namespace ContextSuite.Application.Infrastructure;
 internal sealed class QuietWorkflow
 {
     private readonly Dictionary<Guid, (DateTimeOffset Started, bool Sound)> _batches = new();
+    private bool _progressDismissed;
     public bool NeedsAttention { get; private set; }
     public bool WarningSoundRequested { get; private set; }
-    public void Begin(Guid id, bool sound, DateTimeOffset now) => _batches.TryAdd(id, (now, sound));
-    public bool ShowProgress(DateTimeOffset now) => _batches.Values.Any(batch => now - batch.Started >= TimeSpan.FromSeconds(2));
+    public void DismissAttention() { NeedsAttention = false; _progressDismissed = true; }
+    public void Begin(Guid id, bool sound, DateTimeOffset now)
+    {
+        if (_batches.TryAdd(id, (now, sound))) _progressDismissed = false;
+    }
+    public bool ShowProgress(DateTimeOffset now) => !_progressDismissed && _batches.Values.Any(batch => now - batch.Started >= TimeSpan.FromSeconds(2));
 
     public bool Complete(Guid id, IReadOnlyList<FileResult> results)
     {

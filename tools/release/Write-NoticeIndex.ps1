@@ -24,20 +24,71 @@ foreach ($engine in @(
             $_.path -match '(?i)(\.(txt|md|html|ijg|patch)$|(^|/)LICENSE$)'
         } | ForEach-Object { $engine.Prefix + $_.path } | Sort-Object)
         if ($engine.Directory -eq 'audio-engine') {
-            # Both supported profiles currently ship the same notice paths, with
+            # Supported profiles currently ship the same notice paths, with
             # different contents. Their owning payload verifier checks the hashes.
             $expanded = Get-Content -LiteralPath (Join-Path $toolsRoot 'audio-engine/expanded-payload-candidate.json') -Raw | ConvertFrom-Json
             $expandedPaths = @($expanded.files | Where-Object { $_.path -match '(?i)(\.(txt|md|html|ijg|patch)$|(^|/)LICENSE$)' } |
                 ForEach-Object { $engine.Prefix + $_.path } | Sort-Object)
             if (Compare-Object $groups[$engine.Title] $expandedPaths) { throw 'Audio profile notice paths differ; update index selection before packaging.' }
+            $videoRecord = Join-Path $toolsRoot 'audio-engine/video-payload-candidate.json'
+            if (Test-Path -LiteralPath $videoRecord) {
+                $video = Get-Content -LiteralPath $videoRecord -Raw | ConvertFrom-Json
+                $videoPaths = @($video.files | Where-Object { $_.path -match '(?i)(\.(txt|md|html|ijg|patch)$|(^|/)LICENSE$)' } |
+                    ForEach-Object { $engine.Prefix + $_.path } | Sort-Object)
+                if (Compare-Object $groups[$engine.Title] $videoPaths) { throw 'Video audio notice paths differ; update index selection before packaging.' }
+            }
         }
         if ($groups[$engine.Title].Count -eq 0) { throw "No notices selected for $($engine.Title)." }
     }
 }
 if (Test-Path -LiteralPath (Join-Path $root 'office-engine')) {
+    $officeSourcePath = Join-Path $toolsRoot 'office-engine/source-runtime-candidate.json'
+    $packagedSourcePath = Join-Path $root 'ContextSuite.OfficeSource.json'
+    if (-not (Test-Path -LiteralPath $packagedSourcePath -PathType Leaf) -or
+        (Get-FileHash -LiteralPath $officeSourcePath -Algorithm SHA256).Hash -cne
+        (Get-FileHash -LiteralPath $packagedSourcePath -Algorithm SHA256).Hash) {
+        throw 'Packaged Office source provenance record is missing or differs from the selected record.'
+    }
+    $officeSource = Get-Content -LiteralPath $officeSourcePath -Raw | ConvertFrom-Json
+    $pythonMode = if ($officeSource.PSObject.Properties.Name -contains 'pythonRuntime') { $officeSource.pythonRuntime } else { 'bundled' }
+    if ($pythonMode -cnotin @('bundled', 'none')) { throw "Unsupported Office Python runtime mode: $pythonMode" }
     $groups['Office documents'] = @('office-engine/runtime/LICENSE.html', 'office-engine/runtime/NOTICE',
-        'office-engine/runtime/CREDITS.fodt', 'office-engine/runtime/readmes/readme_en-US.txt',
-        'Office.Python.Notices.txt', 'Office.Dependency.Notices.html')
+        'office-engine/runtime/CREDITS.fodt', 'office-engine/runtime/readmes/readme_en-US.txt')
+    if ($pythonMode -ceq 'bundled') {
+        $groups['Office documents'] += 'Office.Python.Notices.txt'
+    } elseif (Test-Path -LiteralPath (Join-Path $root 'Office.Python.Notices.txt')) {
+        throw 'Python-free Office payload contains stale Python notices.'
+    }
+    $groups['Office documents'] += 'Office.Dependency.Notices.html'
+}
+if (Test-Path -LiteralPath (Join-Path $root 'pdf-dark')) {
+    $groups['PDF dark mode'] = @('pdf-dark/LICENSE.txt', 'pdf-dark/NOTICE.md')
+}
+if (Test-Path -LiteralPath (Join-Path $root 'wem-engine')) {
+    $groups['WEM audio'] = @(
+        'wem-engine/provenance/notices/vgmstream-COPYING.txt',
+        'wem-engine/provenance/notices/GNU-LGPL-2.1.txt',
+        'wem-engine/provenance/notices/Xiph-libvorbis-1.3.7.txt',
+        'wem-engine/provenance/notices/Xiph-libogg-1.3.5.txt',
+        'wem-engine/provenance/notices/linked-embedded-comments.txt',
+        'wem-engine/provenance/recipe/README.md',
+        'wem-engine/provenance/source/vgmstream-71e2361042531fe767fb98300cf8c1ee95e539a0-wem-only-source.zip'
+    )
+}
+if ((Test-Path -LiteralPath (Join-Path $root 'avif')) -or (Test-Path -LiteralPath (Join-Path $root 'svg'))) {
+    if (-not (Test-Path -LiteralPath (Join-Path $root 'avif')) -or -not (Test-Path -LiteralPath (Join-Path $root 'svg'))) {
+        throw 'AVIF and SVG distribution inputs must be packaged together.'
+    }
+    $selection = Get-Content -LiteralPath (Join-Path $toolsRoot 'image-expansion-engine/production.json') -Raw | ConvertFrom-Json
+    foreach ($engine in 'avif', 'svg') {
+        $title = if ($engine -eq 'avif') { 'AVIF encoder' } else { 'SVG renderer' }
+        $groups[$title] = @($selection.engines.$engine.files.PSObject.Properties.Name | Where-Object {
+            $_.StartsWith('provenance/notices/') -or $_.StartsWith('provenance/licenses/') -or
+            $_.StartsWith('provenance/recipe/') -or $_.StartsWith('provenance/source/') -or
+            $_ -eq 'provenance/dependency-inventory.json'
+        } | ForEach-Object { "$engine/$_" } | Sort-Object)
+        if ($groups[$title].Count -eq 0) { throw "No notices or source materials selected for $title." }
+    }
 }
 $lines = [Collections.Generic.List[string]]::new()
 $lines.Add(@'

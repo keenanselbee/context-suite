@@ -32,9 +32,10 @@ def local_path(value, verification=False):
 
 
 def selection(profile="curated"):
-    if profile not in ("curated", "expanded"):
+    if profile not in ("curated", "expanded", "video"):
         raise ValueError("Unknown audio payload profile")
-    record = json.loads((TOOLS / (("expanded-" if profile == "expanded" else "") + "payload-candidate.json")).read_text())
+    prefix = "" if profile == "curated" else profile + "-"
+    record = json.loads((TOOLS / (prefix + "payload-candidate.json")).read_text())
     candidate = json.loads((TOOLS / (profile + "-candidate.json")).read_text())
     native = [{key: item[key] for key in ("path", "bytes", "sha256")} for item in record["files"]
               if item["path"] in {entry["path"] for entry in candidate["files"]}]
@@ -61,15 +62,20 @@ def verify(payload):
     if not probe.is_file() or probe.stat().st_size > 1024 * 1024:
         raise ValueError("Audio probe is missing or oversized")
     probe_hash = digest(probe.read_bytes())
-    records = [selection(profile) for profile in ("curated", "expanded")]
+    profiles = ["curated", "expanded"]
+    if (TOOLS / "video-payload-candidate.json").is_file():
+        profiles.append("video")
+    records = [selection(profile) for profile in profiles]
     matches = [item for item in records if any(entry["path"] == "ffprobe.exe" and entry["sha256"] == probe_hash for entry in item["files"])]
     if len(matches) != 1:
         raise ValueError("Audio probe identity is not a reviewed profile")
     record = matches[0]
     voice = local_path(audio / "voice", verification=True)
+    if record.get("profile") == "video" and not voice.is_dir():
+        raise ValueError("Video audio requires the reviewed Windows Voice provider")
     if voice.exists():
-        if record.get("profile") != "expanded":
-            raise ValueError("Windows Voice requires the expanded audio profile")
+        if record.get("profile") not in ("expanded", "video"):
+            raise ValueError("Windows Voice requires the expanded or video audio profile")
         record = dict(record, files=record["files"] + voice_provider().selection()["files"])
     expected = {item["path"]: item for item in record["files"]}
     actual = set()
@@ -105,9 +111,11 @@ def stage(distribution, payload, voice_distribution=None):
     source = verifier.distribution.build_tool.local_path(distribution) / "audio-runtime-review.zip"
     record = selection(reviewed["profile"])
     voice_contents = {}
+    if reviewed["profile"] == "video" and voice_distribution is None:
+        raise ValueError("Video audio requires the reviewed Windows Voice provider")
     if voice_distribution is not None:
-        if reviewed["profile"] != "expanded":
-            raise ValueError("Windows Voice requires the expanded audio profile")
+        if reviewed["profile"] not in ("expanded", "video"):
+            raise ValueError("Windows Voice requires the expanded or video audio profile")
         voice_contents = voice_provider().verify(voice_distribution)
     if source.stat().st_size != record["archiveBytes"]:
         raise ValueError("Audio runtime archive size differs")

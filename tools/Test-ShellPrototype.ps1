@@ -68,6 +68,9 @@ foreach ($definition in $packageDefinitions) {
     }
 
     $application = $applications[0]
+    if ($application.VisualElements.BackgroundColor -ne 'transparent') {
+        throw "$($definition.Operation) must not paint a tile color behind transparent icon pixels."
+    }
     $verb = $verbs[0]
     $class = $classes[0]
     if ($application.Id -ne $definition.Operation -or

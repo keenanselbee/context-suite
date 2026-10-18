@@ -18,14 +18,16 @@ spec.loader.exec_module(verifier)
 def main():
     original = verifier.distribution.build_tool.local_path(sys.argv[1])
     accepted = verifier.verify(str(original))
-    root = verifier.distribution.build_tool.SCRATCH / ("audio-distribution-tests-" + uuid.uuid4().hex)
+    root = original.parent / ("audio-distribution-tests-" + uuid.uuid4().hex)
     root.mkdir()
     manifest = json.loads((original / "bundle-inventory.json").read_text())
     results = [{"case": "original", "result": accepted}]
     cases = ["missing-license", "extra-private-entry", "changed-runtime", "changed-source", "changed-recipe",
              "changed-notice", "duplicate-entry", "changed-evidence", "changed-notice-inventory"]
-    if manifest.get("profile") == "expanded":
+    if manifest.get("profile") in ("expanded", "video"):
         cases += ["missing-patch", "changed-patch", "changed-profile", "changed-repair-flags", "changed-effective-source"]
+    if manifest.get("profile") == "video":
+        cases += ["changed-video-flag"]
     for case in cases:
         directory = root / case
         directory.mkdir()
@@ -73,11 +75,13 @@ def main():
                 stream.write(b" ")
         if case == "changed-profile":
             current["profile"] = "curated"
-        if case in ("changed-repair-flags", "changed-effective-source"):
+        if case in ("changed-repair-flags", "changed-effective-source", "changed-video-flag"):
             record_path = directory / "evidence/build-result.json"
             record = json.loads(record_path.read_text())
             if case == "changed-repair-flags":
                 record["wmaProMatrixRepair"] = False
+            elif case == "changed-video-flag":
+                record["videoAudioInputs"] = False
             else:
                 effective_path = directory / "evidence/effective-sources.json"
                 effective = json.loads(effective_path.read_text())

@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "status": "Combined repaired audio and video-extraction deployment; requires Windows Voice; isolated candidate only",
+  "profile": "video",
+  "archiveBytes": 2488539,
+  "archiveSha256": "7B68AB938706217B32187D2EA80AF4D83B5980582FEAEA76C5F0DEBFA06A51DB",
+  "files": [
+    {
+      "path": "ffmpeg.exe",
+      "archivePath": "bin/ffmpeg.exe",
+      "bytes": 394240,
+      "sha256": "C4F2D89D1A5EEECFC5FFA321AA08E813894DCA14FBEB1D3A909DE25853FFBC0F"
+    },
+    {
+      "path": "ffprobe.exe",
+      "archivePath": "bin/ffprobe.exe",
+      "bytes": 165376,
+      "sha256": "88F635611485E856AB090F63B64B0F85F8C48B7681D2D23B6FD273E3EBF2C548"
+    },
+    {
+      "path": "avcodec-63.dll",
+      "archivePath": "bin/avcodec-63.dll",
+      "bytes": 2549760,
+      "sha256": "D9AA40BB39FB902DE8BAECA6FED5761F4E3DF25EF75BBDB8FE091E108C0EC8A9"
+    },
+    {
+      "path": "avfilter-12.dll",
+      "archivePath": "bin/avfilter-12.dll",
+      "bytes": 160768,
+      "sha256": "AAA2BEAC77BF74983A7B2A4A95C0137E9FF579C576FE3339D0F9B54B70517F73"
+    },
+    {
+      "path": "avformat-63.dll",
+      "archivePath": "bin/avformat-63.dll",
+      "bytes": 846848,
+      "sha256": "0AB578E586547426C1F654CBF502B3CF2E78807C90192229E6C1DB95A0152B07"
+    },
+    {
+      "path": "avutil-61.dll",
+      "archivePath": "bin/avutil-61.dll",
+      "bytes": 867328,
+      "sha256": "1AD16B98EABEF9EE08C40ED756EEDB8F0EE497658BDBDCCAFD5AB4DFC27F2468"
+    },
+    {
+      "path": "swresample-7.dll",
+      "archivePath": "bin/swresample-7.dll",
+      "bytes": 130048,
+      "sha256": "FA51C13BD7F955B125C318C02B9BFAF2995105DF155CE455392BFBC5BB1003EA"
+    },
+    {
+      "path": "licenses/FFmpeg.IJG.txt",
+      "archivePath": "licenses/FFmpeg.IJG.txt",
+      "bytes": 3034,
+      "sha256": "EE552ADE15C696E8E75E9C1AA91193C8299EA3961E3510AB7667F9B3EEA17123"
+    },
+    {
+      "path": "licenses/FFmpeg.LGPLv2.1.txt",
+      "archivePath": "licenses/FFmpeg.LGPLv2.1.txt",
+      "bytes": 26517,
+      "sha256": "246041B6ECF9BC32D718A62C57877C78B5EB397B6467E74ED7AE2626AB189C30"
+    },
+    {
+      "path": "licenses/FFmpeg.LICENSE.md",
+      "archivePath": "licenses/FFmpeg.LICENSE.md",
+      "bytes": 4346,
+      "sha256": "2E1D16C72FD74E12063776371DA757322F8B77589386532F4FD8634BDE7DE1AF"
+    },
+    {
+      "path": "licenses/LAME.COPYING.txt",
+      "archivePath": "licenses/LAME.COPYING.txt",
+      "bytes": 25281,
+      "sha256": "E64F9C5A18F56828C10A575DF13ADE641AA3AF4512A7AFE6C411256943B57AAF"
+    },
+    {
+      "path": "licenses/Ogg.COPYING.txt",
+      "archivePath": "licenses/Ogg.COPYING.txt",
+      "bytes": 1466,
+      "sha256": "D2AB5758336489DA61C12CC5BB757DA5339C4AE9001F9BB0562B4370249AF814"
+    },
+    {
+      "path": "licenses/Opus.COPYING.txt",
+      "archivePath": "licenses/Opus.COPYING.txt",
+      "bytes": 1945,
+      "sha256": "01E1167D54A096D123CF6DFBBEB19587278845C6481D2D66D545669846079551"
+    },
+    {
+      "path": "licenses/SourceCopyrightNotices.txt",
+      "archivePath": "licenses/SourceCopyrightNotices.txt",
+      "bytes": 1149790,
+      "sha256": "111E1DC7A5B1F78FFDD8AB5A7D1A1B2EA0238D7906705D6F6855297C8EAF80D0"
+    },
+    {
+      "path": "licenses/Vorbis.COPYING.txt",
+      "archivePath": "licenses/Vorbis.COPYING.txt",
+      "bytes": 1470,
+      "sha256": "EC1815DB59FCD302846DF949D7424876CB2E2DC5ED1606C5FB0B36787B1CF43A"
+    },
+    {
+      "path": "licenses/zlib.LICENSE.txt",
+      "archivePath": "licenses/zlib.LICENSE.txt",
+      "bytes": 1002,
+      "sha256": "E32FF4E00D9D94930537635291DA39E7E612703334BF6FDE8C7F1686FE8A45A2"
+    },
+    {
+      "path": "runtime-inventory.json",
+      "archivePath": "runtime-inventory.json",
+      "bytes": 1128,
+      "sha256": "6A527440751BE8A7FCCA5060473F05F579A20D072E3514149009F6036C735E11"
+    },
+    {
+      "path": "THIRD-PARTY-NOTICES.txt",
+      "archivePath": "THIRD-PARTY-NOTICES.txt",
+      "bytes": 2380,
+      "sha256": "15E168E160BAA0110735670DA4C1AFC391DD3A7865319ADF438C3BC7A2598F2D"
+    }
+  ]
+}

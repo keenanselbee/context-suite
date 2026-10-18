@@ -70,9 +70,85 @@ make uncertainty visible rather than infer facts the file does not encode.
 Explorer Experience
 -------------------
 
+Installed locally in 1.2.9 on 2026-10-11: prioritize useful facts over identification
+explanations. Text files show file size, logical line count and a short encoding
+label. Identification evidence and exact byte size remain under **Technical
+details**, without an identification card, introductory caveat or batch-table
+column. Mismatched extensions, malformed content and unreadable files still
+show their warnings.
+
+The 2026-10-16 text-counting update keeps format identification and structured
+parsing within the 64 KiB header limit. Recognized text gets a separate streaming
+line count, up to 256 MiB within the existing five-second read budget. The reader
+runs off the UI thread, uses fixed 64 KiB chunks and an incremental Unicode
+decoder, and never retains the whole file or allocates individual lines.
+Files completely counted show an exact total. A byte limit, read timeout or
+invalid text tail retains a lower bound, such as **128+**, with the text bytes
+checked and the stopping reason under Technical details. Invalid tails also
+produce a warning. User cancellation still cancels the operation. Header-only
+routing does not perform this deeper scan. Source length and modification time
+are checked again after counting; sources are never modified.
+CRLF counts as one line ending; lone CR and LF also terminate lines. A trailing
+line ending does not add an extra empty line. BOM-only text contains zero lines;
+empty, binary and undecodable inputs receive no invented text facts. Raw encoding
+evidence and whether the entire file was counted remain in technical details.
+The existing [I/O cancellation limitations](analyze-io-cancellation.md) apply:
+the read budget is not a hard wall-clock guarantee for uncooperative drivers,
+and the final metadata check has its own bounded cancellation request.
+
 **Analyze** is a top-level Explorer command alongside **Convert** and
 **Optimize**. It has no Explorer submenu: invoking it passes the complete
 selection to the host and opens the Analyzer details surface directly.
+
+The 2026-10-11 UI update, installed locally in 1.2.8, gives Analyze its own **Analyze — Context
+Suite** window, independent of the Convert/Optimize progress and results window.
+One file opens directly on its name, type, file size
+and up to two available type-specific facts. Identification evidence
+remains explicit under Technical details. Multiple files add a comparison table with the selected file's
+details below it. Subsequent Analyze selections join the same bounded session;
+the first newly admitted file becomes selected. Unknown and unreadable files
+remain visible, with per-file explanations. No new file inspection is performed
+by presentation code.
+
+Technical details start open in 1.4.2 and remember the owner's open/closed choice
+across files, inspector windows and application restarts. The preference is saved
+independently of conversion choices in the existing settings file; older settings
+without the field default to open. Type-specific properties lead, followed by
+source information, concise identification, catalog data and analysis scope.
+Identification evidence comes last, and generic file facts are not duplicated.
+Since 1.4.5, opening placement runs once on Loaded: expanded inspectors use 82%
+of the current monitor's work-area height with balanced vertical margins.
+Remembered collapsed details retain the compact 570-DIP opening height, bounded
+to the expanded opening height. Since 1.4.7, both states use the same starting
+top calculated from the expanded layout; collapsed windows are not separately
+centered. There is no persistent maximum-height limit or
+geometry handler for movement, resizing, DPI or state changes. Since 1.4.6,
+explicitly collapsing details shrinks a normal window to at most 570 DIPs;
+reopening restores the previous expanded height (or the 82% preference for an
+inspector that opened collapsed), fitting below the current top where possible.
+These actions preserve position and width. Maximized windows keep their geometry.
+Windows handles moving, snapping and maximizing normally. Long details scroll
+while footer actions stay accessible; a newly opened inspector starts with this
+opening placement again.
+Since 1.4.8, Technical details uses a local, nonanimated Expander template with a
+themed native ToggleButton. Content visibility and the chevron change immediately;
+the scroll range is removed in the first collapsed layout instead of surviving a
+closing animation. The existing disclosure preference and height logic remain.
+Grouped raw facts, unavailable states and descriptive MIME types remain available.
+**Show in folder**
+selects the source in Explorer; **Copy details/report** copies the read-only
+report. Analyze has no savings column, output-folder button, Settings or License
+footer. The inspector uses the application theme and scrolls when content exceeds
+the available window size.
+
+Closing Analyze does not cancel transformations. Closing completed operation
+results leaves Analyze open; closing them during active transformation work
+offers cancellation of that work only. The conversion Cancel command preserves
+queued and active analysis. One application process and sequential worker remain
+unchanged. Source builds and hidden WPF rendering are verified. Local installation
+1.2.9 matches the verified production inventory; all three registered shell COM
+classes activate. Installed visual/lifecycle and assistive technology acceptance
+remain separate checks. The previous 1.2.8 payload is retained for rollback.
 
 Explorer performs no full parse or property-summary work. Analysis happens out
 of process after activation. For multiple selected files, the details surface

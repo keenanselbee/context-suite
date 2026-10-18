@@ -4,6 +4,28 @@ Context-Menu Simplification Goal
 Status: complete for the simplification scope; automated evidence passed and owner manual review accepted
 Owner direction recorded: 2026-09-09
 
+2026-10-15 source follow-up: **Files and details** expands when conversion is
+admitted, including pending work and successful results. Replace the fixed
+240-pixel file table and outer scroller with a height-filling layout, a separately
+scrollable selected-file explanation and fixed bottom actions. The results
+window retains its user-selected height; content-sized decision dialogs keep
+their existing behavior. Quiet-window timing and completion remain unchanged.
+All 161 hidden view contracts pass, including growing table height, overflow,
+wrapped filenames, automatic conversion expansion and footer accessibility at
+minimum, default and tall sizes. Installed desktop/theme acceptance is separate;
+installed 1.3.4 is unchanged by this source follow-up.
+
+2026-10-11 source follow-up: hide Convert and Optimize when the selection has no
+applicable processing action, including HTML and unknown extensions. Settings
+alone must not expose an empty parent menu. Convert parent visibility uses the
+same destination hints as its children; Optimize filters Auto/Lossless to
+PNG/FLAC/PDF and Balanced/Smallest to PNG. Mixed selections retain useful actions
+for supported members, while Analyze remains available. Enumeration performs no
+media reads, engine loads or license checks. Isolated Release shell contracts
+passed 880 Convert root/child checks and 86 Optimize/Analyze checks, plus existing
+activation, settings and icon contracts. The installed shell is unchanged;
+Explorer installation/manual verification is separate.
+
 Objective
 ---------
 

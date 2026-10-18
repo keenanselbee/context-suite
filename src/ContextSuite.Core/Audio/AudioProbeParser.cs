@@ -34,9 +34,23 @@ public static class AudioProbeParser
                 if (picture is not (null or 0 or 1)) throw new InvalidDataException("Invalid attached-picture disposition.");
                 result.Add(new((int)index, Text(stream, "codec_type", 32) ?? "unknown", Text(stream, "codec_name", 64) ?? "unknown",
                     rate is > 0 ? (int)rate : null, channels is > 0 ? (int)channels : null, bits is > 0 ? (int)bits : null,
-                    Integer(stream, "bit_rate"), Number(stream, "duration"), Text(stream, "channel_layout", 128), Tags(stream), picture == 1));
+                    Integer(stream, "bit_rate"), Number(stream, "duration"), Text(stream, "channel_layout", 128), Tags(stream), picture == 1,
+                    Number(stream, "start_time", signed: true), Integer(stream, "duration_ts"), Text(stream, "time_base", 32)));
             }
-            var facts = new AudioProbeFacts(Text(format, "format_name", 128) ?? "unknown", Number(format, "duration"), result.ToImmutable(), Tags(format));
+            var chapters = ImmutableArray<AudioChapterFacts>.Empty;
+            if (root.TryGetProperty("chapters", out var chapterValues))
+            {
+                if (chapterValues.ValueKind != JsonValueKind.Array || chapterValues.GetArrayLength() > 1024)
+                    throw new InvalidDataException("Audio probe chapter count exceeds its budget.");
+                var builder = ImmutableArray.CreateBuilder<AudioChapterFacts>();
+                foreach (var chapter in chapterValues.EnumerateArray())
+                    builder.Add(new(Integer(chapter, "id") ?? throw new InvalidDataException("Missing chapter identity."),
+                        Number(chapter, "start_time", signed: true) ?? throw new InvalidDataException("Missing chapter start."),
+                        Number(chapter, "end_time", signed: true) ?? throw new InvalidDataException("Missing chapter end."), Tags(chapter)));
+                chapters = builder.ToImmutable();
+            }
+            var facts = new AudioProbeFacts(Text(format, "format_name", 128) ?? "unknown", Number(format, "duration"), result.ToImmutable(), Tags(format),
+                Number(format, "start_time", signed: true), chapters);
             facts.Validate();
             return facts;
         }
@@ -65,12 +79,13 @@ public static class AudioProbeParser
         return text;
     }
 
-    private static decimal? Number(JsonElement parent, string name)
+    private static decimal? Number(JsonElement parent, string name, bool signed = false)
     {
         if (!parent.TryGetProperty(name, out var value)) return null;
         var text = value.ValueKind == JsonValueKind.String ? value.GetString() : value.GetRawText();
         if (text == "N/A") return null;
-        if (!decimal.TryParse(text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var number) || number < 0)
+        if (!decimal.TryParse(text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var number) ||
+            !signed && number < 0)
             throw new InvalidDataException("Invalid audio probe numeric declaration.");
         return number;
     }

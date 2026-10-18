@@ -1,0 +1,874 @@
+{
+    "schemaVersion":  1,
+    "status":  "pinned-local-candidate",
+    "engines":  {
+                    "avif":  {
+                                 "files":  {
+                                               "ContextSuite.Avif.Native.dll":  {
+                                                                                    "bytes":  10649088,
+                                                                                    "sha256":  "D31E4A28AE6C9CD73E6CF96A86805BFC22915329D600A73D420E991239C6B77B"
+                                                                                },
+                                               "provenance/build-inputs.json":  {
+                                                                                    "bytes":  230893,
+                                                                                    "sha256":  "8F3BC1E3D8C9CC3E454EEB12C1743A5DF2DD45CEE2ED7D3962DC99036A4508D7"
+                                                                                },
+                                               "provenance/build-results.json":  {
+                                                                                     "bytes":  7210,
+                                                                                     "sha256":  "82489CFE11A2FB347B5C3C964F5E37081F3E6D6AA54CA5D4BA44085FDE264C85"
+                                                                                 },
+                                               "provenance/notices/Aom.License.txt":  {
+                                                                                          "bytes":  1316,
+                                                                                          "sha256":  "4764A286D8B2FAEAF42F4418E7D7A28D58FC8FD4D00A3D0A7F44B0A4099DE7F2"
+                                                                                      },
+                                               "provenance/notices/Aom.Patents.txt":  {
+                                                                                          "bytes":  5701,
+                                                                                          "sha256":  "661FB8E504744E95587B556B94A58343448300606A41BEA8C7A9B97125696E61"
+                                                                                      },
+                                               "provenance/notices/Fastfeat.License.txt":  {
+                                                                                               "bytes":  1504,
+                                                                                               "sha256":  "499041DDEE5227B6F29CA06C17803E5FE24D60F243C69635CD76B7BA08D0DDD5"
+                                                                                           },
+                                               "provenance/notices/Googletest.License.txt":  {
+                                                                                                 "bytes":  1475,
+                                                                                                 "sha256":  "9702DE7E4117A8E2B20DAFAB11FFDA58C198AEDE066406496BEF670D40A22138"
+                                                                                             },
+                                               "provenance/notices/Highway.License.txt":  {
+                                                                                              "bytes":  1515,
+                                                                                              "sha256":  "D25E82E26ACD42CA3CCC9993622631163425B869B9E16284226D534CFF6470F2"
+                                                                                          },
+                                               "provenance/notices/Libavif.License.txt":  {
+                                                                                              "bytes":  20415,
+                                                                                              "sha256":  "165ABF92CC04B39E80D29CADEA7A6A7E8FDDF59407D4AD2616507A7EBE8216F9"
+                                                                                          },
+                                               "provenance/notices/Libwebm.License.txt":  {
+                                                                                              "bytes":  1496,
+                                                                                              "sha256":  "5AEC868F669E384A22372A4E8A1A6CD7D44C64CD451F960CA69CC170D1E13ACF"
+                                                                                          },
+                                               "provenance/notices/Libwebm.Patents.txt":  {
+                                                                                              "bytes":  1436,
+                                                                                              "sha256":  "CC3273E0694EA5896145E0677699B53471B03EA43021DDC50E7923FBB9F5023C"
+                                                                                          },
+                                               "provenance/notices/Libyuv.License.txt":  {
+                                                                                             "bytes":  1506,
+                                                                                             "sha256":  "2B2CC1180C7E6988328AD2033B04B80117419DB9C4C584918BBB3CFEC7E9364F"
+                                                                                         },
+                                               "provenance/notices/Vector.License.txt":  {
+                                                                                             "bytes":  1084,
+                                                                                             "sha256":  "FF6C857CE2708E87701323078AEF115C1872A1F80A9649F86DC899B48083BC60"
+                                                                                         },
+                                               "provenance/notices/X86inc.License.txt":  {
+                                                                                             "bytes":  936,
+                                                                                             "sha256":  "719D8FA235F2068E0AE6D6A7DCEB0A7720D7840F0F0EBED29957989E6DED3CD8"
+                                                                                         },
+                                               "provenance/recipe/Build-AvifEngine.py":  {
+                                                                                             "bytes":  8472,
+                                                                                             "sha256":  "C3043FF4E53AC12F8F76551855CD4CC7211E1E3D40437F47959D5357163C5501"
+                                                                                         },
+                                               "provenance/recipe/Prepare-AvifSource.py":  {
+                                                                                               "bytes":  4362,
+                                                                                               "sha256":  "8C2B19A920605DF4AEB550316071F50EEF2FCB2E23E4C540099B64817D5D0621"
+                                                                                           },
+                                               "provenance/recipe/README.md":  {
+                                                                                   "bytes":  3985,
+                                                                                   "sha256":  "63CF7609D7FF4FD5FD18D342ED8C9FA2902E2155EC8EF45582A0B00C3273C684"
+                                                                               },
+                                               "provenance/source/aom.tar.gz":  {
+                                                                                    "bytes":  6693644,
+                                                                                    "sha256":  "A8E348AD4F009B284BA9A4B5609E9D422A8403B074D38DF6E172F71D92994FD2"
+                                                                                },
+                                               "provenance/source/libavif.tar.gz":  {
+                                                                                        "bytes":  14665927,
+                                                                                        "sha256":  "2B645287340BA5A631D268B551DC2D72BD73AC33335962DD36DCDB6D8366921D"
+                                                                                    },
+                                               "provenance/recipe/KIT.md":  {
+                                                                                "bytes":  969,
+                                                                                "sha256":  "90EC5F6DFA035F924ECC2DA121B9AD2E82F1D1E7E21C95E11736AA0F774C636A"
+                                                                            }
+                                           }
+                             },
+                    "svg":  {
+                                "files":  {
+                                              "ContextSuite.Svg.exe":  {
+                                                                           "bytes":  4276736,
+                                                                           "sha256":  "1348469816E870C68857423BBBEAB045FAB45BA848E085079A866A358004B090"
+                                                                       },
+                                              "provenance/build-provenance.json":  {
+                                                                                       "bytes":  1406,
+                                                                                       "sha256":  "98489523FACD950B72351C2757D4CFE903C4B213C979980C00F150328BFE433E"
+                                                                                   },
+                                              "provenance/dependency-inventory.json":  {
+                                                                                           "bytes":  38650,
+                                                                                           "sha256":  "F6B120B231A467D305EFC1363CB9B7DB77FD80C9EB8BBAFB24D14FCFADA40331"
+                                                                                       },
+                                              "provenance/licenses/adler2-2.0.1/LICENSE-0BSD":  {
+                                                                                                    "bytes":  665,
+                                                                                                    "sha256":  "861399F8C21C042B110517E76DC6B63A2B334276C8CF17412FC3C8908CA8DC17"
+                                                                                                },
+                                              "provenance/licenses/adler2-2.0.1/LICENSE-APACHE":  {
+                                                                                                      "bytes":  10860,
+                                                                                                      "sha256":  "8ADA45CD9F843ACF64E4722AE262C622A2B3B3007C7310EF36AC1061A30F6ADB"
+                                                                                                  },
+                                              "provenance/licenses/adler2-2.0.1/LICENSE-MIT":  {
+                                                                                                   "bytes":  1023,
+                                                                                                   "sha256":  "23F18E03DC49DF91622FE2A76176497404E46CED8A715D9D2B67A7446571CCA3"
+                                                                                               },
+                                              "provenance/licenses/arrayref-0.3.9/LICENSE":  {
+                                                                                                 "bytes":  1336,
+                                                                                                 "sha256":  "1BC7E6F475B3EC99B7E2643411950AE2368C250DD4C5C325F80F9811362A94A1"
+                                                                                             },
+                                              "provenance/licenses/arrayvec-0.7.8/LICENSE-APACHE":  {
+                                                                                                        "bytes":  10847,
+                                                                                                        "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                    },
+                                              "provenance/licenses/arrayvec-0.7.8/LICENSE-MIT":  {
+                                                                                                     "bytes":  1071,
+                                                                                                     "sha256":  "4DA95EC4ECB65B738D470B7D762894AD9C97DA93E6CBFB18B570FC2C96F4B871"
+                                                                                                 },
+                                              "provenance/licenses/autocfg-1.5.1/LICENSE-APACHE":  {
+                                                                                                       "bytes":  10847,
+                                                                                                       "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                   },
+                                              "provenance/licenses/autocfg-1.5.1/LICENSE-MIT":  {
+                                                                                                    "bytes":  1054,
+                                                                                                    "sha256":  "27995D58AD5C1145C1A8CD86244CE844886958A35EB2B78C6B772748669999AC"
+                                                                                                },
+                                              "provenance/licenses/base64-0.23.1/LICENSE-APACHE":  {
+                                                                                                       "bytes":  10847,
+                                                                                                       "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                   },
+                                              "provenance/licenses/base64-0.23.1/LICENSE-MIT":  {
+                                                                                                    "bytes":  1093,
+                                                                                                    "sha256":  "AB499C75A0F0DA8E0FE83BF9BA3A27E5C39705310F07107C6C66B69958D2401C"
+                                                                                                },
+                                              "provenance/licenses/bitflags-2.13.2/LICENSE-APACHE":  {
+                                                                                                         "bytes":  10847,
+                                                                                                         "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                     },
+                                              "provenance/licenses/bitflags-2.13.2/LICENSE-MIT":  {
+                                                                                                      "bytes":  1071,
+                                                                                                      "sha256":  "6485B8ED310D3F0340BF1AD1F47645069CE4069DCC6BB46C7D5C6FAF41DE1FDB"
+                                                                                                  },
+                                              "provenance/licenses/bytemuck-1.25.2/LICENSE-APACHE":  {
+                                                                                                         "bytes":  10398,
+                                                                                                         "sha256":  "E3BA223BB1423F0AAD8C3DFCE0FE3148DB48926D41E6FBC3AFBBF5FF9E1C89CB"
+                                                                                                     },
+                                              "provenance/licenses/bytemuck-1.25.2/LICENSE-MIT":  {
+                                                                                                      "bytes":  1110,
+                                                                                                      "sha256":  "9DF9BA60A11AF705F2E451B53762686E615D86F76B169CF075C3237730DBD7E2"
+                                                                                                  },
+                                              "provenance/licenses/bytemuck-1.25.2/LICENSE-ZLIB":  {
+                                                                                                       "bytes":  851,
+                                                                                                       "sha256":  "84B34DD7608F7FB9B17BD588A6BF392BF7DE504E2716F024A77D89F1B145A151"
+                                                                                                   },
+                                              "provenance/licenses/bytemuck_derive-1.12.1/LICENSE-APACHE":  {
+                                                                                                                "bytes":  10398,
+                                                                                                                "sha256":  "E3BA223BB1423F0AAD8C3DFCE0FE3148DB48926D41E6FBC3AFBBF5FF9E1C89CB"
+                                                                                                            },
+                                              "provenance/licenses/bytemuck_derive-1.12.1/LICENSE-MIT":  {
+                                                                                                             "bytes":  1110,
+                                                                                                             "sha256":  "9DF9BA60A11AF705F2E451B53762686E615D86F76B169CF075C3237730DBD7E2"
+                                                                                                         },
+                                              "provenance/licenses/bytemuck_derive-1.12.1/LICENSE-ZLIB":  {
+                                                                                                              "bytes":  851,
+                                                                                                              "sha256":  "84B34DD7608F7FB9B17BD588A6BF392BF7DE504E2716F024A77D89F1B145A151"
+                                                                                                          },
+                                              "provenance/licenses/byteorder-lite-0.1.0/LICENSE-MIT":  {
+                                                                                                           "bytes":  1081,
+                                                                                                           "sha256":  "0F96A83840E146E43C0EC96A22EC1F392E0680E6C1226E6F3BA87E0740AF850F"
+                                                                                                       },
+                                              "provenance/licenses/cfg-if-1.0.5/LICENSE-APACHE":  {
+                                                                                                      "bytes":  10847,
+                                                                                                      "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                  },
+                                              "provenance/licenses/cfg-if-1.0.5/LICENSE-MIT":  {
+                                                                                                   "bytes":  1057,
+                                                                                                   "sha256":  "378F5840B258E2779C39418F3F2D7B2BA96F1C7917DD6BE0713F88305DBDA397"
+                                                                                               },
+                                              "provenance/licenses/color_quant-1.1.0/LICENSE":  {
+                                                                                                    "bytes":  1083,
+                                                                                                    "sha256":  "592DC80F1A865D20D61A2006A2D29CE34A2BC28CD7E868AB300FDEED6DA154CA"
+                                                                                                },
+                                              "provenance/licenses/crc32fast-1.5.2/LICENSE-APACHE":  {
+                                                                                                         "bytes":  11358,
+                                                                                                         "sha256":  "C6596EB7BE8581C18BE736C846FB9173B69ECCF6EF94C5135893EC56BD92BA08"
+                                                                                                     },
+                                              "provenance/licenses/crc32fast-1.5.2/LICENSE-MIT":  {
+                                                                                                      "bytes":  1097,
+                                                                                                      "sha256":  "61D383B05B87D78F94D2937E2580CCE47226D17823C0430FBCAD09596537EFCF"
+                                                                                                  },
+                                              "provenance/licenses/data-url-0.3.2/LICENSE-APACHE":  {
+                                                                                                        "bytes":  10847,
+                                                                                                        "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                    },
+                                              "provenance/licenses/data-url-0.3.2/LICENSE-MIT":  {
+                                                                                                     "bytes":  1072,
+                                                                                                     "sha256":  "B38F11F6096706E6DE553DABE2A7ED142D59B6FA8C97E290C67496154745CDD5"
+                                                                                                 },
+                                              "provenance/licenses/euclid-0.22.14/LICENSE-APACHE":  {
+                                                                                                        "bytes":  10847,
+                                                                                                        "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                    },
+                                              "provenance/licenses/euclid-0.22.14/LICENSE-MIT":  {
+                                                                                                     "bytes":  1067,
+                                                                                                     "sha256":  "62065228E42CAEBCA7E7D7DB1204CBB867033DE5982CA4009928915E4095F3A3"
+                                                                                                 },
+                                              "provenance/licenses/fdeflate-0.3.7/LICENSE-APACHE":  {
+                                                                                                        "bytes":  10174,
+                                                                                                        "sha256":  "0D542E0C8804E39AA7F37EB00DA5A762149DC682D7829451287E11B938E94594"
+                                                                                                    },
+                                              "provenance/licenses/fdeflate-0.3.7/LICENSE-MIT":  {
+                                                                                                     "bytes":  1036,
+                                                                                                     "sha256":  "C77A4CF9DA729987D0FE7CCD811E3BD27393914DDF3D23467C18CC22954513B3"
+                                                                                                 },
+                                              "provenance/licenses/flate2-1.1.10/LICENSE-APACHE":  {
+                                                                                                       "bytes":  10847,
+                                                                                                       "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                   },
+                                              "provenance/licenses/flate2-1.1.10/LICENSE-MIT":  {
+                                                                                                    "bytes":  1062,
+                                                                                                    "sha256":  "025436EDFF4CFCDDE17A5811FDEA78892D8482EFD1ABDEC5A17872D07A4F2112"
+                                                                                                },
+                                              "provenance/licenses/float-cmp-0.9.0/LICENSE":  {
+                                                                                                  "bytes":  1075,
+                                                                                                  "sha256":  "40BE1E77825D7E49485A2E43D89BED29DFFF29F8F529E71D3C683656021F0D08"
+                                                                                              },
+                                              "provenance/licenses/font-types-0.12.6/LICENSE-APACHE":  {
+                                                                                                           "bytes":  9701,
+                                                                                                           "sha256":  "EBA684204073ED715C4ABB48129ACDFD2BFF8AE48339E6A7DA3B341D3027B7F0"
+                                                                                                       },
+                                              "provenance/licenses/font-types-0.12.6/LICENSE-MIT":  {
+                                                                                                        "bytes":  1065,
+                                                                                                        "sha256":  "7B4C9A3946DFCEA7967582760E963E27799E225DCF20565C8EF55324BB017427"
+                                                                                                    },
+                                              "provenance/licenses/fontdb-0.24.0/LICENSE":  {
+                                                                                                "bytes":  1083,
+                                                                                                "sha256":  "59A1FDAC3BD550043599BD159FD70F09A1108C2B09E3751D39B11E1FF8E51F00"
+                                                                                            },
+                                              "provenance/licenses/gif-0.14.2/LICENSE-APACHE":  {
+                                                                                                    "bytes":  10846,
+                                                                                                    "sha256":  "769F80B5BCB42ED0AF4E4D2FD74E1AC9BF843CB80C5A29219D1EF3544428A6BB"
+                                                                                                },
+                                              "provenance/licenses/gif-0.14.2/LICENSE-MIT":  {
+                                                                                                 "bytes":  1071,
+                                                                                                 "sha256":  "77257F3D2181236B1AEE78920238062AE64EFE13C5D858B2DB126E79C9E1B14F"
+                                                                                             },
+                                              "provenance/licenses/harfrust-0.12.0/LICENSE":  {
+                                                                                                  "bytes":  1117,
+                                                                                                  "sha256":  "3A7C3F0B887ABB7C638FAF022D29257418458614C6724B120CEEFFB279F9C7D2"
+                                                                                              },
+                                              "provenance/licenses/image-webp-0.2.4/LICENSE-APACHE":  {
+                                                                                                          "bytes":  10174,
+                                                                                                          "sha256":  "0D542E0C8804E39AA7F37EB00DA5A762149DC682D7829451287E11B938E94594"
+                                                                                                      },
+                                              "provenance/licenses/image-webp-0.2.4/LICENSE-MIT":  {
+                                                                                                       "bytes":  1036,
+                                                                                                       "sha256":  "C77A4CF9DA729987D0FE7CCD811E3BD27393914DDF3D23467C18CC22954513B3"
+                                                                                                   },
+                                              "provenance/licenses/imagesize-0.15.0/LICENSE":  {
+                                                                                                   "bytes":  1064,
+                                                                                                   "sha256":  "FA0D694967D5C279E70A5C7B7E4B9929E4C1C8C1B8506998E66FC2F1547B200A"
+                                                                                               },
+                                              "provenance/licenses/kurbo-0.13.1/LICENSE-APACHE":  {
+                                                                                                      "bytes":  11358,
+                                                                                                      "sha256":  "CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30"
+                                                                                                  },
+                                              "provenance/licenses/kurbo-0.13.1/LICENSE-MIT":  {
+                                                                                                   "bytes":  1055,
+                                                                                                   "sha256":  "23C23145F6EAC25C28CDCC03D38506A5712A9A8CFFB5BD5301457F6173EA696E"
+                                                                                               },
+                                              "provenance/licenses/log-0.4.34/LICENSE-APACHE":  {
+                                                                                                    "bytes":  10847,
+                                                                                                    "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                },
+                                              "provenance/licenses/log-0.4.34/LICENSE-MIT":  {
+                                                                                                 "bytes":  1071,
+                                                                                                 "sha256":  "6485B8ED310D3F0340BF1AD1F47645069CE4069DCC6BB46C7D5C6FAF41DE1FDB"
+                                                                                             },
+                                              "provenance/licenses/memchr-2.8.3/COPYING":  {
+                                                                                               "bytes":  126,
+                                                                                               "sha256":  "01C266BCED4A434DA0051174D6BEE16A4C82CF634E2679B6155D40D75012390F"
+                                                                                           },
+                                              "provenance/licenses/memchr-2.8.3/LICENSE-MIT":  {
+                                                                                                   "bytes":  1081,
+                                                                                                   "sha256":  "0F96A83840E146E43C0EC96A22EC1F392E0680E6C1226E6F3BA87E0740AF850F"
+                                                                                               },
+                                              "provenance/licenses/miniz_oxide-0.8.9/LICENSE":  {
+                                                                                                    "bytes":  1213,
+                                                                                                    "sha256":  "4108245A1F2DF9D4E94DF8ABED5B4BA0759BB2F9B40A6B939F1BE141077AE50B"
+                                                                                                },
+                                              "provenance/licenses/miniz_oxide-0.8.9/LICENSE-APACHE.md":  {
+                                                                                                              "bytes":  10174,
+                                                                                                              "sha256":  "0D542E0C8804E39AA7F37EB00DA5A762149DC682D7829451287E11B938E94594"
+                                                                                                          },
+                                              "provenance/licenses/miniz_oxide-0.8.9/LICENSE-MIT.md":  {
+                                                                                                           "bytes":  1212,
+                                                                                                           "sha256":  "799E9CA9D179295EF372F25D3769CDDA7D25BB2668ADD6A6A1E22D1E4C678B8D"
+                                                                                                       },
+                                              "provenance/licenses/miniz_oxide-0.8.9/LICENSE-ZLIB.md":  {
+                                                                                                            "bytes":  984,
+                                                                                                            "sha256":  "0A54E647FE54104658B5E563C04C6F9EDF251710E47BCE692E0BD990A4DDAA39"
+                                                                                                        },
+                                              "provenance/licenses/miniz_oxide-0.9.1/LICENSE":  {
+                                                                                                    "bytes":  1213,
+                                                                                                    "sha256":  "4108245A1F2DF9D4E94DF8ABED5B4BA0759BB2F9B40A6B939F1BE141077AE50B"
+                                                                                                },
+                                              "provenance/licenses/miniz_oxide-0.9.1/LICENSE-APACHE.md":  {
+                                                                                                              "bytes":  10174,
+                                                                                                              "sha256":  "0D542E0C8804E39AA7F37EB00DA5A762149DC682D7829451287E11B938E94594"
+                                                                                                          },
+                                              "provenance/licenses/miniz_oxide-0.9.1/LICENSE-MIT.md":  {
+                                                                                                           "bytes":  1212,
+                                                                                                           "sha256":  "799E9CA9D179295EF372F25D3769CDDA7D25BB2668ADD6A6A1E22D1E4C678B8D"
+                                                                                                       },
+                                              "provenance/licenses/miniz_oxide-0.9.1/LICENSE-ZLIB.md":  {
+                                                                                                            "bytes":  984,
+                                                                                                            "sha256":  "0A54E647FE54104658B5E563C04C6F9EDF251710E47BCE692E0BD990A4DDAA39"
+                                                                                                        },
+                                              "provenance/licenses/num-traits-0.2.19/LICENSE-APACHE":  {
+                                                                                                           "bytes":  10847,
+                                                                                                           "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                       },
+                                              "provenance/licenses/num-traits-0.2.19/LICENSE-MIT":  {
+                                                                                                        "bytes":  1071,
+                                                                                                        "sha256":  "6485B8ED310D3F0340BF1AD1F47645069CE4069DCC6BB46C7D5C6FAF41DE1FDB"
+                                                                                                    },
+                                              "provenance/licenses/once_cell-1.21.4/LICENSE-APACHE":  {
+                                                                                                          "bytes":  10847,
+                                                                                                          "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                      },
+                                              "provenance/licenses/once_cell-1.21.4/LICENSE-MIT":  {
+                                                                                                       "bytes":  1023,
+                                                                                                       "sha256":  "23F18E03DC49DF91622FE2A76176497404E46CED8A715D9D2B67A7446571CCA3"
+                                                                                                   },
+                                              "provenance/licenses/pico-args-0.5.0/LICENSE":  {
+                                                                                                  "bytes":  1061,
+                                                                                                  "sha256":  "F71452D91682FDAE0CA948B18CFED53A953D1237740DD80371C76A5C1C7BBE91"
+                                                                                              },
+                                              "provenance/licenses/png-0.18.1/LICENSE-APACHE":  {
+                                                                                                    "bytes":  10847,
+                                                                                                    "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                },
+                                              "provenance/licenses/png-0.18.1/LICENSE-MIT":  {
+                                                                                                 "bytes":  1048,
+                                                                                                 "sha256":  "EAF40297C75DA471F7CDA1F3458E8D91B4B2EC866E609527A13ACFA93B638652"
+                                                                                             },
+                                              "provenance/licenses/polycool-0.4.0/LICENSE-APACHE":  {
+                                                                                                        "bytes":  11358,
+                                                                                                        "sha256":  "CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30"
+                                                                                                    },
+                                              "provenance/licenses/polycool-0.4.0/LICENSE-MIT":  {
+                                                                                                     "bytes":  1055,
+                                                                                                     "sha256":  "23C23145F6EAC25C28CDCC03D38506A5712A9A8CFFB5BD5301457F6173EA696E"
+                                                                                                 },
+                                              "provenance/licenses/proc-macro2-1.0.107/LICENSE-APACHE":  {
+                                                                                                             "bytes":  9723,
+                                                                                                             "sha256":  "62C7A1E35F56406896D7AA7CA52D0CC0D272AC022B5D2796E7D6905DB8A3636A"
+                                                                                                         },
+                                              "provenance/licenses/proc-macro2-1.0.107/LICENSE-MIT":  {
+                                                                                                          "bytes":  1023,
+                                                                                                          "sha256":  "23F18E03DC49DF91622FE2A76176497404E46CED8A715D9D2B67A7446571CCA3"
+                                                                                                      },
+                                              "provenance/licenses/quick-error-2.0.1/LICENSE-APACHE":  {
+                                                                                                           "bytes":  11358,
+                                                                                                           "sha256":  "C6596EB7BE8581C18BE736C846FB9173B69ECCF6EF94C5135893EC56BD92BA08"
+                                                                                                       },
+                                              "provenance/licenses/quick-error-2.0.1/LICENSE-MIT":  {
+                                                                                                        "bytes":  1070,
+                                                                                                        "sha256":  "058F01FE181608D027FCDE7E528FC03EA3CF90F30903C407644B0A9BBC54F500"
+                                                                                                    },
+                                              "provenance/licenses/quote-1.0.47/LICENSE-APACHE":  {
+                                                                                                      "bytes":  9723,
+                                                                                                      "sha256":  "62C7A1E35F56406896D7AA7CA52D0CC0D272AC022B5D2796E7D6905DB8A3636A"
+                                                                                                  },
+                                              "provenance/licenses/quote-1.0.47/LICENSE-MIT":  {
+                                                                                                   "bytes":  1023,
+                                                                                                   "sha256":  "23F18E03DC49DF91622FE2A76176497404E46CED8A715D9D2B67A7446571CCA3"
+                                                                                               },
+                                              "provenance/licenses/read-fonts-0.41.0/LICENSE-APACHE":  {
+                                                                                                           "bytes":  9701,
+                                                                                                           "sha256":  "EBA684204073ED715C4ABB48129ACDFD2BFF8AE48339E6A7DA3B341D3027B7F0"
+                                                                                                       },
+                                              "provenance/licenses/read-fonts-0.41.0/LICENSE-MIT":  {
+                                                                                                        "bytes":  1065,
+                                                                                                        "sha256":  "7B4C9A3946DFCEA7967582760E963E27799E225DCF20565C8EF55324BB017427"
+                                                                                                    },
+                                              "provenance/licenses/resvg-0.48.1/LICENSE-APACHE":  {
+                                                                                                      "bytes":  10173,
+                                                                                                      "sha256":  "A6CBA85BC92E0CFF7A450B1D873C0EAA2E9FC96BF472DF0247A26BEC77BF3FF9"
+                                                                                                  },
+                                              "provenance/licenses/resvg-0.48.1/LICENSE-MIT":  {
+                                                                                                   "bytes":  1057,
+                                                                                                   "sha256":  "F5D934DC281B44E0003EE461AC740B18B6629A454DECD872C774D34E4EE0B21D"
+                                                                                               },
+                                              "provenance/licenses/rgb-0.8.53/LICENSE":  {
+                                                                                             "bytes":  1063,
+                                                                                             "sha256":  "457B464BC0FBA8A3D67D2458569104F5611869F0C1563A1A12D9C51A0BCA9261"
+                                                                                         },
+                                              "provenance/licenses/roxmltree-0.21.1/LICENSE-APACHE":  {
+                                                                                                          "bytes":  10847,
+                                                                                                          "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                      },
+                                              "provenance/licenses/roxmltree-0.21.1/LICENSE-MIT":  {
+                                                                                                       "bytes":  1083,
+                                                                                                       "sha256":  "FFFE218C1E349E1D482A05677F2CE850502F88298174D77F6AC7C04821DB7899"
+                                                                                                   },
+                                              "provenance/licenses/simd-adler32-0.3.10/LICENSE.md":  {
+                                                                                                         "bytes":  1078,
+                                                                                                         "sha256":  "42A35170233E83E18856792E748DE4C1CE4A63B2AFCE9A370C89EF3FE23F9F2D"
+                                                                                                     },
+                                              "provenance/licenses/simplecss-0.2.2/LICENSE-APACHE":  {
+                                                                                                         "bytes":  10847,
+                                                                                                         "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                     },
+                                              "provenance/licenses/simplecss-0.2.2/LICENSE-MIT":  {
+                                                                                                      "bytes":  1082,
+                                                                                                      "sha256":  "0B5F24524360E15BCF9FB79BCA875F5AA62F01F94F2988E23238C7EC0E6E8784"
+                                                                                                  },
+                                              "provenance/licenses/siphasher-1.0.4/COPYING":  {
+                                                                                                  "bytes":  281,
+                                                                                                  "sha256":  "C962EE4D1D05DDC138B202B2540219EBC57893FCF97B364852094A9A94CE1365"
+                                                                                              },
+                                              "provenance/licenses/siphasher-1.0.4/LICENSE-APACHE":  {
+                                                                                                         "bytes":  11358,
+                                                                                                         "sha256":  "CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30"
+                                                                                                     },
+                                              "provenance/licenses/siphasher-1.0.4/LICENSE-MIT":  {
+                                                                                                      "bytes":  1023,
+                                                                                                      "sha256":  "F9C4C77BAA3828004EE54B8A4F2DB2E88ED44A6237A493965BF551FAC0FCB62D"
+                                                                                                  },
+                                              "provenance/licenses/skrifa-0.44.0/LICENSE-APACHE":  {
+                                                                                                       "bytes":  9701,
+                                                                                                       "sha256":  "EBA684204073ED715C4ABB48129ACDFD2BFF8AE48339E6A7DA3B341D3027B7F0"
+                                                                                                   },
+                                              "provenance/licenses/skrifa-0.44.0/LICENSE-MIT":  {
+                                                                                                    "bytes":  1065,
+                                                                                                    "sha256":  "7B4C9A3946DFCEA7967582760E963E27799E225DCF20565C8EF55324BB017427"
+                                                                                                },
+                                              "provenance/licenses/slotmap-1.1.1/LICENSE":  {
+                                                                                                "bytes":  884,
+                                                                                                "sha256":  "6CEC81441B2AB2B5090954C1FB5D0BCCA81B86487B5849061FA8952D20EF67D4"
+                                                                                            },
+                                              "provenance/licenses/smallvec-1.16.2/LICENSE-APACHE":  {
+                                                                                                         "bytes":  10847,
+                                                                                                         "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                     },
+                                              "provenance/licenses/smallvec-1.16.2/LICENSE-MIT":  {
+                                                                                                      "bytes":  1072,
+                                                                                                      "sha256":  "0B28172679E0009B655DA42797C03FD163A3379D5CFA67BA1F1655E974A2A1A9"
+                                                                                                  },
+                                              "provenance/licenses/strict-num-0.1.1/LICENSE":  {
+                                                                                                   "bytes":  1060,
+                                                                                                   "sha256":  "3085885678BB161F6C472BBD331F66A2550B555EB76128F7F8247779128199C0"
+                                                                                               },
+                                              "provenance/licenses/svgtypes-0.16.1/LICENSE-APACHE":  {
+                                                                                                         "bytes":  10847,
+                                                                                                         "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                     },
+                                              "provenance/licenses/svgtypes-0.16.1/LICENSE-MIT":  {
+                                                                                                      "bytes":  1061,
+                                                                                                      "sha256":  "F3C9FE731C701ED77FD5FBAAC573872AF04DC5869385EB9BD5E3C73C42713814"
+                                                                                                  },
+                                              "provenance/licenses/syn-3.0.6/LICENSE-APACHE":  {
+                                                                                                   "bytes":  9723,
+                                                                                                   "sha256":  "62C7A1E35F56406896D7AA7CA52D0CC0D272AC022B5D2796E7D6905DB8A3636A"
+                                                                                               },
+                                              "provenance/licenses/syn-3.0.6/LICENSE-MIT":  {
+                                                                                                "bytes":  1023,
+                                                                                                "sha256":  "23F18E03DC49DF91622FE2A76176497404E46CED8A715D9D2B67A7446571CCA3"
+                                                                                            },
+                                              "provenance/licenses/tiny-skia-0.12.0/LICENSE":  {
+                                                                                                   "bytes":  1564,
+                                                                                                   "sha256":  "6D41E05F1D54FE726997CB0334EC539F1DFF50600B1D5D90462EC2B392770CED"
+                                                                                               },
+                                              "provenance/licenses/tiny-skia-path-0.12.0/LICENSE":  {
+                                                                                                        "bytes":  1564,
+                                                                                                        "sha256":  "6D41E05F1D54FE726997CB0334EC539F1DFF50600B1D5D90462EC2B392770CED"
+                                                                                                    },
+                                              "provenance/licenses/tinyvec-1.13.3/LICENSE-APACHE.md":  {
+                                                                                                           "bytes":  11358,
+                                                                                                           "sha256":  "CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30"
+                                                                                                       },
+                                              "provenance/licenses/tinyvec-1.13.3/LICENSE-MIT.md":  {
+                                                                                                        "bytes":  1023,
+                                                                                                        "sha256":  "FD80A26FBB3F644AF1FA994134446702932968519797227E07A1368DEA80F0BC"
+                                                                                                    },
+                                              "provenance/licenses/tinyvec-1.13.3/LICENSE-ZLIB.md":  {
+                                                                                                         "bytes":  851,
+                                                                                                         "sha256":  "84B34DD7608F7FB9B17BD588A6BF392BF7DE504E2716F024A77D89F1B145A151"
+                                                                                                     },
+                                              "provenance/licenses/unicode-bidi-0.3.18/LICENSE-APACHE":  {
+                                                                                                             "bytes":  10847,
+                                                                                                             "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                         },
+                                              "provenance/licenses/unicode-bidi-0.3.18/LICENSE-MIT":  {
+                                                                                                          "bytes":  1071,
+                                                                                                          "sha256":  "7B63ECD5F1902AF1B63729947373683C32745C16A10E8E6292E2E2DCD7E90AE0"
+                                                                                                      },
+                                              "provenance/licenses/unicode-ident-1.0.26/LICENSE-APACHE":  {
+                                                                                                              "bytes":  9723,
+                                                                                                              "sha256":  "62C7A1E35F56406896D7AA7CA52D0CC0D272AC022B5D2796E7D6905DB8A3636A"
+                                                                                                          },
+                                              "provenance/licenses/unicode-ident-1.0.26/LICENSE-MIT":  {
+                                                                                                           "bytes":  1023,
+                                                                                                           "sha256":  "23F18E03DC49DF91622FE2A76176497404E46CED8A715D9D2B67A7446571CCA3"
+                                                                                                       },
+                                              "provenance/licenses/unicode-ident-1.0.26/LICENSE-UNICODE":  {
+                                                                                                               "bytes":  1995,
+                                                                                                               "sha256":  "F7DB81051789B729FEA528A63EC4C938FDCB93D9D61D97DC8CC2E9DF6D47F2A1"
+                                                                                                           },
+                                              "provenance/licenses/unicode-script-0.5.8/LICENSE-APACHE":  {
+                                                                                                              "bytes":  11049,
+                                                                                                              "sha256":  "7CBB56D1B5D83D735056B363AB20958524120AFAFC4AD8206E6BE98CDEC5D737"
+                                                                                                          },
+                                              "provenance/licenses/unicode-script-0.5.8/LICENSE-MIT":  {
+                                                                                                           "bytes":  1101,
+                                                                                                           "sha256":  "7AD3EA8CA3CAF894DB98C3F31D5D4949173FFA93C883EF19A9E529AD48960F8C"
+                                                                                                       },
+                                              "provenance/licenses/unicode-vo-0.1.0/LICENSE-APACHE":  {
+                                                                                                          "bytes":  10847,
+                                                                                                          "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                      },
+                                              "provenance/licenses/unicode-vo-0.1.0/LICENSE-MIT":  {
+                                                                                                       "bytes":  1082,
+                                                                                                       "sha256":  "0B5F24524360E15BCF9FB79BCA875F5AA62F01F94F2988E23238C7EC0E6E8784"
+                                                                                                   },
+                                              "provenance/licenses/usvg-0.48.1/LICENSE-APACHE":  {
+                                                                                                     "bytes":  10173,
+                                                                                                     "sha256":  "A6CBA85BC92E0CFF7A450B1D873C0EAA2E9FC96BF472DF0247A26BEC77BF3FF9"
+                                                                                                 },
+                                              "provenance/licenses/usvg-0.48.1/LICENSE-MIT":  {
+                                                                                                  "bytes":  1057,
+                                                                                                  "sha256":  "F5D934DC281B44E0003EE461AC740B18B6629A454DECD872C774D34E4EE0B21D"
+                                                                                              },
+                                              "provenance/licenses/version_check-0.9.5/LICENSE-APACHE":  {
+                                                                                                             "bytes":  10847,
+                                                                                                             "sha256":  "A60EEA817514531668D7E00765731449FE14D059D3249E0BC93B36DE45F759F2"
+                                                                                                         },
+                                              "provenance/licenses/version_check-0.9.5/LICENSE-MIT":  {
+                                                                                                          "bytes":  1085,
+                                                                                                          "sha256":  "B7E650F3FCE5C53249D1CDC608B54DF156A97EDD636CF9D23498D0CFE7AEC63E"
+                                                                                                      },
+                                              "provenance/licenses/weezl-0.1.12/LICENSE-APACHE":  {
+                                                                                                      "bytes":  10846,
+                                                                                                      "sha256":  "769F80B5BCB42ED0AF4E4D2FD74E1AC9BF843CB80C5A29219D1EF3544428A6BB"
+                                                                                                  },
+                                              "provenance/licenses/weezl-0.1.12/LICENSE-MIT":  {
+                                                                                                   "bytes":  1080,
+                                                                                                   "sha256":  "573F5227DB835CD30BBDD3AED3F82615F80119A4D5C82B4DAF642DBFE2B6AFDE"
+                                                                                               },
+                                              "provenance/licenses/xmlwriter-0.1.0/LICENSE":  {
+                                                                                                  "bytes":  1082,
+                                                                                                  "sha256":  "2CDCE1FF4CA8F455EF169691EA493407E23C32ECDEA5FD9B3A6FC82BE5B49B5A"
+                                                                                              },
+                                              "provenance/licenses/zlib-rs-0.6.8/LICENSE":  {
+                                                                                                "bytes":  856,
+                                                                                                "sha256":  "E72111C52B7D96EBE25348DEE19F0744F444D3C95AE6B1ECB6CCAECC5BCE05BA"
+                                                                                            },
+                                              "provenance/licenses/zune-core-0.5.3/LICENSE-APACHE":  {
+                                                                                                         "bytes":  11357,
+                                                                                                         "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+                                                                                                     },
+                                              "provenance/licenses/zune-core-0.5.3/LICENSE-MIT":  {
+                                                                                                      "bytes":  1073,
+                                                                                                      "sha256":  "D30047BCA3B516639339A3C279BB84C3483124FB5A9DAFE3C75056A85090E745"
+                                                                                                  },
+                                              "provenance/licenses/zune-core-0.5.3/LICENSE-ZLIB":  {
+                                                                                                       "bytes":  859,
+                                                                                                       "sha256":  "D201D14804D3BCD3B944147173175E4ABFBD838B7C8069B6BD3452496BF13E6C"
+                                                                                                   },
+                                              "provenance/licenses/zune-jpeg-0.5.9/LICENSE-APACHE":  {
+                                                                                                         "bytes":  11357,
+                                                                                                         "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+                                                                                                     },
+                                              "provenance/licenses/zune-jpeg-0.5.9/LICENSE-MIT":  {
+                                                                                                      "bytes":  1073,
+                                                                                                      "sha256":  "D30047BCA3B516639339A3C279BB84C3483124FB5A9DAFE3C75056A85090E745"
+                                                                                                  },
+                                              "provenance/licenses/zune-jpeg-0.5.9/LICENSE-ZLIB":  {
+                                                                                                       "bytes":  859,
+                                                                                                       "sha256":  "D201D14804D3BCD3B944147173175E4ABFBD838B7C8069B6BD3452496BF13E6C"
+                                                                                                   },
+                                              "provenance/recipe/Build-SvgEngine.ps1":  {
+                                                                                            "bytes":  7516,
+                                                                                            "sha256":  "CAFFFB6C4429E6430FD2E8D7E2ED1AE5BFF64C5DC8818C0422FDF770161A45A4"
+                                                                                        },
+                                              "provenance/recipe/DEPENDENCIES.md":  {
+                                                                                        "bytes":  883,
+                                                                                        "sha256":  "3F3CA0C35C9C7B66D502F0DD391F24BE017C73AB36994E6520E6B4A20BE75862"
+                                                                                    },
+                                              "provenance/recipe/README.md":  {
+                                                                                  "bytes":  5702,
+                                                                                  "sha256":  "84A89892D96BDE251B2A7227A3E8CFEE3F662927A397F96658E585C25DCA2025"
+                                                                              },
+                                              "provenance/recipe/Verify-CargoSources.py":  {
+                                                                                               "bytes":  5183,
+                                                                                               "sha256":  "CD8BF1847E2718408C4D325EBCD903C01F0C5E0DA9C089CAE5D74094C8FA1DA4"
+                                                                                           },
+                                              "provenance/source-verification.json":  {
+                                                                                          "bytes":  12227,
+                                                                                          "sha256":  "3CE96FA0045F61933F374A54D883018200034C33993F722E39E7E049D025CC07"
+                                                                                      },
+                                              "provenance/source/crates/adler2-2.0.1.crate":  {
+                                                                                                  "bytes":  13366,
+                                                                                                  "sha256":  "320119579FCAD9C21884F5C4861D16174D0E06250625266F50FE6898340ABEFA"
+                                                                                              },
+                                              "provenance/source/crates/arrayref-0.3.9.crate":  {
+                                                                                                    "bytes":  9186,
+                                                                                                    "sha256":  "76A2E8124351FDA1EF8AAAA3BBD7EBBCB486BBCD4225ACA0AA0D84BB2DB8FECB"
+                                                                                                },
+                                              "provenance/source/crates/arrayvec-0.7.8.crate":  {
+                                                                                                    "bytes":  33260,
+                                                                                                    "sha256":  "D3FB67A6E08ACF24FDECCBAC2CB6AC4305825BD1F117462E0E6F2F193345AD56"
+                                                                                                },
+                                              "provenance/source/crates/autocfg-1.5.1.crate":  {
+                                                                                                   "bytes":  18911,
+                                                                                                   "sha256":  "F2032F911046DE80F0A198E0901378627C33F59EA0AC00E363D481118BD70A53"
+                                                                                               },
+                                              "provenance/source/crates/base64-0.23.1.crate":  {
+                                                                                                   "bytes":  93605,
+                                                                                                   "sha256":  "AC07CDECF99051D9A5238B80F35AF32CDEBA5B336E55D957B318B50137E18DA5"
+                                                                                               },
+                                              "provenance/source/crates/bitflags-2.13.2.crate":  {
+                                                                                                     "bytes":  51678,
+                                                                                                     "sha256":  "3DED4057C258BA199E2D26386D3AF3780957ECAEE6C4EF4041C6B4B8B97C0B06"
+                                                                                                 },
+                                              "provenance/source/crates/bytemuck-1.25.2.crate":  {
+                                                                                                     "bytes":  54075,
+                                                                                                     "sha256":  "95832E849ADFB21180CCB6826A99DA14E5D266AE5C2E668E1602CF234F153797"
+                                                                                                 },
+                                              "provenance/source/crates/bytemuck_derive-1.12.1.crate":  {
+                                                                                                            "bytes":  26509,
+                                                                                                            "sha256":  "6A1F896587B6F2C069C73D2F0913E2D590C3990285CD2F0B6AA02B786B4C679C"
+                                                                                                        },
+                                              "provenance/source/crates/byteorder-lite-0.1.0.crate":  {
+                                                                                                          "bytes":  15909,
+                                                                                                          "sha256":  "8F1FE948FF07F4BD06C30984E69F5B4899C516A3EF74F34DF92A2DF2AB535495"
+                                                                                                      },
+                                              "provenance/source/crates/cfg-if-1.0.5.crate":  {
+                                                                                                  "bytes":  9578,
+                                                                                                  "sha256":  "4E7648175B45A9A48536D676F68D918270699102AA8DAB5496DF06904C914600"
+                                                                                              },
+                                              "provenance/source/crates/color_quant-1.1.0.crate":  {
+                                                                                                       "bytes":  6649,
+                                                                                                       "sha256":  "3D7B894F5411737B7867F4827955924D7C254FC9F4D91A6AAD6B097804B1018B"
+                                                                                                   },
+                                              "provenance/source/crates/crc32fast-1.5.2.crate":  {
+                                                                                                     "bytes":  48100,
+                                                                                                     "sha256":  "01A7799FD6B852DB0E61728DDE9A204C423B44D689DBD432522543614B490E78"
+                                                                                                 },
+                                              "provenance/source/crates/data-url-0.3.2.crate":  {
+                                                                                                    "bytes":  23862,
+                                                                                                    "sha256":  "BE1E0BCA6C3637F992FC1CC7CBC52A78C1EF6DB076DBF1059C4323D6A2048376"
+                                                                                                },
+                                              "provenance/source/crates/euclid-0.22.14.crate":  {
+                                                                                                    "bytes":  88222,
+                                                                                                    "sha256":  "F1A05365E3B1C6D1650318537C7460C6923F1ABDD272AD6842BAA2B509957A06"
+                                                                                                },
+                                              "provenance/source/crates/fdeflate-0.3.7.crate":  {
+                                                                                                    "bytes":  27188,
+                                                                                                    "sha256":  "1E6853B52649D4AC5C0BD02320CDDC5BA956BDB407C4B75A2C6B75BF51500F8C"
+                                                                                                },
+                                              "provenance/source/crates/flate2-1.1.10.crate":  {
+                                                                                                   "bytes":  80244,
+                                                                                                   "sha256":  "6E634E2E0EBAC1EE034020DA1CA582E17FFE4E0F5E985823721E168928136DCB"
+                                                                                               },
+                                              "provenance/source/crates/float-cmp-0.9.0.crate":  {
+                                                                                                     "bytes":  10102,
+                                                                                                     "sha256":  "98DE4BBD547A563B716D8DFA9AAD1CB19BFAB00F4FA09A6A4ED21DBCF44CE9C4"
+                                                                                                 },
+                                              "provenance/source/crates/font-types-0.12.6.crate":  {
+                                                                                                       "bytes":  32485,
+                                                                                                       "sha256":  "6C92D9081C7AB3BD83EF1EECDFAD090F3D966E3CE74106779664114CFE1A6274"
+                                                                                                   },
+                                              "provenance/source/crates/fontdb-0.24.0.crate":  {
+                                                                                                   "bytes":  119122,
+                                                                                                   "sha256":  "2660C5E9157BF76D2DB1294E4A9FEBA604EF610819A3B591088D0D8392A3290F"
+                                                                                               },
+                                              "provenance/source/crates/gif-0.14.2.crate":  {
+                                                                                                "bytes":  38710,
+                                                                                                "sha256":  "EE8CFCC411D9ADBBABA82FB72661CC1BCCA13E8BBA98B364E62B2DBA8F960159"
+                                                                                            },
+                                              "provenance/source/crates/harfrust-0.12.0.crate":  {
+                                                                                                     "bytes":  291579,
+                                                                                                     "sha256":  "C03D949A14AA089BBB282F7DD76A498A7F684428E4257202EFC119EC010376F9"
+                                                                                                 },
+                                              "provenance/source/crates/image-webp-0.2.4.crate":  {
+                                                                                                      "bytes":  68478,
+                                                                                                      "sha256":  "525E9FF3E1A4BE2FBEA1FDF0E98686A6D98B4D8F937E1BF7402245AF1909E8C3"
+                                                                                                  },
+                                              "provenance/source/crates/imagesize-0.15.0.crate":  {
+                                                                                                      "bytes":  29653,
+                                                                                                      "sha256":  "65B27460C2C92B037F3F94C538ED9A3342F3FDF923606781629CCB35F82D042A"
+                                                                                                  },
+                                              "provenance/source/crates/kurbo-0.13.1.crate":  {
+                                                                                                  "bytes":  169000,
+                                                                                                  "sha256":  "4B60DFC32F652B926DF6192E55525B16D186C69D47876C3EAD4DA5CC9F8450E2"
+                                                                                              },
+                                              "provenance/source/crates/log-0.4.34.crate":  {
+                                                                                                "bytes":  53395,
+                                                                                                "sha256":  "F9F8BD3E56CE4DFC153CF470FFFBFA98C7620958B312CA5C3A4B8D5181FD13C6"
+                                                                                            },
+                                              "provenance/source/crates/memchr-2.8.3.crate":  {
+                                                                                                  "bytes":  99165,
+                                                                                                  "sha256":  "CF8BAF1C55E62FFCACE7A9F06F4BD9CD3F0C4BEB022D3B367256B91B87513D98"
+                                                                                              },
+                                              "provenance/source/crates/miniz_oxide-0.8.9.crate":  {
+                                                                                                       "bytes":  67132,
+                                                                                                       "sha256":  "1FA76A2C86F704BDB222D66965FB3D63269CE38518B83CB0575FCA855EBB6316"
+                                                                                                   },
+                                              "provenance/source/crates/miniz_oxide-0.9.1.crate":  {
+                                                                                                       "bytes":  70519,
+                                                                                                       "sha256":  "B63FBC4A50860E98E7B2AA7804DED1DB5CBC3AFF9193ADAFF57A6931BF7C4B4C"
+                                                                                                   },
+                                              "provenance/source/crates/num-traits-0.2.19.crate":  {
+                                                                                                       "bytes":  51631,
+                                                                                                       "sha256":  "071DFC062690E90B734C0B2273CE72AD0FFA95F0C74596BC250DCFD960262841"
+                                                                                                   },
+                                              "provenance/source/crates/once_cell-1.21.4.crate":  {
+                                                                                                      "bytes":  35010,
+                                                                                                      "sha256":  "9F7C3E4BEB33F85D45AE3E3A1792185706C8E16D043238C593331CC7CD313B50"
+                                                                                                  },
+                                              "provenance/source/crates/pico-args-0.5.0.crate":  {
+                                                                                                     "bytes":  11545,
+                                                                                                     "sha256":  "5BE167A7AF36EE22FE3115051BC51F6E6C7054C9348E28DEB4F49BD6F705A315"
+                                                                                                 },
+                                              "provenance/source/crates/png-0.18.1.crate":  {
+                                                                                                "bytes":  125800,
+                                                                                                "sha256":  "60769B8B31B2A9F263DAE2776C37B1B28AE246943CF719EB6946A1DB05128A61"
+                                                                                            },
+                                              "provenance/source/crates/polycool-0.4.0.crate":  {
+                                                                                                    "bytes":  22738,
+                                                                                                    "sha256":  "50596DDC09EB5AD5F75CACD40209568E66DF71BAF86E1499A0E99C4CFF12A5A6"
+                                                                                                },
+                                              "provenance/source/crates/proc-macro2-1.0.107.crate":  {
+                                                                                                         "bytes":  59588,
+                                                                                                         "sha256":  "985E7EC9BB745E6CE6535B544D84D6CD6F7AD8BD711C398938AE983B91A766D9"
+                                                                                                     },
+                                              "provenance/source/crates/quick-error-2.0.1.crate":  {
+                                                                                                       "bytes":  14265,
+                                                                                                       "sha256":  "A993555F31E5A609F617C12DB6250DEDCAC1B0A85076912C436E6FC9B2C8E6A3"
+                                                                                                   },
+                                              "provenance/source/crates/quote-1.0.47.crate":  {
+                                                                                                  "bytes":  31622,
+                                                                                                  "sha256":  "1FBF4DB142A473A8D80C26BBF18454ED458BF8D26C8219C331DAECFDBD079001"
+                                                                                              },
+                                              "provenance/source/crates/read-fonts-0.41.0.crate":  {
+                                                                                                       "bytes":  567271,
+                                                                                                       "sha256":  "046A7D674DAF459825B32F5062056D6882DB0D2F5A479FBD76CCFC870AC18709"
+                                                                                                   },
+                                              "provenance/source/crates/resvg-0.48.1.crate":  {
+                                                                                                  "bytes":  78696,
+                                                                                                  "sha256":  "67E3803F97B999E80CBF7C6ECDD07A8102204D92E1633CF48783720C521196BD"
+                                                                                              },
+                                              "provenance/source/crates/rgb-0.8.53.crate":  {
+                                                                                                "bytes":  18607,
+                                                                                                "sha256":  "47B34B781B31E5D73E9FBC8689C70551FD1ADE9A19E3E28CFEC8580A79290CC4"
+                                                                                            },
+                                              "provenance/source/crates/roxmltree-0.21.1.crate":  {
+                                                                                                      "bytes":  56837,
+                                                                                                      "sha256":  "F1964B10C76125C36F8AFE190065A4BF9A87BF324842C05701330BBA9F1CACBB"
+                                                                                                  },
+                                              "provenance/source/crates/simd-adler32-0.3.10.crate":  {
+                                                                                                         "bytes":  18760,
+                                                                                                         "sha256":  "3A219298AC11A56EA9A6D2120044824D6F01AEB034955E7AF7BC16858527DEEA"
+                                                                                                     },
+                                              "provenance/source/crates/simplecss-0.2.2.crate":  {
+                                                                                                     "bytes":  22136,
+                                                                                                     "sha256":  "7A9C6883CA9C3C7C90E888DE77B7A5C849C779D25D74A1269B0218B14E8B136C"
+                                                                                                 },
+                                              "provenance/source/crates/siphasher-1.0.4.crate":  {
+                                                                                                     "bytes":  16131,
+                                                                                                     "sha256":  "33F4FE9184A62D842C9EF383018F3306D8BA224FD9D836F56D7288308847C256"
+                                                                                                 },
+                                              "provenance/source/crates/skrifa-0.44.0.crate":  {
+                                                                                                   "bytes":  299025,
+                                                                                                   "sha256":  "819AB7D62B1D3E72D9D9DEA5650BAC30424F9111364BB94928DBF5ECAD1BAA68"
+                                                                                               },
+                                              "provenance/source/crates/slotmap-1.1.1.crate":  {
+                                                                                                   "bytes":  61862,
+                                                                                                   "sha256":  "BDD58C3C93C3D278CA835519292445CB4B0D4DC59CCFDF7CEADAAB3F8AEB4038"
+                                                                                               },
+                                              "provenance/source/crates/smallvec-1.16.2.crate":  {
+                                                                                                     "bytes":  34874,
+                                                                                                     "sha256":  "F9395F0F0EEE849A9B707B2F06BB92A6A422090E2123BB2EF8E87A0E61892A8E"
+                                                                                                 },
+                                              "provenance/source/crates/strict-num-0.1.1.crate":  {
+                                                                                                      "bytes":  5104,
+                                                                                                      "sha256":  "6637BAB7722D379C8B41BA849228D680CC12D0A45BA1FA2B48F2A30577A06731"
+                                                                                                  },
+                                              "provenance/source/crates/svgtypes-0.16.1.crate":  {
+                                                                                                     "bytes":  45181,
+                                                                                                     "sha256":  "695B5790B3131DAFA99B3BBFD25A216EDB3D216DAD9CA208D4657BFB8F2ABC3D"
+                                                                                                 },
+                                              "provenance/source/crates/syn-3.0.6.crate":  {
+                                                                                               "bytes":  313821,
+                                                                                               "sha256":  "8593E8E72159ED2257D083C7A454A85CBF854F37A0966D8D483AFF8C8A3EBCEE"
+                                                                                           },
+                                              "provenance/source/crates/tiny-skia-0.12.0.crate":  {
+                                                                                                      "bytes":  268071,
+                                                                                                      "sha256":  "47FFEE5EAAF5527F630FB0E356B90EBDEC84D5D18D937C5E440350F88C5A91EA"
+                                                                                                  },
+                                              "provenance/source/crates/tiny-skia-path-0.12.0.crate":  {
+                                                                                                           "bytes":  49022,
+                                                                                                           "sha256":  "EDCA365C3FACCCA67D06593C5980FA6C57687DE727A03131735BB85F01FDEEB9"
+                                                                                                       },
+                                              "provenance/source/crates/tinyvec-1.13.3.crate":  {
+                                                                                                    "bytes":  60306,
+                                                                                                    "sha256":  "FD3CA314F692EFD6C868F8408F53FE444634A845F96C028B97D35F6A1F79F0EE"
+                                                                                                },
+                                              "provenance/source/crates/unicode-bidi-0.3.18.crate":  {
+                                                                                                         "bytes":  58300,
+                                                                                                         "sha256":  "5C1CB5DB39152898A79168971543B1CB5020DFF7FE43C8DC468B0885F5E29DF5"
+                                                                                                     },
+                                              "provenance/source/crates/unicode-ident-1.0.26.crate":  {
+                                                                                                          "bytes":  48425,
+                                                                                                          "sha256":  "D245F478577F809A851594D02313B640FB437E0BB33866753CFF937863096954"
+                                                                                                      },
+                                              "provenance/source/crates/unicode-script-0.5.8.crate":  {
+                                                                                                          "bytes":  48253,
+                                                                                                          "sha256":  "383AD40BB927465EC0CE7720E033CB4CA06912855FC35DB31B5755D0DE75B1EE"
+                                                                                                      },
+                                              "provenance/source/crates/unicode-vo-0.1.0.crate":  {
+                                                                                                      "bytes":  8084,
+                                                                                                      "sha256":  "B1D386FF53B415B7FE27B50BB44679E2CC4660272694B7B6F3326D8480823A94"
+                                                                                                  },
+                                              "provenance/source/crates/usvg-0.48.1.crate":  {
+                                                                                                 "bytes":  146652,
+                                                                                                 "sha256":  "977D0A4ABDEF933F424A99FE09F95576E089B90AEBC6F016A3BC813762493E91"
+                                                                                             },
+                                              "provenance/source/crates/version_check-0.9.5.crate":  {
+                                                                                                         "bytes":  15554,
+                                                                                                         "sha256":  "0B928F33D975FC6AD9F86C8F283853AD26BDD5B10B7F1542AA2FA15E2289105A"
+                                                                                                     },
+                                              "provenance/source/crates/weezl-0.1.12.crate":  {
+                                                                                                  "bytes":  46045,
+                                                                                                  "sha256":  "A28AC98DDC8B9274CB41BB4D9D4D5C425B6020C50C46F25559911905610B4A88"
+                                                                                              },
+                                              "provenance/source/crates/xmlwriter-0.1.0.crate":  {
+                                                                                                     "bytes":  6261,
+                                                                                                     "sha256":  "EC7A2A501ED189703DBA8B08142F057E887DFC4B2CC4DB2D343AC6376BA3E0B9"
+                                                                                                 },
+                                              "provenance/source/crates/zlib-rs-0.6.8.crate":  {
+                                                                                                   "bytes":  215857,
+                                                                                                   "sha256":  "B268E58E7C693D7C271F93FFC4BA3B380412554231C85BF61CA7AF91042A4112"
+                                                                                               },
+                                              "provenance/source/crates/zune-core-0.5.3.crate":  {
+                                                                                                     "bytes":  30419,
+                                                                                                     "sha256":  "D56377FD46368984A170BC5AAC5567E52CA5DA874CAA60BEA39FCBCA78FB658B"
+                                                                                                 },
+                                              "provenance/source/crates/zune-jpeg-0.5.9.crate":  {
+                                                                                                     "bytes":  85428,
+                                                                                                     "sha256":  "87C86ACB70A85B2C16F071F171847D1945E8F44812630463CD14EC83900AD01C"
+                                                                                                 },
+                                              "provenance/notices/Rust.Library.Notices.html":  {
+                                                                                                   "bytes":  1512520,
+                                                                                                   "sha256":  "68129500B616D5838629E68F55FF3AED5E096DACF60CE9EB41BBE599A563AFA6"
+                                                                                               },
+                                              "provenance/recipe/KIT.md":  {
+                                                                               "bytes":  1026,
+                                                                               "sha256":  "C9677A1CA49287665A9549332415835ED8AFD446FBAA4221771AAA39274EBAA1"
+                                                                           }
+                                          }
+                            }
+                }
+}

@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $SourceDirectory,
-      [Parameter(Mandatory)][ValidateSet('Opus', 'OggVorbis', 'Lame', 'LameStable', 'Make', 'Nasm', 'Zlib')][string] $Dependency)
+      [Parameter(Mandatory)][ValidateSet('Opus', 'OggVorbis', 'Lame', 'LameStable', 'Make', 'Nasm', 'Zlib')][string] $Dependency,
+      [string] $WorkspaceRoot)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 & (Join-Path $PSScriptRoot 'Prepare-AudioSources.ps1') -SourceDirectory $SourceDirectory -VerifyOnly -BuildInputsOnly:($Dependency -ne 'Lame')
@@ -56,7 +57,20 @@ $cmakeDirectory = Join-Path $visualStudio 'Common7/IDE/CommonExtensions/Microsof
 $cmake = Join-Path $cmakeDirectory 'cmake.exe'
 $ctest = Join-Path $cmakeDirectory 'ctest.exe'
 if (-not (Test-Path -LiteralPath $cmake) -or -not (Test-Path -LiteralPath $ctest)) { throw 'Existing Visual Studio CMake/CTest tools are required.' }
-$workspace = Join-Path $repository ('.codex-temp/audio-' + $recipeName + '-' + [guid]::NewGuid().ToString('N'))
+$scratch = [IO.Path]::GetFullPath((Join-Path $repository '.codex-temp'))
+$workspaceParent = if ($WorkspaceRoot) { [IO.Path]::GetFullPath($WorkspaceRoot) } else { $scratch }
+if ($workspaceParent -ne $scratch -and -not $workspaceParent.StartsWith($scratch + '\', [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Dependency workspace must remain inside repository scratch.'
+}
+if (-not (Test-Path -LiteralPath $workspaceParent -PathType Container)) {
+    throw 'Dependency workspace root must be an existing ordinary directory.'
+}
+for ($ancestor = $workspaceParent; $ancestor -and $ancestor -ne $repository; $ancestor = Split-Path $ancestor -Parent) {
+    if ((Get-Item -LiteralPath $ancestor).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'Linked dependency workspace paths are not allowed.'
+    }
+}
+$workspace = Join-Path $workspaceParent ('audio-' + $recipeName + '-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $workspace | Out-Null
 Write-Output "$Dependency dependency evidence: $workspace"
 $sources = @{}

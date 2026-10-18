@@ -9,6 +9,7 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        if (args is ["--analysis-views", var analysisOutput, var analysisTheme]) return AnalysisWindowContracts.Run(analysisOutput, analysisTheme);
         if (args is ["--direct-command-contracts", var stagedWorker]) return DirectCommandContracts.RunAsync(stagedWorker).GetAwaiter().GetResult();
         if (args is ["--view-contracts"]) return ViewContracts.Run();
         if (args is ["--office-app-lifecycle", var lifecycleWorker]) return OfficeAppLifecycleContracts.RunAsync(lifecycleWorker).GetAwaiter().GetResult();

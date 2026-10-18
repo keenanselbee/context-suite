@@ -11,6 +11,13 @@ three qpdf supplements. [Office component notices](office-component-notices.md)
 add one further file: current indexes have ten base or 63 expanded links and
 pass 71 index checks. The initial 8/56-link evidence below remains historical.
 
+The 2026-10-13 Office packaging update passes 81 index checks. It binds the
+packaged source record to the current selection before choosing Python notices.
+Bundled mode preserves the existing link order; Python-free mode omits that
+one link and rejects a stale Python notice. The selected Python-free runtime
+now passes 58 complete Office packaging checks; candidate 1.3.4 verifies all
+282 local links. Office itself remains bundled.
+
 License now includes **Third-party notices**, available without activation or
 online validation. It opens `ThirdPartyNotices.html` beside the application in
 the Windows file association for HTML. Missing files and association failures

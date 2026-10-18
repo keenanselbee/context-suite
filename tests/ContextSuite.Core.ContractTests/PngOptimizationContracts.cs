@@ -41,7 +41,7 @@ internal static class PngOptimizationContracts
             check(request.IsQuickOptimization, "quick: accepted explicit preset " + action);
             Reject(() => (request with { Operation = "convert" }).Validate(false), "preset under wrong operation");
         }
-        foreach (var action in new[] { "png", "jpeg", "webp", "bmp", "tga" })
+        foreach (var action in new[] { "png", "jpeg", "webp", "bmp", "tga", "ico", "avif" })
         {
             var request = new OperationRequest(Guid.NewGuid(), "convert", action, [Path.GetFullPath("test.png")]);
             request.Validate(false);

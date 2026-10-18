@@ -21,7 +21,7 @@ internal sealed partial class ConversionViewModel
     public bool IsDdsTarget => Target == ImageFormat.Dds;
     public bool IsDdsWorkflow => IsDdsTarget || Rows.Any(row => row.Selection.Facts?.Texture is not null);
     public bool IsDdsExport => IsDdsWorkflow && !IsDdsTarget && Target is not null;
-    public bool CanResize => !IsDdsWorkflow;
+    public bool CanResize => !IsDdsWorkflow && Target != ImageFormat.Ico;
     public IReadOnlyList<DdsFormat> DdsFormats { get; } = [DdsFormat.Bc1, DdsFormat.Bc1Srgb,
         DdsFormat.Bc2, DdsFormat.Bc2Srgb, DdsFormat.Bc3, DdsFormat.Bc3Srgb, DdsFormat.Bc4, DdsFormat.Bc4Snorm,
         DdsFormat.Bc5, DdsFormat.Bc5Snorm, DdsFormat.Bc7, DdsFormat.Bc7Srgb, DdsFormat.R8, DdsFormat.Rg8,

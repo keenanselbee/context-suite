@@ -12,6 +12,310 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--text-analysis", var textScratch])
+{
+    var checks = 0;
+    TextSummaryContracts.Run((passed, message) => { if (!passed) throw new InvalidDataException(message); checks++; });
+    await TextLineAnalysisContracts.RunAsync(textScratch, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} text analysis checks.");
+    return 0;
+}
+if (args is ["--inspect-text", var textFile])
+{
+    await TextLineAnalysisContracts.InspectFileAsync(textFile);
+    return 0;
+}
+
+if (args is ["--analysis-ui", var analysisUiScratch])
+{
+    var checks = 0;
+    void CheckUi(bool passed, string message)
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }
+    AnalysisPresentationContracts.Run(CheckUi);
+    TextSummaryContracts.Run(CheckUi);
+    await TextLineAnalysisContracts.RunAsync(analysisUiScratch, CheckUi);
+    await AnalysisViewContracts.RunAsync(analysisUiScratch, CheckUi);
+    await AnalysisContracts.RunAsync(analysisUiScratch, CheckUi);
+    Console.WriteLine($"Passed {checks} analysis checks.");
+    return 0;
+}
+
+if (args is ["--analysis-presentation"])
+{
+    var checks = 0;
+    AnalysisPresentationContracts.Run((passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} analysis presentation checks.");
+    return 0;
+}
+
+if (args.Length is 4 or 6 && args[0] == "--pdf-dark-document")
+{
+    int? expectedRecoveredImages = null, expectedRecoveredCoordinates = null;
+    if (args.Length == 6)
+    {
+        if (!int.TryParse(args[4], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture,
+                out var images) || images is < 0 or > 32768 ||
+            !int.TryParse(args[5], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture,
+                out var coordinates) || coordinates is < 0 or > 4096)
+            throw new InvalidDataException("Expected PDF dark recovery counts must be bounded nonnegative decimal integers.");
+        expectedRecoveredImages = images;
+        expectedRecoveredCoordinates = coordinates;
+    }
+    var checks = 0;
+    await PdfDarkWorkflowContracts.RunDocumentAsync(args[1], args[2], args[3],
+        (passed, message) =>
+        { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); },
+        expectedRecoveredImages, expectedRecoveredCoordinates);
+    Console.WriteLine($"Passed {checks} supplied-document PDF dark-mode checks.");
+    return 0;
+}
+
+if (args is ["--pdf-dark-document-refusal", var refusalScratch, var refusalWorker, var refusalSource,
+    var refusalPage, var refusalFailure])
+{
+    var checks = 0;
+    await PdfDarkFailureContracts.RunDocumentRefusalAsync(refusalScratch, refusalWorker, refusalSource,
+        refusalPage, refusalFailure, (passed, message) =>
+        { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} supplied-document PDF dark-mode refusal checks.");
+    return 0;
+}
+
+if (args is ["--pdf-dark-models", var darkModelScratch])
+{
+    var checks = 0;
+    PdfDarkModelContracts.Run(darkModelScratch, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} PDF dark-mode model checks.");
+    return 0;
+}
+
+if (args is ["--pdf-dark-public", var darkScratch, var darkWorker])
+{
+    var checks = 0;
+    void CheckDark(bool passed, string message)
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }
+    PdfDarkModelContracts.Run(darkScratch, CheckDark);
+    await PdfDarkApplicationContracts.RunAsync(darkScratch, darkWorker, CheckDark);
+    Console.WriteLine($"Passed {checks} PDF dark-mode public checks.");
+    return 0;
+}
+
+if (args is ["--pdf-dark-workflow", var darkWorkflowScratch, var darkWorkflowWorker])
+{
+    var checks = 0;
+    await PdfDarkWorkflowContracts.RunAsync(darkWorkflowScratch, darkWorkflowWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} PDF dark-mode worker checks.");
+    return 0;
+}
+
+if (args is ["--pdf-dark-failures", var darkFailureScratch, var darkFailureWorker])
+{
+    var checks = 0;
+    await PdfDarkFailureContracts.RunAsync(darkFailureScratch, darkFailureWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} PDF dark-mode failure and cancellation checks.");
+    return 0;
+}
+
+if (args is ["--video-audio-workflow", var videoScratch, var videoWorker, var videoFixtures])
+{
+    var checks = 0;
+    await VideoAudioWorkflowContracts.RunAsync(videoScratch, videoWorker, videoFixtures, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} video audio workflow checks.");
+    return 0;
+}
+
+if (args is ["--audio-models"])
+{
+    var checks = 0;
+    void CheckAudio(bool passed, string message)
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }
+    AudioProbeContracts.Run(CheckAudio);
+    AudioConversionContracts.Run(CheckAudio);
+    VideoAudioContracts.Models(CheckAudio);
+    Console.WriteLine($"Passed {checks} audio probe and conversion model checks.");
+    return 0;
+}
+
+if (args is ["--gif-workflow", var gifScratch, var gifWorker])
+{
+    var checks = 0;
+    await GifWorkflowContracts.RunAsync(gifScratch, gifWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} GIF model and workflow checks.");
+    return 0;
+}
+
+if (args is ["--compat-image-workflow", var compatibilityScratch, var compatibilityWorker, var compatibilityIcon])
+{
+    var checks = 0;
+    await CompatibilityImageContracts.RunAsync(compatibilityScratch, compatibilityWorker, compatibilityIcon, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} input compatibility workflow checks.");
+    return 0;
+}
+
+if (args is ["--svg-public", var svgScratch])
+{
+    var checks = 0;
+    void CheckSvg(bool passed, string message)
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }
+    SvgModelContracts.Run(svgScratch, CheckSvg);
+    await SvgApplicationContracts.RunAsync(svgScratch, CheckSvg);
+    Console.WriteLine($"Passed {checks} SVG model and application checks.");
+    return 0;
+}
+
+if (args is ["--svg-interruption", var svgInterruptionScratch, var svgInterruptionWorker])
+{
+    var checks = 0;
+    await SvgApplicationContracts.RunInterruptionAsync(svgInterruptionScratch, svgInterruptionWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} active SVG interruption checks.");
+    return 0;
+}
+
+if (args is ["--svg-workflow", var svgWorkflowScratch, var svgWorker])
+{
+    var checks = 0;
+    await SvgApplicationContracts.RunWorkerAsync(svgWorkflowScratch, svgWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    await SvgApplicationContracts.RunJpegWorkerAsync(Path.Combine(svgWorkflowScratch, "jpeg"), svgWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} SVG worker and application workflow checks.");
+    return 0;
+}
+
+if (args is ["--application-smoke", var smokeScratch, var smokeApplication])
+{
+    if (!Path.IsPathFullyQualified(smokeScratch) || Directory.Exists(smokeScratch))
+        throw new ArgumentException("Use a fresh absolute application-smoke directory.");
+    Directory.CreateDirectory(smokeScratch);
+    var smokeFixture = Path.Combine(smokeScratch, "source.txt");
+    await File.WriteAllTextAsync(smokeFixture, "A deliberately non-media fixture; no transformation is allowed.");
+    try { await ApplicationSmoke.RunAsync(smokeApplication, smokeFixture); }
+    finally { File.Delete(smokeFixture); }
+    Console.WriteLine("Passed actual WPF startup, repeated activation, request consumption, and parent-exit cleanup.");
+    return 0;
+}
+
+if (args is ["--avif-public", var avifScratch])
+{
+    var checks = 0;
+    void CheckAvif(bool passed, string message)
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }
+    ImagePlanContracts.Run(avifScratch, CheckAvif);
+    await AvifPublicContracts.RunAsync(avifScratch, CheckAvif);
+    Console.WriteLine($"Passed {checks} public AVIF planning and UI checks.");
+    return 0;
+}
+
+if (args is ["--avif-workflow", var avifWorkflowScratch, var avifWorker])
+{
+    var checks = 0;
+    await AvifWorkflowContracts.RunAsync(avifWorkflowScratch, avifWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} AVIF worker and application workflow checks.");
+    return 0;
+}
+
+if (args is ["--avif-interruption", var avifInterruptionScratch, var avifInterruptionWorker])
+{
+    var checks = 0;
+    await AvifWorkflowContracts.RunInterruptionAsync(avifInterruptionScratch, avifInterruptionWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} active AVIF interruption checks.");
+    return 0;
+}
+
+if (args is ["--tiff-fixtures", var tiffFixtureRoot])
+{
+    await TiffFixtureFactory.CreateAsync(tiffFixtureRoot);
+    Console.WriteLine("Created reproducible two-page TIFF fixture corpus at " + tiffFixtureRoot);
+    return 0;
+}
+
+if (args is ["--tiff-contracts", var tiffScratch])
+{
+    var checks = 0;
+    await TiffWorkflowContracts.RunAsync(tiffScratch, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} TIFF workflow checks.");
+    return 0;
+}
+
+if (args is ["--tiff-workflow", var tiffWorkflowScratch, var tiffWorker])
+{
+    var checks = 0;
+    await TiffWorkflowContracts.RunWorkerAsync(tiffWorkflowScratch, tiffWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} TIFF worker workflow checks.");
+    return 0;
+}
+
+if (args is ["--tiff-interruption", var tiffInterruptionScratch, var tiffInterruptionWorker])
+{
+    var checks = 0;
+    await TiffWorkflowContracts.RunInterruptionAsync(tiffInterruptionScratch, tiffInterruptionWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} active TIFF interruption checks.");
+    return 0;
+}
+
+if (args is ["--ico-interruption", var icoFaultScratch, var icoFaultWorker])
+{
+    var checks = 0;
+    await IcoWorkflowContracts.RunInterruptionAsync(icoFaultScratch, icoFaultWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} active ICO interruption checks.");
+    return 0;
+}
+
+if (args is ["--ico-workflow", var icoScratch, var icoWorker])
+{
+    var checks = 0;
+    await IcoWorkflowContracts.RunAsync(icoScratch, icoWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} ICO workflow checks.");
+    return 0;
+}
+
+if (args is ["--wem-setup", var wemSetupScratch])
+{
+    var checks = 0;
+    void CheckWemSetup(bool passed, string message)
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }
+    WemEncodingContracts.Run(wemSetupScratch, CheckWemSetup);
+    await WemSetupContracts.RunAsync(wemSetupScratch, CheckWemSetup);
+    Console.WriteLine($"Passed {checks} WEM setup and planning checks.");
+    return 0;
+}
+
+if (args is ["--wem-workflow", var wemScratch, var wemWorker, var wemFixtures, .. var wemMode] &&
+    (wemMode.Length == 0 || wemMode is ["--combined"]))
+{
+    var checks = 0;
+    await WemWorkflowContracts.RunAsync(wemScratch, wemWorker, wemFixtures, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); },
+        withAudioEngine: wemMode.Length != 0);
+    Console.WriteLine($"Passed {checks} WEM workflow checks.");
+    return 0;
+}
+
+if (args is ["--wwise-workflow", var wwiseScratch, var wwiseWorker, var wwiseFixtures, var wwiseConsole])
+{
+    var checks = 0;
+    await WwiseWorkflowContracts.RunAsync(wwiseScratch, wwiseWorker, wwiseFixtures, wwiseConsole, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} Wwise workflow checks.");
+    return 0;
+}
+
 if (args is ["--asf-metadata"])
 {
     var checks = 0;
@@ -496,6 +800,11 @@ if (args.Length == 4 && args[0] == "--pdf-docx-worker")
     Console.WriteLine($"Passed {checks} isolated PDF-to-Word workflow checks.");
     return 0;
 }
+if (args.Length == 4 && args[0] == "--pdf-docx-sample")
+{
+    await PdfDocxWorkflowContracts.ConvertSampleAsync(args[1], args[2], args[3]);
+    return 0;
+}
 if (args.Length == 4 && args[0] == "--pdf-page-worker")
 {
     var checks = 0;
@@ -542,6 +851,10 @@ try
     await SettingsContracts.RunAsync(args[0], Check);
     await DdsContracts.RunAsync(args[0], Check);
     await AnalysisContracts.RunAsync(args[0], Check);
+    AnalysisPresentationContracts.Run(Check);
+    TextSummaryContracts.Run(Check);
+    await TextLineAnalysisContracts.RunAsync(args[0], Check);
+    await AnalysisViewContracts.RunAsync(Path.Combine(args[0], "analysis-window"), Check);
     await ImageHeaderContracts.RunAsync(args[0], Check);
     await DocumentAnalysisContracts.RunAsync(args[0], Check);
     OfficeHostContracts.Run(Check);
@@ -575,12 +888,21 @@ try
     FlacSeekContracts.Run(Check);
     await FlacBatchContracts.RunAsync(args[0], Check);
     AudioProbeContracts.Run(Check);
+    VideoAudioContracts.Models(Check);
     AudioConversionContracts.Run(Check);
+    await WemHeaderContracts.RunAsync(Check);
+    await WwiseInstallationContracts.RunAsync(args[0], Check);
+    WemEncodingContracts.Run(args[0], Check);
+    await WemSetupContracts.RunAsync(args[0], Check);
     await WaveMetadataContracts.RunAsync(Check);
     await AiffMetadataContracts.RunAsync(Check);
     await AsfMetadataContracts.RunAsync(Check);
     await AudioSampleContracts.RunAsync(Check);
     ImagePlanContracts.Run(args[0], Check);
+    await AvifPublicContracts.RunAsync(args[0], Check);
+    await TiffWorkflowContracts.RunAsync(args[0], Check);
+    SvgModelContracts.Run(args[0], Check);
+    await SvgApplicationContracts.RunAsync(args[0], Check);
     await PngOptimizationContracts.RunAsync(args[0], Check);
     await TrialContracts.RunAsync(args[0], Check);
     await PublicationContracts.RunAsync(args[0], Check);
@@ -752,7 +1074,9 @@ try
         vm.Admit(request with { RequestId = Guid.NewGuid(), Paths = [fixture, fixture, fixture] });
         Check(vm.Rows.TakeLast(3).Select(row => row.Batch).Distinct().Count() == 1, "shared batch identity");
         vm.CancelCommand.Execute(null);
-        Check(vm.Rows.All(row => row.Status == "Cancelled"), "cancel queued batches");
+        Check(vm.Rows.Where(row => row.Operation != "analyze").All(row => row.Status == "Cancelled") &&
+            vm.AnalysisRows.All(row => row.Result.State == OperationState.Pending),
+            "cancel queued transformation batches without cancelling independent analysis");
         for (var index = 0; index < 3; index++)
             Check(vm.Admit(many with { RequestId = Guid.NewGuid() }).Accepted, "bounded queue admission");
         Check(!vm.Admit(many with { RequestId = Guid.NewGuid() }).Accepted, "queue overflow rejected");
@@ -762,7 +1086,7 @@ try
     await OnUiThreadAsync(async () =>
     {
         await using var vm = new MainViewModel(new WorkerClient(Path.Combine(args[0], "missing-worker.exe")));
-        vm.Admit(request with { Paths = [fixture, fixture, fixture] });
+        vm.Admit(request with { Operation = "convert", Action = "choose-format", Paths = [fixture, fixture, fixture] });
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         while (vm.IsBusy) await Task.Delay(10, timeout.Token);
         vm.RecordResult(vm.Rows[0], new PublicationResult(fixture, PublicationOutcome.CopyCreated, "Copy created", fixture + ".out").ToFileResult());
@@ -789,10 +1113,12 @@ try
         foreach (var row in new[] { oldFailure, laterSuccess, retry, missing }) vm.Rows.Add(row);
         foreach (var row in new[] { oldFailure, retry, missing }) vm.RecordResult(row, new(row.Path, OperationState.Failed, "Test failure"));
         vm.RecordResult(laterSuccess, new(laterSuccess.Path, OperationState.Succeeded, "Test success"));
+        vm.Settings = vm.Settings with { Optimize = new(ReplaceOriginals: true, OutputDirectory: args[0]) };
         var message = vm.RetryFailed();
         Check(vm.Rows.Count == 5 && vm.Rows[^1].Action == "smallest" && vm.Rows[^1].Path == retryPath &&
             message.StartsWith("1 file(s) could not be restarted"),
             "retry: latest case-insensitive result suppresses old failure; original preset retained; missing source reported");
+        Check(vm.Rows[^1].Settings == vm.Settings.Capture(retry.Operation), "retry: ordinary operations retain current output preference behavior");
         vm.RetryFailed();
         Check(vm.Rows.Count == 5, "retry: double-click cannot duplicate queued retry");
         Check(!vm.DisplayRows.Contains(retry) && vm.DisplayRows.Contains(missing) && vm.Rows.Contains(retry),
@@ -808,6 +1134,8 @@ try
     {
         await WorkerCleanupContracts.RunAsync(args[0], args[1], Check);
         await ImageWorkerContracts.RunAsync(args[0], args[1], Check);
+        await IcoWorkflowContracts.RunAsync(args[0], args[1], Check);
+        await IcoWorkflowContracts.RunInterruptionAsync(args[0], args[1], Check);
         await PngOptimizationContracts.RunWorkerAsync(args[0], args[1], Check);
         await PngInterruptionContracts.RunAsync(args[0], args[1], Check);
         await DdsWorkerContracts.RunAsync(args[0], args[1], Check);
@@ -819,8 +1147,10 @@ try
             from output in new[] { "png", "jpeg", "webp", "bmp", "tga" } where input != output
             select new MediaCapability("convert", input, output)).ToHashSet();
         expectedCapabilities.UnionWith(new[] { "png", "jpeg", "webp", "bmp", "tga" }.Select(input => new MediaCapability("convert", input, "dds")));
+        expectedCapabilities.UnionWith(new[] { "png", "jpeg", "webp", "bmp", "tga" }.Select(input => new MediaCapability("convert", input, "ico")));
+        expectedCapabilities.UnionWith(new[] { "png", "jpeg", "webp", "bmp", "tga" }.Select(input => new MediaCapability("convert", input, "avif")));
         expectedCapabilities.UnionWith([new("convert", "dds", "dds"), new("convert", "dds", "png"), new("optimize", "png", "png")]);
-        Check(capabilities.Length == 28 && expectedCapabilities.SetEquals(capabilities), "real private catalog advertises 27 conversion pairs and bounded lossless PNG optimization");
+        Check(capabilities.Length == 38 && expectedCapabilities.SetEquals(capabilities), "real private catalog advertises 37 conversion pairs and bounded lossless PNG optimization");
         Check((await worker.GetCapabilitiesAsync(CancellationToken.None)).SequenceEqual(capabilities), "worker reuse retains capabilities");
         var engine = await worker.GetEngineIdentityAsync(CancellationToken.None);
         Check(engine.Package == "Magick.NET-Q16-x64" && engine.Version.Contains("14.17.1", StringComparison.Ordinal) &&

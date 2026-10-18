@@ -60,6 +60,19 @@ internal static class PdfPageWorkflowContracts
         var transparentPath = transparent.Pages[0].Result.Publication?.OutputPath;
         check(transparentPath is not null && (await worker.ProbeAsync(new(Guid.NewGuid(), transparentPath), default)).HasTransparency,
             "PDF pages: explicit captured transparency reaches the worker and published PNG");
+        var jpegPlan = PdfPageConversionPlan.Create(Guid.NewGuid(), [first],
+            new("convert", new(), TransparentPdfBackground: true), PdfPageFormat.Jpeg).Confirm();
+        var jpeg = await freshExecutor.ExecuteAsync(jpegPlan, null, default);
+        check(jpeg.Pages.Count == first.Document.Pages.Length && jpeg.Pages.All(page => page.Result.Publication?.IsCommitted == true),
+            "PDF pages: JPEG saves every page despite the PNG transparency preference");
+        foreach (var page in jpeg.Pages)
+        {
+            var path = page.Result.Publication!.OutputPath!;
+            var facts = await worker.ProbeAsync(new(Guid.NewGuid(), path), default);
+            check(Path.GetExtension(path) == ".jpg" && facts.Format == ImageFormat.Jpeg && !facts.HasTransparency &&
+                facts.Width == first.Document.Pages[page.PageIndex].Width && facts.Height == first.Document.Pages[page.PageIndex].Height,
+                "PDF pages: published numbered JPEG has inspected geometry and opaque paper");
+        }
         using var cancelled = new CancellationTokenSource();
         var partial = await freshExecutor.ExecuteAsync(Plan(first), (_, _, row) =>
         { if (row.State == OperationState.Succeeded) cancelled.Cancel(); }, cancelled.Token);

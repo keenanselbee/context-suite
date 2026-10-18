@@ -41,13 +41,15 @@ internal static class ImageConversionSmoke
         using var automation = new UIA3Automation { ConnectionTimeout = TimeSpan.FromSeconds(3), TransactionTimeout = TimeSpan.FromSeconds(3) };
         Window? conversion = null;
         Window? main = null;
+        Window? inspector = null;
         var checks = 0;
         try
         {
             // Analyze keeps the compact report open while forwarded commands run.
             Activate("analyze", "open-details", [files[0]]);
-            main = WaitWindow("ContextSuiteWindow");
-            Wait(() => IsIdle(main), "read-only analysis completion");
+            inspector = WaitWindow("AnalyzeWindow");
+            main = inspector;
+            Wait(() => Control(inspector, "AnalysisType").Name.Contains("PNG"), "read-only analysis completion");
             Check(!File.Exists(trial), "Analyze does not start a trial");
             Check(main.FindFirstDescendant(cf => cf.ByAutomationId("MoreTools")) is null,
                 "compact report has no manual workspace");
@@ -92,6 +94,8 @@ internal static class ImageConversionSmoke
 
             Activate("convert", "webp", files);
             Activate("convert", "jpeg", [files[1]]);
+            main = WaitWindow("ContextSuiteWindow");
+            Check(!inspector.IsOffscreen, "Analyze stays available while conversion problems open separately");
             var jpeg = Path.Combine(inputs, "opaque - Converted.jpg");
             Wait(() => File.Exists(jpeg) && IsIdle(main), "direct queued conversion completion");
             Check(File.Exists(Path.Combine(inputs, "alpha - Converted.webp")) && File.Exists(Path.Combine(inputs, "opaque - Converted.webp")),
@@ -132,7 +136,9 @@ internal static class ImageConversionSmoke
             Control(main, "CloseResults").Focus();
             Wait(() => Control(main, "CloseResults").Properties.HasKeyboardFocus.ValueOrDefault, "result close focus");
             Keyboard.Press(VirtualKeyShort.ESCAPE); Keyboard.Release(VirtualKeyShort.ESCAPE);
-            Wait(() => owned[0].HasExited, "Escape closes idle results and worker");
+            Check(!owned[0].HasExited && !inspector.IsOffscreen, "closing results preserves the independent inspector");
+            Control(inspector, "CloseAnalysis").AsButton().Invoke();
+            Wait(() => owned[0].HasExited, "closing the last idle window stops the worker and application");
             for (var index = 0; index < files.Length; index++)
                 Check(SHA256.HashData(File.ReadAllBytes(files[index])).SequenceEqual(originals[index]), "original bytes unchanged: " + Path.GetFileName(files[index]));
             Check(Directory.GetFiles(inputs).Length == 6, "only the three confirmed outputs were published");

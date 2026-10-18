@@ -4,6 +4,8 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Licensing;
+using ContextSuite.Core.Operations;
+using ContextSuite.Core.Settings;
 
 namespace ContextSuite.Application.TestHost;
 
@@ -30,8 +32,8 @@ internal static class ViewContracts
             {
                 Check(!window.IsVisible && !string.IsNullOrWhiteSpace(AutomationProperties.GetAutomationId(window)),
                     window.GetType().Name + ": instantiated without showing UI");
-                Check(window.SizeToContent == SizeToContent.Height,
-                    window.GetType().Name + ": content controls height while width stays independent");
+                Check(window.SizeToContent == (window is MainWindow ? SizeToContent.Manual : SizeToContent.Height),
+                    window.GetType().Name + ": results use available height; dialogs fit their content");
                 var content = (FrameworkElement)window.Content;
                 content.Measure(new Size(window.MinWidth - 40, window.MinHeight - 70));
                 content.Arrange(new Rect(0, 0, window.MinWidth - 40, window.MinHeight - 70));
@@ -148,13 +150,13 @@ internal static class ViewContracts
                 Check(!Find<Expander>(window, id).IsExpanded, id + ": secondary controls start collapsed");
             Check(Find<DataGrid>(convert, "ConversionFiles").Columns.Count == 2 &&
                 Find<DataGrid>(optimize, "OptimizationFiles").Columns.Count == 2, "planners: two-column file/plan summary");
-            main.DataContext = new { IsLanding = true, HasResults = false, IsBusy = false, HasProblems = false, CanRetry = false };
+            main.DataContext = new { IsLanding = true, HasResults = false, IsOperationBusy = false, HasProblems = false, CanRetry = false };
             ((FrameworkElement)main.Content).UpdateLayout();
             Check(Find<Expander>(main, "FileDetails").Visibility == Visibility.Collapsed &&
                 Find<Button>(main, "CancelPending").Visibility == Visibility.Collapsed &&
                 Find<Button>(main, "RetrySelectedFiles").Visibility == Visibility.Collapsed,
                 "idle: empty results and idle job controls stay hidden");
-            main.DataContext = new { IsLanding = false, HasResults = true, IsBusy = true, HasProblems = true, CanRetry = true };
+            main.DataContext = new { IsLanding = false, HasResults = true, IsOperationBusy = true, HasProblems = true, CanRetry = true };
             ((FrameworkElement)main.Content).UpdateLayout();
             Check(Find<Expander>(main, "FileDetails").Visibility == Visibility.Visible &&
                 Find<Button>(main, "CancelPending").Visibility == Visibility.Visible &&
@@ -262,24 +264,13 @@ internal static class ViewContracts
             Check(recovery.Visibility == Visibility.Visible && !confirmRecovery.IsEnabled,
                 "license: busy recovery keeps instructions visible and disables submission");
             license.DataContext = licenseModel;
+            // Use fresh bindings after the live-region text mutation checks above.
+            main = new MainWindow();
+            windows = [.. windows, main];
+            _ = new System.Windows.Interop.WindowInteropHelper(main).EnsureHandle();
             var results = Find<DataGrid>(main, "BatchResults");
-            var analysisRow = new FileRow(1, "analyze", @"C:\fixture.pdf", new("analyze", new()));
-            analysisRow.ApplyAnalysis(Core.Analysis.HeaderAnalyzer.Analyze(analysisRow.Path, "%PDF-1.7\n"u8, 9));
-            main.DataContext = new { HasResults = true, ShowDetails = true, DisplayRows = new[] { analysisRow } };
-            ((FrameworkElement)main.Content).UpdateLayout();
-            Check(results.SelectedItem == analysisRow && Find<TextBlock>(main, "AnalysisSummary").Text.Contains("PDF document"),
-                "analysis: first selected file shows its ordinary summary without another click");
-            Check(!Find<Expander>(main, "AnalysisTechnicalDetails").IsExpanded &&
-                Find<TextBlock>(main, "AnalysisFacts").Text.Contains("document objects were not parsed"),
-                "analysis: technical evidence is bound but starts collapsed");
-            var scriptRow = new FileRow(2, "analyze", @"C:\example.py", new("analyze", new()));
-            scriptRow.ApplyAnalysis(Core.Analysis.HeaderAnalyzer.Analyze(scriptRow.Path, "Readable text"u8, 13));
-            results.ItemsSource = new[] { scriptRow };
-            results.SelectedItem = scriptRow;
-            ((FrameworkElement)main.Content).UpdateLayout();
-            Check(Find<TextBlock>(main, "AnalysisSummary").Text.Contains("Python source (filename hint)") &&
-                !Find<Expander>(main, "AnalysisTechnicalDetails").IsExpanded,
-                "analysis: ordinary report labels filename-only identity without opening technical details");
+            // Analyze has its own window; its facts, selection and themes are exercised by --analysis-views.
+            main.DataContext = new { HasResults = true, ShowDetails = true };
             const string longName = "A long image filename with several descriptive words that should stay readable when the results window is narrow.png";
             results.ItemsSource = new[] { new { Name = longName, Outcome = "Needs attention", Savings = "—" } };
             Find<Expander>(main, "FileDetails").IsExpanded = true;
@@ -295,6 +286,94 @@ internal static class ViewContracts
                 Check(filename.ActualHeight > filename.FontSize * 2 && filename.ActualWidth <= results.Columns[0].ActualWidth,
                     "results: long filenames wrap inside their column at " + width);
             }
+            var conversionModel = new MainViewModel(new WorkerClient(Path.Combine(Path.GetTempPath(), "unused-conversion-view-worker.exe")));
+            var conversionRow = new FileRow(1, "convert", @"C:\fixtures\Lecture.pdf", new ContextSuite.Core.Settings.SuiteSettings().Capture("convert"), "pdf-dark");
+            conversionModel.Rows.Add(conversionRow);
+            main.DataContext = conversionModel;
+            Check(conversionModel.ShowDetails && Find<Expander>(main, "FileDetails").IsExpanded,
+                "conversion: details open for pending work without requiring a warning");
+            conversionRow.ApplyResult(new(conversionRow.Path, ContextSuite.Core.Operations.OperationState.Succeeded, "Copy saved."));
+            Check(conversionModel.ShowDetails, "conversion: successful results retain expanded details");
+            results.ItemsSource = Enumerable.Range(1, 30).Select(index => new
+            {
+                Name = $"Lecture {index} - Software Modeling.pdf", Outcome = "Completed with warning", Savings = "—",
+                OperationDetails = string.Join(Environment.NewLine, Enumerable.Repeat("A long selected-file detail that remains readable in a scrollable area.", 20)),
+                HasOutput = true
+            }).ToArray();
+            results.SelectedIndex = 0;
+            _ = new System.Windows.Interop.WindowInteropHelper(main).EnsureHandle();
+            var previousHeight = 0.0;
+            foreach (var height in new[] { main.MinHeight - 40, 500.0, 960.0 })
+            {
+                main.Width = 720; main.Height = height + 40;
+                main.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+                mainContent.Measure(new Size(704, height));
+                mainContent.Arrange(new Rect(0, 0, 704, height));
+                mainContent.UpdateLayout();
+                main.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
+                mainContent.Measure(new Size(704, height));
+                mainContent.Arrange(new Rect(0, 0, 704, height));
+                mainContent.UpdateLayout();
+                Check(results.ActualHeight >= 40 && results.ActualHeight > previousHeight, "results: table grows with window height " + height);
+                previousHeight = results.ActualHeight;
+                var folder = Find<Button>(main, "OpenOutputFolder");
+                var close = Find<Button>(main, "CloseResults");
+                Check(folder.TranslatePoint(new Point(0, folder.ActualHeight), mainContent).Y <= close.TranslatePoint(new Point(), mainContent).Y &&
+                    close.TranslatePoint(new Point(0, close.ActualHeight), mainContent).Y <= mainContent.ActualHeight,
+                    $"results: details and output action stay above the footer at {height} (folder bottom {folder.TranslatePoint(new Point(0, folder.ActualHeight), mainContent).Y}, footer top {close.TranslatePoint(new Point(), mainContent).Y}, table {results.ActualHeight})");
+                Check(VisualDescendants(results).OfType<ScrollViewer>().Any(scroll => scroll.ScrollableHeight > 0),
+                    "results: overflowing file list scrolls within its allotted space at " + height);
+            }
+            Check(results.ActualHeight > 400, "results: tall windows no longer cap the file table at 240 pixels");
+            var disclosure = Find<Expander>(main, "FileDetails");
+            disclosure.IsExpanded = false; disclosure.IsExpanded = true;
+            Check(main.SizeToContent == SizeToContent.Manual, "results: opening details retains the user's window height");
+            const string coordinateWarning = "Dark-mode PDF copy saved. Recovered malformed drawing coordinates using the validated zero interpretation.";
+            const string dimensionWarning = "Dark-mode PDF copy saved. Recovered inconsistent image dimensions using the JPEG and mask data.";
+            const string retainedWarning = "Dark-mode PDF copy saved. Some images retain their original colors.";
+            var coordinateModel = new MainViewModel(new WorkerClient(Path.Combine(Path.GetTempPath(), "unused-coordinate-view-worker.exe")));
+            var coordinateRow = AddWarning(coordinateModel, "Coordinates.pdf", "pdf-dark", coordinateWarning);
+            Check(coordinateModel.Summary.Contains("recovered drawing coordinates", StringComparison.Ordinal) &&
+                !coordinateModel.Summary.Contains("original colors", StringComparison.Ordinal) &&
+                coordinateModel.ShowDetails && coordinateRow.Outcome == "Completed with warning" &&
+                coordinateRow.OperationDetails.Contains(coordinateWarning, StringComparison.Ordinal),
+                "PDF dark: coordinate recovery opens details and does not claim retained image colors");
+            var dimensionModel = new MainViewModel(new WorkerClient(Path.Combine(Path.GetTempPath(), "unused-dimension-view-worker.exe")));
+            var dimensionRow = AddWarning(dimensionModel, "Dimensions.pdf", "pdf-dark", dimensionWarning);
+            Check(dimensionModel.Summary.Contains("recovered image dimensions", StringComparison.Ordinal) &&
+                !dimensionModel.Summary.Contains("original colors", StringComparison.Ordinal) &&
+                !dimensionModel.Summary.Contains("recovered drawing coordinates", StringComparison.Ordinal) &&
+                dimensionRow.OperationDetails.Contains(dimensionWarning, StringComparison.Ordinal),
+                "PDF dark: image-dimension recovery has its own summary and retains per-file detail");
+            var retainedModel = new MainViewModel(new WorkerClient(Path.Combine(Path.GetTempPath(), "unused-retained-view-worker.exe")));
+            AddWarning(retainedModel, "Retained.pdf", "pdf-dark", retainedWarning);
+            Check(retainedModel.Summary.Contains("Some images retain their original colors.", StringComparison.Ordinal) &&
+                !retainedModel.Summary.Contains("recovered", StringComparison.Ordinal),
+                "PDF dark: retained-image warning does not imply source recovery");
+            var mixedModel = new MainViewModel(new WorkerClient(Path.Combine(Path.GetTempPath(), "unused-mixed-view-worker.exe")));
+            AddWarning(mixedModel, "Coordinates.pdf", "pdf-dark", coordinateWarning);
+            AddWarning(mixedModel, "Dimensions.pdf", "pdf-dark", dimensionWarning);
+            AddWarning(mixedModel, "Retained.pdf", "pdf-dark", retainedWarning);
+            AddWarning(mixedModel, "Optimized.png", "auto", "Optimized copy saved. Metadata removed.", "optimize");
+            Check(mixedModel.Summary.Contains("4 warnings", StringComparison.Ordinal) &&
+                mixedModel.Summary.Contains("Some images retain their original colors.", StringComparison.Ordinal) &&
+                mixedModel.Summary.Contains("recovered image dimensions", StringComparison.Ordinal) &&
+                mixedModel.Summary.Contains("recovered drawing coordinates", StringComparison.Ordinal) &&
+                mixedModel.Summary.Contains("Some metadata was removed from optimized copies.", StringComparison.Ordinal),
+                "mixed batch: every warning cause remains visible and the existing Optimize warning remains separate");
+            var combinedModel = new MainViewModel(new WorkerClient(Path.Combine(Path.GetTempPath(), "unused-combined-view-worker.exe")));
+            AddWarning(combinedModel, "Combined.pdf", "pdf-dark", dimensionWarning + " " +
+                "Some images retain their original colors. Recovered malformed drawing coordinates using the validated zero interpretation.");
+            Check(combinedModel.Summary.Contains("original colors", StringComparison.Ordinal) &&
+                combinedModel.Summary.Contains("recovered image dimensions", StringComparison.Ordinal) &&
+                combinedModel.Summary.Contains("recovered drawing coordinates", StringComparison.Ordinal),
+                "PDF dark: one published copy can report retained images and both recoveries together");
+            var otherModel = new MainViewModel(new WorkerClient(Path.Combine(Path.GetTempPath(), "unused-other-view-worker.exe")));
+            AddWarning(otherModel, "Future.pdf", "pdf-dark", "Dark-mode PDF copy saved. Additional warning.");
+            Check(otherModel.Summary.Contains("see Files and details", StringComparison.Ordinal) &&
+                !otherModel.Summary.Contains("original colors", StringComparison.Ordinal) &&
+                !otherModel.Summary.Contains("recovered", StringComparison.Ordinal),
+                "PDF dark: an unfamiliar metadata warning remains visible without an invented cause");
             Console.WriteLine($"Passed {passed} hidden view contracts. No desktop input, screen-reader delivery or visual acceptance tested.");
             return 0;
         }
@@ -308,6 +387,16 @@ internal static class ViewContracts
         {
             if (!condition) throw new InvalidOperationException(name);
             passed++; Console.WriteLine("PASS " + name);
+        }
+
+        static FileRow AddWarning(MainViewModel model, string name, string action, string message, string operation = "convert")
+        {
+            var path = Path.Combine(@"C:\fixtures", name);
+            var row = new FileRow(1, operation, path, new SuiteSettings().Capture(operation), action);
+            model.Rows.Add(row);
+            model.RecordResult(row, new PublicationResult(path, PublicationOutcome.CopyCreated, message,
+                path + ".copy", MetadataWarning: true).ToFileResult());
+            return row;
         }
     }
 

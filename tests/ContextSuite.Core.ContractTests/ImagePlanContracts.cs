@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using ContextSuite.Core.Images;
+using ContextSuite.Core.Dds;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Settings;
 
@@ -12,6 +13,82 @@ internal static class ImagePlanContracts
         var facts = new ImageSourceFacts(Guid.NewGuid(), Path.Combine(scratch, "image.png"), new string('A', 64),
             100, ImageFormat.Png, 300, 200, 16, 1, false, false, "sRGB", []);
         var settings = new BatchSettings("convert", new());
+        var jfif = facts with { Path = Path.Combine(scratch, "photo.JfIf"), Format = ImageFormat.Jpeg, BitDepth = 8, IsLossy = true };
+        foreach (var mode in Enum.GetValues<ImageMetadataMode>())
+        {
+            var jfifPlan = ImageConversionPlanner.Create(Guid.NewGuid(), [jfif], new(ImageFormat.Png, Metadata: mode),
+                new("convert", new(ReplaceOriginals: true)), true);
+            check(jfifPlan.HasExecutableItems && !jfifPlan.ReplaceOriginal, "JFIF plan: JPEG alias remains copy-only: " + mode);
+            Reject(() => (jfifPlan with { ReplaceOriginal = true }).Confirm(true, true, true), "forged JFIF replacement: " + mode);
+        }
+        Reject(() => (jfif with { Format = ImageFormat.Png }).Validate(), "JFIF filename with non-JPEG facts");
+        check(!ImageConversionPlanner.Create(Guid.NewGuid(), [jfif], new(ImageFormat.Jpeg), settings).HasExecutableItems,
+            "JFIF plan: no redundant JPEG re-encoding action");
+        var iconOptions = new ImageConversionOptions(ImageFormat.Ico, Metadata: ImageMetadataMode.Automatic);
+        var iconSource = facts with { Format = ImageFormat.Ico, Width = 48, Height = 32, BitDepth = 8, HasTransparency = true };
+        var extracted = ImageConversionPlanner.Create(Guid.NewGuid(), [iconSource], new(ImageFormat.Png, Metadata: ImageMetadataMode.Automatic),
+            new("convert", new(ReplaceOriginals: true)), true);
+        check(extracted.CanConfirmQuickAction && !extracted.ReplaceOriginal && extracted.Items[0].OutputWidth == 48 && extracted.Items[0].OutputHeight == 32,
+            "ICO extraction preserves largest frame size and alpha on a mandatory copy");
+        Reject(() => (extracted with { ReplaceOriginal = true }).Confirm(true, true, true), "forged ICO input replacement");
+        check(!ImageConversionPlanner.Create(Guid.NewGuid(), [iconSource], new(ImageFormat.Jpeg, MatteRgb: 0xffffff), settings).HasExecutableItems,
+            "ICO extraction does not enable other image destinations");
+        var icon = ImageConversionPlanner.Create(Guid.NewGuid(), [facts], iconOptions, new("convert", new(true)), true);
+        check(!icon.ReplaceOriginal && icon.CanConfirmQuickAction && icon.Items[0].OutputWidth == 256 && icon.Items[0].OutputHeight == 256,
+            "ICO plan: automatic square canvases are quiet, copy-only and capped at 256");
+        Reject(() => (icon with { ReplaceOriginal = true }).Confirm(true, true, true), "forged ICO replacement");
+        Reject(() => (iconOptions with { MaximumDimension = 64 }).Validate(), "custom ICO size conflicts with fixed automatic sizes");
+        check(IconFrameLayout.Create(512, 256).Select(f => f.Size).SequenceEqual(new uint[] { 16, 24, 32, 48, 64, 128, 256 }) &&
+            IconFrameLayout.Create(512, 256).All(f => f.Width == f.Size && f.Height == f.Size / 2 && f.Top == f.Size / 4),
+            "ICO layout: every standard size, aspect fit and centered transparent padding");
+        check(IconFrameLayout.Create(20, 10).SequenceEqual(new IconFrameLayout[] { new(16, 16, 8, 0, 4), new(24, 20, 10, 2, 7) }) &&
+            IconFrameLayout.Create(1, 1).SequenceEqual(new IconFrameLayout[] { new(16, 1, 1, 7, 7) }),
+            "ICO layout: small artwork never enlarges and stops at the next standard canvas");
+        foreach (var format in new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Bmp, ImageFormat.Tga })
+            check(ImageConversionPlanner.Create(Guid.NewGuid(), [facts with { Format = format, HasTransparency = true }], iconOptions, settings).CanConfirmQuickAction,
+                "ICO plan: ordinary raster alpha needs no matte: " + format);
+        foreach (var format in new[] { ImageFormat.Heic, ImageFormat.Avif, ImageFormat.Ico })
+            check(!ImageConversionPlanner.Create(Guid.NewGuid(), [facts with { Format = format }], iconOptions, settings).HasExecutableItems,
+                "ICO plan: unsupported input does not gain a conversion pair: " + format);
+        var avifOptions = new ImageConversionOptions(ImageFormat.Avif, Quality: ImageConversionOptions.AvifQuality,
+            Metadata: ImageMetadataMode.Automatic);
+        check(avifOptions.Quality == 95 && avifOptions.Extension == "avif" && avifOptions.IsLossy && avifOptions.SupportsAlpha,
+            "AVIF options: fixed quality 95, lossy output, alpha and AVIF extension");
+        foreach (var format in new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Bmp, ImageFormat.Tga })
+        {
+            var avif = ImageConversionPlanner.Create(Guid.NewGuid(), [facts with { Format = format, BitDepth = 8, HasTransparency = true }],
+                avifOptions, new("convert", new(ReplaceOriginals: true)), true);
+            check(avif.CanConfirmQuickAction && !avif.ReplaceOriginal && avif.Items[0].CanExecute &&
+                avif.Items[0].OutputWidth == facts.Width && avif.Items[0].OutputHeight == facts.Height,
+                "AVIF plan: ordinary raster alpha, original dimensions and mandatory quiet copy: " + format);
+            Reject(() => (avif with { ReplaceOriginal = true }).Confirm(true, true, true), "forged AVIF replacement: " + format);
+        }
+        foreach (var format in new[] { ImageFormat.Heic, ImageFormat.Avif, ImageFormat.Ico })
+            check(!ImageConversionPlanner.Create(Guid.NewGuid(), [facts with { Format = format }], avifOptions, settings).HasExecutableItems,
+                "AVIF plan: unsupported input does not gain a conversion pair: " + format);
+        var dds = new DdsInfo(true, 0, (uint)DdsFormat.Rgba8, DdsFormat.Rgba8, facts.Width, facts.Height,
+            1, 1, 1, DdsTextureKind.Texture2D, 1, 148, facts.FileBytes, null, []);
+        check(!ImageConversionPlanner.Create(Guid.NewGuid(), [facts with { Format = ImageFormat.Dds, Texture = dds }], avifOptions, settings).HasExecutableItems,
+            "AVIF plan: DDS does not gain an output pair");
+        var preciseAvif = ImageConversionPlanner.Create(Guid.NewGuid(), [facts with { ProfileNames = ["icc"], BitDepth = 16 }], avifOptions, settings);
+        check(preciseAvif.CanConfirmQuickAction && preciseAvif.Items[0].OutputDepth == 8 &&
+            preciseAvif.Items[0].Warnings.Any(w => w.Code == "precision-reduction" && w.Message.Contains("8-bit SDR", StringComparison.Ordinal)) &&
+            preciseAvif.Items[0].Warnings.Any(w => w.Code == "color-profile-conversion" && w.Message.Contains("sRGB", StringComparison.Ordinal)),
+            "AVIF plan: automatic copy discloses precision and color transformation without routine prompt");
+        var taggedAvifSource = facts with { BitDepth = 8, ProfileNames = ["icc", "exif", "xmp"],
+            Resolution = new(11811, 11811, 3, 100) };
+        var preserveAvif = ImageConversionPlanner.Create(Guid.NewGuid(), [taggedAvifSource],
+            new(ImageFormat.Avif, Quality: ImageConversionOptions.AvifQuality, Metadata: ImageMetadataMode.Preserve), settings);
+        check(preserveAvif.Items[0].CanExecute && preserveAvif.Items[0].Warnings.Any(w => w.Code == "metadata-normalization"),
+            "AVIF plan: supported EXIF, XMP and resolution use normalized preservation");
+        var automaticAvif = ImageConversionPlanner.Create(Guid.NewGuid(), [taggedAvifSource], avifOptions,
+            new("convert", new(ReplaceOriginals: true)), true);
+        check(!automaticAvif.ReplaceOriginal && automaticAvif.CanConfirmQuickAction,
+            "AVIF plan: tagged automatic output stays a quiet copy under overwrite settings");
+        Reject(() => (avifOptions with { Quality = 90 }).Validate(), "AVIF quality remains fixed at 95");
+        Reject(() => (avifOptions with { WebPLossless = true }).Validate(), "AVIF rejects WebP lossless policy");
+        Reject(() => (avifOptions with { ExtractMip = 0 }).Validate(), "AVIF rejects DDS mip extraction");
+        Reject(() => (avifOptions with { Texture = new() }).Validate(), "AVIF rejects texture options");
         ImageBatchPlan Plan(ImageSourceFacts source, ImageConversionOptions? options = null) =>
             ImageConversionPlanner.Create(Guid.NewGuid(), [source], options ?? new(ImageFormat.WebP), settings);
         var plan = Plan(facts);

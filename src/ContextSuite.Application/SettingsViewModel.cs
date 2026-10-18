@@ -63,7 +63,7 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         IsSaving = true;
         try
         {
-            var settings = new SuiteSettings { Convert = Convert.Capture(), Optimize = Optimize.Capture(), PlayCompletionSound = PlayCompletionSound,
+            var settings = _loaded.Settings with { Convert = Convert.Capture(), Optimize = Optimize.Capture(), PlayCompletionSound = PlayCompletionSound,
                 TransparentPdfBackground = TransparentPdfBackground };
             var result = await _store.SaveAsync(settings, _loaded);
             Message = "Settings saved. Existing batches were not changed.";

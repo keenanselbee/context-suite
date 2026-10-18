@@ -151,6 +151,35 @@ Converters And Optimizers
 Shell Integration
 -----------------
 
+- Windows uses the white folded triangle on transparency from `images/icon-tri.png`
+  and `images/icon-tri-small.png`. Preserve its alpha and neutral facet shading.
+  Keep `images/icon.png` and `images/icon-small.png`, with the emerald background,
+  for online-page branding.
+  Use the small source through 48 pixels and the full source above that. Generate
+  16, 20, 24, 32, 40, 48, 64, 96, 128 and 256-pixel ICO frames with
+  `tools/New-ApplicationAssets.ps1`; the application build embeds this icon for
+  windows, taskbar and executable views. Package and installer branding uses
+  the same artwork. Explorer action glyphs remain distinct monochrome symbols.
+- Package manifests must use `BackgroundColor="transparent"`. Include default,
+  `altform-unplated` and `altform-lightunplated` target-size PNGs and a
+  `resources.pri` alongside the assets at the sparse package's external location.
+  The three tools share its default resource map. Identity-specific indexes beside
+  registration manifests do not replace this runtime index. Verify lookup through
+  the installed package, not only file presence. ICO alpha alone does not prevent
+  Windows from adding a colored taskbar plate; follow
+  [Microsoft's taskbar asset guidance](https://learn.microsoft.com/en-us/windows/apps/design/iconography/app-icon-construction).
+- Explorer uses Compact monochrome solid glyphs: document/magnifier for Analyze,
+  opposing arrows for Convert, and broad inward chevrons for Optimize. Use the
+  selected B geometry: a three-unit central gap on the 24-unit design grid,
+  rendered at 90% scale about its center to balance the other tools.
+  Avoid sparkles or other AI symbolism. Generate transparent light/dark variants
+  with dedicated 16, 20 and 24-pixel frames; match the Windows app appearance and
+  contrast-theme menu text. Keep the small-size preview readable before packaging.
+- Convert destinations extend this same solid monochrome vocabulary with
+  distinct silhouettes and exact text labels. Word uses a large W cutout;
+  Settings uses sliders. Keep destination symbols legible at 16 pixels and
+  preserve tool-root fallback if a destination asset is missing. The
+  [format icon record](convert-format-icons-plan.md) owns the selected geometry.
 - Keep Explorer-facing code minimal, deterministic, and non-blocking.
 - Do not load media engines, parse large files, access the network, or open UI
   while Explorer is enumerating commands.
@@ -187,11 +216,13 @@ Apply this section if the accepted desktop UI decision uses XAML and MVVM.
   [Microsoft's WPF guidance](https://learn.microsoft.com/en-us/accessibility-tools-docs/items/wpf/text_livesetting).
 - Do not rely on color alone to communicate success, warnings, or failures.
 - Keep primary workflows usable without opening advanced settings.
-- Size windows to their content height. Opening an inline expandable section
-  grows the window; closing it removes the unused space. Keep the user's width,
-  cap height to the current monitor's work area, and scroll content when needed.
-  Refit after a disclosure or tab change even if the user previously resized the
-  window. Leave maximized windows maximized.
+- Give windows a usable initial size and scroll long content when needed.
+  Preserve ordinary Windows movement, resizing, snapping and maximizing; do not
+  continually clamp geometry after the user moves or resizes a window.
+  Analyze uses the initial 82% work-area layout and shared starting top described
+  in [product design](product-design.md). Explicit Technical details changes
+  shrink/restore its normal height while preserving position and width; fit an
+  expansion below the current top where possible. Leave maximized geometry alone.
 - Make Settings tabs visibly selectable, with a strong selected indicator and
   a heading in the content panel identifying which tool the settings affect.
 

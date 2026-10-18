@@ -87,12 +87,12 @@ internal static class AiffMetadataContracts
             catch (OperationCanceledException) { check(cancelled.Position == 3, "AIFF inventory: cancellation restores caller position"); }
         }
         foreach (var codec in new[] { "pcm_s8", "pcm_s16be", "pcm_s24be", "pcm_s32be", "pcm_f32be", "pcm_f64be", "pcm_alaw", "pcm_mulaw", "adpcm_ima_qt" })
-        foreach (var target in Enum.GetValues<AudioFormat>())
+        foreach (var target in Enum.GetValues<AudioFormat>().Where(format => format != AudioFormat.Wem))
         {
             var empty = ImmutableDictionary<string, string>.Empty;
             var facts = new AudioProbeFacts("aiff", 1, [new(0, "audio", codec, 48000, 2, null, null, null, "stereo", empty)], empty);
             var plan = AudioConversionPlan.Create(facts, target);
-            check(!plan.AlreadyTarget && plan.Target == target && Enum.GetValues<AudioFormat>().Length == 6,
+            check(!plan.AlreadyTarget && plan.Target == target && Enum.GetValues<AudioFormat>().Count(format => format != AudioFormat.Wem) == 6,
                 "AIFF plan: input-only variant uses existing target " + codec + " / " + target);
             if (target == AudioFormat.Wave && codec == "pcm_f64be")
                 check(plan.OutputCodec == "pcm_f64le" && plan.RequiresExactSamples, "AIFF float64 retains precision while changing WAV byte order");

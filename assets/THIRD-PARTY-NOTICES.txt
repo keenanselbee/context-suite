@@ -54,3 +54,17 @@ The unmodified managed assemblies are packaged with PdfPig.License.txt and
 PdfPig.Notices.txt, including the upstream PDFBox/FontBox and Adobe glyph-list
 acknowledgments. Context Suite supplies its own layout reconstruction and
 Word document writer. Keep both notice files with binary distributions.
+
+AVIF output uses libavif 1.4.2 and AOM 3.15.1, statically linked into
+ContextSuite.Avif.Native.dll. Their license, patent and selected dependency
+notices accompany image-expansion candidates under avif/provenance/notices.
+Pinned official source archives and the build recipe are under avif/provenance.
+Context Suite's private bridge is separate authored code and is not included
+in that third-party source kit.
+
+SVG rendering uses resvg 0.48.1 and 62 other locked Cargo registry crates.
+Image-expansion candidates retain the dependency inventory, copied license
+texts, 63 original crate archives, build recipe and matching Rust library
+notices under svg/provenance. Context Suite's private renderer is separate
+authored code and is not included in that third-party source kit. SVG text
+uses a bounded set of fonts from Windows; no fonts are redistributed.

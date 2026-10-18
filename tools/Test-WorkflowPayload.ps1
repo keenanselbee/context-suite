@@ -22,8 +22,12 @@ if (-not (Test-Path -LiteralPath (Join-Path $payload 'payload-inventory.json') -
 $options = @{ Payload = $payload }
 if (Test-Path -LiteralPath (Join-Path $payload 'audio-engine') -PathType Container) { $options.AllowAudioCandidate = $true }
 if (Test-Path -LiteralPath (Join-Path $payload 'pdf-engine') -PathType Container) { $options.AllowPdfCandidate = $true }
+if (Test-Path -LiteralPath (Join-Path $payload 'pdf-dark') -PathType Container) { $options.AllowPdfDarkCandidate = $true }
 if (Test-Path -LiteralPath (Join-Path $payload 'office-engine') -PathType Container) { $options.AllowOfficeCandidate = $true }
 if (Test-Path -LiteralPath (Join-Path $payload 'heif') -PathType Container) { $options.AllowHeifCandidate = $true }
+if (Test-Path -LiteralPath (Join-Path $payload 'wem-engine') -PathType Container) { $options.AllowWemCandidate = $true }
+if ((Test-Path -LiteralPath (Join-Path $payload 'avif') -PathType Container) -or
+    (Test-Path -LiteralPath (Join-Path $payload 'svg') -PathType Container)) { $options.AllowImageExpansionCandidate = $true }
 & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionPayload.ps1') @options
 & python -B (Join-Path $PSScriptRoot 'audio-engine\Stage-AudioPayload.py') --payload $payload --inventory
 if ($LASTEXITCODE -ne 0) { throw 'Workflow payload inventory verification failed.' }

@@ -1,8 +1,14 @@
 Best-effort PDF-to-Word Conversion
 =================================
 
-Status: implemented and tested in source on 2026-09-28; not installed or staged
-as a new release. Existing reserved candidates are unchanged.
+Status: implemented and tested on 2026-09-28, then installed locally as 1.1.4
+on the owner's request. Existing reserved candidates are preserved.
+
+The [FastAPI fidelity goal](fastapi-pdf-docx-goal.md) records the filled worksheet
+milestone installed as 1.2.0 and the later native-line/paragraph improvements in
+version 1.2.3. The latter preserves three pages, a 42-cell table and seven
+checkmarks; long underscore blanks become editable line geometry while ordinary
+text stays editable. The supplied online DOCX is a blank-layout reference.
 
 Convert > Word (DOCX) accepts text-based PDFs and saves a separate editable Word
 copy. It uses the existing single sequential worker, paid/trial admission and
@@ -13,12 +19,22 @@ continuing supported files. Source hashes are checked before and after work.
 Achieved fidelity
 -----------------
 
-- Reconstruct paragraphs with font family/size, bold, italic and text color.
-  Heading-size and line-gap changes separate paragraphs. Columns become a
-  readable sequence of paragraphs rather than a promise of identical columns.
+- Reconstruct editable, page-positioned paragraphs with font family/size, bold,
+  italic and text color. Preserve source line positions, columns, diagram labels,
+  answer rules and footer placement. Text layers are separated before word
+  extraction so underscore rules do not interleave filled answers or identifiers.
+  Clearly related prose lines share one paragraph with source leading and natural
+  wrapping; ambiguous fields and list items stay separate. Recognized titles and
+  headings receive Word styles. Repeated isolated bottom-margin text moves into
+  real per-section footer parts, with explicit empty footers preventing inheritance.
+- Preserve simple solid horizontal strokes and long underscore blanks as native
+  Word lines with source coordinates, color and thickness. Lines do not wrap or
+  displace surrounding text and have no raster paper background. Curved, compound
+  and dashed artwork retains the bounded figure fallback.
 - Preserve embedded PNG/JPEG pictures and reconstruct ordinary ruled tables
-  as editable Word cells. Page sizes, approximate margins and section breaks
-  preserve the source's page organization; Word may repaginate flowing content.
+  as editable Word cells, including multiline cells and slightly offset rule
+  endpoints. Source column widths, minimum row heights and cell text insets
+  preserve table geometry. Page-sized sections retain page organization.
 - Preserve complex painted regions, masked/rotated pictures and intersecting
   labels as 150-DPI PNG figures using the pinned PDF renderer. Surrounding text
   stays editable. Completion details identify this fallback. A document that
@@ -26,11 +42,27 @@ Achieved fidelity
 - Scanned or other content-bearing pages without usable text require OCR, which
   is not included. Protected, malformed, unsupported and oversized inputs fail
   without changing their originals. Unusable text mappings and unsupported text
-  rendering can be refused. Pages with annotations (including interactive links
-  and form widgets) are refused rather than silently losing their behavior.
+  rendering can be refused. Static Stamp annotations with normal appearances
+  can be flattened into localized images. Contents, actions, replies, optional
+  visibility and alternate interaction appearances remain unsupported. Associated
+  popups must be empty, closed, present on the page and reciprocally linked.
+  Other annotation types, including interactive links and form widgets, refuse.
   This is not an exact-layout, OCR, editable chart,
   editable formula, form, annotation, hyperlink or accessibility reconstruction
   engine. Compare important documents against the original PDF.
+
+Paragraphs still occupy page-positioned frames rather than a fully flowing
+manuscript; general list, form and accessibility reconstruction is not claimed.
+Embedded font subsets are not
+redistributed: standard families and DejaVu names are normalized; Minion uses a
+Times New Roman substitute at natural width for positioned text, with modest
+width compensation retained in narrow table cells. Different fonts
+or document editors can still change wrapping. Stamp appearances are flattened,
+not interactive annotations or retained review metadata. Localized figures retain
+transparent unpainted paper and preserve any white paint actually in the PDF.
+The later worksheet
+acceptance uses local Microsoft Word 16.0 PDF exports and inspection of every
+page. Dark-mode interaction and arbitrary later edits remain manual checks.
 
 The format menu describes reflow and figure limitations. No routine planner,
 cloud upload, account system or additional resident process is introduced.
@@ -64,13 +96,22 @@ conversion deadline. The renderer retains its own pixel/time/input limits.
 
 DOCX output is capped at 64 MiB, embedded media at 48 MiB, and uncompressed ZIP
 parts at 96 MiB. The writer reopens its package and checks document text, drawing
-counts, section presence, part counts and safe paths. Text accounting includes
-labels deliberately preserved inside figures, preventing unnoticed extraction
-loss. The worker writes only an empty reserved output and verifies its hash;
+counts, native rules, footer text/references, section presence, part counts and
+safe paths. Source-character accounting includes labels deliberately preserved
+inside figures and underscores represented by native rules, preventing unnoticed
+extraction loss. Source text counts include those converted underscore glyphs;
+they are not a count of remaining Word text characters. The worker writes only
+an empty reserved output and verifies its hash;
 the app owns final publication and cleanup.
 
 Evidence
 --------
+
+The newer [FastAPI acceptance record](fastapi-pdf-docx-goal.md) adds 94 focused
+adapter/writer checks, the actual filled-sample direct command and publication,
+zero independent schema errors, and visual review of every final page. All 4,506
+foundation contracts and documentation/public-boundary checks pass. The older
+milestone evidence below remains historical.
 
 - 51 private adapter checks: ordinary text, headings, columns, editable table,
   image, multiple pages, accented/Greek/Cyrillic text, artwork with labels,
@@ -96,3 +137,10 @@ and `.codex-temp/pdf-docx-visual-e5a8be352522443ca9e006a591e1b84f`.
 Two additional real-worker checks refuse password-encrypted and owner-protected
 PDFs. A scratch worker publish verifies all nine pinned PdfPig assembly/notice
 files and confirms the Open XML test dependency is absent from runtime packages.
+
+Local 1.1.4 installation: staged payload
+`artifacts/production-staging/f2f229615a2b4025921bea91b78504da`; its exact worker
+passes the 14 workflow/application checks. Copied files match the payload
+inventory, all three 1.1.4 shell COM registrations pass, and license/trial/settings
+files remain byte-identical. Previous installation retained at
+`artifacts/local-update-backups/20260928-163835-1.1.3`.

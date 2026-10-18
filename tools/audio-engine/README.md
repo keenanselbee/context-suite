@@ -319,6 +319,22 @@ candidate and independent runtime identities, tests six generated audio targets
 with both decoders and exercises embedded PNG decoding. Its smoke evidence does
 not replace the full adapter/worker, metadata, compiler or listening review.
 
+`Build-AudioEngine.py --video-audio-inputs` creates a separate candidate for
+audio extraction from MP4, MOV, WebM and MKV. It adds the Matroska/WebM demuxer and
+audio timestamp-reset filter to the existing MOV and audio codec selection; it
+adds no motion-video encoder or decoder.
+The generated configuration is checked exactly. Pass `--workspace-root` with an
+existing repository scratch directory to keep this evaluation and the dependency
+builds together. `Test-VideoAudioCandidate.py` accepts the completed workspace
+and pinned evaluation bin. It authors short video/audio fixtures, checks two tracks,
+languages and a delayed track, compares decoded samples against the independent
+pinned runtime, exercises WAV/MP3/FLAC extraction with and without bounded trim
+and timestamp reset, and refuses video-only sources. Ten-minute Vorbis/WebM and
+PCM16/MKV fixtures check decoded extent against the independent decoder. The
+owner explicitly approved MKV on 2026-10-09; application admission still checks
+the selected container, audio codec and sample timeline rather than the extension
+alone. Surround and chapter/artwork fixtures support separate adapter checks.
+
 Run `python -B tools/audio-engine/Check-AudioBuild.py '<completed FFmpeg workspace>'`
 to verify current recipe identity, generated hardening flags, exact reviewed
 diagnostics and emitted PE security/import metadata. The separate native review
@@ -363,6 +379,17 @@ and `Test-AudioDistribution.py '<review directory>'` for disposable tampering
 cases. The extracted source kit provides `Rebuild-AudioSource.ps1`; its completed
 build passes dependency tests and native review. See [archive hashes, rebuild
 evidence and remaining distribution decisions](../../docs/audio-distribution.md).
+
+For the combined repaired audio and video-extraction candidate, pass `--video`
+and `--workspace-root '<existing repository scratch directory>'` to
+`Prepare-AudioDistribution.py`. This selects the separate `video-candidate.json`
+pin, carries the five existing source patches, copies the exact seven runtime
+files, and inventories notices from the newly compiled Matroska inputs. The
+extracted source kit rebuilds with `Rebuild-AudioSource.ps1 -VideoAudioInputs`.
+The existing curated and expanded profiles remain separate. The new
+`video-payload-candidate.json` binds the exact deployment members; staging this
+profile requires the retained Windows Voice provider so existing WMA support
+is preserved. This review bundle does not install the application payload.
 
 For an actual isolated production payload, use `tools/Build-Production.ps1`
 with a fresh `-StagingId` and `-AudioDistributionDirectory '<verified review

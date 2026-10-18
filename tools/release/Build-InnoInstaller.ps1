@@ -98,7 +98,7 @@ foreach ($name in 'requirements.json', 'Test-Prerequisites.ps1', 'release-manife
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Test-Prerequisites.ps1') -Destination $installation -Force
 foreach ($package in $identity.packages) { Copy-Item -LiteralPath (Join-Path $identityRoot $package.file) -Destination $installation }
 foreach ($package in $identity.packages) { Copy-Item -LiteralPath (Join-Path $identityRoot $package.file) -Destination (Join-Path $releaseDirectory 'packages') }
-Copy-Item -LiteralPath (Join-Path $candidateRoot 'app\Assets\Analyze.ico') -Destination $installation
+Copy-Item -LiteralPath (Join-Path $candidateRoot 'app\Assets\ContextSuite.ico') -Destination $installation
 foreach ($input in @($pins.desktopRuntime, $pins.visualCppRuntime)) {
     Copy-Item -LiteralPath (Join-Path $inputs $input.file) -Destination $runtimes
 }

@@ -16,8 +16,12 @@ def digest(path):
 def verify_payload(root, candidate, run):
     command = ["powershell", "-NoProfile", "-File", str(root / "tools/curated-engine/Test-ProductionPayload.ps1"),
                "-Payload", str(candidate), "-AllowAudioCandidate", "-AllowPdfCandidate", "-AllowOfficeCandidate"]
-    if (candidate / "heif").is_dir():
-        command.append("-AllowHeifCandidate")
+    for directories, flag in ((("heif",), "-AllowHeifCandidate"),
+                              (("wem-engine",), "-AllowWemCandidate"),
+                              (("pdf-dark",), "-AllowPdfDarkCandidate"),
+                              (("avif", "svg"), "-AllowImageExpansionCandidate")):
+        if any((candidate / name).is_dir() for name in directories):
+            command.append(flag)
     run("payload", command)
 
 

@@ -31,14 +31,19 @@ $packageDefinitions = @(
 $requiredFiles = @(
     (Join-Path $externalLocation $executable),
     (Join-Path $externalLocation 'ContextSuite.Shell.dll'),
-    (Join-Path $externalLocation 'Assets\StoreLogo.png'),
-    (Join-Path $externalLocation 'Assets\Analyze.ico'),
-    (Join-Path $externalLocation 'Assets\Convert.ico'),
-    (Join-Path $externalLocation 'Assets\Optimize.ico')
+    (Join-Path $externalLocation 'Assets\StoreLogo.png')
 )
+$iconNames = @('Analyze', 'Convert', 'Optimize', 'ConvertPng', 'ConvertJpeg', 'ConvertWebp',
+    'ConvertBmp', 'ConvertTga', 'ConvertDds', 'ConvertWav', 'ConvertFlac', 'ConvertMp3',
+    'ConvertM4a', 'ConvertOgg', 'ConvertOpus', 'ConvertPdf', 'ConvertDocx', 'ConvertWem', 'ConvertIco', 'ConvertAvif', 'Settings')
+foreach ($name in $iconNames) {
+    $requiredFiles += Join-Path $externalLocation "Assets\$name.ico"
+    $requiredFiles += Join-Path $externalLocation "Assets\$($name)Dark.ico"
+}
 if ($Production) {
     $requiredFiles += Join-Path $externalLocation 'ContextSuite.Worker.exe'
     $requiredFiles += Join-Path $externalLocation 'ContextSuite.Private.dll'
+    $requiredFiles += Join-Path $externalLocation 'resources.pri'
 }
 foreach ($requiredFile in $requiredFiles) {
     if (-not (Test-Path -LiteralPath $requiredFile)) {
@@ -57,6 +62,13 @@ foreach ($definition in $packageDefinitions) {
         New-Item -ItemType Directory -Path $generatedDirectory -Force | Out-Null
         $manifestPath = Join-Path $generatedDirectory 'AppxManifest.xml'
         $document.Save($manifestPath)
+        # Retain identity-package metadata, but runtime icon selection uses the
+        # shared resources.pri already staged at ExternalLocation.
+        $packageAssets = Join-Path $generatedDirectory 'Assets'
+        New-Item -ItemType Directory -Path $packageAssets -Force | Out-Null
+        Get-ChildItem -LiteralPath (Join-Path $externalLocation 'Assets') -File |
+            Copy-Item -Destination $packageAssets -Force
+        & (Join-Path $PSScriptRoot 'New-ShellResourceIndex.ps1') -PackageDirectory $generatedDirectory
     }
     $definition.RegisterManifest = $manifestPath
 }

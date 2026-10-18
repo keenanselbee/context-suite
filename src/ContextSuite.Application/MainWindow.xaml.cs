@@ -8,7 +8,7 @@ public partial class MainWindow : System.Windows.Window
     public MainWindow()
     {
         InitializeComponent();
-        _ = new Infrastructure.ContentWindowSizing(this);
+        _ = new Infrastructure.ContentWindowSizing(this, fitContent: false);
     }
 
     private void OnClose(object sender, RoutedEventArgs e) { Close(); }

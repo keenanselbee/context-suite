@@ -14,13 +14,29 @@ internal static class SettingsContracts
         var path = Path.Combine(directory, "settings.json");
         var store = new SettingsStore(path);
         var original = await store.LoadAsync();
+        check(original.Settings.AnalysisDetailsExpanded, "settings: technical details default to open");
         check(original.CanSave && original.Revision is null && !original.Settings.Convert.ReplaceOriginals &&
             !original.Settings.Optimize.ReplaceOriginals, "settings: missing file uses copy-only defaults");
         var snapshot = original.Settings.Capture("convert");
-        var changed = original.Settings with { Convert = new(true, directory), PlayCompletionSound = false, TransparentPdfBackground = true };
+        var changed = original.Settings with { Convert = new(true, directory), PlayCompletionSound = false, TransparentPdfBackground = true,
+            AnalysisDetailsExpanded = false };
         var saved = await store.SaveAsync(changed, original);
         check((await store.LoadAsync()).Settings == changed, "settings: typed roundtrip");
         check(snapshot.Preferences == new ToolSettings(), "settings: captured batch remains unchanged");
+        var rememberedPath = Path.Combine(directory, "Custom Audio Tools", "Authoring", "x64", "Release", "bin", "WwiseConsole.exe");
+        var remembered = await store.SaveAsync(changed with { WwiseConsolePath = rememberedPath }, saved);
+        check((await store.LoadAsync()).Settings.WwiseConsolePath == rememberedPath,
+            "settings: remembers Wwise location even when the installation is temporarily unavailable");
+        var dependencyEditor = new SettingsViewModel(store, remembered, "convert", false);
+        await dependencyEditor.SaveAsync();
+        check(!(await store.LoadAsync()).Settings.AnalysisDetailsExpanded,
+            "settings: closed technical details survive a restart and an ordinary preferences save");
+        check((await store.LoadAsync()).Settings.WwiseConsolePath == rememberedPath,
+            "settings: changing ordinary preferences preserves the Wwise location");
+        var dependencyCurrent = await store.LoadAsync();
+        await RejectAsync(() => store.SaveAsync(dependencyCurrent.Settings with { WwiseConsolePath = "WwiseConsole.exe" }, dependencyCurrent),
+            check, "settings: relative Wwise executable cannot be remembered");
+        saved = await store.SaveAsync(changed, dependencyCurrent);
         check(!snapshot.TransparentPdfBackground && changed.Capture("convert").TransparentPdfBackground,
             "settings: white PDF background defaults and immutable transparency selection");
         check(snapshot.PlayCompletionSound && !changed.Capture("optimize").PlayCompletionSound, "settings: completion mute captured per batch");

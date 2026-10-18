@@ -19,6 +19,7 @@ internal static class Program
     private static readonly List<Process> Owned = [];
     private static readonly List<string> Requests = [];
     private static Window? _window;
+    private static Window? _analysisWindow;
     private static AutomationElement? _explorer;
     private static dynamic? _folderWindow;
 
@@ -63,13 +64,14 @@ internal static class Program
             {
                 if (explorerMode) InvokeExplorer(automation, operation);
                 else Activate(args[0], operation, files);
-                _window = WaitForWindow(automation, args[0]);
+                _window = WaitForWindow(automation, args[0], operation == "analyze" ? "AnalyzeWindow" : "ContextSuiteWindow");
+                if (operation == "analyze") _analysisWindow = _window;
                 var batches = Array.IndexOf(operations, operation) + 1;
                 WaitFor(() => VerifyRows(_window, files, operations.Take(batches).ToArray()), $"{batches * 3} correct rows and completed statuses");
                 var owners = Process.GetProcessesByName("ContextSuite.Application");
                 try { if (owners.Length != 1) throw new InvalidOperationException("Expected one application owner after forwarding."); }
                 finally { foreach (var owner in owners) owner.Dispose(); }
-                Console.WriteLine($"PASS: {operation}: {batches * 3} rows in one window.");
+                Console.WriteLine($"PASS: {operation}: retained selection in its tool window, one application owner.");
             }
             _window!.SetForeground();
             var keyboardStart = _window.FindFirstDescendant(cf => cf.ByAutomationId("OpenSettings"))
@@ -88,7 +90,8 @@ internal static class Program
             CloseApp();
             if (explorerMode) InvokeExplorer(automation, "analyze");
             else Activate(args[0], "analyze", files);
-            _window = WaitForWindow(automation, args[0]);
+            _window = WaitForWindow(automation, args[0], "AnalyzeWindow");
+            _analysisWindow = _window;
             WaitFor(() => VerifyRows(_window, files, ["analyze"]), "fresh three-row batch after reopening");
             CloseApp();
             for (var i = 0; i < files.Length; i++)
@@ -187,7 +190,7 @@ internal static class Program
         Console.WriteLine("PASS: settings sections, pathless forwarding, keyboard cancellation, unchanged queue and preferences.");
     }
 
-    private static Window WaitForWindow(UIA3Automation automation, string executable)
+    private static Window WaitForWindow(UIA3Automation automation, string executable, string id)
     {
         Window? result = null;
         WaitFor(() =>
@@ -199,10 +202,11 @@ internal static class Program
                 {
                     if (!string.Equals(process.MainModule?.FileName, executable, StringComparison.OrdinalIgnoreCase))
                         throw new InvalidOperationException("Shell launched a different build; explicitly register the intended production configuration.");
-                    if (process.MainWindowHandle == IntPtr.Zero) continue;
-                    result = automation.FromHandle(process.MainWindowHandle).AsWindow();
+                    var element = automation.GetDesktop().FindFirstChild(cf => cf.ByProcessId(process.Id).And(cf.ByAutomationId(id)));
+                    if (element is null) continue;
+                    result = element.AsWindow();
                     if (Owned.All(p => p.Id != process.Id)) { Owned.Add(process); retain = true; }
-                    return result.AutomationId == "ContextSuiteWindow";
+                    return result.AutomationId == id;
                 }
                 finally { if (!retain) process.Dispose(); }
             }
@@ -213,6 +217,17 @@ internal static class Program
 
     private static bool VerifyRows(Window window, string[] files, string[] operations)
     {
+        if (window.AutomationId == "AnalyzeWindow")
+        {
+            var analysis = window.FindFirstDescendant(cf => cf.ByAutomationId("AnalysisFiles"));
+            if (analysis is null) return false;
+            var analysisGrid = analysis.Patterns.Grid.Pattern;
+            if (analysisGrid.RowCount.Value != files.Length) return false;
+            var names = Enumerable.Range(0, files.Length).Select(index => CellText(analysisGrid.GetItem(index, 0))).ToArray();
+            return files.Select(Path.GetFileName).All(name => names.Contains(name, StringComparer.OrdinalIgnoreCase)) &&
+                window.FindFirstDescendant(cf => cf.ByAutomationId("AnalysisStatus"))?.Name.Contains($"{files.Length} of {files.Length} files analyzed") == true;
+        }
+        operations = operations.Where(operation => operation != "analyze").ToArray();
         window.FindFirstDescendant(cf => cf.ByAutomationId("FileDetails"))?.Patterns.ExpandCollapse.Pattern.Expand();
         var element = window.FindFirstDescendant(cf => cf.ByAutomationId("BatchResults"));
         if (element is null) return false;
@@ -241,6 +256,8 @@ internal static class Program
     private static void CloseApp()
     {
         var process = Owned.Single(p => !p.HasExited && p.Id == _window!.Properties.ProcessId.Value);
+        if (_analysisWindow is not null && _window!.AutomationId != "AnalyzeWindow") _analysisWindow.Close();
+        _analysisWindow = null;
         _window!.Close();
         WaitFor(() => process.HasExited, "graceful application close");
         _window = null;

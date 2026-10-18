@@ -9,6 +9,20 @@ internal static class AudioConversionContracts
         AudioProbeFacts Facts(string container, string codec, int? bits = null, int rate = 48000, int channels = 2, string? layout = null) =>
             new(container, null, [new(0, "audio", codec, rate, channels, bits, null, null, layout, empty)], empty);
         var wave = Facts("wav", "pcm_s16le");
+        var wemPcm = AudioConversionPlan.Create(Facts("wem", "pcm_s16le", 16), AudioFormat.Wave);
+        check(!wemPcm.AlreadyTarget && wemPcm.RequiresExactSamples && wemPcm.OutputCodec == "pcm_s16le" &&
+            wemPcm.SampleBits == 16 && wemPcm.RequiredConsent == AudioConversionConsent.None,
+            "audio plan: WEM PCM is a distinct source and decodes to exact PCM16 WAV");
+        var wemVorbis = AudioConversionPlan.Create(Facts("wem", "vorbis", rate: 44100, channels: 1), AudioFormat.Wave);
+        check(wemVorbis.OutputCodec == "pcm_f32le" && wemVorbis.SampleRate == 44100 && wemVorbis.Channels == 1 &&
+            wemVorbis.RequiresExactSamples && wemVorbis.Notices.Any(text => text.Contains("cannot restore")),
+            "audio plan: WEM Vorbis keeps decoded float precision and source rate/channels");
+        foreach (var target in Enum.GetValues<AudioFormat>().Where(format => format != AudioFormat.Wem).Where(format => format != AudioFormat.Wave))
+            Reject(() => AudioConversionPlan.Create(Facts("wem", "vorbis"), target), "WEM only enables verified WAV output " + target);
+        foreach (var source in new[] { Facts("wem", "opus"), Facts("wem", "pcm_s16le", 24),
+                     Facts("wem", "vorbis", channels: 6, layout: "5.1"),
+                     Facts("wem", "vorbis") with { Tags = empty.Add("title", "Unpreserved") } })
+            Reject(() => AudioConversionPlan.Create(source, AudioFormat.Wave), "WEM unsupported codec/layout/metadata cannot bypass preservation");
         var flac = AudioConversionPlan.Create(wave, AudioFormat.Flac);
         check(flac.OutputCodec == "flac" && flac.SampleBits == 16 && flac.RequiresExactSamples && flac.RequiredConsent == AudioConversionConsent.None,
             "audio plan: integer WAVE to FLAC retains precision and requires exact samples");
@@ -24,7 +38,7 @@ internal static class AudioConversionContracts
                 "audio plan: floating input to FLAC requires precision consent " + codec);
             Reject(() => reduced.RequireConsent(AudioConversionConsent.None), "precision acknowledgement cannot be omitted");
         }
-        foreach (var target in Enum.GetValues<AudioFormat>())
+        foreach (var target in Enum.GetValues<AudioFormat>().Where(format => format != AudioFormat.Wem))
         {
             var plan = AudioConversionPlan.Create(wave, target);
             check(plan.SampleRate == 48000 && plan.Channels == 2 && plan.Policy == AudioConversionPlan.CurrentPolicy &&
@@ -37,7 +51,7 @@ internal static class AudioConversionContracts
         foreach (var (source, format) in new[] { (picturedMp3, AudioFormat.Mp3), (m4a, AudioFormat.M4a),
                      (Facts("ogg", "vorbis") with { Streams = Facts("ogg", "vorbis").Streams.Add(picturedMp3.Streams[1]) }, AudioFormat.Vorbis),
                      (Facts("ogg", "opus") with { Streams = Facts("ogg", "opus").Streams.Add(picturedMp3.Streams[1]) }, AudioFormat.Opus) })
-        foreach (var target in Enum.GetValues<AudioFormat>())
+        foreach (var target in Enum.GetValues<AudioFormat>().Where(format => format != AudioFormat.Wem))
         {
             var plan = AudioConversionPlan.Create(source, target);
             var consent = target == format || target == AudioFormat.Wave ? AudioConversionConsent.None :
@@ -48,7 +62,7 @@ internal static class AudioConversionContracts
                 check(plan.OutputCodec == "pcm_f32le" && plan.RequiresExactSamples, "audio plan: artwork WAV retains decoded float samples " + format);
         }
         foreach (var format in new[] { AudioFormat.Wave, AudioFormat.Flac })
-        foreach (var target in Enum.GetValues<AudioFormat>())
+        foreach (var target in Enum.GetValues<AudioFormat>().Where(format => format != AudioFormat.Wem))
         {
             var source = format == AudioFormat.Wave ? wave : Facts("flac", "flac", 16);
             var pictured = source with { Streams = source.Streams.Add(picturedMp3.Streams[1]) };

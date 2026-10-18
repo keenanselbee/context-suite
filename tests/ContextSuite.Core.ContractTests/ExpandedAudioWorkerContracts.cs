@@ -34,7 +34,7 @@ internal static class ExpandedAudioWorkerContracts
             if (Path.GetFileName(fixture.Name) != fixture.Name || await Hash(fixture.Path) != fixture.Sha256 ||
                 await Hash(fixture.ReferencePath) != fixture.ReferenceHash) throw new Exception("Fixture identity changed.");
             var path = Path.Combine(inputs, fixture.Name + Path.GetExtension(fixture.Path)); File.Copy(fixture.Path, path);
-            foreach (var target in Enum.GetValues<AudioFormat>())
+            foreach (var target in Enum.GetValues<AudioFormat>().Where(format => format != AudioFormat.Wem))
             {
                 var expectedRefusal = target == AudioFormat.Mp3 && (fixture.Channels > 2 || fixture.Rate > 48000);
                 try

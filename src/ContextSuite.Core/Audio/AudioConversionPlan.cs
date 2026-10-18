@@ -2,10 +2,11 @@ using System.Collections.Immutable;
 
 namespace ContextSuite.Core.Audio;
 
-public enum AudioFormat { Wave, Flac, Mp3, M4a, Vorbis, Opus }
+public enum AudioFormat { Wave, Flac, Mp3, M4a, Vorbis, Opus, Wem }
 
 [Flags]
-public enum AudioConversionConsent { None = 0, LossyTranscoding = 1, Resampling = 2, PrecisionReduction = 4 }
+public enum AudioConversionConsent { None = 0, LossyTranscoding = 1, Resampling = 2, PrecisionReduction = 4,
+    ChannelReduction = 8, MetadataOmission = 16 }
 
 // Fixed policy, not a shipping capability declaration. Engine, metadata and
 // decoded-output validation must pass before application-owned publication.
@@ -28,21 +29,42 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         return Create(audio, AudioFormat.Flac) with { AlreadyTarget = false, Policy = FlacOptimizationPlan.Policy };
     }
 
-    public static AudioConversionPlan Create(AudioProbeFacts source, AudioFormat target)
+    public static AudioConversionPlan Create(AudioProbeFacts source, AudioFormat target, WemEncodingOptions? wem = null,
+        VideoAudioSelection? video = null)
     {
         source.Validate();
         if (!Enum.IsDefined(target)) throw new ArgumentOutOfRangeException(nameof(target));
-        if (source.Streams.Count(stream => stream.Kind == "audio") != 1 || source.Streams.Any(stream => stream.Kind != "audio" && !stream.AttachedPicture))
+        if (video is not null && target is not (AudioFormat.Wave or AudioFormat.Mp3 or AudioFormat.Flac))
+            throw new NotSupportedException("Video audio extraction supports WAV, MP3 and FLAC.");
+        if (target == AudioFormat.Wem)
+            return (wem ?? throw new NotSupportedException("Choose Wwise and WEM encoding options first.")).CreatePlan(source);
+        if (wem is not null) throw new InvalidDataException("WEM encoding options cannot accompany another output format.");
+        if (source.Container == "wem")
+        {
+            if (target != AudioFormat.Wave || source.Streams.Length != 1 || !source.Tags.IsEmpty)
+                throw new NotSupportedException("WEM conversion currently preserves supported audio and loops in WAV only.");
+            var wemAudio = source.Streams[0];
+            if (wemAudio.Kind != "audio" || wemAudio.AttachedPicture || !wemAudio.Tags.IsEmpty ||
+                wemAudio.Codec is not ("pcm_s16le" or "vorbis") || wemAudio.SampleRate is not (>= 8000 and <= 192000) ||
+                wemAudio.Channels is not (1 or 2) || wemAudio.Codec == "pcm_s16le" && wemAudio.SampleBits != 16)
+                throw new NotSupportedException("This WEM codec, precision or channel layout has no verified WAV conversion policy.");
+            var pcm = wemAudio.Codec == "pcm_s16le";
+            return new(target, CurrentPolicy, ".wav", pcm ? "pcm_s16le" : "pcm_f32le",
+                wemAudio.SampleRate.Value, wemAudio.Channels.Value, pcm ? 16 : 32, false, true,
+                AudioConversionConsent.None, pcm ? [] :
+                    ["A lossless output keeps decoded audio; it cannot restore quality lost in the original recording."]);
+        }
+        if (video is null && (source.Streams.Count(stream => stream.Kind == "audio") != 1 || source.Streams.Any(stream => stream.Kind != "audio" && !stream.AttachedPicture)))
             throw new NotSupportedException("Additional streams or artwork need a preservation plan before conversion.");
-        var audio = source.Streams.Single(stream => stream.Kind == "audio");
+        var audio = video is null ? source.Streams.Single(stream => stream.Kind == "audio") : video.Validate(source);
         if (audio.Codec == "wmavoice" && (audio.Channels != 1 || audio.SampleRate is not (8000 or 11025 or 16000 or 22050)))
             throw new NotSupportedException("This WMA Voice profile has no verified conversion policy yet.");
         if (audio.SampleRate is not (>= 8000 and <= 192000) || audio.Channels is not (>= 1 and <= 8))
             throw new NotSupportedException("The sample rate or channel count is outside the current audio policy.");
         if (audio.Channels > 2 && audio.ChannelLayout is not ("2.1" or "quad" or "4.0" or "5.0" or "5.0(side)" or "5.1" or "5.1(side)" or "6.1" or "7.1"))
             throw new NotSupportedException("The channel layout must be known before multichannel conversion.");
-        var sourceFormat = SourceFormat(source.Container, audio.Codec);
-        if (source.Streams.Any(stream => stream.AttachedPicture) && sourceFormat != target &&
+        var sourceFormat = video is null ? SourceFormat(source.Container, audio.Codec) : VideoSourceFormat(source.Container, audio.Codec);
+        if (video is null && source.Streams.Any(stream => stream.AttachedPicture) && sourceFormat != target &&
             !(sourceFormat is AudioFormat.Wave or AudioFormat.Flac && target is AudioFormat.Wave or AudioFormat.Flac or AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus) &&
             !(sourceFormat is AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Vorbis or AudioFormat.Opus && target is AudioFormat.Wave or AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Flac or AudioFormat.Vorbis or AudioFormat.Opus) && source.Container is not ("aiff" or "asf"))
             throw new NotSupportedException("Artwork needs a preservation handler for these formats. Originals were kept.");
@@ -55,12 +77,29 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         var targetLossy = target is not (AudioFormat.Wave or AudioFormat.Flac);
         if (!lossy && !floating && sourceBits is not (8 or 16 or 24 or 32))
             throw new NotSupportedException("The source precision must be known and supported before conversion.");
-        if (target == AudioFormat.Mp3 && audio.Channels > 2)
+        if (video is null && target == AudioFormat.Mp3 && audio.Channels > 2)
             throw new NotSupportedException("MP3 supports mono or stereo. Choose a format that preserves these channels.");
         var rate = audio.SampleRate.Value;
         var consent = AudioConversionConsent.None;
         var notices = ImmutableArray.CreateBuilder<string>();
-        var already = sourceFormat == target;
+        var already = video is null && sourceFormat == target;
+        var channels = audio.Channels.Value;
+        if (video is not null)
+        {
+            notices.Add("Extract the selected audio track. Video, other tracks and subtitles stay in the original file.");
+            notices.Add("The audio file starts at the selected track's first decoded sample; its offset in the video is not retained.");
+            if (target == AudioFormat.Mp3 && channels > 2)
+            {
+                channels = 2;
+                consent |= AudioConversionConsent.ChannelReduction;
+                notices.Add("MP3 mixes this surround track down to stereo. Choose WAV or FLAC to keep its channels.");
+            }
+            if (!source.Chapters.IsDefaultOrEmpty || source.Streams.Any(stream => stream.AttachedPicture))
+            {
+                consent |= AudioConversionConsent.MetadataOmission;
+                notices.Add("Chapters and attached artwork are not included in the extracted audio. The original keeps them.");
+            }
+        }
         if (!already && audio.Channels > 2)
         {
             var layoutSupported = target switch
@@ -116,16 +155,28 @@ public sealed record AudioConversionPlan(AudioFormat Target, string Policy, stri
         };
         var extension = target switch { AudioFormat.Wave => ".wav", AudioFormat.Flac => ".flac", AudioFormat.Mp3 => ".mp3",
             AudioFormat.M4a => ".m4a", AudioFormat.Vorbis => ".ogg", AudioFormat.Opus => ".opus", _ => throw new ArgumentOutOfRangeException(nameof(target)) };
-        return new(target, CurrentPolicy, extension, codec, rate, audio.Channels.Value, bits, already,
-            !targetLossy && consent == AudioConversionConsent.None, consent, notices.ToImmutable());
+        return new(target, CurrentPolicy, extension, codec, rate, channels, bits, already,
+            !targetLossy && (consent & ~AudioConversionConsent.MetadataOmission) == AudioConversionConsent.None, consent, notices.ToImmutable());
     }
 
     public void RequireConsent(AudioConversionConsent accepted)
     {
-        const AudioConversionConsent known = AudioConversionConsent.LossyTranscoding | AudioConversionConsent.Resampling | AudioConversionConsent.PrecisionReduction;
+        const AudioConversionConsent known = AudioConversionConsent.LossyTranscoding | AudioConversionConsent.Resampling |
+            AudioConversionConsent.PrecisionReduction | AudioConversionConsent.ChannelReduction | AudioConversionConsent.MetadataOmission;
         if ((accepted & ~known) != 0 || (accepted & RequiredConsent) != RequiredConsent)
             throw new InvalidOperationException("The audio conversion needs acknowledgement of its quality changes.");
     }
+
+    private static AudioFormat VideoSourceFormat(string container, string codec) => (container, codec) switch
+    {
+        ("mov,mp4,m4a,3gp,3g2,mj2" or "matroska,webm", "aac") => AudioFormat.M4a,
+        ("mov,mp4,m4a,3gp,3g2,mj2" or "matroska,webm", "mp3") => AudioFormat.Mp3,
+        ("mov,mp4,m4a,3gp,3g2,mj2" or "matroska,webm", "flac") => AudioFormat.Flac,
+        ("mov,mp4,m4a,3gp,3g2,mj2" or "matroska,webm", "pcm_s16le") => AudioFormat.Wave,
+        ("matroska,webm", "vorbis") => AudioFormat.Vorbis,
+        ("matroska,webm", "opus") => AudioFormat.Opus,
+        _ => throw new NotSupportedException("This video's audio codec has no verified extraction policy yet.")
+    };
 
     // Null is an admitted input-only format, never an additional output choice.
     private static AudioFormat? SourceFormat(string container, string codec) => (container, codec) switch

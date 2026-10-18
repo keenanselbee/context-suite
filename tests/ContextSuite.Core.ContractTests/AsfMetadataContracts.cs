@@ -143,7 +143,7 @@ internal static class AsfMetadataContracts
         var empty = ImmutableDictionary<string, string>.Empty;
         AudioProbeFacts Facts(string codec) => new("asf", null, [new(0, "audio", codec, 48000, 2, null, null, null, null, empty)], empty);
         foreach (var codec in new[] { "wmav1", "wmav2", "wmapro" })
-            foreach (var target in Enum.GetValues<AudioFormat>())
+            foreach (var target in Enum.GetValues<AudioFormat>().Where(format => format != AudioFormat.Wem))
             {
                 var plan = AudioConversionPlan.Create(Facts(codec), target);
                 var consent = target == AudioFormat.Wave ? AudioConversionConsent.None : target == AudioFormat.Flac ?
@@ -153,7 +153,7 @@ internal static class AsfMetadataContracts
                     "WMA plan: input-only conversion retains quality policy " + codec + " / " + target);
             }
         foreach (var rate in new[] { 8000, 11025, 16000, 22050 })
-            foreach (var target in Enum.GetValues<AudioFormat>())
+            foreach (var target in Enum.GetValues<AudioFormat>().Where(format => format != AudioFormat.Wem))
             {
                 var facts = new AudioProbeFacts("asf", null, [new(0, "audio", "wmavoice", rate, 1, 16, null, null, "mono", empty)], empty);
                 var plan = AudioConversionPlan.Create(facts, target);
@@ -163,7 +163,7 @@ internal static class AsfMetadataContracts
                     plan.SampleRate == (target == AudioFormat.Opus ? 48000 : rate), "Voice input-only quality policy " + rate + " / " + target);
             }
         foreach (var bits in new[] { 16, 24 })
-            foreach (var target in Enum.GetValues<AudioFormat>())
+            foreach (var target in Enum.GetValues<AudioFormat>().Where(format => format != AudioFormat.Wem))
             {
                 var facts = new AudioProbeFacts("asf", null, [new(0, "audio", "wmalossless", 48000, 2, bits, null, null, "stereo", empty)], empty);
                 var plan = AudioConversionPlan.Create(facts, target);

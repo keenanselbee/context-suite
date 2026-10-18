@@ -1,6 +1,7 @@
 [CmdletBinding()]
-param([string] $SourceDirectory, [switch] $ExpandedInputs)
+param([string] $SourceDirectory, [switch] $ExpandedInputs, [switch] $VideoAudioInputs)
 $ErrorActionPreference = 'Stop'
+if ($ExpandedInputs -and $VideoAudioInputs) { throw 'Select one audio source rebuild profile.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 if (-not $SourceDirectory) { $SourceDirectory = Join-Path $repository '.codex-temp/audio-source-retained' }
 & (Join-Path $PSScriptRoot 'Prepare-AudioSources.ps1') -SourceDirectory $SourceDirectory -VerifyOnly -BuildInputsOnly
@@ -15,10 +16,11 @@ foreach ($dependency in @('Opus', 'OggVorbis', 'LameStable', 'Make', 'Nasm', 'Zl
     $builds[$dependency] = $completed[0].Substring($prefix.Length)
 }
 $engineOptions = @()
-if ($ExpandedInputs) {
+if ($ExpandedInputs -or $VideoAudioInputs) {
     $engineOptions = @('--expanded-inputs', '--wma-pro-tail-repair', '--wma-pro-matrix-repair',
         '--wma-standard-tail-repair', '--wma-voice-cache-repair', '--raw-audio-timestamp-repair')
 }
+if ($VideoAudioInputs) { $engineOptions += '--video-audio-inputs' }
 & python -B (Join-Path $PSScriptRoot 'Build-AudioEngine.py') --sources $SourceDirectory --opus $builds.Opus `
     --ogg-vorbis $builds.OggVorbis --lame $builds.LameStable --make $builds.Make --nasm $builds.Nasm --zlib $builds.Zlib @engineOptions |
     Tee-Object -Variable engineOutput

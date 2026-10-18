@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="clr-namespace:ContextSuite.Application.Infrastructure"
         Title="Context Suite" AutomationProperties.AutomationId="ContextSuiteWindow"
-        Width="720" Height="540" MinWidth="560" MinHeight="380">
+        Width="720" Height="540" MinWidth="560" MinHeight="460">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="VisibleWhenTrue" />
         <Style x:Key="ResultCellText" TargetType="TextBlock">
@@ -18,13 +18,13 @@
             <ui:StatusTextBlock Text="{Binding Summary}" AutomationProperties.AutomationId="BatchSummary"
                        AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap" Margin="0,12,0,8" />
             <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,12"
-                         Visibility="{Binding IsBusy, Converter={StaticResource VisibleWhenTrue}}" AutomationProperties.Name="Processing files" />
+                         Visibility="{Binding IsOperationBusy, Converter={StaticResource VisibleWhenTrue}}" AutomationProperties.Name="Processing files" />
             <ui:StatusTextBlock Text="{Binding RecoveryNotice}" TextWrapping="Wrap" AutomationProperties.AutomationId="RecoveryNotice" />
             <ui:StatusTextBlock x:Name="InputNotice" TextWrapping="Wrap" AutomationProperties.AutomationId="InputNotice" />
         </StackPanel>
         <WrapPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-            <Button Content="Cancel _work" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" Padding="12,6"
-                    Visibility="{Binding IsBusy, Converter={StaticResource VisibleWhenTrue}}"
+            <Button Content="Cancel _work" Command="{Binding CancelCommand}" IsEnabled="{Binding IsOperationBusy}" Padding="12,6"
+                    Visibility="{Binding IsOperationBusy, Converter={StaticResource VisibleWhenTrue}}"
                     AutomationProperties.AutomationId="CancelPending" />
             <Button Content="_Try again" ToolTip="Run unfinished files again with the same format or preset. Completed files are skipped." Click="OnRetrySelected" Padding="12,6" Margin="8,0,0,0"
                     Visibility="{Binding CanRetry, Converter={StaticResource VisibleWhenTrue}}"
@@ -36,36 +36,31 @@
             <Button Content="_Close" Click="OnClose" IsCancel="True" Padding="12,6" Margin="8,0,0,0"
                     AutomationProperties.AutomationId="CloseResults" />
         </WrapPanel>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel>
-                <Expander Header="Files and details" AutomationProperties.AutomationId="FileDetails" IsExpanded="{Binding ShowDetails, Mode=OneWay}" Margin="0,8,0,0"
-                          Visibility="{Binding HasResults, Converter={StaticResource VisibleWhenTrue}}">
-                    <StackPanel>
-                        <DataGrid x:Name="ResultsGrid" ItemsSource="{Binding DisplayRows}" AutoGenerateColumns="False" IsReadOnly="True" IsSynchronizedWithCurrentItem="True"
-                                  CanUserAddRows="False" MaxHeight="240" MinHeight="80" AutomationProperties.AutomationId="BatchResults"
-                                  AutomationProperties.Name="Files and outcomes">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
-                                <DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
-                                <DataGridTextColumn Header="Saved" Binding="{Binding Savings}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                        <TextBlock Text="{Binding SelectedItem.OperationDetails, ElementName=ResultsGrid}" TextWrapping="Wrap" Margin="0,8,0,0"
-                                   AutomationProperties.AutomationId="SelectedResultDetails" />
-                        <TextBlock Text="{Binding SelectedItem.AnalysisSummary, ElementName=ResultsGrid}" TextWrapping="Wrap" Margin="0,8,0,0"
-                                   Visibility="{Binding SelectedItem.HasAnalysis, ElementName=ResultsGrid, Converter={StaticResource VisibleWhenTrue}}"
-                                   AutomationProperties.AutomationId="AnalysisSummary" />
-                        <Expander Header="Technical details" IsExpanded="False" Margin="0,8,0,0"
-                                  Visibility="{Binding SelectedItem.HasAnalysis, ElementName=ResultsGrid, Converter={StaticResource VisibleWhenTrue}}"
-                                  AutomationProperties.AutomationId="AnalysisTechnicalDetails">
-                            <TextBlock Text="{Binding SelectedItem.AnalysisDetails, ElementName=ResultsGrid}" TextWrapping="Wrap"
-                                       AutomationProperties.AutomationId="AnalysisFacts" />
-                        </Expander>
-                        <Button Content="Open output _folder" Click="OnOpenOutputFolder" Padding="10,6" Margin="0,8,0,0" HorizontalAlignment="Left"
-                                IsEnabled="{Binding SelectedItem.HasOutput, ElementName=ResultsGrid}" AutomationProperties.AutomationId="OpenOutputFolder" />
-                    </StackPanel>
-                </Expander>
-            </StackPanel>
-        </ScrollViewer>
+        <Expander Header="Files and details" AutomationProperties.AutomationId="FileDetails" IsExpanded="{Binding ShowDetails, Mode=OneWay}" Margin="0,8,0,0"
+                  VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                  Visibility="{Binding HasResults, Converter={StaticResource VisibleWhenTrue}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="3*" />
+                    <RowDefinition Height="2*" MaxHeight="180" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <DataGrid x:Name="ResultsGrid" ItemsSource="{Binding DisplayRows}" AutoGenerateColumns="False" IsReadOnly="True" IsSynchronizedWithCurrentItem="True"
+                          CanUserAddRows="False" AutomationProperties.AutomationId="BatchResults"
+                          AutomationProperties.Name="Files and outcomes">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
+                        <DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
+                        <DataGridTextColumn Header="Saved" Binding="{Binding Savings}" Width="*" MinWidth="80" ElementStyle="{StaticResource ResultCellText}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,8,0,0">
+                    <TextBlock Text="{Binding SelectedItem.OperationDetails, ElementName=ResultsGrid}" TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="SelectedResultDetails" />
+                </ScrollViewer>
+                <Button Grid.Row="2" Content="Open output _folder" Click="OnOpenOutputFolder" Padding="10,6" Margin="0,8,0,0" HorizontalAlignment="Left"
+                        IsEnabled="{Binding SelectedItem.HasOutput, ElementName=ResultsGrid}" AutomationProperties.AutomationId="OpenOutputFolder" />
+            </Grid>
+        </Expander>
     </DockPanel>
 </Window>

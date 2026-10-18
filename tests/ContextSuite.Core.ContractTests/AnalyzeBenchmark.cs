@@ -56,6 +56,9 @@ internal static class AnalyzeBenchmark
     private static object Observation(string path, FileAnalysis? result, string? error) => new
     {
         Name = Path.GetFileName(path), result?.FileBytes, result?.InspectedBytes,
+        TextBytes = result?.Facts.FirstOrDefault(fact => fact.Id == "text.inspected")?.Integer,
+        Lines = result?.Facts.FirstOrDefault(fact => fact.Id == "text.lines")?.Integer,
+        LinesComplete = result?.Facts.FirstOrDefault(fact => fact.Id == "text.lines-complete")?.Boolean,
         FormatId = result?.Identity.FormatId, Confidence = result?.Identity.Confidence.ToString(), Error = error
     };
 
