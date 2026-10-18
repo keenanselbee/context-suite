@@ -50,5 +50,6 @@ jobs:
         shell: pwsh
         run: ./tools/Test-PrivateBoundary.ps1
       - name: Native shell contracts
-        shell: pwsh
+        # Asset generation compiles against .NET Framework System.Drawing.
+        shell: powershell
         run: ./tools/Test-ShellPrototype.ps1 -Configuration Release
