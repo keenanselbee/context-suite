@@ -12,6 +12,26 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--analysis-view", var analysisViewScratch])
+{
+    var checks = 0;
+    await OnUiThreadAsync(() => AnalysisViewContracts.RunAsync(analysisViewScratch, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }));
+    Console.WriteLine($"Passed {checks} analysis view checks.");
+    return 0;
+}
+
+if (args is ["--png-optimization-worker", var pngScratch, var pngWorker])
+{
+    var checks = 0;
+    void CheckPng(bool passed, string message)
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }
+    await OnUiThreadAsync(() => PngOptimizationContracts.RunWorkerAsync(pngScratch, pngWorker, CheckPng));
+    await PngInterruptionContracts.RunAsync(pngScratch, pngWorker, CheckPng);
+    Console.WriteLine($"Passed {checks} PNG optimization worker checks.");
+    return 0;
+}
+
 if (args is ["--installed-tools", var installedToolsScratch])
 {
     var checks = 0;
@@ -44,7 +64,7 @@ if (args is ["--analysis-ui", var analysisUiScratch])
     AnalysisPresentationContracts.Run(CheckUi);
     TextSummaryContracts.Run(CheckUi);
     await TextLineAnalysisContracts.RunAsync(analysisUiScratch, CheckUi);
-    await AnalysisViewContracts.RunAsync(analysisUiScratch, CheckUi);
+    await OnUiThreadAsync(() => AnalysisViewContracts.RunAsync(analysisUiScratch, CheckUi));
     await AnalysisContracts.RunAsync(analysisUiScratch, CheckUi);
     Console.WriteLine($"Passed {checks} analysis checks.");
     return 0;
@@ -864,7 +884,7 @@ try
     AnalysisPresentationContracts.Run(Check);
     TextSummaryContracts.Run(Check);
     await TextLineAnalysisContracts.RunAsync(args[0], Check);
-    await AnalysisViewContracts.RunAsync(Path.Combine(args[0], "analysis-window"), Check);
+    await OnUiThreadAsync(() => AnalysisViewContracts.RunAsync(Path.Combine(args[0], "analysis-window"), Check));
     await ImageHeaderContracts.RunAsync(args[0], Check);
     await DocumentAnalysisContracts.RunAsync(args[0], Check);
     OfficeHostContracts.Run(Check);

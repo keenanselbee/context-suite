@@ -12,6 +12,8 @@ internal static class AnalysisViewContracts
         var missing = Path.Combine(scratch, "missing.bin");
         await File.WriteAllTextAsync(html, "<html><body>Analysis fixture</body></html>");
         await File.WriteAllBytesAsync(unknown, [0, 255, 1]);
+        var originalHtml = await File.ReadAllBytesAsync(html);
+        var originalTime = File.GetLastWriteTimeUtc(html);
         await using var worker = new WorkerClient(Path.Combine(scratch, "must-not-start.exe"));
         await using var view = new MainViewModel(worker);
         view.Admit(new(Guid.NewGuid(), "analyze", "open-details", [html]));
@@ -32,6 +34,8 @@ internal static class AnalysisViewContracts
             view.AnalysisReport.Contains("index.html") && view.AnalysisReport.Contains("missing.bin"),
             "analysis window: unreadable row and combined copy report retain actionable details");
         view.SelectedAnalysisRow = first;
+        // The caller uses the UI dispatcher: admission and cancellation share one UI turn.
+        // Without it, Task.Yield can run the missing-worker failure before cancellation.
         view.Admit(new(Guid.NewGuid(), "convert", "png", [html]));
         // Cancel transform work while another Analyze request is queued. Neither analysis nor its selection may be lost.
         view.Admit(new(Guid.NewGuid(), "analyze", "open-details", [html]));
@@ -41,6 +45,9 @@ internal static class AnalysisViewContracts
         check(view.AnalysisRows.Count == 4 && view.AnalysisRows[^1].HasAnalysis && view.SelectedAnalysisRow == first &&
             view.DisplayRows.Single().Result.State == OperationState.Cancelled && !view.IsOperationBusy,
             "independent windows: cancelling conversion preserves queued analysis and inspector selection");
+        var remainingHtml = await File.ReadAllBytesAsync(html);
+        check(originalHtml.SequenceEqual(remainingHtml) && File.GetLastWriteTimeUtc(html) == originalTime,
+            "independent windows: cancelled conversion and queued analysis preserve source bytes and timestamp");
         var quiet = new QuietWorkflow();
         var id = Guid.NewGuid(); var start = DateTimeOffset.UtcNow;
         quiet.Begin(id, false, start);
