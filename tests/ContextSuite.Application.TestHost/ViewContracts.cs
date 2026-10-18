@@ -3,6 +3,7 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using ContextSuite.Application.Infrastructure;
+using ContextSuite.Core.Installation;
 using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Settings;
@@ -239,6 +240,7 @@ internal static class ViewContracts
                     "settings: expanded content scrolls while Save stays reachable at minimum size in section " + section);
                 copyOptions.IsExpanded = false;
             }
+            RunInstalledSettingsContracts(Check);
             RunNoticeContracts(Check);
             RunLicenseLinkContracts(Check);
             var licenseContent = (FrameworkElement)license.Content;
@@ -397,6 +399,78 @@ internal static class ViewContracts
             model.RecordResult(row, new PublicationResult(path, PublicationOutcome.CopyCreated, message,
                 path + ".copy", MetadataWarning: true).ToFileResult());
             return row;
+        }
+    }
+
+    private static void RunInstalledSettingsContracts(Action<bool, string> check)
+    {
+        var outputRoot = Path.GetFullPath(AppContext.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar);
+        var fixture = Path.Combine(outputRoot, "installed-settings-" + Guid.NewGuid().ToString("N"));
+        var marker = Path.Combine(fixture, InstalledTools.FileName);
+        Directory.CreateDirectory(fixture);
+        try
+        {
+            var names = new[] { "Analyze", "Convert", "Optimize" };
+            for (var mask = 1; mask < 8; mask++)
+            {
+                var selected = names.Where((_, index) => (mask & (1 << index)) != 0).ToArray();
+                File.WriteAllText(marker, System.Text.Json.JsonSerializer.Serialize(new { schema = 1, tools = selected }));
+                var tools = InstalledTools.Load(fixture);
+                var requestedSection = tools.Optimize ? "optimize" : "convert";
+                var window = new SettingsWindow
+                {
+                    DataContext = new SettingsViewModel(new SettingsStore(Path.Combine(fixture, "unused-settings.json")),
+                        new(new(), null, true, null), requestedSection, replacementAvailable: true, tools)
+                };
+                try
+                {
+                    window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+                    var content = (FrameworkElement)window.Content;
+                    content.Measure(new Size(window.Width - 16, double.PositiveInfinity));
+                    content.Arrange(new Rect(0, 0, window.Width - 16, content.DesiredSize.Height));
+                    content.UpdateLayout();
+                    var tabs = Find<TabControl>(window, "SettingsSections");
+                    var convert = Find<TabItem>(window, "ConvertSettings");
+                    var optimize = Find<TabItem>(window, "OptimizeSettings");
+                    var sound = Find<CheckBox>(window, "PlayCompletionSound");
+                    var hasProcessing = tools.Convert || tools.Optimize;
+                    var expectedSection = tools.Optimize ? 1 : tools.Convert ? 0 : -1;
+                    check(convert.Visibility == (tools.Convert ? Visibility.Visible : Visibility.Collapsed) &&
+                        optimize.Visibility == (tools.Optimize ? Visibility.Visible : Visibility.Collapsed) &&
+                        tabs.Visibility == (hasProcessing ? Visibility.Visible : Visibility.Collapsed) &&
+                        sound.Visibility == tabs.Visibility,
+                        $"installed settings {mask}: only selected processing controls appear");
+                    check(tabs.SelectedIndex == expectedSection &&
+                        (expectedSection < 0 || ReferenceEquals(tabs.SelectedItem, expectedSection == 0 ? convert : optimize)),
+                        $"installed settings {mask}: visible requested tool is selected");
+                    var heading = VisualDescendants(content).OfType<TextBlock>()
+                        .SingleOrDefault(item => AutomationProperties.GetAutomationId(item) == "SettingsSectionHeading");
+                    check(hasProcessing ? heading?.Text == (expectedSection == 0 ? "Convert settings" : "Optimize settings") &&
+                        VisualDescendants(content).OfType<RadioButton>().Any(item => AutomationProperties.GetAutomationId(item) == "AllowReplacement") &&
+                        VisualDescendants(content).OfType<Expander>().Any(item => AutomationProperties.GetAutomationId(item) == "PdfImageOptions") == (expectedSection == 0) :
+                        heading is null && !VisualDescendants(content).OfType<RadioButton>().Any(),
+                        $"installed settings {mask}: selected content matches the installed tool");
+                    var save = Find<Button>(window, "SaveSettings");
+                    var license = Find<Button>(window, "SettingsLicense");
+                    var licenseName = UIElementAutomationPeer.CreatePeerForElement(license)?.GetName();
+                    check(save.IsEnabled == hasProcessing && license.IsEnabled && license.Focusable &&
+                        licenseName?.Contains("License", StringComparison.OrdinalIgnoreCase) == true,
+                        $"installed settings {mask}: Save follows processing tools and License remains accessible " +
+                        $"(save={save.IsEnabled}, license={license.IsEnabled}, focusable={license.Focusable}, name={licenseName})");
+                    check(!window.IsVisible && !File.Exists(Path.Combine(fixture, "unused-settings.json")),
+                        $"installed settings {mask}: no window or settings write occurs");
+                }
+                finally { window.Close(); }
+            }
+        }
+        finally
+        {
+            if (!Path.GetFullPath(fixture).StartsWith(outputRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                (File.GetAttributes(fixture) & FileAttributes.ReparsePoint) != 0 ||
+                File.Exists(marker) && (File.GetAttributes(marker) & FileAttributes.ReparsePoint) != 0)
+                throw new IOException("Installed-settings fixture is not an owned directory or contains a link.");
+            if (File.Exists(marker)) File.Delete(marker);
+            Directory.Delete(fixture);
         }
     }
 
