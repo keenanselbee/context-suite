@@ -1,4 +1,5 @@
 Context Suite.code-workspace
+/.vscode/settings.json
 reference/
 proprietary/
 .codex-temp/

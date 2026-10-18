@@ -71,7 +71,7 @@ claiming to be established format logos. Exact format labels remain essential.
 Mockup review
 -------------
 
-[Interactive mockup source](mockups/convert-format-icons.html) compares **Distinct
+The original interactive mockup compared **Distinct
 silhouettes** (recommended) with **File silhouettes** (a uniform page containing
 each symbol). The latter is deliberately included to assess consistency against
 small-size legibility; its reduced internal space is a risk at 16 pixels.
