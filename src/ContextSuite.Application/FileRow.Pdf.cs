@@ -12,7 +12,9 @@ internal sealed partial class FileRow
     public int PdfPageCount { get; private set; }
     public int SavedPdfPages => _pdfPages.Values.Count(page => page.Publication?.IsCommitted == true);
     public bool HasIncompletePdfPages => PdfPageCount > 0 && SavedPdfPages < PdfPageCount;
-    internal IEnumerable<int> CompletedPdfPages => _pdfPages.Where(page => page.Value.Publication?.IsCommitted == true).Select(page => page.Key);
+    internal IEnumerable<(int PageIndex, long OutputBytes)> CompletedPdfOutputs => _pdfPages
+        .Where(page => page.Value.Publication?.IsCommitted == true)
+        .Select(page => (page.Key, page.Value.Publication!.OutputBytes));
     private string PdfPageDetails => PdfPageCount == 0 ? "" : "\nPage results:\n" + string.Join("\n", _pdfPages.Select(page =>
         $"Page {page.Key + 1}: {page.Value.Message}" +
         (page.Value.Publication?.OutputPath is { } output ? "\n  " + output : "") +

@@ -44,7 +44,9 @@ internal sealed partial class MainViewModel
             }, token);
         if (pdf is not null)
         {
-            var completed = documents.SelectMany(document => byId[document.ItemId].CompletedPdfPages.Select(index => (document.ItemId, index))).ToHashSet();
+            var completed = documents.SelectMany(document => byId[document.ItemId].CompletedPdfOutputs
+                .Select(output => (document.ItemId, output.PageIndex, output.OutputBytes)))
+                .ToDictionary(output => (output.ItemId, output.PageIndex), output => output.OutputBytes);
             await new PdfPageConversionExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(pdf, admission, (source, index, result) =>
             {
                 var row = byId[source.ItemId];

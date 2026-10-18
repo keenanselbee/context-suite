@@ -65,6 +65,27 @@ internal static class PdfPageWorkflowContracts
         { if (row.State == OperationState.Succeeded) cancelled.Cancel(); }, cancelled.Token);
         check(partial.Pages[0].Result.Publication?.IsCommitted == true && partial.Pages[1].Result.State == OperationState.Cancelled &&
             File.Exists(partial.Pages[0].Result.Publication!.OutputPath), "PDF pages: cancellation retains first copy and identifies unconverted page");
+        var retryPlan = Plan(first);
+        var outputsBeforeBudgetRetry = Directory.GetFiles(root, "Authored ü - Page *.png").Length;
+        var budgetRetry = await freshExecutor.ExecuteAdmittedAsync(retryPlan,
+            new(new(true, "Available"), retryPlan.Plan.BatchId), null, default,
+            new Dictionary<(Guid SourceId, int PageIndex), long> { [(first.ItemId, 0)] = 2L * 1024 * 1024 * 1024 });
+        check(budgetRetry.Pages.Count == 1 && budgetRetry.Pages[0].PageIndex == 1 &&
+            budgetRetry.Pages[0].Result.State == OperationState.Failed &&
+            Directory.GetFiles(root, "Authored ü - Page *.png").Length == outputsBeforeBudgetRetry &&
+            Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(sourcePath))) == originalHash,
+            "PDF pages: retry includes completed output in the 2 GiB budget before publishing another page");
+        try
+        {
+            await freshExecutor.ExecuteAdmittedAsync(retryPlan, new(new(true, "Available"), retryPlan.Plan.BatchId),
+                null, default, new Dictionary<(Guid SourceId, int PageIndex), long> { [(first.ItemId, 0)] = long.MaxValue });
+            check(false, "PDF pages accepted an overflowing prior output receipt.");
+        }
+        catch (InvalidDataException)
+        {
+            check(Directory.GetFiles(root, "Authored ü - Page *.png").Length == outputsBeforeBudgetRetry,
+                "PDF pages: overflowing prior output is refused before another output is reserved");
+        }
         using var beforeRender = new CancellationTokenSource();
         var stopped = await freshExecutor.ExecuteAsync(Plan(first), (_, _, row) =>
         { if (row.Message == "Rendering and validating page") beforeRender.Cancel(); }, beforeRender.Token);

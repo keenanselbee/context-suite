@@ -20,24 +20,33 @@ internal sealed class PdfPageConversionExecutor(WorkerClient worker, OutputPubli
 
     internal async Task<PdfPageBatchExecution> ExecuteAdmittedAsync(ConfirmedPdfPageConversion confirmed, OperationAdmission admission,
         Action<PdfRasterSource, int, FileResult>? report, CancellationToken token,
-        IReadOnlySet<(Guid SourceId, int PageIndex)>? completedPages = null)
+        IReadOnlyDictionary<(Guid SourceId, int PageIndex), long>? completedOutputs = null)
     {
+        const long maximumOutputBytes = 2L * 1024 * 1024 * 1024;
         _ = confirmed.Plan.Confirm();
         if (admission.BatchId != confirmed.Plan.BatchId) throw new InvalidDataException("PDF page admission belongs to another batch.");
-        if (completedPages is not null)
+        if (completedOutputs is not null)
         {
             var sources = confirmed.Plan.Sources.ToDictionary(source => source.ItemId);
-            if (completedPages.Any(page => !sources.TryGetValue(page.SourceId, out var source) || page.PageIndex < 0 || page.PageIndex >= source.Document.Pages.Length))
+            if (completedOutputs.Any(output => !sources.TryGetValue(output.Key.SourceId, out var source) ||
+                output.Key.PageIndex < 0 || output.Key.PageIndex >= source.Document.Pages.Length || output.Value <= 0))
                 throw new InvalidDataException("Completed pages do not belong to this PDF selection.");
         }
         var results = new List<PdfPageExecution>();
         long outputBytes = 0;
+        if (completedOutputs is not null)
+            foreach (var bytes in completedOutputs.Values)
+            {
+                if (bytes > maximumOutputBytes - outputBytes)
+                    throw new InvalidDataException("Completed PDF pages exceed the batch output budget.");
+                outputBytes += bytes;
+            }
         foreach (var source in confirmed.Plan.Sources)
         {
             var failedSource = false;
             foreach (var page in source.Document.Pages)
             {
-                if (completedPages?.Contains((source.ItemId, page.Index)) == true) continue;
+                if (completedOutputs?.ContainsKey((source.ItemId, page.Index)) == true) continue;
                 FileResult result;
                 if (!admission.IsAllowed) result = new(source.Path, OperationState.Failed, admission.Status.Message);
                 else if (token.IsCancellationRequested) result = new(source.Path, OperationState.Cancelled, "Page not converted after cancellation.");
@@ -47,6 +56,8 @@ internal sealed class PdfPageConversionExecutor(WorkerClient worker, OutputPubli
                     OutputReservation? reservation = null;
                     try
                     {
+                        if (outputBytes == maximumOutputBytes)
+                            throw new InvalidDataException("PDF page batch exceeds its output budget.");
                         report?.Invoke(source, page.Index, new(source.Path, OperationState.Running, "Preparing page copy"));
                         var id = Guid.NewGuid();
                         reservation = await publisher.ReserveAsync(new(id, source.Path, "png", confirmed.Plan.Settings,
@@ -56,7 +67,7 @@ internal sealed class PdfPageConversionExecutor(WorkerClient worker, OutputPubli
                         report?.Invoke(source, page.Index, new(source.Path, OperationState.Running, "Rendering and validating page"));
                         var rendered = await worker.RenderPdfPageAsync(new(source, page.Index, id, reservation.TemporaryPath,
                             TransparentBackground: confirmed.Plan.Settings.TransparentPdfBackground), token);
-                        if (outputBytes + rendered.OutputBytes > 2L * 1024 * 1024 * 1024)
+                        if (rendered.OutputBytes > maximumOutputBytes - outputBytes)
                             throw new InvalidDataException("PDF page batch exceeds its output budget.");
                         result = (await publisher.PublishAsync(reservation, rendered.Validation, token)).ToFileResult() with { EngineIdentity = rendered.EngineIdentity };
                         if (result.Publication?.IsCommitted == true) outputBytes += rendered.OutputBytes;
