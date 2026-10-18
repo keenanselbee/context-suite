@@ -35,7 +35,7 @@ foreach ($entry in @(@{ source = $repository; destination = $snapshot; name = 'p
         $new = @(& git -C $entry.source ls-files --others --exclude-standard)
         if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect new sources.' }
         # This local verification includes authored changes, never incidental root logs.
-        $new = @($new | Where-Object { $_ -match '^(src/|tests/|tools/|docs/|packaging/|assets/|\.github/)' })
+        $new = @($new | Where-Object { $_ -match '^(src/|tests/|tools/|docs/|packaging/|assets/|images/|\.github/)' })
         foreach ($relative in @($changed + $new | Sort-Object -Unique)) {
             $source = Join-Path $entry.source $relative
             if ((Get-Item -LiteralPath $source).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Source symlinks are not supported by this snapshot test.' }
