@@ -29,6 +29,25 @@ def main():
     assert plan["Options"] == args.baseline_options.read_text(encoding="utf-8")
     assert plan["Jobs"] == 2 and plan["WorkspaceLimitBytes"] == 100 * 1024**3
     checks.append("options-match-actual-configured-baseline")
+    _, no_python = configure.prepare(settings_path, "none")
+    assert no_python["Options"] == plan["Options"] + "--enable-python=no\n"
+    assert no_python["Inputs"] == plan["Inputs"] and no_python["Script"] == plan["Script"]
+    checks.append("no-python-experiment-changes-only-explicit-configure-option")
+    python = Path(sys.executable)
+    _, explicit_python = configure.prepare(settings_path, "none", python)
+    assert explicit_python["Options"] == no_python["Options"] + "PYTHON_FOR_BUILD=" + python.as_posix() + "\n"
+    assert explicit_python["Inputs"] == dict(plan["Inputs"], **{str(python): configure.driver.digest(python)})
+    checks.append("build-time-python-is-explicit-and-hash-bound")
+    try:
+        configure.prepare(settings_path, "bundled", python)
+        raise AssertionError("Default bundled configuration accepted an unrelated override.")
+    except ValueError:
+        checks.append("bundled-mode-refuses-build-python-override")
+    try:
+        configure.prepare(settings_path, "system")
+        raise AssertionError("Unreviewed Python runtime accepted.")
+    except ValueError:
+        checks.append("refuses-unreviewed-python-mode")
     before = set(evidence.parent.iterdir())
     assert not paths["Build"].exists()
     command = [sys.executable, "-B", str(tool), str(settings_path), "--plan"]

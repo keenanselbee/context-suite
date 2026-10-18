@@ -9,13 +9,17 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import stat
+import xml.etree.ElementTree as ET
 
 
 TOOLS = Path(__file__).resolve().parent
 ROOT = TOOLS.parents[1]
 SOURCE_RECORD = TOOLS / "source-runtime-candidate.json"
+REDUCTION_POLICY = TOOLS / "runtime-reduction-policy.json"
+DERIVATION_TOOL = TOOLS / "Derive-ReducedRuntime.py"
 PACKAGED_SOURCE_RECORD = "ContextSuite.OfficeSource.json"
 NOTICE_RECORD = TOOLS / "python-notice-review.json"
 NOTICE_FILE = ROOT / "assets/third-party/office/Office.Python.Notices.txt"
@@ -23,6 +27,42 @@ PACKAGED_NOTICE = "Office.Python.Notices.txt"
 COMPONENT_NOTICE_RECORD = TOOLS / "component-notice-review.json"
 COMPONENT_NOTICE_FILE = ROOT / "assets/third-party/office/Office.Dependency.Notices.html"
 PACKAGED_COMPONENT_NOTICE = "Office.Dependency.Notices.html"
+SERVICES_NAMESPACE = "{http://openoffice.org/2010/uno-components}"
+
+
+def python_runtime(record):
+    mode = record.get("pythonRuntime", "bundled")
+    if mode not in ("bundled", "none"):
+        raise ValueError("Unsupported Office Python runtime mode: " + str(mode))
+    return mode
+
+
+def python_runtime_name(name):
+    parts = [part.casefold() for part in name.split("/")]
+    base = parts[-1]
+    return (any(part.startswith(("python-core-", "pyuno", "pythonloader")) for part in parts) or
+            base.endswith(".pyd") or
+            re.fullmatch(r"pythonw?(?:\d+(?:\.\d+)*)?\.exe", base) is not None or
+            re.fullmatch(r"python\d+[^/]*\.dll", base) is not None or
+            any(part in {"pip", "setuptools", "pkg_resources", "_distutils_hack"} for part in parts))
+
+
+def verify_python_free_services(engine, files):
+    registries = sorted(name for name in files if name.startswith("runtime/") and
+                        Path(name).name == "services.rdb")
+    if not registries:
+        raise ValueError("Python-free Office runtime has no pinned services registry.")
+    for name in registries:
+        root = ET.parse(engine / name).getroot()
+        if root.tag != SERVICES_NAMESPACE + "components":
+            raise ValueError("Unexpected Office services registry XML: " + name)
+        for component in root:
+            if component.tag != SERVICES_NAMESPACE + "component":
+                raise ValueError("Unexpected Office services registry component: " + name)
+            loader, uri = component.get("loader", ""), component.get("uri", "")
+            if not loader or not uri or any("python" in value.casefold() or "pyuno" in value.casefold()
+                                             for element in component.iter() for value in element.attrib.values()):
+                raise ValueError("Python loader or component remains in Office services registry: " + name)
 
 
 def ordinary(path):
@@ -63,11 +103,41 @@ def identity(path, pin):
 def selection():
     record = json.loads((TOOLS / "payload-candidate.json").read_text(encoding="utf-8"))
     upstream = json.loads(SOURCE_RECORD.read_text(encoding="utf-8"))
+    python_runtime(upstream)
     if (upstream["formatVersion"] != 1 or record["archiveSha256"] != upstream["archiveSha256"] or
             record["inventory"]["sha256"] != upstream["inventorySha256"] or
             upstream["host"] != {key: record["host"][key] for key in ("path", "bytes", "sha256")} or
             upstream["runtime"] != {"files": record["inventory"]["files"], "bytes": record["inventory"]["runtimeBytes"]}):
         raise ValueError("Office archive selection differs from the reviewed candidate.")
+    policy = json.loads(REDUCTION_POLICY.read_bytes())
+    base = policy["baseSelection"]
+    derivation = upstream.get("runtimeDerivation")
+    if derivation is None:
+        if record["inventory"] != base["inventory"]:
+            raise ValueError("A derived Office runtime requires its exact reduction recipe.")
+    else:
+        expected = {
+            "formatVersion": 1,
+            "baseArchiveSha256": base["archiveSha256"],
+            "baseInventorySha256": base["inventory"]["sha256"],
+            "policySha256": digest(REDUCTION_POLICY),
+            "toolSha256": digest(DERIVATION_TOOL),
+            "excludedFiles": policy["excludedFiles"],
+            "retainedBinaryBytesUnchanged": True,
+        }
+        if derivation != expected:
+            raise ValueError("Office runtime derivation differs from its reviewed recipe.")
+        original = policy["baseSourceRecord"]
+        for key in original:
+            if key not in ("archiveSha256", "inventorySha256", "runtime", "purpose", "derivation") and upstream.get(key) != original[key]:
+                raise ValueError("Office reduction changed its original build/source identity: " + key)
+        for key in ("host", "hostDependencies", "emptyDirectories"):
+            if record[key] != base[key]:
+                raise ValueError("Office reduction changed a retained host dependency.")
+        removed_bytes = sum(item["bytes"] for item in policy["excludedFiles"])
+        if (record["inventory"]["files"] != base["inventory"]["files"] - len(policy["excludedFiles"]) or
+                record["inventory"]["runtimeBytes"] != base["inventory"]["runtimeBytes"] - removed_bytes):
+            raise ValueError("Office reduction totals differ from the exact exclusions.")
     return record
 
 
@@ -90,16 +160,28 @@ def component_notice():
     ordinary(COMPONENT_NOTICE_RECORD)
     record = json.loads(COMPONENT_NOTICE_RECORD.read_bytes())
     selected = json.loads(SOURCE_RECORD.read_bytes())
-    if (record["formatVersion"] != 1 or record["inventorySha256"] != selection()["inventory"]["sha256"] or
-            record["officeSourceKitManifestSha256"] != selected["sourceKitManifestSha256"]):
+    mode = python_runtime(selected)
+    valid_v1 = (record.get("formatVersion") == 1 and mode == "bundled" and
+                record.get("officeSourceKitManifestSha256") == selected["sourceKitManifestSha256"])
+    valid_v2 = (record.get("formatVersion") == 2 and mode == "none" and
+                record.get("sourceKitManifestSha256") == selected["sourceKitManifestSha256"] and
+                record.get("pythonRuntime") == "none" and
+                record.get("sourceCorrespondenceAccepted") is True and
+                record.get("packagingAccepted") is True)
+    if (record["inventorySha256"] != selection()["inventory"]["sha256"] or
+            not (valid_v1 or valid_v2)):
         raise ValueError("Supplemental component notices differ from the selected Office runtime/source kit.")
     identity(COMPONENT_NOTICE_FILE, record["notice"])
     return record["notice"]
 
 
 def verify_notices(payload):
-    identity(local_path(payload, verification=True) / PACKAGED_NOTICE, supplemental_notice())
-    identity(local_path(payload, verification=True) / PACKAGED_COMPONENT_NOTICE, component_notice())
+    root = local_path(payload, verification=True)
+    if python_runtime(json.loads(SOURCE_RECORD.read_bytes())) == "bundled":
+        identity(root / PACKAGED_NOTICE, supplemental_notice())
+    elif os.path.lexists(root / PACKAGED_NOTICE):
+        raise ValueError("Python-free Office payload contains stale Python notices.")
+    identity(root / PACKAGED_COMPONENT_NOTICE, component_notice())
 
 
 def membership(engine, record):
@@ -129,6 +211,10 @@ def membership(engine, record):
     if (names != sorted(names) or len(names) != len(set(name.casefold() for name in names)) or
             len(names) != record["inventory"]["files"] or total != record["inventory"]["runtimeBytes"]):
         raise ValueError("Office inventory membership differs from the pinned candidate.")
+    if python_runtime(json.loads(SOURCE_RECORD.read_bytes())) == "none":
+        for name in names:
+            if python_runtime_name(name):
+                raise ValueError("Python runtime file remains in Office inventory: " + name)
     return files, directories
 
 
@@ -160,6 +246,8 @@ def verify(engine):
         raise ValueError("Office payload is missing reviewed runtime files, notices or directories.")
     for name, pin in files.items():
         identity(engine / name, pin)
+    if python_runtime(json.loads(SOURCE_RECORD.read_bytes())) == "none":
+        verify_python_free_services(engine, files)
     return files, directories
 
 
@@ -173,10 +261,14 @@ def stage(payload, engine_directory):
     source_target = local_path(root / PACKAGED_SOURCE_RECORD)
     if os.path.lexists(source_target):
         raise ValueError("Office source record already exists; use a new stage.")
+    mode = python_runtime(json.loads(SOURCE_RECORD.read_bytes()))
+    if mode == "none" and os.path.lexists(root / PACKAGED_NOTICE):
+        raise ValueError("Python-free Office payload contains stale Python notices.")
+    notice_sources = [(PACKAGED_COMPONENT_NOTICE, COMPONENT_NOTICE_FILE, component_notice())]
+    if mode == "bundled":
+        notice_sources.insert(0, (PACKAGED_NOTICE, NOTICE_FILE, supplemental_notice()))
     notices = []
-    for name, source_file, notice_pin in (
-            (PACKAGED_NOTICE, NOTICE_FILE, supplemental_notice()),
-            (PACKAGED_COMPONENT_NOTICE, COMPONENT_NOTICE_FILE, component_notice())):
+    for name, source_file, notice_pin in notice_sources:
         target = local_path(root / name)
         if os.path.lexists(target):
             raise ValueError("Office supplemental notices already exist; use a new stage.")

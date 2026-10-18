@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "scope": "Supplemental pip/setuptools source and notice correspondence for the pinned Office runtime; not complete Office redistribution acceptance.",
-  "inventorySha256": "738D1AD2B320A3E1FF6D6E3173CD6B25D5E70C8B707E3B1EBD79220FD0BD738A",
+  "inventorySha256": "90D2BC40C36870523331CF9A9C97A3B19C5BA963B6EFCEA5DF160C14E619954D",
   "officeSourceKitManifestSha256": "9D0EF709159DC2CCCAD6BE315DB7833032C540507DA55CE0EA656EFC3012AF73",
   "archives": {
     "Python-3.12.14.tar.xz": {

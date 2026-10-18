@@ -1,0 +1,365 @@
+{
+  "formatVersion": 1,
+  "status": "Pinned Python-free reduction evidence; release approval remains separate",
+  "baseSelection": {
+    "engine": "LibreOffice source-built renderer at 8221e31b3ac356a1623c672912a3d2b492f7e3d1",
+    "scope": "Full Python-free source-built runtime; packaging approval is separate.",
+    "host": {
+      "path": "ContextSuite.OfficeHost.exe",
+      "bytes": 112640,
+      "sha256": "3F5254F6D6188F5B3637C13BFF29520750073D1F88EA3687630EB4DB5E870059",
+      "sources": [
+        {
+          "path": "proprietary/src/ContextSuite.OfficeHost.Native/app.manifest",
+          "sha256": "4BED6AE394654B3A06E06156879B0EEE739F7B620C6697243FF596F254D989C4"
+        },
+        {
+          "path": "proprietary/src/ContextSuite.OfficeHost.Native/CMakeLists.txt",
+          "sha256": "E40D252F531E3110C853D4BE40D8388E2B31EFBA83E1CD6662C5BE15AC75C07F"
+        },
+        {
+          "path": "proprietary/src/ContextSuite.OfficeHost.Native/EmbeddedOffice.h",
+          "sha256": "BB4A247B0F8E61288284E87BEEB2882545FC973E63A0D3D1CA3D97A890E29AF4"
+        },
+        {
+          "path": "proprietary/src/ContextSuite.OfficeHost.Native/Host.cpp",
+          "sha256": "643902159300DA335871341754F6B68288291172925CECF8E453B8B189154225"
+        }
+      ]
+    },
+    "inventory": {
+      "path": "runtime-files.txt",
+      "bytes": 294668,
+      "sha256": "68372A0C9507E2D8388E988186D24EC885B935A7779A891A957AD77BEBEFF29B",
+      "files": 2380,
+      "runtimeBytes": 507715792
+    },
+    "emptyDirectories": [
+      "share/uno_packages",
+      "share/uno_packages/cache",
+      "share/uno_packages/cache/uno_packages"
+    ],
+    "hostDependencies": [
+      {
+        "path": "msvcp140.dll",
+        "bytes": 643512,
+        "sha256": "7C26614E1D733892C2DEAC7E245CE115504B1D80592DD0A01B08E3E5A55F89CA"
+      },
+      {
+        "path": "vcruntime140.dll",
+        "bytes": 178616,
+        "sha256": "D1F4225DF2CD877DBF130D5668A021DCE3F94118455FF5EC952061C30AFC9CE7"
+      },
+      {
+        "path": "vcruntime140_1.dll",
+        "bytes": 50112,
+        "sha256": "A7146C08F89FE5B04541AB507CDB59FF7B44534D4BA3C668A426C6450A03434E"
+      }
+    ],
+    "archiveSha256": "86C79506F4BB834798358C0BF8383E211FF0DBB0EE44C617D68C2A9A2BDC8E51"
+  },
+  "retainedTheme": "share/config/images_colibre.zip",
+  "excludedFiles": [
+    {
+      "path": "sdk/bin/cppumaker.exe",
+      "bytes": 587776,
+      "sha256": "A4666DE6B29F7A6FE518E4C52DB2E841EA9FDEE4E8D99AB54A84AC54C93D7694"
+    },
+    {
+      "path": "sdk/bin/javamaker.exe",
+      "bytes": 458240,
+      "sha256": "C846F72F85EB629BF626C92C03E26EA80B23D3DFA1A583713CE8E1E328432AFE"
+    },
+    {
+      "path": "sdk/bin/unoidl-write.exe",
+      "bytes": 68096,
+      "sha256": "BDA7BCC1A5B4DEC8BE02575E1CCF6DEEB31FF15851380457F44521A65AFEE609"
+    },
+    {
+      "path": "sdk/lib/icppu.exp",
+      "bytes": 16432,
+      "sha256": "610C4FAF554BC1966F44A1E0FFCA72E8AE4506FE04AABE8258346CE7920DD269"
+    },
+    {
+      "path": "sdk/lib/icppu.lib",
+      "bytes": 27298,
+      "sha256": "747CF45C93D4315973E28A8CB752B39222213B28CCD14A90F65C45352DA53822"
+    },
+    {
+      "path": "sdk/lib/icppuhelper.exp",
+      "bytes": 110826,
+      "sha256": "E36DB7FF8A82BFD24129AE9C572A31041DD3EA30BC62D9F57729364078E61210"
+    },
+    {
+      "path": "sdk/lib/icppuhelper.lib",
+      "bytes": 183814,
+      "sha256": "AB18BD8E689015A11B91BD914895D8C24C3710444EEDF434DFBD4B6BFA897F81"
+    },
+    {
+      "path": "sdk/lib/ipurpenvhelper.exp",
+      "bytes": 1801,
+      "sha256": "44D9061E0631F7D2855588BAAA71DADEC104BB658ACA3703DE5F1C71B0F86C51"
+    },
+    {
+      "path": "sdk/lib/ipurpenvhelper.lib",
+      "bytes": 3594,
+      "sha256": "CA9497255CA9E9452E1F538AD006C00DFF5BDA65587E54786C3E0CFE457C6227"
+    },
+    {
+      "path": "sdk/lib/isal.exp",
+      "bytes": 88689,
+      "sha256": "D1D8072149F1E24F776D6E1C4141D9EE84302A8200533CBC6B38389991B23C7C"
+    },
+    {
+      "path": "sdk/lib/isal.lib",
+      "bytes": 144732,
+      "sha256": "3E1C0DF2AF796FBABB1135C287EDE1344DEAF1511C7DCF8C9FBC66154800DBC4"
+    },
+    {
+      "path": "sdk/lib/isalhelper.exp",
+      "bytes": 13061,
+      "sha256": "E0E50D22B88E50B9C95157BF7670859455251FAC87E013773418D93DB52B0BBA"
+    },
+    {
+      "path": "sdk/lib/isalhelper.lib",
+      "bytes": 21828,
+      "sha256": "4283D2914B209F8B4D5880E4EE614BD7995CD17A23CCDC6681188CE4421B0CF3"
+    },
+    {
+      "path": "share/config/images_breeze.zip",
+      "bytes": 2034292,
+      "sha256": "0FF44B1A95F79D89EB98B1957D4981EDF9DF8D35BBF4619A302CE21A9B35E32B"
+    },
+    {
+      "path": "share/config/images_breeze_dark.zip",
+      "bytes": 2032639,
+      "sha256": "71D027C22B1DFE7D0F83CC611F97010B2D029D19D28F83893D19A16F50DB8DF0"
+    },
+    {
+      "path": "share/config/images_breeze_dark_svg.zip",
+      "bytes": 1671731,
+      "sha256": "7556FC24E9F29A4DD52D285FCBAA4D346C2DEF90331BB34478AD416FD738B4BE"
+    },
+    {
+      "path": "share/config/images_breeze_svg.zip",
+      "bytes": 1668699,
+      "sha256": "F3B1AB8FFFAD9FFD80F844D82436C19B5185CA71E776E8F7F37C7A28A49F8D75"
+    },
+    {
+      "path": "share/config/images_colibre_dark.zip",
+      "bytes": 2808881,
+      "sha256": "60C2C9D69C5E0B7F8A5792CF73A69ECE0B97F9A946060E94ED062A27D6E0388D"
+    },
+    {
+      "path": "share/config/images_colibre_dark_svg.zip",
+      "bytes": 2983478,
+      "sha256": "DE96C3B7807C230482CFAF5D41365D7BBA65CF7049424EF194796204CB57DDA9"
+    },
+    {
+      "path": "share/config/images_colibre_svg.zip",
+      "bytes": 3179886,
+      "sha256": "DEB8996050DC0887EFFCEDB8B98E77EF52853CBFF4551BC1804B5A416B23D1A1"
+    },
+    {
+      "path": "share/config/images_elementary.zip",
+      "bytes": 4352056,
+      "sha256": "D34AE88B19C6B7A77F59210FBD3B96FCAD71FB9C332E36A4E4F3CDE7FAC3ED99"
+    },
+    {
+      "path": "share/config/images_elementary_svg.zip",
+      "bytes": 5626222,
+      "sha256": "522C478BD21D5A46A63AF89D4D8B17042E334D1E68A5FFE53D79ACF9D047CA14"
+    },
+    {
+      "path": "share/config/images_karasa_jaga.zip",
+      "bytes": 5027724,
+      "sha256": "AC25B0777F41731508FD9072D60B6241ED0997E040C0E29453F461A373EB815A"
+    },
+    {
+      "path": "share/config/images_karasa_jaga_svg.zip",
+      "bytes": 16288303,
+      "sha256": "A1ED0E02480F3881F91C6ADA94F21D884C6899620377DFF096DAE0BF16C364C3"
+    },
+    {
+      "path": "share/config/images_sifr.zip",
+      "bytes": 2420011,
+      "sha256": "9A90E57C06B3BDD88EFCD92106287D1B9EBA8B3A7AEFF629C42CCBE32733B460"
+    },
+    {
+      "path": "share/config/images_sifr_dark.zip",
+      "bytes": 2391425,
+      "sha256": "E5EE90769326880CE8BC9E6BDA07E018EDFA6D27A786196B285700FB9AEF7AF9"
+    },
+    {
+      "path": "share/config/images_sifr_dark_svg.zip",
+      "bytes": 2401944,
+      "sha256": "49C440CE98CBE5EA34ACBF0F402CD84C5E01C5563DE0514D05D621F7CACB05D7"
+    },
+    {
+      "path": "share/config/images_sifr_svg.zip",
+      "bytes": 2403031,
+      "sha256": "83B87329249ACCA75FDC43A67073F237C443DA447800F37B82C56917B87134A7"
+    },
+    {
+      "path": "share/config/images_sukapura.zip",
+      "bytes": 3029464,
+      "sha256": "1613060662690F3B68642F2BCE8316FA96971BA0E0044F8F87EC6283B3536897"
+    },
+    {
+      "path": "share/config/images_sukapura_dark.zip",
+      "bytes": 2956920,
+      "sha256": "76CA7D35885F58B826C5915E0E1F5318732A201FAC8EA30E8EB3D795D228CD78"
+    },
+    {
+      "path": "share/config/images_sukapura_dark_svg.zip",
+      "bytes": 3546097,
+      "sha256": "F31E52C6EA9520BC1829E225173199104F91B3BB942958D77CF5301E5B683D73"
+    },
+    {
+      "path": "share/config/images_sukapura_svg.zip",
+      "bytes": 3559000,
+      "sha256": "702F7C6667D977121A8FBC41731C1402BE653ED9B9F85B7C30071BE144CB5A57"
+    }
+  ],
+  "baseSourceRecord": {
+    "formatVersion": 1,
+    "name": "LibreOffice source-built renderer",
+    "architecture": "windows-x86_64",
+    "sourceCommit": "8221e31b3ac356a1623c672912a3d2b492f7e3d1",
+    "sourceArchiveSha256": "7844FC4BD214147AB219012F57F2458A38D544DC8C0A154AF956882D724AF890",
+    "archiveSha256": "86C79506F4BB834798358C0BF8383E211FF0DBB0EE44C617D68C2A9A2BDC8E51",
+    "sourceKitManifestSha256": "0B09F156345C3574D6E4EB88F37491545F618289822CE90F56BFF37B347199E6",
+    "sourceKitArchiveSha256": "EC0235C6D97B4EB28F1488C2258A91E974A35702DC203DEDA78112CF6602D0A5",
+    "inventorySha256": "68372A0C9507E2D8388E988186D24EC885B935A7779A891A957AD77BEBEFF29B",
+    "pythonRuntime": "none",
+    "patches": {
+      "runtime-repair.patch": "C8BD70A6C56F2E1BA54B65FE551E97B802CEDDF07E8C71EB491FADBE32B49148",
+      "build-compatibility.patch": "0DF05DEC47CD887DA22440F8AA66C98869C68970FEF455D94B82D6D5B7344123",
+      "native-test-only.patch": "D621C5D126240C99831F7E73C5F5DC7B25C9DD8B75C5B12A6CA7788ED933339A",
+      "python-free-wizards.patch": "527DB0BBF440CD85AB54C693013B86B0AFFAF1EA5A90AB7999F81A5E8D9A84B2"
+    },
+    "purpose": "Source/build identity for the Python-free Office runtime; release approval remains separate.",
+    "derivation": "Fresh source build with explicit Python disabled; wizard registry repair and Java delivery are separate pinned post-build steps.",
+    "sourceUrl": "https://codeload.github.com/LibreOffice/core/tar.gz/8221e31b3ac356a1623c672912a3d2b492f7e3d1",
+    "host": {
+      "path": "ContextSuite.OfficeHost.exe",
+      "bytes": 112640,
+      "sha256": "3F5254F6D6188F5B3637C13BFF29520750073D1F88EA3687630EB4DB5E870059"
+    },
+    "runtime": {
+      "files": 2380,
+      "bytes": 507715792
+    },
+    "sourceKit": {
+      "archive": "office-source-kit-python-free-01.zip",
+      "manifest": "source-kit.json",
+      "selectedDependencyArchives": 134,
+      "retainedDependencyArchives": 140,
+      "dependencyFetchReceiptSha256": "A17FE13C3886FD9692DF9CDB62A68A9B3655AEE08C7DCA2F00E81A5756E7F7A2",
+      "evaluatedPatchGroups": [
+        {
+          "path": "patches/evaluated/runtime-repair.patch",
+          "bytes": 8962,
+          "sha256": "C8BD70A6C56F2E1BA54B65FE551E97B802CEDDF07E8C71EB491FADBE32B49148"
+        },
+        {
+          "path": "patches/evaluated/build-compatibility.patch",
+          "bytes": 7307,
+          "sha256": "0DF05DEC47CD887DA22440F8AA66C98869C68970FEF455D94B82D6D5B7344123"
+        },
+        {
+          "path": "patches/evaluated/native-test-only.patch",
+          "bytes": 620,
+          "sha256": "D621C5D126240C99831F7E73C5F5DC7B25C9DD8B75C5B12A6CA7788ED933339A"
+        },
+        {
+          "path": "patches/evaluated/python-free-wizards.patch",
+          "bytes": 392,
+          "sha256": "527DB0BBF440CD85AB54C693013B86B0AFFAF1EA5A90AB7999F81A5E8D9A84B2"
+        }
+      ],
+      "canonicalConfigureSha256": "383EFE9C5ED474115EAFA8F30FFDCD0E5EE1ED0D0F941890EF58DCFDC3597FBD",
+      "buildHelpers": {
+        "Configure-Source.py": "9152E74DB922F8B226454F00B951C9C7EF1F3A41B74D8065BF35E490165BA4E7",
+        "Run-SourceBuild.py": "76A5F2D5A91D39C7A559C8C693A49EEF2FE601EA0A85B1756AEEA81B2FBAB832",
+        "Test-SourceConfigure.py": "63AF0B1270F094828634E3B452B42592CDCB37C91467A2EECB3F172C633496B6",
+        "Test-SourceBuild.py": "8829081036CCA300CEC5C667424EF69B486769B32EE297E5919B25D1C15486E3"
+      },
+      "historicalBuildHelpersPublicRevision": "7a02d1297fa024641362b00b6bfb63c7cae62795",
+      "buildHelpersScope": "Current helper hashes are from the fresh kit; historical public revision describes earlier source history only.",
+      "preparedSourceFiles": 148225,
+      "sourceCorrespondenceReceipt": {
+        "path": "G:\\ContextSuite-OfficeBuild\\python-free-20261012\\evidence\\python-free-source-correspondence-02\\comparison.json",
+        "sha256": "8B004594AA8E10E49E3D61F5DDD63245B7A68092CA6DAA38ED0917CD16F8A801"
+      },
+      "historicalCorrespondenceSha256": "C90FB0DDD59F66F29F3AD2E3E532D1A644368F62ACA5B0F065F6FE5F7A4A7672"
+    },
+    "configuration": {
+      "host": "x86_64-pc-cygwin",
+      "portableOptions": [
+        "--host=x86_64-pc-cygwin",
+        "--with-visual-studio=2026",
+        "--with-jdk-home=<jdk>",
+        "--with-ant-home=<ant>",
+        "--with-external-tar=<source-kit>/dependencies",
+        "--with-parallelism=2",
+        "--without-junit",
+        "--without-help",
+        "--without-myspell-dicts",
+        "--disable-online-update",
+        "--disable-extension-update",
+        "--with-vendor=Context Suite isolated chart evaluation",
+        "PKG_CONFIG=<pkgconf>",
+        "LO_CLANG_CC=<clang-cl> --target=x86_64-pc-windows-msvc -m64",
+        "LO_CLANG_CXX=<clang-cl> --target=x86_64-pc-windows-msvc -m64",
+        "LO_CLANG_SHOWINCLUDES_PREFIX=Note: including file:",
+        "--enable-python=no",
+        "PYTHON_FOR_BUILD=<build-python>"
+      ],
+      "optionsPathSubstitution": "Angle-bracket paths stand for the exact configure-plan inputs; <build-python> is build-only.",
+      "configHostSha256": "BB1F3F8AEB785F5D0E04F43EABED99F0E9D157211B2AF953D447AB4C6BAAA55F",
+      "autogenInputSha256": "FD162AB43D309B71D3BE874EDCF5E3B90286220AC875F5BDEEE0FE234F11939E",
+      "configLogSha256": "494D9AA7F8F12B450800083D2A92CB4176C91E38D5E4A148EA7C2D92D44221CC",
+      "configurePlanSha256": "8FF7A872C0A938191E98B7E62945476DF6D9DF922451D83B8D413B1E30516AE1",
+      "configureResultSha256": "F72ACDBC35AA8CA12A8944C2857DA830B31082747DBCE2793D8B0D43BEFEDCE2",
+      "onlineUpdate": false,
+      "extensionUpdate": false,
+      "jobs": 2
+    },
+    "toolchain": {
+      "buildBashSha256": "DF601377E3C85F60DF06A5A1B3BE87EC2B1892580BE86BD39D51E42C03BEE2B1",
+      "buildMakeSha256": "3CBF585A213001FBDEDC5269621A3617D5067ABA8F9DC8947054B76F30035E3D",
+      "scope": "Exact fresh configure/build tool input hashes are in their pinned plans; historical version strings are not reused."
+    },
+    "build": {
+      "compilationResultSha256": "2DD898BE629DDD1ADC8A320BDDA93D6CF136A2C69E40E66116AAB5CE0233ADB0",
+      "compilationPlanSha256": "EF75896D599E480CAA14CEE0F1817A30D135DD7992901EB28CA6C13A2C0791D8",
+      "targets": [
+        "CppunitTest_embeddedobj_contextsuite",
+        "Executable_soffice_bin",
+        "Executable_soffice_exe",
+        "Executable_soffice_com",
+        "Package_instsetoo_native_setup",
+        "Package_instsetoo_native_setup_ure",
+        "Rdb_services",
+        "Package_extras_cfgusr",
+        "Package_extras_autotextuser",
+        "Package_extras_database",
+        "Package_extras_databasebiblio",
+        "Package_extras_gallmytheme",
+        "Package_readlicense_oo_license",
+        "Package_readlicense_oo_files",
+        "Package_readlicense_oo_readmes",
+        "Package_oox_customshapes",
+        "Package_oox_generated"
+      ],
+      "wizardRegistrationRepairSha256": "571761BAFB0A7896F0DBDA238544BEB7CA8553ECBF985528109B13967227BA09",
+      "javaDeliveryVerificationSha256": "C1FED5D1D39CD336F8CA5720E346577CA0D4DCB370B3C0FF8BB7509915CF03BD",
+      "nativeVerificationSha256": "FC919A7195A1489D070AE67BC3AB8C3311B5A7BA80F886A1CFB7F2DA11E74681",
+      "runtimeAssemblySha256": "1189C9A736B0C3A3C8A58DF80CE23BF1DB192C7BB0A58026A4687C8E71FAF3F1",
+      "trimmedWorkerFidelitySha256": "5BA9137C5600C5DE992A05A842969F2E6F8A3E0CB8CCC5452A8B2E8510D28D25",
+      "trimmedWorkerSafetySha256": "157602DB0388D7FABD8B5AB3E02C7F9CBF0ADCCC35C70663273E5103DC4FD057",
+      "postBuildScope": "Wizard registry repair, Java deliverables, native suite, full runtime assembly, and trimmed worker checks are distinct receipts."
+    }
+  }
+}

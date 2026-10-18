@@ -7,6 +7,9 @@ tools/audio-engine/wmapro-channel-matrix.patch text eol=lf whitespace=-blank-at-
 tools/office-engine/patches/allow-native-chart-rendering.patch text eol=lf whitespace=-blank-at-eol
 # This source identity is copied byte-for-byte into candidate packages.
 tools/office-engine/source-runtime-candidate.json text eol=lf
+# These recipe bytes identify the derived Office runtime.
+tools/office-engine/runtime-reduction-policy.json text eol=lf
+tools/office-engine/Derive-ReducedRuntime.py text eol=lf
 # Preserve the reviewed notice bytes, including upstream/generated whitespace.
 assets/third-party/oxipng/Oxipng.Rust.Library.Notices.html text eol=lf whitespace=-blank-at-eol
 assets/third-party/oxipng/Oxipng.ThirdPartyNotices.txt text eol=lf whitespace=-blank-at-eof
@@ -20,3 +23,26 @@ tools/pdf-engine/notice-source-review.json text eol=lf
 # Rendered upstream notice text retains original whitespace and separator lines.
 assets/third-party/office/Office.Dependency.Notices.html -text whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab conflict-marker-size=32
 tools/office-engine/component-notice-review.json text eol=lf
+# Preserve exact AVIF/SVG build-receipt and deployment-pin bytes, including CRLF.
+assets/third-party/avif/*.txt -text whitespace=cr-at-eol
+assets/third-party/svg/licenses/** -text whitespace=cr-at-eol
+assets/third-party/svg/dependency-inventory.json -text whitespace=cr-at-eol
+assets/third-party/svg/README.md -text whitespace=cr-at-eol
+tools/avif-engine/Build-AvifEngine.py -text whitespace=cr-at-eol
+tools/avif-engine/Prepare-AvifSource.py -text whitespace=cr-at-eol
+tools/avif-engine/README.md -text whitespace=cr-at-eol
+tools/svg-engine/Build-SvgEngine.ps1 -text whitespace=cr-at-eol
+tools/svg-engine/Verify-CargoSources.py -text whitespace=cr-at-eol
+tools/svg-engine/README.md -text whitespace=cr-at-eol
+tools/image-expansion-engine/AVIF-KIT.md -text whitespace=cr-at-eol
+tools/image-expansion-engine/SVG-KIT.md -text whitespace=cr-at-eol
+# These hash-verified upstream notices retain their original whitespace.
+assets/third-party/avif/Aom.License.txt whitespace=cr-at-eol,-blank-at-eof
+assets/third-party/avif/Aom.Patents.txt whitespace=cr-at-eol,-blank-at-eof
+assets/third-party/avif/Libwebm.License.txt whitespace=cr-at-eol,-blank-at-eof
+assets/third-party/svg/licenses/crc32fast-1.5.2/LICENSE-APACHE whitespace=cr-at-eol,-blank-at-eof
+assets/third-party/svg/licenses/pico-args-0.5.0/LICENSE whitespace=cr-at-eol,-blank-at-eof
+assets/third-party/svg/licenses/quick-error-2.0.1/LICENSE-APACHE whitespace=cr-at-eol,-blank-at-eof
+assets/third-party/svg/licenses/svgtypes-0.16.1/LICENSE-MIT whitespace=cr-at-eol,-blank-at-eof
+assets/third-party/svg/licenses/weezl-0.1.12/LICENSE-MIT whitespace=cr-at-eol,-blank-at-eof
+assets/third-party/svg/licenses/zlib-rs-0.6.8/LICENSE whitespace=cr-at-eol,-blank-at-eol

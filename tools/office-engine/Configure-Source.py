@@ -23,7 +23,11 @@ driver = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(driver)
 
 
-def prepare(settings_path):
+def prepare(settings_path, python_runtime="bundled", build_python=None):
+    if python_runtime not in ("bundled", "none"):
+        raise ValueError("Choose bundled Python or the separate no-Python build experiment.")
+    if build_python is not None and python_runtime != "none":
+        raise ValueError("An explicit build Python belongs only to the no-Python experiment.")
     settings_path = driver.local_path(settings_path)
     settings = json.loads(settings_path.read_bytes())
     required = {"Workspace", "Source", "Build", "Kit", "Bash", "Environment", "Jdk", "Ant", "Clang", "PkgConfig"}
@@ -106,6 +110,14 @@ def prepare(settings_path):
         "LO_CLANG_CC=" + paths["Clang"].as_posix() + " --target=x86_64-pc-windows-msvc -m64",
         "LO_CLANG_CXX=" + paths["Clang"].as_posix() + " --target=x86_64-pc-windows-msvc -m64",
         "LO_CLANG_SHOWINCLUDES_PREFIX=Note: including file:", ""))
+    if python_runtime == "none":
+        options += "--enable-python=no\n"
+        if build_python is not None:
+            python_path = driver.local_path(build_python)
+            if not python_path.is_file() or any(char in str(python_path) for char in "\r\n\0"):
+                raise ValueError("Use an existing local build-time Python executable.")
+            inputs[str(python_path)] = driver.digest(python_path)
+            options += "PYTHON_FOR_BUILD=" + python_path.as_posix() + "\n"
     script = "set -eu\nunset MAKEFLAGS MFLAGS GNUMAKEFLAGS\n"
     for name, value in sorted(environment.items()):
         script += "export " + name + "=" + shlex.quote(value) + "\n"
@@ -171,11 +183,15 @@ def execute(paths, plan):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("settings", type=Path)
+    parser.add_argument("--python-runtime", choices=("bundled", "none"), default="bundled",
+                        help="Separate source-build experiment; never removes files from an existing runtime.")
+    parser.add_argument("--build-python", type=Path,
+                        help="Build-time Python executable for the no-Python experiment on Windows.")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--plan", action="store_true")
     mode.add_argument("--execute", action="store_true")
     args = parser.parse_args()
-    paths, plan = prepare(args.settings)
+    paths, plan = prepare(args.settings, args.python_runtime, args.build_python)
     if args.plan:
         print(json.dumps(plan, indent=2))
     else:

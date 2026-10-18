@@ -71,6 +71,25 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest().upper()
 
 
+def compiler_environment(config):
+    values = {}
+    for name in ("ILIB", "SOLARINC"):
+        matches = re.findall(r"^export " + name + r"=(.*)$", config, re.M)
+        if len(matches) != 1 or not matches[0].strip() or any(c in matches[0] for c in "\0$`"):
+            raise ValueError("Configuration must contain one literal " + name + " toolchain setting.")
+        values[name] = matches[0]
+    libraries = values["ILIB"].split(";")
+    includes = shlex.split(values["SOLARINC"])
+    if any(not item.startswith("-I") or len(item) == 2 for item in includes):
+        raise ValueError("Configured SOLARINC must contain only explicit include paths.")
+    includes = [item[2:] for item in includes]
+    for path in [item for item in libraries if item != "."] + includes:
+        if not re.match(r"^[A-Za-z]:[/\\]", path):
+            raise ValueError("Configured compiler paths must use absolute local drive paths.")
+        local_path(path)
+    return {"LIB": ";".join(libraries), "INCLUDE": ";".join(includes)}
+
+
 def footprint(root):
     total = 0
     pending = [root]
@@ -126,6 +145,7 @@ def preparation(args):
         if not path.is_file():
             raise ValueError("Required build input is missing: " + str(path))
     config = (build / "config_host.mk").read_text(encoding="utf-8")
+    compiler_paths = compiler_environment(config)
     if "export PARALLELISM?=2\n" not in config or not re.search(r"^export SHA256SUM=.+$", config, re.M):
         raise ValueError("Configuration must retain two jobs and dependency hashing.")
     source_match = re.search(r"^export SRC_ROOT=(.+)$", config, re.M)
@@ -170,9 +190,13 @@ def preparation(args):
     cygwin_temp = "/cygdrive/" + temporary.drive[0].lower() + temporary.as_posix()[2:]
     if environment["TMPDIR"] not in (temporary.as_posix(), cygwin_temp):
         raise ValueError("TMPDIR must be the owned workspace's temp directory.")
-    script = "set -eu\nunset MAKEFLAGS MFLAGS GNUMAKEFLAGS\nexport PARALLELISM=2\n"
+    script = "set -eu\nunset MAKEFLAGS MFLAGS GNUMAKEFLAGS LIB INCLUDE\nexport PARALLELISM=2\n"
     for name, value in sorted(environment.items()):
         script += "export " + name + "=" + shlex.quote(value) + "\n"
+    # INCLUDE is also a target-specific gbuild variable containing -I flags.
+    # Apply native search paths at the compiler/ExternalProject boundary instead.
+    setup = " ".join(name + "=" + shlex.quote(value) for name, value in sorted(compiler_paths.items()))
+    script += "export gb_COMPILER_SETUP=" + shlex.quote(setup) + "\n"
     script += "cd -- " + shlex.quote(build.as_posix()) + "\n"
     script += "for target in " + " ".join(TARGETS) + "; do\n"
     script += "    " + shlex.quote(make.as_posix()) + ' -j2 PARALLELISM=2 gb_SUPPRESS_TESTS=1 "$target"\n'

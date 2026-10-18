@@ -1,6 +1,15 @@
 Office Renderer Source Build
 ===========================
 
+The 2026-10-13 [size-reduction checkpoint](repository-size-reduction-goal.md#python-free-selection-and-candidate-134)
+selects a later source build with `--enable-python=no` for internal candidate
+1.3.4. It adds a fourth patch group for Python-free wizard registration and
+retains build-only Python and separately verified Java deliverables. Its new
+kit, exact 148,225-file correspondence, portable notices, worker fidelity,
+security and final combined-worker checks pass. The selected source-runtime
+record now refers to that build. The source-kit04 discussion below is historical;
+its original runtime, records and reserved candidates remain retained.
+
 Status: an isolated source kit is assembled; standalone source preparation,
 fresh configuration, reconstructed compilation and all 22 native cases pass.
 All 148,225 fresh kit files now match the compiled source tree exactly.
@@ -112,6 +121,17 @@ reviewed child-environment JSON described below. JDK and Ant paths are their
 installation roots; Clang and pkg-config paths identify their executables.
 The command uses existing tools and does not install dependencies.
 
+Bundled Python remains the default. The separate runtime-size experiment accepts
+`--python-runtime none --build-python <existing-python.exe>` in either mode. This
+adds upstream `--enable-python=no` and an explicit `PYTHON_FOR_BUILD`; Windows
+still requires Python as a build tool when runtime Python is disabled. The
+executable is validated as an ordinary local file and included in the input
+hashes. The explicit build-Python override is refused in bundled mode, and no
+arbitrary configure options are accepted. A successful configuration does not
+authorize stripping Python files from an existing runtime or adopting new
+binaries. See [the size-reduction goal](repository-size-reduction-goal.md) for
+the fresh build, service-registry and conversion/security acceptance requirements.
+
 The plan verifies source-kit artifact identities, the preparation receipt and
 the modified/added source identities. It constructs the fixed reviewed options
 with explicit tool, dependency-cache and build paths; it accepts no arbitrary
@@ -132,6 +152,8 @@ same settings path and `--baseline-options <existing-autogen.input>`. It compare
 the actual options, verifies the no-write CLI plan and Bash syntax, and refuses
 out-of-workspace/nested builds, multiline tool paths, unknown settings and an
 existing build directory. These checks do not run configure or compilation.
+The extended checks also bind the explicit build-time interpreter and verify
+that the experimental options leave the bundled defaults unchanged.
 
 The eight focused checks pass at
 `evidence\configure-checks-c849ca10fe534ac4ab8a228d71b18257`. Actual configuration
@@ -172,11 +194,19 @@ The environment JSON uses the fixed reviewed export names from the historical
 build script, including child-local tool PATH, temporary/cache locations and the
 existing telemetry/parallelism settings. No machine-wide environment is changed.
 
-[Test-SourceBuild.py](../tools/office-engine/Test-SourceBuild.py) passes nineteen
-checks at `.codex-temp/office-source-build-driver/62ba8fb1356645f180b43401bf7c3955`.
+The driver derives native library/include search paths from the configured
+literal `ILIB` and `SOLARINC` values. It clears inherited `LIB`/`INCLUDE` and
+supplies those paths through gbuild's `gb_COMPILER_SETUP` hook. This supports
+Meson's direct compiler calls outside a Visual Studio developer shell without
+exporting gbuild's unrelated target-specific `INCLUDE` flags as native paths.
+Missing, duplicate, nonliteral or relative compiler settings are refused.
+
+[Test-SourceBuild.py](../tools/office-engine/Test-SourceBuild.py) passes 27
+checks at `.codex-temp/office-source-build-driver/3d73e488041d4303bf08f6486f020934`.
 Actual Bash/Make run harmless echo/failure targets in a path containing spaces.
 The tests verify no-write planning, invalid limits/cache/temp refusal, inherited
-Make-flag removal, concurrent-driver refusal, exact target order and stopping at
+Make-flag removal, configured compiler paths despite conflicting inherited and
+target-specific variables, concurrent-driver refusal, exact target order and stopping at
 the first failure with its receipt retained. Missing or mismatched package
 definitions are rejected during planning. They run no compiler or Office
 engine and do not establish runtime resource-limit or interruption acceptance.

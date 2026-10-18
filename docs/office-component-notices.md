@@ -5,6 +5,23 @@ Status: supplemental source notices and packaging verified on 2026-09-23.
 The native runtime is unchanged. Final candidate replay, recipient source
 delivery, modified-library support and release adoption remain open.
 
+A separate [v2 companion verifier](../tools/office-engine/Test-ComponentNoticeSourcesV2.py)
+supports the Python-free experiment without changing the historical v1 verifier.
+It requires an independently selected record, exact portable companion members,
+source-kit and runtime identities, completed source correspondence, native and
+Java dependency evidence, and byte-exact regenerated notices. Source archives
+remain in the companion source kit; verification extracts or executes no code.
+Eleven focused tests pass, including actual-archive and reduced-runtime evidence
+checks. The 83 archives reproduce all 364 selected notice blocks, including NSS's
+embedded SQLite disclaimer. Full and reduced companion verification passes;
+the selected reduced runtime compares all 301 retained native/JAR files against
+the 304-file full build. Source correspondence verifies 148,225 exact files with
+no extras. Combined candidate integration remains pending in the
+[size-reduction goal](repository-size-reduction-goal.md).
+
+The Python-free runtime and v2 supplement are now selected for packaging. The
+historical v1 checkpoint below describes the earlier bundled-Python runtime.
+
 
 Source selection and correspondence
 ----------------------------------

@@ -6,6 +6,17 @@ This closes the identified pip/setuptools notice omission in the selected
 Office runtime. Complete Office/PDF dependency review, source delivery,
 redistribution decisions and final candidate acceptance remain open.
 
+The 2026-10-13 size-reduction experiment adds an explicit `pythonRuntime` mode
+to Office packaging. Missing mode retains the historical bundled behavior;
+`none` requires a Python-free inventory and service registries, omits this
+supplement, and rejects a stale Python notice. Unknown modes fail. Component
+notices remain mandatory. The source-built Python-free runtime is now selected
+for packaging; Office remains bundled. The
+[size-reduction goal](repository-size-reduction-goal.md) tracks combined candidate
+acceptance. The earlier Python supplement and its evidence remain preserved for
+historical payloads. Six focused mode tests and 81 offline
+notice-index checks pass, including preservation of the historical link order.
+
 
 Identified omission
 -------------------

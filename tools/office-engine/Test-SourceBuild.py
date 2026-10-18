@@ -31,7 +31,8 @@ def main():
     source = fixture / "source"
     build.mkdir(parents=True)
     (source / "external/python3").mkdir(parents=True)
-    config = "export PARALLELISM?=2\nexport SHA256SUM=sha256sum\nexport SRC_ROOT=" + source.as_posix() + "\n"
+    config = ("export PARALLELISM?=2\nexport SHA256SUM=sha256sum\nexport SRC_ROOT=" + source.as_posix() + "\n" +
+              "export ILIB=.;C:/configured-toolchain/lib\nexport SOLARINC= -IC:/configured-toolchain/include\n")
     (build / "config_host.mk").write_text(config, encoding="utf-8")
     (source / "external/python3/ExternalProject_python3.mk").write_text(
         "/MP1 /maxcpucount:1 /p:MultiProcessorCompilation=false\n", encoding="utf-8")
@@ -70,6 +71,19 @@ def main():
     assert "unset MAKEFLAGS MFLAGS GNUMAKEFLAGS" in plan["Script"]
     assert before == sorted(str(p.relative_to(fixture)) for p in fixture.rglob("*"))
     checks.append("plan-creates-no-build-files")
+    assert "export gb_COMPILER_SETUP=" in plan["Script"]
+    assert "export LIB=" not in plan["Script"] and "export INCLUDE=" not in plan["Script"]
+    checks.append("configured-compiler-paths-use-gbuild-setup")
+    for label, changed in [
+        ("reject-missing-compiler-libraries", config.replace("export ILIB=.;C:/configured-toolchain/lib\n", "")),
+        ("reject-duplicate-compiler-libraries", config + "export ILIB=C:/other/lib\n"),
+        ("reject-compiler-make-expansion", config.replace("C:/configured-toolchain/lib", "$(EXTERNAL_LIB)")),
+        ("reject-relative-compiler-include", config.replace("-IC:/configured-toolchain/include", "-Irelative")),
+        ("reject-compiler-flags-as-includes", config.replace("-IC:/configured-toolchain/include", "-DOTHER")),
+    ]:
+        (build / "config_host.mk").write_text(changed, encoding="utf-8")
+        run(label, "--plan", False)
+    (build / "config_host.mk").write_text(config, encoding="utf-8")
     setup = source / "instsetoo_native/Package_setup.mk"
     setup_original = setup.read_bytes()
     setup.write_bytes(setup_original.replace(b"instsetoo_native_setup", b"setup"))
@@ -108,11 +122,16 @@ def main():
     # Real Make executes only echo or false. No native project or compiler runs.
     makefile = build / "Makefile"
     makefile.write_text("ifneq ($(PARALLELISM),2)\n$(error Unexpected parallelism)\nendif\n" +
+        "ifneq ($(LIB),)\n$(error Inherited compiler libraries)\nendif\n" +
+        "ifneq ($(INCLUDE),)\n$(error Inherited compiler includes)\nendif\n" +
         ".PHONY: " + " ".join(driver.TARGETS) + "\n" +
-        "\n".join(name + ":\n\t@echo CONTEXT_TARGET:" + name for name in driver.TARGETS) + "\n", encoding="utf-8")
-    saved_environment = {name: os.environ.get(name) for name in ("PARALLELISM", "MAKEFLAGS", "MFLAGS", "GNUMAKEFLAGS")}
+        " ".join(driver.TARGETS) + ": INCLUDE := -Igbuild-owned-include\n" +
+        "\n".join(name + ":\n\t@export $(gb_COMPILER_SETUP) && test \"$$LIB\" = '.;C:/configured-toolchain/lib' && " +
+            "test \"$$INCLUDE\" = 'C:/configured-toolchain/include'\n\t@echo CONTEXT_TARGET:" + name for name in driver.TARGETS) + "\n", encoding="utf-8")
+    saved_environment = {name: os.environ.get(name) for name in ("PARALLELISM", "MAKEFLAGS", "MFLAGS", "GNUMAKEFLAGS", "LIB", "INCLUDE")}
     try:
         os.environ.update(PARALLELISM="99", MAKEFLAGS="--invalid-inherited-flag", MFLAGS="--invalid-inherited-flag", GNUMAKEFLAGS="--invalid-inherited-flag")
+        os.environ.update(LIB="C:/wrong-toolchain/lib", INCLUDE="C:/wrong-toolchain/include")
         run("execute-sequential-targets", "--execute", True)
     finally:
         for name, value in saved_environment.items():
@@ -121,6 +140,8 @@ def main():
             else:
                 os.environ[name] = value
     checks.append("inherited-make-overrides-cleared")
+    checks.append("inherited-compiler-paths-replaced")
+    checks.append("gbuild-include-flags-do-not-replace-native-include-paths")
     completed = list((fixture / "evidence").glob("source-build-*/result.json"))
     assert len(completed) == 1
     result = json.loads(completed[0].read_bytes())
