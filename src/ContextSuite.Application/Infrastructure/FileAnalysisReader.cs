@@ -105,12 +105,16 @@ internal static class FileAnalysisReader
     {
         // No worker or paid admission. Validate the opened handle before reading
         // content; a filename check alone cannot exclude a replacement link/device.
-        PublicationFiles.Normalize(path);
+        var normalized = PublicationFiles.Normalize(path);
         token.ThrowIfCancellationRequested();
-        if (((uint)File.GetAttributes(path) & ExcludedAttributes) != 0)
+        if (((uint)File.GetAttributes(normalized) & ExcludedAttributes) != 0)
             throw new InvalidDataException("Analyze requires an available regular file. Folders, devices, linked files and offline placeholders are not read.");
         token.ThrowIfCancellationRequested();
-        var handle = CreateFileW(path, 0x80000000, 1, IntPtr.Zero, 3,
+        // The validated path is ordinary, but the native open also needs the
+        // extended-length spelling when a selected file exceeds MAX_PATH.
+        var nativePath = normalized.StartsWith(@"\\", StringComparison.Ordinal)
+            ? @"\\?\UNC\" + normalized[2..] : @"\\?\" + normalized;
+        var handle = CreateFileW(nativePath, 0x80000000, 1, IntPtr.Zero, 3,
             0x40000000 | 0x08000000 | 0x00200000 | 0x00100000, IntPtr.Zero);
         try
         {

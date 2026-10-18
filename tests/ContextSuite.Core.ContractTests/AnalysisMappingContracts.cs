@@ -79,6 +79,40 @@ internal static class AnalysisMappingContracts
                 "analysis mapping: subsequent analysis succeeds after release " + mode);
             observations.Add(new { mode, refused, probes, sourceHandleClosed = true, sha256 = Convert.ToHexString(SHA256.HashData(baseline)) });
         }
+
+        // The fixture is deliberately beyond MAX_PATH even with a short caller
+        // scratch root; the earlier writable-view case once hid this failure.
+        var stem = new string('L', Math.Max(16, 270 - root.Length - 5));
+        var longPath = Path.Combine(root, stem + ".bin");
+        check(longPath.Length > 260, "analysis mapping: ordinary long-path fixture exceeds native MAX_PATH");
+        var longBytes = new byte[] { 0, 255, 1 };
+        await File.WriteAllBytesAsync(longPath, longBytes);
+        var longModified = File.GetLastWriteTimeUtc(longPath);
+        var longHash = SHA256.HashData(await File.ReadAllBytesAsync(longPath));
+        var longReport = await FileAnalysisReader.ReadAsync(longPath, default);
+        check(longReport.FileBytes == longBytes.Length && longReport.Path == longPath,
+            "analysis mapping: native Analyze opens a validated ordinary long path");
+        try
+        {
+            await FileAnalysisReader.ReadAsync(@"\\?\" + longPath, default);
+            check(false, "analysis mapping: caller-supplied device path remains refused");
+        }
+        catch (InvalidDataException) { check(true, "analysis mapping: caller-supplied device path remains refused"); }
+        var shortPath = Path.Combine(root, "long-path-later.bin");
+        await File.WriteAllBytesAsync(shortPath, [1, 2, 3]);
+        await using (var worker = new WorkerClient(Path.Combine(root, "must-not-start.exe")))
+        await using (var model = new MainViewModel(worker))
+        {
+            check(model.Admit(new(Guid.NewGuid(), "analyze", "open-details", [longPath, shortPath])).Accepted,
+                "analysis mapping: ordinary long path enters an Analyze batch");
+            await model.WaitForIdleAsync();
+            check(model.Rows.All(row => row.Result.State == OperationState.Succeeded && !row.HasOutput),
+                "analysis mapping: long-path and later ordinary file both succeed without publication");
+        }
+        var afterBytes = await File.ReadAllBytesAsync(longPath);
+        check(longHash.SequenceEqual(SHA256.HashData(afterBytes)) &&
+            longModified == File.GetLastWriteTimeUtc(longPath),
+            "analysis mapping: long-path analysis preserves source bytes and time");
         await File.WriteAllTextAsync(Path.Combine(root, "observations.json"), JsonSerializer.Serialize(observations));
         Console.WriteLine("Analysis mapping evidence: " + root);
     }
