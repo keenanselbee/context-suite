@@ -47,6 +47,22 @@ style analyzer. Managed builds treat compiler/analyzer warnings as errors.
 The contract harness is a console executable with a nonzero failure exit,
 matching the native harness convention; use the script, not `dotnet test`.
 
+Public CI runs documentation/source-boundary checks separately from public code
+contracts, so a documentation failure does not suppress code-test results.
+Public checks use a fresh checkout without private source or ignored local
+evidence. Keep linked deliverables in public source; describe scratch evidence
+with a plain path labelled local-only. `tools/Test-RepositoryLinks.ps1` exercises
+this rule with disposable fixtures, including an ignored file that exists locally.
+
+For CI or build changes, replay the relevant commands from a clean public source
+snapshot and report exactly what ran. Keep expensive private engine integration,
+native installation and interactive desktop acceptance in their explicit local
+workflows; release verification applies to the exact packaged payload.
+After an authorized push, inspect the workflow for that commit and distinguish
+remote success, failure or a pending run from local results. Triage failures
+before dependent work; keep ordinary workflow history. Commits, pushes and
+release actions retain their separate authorization requirements.
+
 Close Context Suite before running activation-router contracts. They acquire
 the same per-user/session pipe to verify single ownership and forwarding.
 Do not run two foundation test harnesses concurrently in one session.

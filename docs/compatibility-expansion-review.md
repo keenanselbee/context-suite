@@ -1,6 +1,9 @@
 Compatibility Expansion Review
 ==============================
 
+Evidence paths under `.codex-temp` are local-only review records; they are not
+included in the public checkout.
+
 Historical evidence relocation (2026-10-13): paths marked archived below now
 reside under `Z:\Backup\Context Suite\workspace-history\20261013\payload`,
 using the same repository-relative paths. Follow the
@@ -12,7 +15,7 @@ Status: unsigned **1.2.6**, engineering verification and review handoff complete
 is unchanged; native UI, accessibility and representative-media acceptance remain
 separate.
 
-Open the [local candidate review](../.codex-temp/compatibility-review/index.html).
+Open the local candidate review (`.codex-temp/compatibility-review/index.html`).
 It contains eight renders of the actual WPF track-picker and SVG-to-JPEG window
 sources, unchanged since packaging, in light/dark and minimum-width layouts. Display facts are synthetic;
 the renders show content rather than OS title bars. The harness changes only its
@@ -22,7 +25,7 @@ screen-reader, contrast-theme and owner acceptance remain separate.
 The review also includes copied, validated JFIF/ICO-to-PNG, SVG-to-JPEG,
 PDF-to-JPEG, four GIF frame PNGs and selected-track MKV-to-WAV outputs from the
 exact final candidate. The
-[manifest](../.codex-temp/compatibility-review/review-manifest.json) records
+manifest (`.codex-temp/compatibility-review/review-manifest.json`) records
 source paths, sizes and SHA-256 identities. These are authored diagnostic
 fixtures; they do not establish representative customer-media fidelity.
 
@@ -48,7 +51,7 @@ Exact candidate
 
 Candidate construction verified fresh archive extraction. Hash comparison after
 conversion tests verified all 4,257 staged files and all 4,257 unchanged installed
-1.2.5 files; see [preserved inventories](../.codex-temp/compat126-preserved-identities.json).
+1.2.5 files; see preserved inventories (`.codex-temp/compat126-preserved-identities.json`).
 
 Engineering evidence
 --------------------
@@ -75,9 +78,9 @@ The staged worker and application are used directly.
 | Repository | Public/private build boundary, system-theme/source boundary, 222 documentation files and both whitespace checks |
 
 Focused evidence: extra results (`.codex-temp/compat126-extra/results.json`, archived),
-[PDF page workflow](../.codex-temp/compat126-pdf-page-worker.log),
-[Voice](../.codex-temp/compat126-voice.log) and
-[packaging](../.codex-temp/compat126-packaging-final.log). Counts overlap where
+PDF page workflow (`.codex-temp/compat126-pdf-page-worker.log`),
+Voice (`.codex-temp/compat126-voice.log`) and
+packaging (`.codex-temp/compat126-packaging-final.log`). Counts overlap where
 focused modes repeat foundation assertions; they are not an additive total.
 PDF reference pixels are reused independent evidence with source hashes rechecked.
 Prompt renders reuse the unchanged window sources; final outputs were recopied

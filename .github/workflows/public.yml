@@ -3,7 +3,21 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
+  documentation:
+    name: Documentation and public boundaries
+    runs-on: windows-2025-vs2026
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Documentation link guard contracts
+        shell: pwsh
+        run: ./tools/Test-RepositoryLinks.ps1
+      - name: Public source boundaries and documentation
+        shell: pwsh
+        run: ./tools/Test-Repository.ps1
   contracts:
+    name: Public code contracts
     runs-on: windows-2025-vs2026
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -12,9 +26,6 @@ jobs:
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: '10.0.x'
-      - name: Public source boundaries and documentation
-        shell: pwsh
-        run: ./tools/Test-Repository.ps1
       - name: Installer recovery contracts (mocked platform, no installation)
         shell: powershell
         run: |

@@ -179,6 +179,14 @@ Repository-Specific Notes
   not install packages, restart Explorer, or close unrelated windows/tabs.
 - Documentation-only changes require whitespace and link validation; do not
   scaffold or build the application solely to verify documentation.
+- Keep public documentation links usable in a fresh public checkout. Describe
+  ignored local evidence as plain paths, explicitly labelled local-only.
+- Report local verification and remote CI separately. For CI/build changes, verify
+  relevant checks from a clean source snapshot without private or ignored inputs
+  unless the check explicitly requires them. After an authorized push, inspect
+  the matching workflow result and report failures or a still-pending run; do not
+  call an unobserved remote run passed. A failing run needs triage before further
+  dependent work. See [development verification](docs/development.md).
 - Treat everything under `reference/`, including `reference/reference.md`, as
   repository-local, ignored, read-only implementation research.
 - Use reference projects to understand algorithms, workflows, capability

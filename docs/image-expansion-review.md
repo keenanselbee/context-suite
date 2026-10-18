@@ -1,16 +1,19 @@
 Image Expansion Owner Review
 ============================
 
+Evidence paths under `.codex-temp` are local-only review records; they are not
+included in the public checkout.
+
 Status: unsigned 1.2.5 installed locally, 2026-10-09. Native Explorer visual review, full lifecycle,
 representative content and owner acceptance remain pending.
 
-Open the [local interactive review](../.codex-temp/image-expansion-review/index.html)
+Open the local interactive review (`.codex-temp/image-expansion-review/index.html`)
 in a browser. It uses decoded 16, 20, 24 and 32-pixel frames from the compiled
 light and dark `.ico` files in `.codex-temp/svg-shell-final/Assets`, covering all
 17 Convert destinations, Settings and the Convert root. The
-[asset manifest](../.codex-temp/image-expansion-review/manifest.json) records
+asset manifest (`.codex-temp/image-expansion-review/manifest.json`) records
 the exact compiled source and SHA-256 of every copied review frame. The
-[candidate binding](../.codex-temp/image-expansion-review/candidate-icon-binding.json)
+candidate binding (`.codex-temp/image-expansion-review/candidate-icon-binding.json`)
 confirms that all 38 source icon files and 152 review frames match the exact
 1.2.5 production stage `4ceab4687b07416aa76083d63f3e7c31`. Word retains the
 selected W cutout; ICO and AVIF extend the same Compact monochrome vocabulary.

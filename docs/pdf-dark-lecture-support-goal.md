@@ -1,6 +1,9 @@
 PDF Dark Palette Support for Lecture Documents
 =============================================
 
+Evidence paths under `.codex-temp` are local-only review records; they are not
+included in the public checkout.
+
 Historical evidence relocation (2026-10-13): paths marked archived below now
 reside under `Z:\Backup\Context Suite\workspace-history\20261013\payload`,
 using the same repository-relative paths. Follow the
@@ -126,7 +129,7 @@ Implementation checkpoint
 The combined native build is `pdf-dark-build-16f3aff058124181a941e06047b6fce8`,
 policy `pdf-dark-6`, host SHA256
 `C041A152487EDB4A2330B783C53F92BBA0CAE4DEB0B90ED977EFA679AE6648D1`.
-Its [native replay](../.codex-temp/pdf-lecture-replay34/results.json) and
+Its native replay (`.codex-temp/pdf-lecture-replay34/results.json`) and
 real-worker replay (`.codex-temp/pdf-worker131-corpus/results.json`, archived) pass all 25
 conversions, all 746 pages, repeat no-ops and original-hash checks. Actual worker
 workflow/publication/failure suites also pass, including live cancellation,
@@ -154,33 +157,33 @@ cycles, invalid indices, unsupported point attachment and understated bounds.
 The private diagnostic suite passes 66 bounded, content-free mapping checks.
 
 The all-page gallery (`.codex-temp/pdf-lecture-visual25/index.html`, archived) covers all
-746 pages. The [independent audit](../.codex-temp/pdf-lecture-audit34/results.json)
+746 pages. The independent audit (`.codex-temp/pdf-lecture-audit34/results.json`)
 binds every converted render pixel-for-pixel to the current native output and
 compares tags, reading order, links, passive attachment bytes, bookmarks, metadata
 and layer configuration. It checks 1,264 on/off page-state renders across the
 21 layered documents. No structural or layer-state differences were found.
 All pages received rendered overview review, with enlarged risky examples.
-The [review record](../.codex-temp/pdf-lecture-audit34/visual-review.json) records
+The review record (`.codex-temp/pdf-lecture-audit34/visual-review.json`) records
 scope and limitations; it is engineering review, not owner acceptance.
 
 An independent compositing calculation over all 90 translucent text panels found
 a minimum nominal contrast of 4.6058:1. Original thin fonts and overlay opacity
 remain intact; thumbnail antialiasing can make those strokes look dim. This is
 not a claim of full-document accessibility compliance or OCR repair.
-The earlier [50-page lecture](../.codex-temp/pdf-prior-lecture34/index.html)
+The earlier 50-page lecture (`.codex-temp/pdf-prior-lecture34/index.html`)
 passes independent text/glyph/path/mask checks and rendered review. Three
 unclassified images intentionally retain their original appearance.
 
 The full 1.3.1 candidate is built with all existing engines and has a verified
 version receipt. Its exact worker passes all 25 corpus documents plus the earlier
 50-page lecture, including mandatory-copy publication and repeat no-ops. The
-[final candidate audit](../.codex-temp/pdf-candidate131-audit/results.json)
+final candidate audit (`.codex-temp/pdf-candidate131-audit/results.json`)
 verifies all topic-page renders, logical structure and supported layer states.
 All 50 earlier-lecture candidate renders also match the accepted review.
 
-The [review handoff](../.codex-temp/pdf-lecture-final-review/index.html) links the
+The review handoff (`.codex-temp/pdf-lecture-final-review/index.html`) links the
 actual worker-produced copies and page galleries. Its
-[verification record](../.codex-temp/pdf-lecture-final-review/verification.json)
+verification record (`.codex-temp/pdf-lecture-final-review/verification.json`)
 binds engine identity, inventory and test evidence. The reserved stage is
 `artifacts/production-staging/5eb53b6ee0e84ee4bf47640042faa839`; all 4,271 inventoried
 payload files were hash-verified after testing. Exact-worker tests pass 51 public,
@@ -425,7 +428,7 @@ managed verification passes 4,893 foundation, 147 private diagnostic, 51 public,
 14 workflow and 29 failure/cancellation checks, plus 180 supplied-success and
 9 supplied-refusal checks. Fourteen packaging/tamper guards pass.
 
-The [independent worker audit](../.codex-temp/preservation-audit-worker132/summary.json)
+The independent worker audit (`.codex-temp/preservation-audit-worker132/summary.json`)
 checks all 958 page renders against native output, root/page semantics, links,
 tags, passive attachments, image dimensions/masks and 1,264 alternate-layer-state
 page checks. Original vector geometry remains; five pages add only the validated
@@ -467,7 +470,7 @@ The source pin and managed adapter select native host SHA256
 `E76FDBFAFE6EB542F4B5AC17978D979E6CD10E2C9875B3F7F58A72ADC421FD04`.
 Local evidence is under `.codex-temp/waterfall-suites6`, `waterfall310-6`,
 `waterfall304-6`, and `waterfall-audit6`. The
-[Waterfall comparison](../.codex-temp/waterfall-readability-assessment/index.html)
+Waterfall comparison (`.codex-temp/waterfall-readability-assessment/index.html`)
 links the updated 50-page reading copy and full-page review.
 
 This is a verified source follow-up, not a new combined application candidate.

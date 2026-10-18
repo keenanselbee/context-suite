@@ -1,6 +1,9 @@
 PDF Dark Mode Conversion
 ========================
 
+Evidence paths under `.codex-temp` are local-only review records; they are not
+included in the public checkout.
+
 The owner approved a new [lecture PDF support goal](pdf-dark-lecture-support-goal.md)
 on 2026-10-11. It extends the reading palette to already-dark slides and adds
 validated preservation for tagged structure, links, passive attachments, static
@@ -32,13 +35,13 @@ features, accent, layout (19), transparency (8), focused managed (114) and
 payload (14) checks pass. The production solution builds without warnings/errors.
 The broader foundation suite was not repeated for this bounded native update.
 
-The [updated comparison](../.codex-temp/pdf-dark-edges-review/index.html) starts
+The updated comparison (`.codex-temp/pdf-dark-edges-review/index.html`) starts
 at page 44 and adds four-times-resolution PDF renders and a single-page view.
 Normal reading-size zoom remains calibrated to PDF points. Browser checks cover
 resolution, view selection, paired zoom/pan and narrow-screen layout. See the
-[close-up comparison](../.codex-temp/pdf-dark-edges02-lecture/text-crops.png),
-[all-page review](../.codex-temp/pdf-dark-edges02-lecture/index.html), and
-[verification evidence](../.codex-temp/pdf-dark-edges02-evidence.json).
+close-up comparison (`.codex-temp/pdf-dark-edges02-lecture/text-crops.png`),
+all-page review (`.codex-temp/pdf-dark-edges02-lecture/index.html`), and
+verification evidence (`.codex-temp/pdf-dark-edges02-evidence.json`).
 This update is source and isolated-runtime only; originals and reserved releases
 remain unchanged. No installation was performed.
 
@@ -65,12 +68,12 @@ native/features/accent suites, 19 layout and 8 transparency checks, 114 focused
 managed checks, and 14 payload guards. The broader foundation suite was not
 repeated for this bounded mapping change.
 
-The [two-pane comparison](../.codex-temp/pdf-dark-readability-final/index.html)
+The two-pane comparison (`.codex-temp/pdf-dark-readability-final/index.html`)
 offers Original, Previous, Improved and Reference, with shared zoom and paired
 panning. Browser checks cover image loading, version selection, synchronized
 scrolling and the narrow-screen layout. See the
-[complete lecture](../.codex-temp/pdf-dark-readable02-lecture/index.html) and
-[verification evidence](../.codex-temp/pdf-dark-readable02-evidence.json).
+complete lecture (`.codex-temp/pdf-dark-readable02-lecture/index.html`) and
+verification evidence (`.codex-temp/pdf-dark-readable02-evidence.json`).
 This is source and isolated-runtime work only; no installation or release
 reservation was performed, and earlier review artifacts remain intact.
 
@@ -117,9 +120,9 @@ the reviewed output at 2x on every page. Seven pages changed visually from the
 previous source result (8, 10, 11, 14, 19, 37, 44); each was reviewed. The other
 43 are pixel-identical to that earlier reviewed output.
 
-Open the [four-page comparison](../.codex-temp/pdf-dark-diagrams-review/index.html)
-or [all-page review](../.codex-temp/pdf-dark-diagrams-lecture09/index.html).
-[Verification evidence](../.codex-temp/pdf-dark-diagrams09-evidence.json) records
+Open the four-page comparison (`.codex-temp/pdf-dark-diagrams-review/index.html`)
+or all-page review (`.codex-temp/pdf-dark-diagrams-lecture09/index.html`).
+Verification evidence (`.codex-temp/pdf-dark-diagrams09-evidence.json`) records
 the final identities and checks. No older review artifact was overwritten.
 
 
@@ -186,9 +189,9 @@ The output intentionally differs from the supplied reference in preserved panels
 and accent colors; no AI/OCR/flattening or additional production dependency was
 introduced.
 
-Evidence: [50-page review](../.codex-temp/pdf-dark-layout-lecture-07/index.html),
-[structural report](../.codex-temp/pdf-dark-layout-lecture-07/report.json), and
-[follow-up verification](../.codex-temp/pdf-dark-layout07-evidence.json).
+Evidence: 50-page review (`.codex-temp/pdf-dark-layout-lecture-07/index.html`),
+structural report (`.codex-temp/pdf-dark-layout-lecture-07/report.json`), and
+follow-up verification (`.codex-temp/pdf-dark-layout07-evidence.json`).
 Native, feature, accent, layout and transparency regressions pass. The managed
 host passes 36 model, 51 public, 14 worker, 9 cancellation/failure and 4 complete
 document checks, 14 payload guards and 5,122 foundation integration contracts.

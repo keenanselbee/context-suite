@@ -1,6 +1,9 @@
 PDF Dark-Mode Review
 ====================
 
+Evidence paths under `.codex-temp` are local-only review records; they are not
+included in the public checkout.
+
 Historical evidence relocation (2026-10-13): paths marked archived below now
 reside under `Z:\Backup\Context Suite\workspace-history\20261013\payload`,
 using the same repository-relative paths. Follow the
@@ -17,9 +20,9 @@ remain unchanged; the previous installed 1.2.5 payload is backed up.
 
 Latest source follow-up: `pdf-dark-5` removes pale colored-lettering outlines by
 preserving edge coverage against dark paper and supported panel backgrounds.
-Open the [updated comparison](../.codex-temp/pdf-dark-edges-review/index.html),
+Open the updated comparison (`.codex-temp/pdf-dark-edges-review/index.html`),
 now with higher-resolution renders and a single-page view, or the
-[label close-ups](../.codex-temp/pdf-dark-edges02-lecture/text-crops.png).
+label close-ups (`.codex-temp/pdf-dark-edges02-lecture/text-crops.png`).
 All 50 pages pass structural and actual-worker checks; five changed pages were
 visually reviewed and the other 45 match the previous output. See the
 [text-edge policy and validation](pdf-dark-mode-goal.md#text-edge-follow-up-2026-10-11-pdf-dark-5).
@@ -27,8 +30,8 @@ Source-only; not packaged or installed.
 
 Previous source follow-up: `pdf-dark-4` improves small labels in colored panels
 and reduces compression fringes. Open the
-[two-pane comparison](../.codex-temp/pdf-dark-readability-final/index.html) with
-shared zoom/panning or the [full lecture](../.codex-temp/pdf-dark-readable02-lecture/index.html).
+two-pane comparison (`.codex-temp/pdf-dark-readability-final/index.html`) with
+shared zoom/panning or the full lecture (`.codex-temp/pdf-dark-readable02-lecture/index.html`).
 Pages 37 and 44 were visually reviewed; the other 48 match the previous output.
 All 50 pages pass structural and actual-worker checks. See the
 [readability policy and validation](pdf-dark-mode-goal.md#readability-follow-up-2026-10-10-pdf-dark-4).
@@ -36,8 +39,8 @@ Source-only; not packaged or installed.
 
 Previous source follow-up: `pdf-dark-3` improves embedded monochrome and colored
 diagrams on the four owner-selected pages. See the
-[focused comparison](../.codex-temp/pdf-dark-diagrams-review/index.html),
-[complete lecture](../.codex-temp/pdf-dark-diagrams-lecture09/index.html), and
+focused comparison (`.codex-temp/pdf-dark-diagrams-review/index.html`),
+complete lecture (`.codex-temp/pdf-dark-diagrams-lecture09/index.html`), and
 [policy and verification](pdf-dark-mode-goal.md#diagram-image-follow-up-2026-10-10-pdf-dark-3).
 All 50 pages pass structural checks and actual-worker conversion. Seven changed
 renders were reviewed; the other 43 match the earlier reviewed output. JPEG
@@ -46,7 +49,7 @@ recoloring would lose contrast. Source-only, not packaged or installed.
 
 Source follow-up, 2026-10-10: `pdf-dark-2` now converts all 50 pages of the owner
 lecture through the actual worker. See the
-[current review](../.codex-temp/pdf-dark-layout-lecture-07/index.html) and
+current review (`.codex-temp/pdf-dark-layout-lecture-07/index.html`) and
 [implementation details](pdf-dark-mode-goal.md#layout-and-transparency-follow-up).
 Text/glyph placement, vector geometry and masks pass independent checks on every
 page. All pages received rendered review; images deliberately preserved in their
@@ -59,7 +62,7 @@ handoff complete, 2026-10-10. Production staging, fresh archive extraction and
 exact-candidate regression coverage passed within the documented feature bounds.
 Installed 1.2.5 and reserved 1.2.6 remain unchanged.
 
-Open the [local before/after review](../.codex-temp/pdf-dark-review-127/index.html).
+Open the local before/after review (`.codex-temp/pdf-dark-review-127/index.html`).
 It contains authored vector, line-art, soft-mask, photographic/scan, shared-resource
 and colored-accent fixtures, plus an admitted isolated lecture title page. PDF
 links retain searchable text and vector content. The menu illustration uses the
@@ -116,10 +119,10 @@ commands and runtime identities. Every staged file remained unchanged.
 
 The first run passed 46 suites. The existing SVG interruption test missed its
 live-child/parent-CPU observation before cancellation. Its unchanged
-[isolated rerun](../.codex-temp/pdfdark127-svg-isolated.log) passes all 16 checks,
+isolated rerun (`.codex-temp/pdfdark127-svg-isolated.log`) passes all 16 checks,
 including live child observation, cancellation, worker termination and timeout.
 The initial failure is retained, not relabeled as a pass. The
-[consolidated evidence](../.codex-temp/pdfdark127-evidence.json) records both runs.
+consolidated evidence (`.codex-temp/pdfdark127-evidence.json`) records both runs.
 
 | Check group | Passing evidence |
 | --- | --- |
@@ -133,11 +136,11 @@ The initial failure is retained, not relabeled as a pass. The
 
 The full production solution builds with zero warnings or errors. Public/private
 build-boundary checks pass. The
-[preserved inventories](../.codex-temp/pdfdark127-preserved-identities.json)
+preserved inventories (`.codex-temp/pdfdark127-preserved-identities.json`)
 verify all 4,257 installed 1.2.5 files, all 4,257 reserved 1.2.6 files and all
 4,271 new staged files. Both reference PDF hashes remain unchanged.
 
-The [review manifest](../.codex-temp/pdf-dark-review-127/review-manifest.json)
+The review manifest (`.codex-temp/pdf-dark-review-127/review-manifest.json`)
 identifies every artifact, the exact native host, reference source hash and page
 admission results. Reference files were read-only and unchanged. Authored images
 are diagnostic fixtures, not representative customer-photography acceptance.
