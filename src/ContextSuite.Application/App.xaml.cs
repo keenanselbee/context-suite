@@ -6,6 +6,7 @@ using ContextSuite.Core.Images;
 using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Pdf;
+using ContextSuite.Core.Installation;
 
 namespace ContextSuite.Application;
 
@@ -64,6 +65,9 @@ public partial class App : System.Windows.Application
             }
             OperationRequest? request = activationPath is null ? null :
                 await _readActivation(activationPath, CancellationToken.None);
+            var installedTools = InstalledTools.Load(AppContext.BaseDirectory);
+            if (request is not null && !request.IsSettingsRequest && !installedTools.IncludesOperation(request.Operation))
+                throw new InstallationToolsException(InstalledTools.UnavailableMessage(request.Operation));
             using var handoff = new ActivationGate();
             await handoff.EnterAsync(CancellationToken.None);
             var forwardDeadline = DateTime.UtcNow.AddSeconds(12);
@@ -86,7 +90,7 @@ public partial class App : System.Windows.Application
                     "license-" + _licenseService.Environment.ToString().ToLowerInvariant() + ".bin"), _licenseService.Environment));
                 access = new OperationAccess(new LocalTrialStore(_paths.Trial), _paidLicense);
             }
-            _viewModel = new MainViewModel(new WorkerClient(_paths.Worker, _paths.WorkerScratch), _settings.Settings, publisher, access, _paths.OfficeContexts);
+            _viewModel = new MainViewModel(new WorkerClient(_paths.Worker, _paths.WorkerScratch), _settings.Settings, publisher, access, _paths.OfficeContexts, installedTools);
             _viewModel.SettingsRequested += ShowSettings;
             _viewModel.ConversionRequested += ShowConversionAsync;
             _viewModel.AudioConversionRequested += ShowAudioConversionAsync;
@@ -155,7 +159,8 @@ public partial class App : System.Windows.Application
             Console.Error.WriteLine($"Activation failed: {error.GetType().Name}, HRESULT 0x{error.HResult:X8}, method {error.TargetSite?.Name}.");
             _officeRecoveryLifetime.Cancel();
             await _officeRecovery;
-            MessageBox.Show("Context Suite could not receive this selection. Check that the files still exist and try again.",
+            MessageBox.Show(error is InstallationToolsException ? error.Message :
+                "Context Suite could not receive this selection. Check that the files still exist and try again.",
                 "Context Suite", MessageBoxButton.OK, MessageBoxImage.Warning);
             if (_router is not null) await _router.DisposeAsync();
             if (_viewModel is not null) await _viewModel.DisposeAsync();
@@ -443,7 +448,7 @@ public partial class App : System.Windows.Application
             _settings = await _settingsStore.LoadAsync();
             if (_closing) return;
             _viewModel!.Settings = _settings.Settings;
-            var settingsViewModel = new SettingsViewModel(_settingsStore, _settings, _requestedSettingsSection, PublicationSupport.ReplacementAvailable);
+            var settingsViewModel = new SettingsViewModel(_settingsStore, _settings, _requestedSettingsSection, PublicationSupport.ReplacementAvailable, _viewModel.InstalledTools);
             var window = new SettingsWindow { DataContext = settingsViewModel };
             if (MainWindow.IsVisible) window.Owner = MainWindow;
             _settingsWindow = window;

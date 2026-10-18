@@ -14,11 +14,12 @@ using ContextSuite.Core.Pdf;
 using ContextSuite.Core.Tiff;
 using ContextSuite.Core.Svg;
 using ContextSuite.Core.Gif;
+using ContextSuite.Core.Installation;
 
 namespace ContextSuite.Application;
 
 internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? settings = null, OutputPublisher? publisher = null,
-    IOperationAccess? trial = null, string? officeContextRoot = null) : INotifyPropertyChanged, IAsyncDisposable
+    IOperationAccess? trial = null, string? officeContextRoot = null, InstalledTools? installedTools = null) : INotifyPropertyChanged, IAsyncDisposable
 {
     private readonly Queue<(OperationRequest Request, FileRow[] Rows)> _pending = new();
     private readonly HashSet<Guid> _received = [];
@@ -33,6 +34,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
     private ICommand? _settingsCommand;
     public ObservableCollection<FileRow> Rows { get; } = [];
     public SuiteSettings Settings { get; set; } = settings ?? new();
+    internal InstalledTools InstalledTools { get; } = installedTools ?? InstalledTools.All;
     internal OutputPublisher? Publisher { get; } = publisher;
     private readonly string _publicationRecoveryNotice = RecoveryMessage(publisher);
     private string _officeRecoveryNotice = "";
@@ -91,6 +93,8 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             SettingsRequested?.Invoke(request.Operation);
             return new(1, request.RequestId, true, "Settings opened.");
         }
+        if (!InstalledTools.IncludesOperation(request.Operation))
+            return new(1, request.RequestId, false, InstalledTools.UnavailableMessage(request.Operation));
         if (_received.Contains(request.RequestId)) return new(1, request.RequestId, true, "Already received.");
         // Bound both pending work and retained UI history. Never silently discard selections.
         if (_lifetime.IsCancellationRequested || Rows.Sum(row => row.IsImagePdf ? row.ImagePdfPaths.Length : 1) + request.Paths.Length > 16384 || _received.Count >= 1024)

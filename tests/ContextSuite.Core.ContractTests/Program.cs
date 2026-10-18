@@ -12,6 +12,15 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--installed-tools", var installedToolsScratch])
+{
+    var checks = 0;
+    await InstalledToolsContracts.RunAsync(installedToolsScratch, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} installed tool checks.");
+    return 0;
+}
+
 if (args is ["--text-analysis", var textScratch])
 {
     var checks = 0;
@@ -849,6 +858,7 @@ try
     PaidLicenseContracts.Run(Check);
     await LicenseStorageContracts.RunAsync(args[0], Check);
     await SettingsContracts.RunAsync(args[0], Check);
+    await InstalledToolsContracts.RunAsync(args[0], Check);
     await DdsContracts.RunAsync(args[0], Check);
     await AnalysisContracts.RunAsync(args[0], Check);
     AnalysisPresentationContracts.Run(Check);

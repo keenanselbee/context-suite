@@ -5,6 +5,7 @@
         Title="Context Suite - Settings" Width="680" Height="660" MinWidth="560" MinHeight="480" FontSize="14"
         WindowStartupLocation="CenterOwner" AutomationProperties.AutomationId="SettingsWindow">
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="InstalledToolVisibility" />
         <DataTemplate x:Key="SettingsTabHeader">
             <Border Padding="14,8" Margin="0,0,8,0" BorderBrush="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}">
                 <Border.Style>
@@ -66,15 +67,16 @@
         </Grid.RowDefinitions>
         <StackPanel Margin="0,0,0,20">
             <TextBlock Text="Settings" FontSize="24" FontWeight="SemiBold" />
-            <TextBlock Text="Right-click files in Explorer to Convert, Optimize or Analyze."
+            <TextBlock Text="{Binding InstalledToolHelp}"
                        TextWrapping="Wrap" Margin="0,8,0,0" />
         </StackPanel>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       AutomationProperties.AutomationId="SettingsBody">
             <StackPanel>
                 <TabControl SelectedIndex="{Binding SelectedSection}" IsEnabled="{Binding CanEdit}"
+                            Visibility="{Binding HasProcessingTools, Converter={StaticResource InstalledToolVisibility}}"
                             AutomationProperties.AutomationId="SettingsSections">
-                    <TabItem Header="_Convert" HeaderTemplate="{StaticResource SettingsTabHeader}" AutomationProperties.AutomationId="ConvertSettings">
+                    <TabItem Visibility="{Binding HasConvert, Converter={StaticResource InstalledToolVisibility}}" Header="_Convert" HeaderTemplate="{StaticResource SettingsTabHeader}" AutomationProperties.AutomationId="ConvertSettings">
                         <StackPanel>
                             <ContentControl Content="{Binding Convert}" ContentTemplate="{StaticResource ToolPreferences}" />
                             <Expander Header="PDF page images" Margin="16,12,16,16" AutomationProperties.AutomationId="PdfImageOptions">
@@ -87,11 +89,11 @@
                             </Expander>
                         </StackPanel>
                     </TabItem>
-                    <TabItem Header="_Optimize" HeaderTemplate="{StaticResource SettingsTabHeader}" AutomationProperties.AutomationId="OptimizeSettings">
+                    <TabItem Visibility="{Binding HasOptimize, Converter={StaticResource InstalledToolVisibility}}" Header="_Optimize" HeaderTemplate="{StaticResource SettingsTabHeader}" AutomationProperties.AutomationId="OptimizeSettings">
                         <ContentControl Content="{Binding Optimize}" ContentTemplate="{StaticResource ToolPreferences}" />
                     </TabItem>
                 </TabControl>
-                <CheckBox Content="Play a _sound when work finishes" IsChecked="{Binding PlayCompletionSound}" IsEnabled="{Binding CanEdit}"
+                <CheckBox Visibility="{Binding HasProcessingTools, Converter={StaticResource InstalledToolVisibility}}" Content="Play a _sound when work finishes" IsChecked="{Binding PlayCompletionSound}" IsEnabled="{Binding CanEdit}"
                           AutomationProperties.AutomationId="PlayCompletionSound" Margin="0,24,0,12" />
             </StackPanel>
         </ScrollViewer>

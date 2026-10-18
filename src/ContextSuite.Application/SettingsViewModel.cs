@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Settings;
+using ContextSuite.Core.Installation;
 
 namespace ContextSuite.Application;
 
@@ -15,7 +16,7 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     private bool _isSaving;
     private string _message;
 
-    public SettingsViewModel(SettingsStore store, LoadedSettings loaded, string section, bool replacementAvailable)
+    public SettingsViewModel(SettingsStore store, LoadedSettings loaded, string section, bool replacementAvailable, InstalledTools? installedTools = null)
     {
         _store = store;
         _loaded = loaded;
@@ -23,9 +24,13 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         Optimize = new ToolSettingsEditor(loaded.Settings.Optimize);
         PlayCompletionSound = loaded.Settings.PlayCompletionSound;
         TransparentPdfBackground = loaded.Settings.TransparentPdfBackground;
-        _selectedSection = section == "optimize" ? 1 : 0;
-        _message = loaded.Warning ?? "Changes apply the next time you run Convert or Optimize.";
-        CanEdit = loaded.CanSave;
+        var tools = installedTools ?? InstalledTools.All;
+        HasConvert = tools.Convert;
+        HasOptimize = tools.Optimize;
+        SelectedSection = section == "optimize" ? 1 : 0;
+        _message = loaded.Warning ?? (HasProcessingTools ? "Changes apply the next time you run an installed tool."
+            : "Analyze has no processing preferences. Right-click a file and choose Analyze. Choose Convert or Optimize when installing Context Suite to use their processing options.");
+        CanEdit = loaded.CanSave && HasProcessingTools;
         CanAllowReplacement = CanEdit && replacementAvailable;
         ReplacementNotice = replacementAvailable
             ? "After the new file is validated, the original goes to the Recycle Bin. If overwriting is unsafe, we keep the original and save a copy instead."
@@ -33,6 +38,10 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         _saveCommand = new SaveSettingsCommand(this);
     }
 
+    public bool HasConvert { get; }
+    public bool HasOptimize { get; }
+    public bool HasProcessingTools => HasConvert || HasOptimize;
+    public string InstalledToolHelp => "Right-click files in Explorer to use your installed tools. Choose installed tools in setup.";
     public ToolSettingsEditor Convert { get; }
     public ToolSettingsEditor Optimize { get; }
     public bool PlayCompletionSound { get; set; }
@@ -45,7 +54,11 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     public int SelectedSection
     {
         get => _selectedSection;
-        set { _selectedSection = value; Changed(); Changed(nameof(NamingExample)); Changed(nameof(SectionHeading)); }
+        set
+        {
+            _selectedSection = value == 1 && HasOptimize ? 1 : HasConvert ? 0 : HasOptimize ? 1 : -1;
+            Changed(); Changed(nameof(NamingExample)); Changed(nameof(SectionHeading));
+        }
     }
     public bool IsSaving
     {
