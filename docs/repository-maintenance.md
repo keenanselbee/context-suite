@@ -1,10 +1,16 @@
 Repository Cleanup And Correctness Plan
 =======================================
 
-Status: implementation started on 2026-10-17. The first maintenance commit and
-verified historical fixture cleanup are complete. Correctness review, follow-up
-guards and feature commit proposals remain underway. This document is not an
-executable commit or deletion proposal.
+Status: the maintenance scripts, standing agent rules and independent correctness
+fixes are committed as of 2026-10-17. The selected historical cleanup and
+representative success/failure cleanup behavior are verified. Substantial feature
+work remains uncommitted and preserved for its own reviews; this status does not
+establish a clean working tree or release readiness.
+
+Reviewed fixes for TIFF/GIF retries, video title metadata and workflow payload
+verification remain with their interdependent feature changes. Keep those fixes,
+their tests and source/notice companions together when preparing the next commit
+groups. This document is not an executable commit or deletion proposal.
 
 Keep the repository understandable, preserve working behavior and prevent
 unnecessary output from accumulating. Use existing tools and short records.
