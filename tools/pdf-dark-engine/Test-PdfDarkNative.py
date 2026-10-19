@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen.canvas import Canvas
 from pypdf import PdfReader, PdfWriter
-from pypdf.generic import ArrayObject, DictionaryObject, NameObject
+from pypdf.generic import ArrayObject, DecodedStreamObject, DictionaryObject, NameObject
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--engine", required=True)
@@ -118,6 +118,7 @@ def check_positive(name, data, changed, dark, recolored):
         for index, page in enumerate(result_pdf):
             page.get_pixmap(matrix=pymupdf.Matrix(1.5, 1.5)).save(ROOT / (name + f"-dark-{index + 1:02}.png"))
     print("PASS", name, conversion)
+    return output
 
 
 for name, expected in [("light-vector", (1, 0, 0)),
@@ -285,9 +286,69 @@ def transparent_photo(canvas):
     canvas.drawString(20, 260, "Transparent color image")
 
 
-code, reason, _ = invoke(make_pdf(transparent_photo), "--inspect")
-assert code == 3 and "Ambiguous transparent" in reason, (code, reason)
-print("PASS ambiguous transparent refusal")
+transparent_source = make_pdf(transparent_photo)
+transparent_output = check_positive("transparent-photo-original-composite", transparent_source, 1, 0, 0)
+
+
+def original_composite_facts(data):
+    page = PdfReader(io.BytesIO(data)).pages[0]
+    images = {}
+    for key, reference in page["/Resources"]["/XObject"].items():
+        image = reference.get_object()
+        images[str(key)] = (image.get_data(), image["/SMask"].get_data(),
+                            image["/ColorSpace"], image["/Width"], image["/Height"])
+    with pymupdf.open(stream=data, filetype="pdf") as document:
+        page = document[0]
+        text = [(entry["font"], entry["size"], entry["chars"], entry["color"],
+                 entry["opacity"], entry["type"]) for entry in page.get_texttrace()]
+        placement = [(entry["bbox"], entry["transform"], entry["width"], entry["height"])
+                     for entry in page.get_image_info()]
+    return images, text, placement
+
+
+def render_on_opaque_white(data):
+    # MuPDF rounds an implicit transparent page's final white composition
+    # differently from an explicit white backing (up to two 8-bit levels).
+    # Give both render-only copies the same opaque starting surface so exact
+    # pixel equality tests the preserved PDF scene rather than that rounding.
+    writer = PdfWriter()
+    writer.clone_document_from_reader(PdfReader(io.BytesIO(data)))
+    page = writer.pages[0]
+    content = DecodedStreamObject()
+    content.set_data(b"q 1 1 1 rg 0 0 420 300 re f Q\n" + page.get_contents().get_data())
+    page[NameObject("/Contents")] = writer._add_object(content)
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    with pymupdf.open(stream=buffer.getvalue(), filetype="pdf") as document:
+        return document[0].get_pixmap(alpha=False)
+
+
+assert original_composite_facts(transparent_source) == original_composite_facts(transparent_output), \
+    "Transparent composite changed samples, alpha, text colors, or geometry"
+source_render = render_on_opaque_white(transparent_source)
+output_render = render_on_opaque_white(transparent_output)
+assert all(source_render.pixel(x, y) == output_render.pixel(x, y)
+           for y in range(31, 220) for x in range(20, 260)), "Transparent composite changed appearance"
+with pymupdf.open(stream=transparent_output, filetype="pdf") as document:
+    pixels = document[0].get_pixmap(alpha=False)
+    assert max(pixels.pixel(5, 5)) < 60 and max(pixels.pixel(350, 35)) < 60
+for mode in ("--inspect", "--convert"):
+    code, repeated, empty = invoke(transparent_output, mode)
+    assert code == 0 and repeated["changedPages"] == 0 and not empty, (mode, code, repeated)
+print("PASS transparent original-composite samples, pixels, geometry and repeat")
+
+
+def unsafe_transparent_photo(canvas):
+    canvas.setFillColorRGB(.8, .1, .1)
+    canvas.rect(15, 255, 8, 15, fill=1, stroke=0)
+    canvas.setFillColorRGB(0, 0, 0)
+    transparent_photo(canvas)
+
+
+for mode in ("--inspect", "--convert"):
+    code, reason, empty = invoke(make_pdf(unsafe_transparent_photo), mode)
+    assert code == 3 and not empty, (mode, code, reason)
+print("PASS transparent image with unrelated prior paint refused")
 
 code, reason, _ = invoke(b"not pdf", "--inspect")
 assert code == 4 and "not a PDF" in reason, (code, reason)

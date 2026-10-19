@@ -33,8 +33,8 @@ workflow does not run that command. `Test-ProductionPayload.ps1` accepts
 same exact files. Until the host and pin are reviewed together, do not pass
 this option to candidate staging. Candidate 1.2.7 opts in with the reviewed
 native pin; subsequent source or binary changes require a new review and version.
-The current pin selects the reviewed `pdf-dark-8` consistent-export extension. The build
-records the implementation, CMake definition and all seven policy headers.
+The current pin selects the `pdf-dark-8` exercises compatibility extension. The build
+records the implementation, CMake definition and all eight policy headers.
 The parent `docs/pdf-dark-lecture-support-goal.md` records supported bounds,
 corpus evidence, independent preservation review and current candidate status.
 The pin does not describe historical candidate 1.2.7 or installed 1.2.9.
@@ -42,13 +42,36 @@ The pin does not describe historical candidate 1.2.7 or installed 1.2.9.
 The source pin includes bounded source recovery, joined page-content checks,
 transparent image regions and the prior diagram readability fixes. Existing
 reserved candidates retain their recorded hosts. Candidate 1.3.5 passes the
-combined-worker verification recorded in the owning goal document; installed
-1.3.4 remains unchanged.
+combined-worker verification recorded in the owning goal document. That section
+is historical; the dated follow-ups record later development and installation.
 
 
 
 Verification
 ------------
+
+`Test-PdfDarkNamedColors.py`, `Test-PdfDarkCalibratedImages.py`, and
+`Test-PdfDarkCffBounds.py` exercise bounded color profiles, calibrated image
+samples, embedded CFF glyph geometry, malformed inputs, and decode budgets.
+`Test-PdfDarkUnusedXref.py` permits only proven unreachable zero-offset entries;
+reachable corruption and other parser warnings remain refusals.
+`Test-PdfDarkRetainedAnnotations.py` checks original-color diagram composites,
+outlined labels, clipping, overhangs, unsafe overlaps, and repeat conversions.
+`Test-PdfDarkSyntheticBoldOcclusion.py` checks same-color fill-only text overlap
+around a later opaque panel, with different-color and mixed-stroke refusals.
+`Test-PdfDarkDuplicateBorder.py` verifies exact duplicate vertices in border
+footprints without changing source paths or admitting crossing strokes.
+`Test-PdfDarkImageLayering.py` verifies exact opaque and unchanged masked
+image layers while rejecting changed masked and fractional-opacity overlays.
+`Test-PdfDarkCrossingAnnotations.py` checks retained white labels and stroked
+arrows on dark paper, with exterior contrast and mixed-paint refusal controls.
+Each accepts `--engine` and a fresh repository-local `--scratch`.
+
+`Test-PdfDarkTextPositioning.py` checks Standard 14 text placed by `Td`, `TD`,
+`T*`, and quoted text operators, plus unresolved-position refusal controls.
+`Test-PdfDarkPredictors.py` checks retained PNG predictors 10-15, opaque masks,
+decoded samples, independent rendered pixels, defaults, malformed rows, and
+repeat no-ops. Both accept `--engine` and fresh repository-local `--scratch`.
 
 The active consistent-export follow-up also adds `Test-PdfDarkImageRegions.py`,
 `Test-PdfDarkGlyphContrast.py` and `Test-PdfDarkImageComposites.py`. They use the

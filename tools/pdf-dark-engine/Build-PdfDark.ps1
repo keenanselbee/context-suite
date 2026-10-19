@@ -71,6 +71,7 @@ if (-not $instanceLine) { throw 'CMake did not record the Visual Studio instance
     retainedImagePolicySha256 = (Get-FileHash -LiteralPath (Join-Path $source 'PdfDarkRetainedImagePolicy.h')).Hash
     fontPolicySha256 = (Get-FileHash -LiteralPath (Join-Path $source 'PdfDarkFontPolicy.h')).Hash
     systemFontPolicySha256 = (Get-FileHash -LiteralPath (Join-Path $source 'PdfDarkSystemFontPolicy.h')).Hash
+    cffFontPolicySha256 = (Get-FileHash -LiteralPath (Join-Path $source 'PdfDarkCffFontPolicy.h')).Hash
     buildSourceSha256 = (Get-FileHash -LiteralPath (Join-Path $source 'CMakeLists.txt')).Hash
     qpdfSha256 = (Get-FileHash -LiteralPath (Join-Path $payload 'bin\qpdf30.dll')).Hash
     visualStudio = $instanceLine.Substring($instanceLine.IndexOf('=') + 1)

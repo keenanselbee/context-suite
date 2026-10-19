@@ -168,9 +168,9 @@ def image_and_text_facts(data):
 
 
 positives = ("soft-mask",)
-safe_general = ("single", "transformed-paper", "second-connected-image",
-                "lossless-connected-image", "rectangular-clip", "prior-uncovered-paint",
-                "nonwhite-paper", "curved-clip", "reused-image")
+unchanged_general = ("single", "transformed-paper", "rectangular-clip",
+                     "second-connected-image", "lossless-connected-image")
+safe_general = (*unchanged_general, "prior-uncovered-paint", "nonwhite-paper", "curved-clip", "reused-image")
 negatives = ("masked-prior-partial", "fractional-label")
 results = []
 for case in (*positives, *safe_general, *negatives):
@@ -189,10 +189,10 @@ for case in (*positives, *safe_general, *negatives):
         # These structures may convert by another safe policy; they cannot use
         # the bounded original-color composite's inserted white backing.
         if code:
-            passed = code == 3 and not output
+            passed = case not in unchanged_general and code == 3 and not output
         else:
             (scratch / f"{case}-general-dark.pdf").write_bytes(output)
-            before_trace, _ = image_and_text_facts(source)
+            before_trace, original = image_and_text_facts(source)
             after_trace, dark = image_and_text_facts(output)
             page = PdfReader(io.BytesIO(output)).pages[0]
             content = page.get_contents().get_data()
@@ -208,6 +208,52 @@ for case in (*positives, *safe_general, *negatives):
             passed = all(details[key] for key in ("noCompositeBacking", "imageAndMaskBytesPreserved",
                                                    "textGeometryPreserved", "outsidePaperDark",
                                                    "adjacentPaperDark", "repeatNoOp"))
+            if case in unchanged_general:
+                rectangle = (32, 57, 188, 153) if case == "rectangular-clip" else (31, 56, 189, 154)
+                rectangles = [rectangle]
+                if case in ("second-connected-image", "lossless-connected-image"):
+                    # The second opaque image covers part of the first image
+                    # and extends onto paper. Check both visible image regions,
+                    # including their mutual overlap and annotation overlap.
+                    rectangles.append((181, 81, 223, 117))
+                image_overlap_exact = all(original.pixel(x, y) == dark.pixel(x, y)
+                                          for left, top, right, bottom in rectangles
+                                          for y in range(top, bottom) for x in range(left, right))
+                with pymupdf.open(stream=source, filetype="pdf") as before, \
+                        pymupdf.open(stream=output, filetype="pdf") as after:
+                    def placements(page):
+                        return [(entry["bbox"], entry["transform"], entry["width"], entry["height"])
+                                for entry in page.get_image_info()]
+                    def strokes(page):
+                        return [(entry["type"], entry["items"], entry["color"], entry["width"],
+                                 entry["stroke_opacity"])
+                                for entry in page.get_drawings() if entry["color"] is not None]
+                    geometry_kept = placements(before[0]) == placements(after[0]) and \
+                        strokes(before[0]) == strokes(after[0])
+                def luminance(color):
+                    linear = [value / 12.92 if value <= .04045 else ((value + .055) / 1.055) ** 2.4
+                              for value in color]
+                    return sum(value * weight for value, weight in zip(linear, (.2126, .7152, .0722)))
+                def contrast(first, second):
+                    values = sorted((luminance(first), luminance(second)))
+                    return (values[1] + .05) / (values[0] + .05)
+                ink = before_trace[0][3]
+                source_paper = tuple(value / 255 for value in original.pixel(240, 60))
+                target_paper = tuple(value / 255 for value in dark.pixel(240, 60))
+                contrast_safe = contrast(ink, target_paper) >= max(4.5, contrast(ink, source_paper))
+                inspect_repeat_code, inspect_repeat, inspect_duplicate = invoke(output, "--inspect")
+                details.update({"renderedImageOverlapExact": image_overlap_exact,
+                                "comparedImageRegions": rectangles,
+                                "textGeometryAndColorPreserved": before_trace == after_trace,
+                                "imageAndStrokeGeometryPreserved": geometry_kept,
+                                "outsideAnnotationContrastPreserved": contrast_safe,
+                                "repeatInspectionNoOp": inspect_repeat_code == 0 and
+                                inspect_repeat["changedPages"] == 0 and not inspect_duplicate})
+                passed &= all(details[key] for key in ("renderedImageOverlapExact",
+                                                       "textGeometryAndColorPreserved",
+                                                       "imageAndStrokeGeometryPreserved",
+                                                       "outsideAnnotationContrastPreserved",
+                                                       "repeatInspectionNoOp"))
     elif code:
         passed = False
     else:

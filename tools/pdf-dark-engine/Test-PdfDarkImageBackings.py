@@ -123,9 +123,23 @@ for case in ('uniform', 'edge', 'clip', 'tagged', 'mirrored', 'unknown-paper', '
     source = fixture(case)
     (root / f'{case}-source.pdf').write_bytes(source)
     code, facts, output = invoke(source, '--convert')
-    if case in ('uniform', 'edge', 'clip', 'tagged', 'mirrored', 'support-clear', 'support-color-interpolated'):
+    if case in ('uniform', 'edge', 'clip', 'tagged', 'mirrored', 'support-clear',
+                'support-color-interpolated', 'later-paint'):
         assert code == 0 and output, (case, code, facts)
         assert samples(source) == samples(output), case
+        if case == 'later-paint':
+            inspect_code, inspected, empty = invoke(source, '--inspect')
+            assert inspect_code == 0 and inspected == facts and not empty, case
+            with pymupdf.open(stream=source) as original, pymupdf.open(stream=output) as converted:
+                def placements(page):
+                    return [(entry['bbox'], entry['transform'], entry['width'], entry['height'])
+                            for entry in page.get_image_info()]
+                assert placements(original[0]) == placements(converted[0]), case
+                original_overlay = [entry['items'] for entry in original[0].get_drawings()
+                                    if entry['fill'] == (1, 0, 0)]
+                converted_overlay = [entry['items'] for entry in converted[0].get_drawings()
+                                     if entry['fill'] == (1, 0, 0)]
+                assert original_overlay and original_overlay == converted_overlay, case
         if case == 'tagged':
             reader = PdfReader(io.BytesIO(output))
             figure = reader.trailer['/Root']['/StructTreeRoot']['/K'][0].get_object()

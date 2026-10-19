@@ -8,6 +8,7 @@ import argparse
 import hashlib
 import html
 import json
+import math
 import pathlib
 import re
 import struct
@@ -66,8 +67,10 @@ source_reader, output_reader = PdfReader(source), PdfReader(output)
 
 def glyphs(page):
     # Color changes are intentional; placement, text, font and rendering mode are not.
-    return [(span["font"], span["size"], span["dir"], span["type"], span["chars"])
-            for span in page.get_texttrace()]
+    # Re-emitted paint colors can split a renderer's spans without moving ink.
+    # Compare every glyph with its own font/geometry instead of span grouping.
+    return [(span["font"], span["size"], span["dir"], span["type"], char)
+            for span in page.get_texttrace() for char in span["chars"]]
 
 
 def paths(page):
@@ -98,6 +101,13 @@ cards = []
 thumbnails = []
 geometry_copy = pymupdf.open(stream=output.read_bytes(), filetype='pdf')
 backing_pattern = re.compile(rb'/Artifact BMC\nq\n([0-9.]+) ([0-9.]+) ([0-9.]+) rg\n([0-9.]+) ([0-9.]+) ([0-9.]+) ([0-9.]+) re\nf\nQ\nEMC\n')
+# Page-coordinate composites use an explicit inverse CTM and one or more
+# rectangles. Match only the host's fixed typed artifact, not arbitrary paths.
+number = rb'-?[0-9]+\.[0-9]{6}'
+page_backing_pattern = re.compile(
+    rb'/Artifact BMC\nq\n(' + number + rb'(?: ' + number + rb'){5}) cm\n(' +
+    number + rb'(?: ' + number + rb'){2}) rg\n((?:' + number + rb'(?: ' +
+    number + rb'){3} re\n)+)f\nQ\nEMC\n')
 for index, (left, right) in enumerate(zip(before, after)):
     assert left.rect == right.rect and left.rotation == right.rotation, (index + 1, "page geometry")
     assert left.get_text() == right.get_text(), (index + 1, "searchable text")
@@ -119,7 +129,26 @@ for index, (left, right) in enumerate(zip(before, after)):
         assert 0 <= x < x + width <= 1.000001 and 0 <= y < y + height <= 1.000001
         added_backings.append(dict(rectangle=[x, y, width, height], color=[red, green, blue]))
         return b''
-    filtered = backing_pattern.sub(remove_added_backing, right.read_contents())
+    def remove_added_page_backing(match):
+        marker = match.group(0)
+        seen[marker] = seen.get(marker, 0) + 1
+        if seen[marker] <= source_content.count(marker):
+            return marker
+        matrix = [float(value) for value in match.group(1).split()]
+        color = [float(value) for value in match.group(2).split()]
+        assert all(math.isfinite(value) and abs(value) <= 200000000 for value in matrix)
+        assert abs(matrix[0] * matrix[3] - matrix[1] * matrix[2]) > 1e-12
+        assert all(0 <= value <= 1 for value in color)
+        rectangles = []
+        for line in match.group(3).splitlines():
+            rectangle = [float(value) for value in line.split()[:4]]
+            assert all(math.isfinite(value) and abs(value) <= 200000000 for value in rectangle)
+            assert rectangle[2] > 0 and rectangle[3] > 0
+            rectangles.append(rectangle)
+        added_backings.append(dict(rectangles=rectangles, color=color, matrix=matrix))
+        return b''
+    filtered = page_backing_pattern.sub(remove_added_page_backing, right.read_contents())
+    filtered = backing_pattern.sub(remove_added_backing, filtered)
     if added_backings:
         clone = geometry_copy[index]
         clone.clean_contents()

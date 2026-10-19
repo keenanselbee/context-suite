@@ -2,12 +2,12 @@
   "schema": 1,
   "host": {
     "path": "bin/Release/ContextSuite.PdfDark.exe",
-    "bytes": 683008,
-    "sha256": "DEF3416B9529BFA8C1EAD0F8891962BA15FC78913D23AFA958D18E81901E3D0F",
+    "bytes": 762368,
+    "sha256": "E72A38B99F750129ABE5D3DD97A38FD2EFD5A8F0E60DFF12E91C64761D1A485A",
     "sources": [
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDark.cpp",
-        "sha256": "375E03DA4EFB08817FFC9F9364618ABAE1286822D76E4C3E235CBC592DA3F604"
+        "sha256": "67690C211E2D670CC545264769EA36D2F625BF2965379964EA36E3DFE1D9CB3E"
       },
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/CMakeLists.txt",
@@ -31,7 +31,7 @@
       },
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkRetainedImagePolicy.h",
-        "sha256": "4FEBA33E74AA2AAD59B1C5128B50C19A4CC3E618772805787B832714645B9F0A"
+        "sha256": "9F65DFAAFD9346B174465A6DF43B1B089E173A4D7B143E20F6518475A56E7164"
       },
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkFontPolicy.h",
@@ -40,6 +40,10 @@
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkSystemFontPolicy.h",
         "sha256": "E0738750C8EA069C1EE6E66FD81503E3675EF1E6E551087A303CB1CAA1C0C08D"
+      },
+      {
+        "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkCffFontPolicy.h",
+        "sha256": "6D1777B45788ED054C8910D5D57619626721CE8D0A25F5B865BB7C2E4BA133CA"
       }
     ]
   }

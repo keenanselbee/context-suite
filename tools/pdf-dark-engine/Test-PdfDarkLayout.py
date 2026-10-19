@@ -83,6 +83,7 @@ def accepted(name, source, check_pixels=None):
     (scratch / f"{name}.pdf").write_bytes(output)
     result[0].get_pixmap(alpha=False).save(scratch / f"{name}.png")
     print(f"PASS {name}")
+    return output
 
 
 def refused(name, source, reason_fragment="contrast-aware recoloring"):
@@ -213,6 +214,65 @@ def clipped(canvas):
 
 
 refused("clipped-panel", fixture(clipped))
+
+
+def clipped_titlebar(canvas, clip_kind="redundant", stroke=False, button_kind="full"):
+    canvas.saveState()
+    clip = canvas.beginPath()
+    if clip_kind == "nonrectangular":
+        # The triangle's bounding box encloses both panels. That does not prove
+        # rectangular coverage; its sloping edge cuts through the titlebar.
+        clip.moveTo(45, 135)
+        clip.lineTo(375, 135)
+        clip.lineTo(375, 205)
+        clip.close()
+    else:
+        clip.rect(45, 135, 270 if clip_kind == "partial" else 330, 70)
+    if clip_kind != "none":
+        canvas.clipPath(clip, stroke=0, fill=0)
+    canvas.setLineWidth(.15)
+    canvas.setFillColorRGB(.204, .235, .235)
+    canvas.setStrokeColorRGB(.204, .235, .235)
+    canvas.rect(60, 150, 300, 40, fill=1, stroke=int(stroke))
+    canvas.setFillColorRGB(.906, .906, .906)
+    canvas.setStrokeColorRGB(.906, .906, .906)
+    canvas.rect(300, 160, 12 if button_kind == "partial" else 30, 24, fill=1, stroke=int(stroke))
+    canvas.setFillColorRGB(*((.906, .906, .906) if button_kind == "hidden" else (.161, .145, .149)))
+    canvas.setFont("Helvetica", 10)
+    canvas.drawString(308, 166, "X")
+    canvas.setFillColorRGB(1, 1, 1)
+    canvas.drawString(80, 167, "Title")
+    canvas.restoreState()
+
+
+def clipped_titlebar_pixels(page):
+    pixmap = page.get_pixmap(alpha=False)
+    assert max(pixmap.pixel(20, 20)) < 60, "Page paper did not become dark"
+    assert max(pixmap.pixel(70, 130)) < 100, "Titlebar lost its dark backing"
+    for label, rectangle in (("Title", (80, 124, 105, 136)), ("X", (307, 123, 320, 136))):
+        left, top, right, bottom = rectangle
+        samples = [pixmap.pixel(x, y) for y in range(top, bottom) for x in range(left, right)]
+        assert max(max(pixel) for pixel in samples) > 210, (label, "Light ink disappeared")
+        assert min(min(pixel) for pixel in samples) < 100, (label, "Dark backing disappeared")
+
+
+for clip_kind, stroke in (("none", False), ("redundant", False), ("redundant", True)):
+    case = ("unclipped-nested-titlebar" if clip_kind == "none" else
+            "redundant-rectangular-clip-titlebar" + ("-border" if stroke else ""))
+    source = fixture(lambda canvas: clipped_titlebar(canvas, clip_kind=clip_kind, stroke=stroke))
+    output = accepted(case, source, clipped_titlebar_pixels)
+    for mode in ("--inspect", "--convert"):
+        code, repeated, duplicate = invoke(output, mode)
+        assert code == 0 and repeated["changedPages"] == 0 and \
+            repeated["alreadyDarkPages"] == 1 and not duplicate, (case, mode, code, repeated)
+
+for clip_kind in ("partial", "nonrectangular"):
+    refused(f"unsafe-{clip_kind}-clip-titlebar",
+            fixture(lambda canvas: clipped_titlebar(canvas, clip_kind=clip_kind)))
+
+for button_kind in ("hidden", "partial"):
+    refused(f"unsafe-{button_kind}-button-titlebar",
+            fixture(lambda canvas: clipped_titlebar(canvas, button_kind=button_kind)))
 
 
 def covered(canvas):

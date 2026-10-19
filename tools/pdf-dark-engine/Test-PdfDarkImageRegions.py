@@ -193,14 +193,14 @@ def same_region(before, after, rectangle):
 
 positives = ("columns-basic", "columns-nearopaque-basic",
              "columns-prior-vector-gap", "columns-later-image-gap",
-             "rows-prior-image-gap", "columns-text-contained", "columns-mirrored", "rows-clipped",
+             "columns-text-contained", "columns-mirrored", "rows-clipped",
              "columns-prior-opaque-vector", "columns-prior-opaque-wide-vector",
              "rows-clipped-prior-opaque-vector")
 negatives = ("columns-bridge", "columns-interpolated-mask",
              "columns-prior-nearopaque-vector", "columns-prior-edge-vector",
-             "columns-prior-outside-bounds-vector",
+             "columns-prior-outside-bounds-vector")
+fallbacks = ("columns-crossing-text", "columns-unsafe-reuse", "rows-prior-image-gap",
              "columns-later-overlap-vector")
-fallbacks = ("columns-crossing-text", "columns-unsafe-reuse")
 results = []
 for case in (*positives, *fallbacks, *negatives):
     source = fixture(case)
@@ -218,14 +218,18 @@ for case in (*positives, *fallbacks, *negatives):
             original, dark = rendered(source), rendered(output)
             original.save(scratch / f"{case}-source.png")
             dark.save(scratch / f"{case}-dark.png")
-            bottom = 110 if case == "columns-crossing-text" else 150
+            bottom = 150 if case == "columns-unsafe-reuse" else 110
             exact = all(original.pixel(x, y) == dark.pixel(x, y)
                         for y in range(50, bottom) for x in range(20, 220))
             content = PdfReader(io.BytesIO(output)).pages[0].get_contents().get_data()
             with pymupdf.open(stream=source, filetype="pdf") as before:
                 source_text = before[0].get_texttrace()
+                source_placements = [(entry["bbox"], entry["transform"], entry["width"], entry["height"])
+                                     for entry in before[0].get_image_info()]
             with pymupdf.open(stream=output, filetype="pdf") as after:
                 output_text = after[0].get_texttrace()
+                output_placements = [(entry["bbox"], entry["transform"], entry["width"], entry["height"])
+                                     for entry in after[0].get_image_info()]
             def visible_text(spans):
                 return [(span["font"], span["size"], span["bbox"], span["chars"],
                          span["color"], span["opacity"], span["type"])
@@ -236,13 +240,15 @@ for case in (*positives, *fallbacks, *negatives):
                             all_image_bytes(output),
                             "textAndGeometryPreserved": visible_text(source_text) ==
                             visible_text(output_text),
+                            "imagePlacementsPreserved": source_placements == output_placements,
                             "localBackingInserted": b"/Artifact BMC" in content,
                             "outsidePaperDark": max(dark.pixel(5, 5)) < 60,
                             "repeatNoOp": repeat_code == 0 and
                             repeat_facts["changedPages"] == 0 and not duplicate})
             passed = all(details[key] for key in ("entireCompositePixelsExact",
                                                    "allImageAndMaskBytesPreserved",
-                                                   "textAndGeometryPreserved", "localBackingInserted",
+                                                   "textAndGeometryPreserved", "imagePlacementsPreserved",
+                                                   "localBackingInserted",
                                                    "outsidePaperDark", "repeatNoOp"))
     elif case in negatives:
         passed = code == 3 and not output

@@ -10,11 +10,113 @@ using the same repository-relative paths. Follow the
 [workspace recovery instructions](repository-size-reduction-goal.md#uncompressed-workspace-relocation-2026-10-13)
 before rerunning historical checks.
 
-Current goal: completed in verified candidate 1.3.5 on 2026-10-15. The four
+Original lecture goal: completed in verified candidate 1.3.5 on 2026-10-15. The four
 original rejected COSC 310 lecture PDFs and the regression corpus export through
-the actual worker and publication path. Installed 1.3.4 remains unchanged;
-installation and publication are separate actions. Earlier milestones below
-remain historical evidence.
+the actual worker and publication path. That milestone left installed 1.3.4
+unchanged. Earlier milestones below remain historical evidence; the dated
+follow-ups describe subsequent work.
+
+Source follow-up, 2026-10-18: an older one-page UML reference card now exports
+through the actual worker and mandatory-copy publisher. Line-relative text moves
+restore known text positions after approximate Standard 14 advances; consecutive
+text-show operations without repositioning retain the existing refusal. This
+follows the separation between text and text-line matrices in the
+[PDF text-positioning model](https://pdfa.org/download-area/cheat-sheets/OperatorsAndOperands.pdf).
+Retained 8-bit images and masks also accept PNG predictors 10-15, with matching
+dimensions/channels, explicit default validation, valid row filter bytes, exact
+row/sample lengths, and the existing decoded-resource budgets. Image samples
+remain unchanged. TIFF predictors and unsupported variants remain closed.
+
+The new native pin and managed adapter select the same verified development
+host. Seven authored text-positioning cases and 21 predictor cases pass, alongside
+11 existing native suites. The supplied document passes eight actual-worker
+checks, including glyph validation, unchanged originals, and repeat no-op.
+Independent rendered review confirms the complete card, searchable text, glyph
+positions, diagram geometry, and retained logo. Review compares per-glyph
+geometry because intentional paint changes can split renderer text spans.
+Local-only evidence: `.codex-temp/uml-dark-413e82d808e641589305fde6dda572f3`.
+This is source/development evidence; no reserved payload or installation changed.
+
+
+Exercises Compatibility Follow-up, 2026-10-19
+--------------------------------------------
+
+The supplied 28-page complementary-exercises PDF now passes native conversion,
+independent text/glyph/vector checks, and rendered review. Its title banner and
+several activity diagrams retain bounded original-color regions where changing
+raster backgrounds or outlined labels would lose contrast. Other page content
+uses the dark palette. The source PDF remains unchanged and is not a fixture in
+this repository. There are no filename, hash, or page-number exceptions.
+
+The implementation adds bounded grayscale ICC and constrained calibrated RGB
+handling, grayscale JPEGs, safe print-state handling, and embedded CFF glyph
+bounds. Unsupported profiles, mappings, and ambiguous overprint still refuse.
+CFF and ICC stream limits are enforced during decoding. Unreachable zero-offset
+cross-reference entries are admitted only after a bounded trailer-graph proof;
+reachable damage and unrelated parser warnings remain refusals. Output-byte
+verification now compares high-bit literal text as unsigned bytes.
+
+Original-color composites require bounded geometry, validated image/mask data,
+isolated prior paint, and retained vector colors. Rectangular clips can establish
+visible extents; unknown clips and unbounded overlaps remain unsupported. Repeat
+conversion permits overlapping vector paint only when the writer proves both
+visible fill and stroke colors unchanged, or another existing contrast proof
+applies. Later images require a separate proof: unchanged samples and masks
+without an inserted backing, or a validated opaque placement. Changed masked
+images, forms, and shading do not receive that exemption. Crossing white labels
+and pure strokes on dark paper use the existing original-annotation proof,
+including nondecreasing exterior contrast and whole-operation checks.
+
+Local evidence is under
+`.codex-temp/exercises-dark-0cb2f1f846264fc7b38c51f8ac6b922f`.
+The `review32-final` report checks all 28 pages; `repeat32-final.json` confirms
+final output matches the visually reviewed renders exactly at 2x and repeats
+without another output in both native modes.
+
+Candidate 1.4.9 built and passed export, glyph validation, and mandatory-copy
+publication, but repeat inspection refused an unchanged same-color text overlap
+on page 3. It was not installed. Its reserved payload and receipt remain intact.
+The correction admits only fill-only text whose source and target colors match;
+different-color and mixed-stroke witnesses remain refused. Candidate 1.5.0
+supersedes that payload and passes all eight exercises worker checks, but its
+UML-card probe exposed a conservative border footprint regression. That candidate
+was also not installed. Exact consecutive duplicate vertices now collapse only
+in bounded footprint analysis, preserving every emitted source vertex. Crossing
+strokes, excess distinct vertices, and degenerate paths keep their existing
+checks. Candidate 1.5.1 includes both corrections, but broader corpus verification
+exposed overly broad image-layer and crossing-annotation refusals. It remains
+uninstalled and reserved. Candidate 1.5.2 includes the bounded corrections above
+and is now installed locally. The final native host SHA256 is
+`E72A38B99F750129ABE5D3DD97A38FD2EFD5A8F0E60DFF12E91C64761D1A485A`.
+
+Final verification under the local evidence directory:
+
+- `native-acceptance.json` records 58 passing native suites. All nine prior
+  lectures (390 pages), all 25 topic documents (746 pages), and both supplied
+  PDFs (29 pages) export and repeat without another output. Original hashes
+  remain unchanged. These corpus checks use the native host.
+- `worker152-results.json` records 127 passing packaged-worker checks: 64 public,
+  14 workflow, 33 failure/cancellation, and eight for each supplied PDF. Both
+  documents pass independent glyph validation, mandatory-copy publication,
+  unchanged-source checks, and repeat no-op through the actual staged worker.
+- `worker152-visual-equivalence.json` confirms all 29 published pages match the
+  independently reviewed native renders at 2x. It also verifies native source
+  pins and Git byte preservation. Fourteen payload tamper/membership checks pass.
+- `foundation-short.log` records 5,022 source foundation contracts from the
+  earlier isolated managed build; this is separate from final packaged-worker
+  evidence. Repository boundaries, theme policy, and 228 documentation files
+  pass the final repository check.
+- `install-receipt.json` and `post-install152-verification.json` verify local
+  1.5.2 installation, exact payload hashes/membership, all three packaged COM
+  activations, and preserved settings, trial, and license state. The prior 1.4.7
+  payload remains available for rollback. No Explorer restart was required.
+- `cleanup-result.json` records 48 task-owned disposable directories removed
+  (about 517 MiB). Final outputs, logs, native inputs, reserved candidates 1.4.9,
+  1.5.0, and 1.5.1, installed 1.5.2, and rollback material remain protected.
+
+This verifies the local unsigned installation and these documents within the
+bounded PDF policy. It does not establish universal PDF support, signing,
+release publication, or remote CI results.
 
 
 Consistent Export Follow-up

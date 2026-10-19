@@ -251,7 +251,8 @@ run("dark-label-over-diagram-paper", panel(), True, contrast, overlay=(220, 288,
 run("label-outside-rectangular-image-clip", panel(), True, contrast,
     overlay=(220, 288, (0, 0, 0)), clip_image=True)
 # A white label on original dark raster ink would become light-on-light.
-# Local overlap validation must continue to refuse that conversion.
+# Local overlap validation must reject recoloring; a proved original-color
+# composite may preserve the complete diagram and its label instead.
 conflict = panel()
 ImageDraw.Draw(conflict).rectangle((270, 160, 365, 205), fill=(15, 15, 15))
 gray_panel = panel()
@@ -263,6 +264,35 @@ negative_labels = [
     ("irregular-clip-cannot-prove-label-background", document(panel(), overlay=(220, 288, (0, 0, 0)), clip_image="curve")),
 ]
 for name, source in negative_labels:
+    if name != "irregular-clip-cannot-prove-label-background":
+        facts, output = invoke(source, "--convert")
+        inspection, empty = invoke(source, "--inspect")
+        assert facts == inspection and not empty and facts["recoloredImages"] == 0
+        before, after = pymupdf.open(stream=source), pymupdf.open(stream=output)
+        clip = pymupdf.Rect(20, 40, 460, 320)
+        assert before[0].get_pixmap(matrix=pymupdf.Matrix(2, 2), clip=clip).samples == \
+            after[0].get_pixmap(matrix=pymupdf.Matrix(2, 2), clip=clip).samples, name
+        original_image, original_mask = embedded(source)
+        output_image, output_mask = embedded(output)
+        assert original_image.tobytes() == output_image.tobytes() and original_mask == output_mask
+        old_images, new_images = before[0].get_images(full=True), after[0].get_images(full=True)
+        assert len(old_images) == len(new_images) == 1
+        assert before.xref_stream_raw(old_images[0][0]) == after.xref_stream_raw(new_images[0][0])
+        assert before[0].get_image_rects(old_images[0][0]) == after[0].get_image_rects(new_images[0][0])
+        old_text, new_text = before[0].get_texttrace(), after[0].get_texttrace()
+        assert [(x["font"], x["size"], x["chars"]) for x in old_text] == \
+            [(x["font"], x["size"], x["chars"]) for x in new_text]
+        assert old_text[-1]["color"] == new_text[-1]["color"], name
+        pix = after[0].get_pixmap()
+        assert max(pix.pixel(5, 5)) < 60
+        for mode in ("--inspect", "--convert"):
+            repeat, duplicate = invoke(output, mode)
+            assert repeat["changedPages"] == 0 and not duplicate
+        (root / f"{name}-source.pdf").write_bytes(source)
+        (root / f"{name}-dark.pdf").write_bytes(output)
+        results.append(dict(name=name, passed=True, originalCompositePreserved=True))
+        print("PASS", name, "strict original-color composite")
+        continue
     for mode in ("--inspect", "--convert"):
         with tempfile.TemporaryFile(dir=root) as stream:
             stream.write(source)

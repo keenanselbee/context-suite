@@ -1,6 +1,54 @@
 Context Suite Changelog
 =======================
 
+1.5.2 - Preserve layered images and crossing annotations, 2026-10-19
+-----------------------------------------------------------------
+
+- Admit validated opaque or unchanged image layers without bypassing changed
+  masked-image, fractional-opacity, or vector contrast checks.
+- Preserve bounded white labels and pure stroked annotations crossing retained
+  screenshots on dark paper, with existing outside-image contrast checks.
+- Supersede uninstalled candidate 1.5.1 after the broader lecture corpus exposed
+  overly broad image-overlap refusals. Preserve all reserved candidate receipts.
+
+
+1.5.1 - Preserve repeated-point diagram borders, 2026-10-19
+--------------------------------------------------------
+
+- Ignore exact consecutive duplicate vertices only in bounded stroke-footprint
+  analysis, preserving the emitted PDF path and existing geometry limits.
+- Restore dark-mode support for the UML reference card while retaining the
+  exercises compatibility fixes. Supersede uninstalled candidate 1.5.0, whose
+  broad border bounds incorrectly overlapped the card's retained logo.
+
+
+1.5.0 - Repeat dark-mode conversion of overlapping labels, 2026-10-19
+------------------------------------------------------------------
+
+- Preserve overlapping fill-only text with identical source and target colors
+  when validating text partly covered by a later panel. Keep mixed-stroke and
+  different-color cases under the existing contrast checks.
+- Supersede candidate 1.4.9, whose exercises export passed glyph validation but
+  whose repeat inspection refused a safe overlapping label.
+
+
+1.4.9 - File dates and PDF reading compatibility, 2026-10-19
+---------------------------------------------------------
+
+- Show filesystem creation and modification dates in Analyze Source details,
+  including seconds and local UTC offsets, without changing source files.
+- Support explicitly positioned Standard 14 text and retained images using PNG
+  predictors in PDF dark mode, with malformed-data and resource-budget guards.
+- Read bounded grayscale ICC and calibrated RGB colors, grayscale JPEGs, and
+  harmless print settings while retaining ambiguous overprint refusals.
+- Measure supported embedded CFF glyphs for contrast checks rather than relying
+  on oversized font-wide boxes. Preserve original files and searchable text.
+- Support PDFs with proven unreachable zero-offset cross-reference entries and
+  preserve high-bit text bytes during output verification.
+- Keep bounded original-color diagram regions when recoloring their raster and
+  vector labels would lose contrast; preserve repeat-conversion no-ops.
+
+
 Unreleased - Optional installation tools
 ----------------------------------------
 
