@@ -7,6 +7,12 @@ for the latest source and recorded installed versions. Later lecture-specific PD
 evidence is recorded in the [lecture support goal](pdf-dark-lecture-support-goal.md).
 Neither a newer version nor a historical pass broadens the tested scope below.
 
+The owner-approved [Optimize expansion](optimization-expansion-goal.md), started
+2026-10-19, tracks new JPEG, still WebP, document-package and broader structural
+PDF work. It is planned work, not additional supported pairs in this historical
+matrix. The installed baseline remains PNG/FLAC/PDF optimization until new
+handlers have their own recorded implementation and verification.
+
 Matrix revision: **2026-10-10.2**. PDF dark-mode candidate **1.2.7** passes
 exact-candidate regression coverage and verified fresh archive extraction.
 It adds one mandatory-copy PDF appearance destination within the

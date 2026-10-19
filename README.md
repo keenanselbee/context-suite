@@ -30,10 +30,13 @@ remaining visual acceptance.
 Project Status
 --------------
 
-Source metadata is **1.4.8**. The last recorded local installation is **1.4.7**
-(2026-10-16); the production executable still reports 1.4.7 on 2026-10-17.
-An isolated **1.4.8** development payload passed workflow inventory, dependency
-and notice checks on 2026-10-17. Later source fixes require their own verification.
+Source metadata and the latest recorded local installation are **1.5.2**
+(verified 2026-10-19). That payload includes filesystem dates in Analyze and the
+bounded PDF reading-copy compatibility fixes. Its recorded verification covers
+2,915 payload files and all three registered package identities. Later source
+changes require their own verification. The approved
+[Optimize expansion goal](docs/optimization-expansion-goal.md) is in progress;
+its additional formats are not yet enabled.
 Source changes and historical passing results do not establish a newly verified
 release. Signing, native installer lifecycle, broader visual/accessibility and
 commercial acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).

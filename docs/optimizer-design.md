@@ -1,6 +1,15 @@
 Context Optimizer Design
 ========================
 
+Current direction, 2026-10-19: the owner approved the
+[Optimize expansion goal](optimization-expansion-goal.md). Its first milestone
+adds bounded lossless JPEG, still WebP and DOCX/XLSX/PPTX package recompression,
+plus demonstrated structural PDF compatibility improvements. These additions
+are planned, not yet enabled. Existing PNG, FLAC and structural PDF dispatch
+are included in the recorded local 1.5.2 installation; older candidate-only
+wording below describes historical checkpoints, not current payload absence.
+The new families initially use Auto/Lossless without changing PNG's presets.
+
 Next scope follows [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md)
 and the [broad file support goal](broad-file-support-goal.md). Preserve the verified
 PNG recipes and add bounded lossless FLAC recompression with decoded-sample and

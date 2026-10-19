@@ -1,6 +1,13 @@
 Context Suite Product Design
 ============================
 
+Owner-approved extension, 2026-10-19: the
+[Optimize expansion goal](optimization-expansion-goal.md) adds bounded lossless
+JPEG, still WebP and DOCX/XLSX/PPTX package recompression, and broadens structural
+PDF optimization through demonstrated compatibility work. This is planned
+same-format optimization with local processing and existing publication rules;
+it does not authorize video support, installation or public release.
+
 Version 1.4.8 uses an immediate Technical details disclosure. Its content,
 chevron and scroll range update in the first layout without a sliding transition.
 The native Expander state and themed ToggleButton retain keyboard interaction,
