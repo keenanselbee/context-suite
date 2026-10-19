@@ -37,8 +37,8 @@ internal static class OfficePdfContracts
             var bytes = Encoding.UTF8.GetBytes(node.ToJsonString());
             OfficePdfPolicy.CheckObjects(bytes);
             check(true, $"Office PDF: {count} linked outlines pass bounded admission");
-            try { PdfRewriteInventory.Read(bytes); check(false, "PDF rewrite graph limit"); }
-            catch (InvalidDataException) { check(true, "Office PDF: admission does not relax rewrite hashing limits"); }
+            var rewrite = PdfRewriteInventory.Read(bytes);
+            check(rewrite.ReachableObjects == count + 4, $"Office PDF: {count} linked outlines also pass complete rewrite hashing");
             objects[$"obj:{count + 4} 0 R"]!["value"]!["/Next"] = "999999 0 R";
             try { OfficePdfPolicy.CheckObjects(Encoding.UTF8.GetBytes(node.ToJsonString())); check(false, "PDF dangling outline reference"); }
             catch (InvalidDataException) { check(true, "Office PDF: long outlines retain reference validation"); }

@@ -52,11 +52,55 @@ internal static class PdfRewriteContracts
             for (var index = 4; index <= PdfRewriteInventory.MaximumObjects + 1; index++)
                 Objects(node)["obj:" + index + " 0 R"] = new JsonObject { ["value"] = 0 };
         }, "object count budget");
+        foreach (var count in new[] { 48, 128, 512 })
+        {
+            var chain = JsonNode.Parse(Fixture)!;
+            Objects(chain)["obj:1 0 R"]!["value"]!["/Extra"] = "4 0 R";
+            for (var index = 4; index < count + 4; index++)
+                Objects(chain)["obj:" + index + " 0 R"] = new JsonObject { ["value"] = new JsonObject
+                    { ["/Next"] = (index == count + 3 ? "1" : (index + 1).ToString()) + " 0 R", ["/Label"] = "u:Outline " + index } };
+            var chainFacts = Read(chain);
+            check(chainFacts.ReachableObjects == count + 3, $"PDF rewrite: {count} linked objects retain a bounded cyclic inventory");
+            var reordered = chain.DeepClone(); var reorderedObjects = Objects(reordered); reorderedObjects.Clear();
+            foreach (var property in Objects(chain).Reverse())
+                reorderedObjects[property.Key == "trailer" ? property.Key : "obj:" + Rename(property.Key[4..])] = Renumber(property.Value!);
+            PdfRewriteInventory.RequirePreserved(chainFacts, Read(reordered));
+            check(true, $"PDF rewrite: {count} linked objects are independent of numbering and directory order");
+            var changedChain = chain.DeepClone();
+            Objects(changedChain)["obj:" + (count + 3) + " 0 R"]!["value"]!["/Next"] = "4 0 R";
+            Changed(chainFacts, changedChain, "long-chain cycle target");
+        }
+        var aliases = JsonNode.Parse(Fixture)!;
+        Objects(aliases)["obj:1 0 R"]!["value"]!["/Alias"] = "3 0 R";
+        var aliasFacts = Read(aliases);
+        var splitAlias = aliases.DeepClone();
+        Objects(splitAlias)["obj:4 0 R"] = Objects(splitAlias)["obj:3 0 R"]!.DeepClone();
+        Objects(splitAlias)["obj:1 0 R"]!["value"]!["/Alias"] = "4 0 R";
+        Changed(aliasFacts, splitAlias, "shared stream replaced by a distinct identical stream");
+        var changedCycle = JsonNode.Parse(Fixture)!;
+        Objects(changedCycle)["obj:2 0 R"]!["value"]!["/Parent"] = "2 0 R";
+        Changed(before, changedCycle, "parent cycle topology");
+        var duplicateOrphan = withOrphan.DeepClone();
+        Objects(duplicateOrphan)["obj:10 0 R"] = Objects(duplicateOrphan)["obj:9 0 R"]!.DeepClone();
+        Changed(orphanFacts, duplicateOrphan, "ordinary orphan multiplicity");
+        var orphanCycle = withOrphan.DeepClone();
+        Objects(orphanCycle)["obj:9 0 R"] = new JsonObject { ["value"] = new JsonObject { ["/Next"] = "10 0 R", ["/Root"] = "1 0 R" } };
+        Objects(orphanCycle)["obj:10 0 R"] = new JsonObject { ["value"] = new JsonObject { ["/Next"] = "9 0 R" } };
+        var orphanCycleFacts = Read(orphanCycle);
+        PdfRewriteInventory.RequirePreserved(orphanCycleFacts, Read(Renumber(orphanCycle)));
+        check(true, "PDF rewrite: orphan cycles and rooted aliases survive renumbering");
+        Objects(orphanCycle)["obj:10 0 R"]!["value"]!["/Next"] = "10 0 R";
+        Changed(orphanCycleFacts, orphanCycle, "orphan cycle topology");
         Reject(node => {
-            for (var index = 4; index <= 80; index++)
-                Objects(node)["obj:" + index + " 0 R"] = new JsonObject { ["value"] = new JsonObject { ["/Next"] = (index == 80 ? "1" : (index + 1).ToString()) + " 0 R" } };
-            Objects(node)["obj:1 0 R"]!["value"]!["/Extra"] = "4 0 R";
-        }, "reference chain depth budget");
+            // Each unreferenced root must retain its own complete inventory.
+            // Repeated walks still share the fixed aggregate traversal budget.
+            for (var index = 4; index < 604; index++)
+                Objects(node)["obj:" + index + " 0 R"] = new JsonObject { ["value"] = new JsonObject
+                    { ["/Next"] = (index == 603 ? "4" : (index + 1).ToString()) + " 0 R", ["/Label"] = "u:Unreferenced" } };
+        }, "aggregate traversal budget across unreferenced cycles");
+        var deep = Fixture.Replace("\"/Type\":\"/Catalog\"", "\"/Type\":\"/Catalog\",\"/Deep\":" + new string('[', 70) + "0" + new string(']', 70));
+        try { PdfRewriteInventory.Read(Encoding.UTF8.GetBytes(deep)); check(false, "PDF rewrite: direct JSON nesting budget"); }
+        catch (InvalidDataException) { check(true, "PDF rewrite: direct JSON nesting remains bounded"); }
         var noData = JsonNode.Parse(Fixture)!; Objects(noData)["obj:3 0 R"]!["stream"]!.AsObject().Remove("data");
         PdfRewriteInventory.CheckAdmission(Encoding.UTF8.GetBytes(noData.ToJsonString()));
         check(true, "PDF rewrite: admission precedes stream extraction but does not produce validated facts");
@@ -71,6 +115,28 @@ internal static class PdfRewriteContracts
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         try { PdfRewriteInventory.Read(bytes, cancelled.Token); check(false, "PDF rewrite: cancellation"); }
         catch (OperationCanceledException) { check(true, "PDF rewrite: cancellation before inspection"); }
+        PdfRewriteFacts Read(JsonNode node) => PdfRewriteInventory.Read(Encoding.UTF8.GetBytes(node.ToJsonString()));
+        string Rename(string reference) => (int.Parse(reference.Split(' ')[0]) + 1000) + " 0 R";
+        JsonNode Renumber(JsonNode node)
+        {
+            if (node is JsonObject obj)
+            {
+                var result = new JsonObject();
+                foreach (var property in obj)
+                    result[property.Key.StartsWith("obj:", StringComparison.Ordinal) ? "obj:" + Rename(property.Key[4..]) : property.Key] =
+                        property.Value is null ? null : Renumber(property.Value);
+                return result;
+            }
+            if (node is JsonArray array) return new JsonArray(array.Select(item => item is null ? null : Renumber(item)).ToArray());
+            if (node is JsonValue value && value.TryGetValue<string>(out var text) && text.EndsWith(" R", StringComparison.Ordinal))
+                return JsonValue.Create(Rename(text))!;
+            return node.DeepClone();
+        }
+        void Changed(PdfRewriteFacts expected, JsonNode node, string name)
+        {
+            try { PdfRewriteInventory.RequirePreserved(expected, Read(node)); check(false, "PDF rewrite: changed " + name); }
+            catch (InvalidDataException) { check(true, "PDF rewrite: changed " + name + " rejects output"); }
+        }
         void Reject(Action<JsonNode> mutate, string name)
         {
             var node = JsonNode.Parse(Fixture)!; mutate(node);

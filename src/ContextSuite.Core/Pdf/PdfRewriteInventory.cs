@@ -110,17 +110,18 @@ public static class PdfRewriteInventory
             }
             var xref = trailer.TryGetProperty("/Type", out var type) && type.ValueKind == JsonValueKind.String && type.GetString() == "/XRef";
             var visited = new Dictionary<string, int>(StringComparer.Ordinal);
+            var pending = new List<string>();
             var traversed = 0; long totalCanonicalBytes = 0;
             using var canonical = new MemoryStream();
             using (var writer = new Utf8JsonWriter(canonical, new JsonWriterOptions { MaxDepth = 128 }))
             {
-                writer.WriteStartObject();
+                writer.WriteStartArray(); writer.WriteStartObject();
                 foreach (var property in trailer.EnumerateObject().OrderBy(property => property.Name, StringComparer.Ordinal))
                 {
                     if (TrailerStorage.Contains(property.Name) || xref && XrefStorage.Contains(property.Name)) continue;
                     writer.WritePropertyName(property.Name); Write(property.Value, writer, 0);
                 }
-                writer.WriteEndObject(); writer.Flush();
+                writer.WriteEndObject(); WritePending(writer); writer.WriteEndArray(); writer.Flush();
             }
             var rooted = new Dictionary<string, int>(visited, StringComparer.Ordinal);
             totalCanonicalBytes = canonical.Length;
@@ -129,9 +130,10 @@ public static class PdfRewriteInventory
             {
                 if (entry.Name == "trailer" || rooted.ContainsKey(entry.Name[4..]) || IsStorageObject(entry.Value)) continue;
                 visited = new(rooted, StringComparer.Ordinal);
+                pending.Clear();
                 using var orphan = new MemoryStream();
                 using (var writer = new Utf8JsonWriter(orphan, new JsonWriterOptions { MaxDepth = 128 }))
-                { Write(entry.Value, writer, 0); writer.Flush(); }
+                { writer.WriteStartArray(); Write(entry.Value, writer, 0); WritePending(writer); writer.WriteEndArray(); writer.Flush(); }
                 totalCanonicalBytes += orphan.Length;
                 orphanHashes.Add(Convert.ToHexString(SHA256.HashData(orphan.GetBuffer().AsSpan(0, checked((int)orphan.Length)))));
             }
@@ -162,6 +164,17 @@ public static class PdfRewriteInventory
                 }
                 else if (element.ValueKind == JsonValueKind.Array) foreach (var item in element.EnumerateArray()) Inspect(item);
             }
+            // Assign indices in sorted-property/array order, then emit an object
+            // table. Indirect edges never consume JSON depth or the call stack;
+            // stable indices retain aliases and cycles independently of PDF IDs.
+            void WritePending(Utf8JsonWriter writer)
+            {
+                for (var index = 0; index < pending.Count; index++)
+                {
+                    token.ThrowIfCancellationRequested();
+                    Write(objects.GetProperty("obj:" + pending[index]), writer, 0);
+                }
+            }
             void Write(JsonElement element, Utf8JsonWriter writer, int depth)
             {
                 token.ThrowIfCancellationRequested();
@@ -170,15 +183,12 @@ public static class PdfRewriteInventory
                 if (element.ValueKind == JsonValueKind.String && IsReference(element.GetString()!))
                 {
                     var reference = element.GetString()!;
-                    writer.WriteStartObject();
-                    if (visited.TryGetValue(reference, out var index)) writer.WriteNumber("reference", index);
-                    else
+                    if (!visited.TryGetValue(reference, out var index))
                     {
-                        index = visited.Count; visited.Add(reference, index);
-                        if (!objects.TryGetProperty("obj:" + reference, out var target)) throw new InvalidDataException("PDF graph has an unresolved reference.");
-                        writer.WriteNumber("index", index); writer.WritePropertyName("object"); Write(target, writer, depth + 1);
+                        if (!objects.TryGetProperty("obj:" + reference, out _)) throw new InvalidDataException("PDF graph has an unresolved reference.");
+                        index = visited.Count; visited.Add(reference, index); pending.Add(reference);
                     }
-                    writer.WriteEndObject();
+                    writer.WriteStartObject(); writer.WriteNumber("reference", index); writer.WriteEndObject();
                 }
                 else if (element.ValueKind == JsonValueKind.Object)
                 {

@@ -12,6 +12,17 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--pdf-rewrite"])
+{
+    var checks = 0;
+    void CheckRewrite(bool passed, string message)
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }
+    PdfRewriteContracts.Run(CheckRewrite);
+    OfficePdfContracts.Run(CheckRewrite);
+    Console.WriteLine($"Passed {checks} PDF rewrite and Office inventory checks.");
+    return 0;
+}
+
 if (args is ["--analysis-view", var analysisViewScratch])
 {
     var checks = 0;

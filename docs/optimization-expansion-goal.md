@@ -81,6 +81,18 @@ Execution And Acceptance
 - [ ] Update current support documentation, review diffs, commit completed groups,
       and close out task-owned transient output with retained evidence identified.
 
+The first PDF source checkpoint replaces recursive indirect-reference hashing
+with a bounded deterministic object table. Linked 48/128/512-object chains now
+retain aliases/cycles without consuming nesting depth; direct nesting, object,
+node and byte bounds and protected/history refusals remain. Focused verification
+passes 129 PDF rewrite/Office inventory checks; the isolated public harness passes
+5,037 foundation contracts. Actual-worker and representative-render checks remain
+open, so the PDF milestone above is not complete. Local-only evidence:
+`.codex-temp/opt-71d1898e/pdf-rewrite.log` and `foundation-third.log` in the same
+directory. Earlier harness attempts used a relative fixture root and then the
+DLL rather than apphost; their failures are retained separately and corrected
+in the successful absolute-root/apphost invocation.
+
 Extend existing planning, worker, executor and publication boundaries. Add
 shared code only where implemented handlers need it. Each recipe gets one
 primary attempt and at most one predetermined fallback under a shared deadline;
