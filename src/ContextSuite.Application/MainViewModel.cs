@@ -764,6 +764,9 @@ internal sealed partial class FileRow(int batch, string operation, string path, 
 
     public string AnalysisDetails => Analysis is not { } analysis ? "" :
         $"Source: {Path}\n{string.Join("\n", analysis.Identity.Evidence)}\n" +
+        $"File created: {AnalysisSnapshot.FormatFileTime(analysis.FileCreatedUtc, TimeZoneInfo.Local)}\n" +
+        $"File modified: {AnalysisSnapshot.FormatFileTime(analysis.FileModifiedUtc, TimeZoneInfo.Local)}\n" +
+        "Date source: Filesystem dates; these may differ from when the content was originally created.\n" +
         CatalogMimeDetails(analysis) +
         string.Join("\n", analysis.Facts.GroupBy(fact => fact.Group).Select(group => group.Key + ":\n" +
             string.Join("\n", group.Select(fact => $"{fact.Label}: {FactText(fact)}")))) +

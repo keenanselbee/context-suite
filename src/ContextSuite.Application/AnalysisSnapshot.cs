@@ -88,6 +88,9 @@ internal sealed record AnalysisSnapshot(
         details.Add(new("Source", ImmutableArray.CreateRange(new AnalysisDetail[] {
             new("Path", analysis.Path),
             new("File size (bytes)", analysis.FileBytes.ToString("N0")),
+            new("File created", FormatFileTime(analysis.FileCreatedUtc, TimeZoneInfo.Local)),
+            new("File modified", FormatFileTime(analysis.FileModifiedUtc, TimeZoneInfo.Local)),
+            new("Date source", "Filesystem dates; these may differ from when the content was originally created."),
             new("Header bytes inspected", analysis.InspectedBytes.ToString("N0"))
         })));
         details.Add(new("Identification", ImmutableArray.CreateRange(new AnalysisDetail[] {
@@ -126,6 +129,13 @@ internal sealed record AnalysisSnapshot(
         return new(identity.Name, identification, evidence, size, selected, keyInformation,
             identity.CommonUses, warnings.IsEmpty ? "" : string.Join(Environment.NewLine, warnings),
             details.ToImmutable());
+    }
+
+    internal static string FormatFileTime(DateTimeOffset? value, TimeZoneInfo timeZone)
+    {
+        if (value is null) return "Unavailable";
+        return TimeZoneInfo.ConvertTime(value.Value, timeZone)
+            .ToString("yyyy-MM-dd HH:mm:ss 'UTC'zzz", CultureInfo.InvariantCulture);
     }
 
     private static string FriendlyEncoding(string encoding) => encoding switch

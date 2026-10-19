@@ -9,6 +9,14 @@ facts, limits and tests; broader catalog/family analysis remains in progress.
 The [launch matrix](launch-capability-matrix.md) separates these analysis facts
 from current conversion/optimization and packaged-engine availability.
 
+Source details now include filesystem **File created** and **File modified**
+dates, displayed in local time with seconds and the UTC offset for that date.
+Copy report includes the same dates and their filesystem source.
+These are read from the validated open file, separately from embedded authorship
+or capture dates. Unavailable values are labelled explicitly. Creation-date read
+failure preserves other analysis; modification time retains its existing role
+in detecting source changes. Header-only routing does not request extra dates.
+
 The [file I/O cancellation scope](analyze-io-cancellation.md) now covers synchronous
 opening and metadata operations as well as the asynchronous read budget. Local
 blocked-open tests pass; driver-dependent completion and remote-storage acceptance

@@ -43,6 +43,11 @@ internal static class FileAnalysisReader
         deadline.Token.ThrowIfCancellationRequested();
         var analysis = HeaderAnalyzer.Analyze(path, bytes, length);
         if (headerOnly) return analysis;
+        analysis = analysis with
+        {
+            FileCreatedUtc = ReadCreationTime(stream.SafeFileHandle, deadline.Token),
+            FileModifiedUtc = modified == DateTime.FromFileTimeUtc(0) ? null : new DateTimeOffset(modified)
+        };
         if (analysis.Facts.Any(fact => fact.Id == "text.lines-complete" && fact.Boolean == false))
         {
             analysis = await TextLineAnalysis.AddAsync(analysis, bytes, stream, cancellationToken, deadline.Token);
@@ -137,6 +142,22 @@ internal static class FileAnalysisReader
             throw;
         }
     }, token);
+
+    private static DateTimeOffset? ReadCreationTime(SafeFileHandle handle, CancellationToken token)
+    {
+        try
+        {
+            var created = SynchronousFileIo.Run(() => File.GetCreationTimeUtc(handle), token);
+            token.ThrowIfCancellationRequested();
+            return created == DateTime.FromFileTimeUtc(0) ? null : new DateTimeOffset(created);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or Win32Exception)
+        {
+            token.ThrowIfCancellationRequested();
+            // Optional report metadata must not hide otherwise readable content.
+            return null;
+        }
+    }
 
     private static (long Length, DateTime Modified) ReadState(FileStream stream, CancellationToken token) =>
         SynchronousFileIo.Run(() =>

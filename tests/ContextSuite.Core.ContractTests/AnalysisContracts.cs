@@ -274,6 +274,9 @@ internal static class AnalysisContracts
         await File.WriteAllBytesAsync(pdf, "%PDF-1.7\n"u8.ToArray());
         await File.WriteAllTextAsync(locked, "Locked fixture");
         await File.WriteAllTextAsync(text, "Readable notes");
+        File.SetCreationTimeUtc(binary, new DateTime(2025, 2, 3, 4, 5, 6, DateTimeKind.Utc));
+        File.SetLastWriteTimeUtc(binary, new DateTime(2026, 3, 4, 5, 6, 7, DateTimeKind.Utc));
+        var created = File.GetCreationTimeUtc(binary);
         var before = SHA256.HashData(await File.ReadAllBytesAsync(binary));
         var timestamp = File.GetLastWriteTimeUtc(binary);
         await using (var lockStream = new FileStream(locked, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
@@ -287,6 +290,14 @@ internal static class AnalysisContracts
             check(view.Rows[1].Analysis?.Identity.Confidence == IdentificationConfidence.Unknown &&
                 view.Rows[2].Analysis?.Identity.FormatId == "pdf" && view.Rows[3].Analysis?.Identity.FormatId == "text",
                 "analysis: unknown binary, PDF and text share the actual application batch");
+            check(view.Rows[1].Analysis?.FileCreatedUtc == new DateTimeOffset(created) &&
+                view.Rows[1].Analysis?.FileModifiedUtc == new DateTimeOffset(timestamp) &&
+                view.Rows[2].Analysis?.FileCreatedUtc is not null && view.Rows[3].Analysis?.FileModifiedUtc is not null,
+                "analysis dates: actual mixed batch retains filesystem timestamps even for unknown formats");
+            check(view.AnalysisReport.Contains("File created: " + ContextSuite.Application.AnalysisSnapshot.FormatFileTime(created, TimeZoneInfo.Local)) &&
+                view.AnalysisReport.Contains("File modified: " + ContextSuite.Application.AnalysisSnapshot.FormatFileTime(timestamp, TimeZoneInfo.Local)) &&
+                view.AnalysisReport.Contains("Date source: Filesystem dates"),
+                "analysis dates: copied report includes labelled filesystem dates and their source");
             check(view.Rows.All(row => row.Result.Publication is null && !row.HasOutput) && !view.CanRetry,
                 "analysis: read-only results never publish or enter transformation retry");
             check(view.Rows[0].Status.Contains("Another program is using") && view.Rows[0].Status.Contains("Close it there"),
@@ -351,8 +362,8 @@ internal static class AnalysisContracts
         check(denied.GetAccessControl().GetSecurityDescriptorBinaryForm().SequenceEqual(originalSecurity.GetSecurityDescriptorBinaryForm()),
             "analysis: disposable denial fixture restores its exact security descriptor");
         var after = SHA256.HashData(await File.ReadAllBytesAsync(binary));
-        check(before.SequenceEqual(after) && timestamp == File.GetLastWriteTimeUtc(binary),
-            "analysis: source bytes and write timestamp unchanged");
+        check(before.SequenceEqual(after) && timestamp == File.GetLastWriteTimeUtc(binary) && created == File.GetCreationTimeUtc(binary),
+            "analysis: source bytes, creation time, and write timestamp unchanged");
         var large = Path.Combine(root, "large.bin");
         await using (var stream = new FileStream(large, FileMode.CreateNew, FileAccess.Write)) stream.SetLength(4 * 1024 * 1024);
         var largeResult = await FileAnalysisReader.ReadAsync(large, CancellationToken.None);
@@ -373,6 +384,9 @@ internal static class AnalysisContracts
         check(enriched.Identity.Basis == IdentificationBasis.Content && enriched.Facts.Any(fact => fact.Id == "audio.probe.stream.0.rate") &&
             enriched.Warnings.All(warning => !warning.Contains("only on the filename")),
             "analysis: bounded audio evidence replaces an unconfirmed filename hint");
+        check(enriched.FileCreatedUtc == new DateTimeOffset(File.GetCreationTimeUtc(audioPath)) &&
+            enriched.FileModifiedUtc == new DateTimeOffset(File.GetLastWriteTimeUtc(audioPath)),
+            "analysis dates: optional audio enrichment preserves filesystem dates");
         var fallback = await FileAnalysisReader.ReadAsync(audioPath, CancellationToken.None, (_, _) =>
             Task.FromException<ContextSuite.Core.Audio.AudioProbeFacts>(new InvalidDataException("Test probe failure")));
         check(fallback.Identity.FormatId == "mp3" && fallback.Warnings.Any(warning => warning.Contains("Deeper audio")),
@@ -381,8 +395,9 @@ internal static class AnalysisContracts
             (_, _) => throw new InvalidOperationException("Header routing must not invoke deeper media parsing."), headerOnly: true);
         check(routing.Facts.All(fact => !fact.Id.StartsWith("audio.probe.")), "analysis: header-only routing skips optional native probes");
         var empty = Path.Combine(root, "empty"); await File.WriteAllBytesAsync(empty, []);
-        check((await FileAnalysisReader.ReadAsync(empty, CancellationToken.None)).Identity.Name == "Empty file",
-            "analysis: zero-byte file survives real reader");
+        var emptyAnalysis = await FileAnalysisReader.ReadAsync(empty, CancellationToken.None);
+        check(emptyAnalysis.Identity.Name == "Empty file" && emptyAnalysis.FileCreatedUtc is not null && emptyAnalysis.FileModifiedUtc is not null,
+            "analysis: zero-byte file retains dates through the real reader");
         using (var cancelled = new CancellationTokenSource())
         {
             cancelled.Cancel();

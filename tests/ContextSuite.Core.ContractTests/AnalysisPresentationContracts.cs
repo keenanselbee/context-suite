@@ -21,6 +21,28 @@ internal static class AnalysisPresentationContracts
             filename.TechnicalDetails.SelectMany(group => group.Items).Count(item => item.Label == "File size (bytes)") == 1,
             "analysis presentation: type-specific facts lead, source facts are not duplicated, evidence is last");
 
+        var source = filename.TechnicalDetails.Single(group => group.Name == "Source");
+        check(source.Items.Single(item => item.Label == "File created").Value == "Unavailable" &&
+            source.Items.Single(item => item.Label == "File modified").Value == "Unavailable" &&
+            source.Items.Single(item => item.Label == "Date source").Value.Contains("Filesystem"),
+            "analysis dates: byte-only analysis does not invent filesystem dates or imply authorship");
+        var winter = new DateTimeOffset(2026, 1, 1, 0, 2, 3, TimeSpan.Zero);
+        var summer = new DateTimeOffset(2026, 7, 1, 12, 2, 3, TimeSpan.Zero);
+        var pacific = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+        check(AnalysisSnapshot.FormatFileTime(winter, pacific) == "2025-12-31 16:02:03 UTC-08:00" &&
+            AnalysisSnapshot.FormatFileTime(summer, pacific) == "2026-07-01 05:02:03 UTC-07:00",
+            "analysis dates: local conversion retains seconds, date rollover, and the timestamp's daylight-saving offset");
+        var halfHour = TimeZoneInfo.CreateCustomTimeZone("test-half-hour", TimeSpan.FromMinutes(330), "Test", "Test");
+        check(AnalysisSnapshot.FormatFileTime(winter, halfHour) == "2026-01-01 05:32:03 UTC+05:30" &&
+            AnalysisSnapshot.FormatFileTime(null, halfHour) == "Unavailable",
+            "analysis dates: non-hour offsets and unavailable dates remain explicit");
+        var dated = AnalysisSnapshot.Create(HeaderAnalyzer.Analyze("dated.bin", [0, 255], 2) with
+            { FileCreatedUtc = winter, FileModifiedUtc = summer });
+        var datedSource = dated.TechnicalDetails.Single(group => group.Name == "Source");
+        check(datedSource.Items.Single(item => item.Label == "File created").Value == AnalysisSnapshot.FormatFileTime(winter, TimeZoneInfo.Local) &&
+            datedSource.Items.Single(item => item.Label == "File modified").Value == AnalysisSnapshot.FormatFileTime(summer, TimeZoneInfo.Local),
+            "analysis dates: Source presents created and modified independently in local time");
+
         var pngBytes = new byte[33];
         new byte[] { 137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82,
             0, 0, 2, 0, 0, 0, 1, 0, 8, 2 }.CopyTo(pngBytes, 0);

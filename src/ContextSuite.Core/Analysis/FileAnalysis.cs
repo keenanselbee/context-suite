@@ -19,6 +19,11 @@ public sealed record FileAnalysis(string Path, long FileBytes, FormatIdentity Id
     ImmutableArray<AnalysisFact> Facts, ImmutableArray<string> Warnings, int InspectedBytes,
     DdsInfo? Texture = null, ImmutableArray<FileTypeDescription> FilenameHints = default)
 {
+    // Filesystem timestamps, not embedded authorship/capture dates. Byte-only
+    // analyzers leave these unavailable; the file reader supplies UTC values.
+    public DateTimeOffset? FileCreatedUtc { get; init; }
+    public DateTimeOffset? FileModifiedUtc { get; init; }
+
     public const int SchemaVersion = 1;
     public const string AnalyzerVersion = "text-summary-2";
 }
