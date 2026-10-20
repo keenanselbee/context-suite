@@ -1,6 +1,10 @@
 Context Optimizer Design
 ========================
 
+Active work: the [preset expansion goal](optimization-presets-goal.md) extends
+quality choices where they have a meaningful, validated tradeoff. Its unchecked
+work and source changes are not part of the verified candidate described below.
+
 Current source, 2026-10-19: the [Optimize expansion goal](optimization-expansion-goal.md)
 adds implemented bounded lossless JPEG, still lossless WebP, and DOCX/XLSX/PPTX
 package recompression to Auto and Lossless. These handlers always create copies,

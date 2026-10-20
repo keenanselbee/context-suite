@@ -2,6 +2,12 @@ Context Suite Product Design
 ============================
 
 Owner-approved extension, 2026-10-19: the
+[Optimize preset expansion goal](optimization-presets-goal.md) extends meaningful
+quality choices across supported formats, with bounded fixed recipes, mandatory
+copies for new paths, and format-specific preservation and quality evidence.
+This work is active; the first expansion's verified candidate remains separate.
+
+Owner-approved extension, 2026-10-19: the
 [Optimize expansion goal](optimization-expansion-goal.md) adds bounded lossless
 JPEG, still WebP and DOCX/XLSX/PPTX package recompression, and broadens structural
 PDF optimization through demonstrated compatibility work. These paths are now
