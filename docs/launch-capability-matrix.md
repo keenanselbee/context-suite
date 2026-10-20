@@ -7,13 +7,15 @@ for the latest source and recorded installed versions. Later lecture-specific PD
 evidence is recorded in the [lecture support goal](pdf-dark-lecture-support-goal.md).
 Neither a newer version nor a historical pass broadens the tested scope below.
 
-The owner-approved [Optimize expansion](optimization-expansion-goal.md), started
-2026-10-19, tracks new JPEG, still WebP, document-package and broader structural
-PDF work. It is planned work, not additional supported pairs in this historical
-matrix. The installed baseline remains PNG/FLAC/PDF optimization until new
-handlers have their own recorded implementation and verification.
+The [Optimize expansion](optimization-expansion-goal.md) adds implemented source
+handlers for bounded lossless JPEG, still lossless WebP, and DOCX/XLSX/PPTX package
+recompression to Auto and Lossless. They always create copies, reuse existing
+dependencies, and retain one batch admission. The recorded installed **1.5.2**
+baseline remains PNG/FLAC/PDF optimization. New source implementation and focused
+checks do not establish installation, a verified release payload, or completed
+representative/resource and visible acceptance; the goal records those gates.
 
-Matrix revision: **2026-10-10.2**. PDF dark-mode candidate **1.2.7** passes
+Matrix revision: **2026-10-19.1**. The earlier PDF dark-mode candidate **1.2.7** passes
 exact-candidate regression coverage and verified fresh archive extraction.
 It adds one mandatory-copy PDF appearance destination within the
 [documented admission policy](pdf-dark-mode-goal.md#current-admission-policy).
@@ -487,12 +489,37 @@ Optimize and original-file policy
 | PNG | Auto, Lossless, Balanced, Smallest | Validated smaller result only; lossy presets have fixed quality/alpha limits; the approved fdEC omission exception is retained |
 | Native FLAC | Auto, Lossless | Same lossless recompression policy; exact decoded samples and admitted raw metadata; smaller result only |
 | PDF | Auto, Lossless | Structural optimization, no image downsampling; 16 MiB source bound; encrypted/signature-bearing or unsupported objects refused; smaller PDF copy only |
+| JPEG, new source handler | Auto, Lossless | 8-bit grayscale/three-component baseline or progressive input; one coefficient-preserving Huffman recipe, exact decoded samples and admitted raw metadata; smaller copy only |
+| Still lossless WebP, new source handler | Auto, Lossless | One VP8L image with supported VP8X/ICC/EXIF/XMP envelope; fixed lossless method 6, quality 100, exact alpha and hidden RGB; smaller copy only; no lossy VP8 or animation |
+| DOCX/XLSX/PPTX, new source handler | Auto, Lossless | Agreeing ordinary package identity; one Deflate attempt per member, exact uncompressed bytes and preserved ZIP/package properties; smaller copy only; no Office engine or recalculation |
 | Other formats | None | A Convert target or catalog description does not add Optimize |
+
+The new image handlers use existing curated JPEG/WebP dependencies. Their shared
+source/output bound is 128 MiB and 40 million pixels; JPEG is limited to 16,384
+pixels per axis and WebP encoding to 16,383. Unsupported JPEG color/precision
+modes, HDR/gain maps, MPO/MPF, unknown application markers, and metadata or
+quantization changes after scans are refused. WebP rejects unknown/duplicate or
+inconsistent chunks, separate ALPH, and unsupported bitstream versions. Filename
+hints, including JPEG `.jpg`/`.jpeg`/`.jpe`/`.jfif` aliases, do not replace content
+and metadata admission.
+
+Office recompression uses existing .NET compression with no additional native
+or Office dependency. Its ZIP32 limits are 64 MiB source, 4,096 members, a 4 MiB
+central directory, 64 MiB per expanded member, and 256 MiB expanded total.
+Inspected declaration/main/relationship XML is limited to 8 MiB per part and
+depth 64. Supported stored/Deflate members retain ZIP 1.0/2.0 declarations;
+12-byte unsigned or 16-byte signed data descriptors require Deflate/ZIP 2.0 and
+retain their local declaration style. Encryption, signatures, macros, templates,
+slideshows, ZIP64, split archives, extra fields, unsupported flags/methods/names,
+opaque gaps or record reordering, malformed/conflicting declarations, and DTDs
+remain refusals. See the [optimizer boundaries](optimizer-design.md#office-package-recompression)
+for preservation details and [current evidence](optimization-expansion-goal.md).
 
 All work defaults to copies. Saved per-tool **Overwrite originals** applies only
 where existing validated publication and platform gates permit it; unsupported
 metadata/format cases still keep originals. Every PDF/document transformation
-above always creates copies. Recycling happens only after validated publication,
+above always creates copies, as do the new JPEG, WebP, and Office package
+optimization handlers. Recycling happens only after validated publication,
 with no permanent-delete fallback. A no-smaller result is a valid unchanged
 outcome. The [quick start](customer-quick-start.md) owns customer-facing guidance.
 

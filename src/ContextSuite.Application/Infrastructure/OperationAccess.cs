@@ -37,6 +37,10 @@ internal interface IOperationAccess
     Task<OperationAdmission> AdmitConversionAsync(ConfirmedAudioConversion confirmed, CancellationToken cancellationToken) =>
         throw new NotSupportedException("This access implementation does not admit audio conversions.");
     Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken);
+    Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedOfficePackageOptimization confirmed, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("This access implementation does not admit document package optimization.");
+    Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedLosslessImageOptimization confirmed, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("This access implementation does not admit lossless image optimization.");
     Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedFlacOptimization confirmed, CancellationToken cancellationToken) =>
         throw new NotSupportedException("This access implementation does not admit FLAC operations.");
     Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPdfOptimization confirmed, CancellationToken cancellationToken) =>
@@ -47,6 +51,22 @@ internal interface IOperationAccess
 // bookkeeping entirely; only an unactivated installation may use its trial.
 internal sealed class OperationAccess(LocalTrialStore trial, PaidLicenseManager paid) : IOperationAccess
 {
+    public async Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedOfficePackageOptimization confirmed, CancellationToken cancellationToken)
+    {
+        _ = confirmed.Plan.Confirm();
+        var status = await paid.ReadStatusAsync(cancellationToken);
+        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
+        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+    }
+
+    public async Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedLosslessImageOptimization confirmed, CancellationToken cancellationToken)
+    {
+        _ = confirmed.Plan.Confirm();
+        var status = await paid.ReadStatusAsync(cancellationToken);
+        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
+        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+    }
+
     public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedGifConversion confirmed, CancellationToken cancellationToken)
     {
         _ = confirmed.Plan.Confirm();

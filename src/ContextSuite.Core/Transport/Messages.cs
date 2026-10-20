@@ -20,7 +20,9 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     PdfPageWork? PdfPage = null, ImagePdfWork? ImagePdf = null, OfficeExportWork? OfficeWork = null, OfficePdfWork? OfficePdf = null,
     PdfDocxWork? PdfDocx = null, TiffProbe? TiffProbe = null, TiffWork? TiffWork = null, TiffPreviewRequest? TiffPreview = null,
     SvgProbe? SvgProbe = null, SvgWork? SvgWork = null, GifProbe? GifProbe = null, GifWork? GifWork = null,
-    PdfFileProbe? PdfDarkProbe = null, PdfDarkWork? PdfDarkWork = null)
+    PdfFileProbe? PdfDarkProbe = null, PdfDarkWork? PdfDarkWork = null,
+    LosslessImageOptimizationWork? LosslessImageWork = null,
+    OfficePackageProbe? PackageProbe = null, OfficePackageWork? PackageWork = null)
 {
     public const int MaximumAudioProbeBytes = 1024 * 1024;
     // A complete seekable PDF snapshot is required; base64 stays below the IPC frame limit.
@@ -28,6 +30,23 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
     public void Validate()
     {
         if (Version != 1 || RequestId == Guid.Empty) throw new InvalidDataException("Invalid worker request identity.");
+        if (Command is "office-package-probe" or "office-package-optimize")
+        {
+            if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
+                PdfBytes is not null || AudioFile is not null || FlacWork is not null || AudioTarget is not null || AudioWork is not null ||
+                PdfFile is not null || PdfWork is not null || PdfPage is not null || ImagePdf is not null || OfficeWork is not null ||
+                OfficePdf is not null || PdfDocx is not null || TiffProbe is not null || TiffWork is not null || TiffPreview is not null ||
+                SvgProbe is not null || SvgWork is not null || GifProbe is not null || GifWork is not null ||
+                PdfDarkProbe is not null || PdfDarkWork is not null || LosslessImageWork is not null)
+                throw new InvalidDataException("Unexpected document optimization request data.");
+            if (Command == "office-package-probe" && PackageProbe is { } probe && PackageWork is null) probe.Validate();
+            else if (Command == "office-package-optimize" && PackageWork is { } work && PackageProbe is null) work.Validate();
+            else throw new InvalidDataException("Invalid document optimization payload.");
+            return;
+        }
+        if (PackageProbe is not null || PackageWork is not null) throw new InvalidDataException("Unexpected document optimization payload.");
+        if (LosslessImageWork is not null && Command != "image-lossless-optimize")
+            throw new InvalidDataException("Unexpected lossless image optimization payload.");
         if (Command is "pdf-dark-probe" or "pdf-dark-convert")
         {
             if (Probe is not null || Work is not null || Preview is not null || Optimization is not null || AudioBytes is not null ||
@@ -234,13 +253,15 @@ public sealed record WorkerCommand(int Version, Guid RequestId, string Command,
         var valid = Command switch
         {
             "shutdown" or "capabilities" or "engine-info" => Probe is null && Work is null && Preview is null && Optimization is null,
-            "image-probe" or "png-probe" => Probe is not null && Work is null && Preview is null && Optimization is null,
+            "image-probe" or "png-probe" or "image-lossless-probe" => Probe is not null && Work is null && Preview is null && Optimization is null,
             "image-convert" => Work is not null && Probe is null && Preview is null && Optimization is null,
             "image-preview" => Preview is not null && Probe is null && Work is null && Optimization is null,
             "png-optimize" => Optimization is not null && Probe is null && Work is null && Preview is null,
+            "image-lossless-optimize" => LosslessImageWork is not null && Probe is null && Work is null && Preview is null && Optimization is null,
             _ => false
         };
         if (!valid) throw new InvalidDataException("Worker command payload does not match its operation.");
+        LosslessImageWork?.Validate();
     }
 }
 public sealed record ImageEngineIdentity(string Package, string Version, string NativeVersion);
@@ -255,4 +276,4 @@ public sealed record WorkerReply(int Version, Guid RequestId, MediaCapability[] 
     SvgSourceFacts? SvgSource = null, SvgWorkResult? SvgResult = null,
     GifSourceFacts? GifSource = null, GifWorkResult? GifResult = null,
     PdfDarkSource? PdfDarkSource = null, PdfDarkResult? PdfDarkResult = null,
-    int? PdfDarkFailurePage = null);
+    int? PdfDarkFailurePage = null, OfficePackageSource? PackageSource = null, OfficePackageResult? PackageResult = null);

@@ -346,6 +346,63 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
         return source;
     }
 
+    public async Task<OfficePackageSource> ProbeOfficePackageAsync(OfficePackageProbe request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "office-package-probe", PackageProbe: request), token);
+        if (reply.PackageSource is not { } source || reply.PackageResult is not null || reply.Source is not null || reply.ImageResult is not null ||
+            reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0 ||
+            source.ItemId != request.ItemId || source.Path != request.Path)
+            throw new InvalidDataException("Invalid document optimization probe response.");
+        source.Validate();
+        return source;
+    }
+
+    public async Task<OfficePackageResult> OptimizeOfficePackageAsync(OfficePackageWork request, CancellationToken token)
+    {
+        request.Validate();
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "office-package-optimize", PackageWork: request), token);
+        if (reply.PackageResult is not { } result || reply.PackageSource is not null || reply.Source is not null || reply.ImageResult is not null ||
+            reply.Preview is not null || reply.Engine is not null || reply.Capabilities.Length != 0 || result.Validation is null ||
+            result.Validation.ItemId != request.Source.ItemId || !result.Validation.MatchesPlan ||
+            result.Validation.Sha256 is not { Length: 64 } || !result.Validation.Sha256.All(char.IsAsciiHexDigit) ||
+            result.SourceSha256 != request.Source.Sha256 || result.SourceBytes != request.Source.FileBytes ||
+            result.OutputBytes <= 0 || result.OutputBytes > request.Source.FileBytes || result.Policy != request.Policy ||
+            string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 128)
+            throw new InvalidDataException("Worker result does not match document optimization.");
+        return result;
+    }
+
+    public async Task<ImageSourceFacts> ProbeLosslessImageAsync(ImageProbe request, CancellationToken token)
+    {
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "image-lossless-probe", Probe: request), token);
+        if (reply.Source is not { } source || reply.ImageResult is not null || reply.Preview is not null ||
+            reply.Engine is not null || reply.Capabilities.Length != 0)
+            throw new InvalidDataException("Invalid lossless image probe response.");
+        source.Validate();
+        if (source.ItemId != request.ItemId || !string.Equals(source.Path, Path.GetFullPath(request.SourcePath), StringComparison.OrdinalIgnoreCase) ||
+            source.Format is not (ImageFormat.Jpeg or ImageFormat.WebP) || source.UnsupportedReason is not null ||
+            source.FileBytes > 128 * 1024 * 1024 || source.Format == ImageFormat.WebP && source.IsLossy)
+            throw new InvalidDataException("Lossless image facts do not match the request.");
+        return source;
+    }
+
+    public async Task<ImageWorkResult> OptimizeLosslessImageAsync(LosslessImageOptimizationWork request, CancellationToken token)
+    {
+        request.Validate();
+        var reply = await SendAsync(new(1, Guid.NewGuid(), "image-lossless-optimize", LosslessImageWork: request), token);
+        if (reply.ImageResult is not { } result || reply.Source is not null || reply.Preview is not null ||
+            reply.Engine is not null || reply.Capabilities.Length != 0 || result.Validation is null ||
+            result.Validation.ItemId != request.Source.ItemId || !result.Validation.MatchesPlan ||
+            result.Validation.Sha256 is not { Length: 64 } || !result.Validation.Sha256.All(char.IsAsciiHexDigit) ||
+            result.Width != request.Source.Width || result.Height != request.Source.Height || result.BitDepth != request.Source.BitDepth ||
+            result.OutputBytes <= 0 || result.OutputBytes > request.Source.FileBytes ||
+            result.OutputBytes > 128 * 1024 * 1024 || string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 128 ||
+            result.OptimizationMethod != "Lossless" || result.OptimizationAttempts != 1 ||
+            result.OptimizationReason?.Length > 512 || result.PngFdECRemoved)
+            throw new InvalidDataException("Worker result does not match lossless image optimization.");
+        return result;
+    }
+
     public async Task<ImageWorkResult> ConvertAsync(ImageWork request, CancellationToken cancellationToken)
     {
         var reply = await SendAsync(new(1, Guid.NewGuid(), "image-convert", Work: request), cancellationToken);
@@ -387,7 +444,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     {
         command.Validate();
         await _gate.WaitAsync(cancellationToken);
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.AudioWork?.Target == AudioFormat.Wem || command.AudioWork?.Source.Video is not null ? 270 : command.Command == "pdf-dark-convert" ? 240 : command.Command is "images-to-pdf" or "office-export" or "pdf-to-docx" or "pdf-dark-probe" ? 180 : command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" or "office-pdf-validate" or "tiff-probe" or "tiff-convert" or "svg-probe" or "svg-convert" or "gif-probe" or "gif-convert" or "video-audio-probe" ? 120 : 30),
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(command.AudioWork?.Target == AudioFormat.Wem || command.AudioWork?.Source.Video is not null ? 270 : command.Command == "pdf-dark-convert" ? 240 : command.Command is "images-to-pdf" or "office-export" or "pdf-to-docx" or "pdf-dark-probe" ? 180 : command.Command is "flac-optimize" or "audio-convert" ? 150 : command.Command is "image-convert" or "png-optimize" or "image-lossless-optimize" or "office-package-optimize" or "pdf-optimize" or "pdf-raster-probe" or "pdf-render-page" or "office-pdf-validate" or "tiff-probe" or "tiff-convert" or "svg-probe" or "svg-convert" or "gif-probe" or "gif-convert" or "video-audio-probe" ? 120 : 30),
             timeProvider ?? TimeProvider.System);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
         try
@@ -426,6 +483,10 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             var reply = await JsonFrames.ReadAsync<WorkerReply>(_pipe!, timeout.Token);
             if (reply.Version != 1 || reply.RequestId != command.RequestId || reply.Capabilities is null)
                 throw new InvalidDataException("The media worker returned an invalid response.");
+            if (command.Command != "office-package-probe" && reply.PackageSource is not null ||
+                command.Command != "office-package-optimize" && reply.PackageResult is not null ||
+                reply.Failure is not null && (reply.PackageSource is not null || reply.PackageResult is not null))
+                throw new InvalidDataException("The media worker returned unexpected document optimization data.");
             if (command.Command != "pdf-dark-probe" && reply.PdfDarkSource is not null ||
                 command.Command != "pdf-dark-convert" && reply.PdfDarkResult is not null ||
                 command.Command is "pdf-dark-probe" or "pdf-dark-convert" &&

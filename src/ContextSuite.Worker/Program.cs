@@ -164,6 +164,12 @@ try
                     ? new(1, command.RequestId, [], PdfRaster: await pdfRaster.ProbeAsync(command.PdfFile!, lifetime.Token))
                     : new(1, command.RequestId, [], PdfPageResult: await pdfRaster.RenderFileAsync(command.PdfPage!, lifetime.Token));
             }
+            else if (command.Command is "office-package-probe" or "office-package-optimize")
+            {
+                reply = command.Command == "office-package-probe"
+                    ? new(1, command.RequestId, [], PackageSource: await OfficePackageFileAdapter.ProbeAsync(command.PackageProbe!, lifetime.Token))
+                    : new(1, command.RequestId, [], PackageResult: await OfficePackageFileAdapter.OptimizeAsync(command.PackageWork!, lifetime.Token));
+            }
             else if (command.Command is "pdf-probe" or "pdf-file-probe" or "pdf-optimize")
             {
                 pdf ??= new PdfProbeAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-engine"), args[5]);
@@ -181,6 +187,8 @@ try
                 {
                     "image-probe" => new(1, command.RequestId, [], Source: adapter.Probe(command.Probe!, lifetime.Token)),
                     "png-probe" => new(1, command.RequestId, [], Source: adapter.ProbeOptimization(command.Probe!, lifetime.Token)),
+                    "image-lossless-probe" => new(1, command.RequestId, [], Source: adapter.ProbeLosslessOptimization(command.Probe!, lifetime.Token)),
+                    "image-lossless-optimize" => new(1, command.RequestId, [], ImageResult: adapter.OptimizeLosslessImage(command.LosslessImageWork!, lifetime.Token)),
                     "png-optimize" => new(1, command.RequestId, [], ImageResult: await adapter.OptimizeAsync(command.Optimization!, lifetime.Token)),
                     "image-preview" => new(1, command.RequestId, [], Preview: adapter.Preview(command.Preview!, lifetime.Token)),
                     "image-convert" => new(1, command.RequestId, [], ImageResult: adapter.Convert(command.Work!, lifetime.Token)),

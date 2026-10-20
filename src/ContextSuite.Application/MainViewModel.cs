@@ -8,6 +8,7 @@ using ContextSuite.Core.Operations;
 using ContextSuite.Core.Transport;
 using ContextSuite.Core.Settings;
 using ContextSuite.Core.Images;
+using ContextSuite.Core.Office;
 using ContextSuite.Core.Analysis;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Pdf;
@@ -461,6 +462,8 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         var images = new List<ImageSourceFacts>();
         var audio = new List<AudioFileSource>();
         var documents = new List<PdfFileSource>();
+        var losslessImages = new List<ImageSourceFacts>();
+        var packages = new List<OfficePackageSource>();
         for (var index = 0; index < rows.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -493,6 +496,22 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                 }
                 else if (header.Identity is { FormatId: "png", Basis: IdentificationBasis.Content })
                     images.Add(await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken, forOptimization: true));
+                else if (header.Identity is { FormatId: "jpeg" or "webp", Basis: IdentificationBasis.Content } imageIdentity)
+                {
+                    var extension = Path.GetExtension(row.Path).ToLowerInvariant();
+                    if (!(imageIdentity.FormatId == "jpeg" && extension is ".jpg" or ".jpeg" or ".jpe" or ".jfif") &&
+                        !(imageIdentity.FormatId == "webp" && extension == ".webp"))
+                    {
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "The image content and filename extension differ. Rename the file before optimizing."));
+                        continue;
+                    }
+                    if (request.Action is "balanced" or "smallest")
+                    {
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For JPEG and lossless WebP, choose Auto or Lossless. Balanced and Smallest apply to PNG images."));
+                        continue;
+                    }
+                    losslessImages.Add(await worker.ProbeLosslessImageAsync(new(row.ItemId, row.Path), cancellationToken));
+                }
                 else if (header.Identity is { FormatId: "pdf", Basis: IdentificationBasis.Content })
                 {
                     if (request.Action is "balanced" or "smallest")
@@ -507,9 +526,20 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                     }
                     documents.Add(await worker.ProbePdfFileAsync(new(row.ItemId, row.Path), cancellationToken));
                 }
+                else if (Path.GetExtension(row.Path).ToLowerInvariant() is ".docx" or ".xlsx" or ".pptx")
+                {
+                    if (request.Action is "balanced" or "smallest")
+                    {
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For documents, choose Auto or Lossless. Balanced and Smallest apply to PNG images."));
+                        continue;
+                    }
+                    // Header-only analysis sees a ZIP container. A complete bounded
+                    // worker probe must establish the actual ordinary package type.
+                    packages.Add(await worker.ProbeOfficePackageAsync(new(row.ItemId, row.Path), cancellationToken));
+                }
                 else
                 {
-                    row.ApplyResult(new(row.Path, OperationState.Unsupported, "Optimization supports PNG images, FLAC audio and PDF documents. Other files are kept unchanged."));
+                    row.ApplyResult(new(row.Path, OperationState.Unsupported, "Optimization supports PNG, JPEG, still lossless WebP, FLAC, PDF, DOCX, XLSX and PPTX. Other files are kept unchanged."));
                     continue;
                 }
                 row.ApplyResult(new(row.Path, OperationState.Pending, "Preparing optimization"));
@@ -532,6 +562,8 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         var pngPlan = images.Count == 0 ? null : PngOptimizationPlan.Create(request.RequestId, images, snapshot, replace, preset);
         var flacPlan = audio.Count == 0 ? null : FlacOptimizationPlan.Create(request.RequestId, audio, snapshot, replace);
         var pdfPlan = documents.Count == 0 ? null : PdfOptimizationPlan.Create(request.RequestId, documents, snapshot);
+        var losslessPlan = losslessImages.Count == 0 ? null : LosslessImageOptimizationPlan.Create(request.RequestId, losslessImages, snapshot);
+        var packagePlan = packages.Count == 0 ? null : OfficePackageOptimizationPlan.Create(request.RequestId, packages, snapshot);
         var byId = rows.ToDictionary(row => row.ItemId);
         foreach (var item in pngPlan?.Items ?? [])
             if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));
@@ -539,16 +571,22 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
             if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));
         foreach (var item in pdfPlan?.Items ?? [])
             if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));
+        foreach (var item in losslessPlan?.Items ?? [])
+            if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));
         var png = pngPlan?.HasExecutableItems == true ? pngPlan.Confirm(replace, PublicationSupport.ReplacementAvailable) : null;
         var flac = flacPlan?.HasExecutableItems == true ? flacPlan.Confirm(replace, PublicationSupport.ReplacementAvailable) : null;
         var pdf = pdfPlan?.HasExecutableItems == true ? pdfPlan.Confirm() : null;
-        if (png is null && flac is null && pdf is null) return;
+        var lossless = losslessPlan?.HasExecutableItems == true ? losslessPlan.Confirm() : null;
+        var package = packagePlan?.Confirm();
+        if (png is null && flac is null && pdf is null && lossless is null && package is null) return;
         cancellationToken.ThrowIfCancellationRequested();
         // One Explorer invocation is one admitted batch, including mixed families.
         // All confirmed plans carry the same request ID and settings snapshot.
         var admission = png is not null ? await trial!.AdmitOptimizationAsync(png, cancellationToken)
             : flac is not null ? await trial!.AdmitOptimizationAsync(flac, cancellationToken)
-            : await trial!.AdmitOptimizationAsync(pdf!, cancellationToken);
+            : pdf is not null ? await trial!.AdmitOptimizationAsync(pdf, cancellationToken)
+            : lossless is not null ? await trial!.AdmitOptimizationAsync(lossless, cancellationToken)
+            : await trial!.AdmitOptimizationAsync(package!, cancellationToken);
         if (png is not null)
             await new PngOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(png, admission,
                 (item, result) => Report(item.Source.ItemId, result), cancellationToken);
@@ -558,6 +596,12 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         if (pdf is not null)
             await new PdfOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(pdf, admission,
                 (item, result) => Report(item.Source.ItemId, result), cancellationToken);
+        if (lossless is not null)
+            await new LosslessImageOptimizationExecutor(worker, Publisher!).ExecuteAdmittedAsync(lossless, admission,
+                (item, result) => Report(item.Source.ItemId, result), cancellationToken);
+        if (package is not null)
+            await new OfficePackageOptimizationExecutor(worker, Publisher!).ExecuteAdmittedAsync(package, admission,
+                (source, result) => Report(source.ItemId, result), cancellationToken);
 
         void Report(Guid itemId, FileResult result)
         {

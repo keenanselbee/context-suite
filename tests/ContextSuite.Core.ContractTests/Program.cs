@@ -12,6 +12,47 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--office-package-representative", var packageScratch, var packageWorker, var packageSource])
+{
+    var checks = 0;
+    await OfficePackageWorkflowContracts.RunRepresentativeAsync(packageScratch, packageWorker, packageSource, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} representative Office package checks.");
+    return 0;
+}
+
+if (args is ["--optimize-interruption", var optimizeInterruptionScratch, var optimizeInterruptionWorker])
+{
+    var checks = 0;
+    await OnUiThreadAsync(() => OptimizeExpansionInterruptionContracts.RunAsync(optimizeInterruptionScratch, optimizeInterruptionWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }));
+    Console.WriteLine($"Passed {checks} optimization interruption checks.");
+    return 0;
+}
+
+if (args is ["--pdf-long-graph", var graphScratch, var graphWorker])
+{
+    var checks = 0;
+    await PdfLongGraphWorkflowContracts.RunAsync(graphScratch, graphWorker, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); });
+    Console.WriteLine($"Passed {checks} long-graph PDF workflow checks.");
+    return 0;
+}
+
+if (args.Length is 2 or 3 && args[0] == "--optimize-expansion")
+{
+    var checks = 0;
+    void CheckExpansion(bool passed, string message)
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }
+    await OnUiThreadAsync(async () =>
+    {
+        await LosslessImageWorkflowContracts.RunAsync(args[1], args.Length == 3 ? args[2] : null, CheckExpansion);
+        await OfficePackageWorkflowContracts.RunAsync(args[1], args.Length == 3 ? args[2] : null, CheckExpansion);
+    });
+    Console.WriteLine($"Passed {checks} optimization expansion workflow checks.");
+    return 0;
+}
+
 if (args is ["--pdf-rewrite"])
 {
     var checks = 0;
@@ -945,6 +986,8 @@ try
     SvgModelContracts.Run(args[0], Check);
     await SvgApplicationContracts.RunAsync(args[0], Check);
     await PngOptimizationContracts.RunAsync(args[0], Check);
+    await LosslessImageWorkflowContracts.RunAsync(args[0], null, Check);
+    await OfficePackageWorkflowContracts.RunAsync(args[0], null, Check);
     await TrialContracts.RunAsync(args[0], Check);
     await PublicationContracts.RunAsync(args[0], Check);
     await PublicationCrashContracts.RunAsync(args[0], Check);
@@ -1178,6 +1221,8 @@ try
         await IcoWorkflowContracts.RunAsync(args[0], args[1], Check);
         await IcoWorkflowContracts.RunInterruptionAsync(args[0], args[1], Check);
         await PngOptimizationContracts.RunWorkerAsync(args[0], args[1], Check);
+        await LosslessImageWorkflowContracts.RunAsync(args[0], args[1], Check);
+        await OfficePackageWorkflowContracts.RunAsync(args[0], args[1], Check);
         await PngInterruptionContracts.RunAsync(args[0], args[1], Check);
         await DdsWorkerContracts.RunAsync(args[0], args[1], Check);
         await ImageInterruptionContracts.RunAsync(args[0], args[1], Check);

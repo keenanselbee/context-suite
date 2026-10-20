@@ -1,45 +1,28 @@
 Context Optimizer Design
 ========================
 
-Current direction, 2026-10-19: the owner approved the
-[Optimize expansion goal](optimization-expansion-goal.md). Its first milestone
-adds bounded lossless JPEG, still WebP and DOCX/XLSX/PPTX package recompression,
-plus demonstrated structural PDF compatibility improvements. These additions
-are planned, not yet enabled. Existing PNG, FLAC and structural PDF dispatch
-are included in the recorded local 1.5.2 installation; older candidate-only
-wording below describes historical checkpoints, not current payload absence.
-The new families initially use Auto/Lossless without changing PNG's presets.
+Current source, 2026-10-19: the [Optimize expansion goal](optimization-expansion-goal.md)
+adds implemented bounded lossless JPEG, still lossless WebP, and DOCX/XLSX/PPTX
+package recompression to Auto and Lossless. These handlers always create copies,
+including when Overwrite originals is saved. They share the existing batch,
+settings snapshot, access admission, sequential worker, and smaller-only
+publication. Balanced and Smallest remain PNG-only. Installed **1.5.2** retains
+the earlier PNG/FLAC/structural PDF baseline; these source additions have not
+been installed or accepted as a release. The goal records current verification
+and remaining combined-payload, resource, representative, and visible acceptance.
 
-Next scope follows [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md)
-and the [broad file support goal](broad-file-support-goal.md). Preserve the verified
-PNG recipes and add bounded lossless FLAC recompression with decoded-sample and
-metadata validation. PDF optimization is selected for launch; engine choice and
-preservation policies remain pending under the [document design](document-design.md).
-FLAC and structural PDF direct dispatch are implemented for their optional
-verified candidate engines. Auto and Lossless include PDF in the same admitted
-batch as PNG and FLAC; PDF always produces a copy, even with overwrite selected.
-Balanced and Smallest remain PNG-only. Missing engines produce an unavailable
-result before admission; normal packaging still excludes these evaluation engines.
-Format recognition alone does not enable Optimize. Broader PDF preservation and
-production engine adoption remain pending under the document design.
+Existing PNG, FLAC, and structural PDF dispatch are included in that recorded
+installation. PDF always produces a copy. Missing required engines produce an
+unavailable result before admission; format recognition alone never enables
+processing. The [document design](document-design.md) owns broader PDF bounds.
 
-The first FLAC core step now inventories bounded metadata and reconciles original
-descriptive blocks with the newly encoded STREAMINFO. Independent byte comparison
-and decoded-sample tests protect against an engine's metadata rewrite. Application
-blocks and unknown block types still require handlers before
-recompression; seek tables now rebuild against complete frame indexes with
-CRC and seeked-decoding evidence. Auto and Lossless dispatch to this path when the
-verified audio engine is present; Balanced and Smallest remain PNG-only. See
-[current experiment and preservation evidence](audio-engine-evaluation.md).
-The private [FLAC optimization candidate](audio-conversion-policy.md) now connects
-that reconciler to encoding, exact decoded-sample checks and smaller-only results.
-FLAC worker commands and sequential application publication now have isolated
-copy/collision, source-change, access-expiry, cancellation and failure evidence.
-Complete frame/CRC validation also applies to sources without seek tables.
-Mixed PNG/FLAC batches share one admission, settings snapshot and completion;
-expiry cannot stop the second family. Full metadata admission, broader
-recovery/crash coverage, production engine adoption and visible acceptance remain
-open. Missing engines and misleading file extensions are explained before admission.
+FLAC uses exact decoded-sample validation and reconciles admitted original
+metadata with the new STREAMINFO. Seek tables rebuild against complete frame
+indexes with CRC and seeked-decoding validation; frame validation also applies
+without seek tables. Unsupported application and unknown metadata blocks remain
+refusals. See the [audio policy](audio-conversion-policy.md) and
+[recorded engine evidence](audio-engine-evaluation.md). Earlier candidate-only
+records describe their dated checkpoints, not current payload absence.
 
 Current scope: [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md)
 removes the manual optimization workspace and routine preset planner. Direct
@@ -81,8 +64,9 @@ Explorer Experience
 -------------------
 
 **Optimize** is a top-level Explorer command, hidden when no processing preset
-applies to the selection. Auto and Lossless accept PNG, FLAC and PDF filename
-hints; Balanced and Smallest accept PNG only. Settings does not count as a
+applies to the selection. Source Auto and Lossless accept PNG, JPEG, WebP, FLAC,
+PDF, DOCX, XLSX, and PPTX filename hints; JPEG includes `.jpg`, `.jpeg`, `.jpe`,
+and `.jfif`. Balanced and Smallest accept PNG only. Settings does not count as a
 processing action. Mixed selections retain presets useful for at least one file.
 Direct preset IDs capture the saved output choice. The bounded shell checks only
 selection metadata and filenames; content support is checked outside Explorer
@@ -108,6 +92,8 @@ progress only when useful; problems and necessary decisions get actionable UI.
 
 The default output is a collision-safe sibling file. Replacing the source is an
 explicit option and must use recoverable transactional publication.
+JPEG, WebP, PDF, and Office package optimization always use copies in the
+current source, regardless of the saved replacement preference.
 
 Use `name - Optimized.ext`, then `name - Optimized (2).ext` for collisions.
 Preserve the source basename including existing suffixes. Replacement is disabled
@@ -135,6 +121,71 @@ Core Invariants
 - Pre-publication cancellation or failure preserves the original. Completed
   publications remain completed during batch cancellation; a later recycling
   failure retains the original backup and is reported as a cleanup warning.
+
+
+JPEG And Still Lossless WebP
+---------------------------
+
+Auto and Lossless select the same single recipe for each admitted format. JPEG
+uses the existing curated Magick.NET coefficient optimizer with optimized Huffman
+coding and baseline output, without a search across encodings. Original frame
+components/sampling and quantization tables must agree, decoded samples must be
+identical, and original admitted application/comment segments are restored
+byte-for-byte. Orientation, ICC, EXIF, XMP, density, and admitted thumbnails are
+retained without auto-orienting or rewriting descriptive metadata. This is not a
+decode-and-save JPEG transcode.
+
+JPEG admission covers 8-bit grayscale or three-component baseline/progressive
+images with ordinary JFIF, EXIF/XMP, ICC, Adobe, and comment markers. CMYK,
+higher-precision or other unsupported JPEG modes, MPO/MPF, HDR/gain maps, unknown
+application markers, metadata after a scan, and changing quantization tables
+between scans are refused. Malformed or conflicting metadata also stops work.
+
+WebP admits one 8-bit lossless `VP8L` image, optionally inside a supported `VP8X`
+envelope with ICCP, EXIF, and XMP chunks. One fixed lossless method-6 recipe uses
+quality 100 and exact transparent RGB. Validation compares all decoded samples,
+including alpha and hidden RGB, and retains original metadata chunks and header
+framing. Lossy `VP8`, separate `ALPH`, animation, unknown or duplicate chunks,
+unsupported bitstream versions, and inconsistent chunk ordering/flags are refused.
+
+Both paths have a 128 MiB source/output bound and a 40-million-pixel limit.
+JPEG permits at most 16,384 pixels per axis; WebP encoding is limited to 16,383.
+Existing color/profile and malformed-input checks still apply. Only validated
+smaller copies are published; a larger or equal result leaves the original
+unchanged. These recipes reuse the pinned JPEG/WebP engines already in the
+curated image dependency; they add no native executable or library.
+
+
+Office Package Recompression
+----------------------------
+
+Auto and Lossless admit ordinary DOCX, XLSX, and PPTX packages with agreeing
+content types, main relationships, XML roots, and filename suffixes. Each member
+gets one fixed .NET Deflate attempt; its original compressed representation is
+kept unless the attempt is smaller and its extraction version permits the change.
+Complete decoded member bytes, CRCs, and hashes must agree. Names, order, flags,
+versions, dates, attributes, comments, and required package declarations remain
+intact; only storage method, compressed lengths, and dependent offsets may change.
+Signed 16-byte and unsigned 12-byte ZIP32 data descriptors retain their framing,
+CRC, expanded size, and zero/populated local declaration style, with compressed
+lengths updated consistently. Output is always a validated smaller copy.
+
+The initial boundary is a single-disk ZIP32 package of at most 64 MiB, with at
+most 4,096 members and a 4 MiB central directory. Each expanded member is limited
+to 64 MiB and the expanded package to 256 MiB. Inspected declarations, the main
+XML part, and each relationship part have an 8 MiB XML limit and depth 64.
+Only stored and Deflate members with supported ZIP 1.0/2.0 extraction declarations
+are admitted; descriptors require Deflate and ZIP 2.0. Names must be unambiguous
+ASCII or explicitly UTF-8, without unsafe/noncanonical path segments. Local records
+must follow central-directory order without gaps or preambles.
+
+Encrypted, signed, macro-enabled, template, and slideshow packages, ZIP64, split
+archives, extra fields, unsupported flags/methods, conflicting descriptors or
+headers, malformed XML, DTDs, and unsupported names are refused. The optimizer
+does not open Office, recalculate spreadsheets, reserialize document XML, or
+refresh external links. It uses existing .NET compression and adds no Office or
+native dependency to Optimize. Exact member-byte preservation is distinct from
+the broader rendering/fidelity acceptance required for Office-to-PDF conversion.
 
 
 PNG Version 1
@@ -278,9 +329,10 @@ Selecting multiple files and invoking Optimize creates one coordinated batch.
 
 - One named optimization policy applies consistently to all files in a direct
   batch action.
-- A direct preset is offered only when every selected file supports its semantic
-  contract. A mixed-format selection may be partitioned only in **More
-  options...**, where the proposed groups are visible before execution.
+- A direct preset remains useful when at least one selected filename qualifies.
+  Content admission handles each file separately; unsupported items do not block
+  supported ones. All supported families share one access admission and settings
+  snapshot, including when trial access expires during the admitted batch.
 - One queue, progress surface, and cancellation control represent the batch.
 - Work uses bounded concurrency and prevents conflicting operations on the same
   source or destination.
@@ -325,15 +377,12 @@ Batch summaries distinguish succeeded, unchanged, cancelled, unsupported, and
 failed files.
 
 
-Planned Image And Audio Expansion
----------------------------------
+Further Lossy Processing
+------------------------
 
-Later image optimization may include JPEG and WebP only after generation-loss
-behavior and metadata handling are explicit. Re-encoding an already lossy file
-must never be described as harmless.
-
-Audio optimization should begin with lossless operations whose invariants are
-clear, such as verified FLAC recompression. Lowering the bitrate of MP3, AAC, or
+The implemented JPEG recipe preserves coefficients, and the WebP recipe admits
+lossless sources only. Further lossy image optimization requires a separate
+explicit quality and metadata policy. Lowering the bitrate of MP3, AAC, or
 Opus is a lossy transcode and requires the same explicit warning and bounded
 policy used by lossy image optimization. Changing an audio container or codec
 belongs to Converter.

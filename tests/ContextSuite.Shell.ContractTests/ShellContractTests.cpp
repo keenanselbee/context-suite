@@ -298,7 +298,11 @@ bool TestOptimizationAvailability(DllGetClassObjectFunction getClassObject, cons
     struct Case { std::vector<std::wstring> names; unsigned mask; bool directory = false; };
     const Case cases[] = {
         {{L"index.html"}, 0}, {{L"page.HTM", L"unknown.xyz"}, 0}, {{L"no-extension"}, 0},
-        {{L"image.JPEG"}, 0}, {{L"song.mp3"}, 0}, {{L"image.webp"}, 0},
+        {{L"image.JPEG"}, 3}, {{L"song.mp3"}, 0}, {{L"image.webp"}, 3},
+        {{L"image.jpg"}, 3}, {{L"image.JPE"}, 3}, {{L"image.jfif"}, 3},
+        {{L"document.docx"}, 3}, {{L"workbook.XLSX"}, 3}, {{L"slides.pptx"}, 3},
+        {{L"macro.docm"}, 0}, {{L"archive.zip"}, 0},
+        {{L"image.jpeg", L"document.docx", L"index.html"}, 3},
         {{L"image.PnG"}, 15}, {{L"song.FlAc"}, 3}, {{L"page.PDF"}, 3},
         {{L"index.html", L"image.PnG"}, 15}, {{L"index.html", L"song.FlAc"}, 3},
         {{L"page.PDF", L"song.FlAc"}, 3}, {{L"page.PDF", L"image.PnG"}, 15},

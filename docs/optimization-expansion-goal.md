@@ -70,12 +70,12 @@ Execution And Acceptance
 ------------------------
 
 - [x] Establish clean source heads, accepted scope and payload-size baseline.
-- [ ] Define exact initial image representations, metadata and engine paths.
-- [ ] Implement and verify JPEG through the real worker and application flow.
-- [ ] Implement and verify still WebP through the same flow.
-- [ ] Reproduce a useful PDF structural refusal and broaden it safely with regressions.
-- [ ] Implement DOCX/XLSX/PPTX admission, package preservation and recompression.
-- [ ] Integrate all new handlers with shell hints, batch admission, retry and settings.
+- [x] Define exact initial image representations, metadata and engine paths.
+- [x] Implement and verify JPEG through the real worker and application flow.
+- [x] Implement and verify still WebP through the same flow.
+- [x] Reproduce a useful PDF structural refusal and broaden it safely with regressions.
+- [x] Implement DOCX/XLSX/PPTX admission, package preservation and recompression.
+- [x] Integrate all new handlers with shell hints, batch admission, retry and settings.
 - [ ] Verify combined workflows and all affected installer component selections.
 - [ ] Measure final payload growth and representative processing resource use.
 - [ ] Update current support documentation, review diffs, commit completed groups,
@@ -86,12 +86,39 @@ with a bounded deterministic object table. Linked 48/128/512-object chains now
 retain aliases/cycles without consuming nesting depth; direct nesting, object,
 node and byte bounds and protected/history refusals remain. Focused verification
 passes 129 PDF rewrite/Office inventory checks; the isolated public harness passes
-5,037 foundation contracts. Actual-worker and representative-render checks remain
-open, so the PDF milestone above is not complete. Local-only evidence:
+5,037 foundation contracts at that checkpoint. Actual-worker follow-up passes
+18 checks over independently authored 48/128/512-page PDFs with linked bookmarks;
+PyMuPDF 1.28.2 independently confirms identical text, bookmarks and rendered RGBA
+pixels at 72 dpi across all 688 pages. All three produce smaller copies and repeat
+without a duplicate. These fixtures establish bounded linked-graph compatibility,
+not arbitrary PDF acceptance. The older 21 MiB historical workbook PDFs remain
+over the unchanged 16 MiB input limit. Local-only evidence:
 `.codex-temp/opt-71d1898e/pdf-rewrite.log` and `foundation-third.log` in the same
 directory. Earlier harness attempts used a relative fixture root and then the
 DLL rather than apphost; their failures are retained separately and corrected
-in the successful absolute-root/apphost invocation.
+in the successful absolute-root/apphost invocation. Follow-up evidence is
+`pdf-graphs.log` and `pdf-independent-validation.json` in the same task directory.
+
+The integrated source checkpoint passes 5,076 public foundation contracts,
+81 actual-worker/application expansion checks and 54 interruption checks covering
+active cancellation, injected timeout and killed worker for JPEG, WebP and Office.
+Each interrupted operation preserves the source, retires its reservation and
+recovers with a fresh worker. The execution deadline is 120 seconds; probes retain
+the existing 30-second boundary. Private package verification passes 280 checks,
+including signed/unsigned ZIP descriptors, exact part and structural preservation,
+malformed framing, bounded expansion and repeat behavior. Native shell checks pass;
+77 installer component checks and 132 selection checks plus 104 legacy checks pass
+with mocked installation boundaries. Native installation has not been performed.
+
+One independently produced LibreOffice workbook passes eight actual-worker checks
+and independent Python ZIP/openpyxl reopening. All 11 expanded parts, formulas,
+cached values, styles and sheet dimensions remain identical. Its 6,609-to-6,608-byte
+change is compatibility evidence, not a claim of useful typical savings. Authored
+fixtures exercise all three package families. Microsoft-produced packages and
+engine-produced DOCX/PPTX have no new application-reopen evidence in this milestone.
+Exact part preservation is tested; representative visual/owner acceptance remains
+separate. Evidence: `representative-office.log` and
+`representative-office1/independent-package-reopen.json` under the task directory.
 
 Extend existing planning, worker, executor and publication boundaries. Add
 shared code only where implemented handlers need it. Each recipe gets one

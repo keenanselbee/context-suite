@@ -79,6 +79,20 @@ internal sealed class LocalTrialStore : IOperationAccess
         return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
     }
 
+    async Task<OperationAdmission> IOperationAccess.AdmitOptimizationAsync(ConfirmedOfficePackageOptimization confirmed, CancellationToken cancellationToken)
+    {
+        _ = confirmed.Plan.Confirm();
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
+    async Task<OperationAdmission> IOperationAccess.AdmitOptimizationAsync(ConfirmedLosslessImageOptimization confirmed, CancellationToken cancellationToken)
+    {
+        _ = confirmed.Plan.Confirm();
+        var admission = await AdmitBatchAsync(confirmed.Plan.BatchId, cancellationToken);
+        return new(new(admission.IsAllowed, admission.Status.Message), admission.BatchId);
+    }
+
     async Task<OperationAdmission> IOperationAccess.AdmitOptimizationAsync(ConfirmedPdfOptimization confirmed, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(confirmed);

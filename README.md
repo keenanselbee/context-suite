@@ -36,7 +36,9 @@ bounded PDF reading-copy compatibility fixes. Its recorded verification covers
 2,915 payload files and all three registered package identities. Later source
 changes require their own verification. The approved
 [Optimize expansion goal](docs/optimization-expansion-goal.md) is in progress;
-its additional formats are not yet enabled.
+its JPEG, still lossless WebP and DOCX/XLSX/PPTX paths are implemented in source
+with mandatory copies and bounded preservation checks. They are not part of the
+installed 1.5.2 payload. The goal records current worker and packaging evidence.
 Source changes and historical passing results do not establish a newly verified
 release. Signing, native installer lifecycle, broader visual/accessibility and
 commercial acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).

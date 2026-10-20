@@ -14,7 +14,9 @@ inline bool CanOptimizeFilename(std::wstring_view name, unsigned preset)
         return CompareStringOrdinal(extension.data(), static_cast<int>(extension.size()),
             expected.data(), static_cast<int>(expected.size()), TRUE) == CSTR_EQUAL;
     };
-    return is(L".png") || (preset <= 1 && (is(L".flac") || is(L".pdf")));
+    return is(L".png") || (preset <= 1 && (is(L".flac") || is(L".pdf") ||
+        is(L".jpg") || is(L".jpeg") || is(L".jpe") || is(L".jfif") || is(L".webp") ||
+        is(L".docx") || is(L".xlsx") || is(L".pptx")));
 }
 
 // Filename hints only: the application still probes and validates every input.

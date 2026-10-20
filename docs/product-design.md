@@ -4,9 +4,12 @@ Context Suite Product Design
 Owner-approved extension, 2026-10-19: the
 [Optimize expansion goal](optimization-expansion-goal.md) adds bounded lossless
 JPEG, still WebP and DOCX/XLSX/PPTX package recompression, and broadens structural
-PDF optimization through demonstrated compatibility work. This is planned
-same-format optimization with local processing and existing publication rules;
-it does not authorize video support, installation or public release.
+PDF optimization through demonstrated compatibility work. These paths are now
+implemented in source: Auto and Lossless preserve the format, validate a smaller
+result and publish copies. JPEG/WebP and Office package work reuse existing
+dependencies; Office package recompression does not require the Convert engine.
+Installed 1.5.2 remains unchanged. Combined candidate verification and release
+acceptance are recorded separately in the goal; video remains outside this scope.
 
 Version 1.4.8 uses an immediate Technical details disclosure. Its content,
 chevron and scroll range update in the first layout without a sliding transition.
