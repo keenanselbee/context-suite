@@ -17,7 +17,13 @@ checks do not establish installation or public release. Development candidate
 and resource evidence; the goal records remaining representative and visible
 acceptance separately.
 
-Matrix revision: **2026-10-19.1**. The earlier PDF dark-mode candidate **1.2.7** passes
+Current source additionally implements the [preset expansion](optimization-presets-goal.md):
+all four presets for JPEG/still WebP/PDF/DOCX/XLSX/PPTX alongside PNG, and exact
+Auto/Lossless for TGA/ODT/ODS/ODP/EPUB alongside FLAC. The goal specifies eligible
+representations, image preservation limits, and verification. These additions
+are absent from the reserved 1.5.3 payload and installed 1.5.2.
+
+Matrix revision: **2026-10-19.2**. The earlier PDF dark-mode candidate **1.2.7** passes
 exact-candidate regression coverage and verified fresh archive extraction.
 It adds one mandatory-copy PDF appearance destination within the
 [documented admission policy](pdf-dark-mode-goal.md#current-admission-policy).

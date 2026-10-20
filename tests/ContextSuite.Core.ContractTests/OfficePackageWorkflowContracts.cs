@@ -89,6 +89,15 @@ internal static class OfficePackageWorkflowContracts
         Refuses(() => (source with { FileBytes = OfficePackageSource.MaximumFileBytes + 1L }).Validate(), "source byte budget");
         Refuses(() => (source with { Sha256 = new('Z', 64) }).Validate(), "invalid source hash");
         var work = new OfficePackageWork(source, Path.Combine(scratch, $".context-suite-{source.ItemId:N}.tmp"));
+        foreach (var preset in Enum.GetValues<ImageOptimizationPreset>())
+        {
+            var selected = OfficePackageOptimizationPlan.Create(Guid.NewGuid(), [source], settings, preset).Confirm();
+            (work with { Policy = OfficePackageOptimizationPlan.PolicyFor(preset) }).Validate();
+            check(selected.Plan.Preset == preset &&
+                OfficePackageOptimizationPlan.PresetFor(OfficePackageOptimizationPlan.PolicyFor(preset)) == preset,
+                $"Office package: {preset} has an explicit versioned policy");
+        }
+        Refuses(() => (plan with { Preset = (ImageOptimizationPreset)99 }).Confirm(), "unknown preset");
         new WorkerCommand(1, Guid.NewGuid(), "office-package-probe", PackageProbe: new(source.ItemId, source.Path)).Validate();
         new WorkerCommand(1, Guid.NewGuid(), "office-package-optimize", PackageWork: work).Validate();
         check(true, "Office package: typed probe and optimization protocol validates");

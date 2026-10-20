@@ -18,6 +18,7 @@ internal sealed class PdfOptimizationExecutor(WorkerClient worker, OutputPublish
     internal async Task<PdfBatchExecution> ExecuteAdmittedAsync(ConfirmedPdfOptimization confirmed, OperationAdmission admission,
         Action<PdfOptimizationItem, FileResult>? report, CancellationToken token)
     {
+        _ = confirmed.Plan.Confirm();
         if (admission.BatchId != confirmed.Plan.BatchId) throw new InvalidDataException("PDF admission belongs to another batch.");
         var results = new List<FileResult>();
         foreach (var item in confirmed.Plan.Items)
@@ -37,8 +38,13 @@ internal sealed class PdfOptimizationExecutor(WorkerClient worker, OutputPublish
                     if (reservation.Record.Source.Sha256 != item.Source.Sha256 || reservation.Record.Source.Length != item.Source.FileBytes)
                         throw new InvalidDataException("PDF source changed after planning.");
                     report?.Invoke(item, new(item.Source.Path, OperationState.Running, "Optimizing and verifying PDF"));
-                    var optimized = await worker.OptimizePdfAsync(new(item.Source, reservation.TemporaryPath), token);
+                    var optimized = await worker.OptimizePdfAsync(new(item.Source, reservation.TemporaryPath,
+                        PdfOptimizationPlan.PolicyFor(confirmed.Plan.Preset)), token);
                     result = (await publisher.PublishAsync(reservation, optimized.Validation, token)).ToFileResult() with { EngineIdentity = optimized.EngineIdentity };
+                    result = result with { Message = result.Message + $" Requested: {confirmed.Plan.Preset}. " +
+                        (confirmed.Plan.Preset is ImageOptimizationPreset.Balanced or ImageOptimizationPreset.Smallest
+                            ? "Eligible embedded JPEG images may use bounded lossy recompression; text and document structure are preserved."
+                            : "Document content is unchanged.") };
                 }
                 catch (OperationCanceledException)
                 {

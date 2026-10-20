@@ -5,7 +5,8 @@ Owner-approved extension, 2026-10-19: the
 [Optimize preset expansion goal](optimization-presets-goal.md) extends meaningful
 quality choices across supported formats, with bounded fixed recipes, mandatory
 copies for new paths, and format-specific preservation and quality evidence.
-This work is active; the first expansion's verified candidate remains separate.
+The bounded source implementation and verification are complete; the first
+expansion's verified candidate remains separate from these later source changes.
 
 Owner-approved extension, 2026-10-19: the
 [Optimize expansion goal](optimization-expansion-goal.md) adds bounded lossless

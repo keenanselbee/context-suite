@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using ContextSuite.Core.Images;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Settings;
 
@@ -22,30 +23,52 @@ public sealed record OfficePackageSource(Guid ItemId, string Path, string Sha256
     {
         new OfficePackageProbe(ItemId, Path).Validate();
         if (Sha256 is not { Length: 64 } || !Sha256.All(char.IsAsciiHexDigit) || FileBytes is <= 0 or > MaximumFileBytes ||
-            Format is not ("docx" or "xlsx" or "pptx") || !System.IO.Path.GetExtension(Path).Equals("." + Format, StringComparison.OrdinalIgnoreCase))
+            Format is not ("docx" or "xlsx" or "pptx" or "odt" or "ods" or "odp" or "epub") ||
+            !System.IO.Path.GetExtension(Path).Equals("." + Format, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Invalid document package source facts.");
     }
 }
 
-public sealed record OfficePackageOptimizationPlan(Guid BatchId, BatchSettings Settings, ImmutableArray<OfficePackageSource> Sources)
+public sealed record OfficePackageOptimizationPlan(Guid BatchId, BatchSettings Settings, ImmutableArray<OfficePackageSource> Sources,
+    ImageOptimizationPreset Preset = ImageOptimizationPreset.Lossless)
 {
     public const string Policy = "ooxml-package-lossless-v1";
-    public static OfficePackageOptimizationPlan Create(Guid batchId, IEnumerable<OfficePackageSource> sources, BatchSettings settings)
+    public static string PolicyFor(ImageOptimizationPreset preset)
     {
-        if (batchId == Guid.Empty || settings?.Operation != "optimize" || settings.Preferences is null)
+        if (!Enum.IsDefined(preset)) throw new InvalidDataException("Unknown document optimization preset.");
+        return $"ooxml-package-{preset.ToString().ToLowerInvariant()}-v1";
+    }
+
+    public static ImageOptimizationPreset PresetFor(string policy)
+    {
+        foreach (var preset in Enum.GetValues<ImageOptimizationPreset>())
+            if (PolicyFor(preset) == policy) return preset;
+        throw new InvalidDataException("Unknown document optimization policy.");
+    }
+
+    public static OfficePackageOptimizationPlan Create(Guid batchId, IEnumerable<OfficePackageSource> sources, BatchSettings settings,
+        ImageOptimizationPreset preset = ImageOptimizationPreset.Lossless)
+    {
+        if (batchId == Guid.Empty || settings?.Operation != "optimize" || settings.Preferences is null || !Enum.IsDefined(preset))
             throw new InvalidDataException("Invalid document optimization batch or settings.");
         var items = sources.Take(4097).ToImmutableArray();
         if (items.IsEmpty || items.Length > 4096 || items.Any(source => source is null) ||
             items.Select(source => source.ItemId).Distinct().Count() != items.Length)
             throw new InvalidDataException("Invalid document optimization selection.");
-        foreach (var source in items) source.Validate();
-        return new(batchId, settings, items);
+        foreach (var source in items)
+        {
+            source.Validate();
+            if (source.Format is "odt" or "ods" or "odp" or "epub" &&
+                preset is ImageOptimizationPreset.Balanced or ImageOptimizationPreset.Smallest)
+                throw new InvalidDataException("This document family supports Auto and Lossless only.");
+        }
+        return new(batchId, settings, items, preset);
     }
 
     public ConfirmedOfficePackageOptimization Confirm()
     {
         if (Sources.IsDefaultOrEmpty) throw new InvalidDataException("No document optimization plan.");
-        _ = Create(BatchId, Sources, Settings);
+        _ = Create(BatchId, Sources, Settings, Preset);
         Settings.SelectOutput(false, false, false, false);
         return new(this);
     }
@@ -63,7 +86,11 @@ public sealed record OfficePackageWork(OfficePackageSource Source, string Tempor
     {
         if (Source is null) throw new InvalidDataException("Missing document optimization source.");
         Source.Validate();
-        if (Policy != OfficePackageOptimizationPlan.Policy || !OfficePackageProbe.ValidPath(TemporaryPath) ||
+        var preset = OfficePackageOptimizationPlan.PresetFor(Policy);
+        if (Source.Format is "odt" or "ods" or "odp" or "epub" &&
+            preset is ImageOptimizationPreset.Balanced or ImageOptimizationPreset.Smallest)
+            throw new InvalidDataException("This document family supports Auto and Lossless only.");
+        if (!OfficePackageProbe.ValidPath(TemporaryPath) ||
             System.IO.Path.GetFileName(TemporaryPath) != $".context-suite-{Source.ItemId:N}.tmp" ||
             string.Equals(System.IO.Path.GetFullPath(TemporaryPath), System.IO.Path.GetFullPath(Source.Path), StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Invalid document optimization work or reservation.");

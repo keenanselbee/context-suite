@@ -42,6 +42,11 @@ preservation checks. The exact candidate passes 5,441 foundation contracts and
 Optimize-only component workflows. The application payload grows by 132 KiB with
 no new native engines. The first expansion milestone and its fixture cleanup are
 complete. These changes are not installed.
+The subsequent [preset expansion](docs/optimization-presets-goal.md) adds
+Balanced/Smallest to JPEG, still WebP, PDF, and DOCX/XLSX/PPTX, plus exact
+Auto/Lossless TGA, OpenDocument, and EPUB paths. It reuses existing engines and
+keeps mandatory copies. Its scratch-source checks and bounded quality evidence
+are separate from the reserved 1.5.3 candidate.
 Source changes and historical passing results do not establish a newly verified
 release. Signing, native installer lifecycle, broader visual/accessibility and
 commercial acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).

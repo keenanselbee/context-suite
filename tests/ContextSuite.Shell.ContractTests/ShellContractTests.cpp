@@ -298,14 +298,16 @@ bool TestOptimizationAvailability(DllGetClassObjectFunction getClassObject, cons
     struct Case { std::vector<std::wstring> names; unsigned mask; bool directory = false; };
     const Case cases[] = {
         {{L"index.html"}, 0}, {{L"page.HTM", L"unknown.xyz"}, 0}, {{L"no-extension"}, 0},
-        {{L"image.JPEG"}, 3}, {{L"song.mp3"}, 0}, {{L"image.webp"}, 3},
-        {{L"image.jpg"}, 3}, {{L"image.JPE"}, 3}, {{L"image.jfif"}, 3},
-        {{L"document.docx"}, 3}, {{L"workbook.XLSX"}, 3}, {{L"slides.pptx"}, 3},
+        {{L"image.JPEG"}, 15}, {{L"song.mp3"}, 0}, {{L"image.webp"}, 15},
+        {{L"image.jpg"}, 15}, {{L"image.JPE"}, 15}, {{L"image.jfif"}, 15},
+        {{L"document.docx"}, 15}, {{L"workbook.XLSX"}, 15}, {{L"slides.pptx"}, 15},
         {{L"macro.docm"}, 0}, {{L"archive.zip"}, 0},
-        {{L"image.jpeg", L"document.docx", L"index.html"}, 3},
-        {{L"image.PnG"}, 15}, {{L"song.FlAc"}, 3}, {{L"page.PDF"}, 3},
+        {{L"image.TGA"}, 3}, {{L"image.bmp"}, 0}, {{L"image.gif"}, 0},
+        {{L"document.odt"}, 3}, {{L"sheet.ods"}, 3}, {{L"slides.odp"}, 3}, {{L"book.epub"}, 3},
+        {{L"image.jpeg", L"document.docx", L"index.html"}, 15},
+        {{L"image.PnG"}, 15}, {{L"song.FlAc"}, 3}, {{L"page.PDF"}, 15},
         {{L"index.html", L"image.PnG"}, 15}, {{L"index.html", L"song.FlAc"}, 3},
-        {{L"page.PDF", L"song.FlAc"}, 3}, {{L"page.PDF", L"image.PnG"}, 15},
+        {{L"page.PDF", L"song.FlAc"}, 15}, {{L"page.PDF", L"image.PnG"}, 15},
         {{L"optimize-folder.png"}, 0, true}
     };
     EXPCMDSTATE emptyState = ECS_ENABLED;

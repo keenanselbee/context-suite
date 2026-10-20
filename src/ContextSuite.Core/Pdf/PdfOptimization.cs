@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using ContextSuite.Core.Analysis;
+using ContextSuite.Core.Images;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Settings;
 
@@ -34,14 +35,32 @@ public sealed record PdfOptimizationItem(PdfFileSource Source, string? BlockReas
     public bool CanExecute => BlockReason is null;
 }
 
-public sealed record PdfOptimizationPlan(Guid BatchId, BatchSettings Settings, ImmutableArray<PdfOptimizationItem> Items)
+public sealed record PdfOptimizationPlan(Guid BatchId, BatchSettings Settings, ImmutableArray<PdfOptimizationItem> Items,
+    ImageOptimizationPreset Preset = ImageOptimizationPreset.Lossless)
 {
     public const string Policy = "pdf-structural-1";
     public bool HasExecutableItems => !Items.IsDefaultOrEmpty && Items.Any(item => item.CanExecute);
 
-    public static PdfOptimizationPlan Create(Guid batchId, IEnumerable<PdfFileSource> sources, BatchSettings settings)
+    public static string PolicyFor(ImageOptimizationPreset preset) => preset switch
     {
-        if (batchId == Guid.Empty || settings?.Operation != "optimize" || settings.Preferences is null)
+        ImageOptimizationPreset.Lossless => Policy,
+        ImageOptimizationPreset.Auto => "pdf-auto-1",
+        ImageOptimizationPreset.Balanced => "pdf-images-balanced-1",
+        ImageOptimizationPreset.Smallest => "pdf-images-smallest-1",
+        _ => throw new InvalidDataException("Unknown PDF optimization preset.")
+    };
+
+    public static ImageOptimizationPreset PresetFor(string policy)
+    {
+        foreach (var preset in Enum.GetValues<ImageOptimizationPreset>())
+            if (PolicyFor(preset) == policy) return preset;
+        throw new InvalidDataException("Unknown PDF optimization policy.");
+    }
+
+    public static PdfOptimizationPlan Create(Guid batchId, IEnumerable<PdfFileSource> sources, BatchSettings settings,
+        ImageOptimizationPreset preset = ImageOptimizationPreset.Lossless)
+    {
+        if (batchId == Guid.Empty || settings?.Operation != "optimize" || settings.Preferences is null || !Enum.IsDefined(preset))
             throw new InvalidDataException("Invalid PDF optimization settings or batch.");
         var items = sources.Take(4097).Select(source =>
         {
@@ -51,13 +70,13 @@ public sealed record PdfOptimizationPlan(Guid BatchId, BatchSettings Settings, I
         }).ToImmutableArray();
         if (items.IsEmpty || items.Length > 4096 || items.Select(item => item.Source.ItemId).Distinct().Count() != items.Length)
             throw new InvalidDataException("Invalid PDF optimization selection.");
-        return new(batchId, settings, items);
+        return new(batchId, settings, items, preset);
     }
 
     public ConfirmedPdfOptimization Confirm()
     {
         if (Items.IsDefaultOrEmpty || Items.Any(item => item?.Source is null)) throw new InvalidDataException("No valid PDF optimization plan.");
-        var expected = Create(BatchId, Items.Select(item => item.Source), Settings);
+        var expected = Create(BatchId, Items.Select(item => item.Source), Settings, Preset);
         if (!HasExecutableItems || !expected.Items.SequenceEqual(Items)) throw new InvalidDataException("No valid PDF optimization plan.");
         // Document transformations currently always publish copies, including when
         // the saved Optimize preference requests replacement for supported media.
@@ -78,7 +97,8 @@ public sealed record PdfOptimizationWork(PdfFileSource Source, string TemporaryP
     {
         if (Source is null) throw new InvalidDataException("Missing PDF source.");
         Source.Validate();
-        if (Policy != PdfOptimizationPlan.Policy || !PdfFileProbe.ValidPath(TemporaryPath) ||
+        _ = PdfOptimizationPlan.PresetFor(Policy);
+        if (!PdfFileProbe.ValidPath(TemporaryPath) ||
             System.IO.Path.GetFileName(TemporaryPath) != $".context-suite-{Source.ItemId:N}.tmp" ||
             string.Equals(System.IO.Path.GetFullPath(TemporaryPath), System.IO.Path.GetFullPath(Source.Path), StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Invalid PDF optimization work or output reservation.");

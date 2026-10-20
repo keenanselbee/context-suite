@@ -28,9 +28,14 @@ internal sealed class OfficePackageOptimizationExecutor(WorkerClient worker, Out
                     if (reservation.Record.Source.Sha256 != source.Sha256 || reservation.Record.Source.Length != source.FileBytes)
                         throw new InvalidDataException("Source changed after planning.");
                     report?.Invoke(source, new(source.Path, OperationState.Running, "Recompressing and verifying document"));
-                    var optimized = await worker.OptimizeOfficePackageAsync(new(source, reservation.TemporaryPath), token);
+                    var optimized = await worker.OptimizeOfficePackageAsync(new(source, reservation.TemporaryPath,
+                        OfficePackageOptimizationPlan.PolicyFor(confirmed.Plan.Preset)), token);
                     result = (await publisher.PublishAsync(reservation, optimized.Validation, token)).ToFileResult()
                         with { EngineIdentity = optimized.EngineIdentity };
+                    result = result with { Message = result.Message + $" Requested: {confirmed.Plan.Preset}. " +
+                        (confirmed.Plan.Preset is ImageOptimizationPreset.Balanced or ImageOptimizationPreset.Smallest
+                            ? "Eligible embedded images may use bounded lossy recompression; other document content is preserved."
+                            : "Document member content is unchanged.") };
                 }
                 catch (OperationCanceledException)
                 {

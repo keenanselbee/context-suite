@@ -484,7 +484,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                 {
                     if (request.Action is "balanced" or "smallest")
                     {
-                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For FLAC, choose Auto or Lossless. Balanced and Smallest apply to PNG images."));
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For FLAC, choose Auto or Lossless to preserve audio samples."));
                         continue;
                     }
                     if (!worker.HasFlacOptimizer)
@@ -496,6 +496,17 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                 }
                 else if (header.Identity is { FormatId: "png", Basis: IdentificationBasis.Content })
                     images.Add(await worker.ProbeAsync(new(row.ItemId, row.Path), cancellationToken, forOptimization: true));
+                else if (Path.GetExtension(row.Path).Equals(".tga", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (request.Action is "balanced" or "smallest")
+                    {
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For TGA, choose Auto or Lossless for exact run-length compression."));
+                        continue;
+                    }
+                    var tga = await worker.ProbeLosslessImageAsync(new(row.ItemId, row.Path), cancellationToken);
+                    if (tga.Format != ImageFormat.Tga) throw new InvalidDataException("TGA filename does not match its content.");
+                    losslessImages.Add(tga);
+                }
                 else if (header.Identity is { FormatId: "jpeg" or "webp", Basis: IdentificationBasis.Content } imageIdentity)
                 {
                     var extension = Path.GetExtension(row.Path).ToLowerInvariant();
@@ -505,20 +516,10 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                         row.ApplyResult(new(row.Path, OperationState.Unsupported, "The image content and filename extension differ. Rename the file before optimizing."));
                         continue;
                     }
-                    if (request.Action is "balanced" or "smallest")
-                    {
-                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For JPEG and lossless WebP, choose Auto or Lossless. Balanced and Smallest apply to PNG images."));
-                        continue;
-                    }
                     losslessImages.Add(await worker.ProbeLosslessImageAsync(new(row.ItemId, row.Path), cancellationToken));
                 }
                 else if (header.Identity is { FormatId: "pdf", Basis: IdentificationBasis.Content })
                 {
-                    if (request.Action is "balanced" or "smallest")
-                    {
-                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For PDF, choose Auto or Lossless. Balanced and Smallest apply to PNG images."));
-                        continue;
-                    }
                     if (!worker.HasPdfOptimizer)
                     {
                         row.ApplyResult(new(row.Path, OperationState.Unsupported, "PDF optimization is unavailable in this build."));
@@ -526,11 +527,12 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                     }
                     documents.Add(await worker.ProbePdfFileAsync(new(row.ItemId, row.Path), cancellationToken));
                 }
-                else if (Path.GetExtension(row.Path).ToLowerInvariant() is ".docx" or ".xlsx" or ".pptx")
+                else if (Path.GetExtension(row.Path).ToLowerInvariant() is ".docx" or ".xlsx" or ".pptx" or ".odt" or ".ods" or ".odp" or ".epub")
                 {
-                    if (request.Action is "balanced" or "smallest")
+                    if (Path.GetExtension(row.Path).ToLowerInvariant() is ".odt" or ".ods" or ".odp" or ".epub" &&
+                        request.Action is "balanced" or "smallest")
                     {
-                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For documents, choose Auto or Lossless. Balanced and Smallest apply to PNG images."));
+                        row.ApplyResult(new(row.Path, OperationState.Unsupported, "For OpenDocument and EPUB files, choose Auto or Lossless to preserve every document part."));
                         continue;
                     }
                     // Header-only analysis sees a ZIP container. A complete bounded
@@ -539,7 +541,8 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                 }
                 else
                 {
-                    row.ApplyResult(new(row.Path, OperationState.Unsupported, "Optimization supports PNG, JPEG, still lossless WebP, FLAC, PDF, DOCX, XLSX and PPTX. Other files are kept unchanged."));
+                    row.ApplyResult(new(row.Path, OperationState.Unsupported,
+                        "Optimization supports PNG, JPEG, still WebP, TGA, FLAC, PDF, DOCX, XLSX, PPTX, ODT, ODS, ODP, and EPUB. Other files are kept unchanged."));
                     continue;
                 }
                 row.ApplyResult(new(row.Path, OperationState.Pending, "Preparing optimization"));
@@ -561,9 +564,14 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         };
         var pngPlan = images.Count == 0 ? null : PngOptimizationPlan.Create(request.RequestId, images, snapshot, replace, preset);
         var flacPlan = audio.Count == 0 ? null : FlacOptimizationPlan.Create(request.RequestId, audio, snapshot, replace);
-        var pdfPlan = documents.Count == 0 ? null : PdfOptimizationPlan.Create(request.RequestId, documents, snapshot);
-        var losslessPlan = losslessImages.Count == 0 ? null : LosslessImageOptimizationPlan.Create(request.RequestId, losslessImages, snapshot);
-        var packagePlan = packages.Count == 0 ? null : OfficePackageOptimizationPlan.Create(request.RequestId, packages, snapshot);
+        var imagePreset = request.Action switch
+        {
+            "auto" => ImageOptimizationPreset.Auto, "balanced" => ImageOptimizationPreset.Balanced,
+            "smallest" => ImageOptimizationPreset.Smallest, _ => ImageOptimizationPreset.Lossless
+        };
+        var pdfPlan = documents.Count == 0 ? null : PdfOptimizationPlan.Create(request.RequestId, documents, snapshot, imagePreset);
+        var losslessPlan = losslessImages.Count == 0 ? null : LosslessImageOptimizationPlan.Create(request.RequestId, losslessImages, snapshot, imagePreset);
+        var packagePlan = packages.Count == 0 ? null : OfficePackageOptimizationPlan.Create(request.RequestId, packages, snapshot, imagePreset);
         var byId = rows.ToDictionary(row => row.ItemId);
         foreach (var item in pngPlan?.Items ?? [])
             if (!item.CanExecute) byId[item.Source.ItemId].ApplyResult(new(item.Source.Path, OperationState.Unsupported, item.BlockReason!));

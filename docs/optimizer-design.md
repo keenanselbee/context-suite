@@ -1,20 +1,16 @@
 Context Optimizer Design
 ========================
 
-Active work: the [preset expansion goal](optimization-presets-goal.md) extends
-quality choices where they have a meaningful, validated tradeoff. Its unchecked
-work and source changes are not part of the verified candidate described below.
+Current source, 2026-10-19: the [preset expansion](optimization-presets-goal.md)
+adds four meaningful presets for PNG, JPEG, still WebP, PDF, and DOCX/XLSX/PPTX.
+Auto/Lossless also support FLAC, TGA, ODT/ODS/ODP, and EPUB. New image and document
+paths always create copies, share one batch admission and sequential worker, and
+publish only validated smaller results. Inapplicable presets explain the limit.
 
-Current source, 2026-10-19: the [Optimize expansion goal](optimization-expansion-goal.md)
-adds implemented bounded lossless JPEG, still lossless WebP, and DOCX/XLSX/PPTX
-package recompression to Auto and Lossless. These handlers always create copies,
-including when Overwrite originals is saved. They share the existing batch,
-settings snapshot, access admission, sequential worker, and smaller-only
-publication. Balanced and Smallest remain PNG-only. Installed **1.5.2** retains
-the earlier PNG/FLAC/structural PDF baseline; these source additions have not
-been installed or accepted as a release. The goal records current verification
-including verified development candidate 1.5.3, measured component/resource
-evidence, and remaining representative and visible release acceptance.
+Installed **1.5.2** retains the earlier PNG/FLAC/structural PDF baseline. Reserved
+candidate **1.5.3** contains the [first expansion](optimization-expansion-goal.md),
+not this later preset work. Current scratch builds do not update either payload
+or establish release acceptance. The preset goal records current checks and limits.
 
 Existing PNG, FLAC, and structural PDF dispatch are included in that recorded
 installation. PDF always produces a copy. Missing required engines produce an
@@ -70,8 +66,8 @@ Explorer Experience
 
 **Optimize** is a top-level Explorer command, hidden when no processing preset
 applies to the selection. Source Auto and Lossless accept PNG, JPEG, WebP, FLAC,
-PDF, DOCX, XLSX, and PPTX filename hints; JPEG includes `.jpg`, `.jpeg`, `.jpe`,
-and `.jfif`. Balanced and Smallest accept PNG only. Settings does not count as a
+PDF, DOCX, XLSX, PPTX, TGA, ODT, ODS, ODP, and EPUB filename hints; JPEG includes `.jpg`, `.jpeg`, `.jpe`,
+and `.jfif`. Balanced and Smallest accept PNG, JPEG, WebP, PDF, DOCX, XLSX, and PPTX. Settings does not count as a
 processing action. Mixed selections retain presets useful for at least one file.
 Direct preset IDs capture the saved output choice. The bounded shell checks only
 selection metadata and filenames; content support is checked outside Explorer
@@ -80,7 +76,7 @@ No manual picker or routine preset planner is exposed. Expired access appears
 as an actionable problem with License and Retry failed; retry retains the
 selected file and preset. Legacy choose-preset activation uses conservative
 Lossless directly. Direct Explorer Auto remains first.
-Implemented direct PNG actions are:
+The direct actions are:
 
 - **Auto** — the first/recommended action; a conservative, image-specific choice
   of one conservative recipe, with worthwhile savings and bounded visual loss.
@@ -97,7 +93,7 @@ progress only when useful; problems and necessary decisions get actionable UI.
 
 The default output is a collision-safe sibling file. Replacing the source is an
 explicit option and must use recoverable transactional publication.
-JPEG, WebP, PDF, and Office package optimization always use copies in the
+JPEG, WebP, TGA, PDF, and document package optimization always use copies in the
 current source, regardless of the saved replacement preference.
 
 Use `name - Optimized.ext`, then `name - Optimized (2).ext` for collisions.
@@ -128,11 +124,10 @@ Core Invariants
   failure retains the original backup and is reported as a cleanup warning.
 
 
-JPEG And Still Lossless WebP
----------------------------
+JPEG And Still WebP
+-------------------
 
-Auto and Lossless select the same single recipe for each admitted format. JPEG
-uses the existing curated Magick.NET coefficient optimizer with optimized Huffman
+Lossless, and Auto on already-lossy input, select exact preservation. JPEG uses the existing curated Magick.NET coefficient optimizer with optimized Huffman
 coding and baseline output, without a search across encodings. Original frame
 components/sampling and quantization tables must agree, decoded samples must be
 identical, and original admitted application/comment segments are restored
@@ -146,12 +141,24 @@ higher-precision or other unsupported JPEG modes, MPO/MPF, HDR/gain maps, unknow
 application markers, metadata after a scan, and changing quantization tables
 between scans are refused. Malformed or conflicting metadata also stops work.
 
-WebP admits one 8-bit lossless `VP8L` image, optionally inside a supported `VP8X`
-envelope with ICCP, EXIF, and XMP chunks. One fixed lossless method-6 recipe uses
-quality 100 and exact transparent RGB. Validation compares all decoded samples,
-including alpha and hidden RGB, and retains original metadata chunks and header
-framing. Lossy `VP8`, separate `ALPH`, animation, unknown or duplicate chunks,
-unsupported bitstream versions, and inconsistent chunk ordering/flags are refused.
+WebP admits one ordinary still 8-bit VP8 or VP8L image, optionally inside a
+supported VP8X envelope with ICCP, EXIF, and XMP. Lossless uses method 6, quality
+100, exact alpha/hidden RGB, and exact decoded validation. A lossless encoding of
+already-lossy input does not restore lost detail and often gives no smaller result.
+Animation, unknown or duplicate chunks, and conflicting ordering/flags are refused.
+Metadata chunks remain byte-identical; container framing adapts to the encoding.
+
+Balanced and Smallest use fixed quality 92 and 84 respectively: JPEG retains
+4:4:4 sampling; WebP uses method 6. These quality numbers are codec settings, not
+percentages or universal quality scores. Full decoded local, edge, gradient,
+color-bias, and sample-error checks can reject a candidate. Photograph texture
+has a separately bounded tolerance; flat regions and text edges retain stricter
+checks. Alpha-bearing inputs currently stay exact. Balanced may fall back once
+to Lossless; Smallest may fall back once to Balanced, with no recursive attempt.
+Auto may select Balanced for an opaque lossless WebP with conservative preflight;
+it stays Lossless when uncertain and never selects Smallest. All attempts start
+from the original and share a 110-second deadline. Result details report the
+requested preset, actual recipe, attempts, and fallback reason.
 
 Both paths have a 128 MiB source/output bound and a 40-million-pixel limit.
 JPEG permits at most 16,384 pixels per axis; WebP encoding is limited to 16,383.
@@ -191,6 +198,43 @@ does not open Office, recalculate spreadsheets, reserialize document XML, or
 refresh external links. It uses existing .NET compression and adds no Office or
 native dependency to Optimize. Exact member-byte preservation is distinct from
 the broader rendering/fidelity acceptance required for Office-to-PDF conversion.
+
+
+Document Image Presets And Additional Containers
+------------------------------------------------
+
+PDF Balanced/Smallest replace only validated ordinary JPEG image streams using
+the same bounded image recipes. Eligible streams must have direct DeviceRGB or
+DeviceGray, eight-bit samples, matching JPEG components, and a restricted image
+dictionary. Masks, attachments, transfer functions, or display-color overrides
+keep all image streams exact. Unsupported images stay unchanged. The complete
+expected object graph is compared after qpdf rewrites it; text, fonts, vectors,
+page structure, and all other content remain exact. Auto/Lossless remain structural
+compression only. No page rasterization, downsampling, or generic lossy qpdf flag
+is enabled. Existing signed/encrypted refusals and the 16 MiB input bound remain.
+
+DOCX/XLSX/PPTX Balanced/Smallest may replace individually certified JPEG/WebP
+members referenced as images, while preserving every other member byte and ZIP
+property. Ambiguous relationships or non-image aliases prevent image replacement.
+PNG and other embedded formats remain unchanged in this increment. Auto/Lossless
+remain package-only. Recognized active edit/write protection is refused. Image
+processing is bounded to 128 images and 80 million total pixels, within the
+package deadline. No Office application, recalculation, XML rewriting, or new
+native dependency is involved. Package reopen evidence is separate from universal
+rendering/fidelity acceptance.
+
+ODT, ODS, ODP, and EPUB support Auto/Lossless exact package compression through
+the same bounded ZIP32 parser. The first stored `mimetype` and all expanded member
+bytes remain unchanged. Identity, required manifests/references, and passive
+content are checked. EPUB supports a single rootfile with ordinary EPUB 2/3
+navigation. Encryption/obfuscated fonts, signatures, scripts, DTDs, and recognized
+protection are refused. This is bounded package admission, not full schema or
+reader conformance. Balanced/Smallest are unavailable rather than duplicate labels.
+
+TGA Auto/Lossless use exact RLE packets for admitted 24/32-bit true-color images.
+Samples including hidden RGB, dimensions, origin, image ID, and the supported
+footer remain exact. Extended/developer footer areas remain unsupported. Existing
+128 MiB and 40-million-pixel image bounds apply. No lossy TGA policy is offered.
 
 
 PNG Version 1
@@ -385,9 +429,9 @@ failed files.
 Further Lossy Processing
 ------------------------
 
-The implemented JPEG recipe preserves coefficients, and the WebP recipe admits
-lossless sources only. Further lossy image optimization requires a separate
-explicit quality and metadata policy. Lowering the bitrate of MP3, AAC, or
+JPEG/WebP now have explicit bounded lossy presets as described above. Auto on
+already-lossy images remains exact; selecting Balanced/Smallest permits another
+lossy generation on a copy. Lowering the bitrate of MP3, AAC, or
 Opus is a lossy transcode and requires the same explicit warning and bounded
 policy used by lossy image optimization. Changing an audio container or codec
 belongs to Converter.

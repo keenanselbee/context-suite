@@ -166,12 +166,20 @@ try
             }
             else if (command.Command is "office-package-probe" or "office-package-optimize")
             {
+                if (command.PackageWork is { } packageWork &&
+                    ContextSuite.Core.Office.OfficePackageOptimizationPlan.PresetFor(packageWork.Policy) is
+                        ImageOptimizationPreset.Balanced or ImageOptimizationPreset.Smallest)
+                    adapter ??= new ImageAdapter(args[5]);
                 reply = command.Command == "office-package-probe"
                     ? new(1, command.RequestId, [], PackageSource: await OfficePackageFileAdapter.ProbeAsync(command.PackageProbe!, lifetime.Token))
                     : new(1, command.RequestId, [], PackageResult: await OfficePackageFileAdapter.OptimizeAsync(command.PackageWork!, lifetime.Token));
             }
             else if (command.Command is "pdf-probe" or "pdf-file-probe" or "pdf-optimize")
             {
+                if (command.PdfWork is { } pdfWork &&
+                    ContextSuite.Core.Pdf.PdfOptimizationPlan.PresetFor(pdfWork.Policy) is
+                        ImageOptimizationPreset.Balanced or ImageOptimizationPreset.Smallest)
+                    adapter ??= new ImageAdapter(args[5]);
                 pdf ??= new PdfProbeAdapter(Path.Combine(AppContext.BaseDirectory, "pdf-engine"), args[5]);
                 reply = command.Command switch
                 {

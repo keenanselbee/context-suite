@@ -27,8 +27,18 @@ internal static class LosslessImageWorkflowContracts
         var webp = source with { ItemId = Guid.NewGuid(), Path = Path.Combine(root, "policy.webp"), Format = ImageFormat.WebP, IsLossy = false };
         check(LosslessImageOptimizationPlan.Create(Guid.NewGuid(), [webp], settings).Confirm().Plan.HasExecutableItems,
             "lossless image policy: still lossless WebP has an explicit recipe");
-        check(!LosslessImageOptimizationPlan.Create(Guid.NewGuid(), [webp with { IsLossy = true }], settings).HasExecutableItems,
-            "lossless image policy: lossy WebP is not admitted as lossless optimization");
+        check(LosslessImageOptimizationPlan.Create(Guid.NewGuid(), [webp with { IsLossy = true }], settings).HasExecutableItems,
+            "image policy: lossy WebP can preserve its decoded samples without implying restored quality");
+        foreach (var preset in Enum.GetValues<ImageOptimizationPreset>())
+        foreach (var image in new[] { source, webp, webp with { IsLossy = true } })
+        {
+            var selected = LosslessImageOptimizationPlan.Create(Guid.NewGuid(), [image], settings, preset).Confirm();
+            var policy = LosslessImageOptimizationPlan.PolicyFor(image.Format, preset);
+            new LosslessImageOptimizationWork(image, Path.Combine(root, $".context-suite-{image.ItemId:N}.tmp"), policy).Validate();
+            check(selected.Plan.Preset == preset && LosslessImageOptimizationPlan.PresetFor(image.Format, policy) == preset,
+                $"image policy: {image.Format}/{preset} survives confirmation and work validation");
+        }
+        Reject(() => (plan with { Preset = (ImageOptimizationPreset)99 }).Confirm(), "unknown preset");
         check(!LosslessImageOptimizationPlan.Create(Guid.NewGuid(), [source with { Format = ImageFormat.Png }], settings).HasExecutableItems,
             "lossless image policy: PNG remains with its existing recipes");
         check(!LosslessImageOptimizationPlan.Create(Guid.NewGuid(), [source with { UnsupportedReason = "unsupported variant" }], settings).HasExecutableItems,
@@ -42,8 +52,7 @@ internal static class LosslessImageWorkflowContracts
         Reject(() => (work with { Policy = LosslessImageOptimizationPlan.WebPPolicy }).Validate(), "cross-format policy");
         Reject(() => (work with { TemporaryPath = source.Path }).Validate(), "source as reservation");
         Reject(() => (work with { TemporaryPath = Path.Combine(root, "wrong.tmp") }).Validate(), "unreserved filename");
-        Reject(() => (work with { Source = webp with { IsLossy = true }, Policy = LosslessImageOptimizationPlan.WebPPolicy,
-            TemporaryPath = Path.Combine(root, $".context-suite-{webp.ItemId:N}.tmp") }).Validate(), "lossy WebP work");
+        Reject(() => (work with { Policy = "jpeg-balanced-preserve-v99" }).Validate(), "unknown recipe version");
         Reject(() => (work with { Source = source with { FileBytes = 128L * 1024 * 1024 + 1 } }).Validate(), "oversized source facts");
         var command = new WorkerCommand(1, Guid.NewGuid(), "image-lossless-optimize", LosslessImageWork: work);
         command.Validate();
@@ -80,8 +89,8 @@ internal static class LosslessImageWorkflowContracts
         check(jpeg.Format == ImageFormat.Jpeg && lossless.Format == ImageFormat.WebP && !lossless.IsLossy,
             "lossless image worker: independent JPEG and converted VP8L receive typed probe facts");
         var workerId = worker.ProcessId;
-        try { await worker.ProbeLosslessImageAsync(new(Guid.NewGuid(), lossyPath), default); check(false, "lossless image worker: lossy WebP refusal"); }
-        catch (MediaWorkerException error) { check(error.Failure == ImageFailure.UnsupportedInput, "lossless image worker: lossy WebP has typed unsupported refusal"); }
+        var lossy = await worker.ProbeLosslessImageAsync(new(Guid.NewGuid(), lossyPath), default);
+        check(lossy.Format == ImageFormat.WebP && lossy.IsLossy, "image worker: still lossy WebP retains honest encoding facts");
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new NoRecycle(), replacementVerified: true);
         var executor = new LosslessImageOptimizationExecutor(worker, publisher);
         var freshTrial = new CountedAccess(new LocalTrialStore(Path.Combine(root, "worker-trial", "trial.json")));
@@ -158,9 +167,8 @@ internal static class LosslessImageWorkflowContracts
             view.Admit(new(Guid.NewGuid(), "optimize", "auto", [pngPath, jpegPath, webpPath, lossyPath]));
             await view.WaitForIdleAsync();
             check(starts == 1 && finishes == 1 && mixedAccess.Admissions == 1 && File.Exists(mixedTrialPath) &&
-                view.Rows.Take(3).All(row => row.Result.State is OperationState.Succeeded or OperationState.Unchanged) &&
-                view.Rows[3].Result.State == OperationState.Unsupported,
-                "lossless image direct: mixed PNG/JPEG/VP8L completes under one admission across expiry, with lossy WebP explained separately");
+                view.Rows.All(row => row.Result.State is OperationState.Succeeded or OperationState.Unchanged),
+                "image direct: mixed PNG/JPEG/VP8L/VP8 completes under one admission across expiry");
             check(view.Rows.Where(row => row.Path != pngPath && row.HasOutput).All(row => row.Result.Publication?.Outcome == PublicationOutcome.CopyCreated) &&
                 originals.All(pair => SHA256.HashData(File.ReadAllBytes(pair.Key)).SequenceEqual(pair.Value)),
                 "lossless image direct: mixed copy workflow preserves all originals");
@@ -168,6 +176,25 @@ internal static class LosslessImageWorkflowContracts
             await view.WaitForIdleAsync();
             check(mixedAccess.Admissions == 2 && view.Rows[^1].Result.State == OperationState.Failed,
                 "lossless image direct: next batch after expiry requires fresh access");
+        }
+        foreach (var preset in new[] { ImageOptimizationPreset.Balanced, ImageOptimizationPreset.Smallest })
+        {
+            var selected = LosslessImageOptimizationPlan.Create(Guid.NewGuid(), [jpeg, lossless, lossy], settings, preset).Confirm();
+            var permitted = await freshTrial.AdmitOptimizationAsync(selected, default);
+            var optimized = await executor.ExecuteAdmittedAsync(selected, permitted, null, default);
+            check(optimized.Results.All(row => row.State is OperationState.Succeeded or OperationState.Unchanged) &&
+                optimized.Results.All(row => row.Message.Contains("Requested: " + preset, StringComparison.Ordinal)),
+                $"image workflow: {preset} executes JPEG, VP8L, and VP8 with truthful recipe details");
+            check(optimized.Results.Where(row => row.State == OperationState.Succeeded)
+                    .All(row => row.Publication?.Outcome == PublicationOutcome.CopyCreated) &&
+                originals.All(pair => SHA256.HashData(File.ReadAllBytes(pair.Key)).SequenceEqual(pair.Value)),
+                $"image workflow: {preset} keeps originals even with overwrite enabled");
+            await using var view = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "preset-worker-" + preset)),
+                new SuiteSettings { PlayCompletionSound = false }, publisher, freshTrial);
+            view.Admit(new(Guid.NewGuid(), "optimize", preset.ToString().ToLowerInvariant(), [jpegPath, webpPath, lossyPath]));
+            await view.WaitForIdleAsync();
+            check(view.Rows.Count == 3 && view.Rows.All(row => row.Result.State is OperationState.Succeeded or OperationState.Unchanged),
+                $"image direct: {preset} dispatches every admitted still image encoding");
         }
         check(!Directory.GetFiles(root, ".context-suite-*.tmp").Any() && !Directory.GetFiles(Path.Combine(root, "records")).Any(),
             "lossless image workflow: completed, unchanged, and refused operations leave no active reservations");

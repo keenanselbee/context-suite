@@ -45,6 +45,12 @@ internal static class OptimizeExpansionInterruptionContracts
             var timestamp = File.GetLastWriteTimeUtc(path);
             foreach (var fault in new[] { "cancel", "timeout", "crash" })
             {
+                var preset = fault switch
+                {
+                    "cancel" => ImageOptimizationPreset.Balanced,
+                    "timeout" => ImageOptimizationPreset.Smallest,
+                    _ => ImageOptimizationPreset.Auto
+                };
                 ImageSourceFacts? image = null;
                 OfficePackageSource? package = null;
                 if (family == "Office") package = await worker.ProbeOfficePackageAsync(new(Guid.NewGuid(), path), default);
@@ -57,8 +63,8 @@ internal static class OptimizeExpansionInterruptionContracts
                 var cpuBefore = active.TotalProcessorTime;
                 using var cancellation = new CancellationTokenSource();
                 Task operation = package is not null
-                    ? worker.OptimizeOfficePackageAsync(new(package, reservation.TemporaryPath), cancellation.Token)
-                    : worker.OptimizeLosslessImageAsync(new(image!, reservation.TemporaryPath, LosslessImageOptimizationPlan.PolicyFor(image!.Format)), cancellation.Token);
+                    ? worker.OptimizeOfficePackageAsync(new(package, reservation.TemporaryPath, OfficePackageOptimizationPlan.PolicyFor(preset)), cancellation.Token)
+                    : worker.OptimizeLosslessImageAsync(new(image!, reservation.TemporaryPath, LosslessImageOptimizationPlan.PolicyFor(image!.Format, preset)), cancellation.Token);
                 PublicationResult? abandoned = null;
                 try
                 {
@@ -79,7 +85,7 @@ internal static class OptimizeExpansionInterruptionContracts
                     if (!observedActive || operation.IsCompleted)
                         throw new InvalidOperationException($"Did not observe active owned-worker CPU before {family} {fault}; no interruption pass recorded.");
                     var timer = clock.Current ?? throw new InvalidOperationException("The active command did not create its deadline timer.");
-                    check(timer.Due == TimeSpan.FromSeconds(120), $"Optimize interruption: {family} uses its production 120-second execution deadline: {fault}");
+                    check(timer.Due == TimeSpan.FromSeconds(120), $"Optimize interruption: {family}/{preset} uses its production 120-second execution deadline: {fault}");
                     check(!operation.IsCompleted && active.TotalProcessorTime > cpuBefore,
                         $"Optimize interruption: owned {family} worker consumes CPU during the unfinished command: {fault}");
                     if (operation.IsCompleted)

@@ -380,8 +380,8 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             throw new InvalidDataException("Invalid lossless image probe response.");
         source.Validate();
         if (source.ItemId != request.ItemId || !string.Equals(source.Path, Path.GetFullPath(request.SourcePath), StringComparison.OrdinalIgnoreCase) ||
-            source.Format is not (ImageFormat.Jpeg or ImageFormat.WebP) || source.UnsupportedReason is not null ||
-            source.FileBytes > 128 * 1024 * 1024 || source.Format == ImageFormat.WebP && source.IsLossy)
+            source.Format is not (ImageFormat.Jpeg or ImageFormat.WebP or ImageFormat.Tga) || source.UnsupportedReason is not null ||
+            source.FileBytes > 128 * 1024 * 1024)
             throw new InvalidDataException("Lossless image facts do not match the request.");
         return source;
     }
@@ -389,6 +389,7 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
     public async Task<ImageWorkResult> OptimizeLosslessImageAsync(LosslessImageOptimizationWork request, CancellationToken token)
     {
         request.Validate();
+        var preset = LosslessImageOptimizationPlan.PresetFor(request.Source.Format, request.Policy);
         var reply = await SendAsync(new(1, Guid.NewGuid(), "image-lossless-optimize", LosslessImageWork: request), token);
         if (reply.ImageResult is not { } result || reply.Source is not null || reply.Preview is not null ||
             reply.Engine is not null || reply.Capabilities.Length != 0 || result.Validation is null ||
@@ -397,7 +398,13 @@ internal sealed class WorkerClient(string executable, string? scratchRoot = null
             result.Width != request.Source.Width || result.Height != request.Source.Height || result.BitDepth != request.Source.BitDepth ||
             result.OutputBytes <= 0 || result.OutputBytes > request.Source.FileBytes ||
             result.OutputBytes > 128 * 1024 * 1024 || string.IsNullOrWhiteSpace(result.EngineIdentity) || result.EngineIdentity.Length > 128 ||
-            result.OptimizationMethod != "Lossless" || result.OptimizationAttempts != 1 ||
+            !result.EngineIdentity.EndsWith("/ " + request.Policy, StringComparison.Ordinal) ||
+            result.OptimizationMethod is not ("Lossless" or "Balanced (lossy)" or "Smallest (lossy)") ||
+            result.OptimizationAttempts is < 1 or > 2 ||
+            (preset == ImageOptimizationPreset.Lossless && (result.OptimizationMethod != "Lossless" || result.OptimizationAttempts != 1)) ||
+            (request.Source.Format == ImageFormat.Tga && (result.OptimizationMethod != "Lossless" || result.OptimizationAttempts != 1)) ||
+            (preset != ImageOptimizationPreset.Smallest && result.OptimizationMethod == "Smallest (lossy)") ||
+            (preset == ImageOptimizationPreset.Auto && request.Source.IsLossy && result.OptimizationMethod != "Lossless") ||
             result.OptimizationReason?.Length > 512 || result.PngFdECRemoved)
             throw new InvalidDataException("Worker result does not match lossless image optimization.");
         return result;

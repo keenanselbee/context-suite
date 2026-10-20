@@ -709,10 +709,10 @@ private:
     static constexpr const wchar_t* PresetTitles[] = { L"Auto", L"Lossless", L"Balanced", L"Smallest" };
     static constexpr const wchar_t* PresetActions[] = { L"auto", L"lossless", L"balanced", L"smallest" };
     static constexpr const wchar_t* PresetTooltips[] = {
-        L"Balance PNG size and quality; preserve FLAC samples and PDF content; PDF results always keep originals",
-        L"Reduce size without changing pixels, audio samples or PDF content; PDF results always keep originals",
-        L"PNG only: allow slight RGB precision loss for smaller files; output follows Settings",
-        L"PNG only: allow stronger RGB precision loss; banding may be visible; output follows Settings" };
+        L"Choose conservative compression; keep JPEG and lossy WebP quality unchanged; JPEG, WebP, TGA, and documents keep originals",
+        L"Reduce size without changing decoded pixels, audio samples, or document content",
+        L"Allow modest image quality loss, including recompression inside supported documents; JPEG, WebP, and documents keep originals",
+        L"Allow stronger image quality loss; texture and detail may change; JPEG, WebP, and documents keep originals" };
 };
 
 class CommandEnumerator final : public IEnumExplorerCommand

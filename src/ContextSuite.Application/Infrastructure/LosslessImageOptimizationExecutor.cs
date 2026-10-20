@@ -25,17 +25,20 @@ internal sealed class LosslessImageOptimizationExecutor(WorkerClient worker, Out
                     report?.Invoke(item, new(item.Source.Path, OperationState.Running, "Preparing safe output"));
                     var extension = Path.GetExtension(item.Source.Path).TrimStart('.').ToLowerInvariant();
                     if (!(item.Source.Format == ImageFormat.Jpeg && extension is "jpg" or "jpeg" or "jpe" or "jfif") &&
-                        !(item.Source.Format == ImageFormat.WebP && extension == "webp"))
+                        !(item.Source.Format == ImageFormat.WebP && extension == "webp") &&
+                        !(item.Source.Format == ImageFormat.Tga && extension == "tga"))
                         throw new InvalidDataException("Image filename does not match its format.");
                     reservation = await publisher.ReserveAsync(new(item.Source.ItemId, item.Source.Path, extension,
                         confirmed.Plan.Settings, false, false), token);
                     if (reservation.Record.Source.Sha256 != item.Source.Sha256 || reservation.Record.Source.Length != item.Source.FileBytes)
                         throw new InvalidDataException("Source changed after planning.");
-                    report?.Invoke(item, new(item.Source.Path, OperationState.Running, "Optimizing and verifying lossless image"));
+                    report?.Invoke(item, new(item.Source.Path, OperationState.Running, "Optimizing and verifying image"));
                     var optimized = await worker.OptimizeLosslessImageAsync(new(item.Source, reservation.TemporaryPath,
-                        LosslessImageOptimizationPlan.PolicyFor(item.Source.Format)), token);
+                        LosslessImageOptimizationPlan.PolicyFor(item.Source.Format, confirmed.Plan.Preset)), token);
                     result = (await publisher.PublishAsync(reservation, optimized.Validation, token)).ToFileResult()
                         with { EngineIdentity = optimized.EngineIdentity };
+                    result = result with { Message = result.Message +
+                        $" Requested: {confirmed.Plan.Preset}. Used: {optimized.OptimizationMethod}. {optimized.OptimizationReason}" };
                 }
                 catch (OperationCanceledException)
                 {

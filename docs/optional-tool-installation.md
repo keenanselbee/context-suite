@@ -19,7 +19,10 @@ Payload Policy
 The application, worker, managed dependencies, assets, audio engine, and qpdf are
 shared. Analyze needs audio/PDF probes; Optimize needs PNG, FLAC, PDF and the
 existing JPEG/WebP engine. DOCX/XLSX/PPTX optimization uses managed package
-recompression and does not require the Office conversion engine.
+recompression and does not require the Office conversion engine. The subsequent
+[preset expansion](optimization-presets-goal.md) reuses these same shared image/PDF
+dependencies for document images, TGA, OpenDocument, and EPUB. Its scratch-source
+overlay adds about 68 KiB; the 1.5.3 candidate table below remains historical.
 Keep these complete verified groups instead of trimming individual DLLs by guess.
 Convert additionally installs Office, PDF rendering/validation/dark-mode, AVIF,
 HEIF, SVG, and WEM engines. Unknown engine directories stop packaging until their

@@ -12,6 +12,15 @@ using ContextSuite.Runtime;
 using ContextSuite.Core.ContractTests;
 using ContextSuite.Core.Settings;
 
+if (args is ["--optimization-presets", var presetsRoot, var presetsWorker, var presetsFixtures])
+{
+    var checks = 0;
+    await OnUiThreadAsync(() => OptimizationPresetWorkflowContracts.RunAsync(presetsRoot, presetsWorker, presetsFixtures, (passed, message) =>
+    { if (!passed) throw new InvalidDataException(message); checks++; Console.WriteLine("PASS: " + message); }));
+    Console.WriteLine($"Passed {checks} optimization preset workflow checks.");
+    return 0;
+}
+
 if (args is ["--office-package-representative", var packageScratch, var packageWorker, var packageSource])
 {
     var checks = 0;
