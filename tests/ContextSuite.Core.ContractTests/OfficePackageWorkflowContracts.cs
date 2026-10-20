@@ -75,6 +75,9 @@ internal static class OfficePackageWorkflowContracts
 
     public static async Task RunAsync(string scratch, string? executable, Action<bool, string> check)
     {
+        // Foundation runs policy-only and actual-worker coverage in one parent.
+        // Each invocation must start with its own unstarted trial and journals.
+        scratch = Path.Combine(scratch, "office-package-workflow-" + Guid.NewGuid().ToString("N"));
         var source = new OfficePackageSource(Guid.NewGuid(), Path.Combine(scratch, "source.docx"), new('A', 64), 1024, "docx");
         var settings = new BatchSettings("optimize", new(ReplaceOriginals: true));
         var plan = OfficePackageOptimizationPlan.Create(Guid.NewGuid(), [source], settings);
