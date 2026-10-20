@@ -1,9 +1,9 @@
 Optimize Expansion Goal
 =======================
 
-Status, 2026-10-19: implementation and development-candidate verification are
-complete. Goal closeout remains open for retained foundation-fixture cleanup
-blocked by automatic approval review. Candidate 1.5.3 is not installed or released.
+Status, 2026-10-19: the first milestone is complete, including implementation,
+development-candidate verification, incremental commits, and task-owned fixture
+cleanup. Candidate 1.5.3 is not installed or released.
 The owner authorized incremental commits in the public and private repositories
 and task-owned cleanup. Installation, pushing and public release are separate.
 
@@ -80,7 +80,7 @@ Execution And Acceptance
 - [x] Verify combined workflows and all affected installer component selections.
 - [x] Measure final payload growth and representative processing resource use.
 - [x] Update current support documentation, review diffs and commit verified source groups.
-- [ ] Finish remaining task-owned foundation-fixture cleanup; preserve compact
+- [x] Finish remaining task-owned foundation-fixture cleanup; preserve compact
       evidence and the verified reserved candidate. See closeout below.
 
 The first PDF source checkpoint replaces recursive indirect-reference hashing
@@ -235,15 +235,17 @@ remain under `.codex-temp/opt-71d1898e`. The verified 1.5.3 candidate is deliber
 retained as the one new immutable development payload; previous installed and
 reserved versions remain untouched.
 
-Automatic approval review rejected recursive forced deletion of foundation
-fixtures. A narrower cleanup of verified ordinary writable directories succeeded;
-no further forced-deletion retry is planned. Three foundation fixture directories
-remain: `foundation-final`, `candidate-foundation`, and `candidate-foundation2`,
-totalling **546,209,670 bytes (520.9 MiB)**. Each contains deliberately read-only
-test copies. Their processes have exited; logs identify the successful runs and
-the diagnosed harness failure. They are disposable task output, retained solely
-because this cleanup is blocked, not active build inputs. `cleanup-closeout.json`
-records exact paths, reproduction commands and dispositions for later maintenance.
+Automatic approval review initially blocked deletion of the three foundation
+fixture directories, including their deliberately read-only test copies. After
+the owner approved cleanup and received their exact locations, `foundation-final`,
+`candidate-foundation`, and `candidate-foundation2` were removed externally; their
+absence was verified on 2026-10-19. This removes another **546,209,670 bytes
+(520.9 MiB)**, for **1,046,400,966 bytes (997.9 MiB)** of task output removed in total.
+Logs retain the successful runs and diagnosed harness failure. No required fixture
+cleanup remains. `cleanup-closeout.json` records the exact paths and dispositions;
+`post-cleanup-payload-verification.json` rechecks all 2,915 files in each protected
+installed/candidate payload against their unchanged inventories. The cleanup did
+not require a rebuild or replacement of the reserved candidate.
 
 
 Later Reviewed Milestones

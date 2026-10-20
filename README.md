@@ -40,8 +40,8 @@ changes require their own verification. The approved
 JPEG, still lossless WebP and DOCX/XLSX/PPTX paths, with mandatory copies and bounded
 preservation checks. The exact candidate passes 5,441 foundation contracts and
 Optimize-only component workflows. The application payload grows by 132 KiB with
-no new native engines. These changes are not installed; retained fixture cleanup
-is the remaining goal closeout item.
+no new native engines. The first expansion milestone and its fixture cleanup are
+complete. These changes are not installed.
 Source changes and historical passing results do not establish a newly verified
 release. Signing, native installer lifecycle, broader visual/accessibility and
 commercial acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).
