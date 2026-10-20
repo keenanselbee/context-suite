@@ -12,8 +12,10 @@ handlers for bounded lossless JPEG, still lossless WebP, and DOCX/XLSX/PPTX pack
 recompression to Auto and Lossless. They always create copies, reuse existing
 dependencies, and retain one batch admission. The recorded installed **1.5.2**
 baseline remains PNG/FLAC/PDF optimization. New source implementation and focused
-checks do not establish installation, a verified release payload, or completed
-representative/resource and visible acceptance; the goal records those gates.
+checks do not establish installation or public release. Development candidate
+1.5.3 now passes exact-worker and common-only projection checks with measured size
+and resource evidence; the goal records remaining representative and visible
+acceptance separately.
 
 Matrix revision: **2026-10-19.1**. The earlier PDF dark-mode candidate **1.2.7** passes
 exact-candidate regression coverage and verified fresh archive extraction.

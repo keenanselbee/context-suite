@@ -17,7 +17,9 @@ Payload Policy
 --------------
 
 The application, worker, managed dependencies, assets, audio engine, and qpdf are
-shared. Analyze needs audio/PDF probes; Optimize needs PNG, FLAC, and PDF engines.
+shared. Analyze needs audio/PDF probes; Optimize needs PNG, FLAC, PDF and the
+existing JPEG/WebP engine. DOCX/XLSX/PPTX optimization uses managed package
+recompression and does not require the Office conversion engine.
 Keep these complete verified groups instead of trimming individual DLLs by guess.
 Convert additionally installs Office, PDF rendering/validation/dark-mode, AVIF,
 HEIF, SVG, and WEM engines. Unknown engine directories stop packaging until their
@@ -47,20 +49,28 @@ registration. Existing-install upgrade/repair admission remains gated.
 Approximate Installed Sizes
 ---------------------------
 
-These estimates use the preserved 1.4.8 application payload, before this feature's
-small managed-code, marker, identity, and installer-metadata overhead. They are
-planning estimates, not a newly packaged release. The builder records exact
-payload bytes for every selection in each new installer receipt.
+These estimates use verified development candidate 1.5.3 (2026-10-19), projected
+through the canonical component classifier. They exclude inventory, selection
+markers, package identities, installer metadata/cache and shared prerequisites.
+They are application-payload projections, not a signed installer measurement.
+The builder records exact selection bytes in each new installer receipt.
 
 | Selection | Application payload | Practical estimate |
 |---|---:|---:|
-| Analyze | 43.6 MiB | 45-50 MiB |
-| Optimize | 43.6 MiB | 45-50 MiB |
-| Analyze + Optimize | 43.6 MiB | 45-50 MiB |
-| Convert | 546.5 MiB | 545-555 MiB |
-| Analyze + Convert | 546.5 MiB | 545-555 MiB |
-| Convert + Optimize | 546.5 MiB | 545-555 MiB |
-| All three | 546.5 MiB | 545-555 MiB |
+| Analyze | 43.1 MiB | 45-50 MiB |
+| Optimize | 43.1 MiB | 45-50 MiB |
+| Analyze + Optimize | 43.1 MiB | 45-50 MiB |
+| Convert | 546.1 MiB | 545-555 MiB |
+| Analyze + Convert | 546.1 MiB | 545-555 MiB |
+| Convert + Optimize | 546.1 MiB | 545-555 MiB |
+| All three | 546.1 MiB | 545-555 MiB |
+
+The common group has 260 files / 45,230,370 bytes; the full payload has 2,915 files /
+572,589,870 bytes. Optimize expansion adds 134,784 bytes over 1.5.2 and no files or
+native engines. A fixed DEFLATE ZIP comparison grows by 38,595 bytes; this is not
+an Inno download-size claim. The common-only worker passes the new image/package
+and long-graph PDF flows plus existing FLAC interruption/recovery checks without
+Convert engines. See the [expansion evidence](optimization-expansion-goal.md).
 
 Convert's Office engine accounts for about 417 MiB. Deselecting Analyze or Optimize
 while retaining Convert saves little because their dependencies are shared.

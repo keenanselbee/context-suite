@@ -1,6 +1,19 @@
 Context Suite Changelog
 =======================
 
+1.5.3 - Expand lossless optimization, 2026-10-19
+----------------------------------------------
+
+- Add bounded JPEG coefficient recompression, still lossless WebP recompression,
+  and DOCX/XLSX/PPTX package recompression to Auto and Lossless.
+- Preserve admitted image metadata and samples, exact document part bytes, and
+  originals; publish only validated smaller copies, including with overwrite saved.
+- Accept long linked PDF object graphs without consuming direct nesting depth;
+  preserve the existing document protection and resource bounds.
+- Reuse existing native engines. Office package optimization does not require
+  the Office conversion engine. Installed 1.5.2 remains unchanged.
+
+
 1.5.2 - Preserve layered images and crossing annotations, 2026-10-19
 -----------------------------------------------------------------
 

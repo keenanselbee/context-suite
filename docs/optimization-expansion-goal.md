@@ -1,8 +1,9 @@
 Optimize Expansion Goal
 =======================
 
-Status: approved and started on 2026-10-19. This is an implementation goal,
-not a claim that the additional formats are available or release-ready.
+Status, 2026-10-19: implementation and development-candidate verification are
+complete. Goal closeout remains open for retained foundation-fixture cleanup
+blocked by automatic approval review. Candidate 1.5.3 is not installed or released.
 The owner authorized incremental commits in the public and private repositories
 and task-owned cleanup. Installation, pushing and public release are separate.
 
@@ -76,10 +77,11 @@ Execution And Acceptance
 - [x] Reproduce a useful PDF structural refusal and broaden it safely with regressions.
 - [x] Implement DOCX/XLSX/PPTX admission, package preservation and recompression.
 - [x] Integrate all new handlers with shell hints, batch admission, retry and settings.
-- [ ] Verify combined workflows and all affected installer component selections.
-- [ ] Measure final payload growth and representative processing resource use.
-- [ ] Update current support documentation, review diffs, commit completed groups,
-      and close out task-owned transient output with retained evidence identified.
+- [x] Verify combined workflows and all affected installer component selections.
+- [x] Measure final payload growth and representative processing resource use.
+- [x] Update current support documentation, review diffs and commit verified source groups.
+- [ ] Finish remaining task-owned foundation-fixture cleanup; preserve compact
+      evidence and the verified reserved candidate. See closeout below.
 
 The first PDF source checkpoint replaces recursive indirect-reference hashing
 with a bounded deterministic object table. Linked 48/128/512-object chains now
@@ -119,6 +121,57 @@ engine-produced DOCX/PPTX have no new application-reopen evidence in this milest
 Exact part preservation is tested; representative visual/owner acceptance remains
 separate. Evidence: `representative-office.log` and
 `representative-office1/independent-package-reopen.json` under the task directory.
+
+Candidate 1.5.3 is reserved and its complete payload passes engine pins, allowlist,
+version and notice verification. It contains 2,915 files / 572,589,870 bytes; its
+common component contains 260 files / 45,230,370 bytes. All seven component
+projections grow by 134,784 bytes (131.6 KiB), with no added or removed files.
+All 340 third-party/runtime native PE files retain their hashes. Managed
+assemblies account for 116,224 bytes of growth; shell/debug information accounts
+for the rest. A fixed-metadata DEFLATE ZIP comparison streamed into a counting
+sink grows by 38,595 bytes; no archive was written. This measures application
+payloads, not Inno compression, source delivery or Microsoft prerequisites.
+
+The exact common-only projection passes 131 checks: 81 image/package workflow,
+18 long-graph PDF, eight representative workbook and 24 FLAC interruption/recovery
+checks. No Office conversion, PDF renderer or other Convert-only engine is present.
+The final PDF outputs also pass independent all-688-page text, RGBA and bookmark
+comparison; qpdf output hashes differed from the earlier run, so this comparison
+was repeated rather than inferred. The workbook output matches its independently
+reopened result. Evidence: `size-impact.json`, `optimize-only-acceptance.json` and
+`common-pdf-independent-validation.json` under the task directory.
+
+| Common-only test invocation | Wall time | Observed worker peak | Sampled fixture peak |
+| --- | ---: | ---: | ---: |
+| JPEG/WebP/Office workflows | 4.17 s | 64.5 MiB | 0.64 MiB |
+| 48/128/512-page PDF workflows | 7.47 s | 112.5 MiB | 3.61 MiB |
+| Representative LibreOffice workbook | 1.29 s | 54.2 MiB | 0.02 MiB |
+| FLAC interruptions and retries | 17.96 s | 71.3 MiB | 229.9 MiB |
+
+These are complete test invocations including fixture generation, validation,
+retries and harness overhead, with concurrent verification possible. Worker
+process sampling is 100 ms and fixture-byte sampling 250 ms; short-lived peaks
+can be missed. They are reproducible observations, not product benchmarks or
+worst-case memory guarantees at the admission limits. Individual commands and
+measurement boundaries are retained in the receipt. The FLAC stress fixture is
+intentionally much larger than the new document/image workflow fixtures.
+
+Final combined verification passes **5,441 foundation contracts** against the exact
+1.5.3 packaged worker, including existing conversion, PNG and failure recovery.
+The first combined attempt exposed a harness-only collision: policy-only and
+worker Office tests reused a trial path. Each invocation now receives an isolated
+fixture directory; the complete replay passes. This test-only correction does not
+change or rebuild the reserved payload. Private focused checks pass 103 image and
+280 package cases. The 1.5.2 installed inventory and all 2,915 payload files were
+rehashed and remain unchanged. No installation or push occurred.
+
+The reserved candidate is
+`artifacts/production-staging/9682683c71444e09aaca3feb8f39c2fe`; its inventory SHA-256
+is `4415DDB48E6910F7883A439DF0E718DC075F25769DFE5CFB0BC1E42C36DC6D3D`.
+The private implementation checkpoint is `d897002`; public integration is
+`a767321`, following PDF inventory fix `75d3f7d`. Later version/evidence commits
+retain this exact packaged payload. Signing, native installation/upgrade,
+broader representative fidelity and commerce remain release gates.
 
 Extend existing planning, worker, executor and publication boundaries. Add
 shared code only where implemented handlers need it. Each recipe gets one
@@ -174,6 +227,23 @@ evidence. Keep active caches, selected engine inputs, source kits, installed and
 rollback payloads, reserved versions and historical evidence intact. There is
 no broad scratch deletion, age-based sweeper or automatic Git clean. Report
 significant retained output and cleanup failures at each milestone.
+
+Task closeout removed **500,191,296 bytes (477.0 MiB)** of owned disposable
+fixtures, redundant managed/native build directories and the common projection.
+Compact receipts, commands, logs and the small representative workbook evidence
+remain under `.codex-temp/opt-71d1898e`. The verified 1.5.3 candidate is deliberately
+retained as the one new immutable development payload; previous installed and
+reserved versions remain untouched.
+
+Automatic approval review rejected recursive forced deletion of foundation
+fixtures. A narrower cleanup of verified ordinary writable directories succeeded;
+no further forced-deletion retry is planned. Three foundation fixture directories
+remain: `foundation-final`, `candidate-foundation`, and `candidate-foundation2`,
+totalling **546,209,670 bytes (520.9 MiB)**. Each contains deliberately read-only
+test copies. Their processes have exited; logs identify the successful runs and
+the diagnosed harness failure. They are disposable task output, retained solely
+because this cleanup is blocked, not active build inputs. `cleanup-closeout.json`
+records exact paths, reproduction commands and dispositions for later maintenance.
 
 
 Later Reviewed Milestones

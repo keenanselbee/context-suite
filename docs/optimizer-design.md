@@ -9,7 +9,8 @@ settings snapshot, access admission, sequential worker, and smaller-only
 publication. Balanced and Smallest remain PNG-only. Installed **1.5.2** retains
 the earlier PNG/FLAC/structural PDF baseline; these source additions have not
 been installed or accepted as a release. The goal records current verification
-and remaining combined-payload, resource, representative, and visible acceptance.
+including verified development candidate 1.5.3, measured component/resource
+evidence, and remaining representative and visible release acceptance.
 
 Existing PNG, FLAC, and structural PDF dispatch are included in that recorded
 installation. PDF always produces a copy. Missing required engines produce an

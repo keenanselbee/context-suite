@@ -30,15 +30,18 @@ remaining visual acceptance.
 Project Status
 --------------
 
-Source metadata and the latest recorded local installation are **1.5.2**
-(verified 2026-10-19). That payload includes filesystem dates in Analyze and the
+Source metadata and the verified development candidate are **1.5.3**.
+The latest recorded local installation remains **1.5.2**
+(verified 2026-10-19). That installed payload includes filesystem dates in Analyze and the
 bounded PDF reading-copy compatibility fixes. Its recorded verification covers
 2,915 payload files and all three registered package identities. Later source
 changes require their own verification. The approved
-[Optimize expansion goal](docs/optimization-expansion-goal.md) is in progress;
-its JPEG, still lossless WebP and DOCX/XLSX/PPTX paths are implemented in source
-with mandatory copies and bounded preservation checks. They are not part of the
-installed 1.5.2 payload. The goal records current worker and packaging evidence.
+[Optimize expansion goal](docs/optimization-expansion-goal.md) records its verified
+JPEG, still lossless WebP and DOCX/XLSX/PPTX paths, with mandatory copies and bounded
+preservation checks. The exact candidate passes 5,441 foundation contracts and
+Optimize-only component workflows. The application payload grows by 132 KiB with
+no new native engines. These changes are not installed; retained fixture cleanup
+is the remaining goal closeout item.
 Source changes and historical passing results do not establish a newly verified
 release. Signing, native installer lifecycle, broader visual/accessibility and
 commercial acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).
