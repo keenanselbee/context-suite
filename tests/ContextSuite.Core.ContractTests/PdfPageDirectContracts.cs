@@ -22,7 +22,7 @@ internal static class PdfPageDirectContracts
         await File.WriteAllBytesAsync(bmp, bytes);
         var png = Path.Combine(root, "Already.png"); ImageWorkerContracts.WritePng(png);
         var hash = SHA256.HashData(await File.ReadAllBytesAsync(pdf));
-        var clock = new Clock(); var access = new Access(new LocalTrialStore(Path.Combine(root, "trial.json"), clock));
+        var clock = new Clock(); var access = new Access(new OperationAdmissionService());
         await using (var vm = Create(root, access))
         {
             var sound = false; var quiet = new QuietWorkflow(); var starts = 0; var finishes = 0;
@@ -37,7 +37,7 @@ internal static class PdfPageDirectContracts
             check(vm.Rows.Select(row => row.Path).SequenceEqual([pdf, bmp, png]) && vm.Rows[0].SavedPdfPages == 2 && vm.Rows[1].Result.State == OperationState.Succeeded &&
                 vm.Rows[2].Result.State == OperationState.Unchanged, "PDF page direct: PNG target handles mixed PDF/image/already-PNG selection in original row order");
             check(access.Admissions == 1 && access.ImageAdmissions == 1 && starts == 1 && finishes == 1 && sound && !quiet.NeedsAttention && !vm.HasProblems,
-                "PDF page direct: one admission across expiry and one quiet completion cover the mixed batch");
+                "PDF page direct: one admission after clock changes and one quiet completion cover the mixed batch");
             check(vm.Rows[0].Outcome == "2 of 2 pages saved" && vm.Rows[0].ResultDetails.Contains("Page 1:") && vm.Rows[0].ResultDetails.Contains("Page 2:") &&
                 !vm.Summary.Contains("No files changed") && vm.Rows[0].HasOutput, "PDF page direct: one document row exposes every page path and correct completion summary");
         }
@@ -94,7 +94,7 @@ internal static class PdfPageDirectContracts
         await using (var vm = Create(deniedRoot, deniedAccess))
         {
             vm.Admit(new(Guid.NewGuid(), "convert", "png", [pdf])); await vm.WaitForIdleAsync();
-            check(vm.Rows.Single().Status.Contains("Activate") && vm.CanRetry && Directory.GetFiles(deniedRoot, "*.png").Length == 0,
+            check(vm.Rows.Single().Status.Contains("unavailable") && vm.CanRetry && Directory.GetFiles(deniedRoot, "*.png").Length == 0,
                 "PDF page direct: denied access explains activation and creates no output");
             deniedAccess.Allowed = true; vm.RetryFailed(); await vm.WaitForIdleAsync();
             check(vm.DisplayRows.Single().SavedPdfPages == 2 && !vm.HasProblems, "PDF page direct: activation-equivalent access change makes retry usable");
@@ -117,7 +117,7 @@ internal static class PdfPageDirectContracts
         {
             vm.Admit(new(Guid.NewGuid(), "convert", "png", [pdf])); await vm.WaitForIdleAsync();
             check(vm.Rows.Single().Result.State == OperationState.Unsupported && vm.Rows.Single().Status.Contains("unavailable") && absent.ProcessId is null && absentAccess.Admissions == 0,
-                "PDF page direct: missing renderer starts neither worker nor trial admission");
+                "PDF page direct: missing renderer starts neither worker nor batch admission");
         }
         var otherRoot = Path.Combine(root, "unsupported"); Directory.CreateDirectory(otherRoot);
         await using (var vm = Create(otherRoot, new()))
@@ -163,7 +163,7 @@ internal static class PdfPageDirectContracts
         public bool Allowed { get; set; } = true;
         public int Admissions { get; private set; }
         public int ImageAdmissions { get; private set; }
-        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => inner?.ReadAccessAsync(token) ?? Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "License active." : "Activate a license to convert."));
+        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => inner?.ReadAccessAsync(token) ?? Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Ready." : "The operation is temporarily unavailable."));
         public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken token)
         { Admissions++; ImageAdmissions++; return inner is null ? new(await ReadAccessAsync(token), confirmed.Plan.BatchId) : await inner.AdmitConversionAsync(confirmed, token); }
         public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfPageConversion confirmed, CancellationToken token)

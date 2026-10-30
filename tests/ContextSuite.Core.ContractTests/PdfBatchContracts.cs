@@ -31,7 +31,7 @@ internal static class PdfBatchContracts
         Refuses(() => new WorkerCommand(1, Guid.NewGuid(), "pdf-optimize", PdfWork: work, PdfBytes: [1]).Validate(), "mixed PDF payload is refused");
         Refuses(() => new WorkerCommand(1, Guid.NewGuid(), "capabilities", PdfWork: work).Validate(), "unrelated operation cannot carry PDF work");
         Refuses(() => new WorkerCommand(1, Guid.NewGuid(), "pdf-file-probe", PdfFile: new(source.ItemId, source.Path), PdfWork: work).Validate(), "probe cannot carry optimization work");
-        IOperationAccess access = new LocalTrialStore(Path.Combine(scratch, "pdf-batch-trial-" + Guid.NewGuid().ToString("N"), "trial.json"));
+        IOperationAccess access = new OperationAdmissionService();
         var admitted = await access.AdmitOptimizationAsync(plan.Confirm(), default);
         check(admitted.IsAllowed && admitted.BatchId == plan.BatchId, "PDF batch: confirmed optimization starts the normal local trial");
         await using var worker = new WorkerClient(Path.Combine(scratch, "missing-pdf-worker.exe"));
@@ -39,8 +39,8 @@ internal static class PdfBatchContracts
         var executor = new PdfOptimizationExecutor(worker, new OutputPublisher(recordPath, null!), null!);
         try { await executor.ExecuteAdmittedAsync(plan.Confirm(), new(new(true, "Other batch"), Guid.NewGuid()), null, default); check(false, "PDF batch: foreign admission"); }
         catch (InvalidDataException) { check(worker.ProcessId is null && !Directory.Exists(recordPath), "PDF batch: foreign admission starts no worker or publication"); }
-        var denied = await executor.ExecuteAdmittedAsync(plan.Confirm(), new(new(false, "Activate a license."), plan.BatchId), null, default);
-        check(denied.Results.Single().Message == "Activate a license." && worker.ProcessId is null && !Directory.Exists(recordPath),
+        var denied = await executor.ExecuteAdmittedAsync(plan.Confirm(), new(new(false, "The operation is temporarily unavailable."), plan.BatchId), null, default);
+        check(denied.Results.Single().Message == "The operation is temporarily unavailable." && worker.ProcessId is null && !Directory.Exists(recordPath),
             "PDF batch: denied admission does not touch files or start worker");
 
         void Refuses(Action action, string description)

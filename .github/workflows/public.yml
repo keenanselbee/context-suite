@@ -44,12 +44,9 @@ jobs:
       - name: Hidden layout and accessibility contracts (no desktop input)
         shell: pwsh
         run: dotnet run --project tests/ContextSuite.Application.TestHost -c Release --no-build -- --view-contracts
-      - name: License workflow harness guards (no window or network)
+      - name: Complete public production source boundary
         shell: pwsh
-        run: dotnet run --project tests/ContextSuite.Application.TestHost -c Release --no-build -- --license-workflow-contracts
-      - name: Missing private implementation errors
-        shell: pwsh
-        run: ./tools/Test-PrivateBoundary.ps1
+        run: ./tools/Test-ProductionSource.ps1
       - name: Native shell contracts
         # Asset generation compiles against .NET Framework System.Drawing.
         shell: powershell

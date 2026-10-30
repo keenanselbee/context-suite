@@ -15,7 +15,10 @@ foreach ($tool in @('Analyze', 'Convert', 'Optimize')) {
 }
 if ($Payload) {
     $Payload = (Resolve-Path -LiteralPath $Payload).Path
-    foreach ($assembly in @('ContextSuite.Application', 'ContextSuite.Worker', 'ContextSuite.Core', 'ContextSuite.Private', 'ContextSuite.Commercial')) {
+    $assemblies = @('ContextSuite.Application', 'ContextSuite.Worker', 'ContextSuite.Core', 'ContextSuite.Private')
+    # Retain version validation for historical commercial payloads.
+    if (Test-Path -LiteralPath (Join-Path $Payload 'ContextSuite.Commercial.dll')) { $assemblies += 'ContextSuite.Commercial' }
+    foreach ($assembly in $assemblies) {
         $path = Join-Path $Payload ($assembly + '.dll')
         if ([Reflection.AssemblyName]::GetAssemblyName($path).Version.ToString() -ne $windowsVersion -or
             (Get-Item -LiteralPath $path).VersionInfo.FileVersionRaw.ToString() -ne $windowsVersion) {

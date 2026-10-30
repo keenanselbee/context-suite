@@ -23,9 +23,9 @@ def main():
     root = Path(__file__).resolve().parents[2]
     if os.name != "nt":
         raise RuntimeError("Windows x64 is required.")
-    project = root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
+    project = root / "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
     if not project.is_file():
-        raise RuntimeError("The separate private checkout and its contract tests are required.")
+        raise RuntimeError("The public Office contract test sources are required.")
     identity = uuid.uuid4().hex
     evidence = root / ".codex-temp/office-owner" / identity
     stage = root / ".codex-temp/office-isolation" / identity
@@ -38,12 +38,12 @@ def main():
              "src/ContextSuite.Application/Infrastructure/OfficeRecoveryCoordinator.cs",
              "src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs",
              "src/ContextSuite.Application/Infrastructure/PublicationFiles.cs",
-             "proprietary/src/ContextSuite.Private/Office/OfficeJob.cs",
-             "proprietary/src/ContextSuite.Private/Office/OfficeSandboxProcess.cs",
-             "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeOwnerContracts.cs",
-             "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeRecoveryContracts.cs",
-             "proprietary/tests/ContextSuite.Pdf.ContractTests/Program.cs",
-             "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"]
+             "src/ContextSuite.Private/Office/OfficeJob.cs",
+             "src/ContextSuite.Private/Office/OfficeSandboxProcess.cs",
+             "tests/ContextSuite.Pdf.ContractTests/OfficeOwnerContracts.cs",
+             "tests/ContextSuite.Pdf.ContractTests/OfficeRecoveryContracts.cs",
+             "tests/ContextSuite.Pdf.ContractTests/Program.cs",
+             "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"]
     inputs = {name: digest(root / name) for name in names}
     vswhere = Path(os.environ["ProgramFiles(x86)"]) / "Microsoft Visual Studio/Installer/vswhere.exe"
     visual_studio = subprocess.check_output([str(vswhere), "-latest", "-products", "*", "-requires",

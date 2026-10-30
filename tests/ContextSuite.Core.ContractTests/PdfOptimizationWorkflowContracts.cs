@@ -18,7 +18,7 @@ internal static class PdfOptimizationWorkflowContracts
         var digest = SHA256.HashData(bytes);
         var trialPath = Path.Combine(scratch, "access", "trial.json");
         var clock = new Clock();
-        var access = new CountingAccess(new LocalTrialStore(trialPath, clock));
+        var access = new CountingAccess(new OperationAdmissionService());
         var records = Path.Combine(scratch, "publications");
         var publisher = new OutputPublisher(records, new ForbiddenRecycle(), replacementVerified: true);
         await using var worker = new WorkerClient(executable, Path.Combine(scratch, "workers"));
@@ -36,7 +36,7 @@ internal static class PdfOptimizationWorkflowContracts
             if (item.Source.ItemId == first.ItemId && row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8);
         }, default);
         check(result.Admission.IsAllowed && access.Admissions == 1 && result.Results.All(row => row.Publication?.Outcome == PublicationOutcome.CopyCreated),
-            "PDF optimization: one trial admission completes both copies across expiry despite overwrite preference");
+            "PDF optimization: one batch admission completes both copies after clock changes despite overwrite preference");
         check(worker.ProcessId == workerId, "PDF optimization: one sequential worker handles the batch");
         var published = result.Results[0].Publication!.OutputPath!;
         check(published != collision && await File.ReadAllTextAsync(collision) == "existing output canary" &&
@@ -45,10 +45,10 @@ internal static class PdfOptimizationWorkflowContracts
         check(outputBytes.Length < bytes.Length && SHA256.HashData(await File.ReadAllBytesAsync(path)).SequenceEqual(digest) &&
             SHA256.HashData(await File.ReadAllBytesAsync(secondPath)).SequenceEqual(digest), "PDF optimization: validated smaller copies preserve both originals");
         var denied = await executor.ExecuteAsync(confirmed, null, default);
-        check(!denied.Admission.IsAllowed && denied.Results.All(row => row.State == OperationState.Failed) && Directory.GetFiles(records).Length == 0,
-            "PDF optimization: expired access creates no reservation or output");
+        check(denied.Admission.IsAllowed && denied.Results.All(row => row.State is OperationState.Succeeded or OperationState.Unchanged) && Directory.GetFiles(records).Length == 0,
+            "PDF optimization: subsequent free batch completes and cleans publication records");
 
-        var freshAccess = new CountingAccess(new LocalTrialStore(Path.Combine(scratch, "fresh-access", "trial.json")));
+        var freshAccess = new CountingAccess(new OperationAdmissionService());
         var freshExecutor = new PdfOptimizationExecutor(worker, publisher, freshAccess);
         var compressed = await worker.ProbePdfFileAsync(new(Guid.NewGuid(), published), default);
         var beforeCount = Directory.GetFiles(scratch, "*.pdf").Length;

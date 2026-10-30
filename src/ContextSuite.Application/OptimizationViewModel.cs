@@ -9,7 +9,7 @@ namespace ContextSuite.Application;
 
 internal sealed class OptimizationViewModel : INotifyPropertyChanged
 {
-    private readonly IOperationAccess _trial;
+    private readonly IOperationAccess _admission;
     private readonly Guid _batchId;
     private readonly IReadOnlyList<ConversionSelection> _selection;
     private readonly BatchSettings _settings;
@@ -19,10 +19,10 @@ internal sealed class OptimizationViewModel : INotifyPropertyChanged
     private PngOptimizationPreset _preset;
     private int _selectedIndex;
 
-    public OptimizationViewModel(IOperationAccess trial, Guid batchId, IReadOnlyList<ConversionSelection> selection,
+    public OptimizationViewModel(IOperationAccess admission, Guid batchId, IReadOnlyList<ConversionSelection> selection,
         BatchSettings settings, bool replacementAvailable)
     {
-        _trial = trial; _batchId = batchId; _selection = selection; _settings = settings;
+        _admission = admission; _batchId = batchId; _selection = selection; _settings = settings;
         _replacementAvailable = replacementAvailable;
         ConfirmCommand = new UiCommand(Confirm, () => CanConfirm);
         Refresh();
@@ -40,8 +40,7 @@ internal sealed class OptimizationViewModel : INotifyPropertyChanged
         PngOptimizationPreset.Balanced => "Balanced (lossy): slightly reduces RGB precision. Banding is possible; alpha and accepted metadata stay exact.",
         _ => "Smallest (lossy): reduces colors with dark-gradient protection. Fine texture or detail may change. Uses one gentler fallback when needed; transparency and accepted metadata stay exact."
     };
-    public string TrialMessage => _status?.Message ?? "Checking license and trial status…";
-    public string LicenseActionLabel => _status is { CanStart: false } ? "_Activate license..." : "_License...";
+    public string PreparationMessage => _status?.Message ?? "Preparing operation...";
     public bool CanReplaceOriginal => _replacementAvailable && _settings.Preferences.ReplaceOriginals && _settings.Preferences.OutputDirectory is null;
     public bool ReplaceOriginal { get => _replace; set { _replace = value; _confirmed = false; Refresh(); } }
     public bool ReplacementConfirmed { get => _confirmed; set { _confirmed = value; Refresh(); } }
@@ -68,10 +67,9 @@ internal sealed class OptimizationViewModel : INotifyPropertyChanged
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        _status = await _trial.ReadAccessAsync(cancellationToken);
-        // The license window calls this again after activation or transfer. Keep
-        // the existing plan, selection and consent rather than rebuilding rows.
-        Changed(nameof(TrialMessage)); Changed(nameof(LicenseActionLabel)); Changed(nameof(CanConfirm));
+        _status = await _admission.ReadAccessAsync(cancellationToken);
+        // Rechecking preparation keeps the existing plan and selected options.
+        Changed(nameof(PreparationMessage)); Changed(nameof(CanConfirm));
         ConfirmCommand.Notify();
     }
 
@@ -88,7 +86,7 @@ internal sealed class OptimizationViewModel : INotifyPropertyChanged
             return new OptimizationRow(Path.GetFileName(selection.Path), selection.Facts is { } facts ? $"{facts.Width} × {facts.Height}, {facts.BitDepth}-bit, {facts.FileBytes:N0} bytes" : "",
                 selection.Failure ?? item?.BlockReason ?? $"{Preset} · preserve accepted metadata", path, ready);
         }).ToArray();
-        foreach (var name in new[] { nameof(Rows), nameof(Preset), nameof(PolicyDescription), nameof(ReplaceOriginal), nameof(ReplacementConfirmed), nameof(CanConfirm), nameof(TrialMessage), nameof(Summary), nameof(SelectedStatus), nameof(SelectedDetails), nameof(OutputNotice) }) Changed(name);
+        foreach (var name in new[] { nameof(Rows), nameof(Preset), nameof(PolicyDescription), nameof(ReplaceOriginal), nameof(ReplacementConfirmed), nameof(CanConfirm), nameof(PreparationMessage), nameof(Summary), nameof(SelectedStatus), nameof(SelectedDetails), nameof(OutputNotice) }) Changed(name);
         ConfirmCommand.Notify();
     }
 

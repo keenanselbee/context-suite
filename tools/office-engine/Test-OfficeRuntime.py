@@ -40,15 +40,15 @@ def main():
             parser.error("Provide a scratch package or both preparation receipts.")
         copied = json.loads(args.copy_receipt.read_text(encoding="utf-8"))
         host = json.loads(args.host_receipt.read_text(encoding="utf-8-sig"))
-    project = root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
-    names = ["proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
-             "proprietary/src/ContextSuite.Private/Office/OfficeDirectoryLeases.cs",
-             "proprietary/src/ContextSuite.Private/IO/RuntimeDirectoryLeases.cs",
-             "proprietary/src/ContextSuite.Private/IO/MediaFiles.cs",
-             "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeRuntimeContracts.cs",
-             "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeRuntimeFileContracts.cs",
-             "proprietary/tests/ContextSuite.Pdf.ContractTests/Program.cs",
-             "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj",
+    project = root / "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
+    names = ["src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
+             "src/ContextSuite.Private/Office/OfficeDirectoryLeases.cs",
+             "src/ContextSuite.Private/IO/RuntimeDirectoryLeases.cs",
+             "src/ContextSuite.Private/IO/MediaFiles.cs",
+             "tests/ContextSuite.Pdf.ContractTests/OfficeRuntimeContracts.cs",
+             "tests/ContextSuite.Pdf.ContractTests/OfficeRuntimeFileContracts.cs",
+             "tests/ContextSuite.Pdf.ContractTests/Program.cs",
+             "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj",
              "tools/office-engine/Write-OfficeRuntimeInventory.py", "tools/office-engine/Test-OfficeRuntime.py"]
     names.extend(("tools/office-engine/payload-candidate.json", "tools/office-engine/source-runtime-candidate.json"))
     sources = {name: digest(root / name) for name in names}

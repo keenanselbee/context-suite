@@ -3,12 +3,12 @@ using ContextSuite.Core.Operations;
 
 namespace ContextSuite.Application.Infrastructure;
 
-internal sealed class PngOptimizationExecutor(WorkerClient worker, OutputPublisher publisher, IOperationAccess trial)
+internal sealed class PngOptimizationExecutor(WorkerClient worker, OutputPublisher publisher, IOperationAccess admissionService)
 {
     public async Task<ImageBatchExecution> ExecuteAsync(ConfirmedPngOptimization confirmed,
         Action<PngOptimizationItem, FileResult>? report, CancellationToken cancellationToken)
     {
-        var admission = await trial.AdmitOptimizationAsync(confirmed, cancellationToken);
+        var admission = await admissionService.AdmitOptimizationAsync(confirmed, cancellationToken);
         return await ExecuteAdmittedAsync(confirmed, admission, report, cancellationToken);
     }
 

@@ -40,7 +40,7 @@ def main():
                root / "tools/Build-Production.ps1", root / "tools/curated-engine/Test-ProductionPayload.ps1",
                root / "tools/audio-engine/Stage-AudioPayload.py"}
     sources.update(path for path in payload.TOOLS.iterdir() if path.is_file() and path.suffix in (".py", ".json", ".patch"))
-    for folder in ("src", "proprietary/src"):
+    for folder in ("src", "src"):
         sources.update(path for path in (root / folder).rglob("*") if path.is_file() and path.suffix in (".cs", ".csproj", ".icc", ".xaml"))
     sources.update(path for path in root.iterdir() if path.suffix in (".props", ".targets") or path.name == "global.json")
     inputs = {str(path): digest(path) for path in sources}
@@ -73,7 +73,7 @@ def main():
     payload.stage(bundle, valid)
     record = payload.verify(valid)
     passed("Complete reviewed runtime stages and verifies")
-    lease = (root / "proprietary/src/ContextSuite.Private/Images/HeifCodec.cs").read_text()
+    lease = (root / "src/ContextSuite.Private/Images/HeifCodec.cs").read_text()
     if any(item["sha256"] not in lease for item in record["files"] if item["path"].endswith(".dll")):
         raise AssertionError("Packaging differs from private runtime pins")
     passed("Packaging pins match the actual worker loader")

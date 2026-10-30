@@ -91,11 +91,11 @@ internal static class PngOptimizationContracts
         Reject(() => new WorkerCommand(1, Guid.NewGuid(), "png-probe", Probe: new(Guid.NewGuid(), source.Path), Optimization: new(source, "temp")).Validate(), "contradictory worker payload");
 
         var trialPath = Path.Combine(root, "trial.json");
-        var trial = new LocalTrialStore(trialPath);
+        var trial = new OperationAdmissionService();
         var viewModel = new OptimizationViewModel(trial, plan.BatchId, [new(source.ItemId, source.Path, source, null)], plan.Settings, false);
         check(!viewModel.CanConfirm, "PNG UI: waits for access status");
         await viewModel.InitializeAsync();
-        check(viewModel.CanConfirm && !File.Exists(trialPath) && viewModel.Rows[0].ProposedOutput.EndsWith("source - Optimized.png"), "PNG UI: safe named copy, reading planner does not start trial");
+        check(viewModel.CanConfirm && !File.Exists(trialPath) && viewModel.Rows[0].ProposedOutput.EndsWith("source - Optimized.png"), "PNG UI: safe named copy, reading planner does not create access files");
         check(viewModel.SelectedDetails.Contains("source - Optimized.png") && viewModel.SelectedStatus.Contains("Lossless") &&
             viewModel.OutputNotice.Contains("beside") && viewModel.ReplacementNotice.Contains("unavailable"),
             "PNG UI: selected detail retains destination, preset and replacement explanation");
@@ -105,7 +105,7 @@ internal static class PngOptimizationContracts
         ConfirmedPngOptimization? confirmed = null;
         viewModel.Confirmed += value => confirmed = value;
         viewModel.ConfirmCommand.Execute(null);
-        check(confirmed is not null && !File.Exists(trialPath), "PNG UI: confirmation is immutable, admission alone starts trial");
+        check(confirmed is not null && !File.Exists(trialPath), "PNG UI: confirmation is immutable, admission leaves legacy access storage untouched");
         check(viewModel.Preset == PngOptimizationPreset.Lossless, "PNG UI: Lossless remains default");
         viewModel.Preset = PngOptimizationPreset.Balanced;
         check(viewModel.CanConfirm && confirmed!.Plan.Preset == PngOptimizationPreset.Lossless,
@@ -133,7 +133,7 @@ internal static class PngOptimizationContracts
         replacementView.Preset = PngOptimizationPreset.Smallest;
         check(!replacementView.ReplacementConfirmed && !replacementView.CanConfirm, "PNG UI: changed loss policy requires fresh replacement consent");
         var admission = await trial.AdmitAsync(confirmed!);
-        check(admission.IsAllowed && File.Exists(trialPath), "PNG trial: first optimization starts the same 7-day trial");
+        check(admission.IsAllowed && !File.Exists(trialPath), "PNG admissionService: first optimization needs no access file");
         viewModel.ReplaceOriginal = true;
         check(!viewModel.CanConfirm, "PNG UI: unauthorized replacement cannot execute");
 
@@ -150,12 +150,12 @@ internal static class PngOptimizationContracts
         var root = Path.Combine(scratch, "png-worker-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         await using var worker = new WorkerClient(executable, Path.Combine(root, "scratch"));
-        var sourcePath = Path.Combine(root, "sample 空白.png");
+        var sourcePath = Path.Combine(root, "sample ç©ºç™½.png");
         ImageWorkerContracts.WritePng(sourcePath, transparent: true, compression: CompressionLevel.NoCompression);
         var original = SHA256.HashData(File.ReadAllBytes(sourcePath));
         var facts = await worker.ProbeAsync(new(Guid.NewGuid(), sourcePath), default, forOptimization: true);
         var clock = new TestClock();
-        var trial = new LocalTrialStore(Path.Combine(root, "trial.json"), clock);
+        var trial = new OperationAdmissionService();
         var publisher = new OutputPublisher(Path.Combine(root, "publications"), new NoRecycle(), false);
         var executor = new PngOptimizationExecutor(worker, publisher, trial);
         var plan = PngOptimizationPlan.Create(Guid.NewGuid(), [facts, facts with { ItemId = Guid.NewGuid() }], new("optimize", new()));
@@ -163,16 +163,16 @@ internal static class PngOptimizationContracts
         {
             if (result.State == OperationState.Succeeded) clock.Utc = clock.Utc.AddDays(8);
         }, default);
-        check(execution.Admission.IsAllowed && execution.Results.All(result => result.State == OperationState.Succeeded), "PNG batch: both admitted items finish after trial expires");
+        check(execution.Admission.IsAllowed && execution.Results.All(result => result.State == OperationState.Succeeded), "PNG batch: both admitted items finish after clock changes");
         var first = execution.Results[0].Publication!;
-        check(first.OutputBytes < first.SourceBytes && first.OutputPath!.EndsWith("sample 空白 - Optimized.png") &&
-            execution.Results[1].Publication!.OutputPath!.EndsWith("sample 空白 - Optimized (2).png"), "PNG batch: smaller copies with Windows collision numbering");
+        check(first.OutputBytes < first.SourceBytes && first.OutputPath!.EndsWith("sample ç©ºç™½ - Optimized.png") &&
+            execution.Results[1].Publication!.OutputPath!.EndsWith("sample ç©ºç™½ - Optimized (2).png"), "PNG batch: smaller copies with Windows collision numbering");
         check(SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original), "PNG batch: original hash retained");
         check(execution.Results[0].Message.Contains("saved") && !Directory.EnumerateFiles(root, ".context-suite-*.tmp").Any(), "PNG batch: savings reported and temporary files cleaned");
         var declined = await executor.ExecuteAsync(plan.Confirm(false, false), null, default);
-        check(!declined.Admission.IsAllowed && declined.Results.All(result => result.State == OperationState.Failed), "PNG batch: subsequent expired batch cannot execute");
+        check(declined.Admission.IsAllowed && declined.Results.All(result => result.State is OperationState.Succeeded or OperationState.Unchanged), "PNG batch: subsequent batch remains free to execute");
 
-        var activeTrial = new LocalTrialStore(Path.Combine(root, "second-trial.json"));
+        var activeTrial = new OperationAdmissionService();
         var taggedPath = Path.Combine(root, "metadata.png");
         ImageWorkerContracts.WritePng(taggedPath, true, CompressionLevel.NoCompression, fdEC: true);
         var taggedOriginal = File.ReadAllBytes(taggedPath);
@@ -202,7 +202,7 @@ internal static class PngOptimizationContracts
         var optimizedFacts = await worker.ProbeAsync(new(Guid.NewGuid(), first.OutputPath!), default, forOptimization: true);
         var noChange = PngOptimizationPlan.Create(Guid.NewGuid(), [optimizedFacts], new("optimize", new()));
         var stable = await new PngOptimizationExecutor(worker, publisher, activeTrial).ExecuteAsync(noChange.Confirm(false, false), null, default);
-        check(stable.Results.Single().State == OperationState.Unchanged && !File.Exists(Path.Combine(root, "sample 空白 - Optimized - Optimized.png")), "PNG batch: no smaller result is unchanged, not a failure or extra file");
+        check(stable.Results.Single().State == OperationState.Unchanged && !File.Exists(Path.Combine(root, "sample ç©ºç™½ - Optimized - Optimized.png")), "PNG batch: no smaller result is unchanged, not a failure or extra file");
         var stale = PngOptimizationPlan.Create(Guid.NewGuid(), [facts with { ItemId = Guid.NewGuid(), Sha256 = new string('0', 64) }], new("optimize", new()));
         var staleResult = await new PngOptimizationExecutor(worker, publisher, activeTrial).ExecuteAsync(stale.Confirm(false, false), null, default);
         check(staleResult.Results.Single().State == OperationState.Failed && SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original), "PNG batch: stale planned source fails safely");
@@ -212,16 +212,16 @@ internal static class PngOptimizationContracts
             var cancelledPath = Path.Combine(root, "cancelled-trial.json");
             try
             {
-                await new PngOptimizationExecutor(worker, publisher, new LocalTrialStore(cancelledPath)).ExecuteAsync(plan.Confirm(false, false), null, cancelled.Token);
+                await new PngOptimizationExecutor(worker, publisher, new OperationAdmissionService()).ExecuteAsync(plan.Confirm(false, false), null, cancelled.Token);
                 throw new InvalidOperationException("Cancelled PNG admission succeeded");
             }
-            catch (OperationCanceledException) { check(!File.Exists(cancelledPath), "PNG batch: pre-cancelled admission never starts trial"); }
+            catch (OperationCanceledException) { check(!File.Exists(cancelledPath), "PNG batch: pre-cancelled admission creates no access files"); }
         }
         var corrupt = Path.Combine(root, "corrupt.png");
         File.WriteAllText(corrupt, "unsupported fixture");
         await using (var convertVm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "direct-convert-scratch")),
             new SuiteSettings { PlayCompletionSound = false }, publisher,
-            new LocalTrialStore(Path.Combine(root, "direct-convert-trial.json"))))
+            new OperationAdmissionService()))
         {
             var prompts = 0;
             var completedBatches = 0;
@@ -249,7 +249,7 @@ internal static class PngOptimizationContracts
                 "quick Convert: default named validated copy; original unchanged");
         }
         await using var vm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "ui-scratch")), publisher: publisher,
-            trial: new LocalTrialStore(Path.Combine(root, "ui-trial.json")));
+            admissionService: new OperationAdmissionService());
         vm.Admit(new(Guid.NewGuid(), "optimize", "choose-preset", [sourcePath, corrupt]));
         await vm.WaitForIdleAsync();
         check(vm.Rows[0].Result.State == OperationState.Succeeded && vm.Rows[1].Result.State == OperationState.Unsupported &&
@@ -257,7 +257,7 @@ internal static class PngOptimizationContracts
         check(SHA256.HashData(File.ReadAllBytes(sourcePath)).SequenceEqual(original), "PNG legacy direct action: source still unchanged");
         await using (var quickVm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "quick-scratch")),
             new SuiteSettings { PlayCompletionSound = false }, publisher,
-            new LocalTrialStore(Path.Combine(root, "quick-trial.json"))))
+            new OperationAdmissionService()))
         {
             var started = 0;
             var finished = 0;

@@ -24,7 +24,7 @@ internal static class AudioDirectContracts
         var originalPng = SHA256.HashData(await File.ReadAllBytesAsync(png));
         var clock = new Clock();
         var trialPath = Path.Combine(scratch, "trial", "trial.json");
-        var access = new CountedTrial(new LocalTrialStore(trialPath, clock));
+        var access = new CountedTrial(new OperationAdmissionService());
         var publisher = new OutputPublisher(Path.Combine(scratch, "records"), new RefusingRecycler());
         var worker = new WorkerClient(executable, Path.Combine(scratch, "worker"));
         await using (var vm = new MainViewModel(worker, new() { PlayCompletionSound = false }, publisher, access))
@@ -44,16 +44,16 @@ internal static class AudioDirectContracts
             vm.ConversionRequested += (_, _) => throw new InvalidOperationException("Optimization must not open a planner.");
             check(vm.Admit(new(Guid.NewGuid(), "optimize", "auto", [png, flac])).Accepted, "audio direct: mixed Auto selection is admitted");
             await vm.WaitForIdleAsync();
-            check(access.Admissions == 1 && File.Exists(trialPath) && vm.Rows.All(row => row.Result.State == OperationState.Succeeded),
-                "audio direct: one trial admission covers both families across expiry");
+            check(access.Admissions == 1 && !File.Exists(trialPath) && vm.Rows.All(row => row.Result.State == OperationState.Succeeded),
+                "audio direct: one batch admission covers both families after clock changes");
             check(vm.Rows[0].OutputPath.EndsWith(".png") && vm.Rows[1].OutputPath.EndsWith(".flac"),
                 "audio direct: mixed optimization retains each format and names its output copy");
             check(starts == 1 && finishes == 1 && !quiet.NeedsAttention && !vm.HasProblems && !vm.ShowDetails && vm.Summary.Contains("saved"),
                 "audio direct: one quiet completion and aggregate savings without a planner");
             var processId = worker.ProcessId;
             vm.Admit(new(Guid.NewGuid(), "optimize", "lossless", [flac])); await vm.WaitForIdleAsync();
-            check(vm.Rows[^1].Result.State == OperationState.Failed && access.Admissions == 2 && worker.ProcessId == processId,
-                "audio direct: expired next batch is blocked with the shared worker retained");
+            check(vm.Rows[^1].Result.State is OperationState.Succeeded or OperationState.Unchanged && access.Admissions == 2 && worker.ProcessId == processId,
+                "audio direct: following free batch uses the retained worker");
         }
 
         var switchable = new SwitchableAccess();
@@ -62,7 +62,7 @@ internal static class AudioDirectContracts
             new() { PlayCompletionSound = false }, publisher, switchable))
         {
             vm.Admit(new(Guid.NewGuid(), "optimize", "lossless", [flac])); await vm.WaitForIdleAsync();
-            check(vm.Rows.Single().Status.Contains("Activate") && vm.CanRetry && vm.HasProblems,
+            check(vm.Rows.Single().Status.Contains("unavailable") && vm.CanRetry && vm.HasProblems,
                 "audio direct: blocked access gives activation guidance and a retry action");
             switchable.Allowed = true;
             vm.Settings = new() { Optimize = new(OutputDirectory: retryOutput), PlayCompletionSound = false };
@@ -74,10 +74,10 @@ internal static class AudioDirectContracts
                 !vm.CanRetry && !vm.HasProblems, "audio direct: activation retry keeps action/files, captures current settings and suppresses duplicate clicks");
             switchable.Allowed = false;
             vm.Admit(new(Guid.NewGuid(), "optimize", "auto", [flac])); await vm.WaitForIdleAsync();
-            check(vm.Rows[^1].Result.State == OperationState.Failed, "audio direct: deactivation blocks new Auto work");
+            check(vm.Rows[^1].Result.State == OperationState.Failed, "audio direct: preparation failure blocks new Auto work");
             switchable.Allowed = true; vm.RetryFailed(); await vm.WaitForIdleAsync();
             check(vm.Rows[^1].Action == "auto" && vm.Rows[^1].Result.State == OperationState.Succeeded && !vm.HasProblems,
-                "audio direct: reactivation retries the same Auto action");
+                "audio direct: preparation recovery retries the same Auto action");
         }
 
         var supportedAccess = new SwitchableAccess { Allowed = true };
@@ -120,7 +120,7 @@ internal static class AudioDirectContracts
         {
             vm.Admit(new(Guid.NewGuid(), "optimize", "auto", [flac])); await vm.WaitForIdleAsync();
             check(vm.Rows.Single().Result.State == OperationState.Unsupported && vm.Rows[0].Status.Contains("unavailable in this build") && unavailableAccess.Admissions == 0,
-                "audio direct: missing engine yields a clear result without trial admission or worker launch");
+                "audio direct: missing engine yields a clear result without batch admission or worker launch");
         }
         check(SHA256.HashData(await File.ReadAllBytesAsync(flac)).SequenceEqual(originalFlac) &&
             SHA256.HashData(await File.ReadAllBytesAsync(png)).SequenceEqual(originalPng) && Directory.GetFiles(publisher.RecordDirectory).Length == 0,
@@ -148,7 +148,7 @@ internal static class AudioDirectContracts
     {
         public bool Allowed { get; set; }
         public int Admissions { get; private set; }
-        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "License active." : "Activate a license to optimize."));
+        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Ready." : "The operation is temporarily unavailable."));
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken token) => throw new InvalidOperationException();
         public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken token) => Admit(confirmed.Plan.BatchId, token);
         public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedFlacOptimization confirmed, CancellationToken token) => Admit(confirmed.Plan.BatchId, token);

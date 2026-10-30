@@ -65,7 +65,7 @@ def main():
     print('Evidence: ' + str(root), flush=True)
     # This invokes the real private adapter; no direct FFmpeg recipe substitutes
     # for production conversion/optimization policy in the generated fixtures.
-    built = run(['dotnet', 'build', ROOT / 'proprietary/tests/ContextSuite.Audio.ContractTests', '-c', 'Release', '--nologo'], ROOT)
+    built = run(['dotnet', 'build', ROOT / 'tests/ContextSuite.Audio.ContractTests', '-c', 'Release', '--nologo'], ROOT)
     (root / 'build.log').write_bytes(built.stdout + built.stderr)
     # Run the adapter host directly, so a subprocess timeout terminates the owner
     # of the production native jobs rather than only a dotnet-run intermediary.

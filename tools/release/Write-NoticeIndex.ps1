@@ -9,6 +9,9 @@ $groups = [ordered]@{
         'Magick.NET.Notice.txt', 'DirectXTex.License.txt', 'Oxipng.License.txt', 'Oxipng.ThirdPartyNotices.txt',
         'Oxipng.Rust.Library.Notices.html', 'ExoQuant.License.txt', 'Rust.Library.Notices.html')
 }
+if (Test-Path -LiteralPath (Join-Path $root 'ContextSuite.License.md')) {
+    $groups['Context Suite terms'] = @('ContextSuite.License.md')
+}
 if (Test-Path -LiteralPath (Join-Path $root 'UglyToad.PdfPig.dll')) {
     $groups['PDF-to-Word'] = @('PdfPig.License.txt', 'PdfPig.Notices.txt')
 }

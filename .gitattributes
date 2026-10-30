@@ -46,3 +46,20 @@ assets/third-party/svg/licenses/quick-error-2.0.1/LICENSE-APACHE whitespace=cr-a
 assets/third-party/svg/licenses/svgtypes-0.16.1/LICENSE-MIT whitespace=cr-at-eol,-blank-at-eof
 assets/third-party/svg/licenses/weezl-0.1.12/LICENSE-MIT whitespace=cr-at-eol,-blank-at-eof
 assets/third-party/svg/licenses/zlib-rs-0.6.8/LICENSE whitespace=cr-at-eol,-blank-at-eol
+
+# Preserve imported native identities from the retired implementation repository.
+# These exact source bytes are pinned by the parent's Office staging verifier.
+src/ContextSuite.OfficeHost.Native/* text eol=lf
+# Preserve exact source bytes checked against the selected native build receipts.
+src/ContextSuite.Avif.Native/* -text whitespace=cr-at-eol
+src/ContextSuite.Svg.Native/Cargo.toml -text whitespace=cr-at-eol
+src/ContextSuite.Svg.Native/Cargo.lock -text whitespace=cr-at-eol
+src/ContextSuite.Svg.Native/src/main.rs -text whitespace=cr-at-eol
+src/ContextSuite.PdfDark.Native/* -text whitespace=cr-at-eol
+
+# Keep migrated pinned native sources stable in fresh Windows checkouts.
+native/dds/Bridge.cpp text eol=lf
+tools/dds-engine/CMakeLists.txt text eol=lf
+src/ContextSuite.Heif.Native/* text eol=lf
+src/ContextSuite.ImagePdfValidator.Native/* text eol=lf
+src/ContextSuite.PdfRenderer.Native/* text eol=lf

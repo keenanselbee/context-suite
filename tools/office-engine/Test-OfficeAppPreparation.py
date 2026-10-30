@@ -32,7 +32,7 @@ def main():
     stage.mkdir(parents=True)
     print("Application preparation run:", stage, flush=True)
     sources = {Path(__file__).resolve(), fixture}
-    for directory in ("src", "tests/ContextSuite.Application.TestHost", "proprietary/src"):
+    for directory in ("src", "tests/ContextSuite.Application.TestHost"):
         sources.update(path for path in (root / directory).rglob("*") if path.suffix in (".cs", ".csproj", ".xaml")
                        and not {"bin", "obj"}.intersection(path.parts))
     sources.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json")

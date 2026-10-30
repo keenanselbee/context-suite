@@ -25,7 +25,7 @@ internal static class WemWorkflowContracts
             }
         }
         var records = Path.Combine(scratch, "publications");
-        var access = new CountingAccess(new LocalTrialStore(Path.Combine(scratch, "access", "trial.json")));
+        var access = new CountingAccess(new OperationAdmissionService());
         var publisher = new OutputPublisher(records, new ForbiddenRecycle());
         await using var worker = new WorkerClient(executable, Path.Combine(scratch, "workers"));
         check(worker.HasWemDecoder && worker.HasAudioConverter == withAudioEngine,

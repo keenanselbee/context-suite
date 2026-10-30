@@ -21,7 +21,7 @@ internal static class PdfDocxWorkflowContracts
         File.Copy(input, copy);
         await using var vm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "worker")),
             new() { Convert = new(OutputDirectory: root) }, new OutputPublisher(Path.Combine(root, "records"), new NoRecycle()),
-            new LocalTrialStore(Path.Combine(root, "trial.json")));
+            new OperationAdmissionService());
         vm.ConversionRequested += (_, _) => throw new InvalidOperationException("PDF-to-Word must use the direct command.");
         vm.Admit(new(Guid.NewGuid(), "convert", "docx", [copy]));
         await vm.WaitForIdleAsync();
@@ -44,11 +44,11 @@ internal static class PdfDocxWorkflowContracts
         var hash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(path)));
         await using var worker = new WorkerClient(executable, Path.Combine(root, "worker"));
         var trialPath = Path.Combine(root, "trial.json");
-        IOperationAccess access = new LocalTrialStore(trialPath);
+        IOperationAccess access = new OperationAdmissionService();
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new NoRecycle(), replacementVerified: true);
         var executor = new PdfDocxExecutor(worker, publisher, access);
         var source = await worker.ProbePdfDocxAsync(new(Guid.NewGuid(), path), default);
-        check(!source.NeedsOcr && source.TextCharacters > 0 && !File.Exists(trialPath), "DOCX: inspection does not start trial");
+        check(!source.NeedsOcr && source.TextCharacters > 0 && !File.Exists(trialPath), "DOCX: inspection does not create access files");
         var collision = Path.Combine(root, "Report.docx");
         await File.WriteAllTextAsync(collision, "existing document");
         var results = new List<FileResult>();

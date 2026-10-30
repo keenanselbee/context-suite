@@ -49,17 +49,17 @@ def main():
     stage.mkdir(parents=True)
     print("Office PDF validation evidence:", stage, flush=True)
     inputs = {Path(__file__).resolve()}
-    for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/ContextSuite.Worker", "src/Shared", "proprietary/src/ContextSuite.Private",
-                      "proprietary/tests/ContextSuite.Pdf.ContractTests", "proprietary/tests/ContextSuite.Image.ContractTests"):
+    for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/ContextSuite.Worker", "src/Shared", "src/ContextSuite.Private",
+                      "tests/ContextSuite.Pdf.ContractTests", "tests/ContextSuite.Image.ContractTests"):
         inputs.update(path for path in (root / directory).rglob("*") if path.suffix in (".cs", ".csproj")
                       and not {"bin", "obj"}.intersection(path.parts))
-    inputs.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json", "tools/Require-Private.targets")
+    inputs.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json")
                   if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(inputs)}
     engines = {str(path): digest(path) for folder in (args.pdf_engine.resolve(strict=True), args.pdf_renderer.resolve(strict=True))
                for path in folder.iterdir() if path.is_file()}
     (stage / "inputs.json").write_text(json.dumps({"Sources": sources, "Fixtures": fixtures, "Engines": engines}, indent=2), encoding="utf-8")
-    build = subprocess.run(["dotnet", "build", str(root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"),
+    build = subprocess.run(["dotnet", "build", str(root / "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"),
                             "-c", "Release", "--no-restore", "--verbosity", "quiet"], cwd=root, capture_output=True)
     (stage / "build.log").write_bytes(build.stdout + build.stderr)
     if build.returncode:

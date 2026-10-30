@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using ContextSuite.Application.Infrastructure;
-using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Images;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Settings;
@@ -14,13 +13,12 @@ internal static class DirectCommandContracts
         var repository = new DirectoryInfo(AppContext.BaseDirectory);
         while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "ContextSuite.Production.slnx"))) repository = repository.Parent;
         if (repository is null || !File.Exists(executable)) throw new InvalidOperationException("Repository and staged worker are required.");
-        var root = Path.Combine(repository.FullName, ".codex-temp", "license-workflow", "direct-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(repository.FullName, ".codex-temp", "command-workflow", "direct-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
-        LicenseWorkflowFixture.Prepare(root);
+        WorkflowFixture.Prepare(root);
         var source = Path.Combine(root, "fixture.png");
         var original = SHA256.HashData(File.ReadAllBytes(source));
-        var manager = new PaidLicenseManager(new LicenseWorkflowFixture(), new LicenseStore(Path.Combine(root, "Access", "license.bin"), LicenseEnvironment.Sandbox));
-        var access = new OperationAccess(new LocalTrialStore(Path.Combine(root, "Access", "trial.json")), manager);
+        var access = new OperationAdmissionService();
         var recycler = new RetainFiles();
         var publisher = new OutputPublisher(Path.Combine(root, "Publications"), recycler, PublicationSupport.ReplacementAvailable);
         await using var vm = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "WorkerScratch")),
@@ -35,31 +33,21 @@ internal static class DirectCommandContracts
         };
         var passed = 0;
         await Run("convert", "tga", source);
-        Check(vm.Rows.Single().Result.State == OperationState.Failed && vm.Rows[0].Status.Contains("Activate", StringComparison.OrdinalIgnoreCase),
-            "expired direct conversion gives activation guidance");
-        await manager.ActivateAsync(LicenseWorkflowFixture.TestKey);
-        vm.RetryFailed();
-        await vm.WaitForIdleAsync();
-        Check(vm.Rows.Count == 2 && vm.Rows[1].Action == "tga" && vm.Rows[1].Result.State == OperationState.Succeeded &&
-            vm.Rows[1].OutputPath.EndsWith(" - Converted.tga"), "activation and retry retain selected files and target");
-        Check(vm.DisplayRows.Count() == 1 && !vm.HasProblems && !vm.CanRetry && vm.Summary.StartsWith("1 completed") && !vm.Summary.Contains("failed"),
-            "successful retry removes the stale failure from visible results and disables another attempt");
+        Check(vm.Rows.Single().Result.State == OperationState.Succeeded && vm.Rows[0].Action == "tga" &&
+            vm.Rows[0].OutputPath.EndsWith(" - Converted.tga"), "free direct conversion preserves the selected target");
+        Check(!vm.HasProblems && !vm.CanRetry && vm.Summary.StartsWith("1 completed"),
+            "successful direct conversion stays quiet without retry");
         Check(SHA256.HashData(File.ReadAllBytes(source)).SequenceEqual(original), "default conversion preserves original bytes");
-        await manager.DeactivateAsync();
         await Run("optimize", "balanced", source);
-        Check(vm.Rows[^1].Result.State == OperationState.Failed, "deactivation blocks the next optimization");
-        await manager.ActivateAsync(LicenseWorkflowFixture.TestKey);
-        vm.RetryFailed();
-        await vm.WaitForIdleAsync();
         Check(vm.Rows[^1].Action == "balanced" && vm.Rows[^1].Path == source &&
             vm.Rows[^1].Result.State is OperationState.Succeeded or OperationState.Unchanged,
-            "reactivation and retry preserve optimization preset and file");
+            "free direct optimization preserves preset and file");
         Check(SHA256.HashData(File.ReadAllBytes(source)).SequenceEqual(original) && recycler.Calls == 0,
             "default optimization keeps originals and never recycles");
 
         // Use the metadata-free TGA copy to exercise replacement independently
         // of the PNG fixture's metadata, which can mandate copies on conversion.
-        var tga = vm.Rows[1].OutputPath;
+        var tga = vm.Rows[0].OutputPath;
         var tgaBytes = File.ReadAllBytes(tga);
         vm.Settings = new() { Convert = new(true), Optimize = new(true), PlayCompletionSound = false };
         vm.Admit(new(Guid.NewGuid(), "convert", "png", [tga]));
@@ -89,7 +77,7 @@ internal static class DirectCommandContracts
         await Run("convert", "dds", tga);
         Check(vm.Rows[^1].Result.State == OperationState.Cancelled && File.ReadAllBytes(tga).SequenceEqual(tgaBytes),
             "DDS menu command retains focused texture and metadata choices; cancellation keeps source");
-        Console.WriteLine($"Passed {passed} direct-command workflow checks. Simulated license, disposable files, no native recycling. Evidence: {root}");
+        Console.WriteLine($"Passed {passed} direct-command workflow checks. Free operation admission, disposable files, no native recycling. Evidence: {root}");
         return 0;
 
         async Task Run(string operation, string action, string path)

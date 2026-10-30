@@ -56,17 +56,17 @@ internal static class AudioBatchContracts
             catch (InvalidDataException) { check(worker.ProcessId is null, "Audio batch: mismatched admission starts no worker or publication"); }
         }
         var clock = new Clock(); var trialPath = Path.Combine(scratch, "audio-trial-" + Guid.NewGuid().ToString("N"), "trial.json");
-        IOperationAccess trial = new LocalTrialStore(trialPath, clock);
-        check((await trial.ReadAccessAsync()).CanStart && !File.Exists(trialPath), "Audio access: status does not start trial");
+        IOperationAccess trial = new OperationAdmissionService();
+        check((await trial.ReadAccessAsync()).CanStart && !File.Exists(trialPath), "Audio access: status does not create access files");
         var admitted = await trial.AdmitConversionAsync(confirmed, default);
-        check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && File.Exists(trialPath), "Audio access: one confirmed batch uses existing trial bookkeeping");
+        check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && !File.Exists(trialPath), "Audio access: one confirmed batch uses validated admission without access files");
         clock.Now = clock.Now.AddDays(8);
-        check(admitted.IsAllowed && !(await trial.AdmitConversionAsync(confirmed, default)).IsAllowed, "Audio access: expiry blocks new work without revoking admission");
+        check(admitted.IsAllowed && (await trial.AdmitConversionAsync(confirmed, default)).IsAllowed, "Audio access: clock changes do not restrict new or admitted work");
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         var untouched = Path.Combine(scratch, "audio-cancelled-trial-" + Guid.NewGuid().ToString("N"), "trial.json");
-        IOperationAccess cancelledTrial = new LocalTrialStore(untouched);
+        IOperationAccess cancelledTrial = new OperationAdmissionService();
         try { await cancelledTrial.AdmitConversionAsync(confirmed, cancelled.Token); check(false, "Audio pre-cancellation"); }
-        catch (OperationCanceledException) { check(!File.Exists(untouched), "Audio access: pre-cancellation leaves trial unstarted"); }
+        catch (OperationCanceledException) { check(!File.Exists(untouched), "Audio access: pre-cancellation leaves legacy access storage untouched"); }
         void Reject(Action action, string name)
         {
             try { action(); }

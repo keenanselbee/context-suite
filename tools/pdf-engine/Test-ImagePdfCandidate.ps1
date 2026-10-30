@@ -26,12 +26,12 @@ $extra = @()
 if ($Validate) {
     $validation = Get-Content -LiteralPath (Join-Path $pdf 'image-validator-build.json') -Raw | ConvertFrom-Json
     $binary = Join-Path $pdf 'image-validator-build\bin\Release'
-    $source = Join-Path $repository 'proprietary\src\ContextSuite.ImagePdfValidator.Native'
+    $source = Join-Path $repository 'src\ContextSuite.ImagePdfValidator.Native'
     if ((Get-FileHash -LiteralPath (Join-Path $binary 'ContextSuite.ImagePdfValidator.exe')).Hash -ne $validation.sha256 -or
         (Get-FileHash -LiteralPath (Join-Path $binary 'qpdf30.dll')).Hash -ne $validation.qpdfSha256 -or
         (Get-FileHash -LiteralPath (Join-Path $source 'Validator.cpp')).Hash -ne $validation.bridgeSourceSha256 -or
         (Get-FileHash -LiteralPath (Join-Path $source 'CMakeLists.txt')).Hash -ne $validation.buildSourceSha256) { throw 'Image PDF validator identity changed; rebuild it.' }
     $extra = @($binary)
 }
-& dotnet run --project (Join-Path $repository 'proprietary\tests\ContextSuite.Pdf.ContractTests\ContextSuite.Pdf.ContractTests.csproj') -c Release -- --image-pdf $qpdf $probe $evidence @extra
+& dotnet run --project (Join-Path $repository 'tests\ContextSuite.Pdf.ContractTests\ContextSuite.Pdf.ContractTests.csproj') -c Release -- --image-pdf $qpdf $probe $evidence @extra
 if ($LASTEXITCODE -ne 0) { throw "Image-PDF candidate failed; evidence retained at $evidence" }

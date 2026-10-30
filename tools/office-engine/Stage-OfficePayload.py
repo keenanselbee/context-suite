@@ -111,6 +111,10 @@ def selection():
         raise ValueError("Office archive selection differs from the reviewed candidate.")
     policy = json.loads(REDUCTION_POLICY.read_bytes())
     base = policy["baseSelection"]
+    # Keep the immutable reduction recipe bytes and its original path identities.
+    # The production selection now resolves those same authored sources publicly.
+    for item in base["host"]["sources"]:
+        item["path"] = item["path"].removeprefix("proprietary/")
     derivation = upstream.get("runtimeDerivation")
     if derivation is None:
         if record["inventory"] != base["inventory"]:

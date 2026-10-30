@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-$privateSource = Join-Path $repositoryRoot 'proprietary/src/ContextSuite.Svg.Native'
+$privateSource = Join-Path $repositoryRoot 'src/ContextSuite.Svg.Native'
 $noticeRoot = Join-Path $repositoryRoot 'assets/third-party/svg'
 $inventoryPath = Join-Path $noticeRoot 'dependency-inventory.json'
 $verificationScript = Join-Path $PSScriptRoot 'Verify-CargoSources.py'

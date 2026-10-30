@@ -12,7 +12,7 @@ TOOLS = pathlib.Path(__file__).absolute().parent
 ROOT = TOOLS.parents[1]
 PDF_TOOLS = ROOT / "tools/pdf-engine"
 HOST_NAME = "ContextSuite.PdfDark.exe"
-ADAPTER_SOURCE = ROOT / "proprietary/src/ContextSuite.Private/Pdf/PdfDarkAdapter.cs"
+ADAPTER_SOURCE = ROOT / "src/ContextSuite.Private/Pdf/PdfDarkAdapter.cs"
 
 
 def digest(path):
@@ -51,7 +51,7 @@ def pins():
             raise ValueError("Invalid PDF dark-mode SHA-256 pin")
     if not isinstance(host["bytes"], int) or host["bytes"] <= 0:
         raise ValueError("Invalid PDF dark-mode host size pin")
-    sources = [checked_relative(item["path"], "proprietary/src/ContextSuite.PdfDark.Native/")
+    sources = [checked_relative(item["path"], "src/ContextSuite.PdfDark.Native/")
                for item in host["sources"]]
     if len(sources) != len(set(sources)):
         raise ValueError("Duplicate PDF dark-mode source pin")
@@ -124,7 +124,7 @@ def stage(payload, build_directory):
     if not executable.is_file() or executable.stat().st_size != host["bytes"] or digest(executable) != host["sha256"]:
         raise ValueError("PDF dark-mode host differs from the reviewed build")
     for item in host["sources"]:
-        source = ROOT / checked_relative(item["path"], "proprietary/src/ContextSuite.PdfDark.Native/")
+        source = ROOT / checked_relative(item["path"], "src/ContextSuite.PdfDark.Native/")
         for ancestor in (source, *source.parents):
             if ancestor == ROOT:
                 break

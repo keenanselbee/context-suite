@@ -33,7 +33,7 @@ internal static class AudioListeningContracts
         {
             if (!worker.HasAudioConverter) throw new IOException("The current isolated audio worker is required.");
             var publisher = new OutputPublisher(records, new ForbiddenRecycle());
-            var access = new LocalTrialStore(Path.Combine(work, "access", "trial.json"));
+            var access = new OperationAdmissionService();
             var executor = new AudioConversionExecutor(worker, publisher, access);
             foreach (var name in names)
             {

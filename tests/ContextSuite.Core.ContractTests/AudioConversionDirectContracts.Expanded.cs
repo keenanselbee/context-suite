@@ -45,7 +45,7 @@ internal static partial class AudioConversionDirectContracts
             if (decline) return null;
             var plan = decision.Plan;
             access.Allowed = false; await decision.RefreshAccessAsync();
-            check(!decision.CanConfirm && decision.LicenseActionLabel.Contains("Activate"), "Expanded direct: expired prompt exposes activation");
+            check(!decision.CanConfirm && decision.Message.Contains("unavailable"), "Expanded direct: unavailable preparation reports unavailable preparation");
             access.Allowed = true; await decision.RefreshAccessAsync();
             check(decision.CanConfirm && ReferenceEquals(decision.Plan, plan), "Expanded direct: activation preserves the selected plan");
             ConfirmedAudioConversion? result = null;
@@ -96,8 +96,8 @@ internal static partial class AudioConversionDirectContracts
         {
             access.Allowed = false;
             retry.Admit(new(Guid.NewGuid(), "convert", "flac", [aiff])); await retry.WaitForIdleAsync();
-            check(retry.Rows.Single().Result.State == OperationState.Failed && retry.CanRetry && retry.Rows.Single().Status.Contains("Activate"),
-                "Expanded direct: expired access blocks a routine copy and exposes retry");
+            check(retry.Rows.Single().Result.State == OperationState.Failed && retry.CanRetry && retry.Rows.Single().Status.Contains("unavailable"),
+                "Expanded direct: unavailable preparation blocks a routine copy and exposes retry");
             access.Allowed = true;
             var folder = Path.Combine(scratch, "retry-output"); Directory.CreateDirectory(folder);
             retry.Settings = new() { Convert = new(OutputDirectory: folder), PlayCompletionSound = false };

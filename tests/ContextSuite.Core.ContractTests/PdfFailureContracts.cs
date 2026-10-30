@@ -25,7 +25,7 @@ internal static class PdfFailureContracts
         await using var worker = new WorkerClient(executable, workerRoot, clock);
         var evidence = new List<object>();
         var baselineSource = await worker.ProbePdfFileAsync(new(Guid.NewGuid(), path), default);
-        var baseline = await new PdfOptimizationExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial", "trial.json")))
+        var baseline = await new PdfOptimizationExecutor(worker, publisher, new OperationAdmissionService())
             .ExecuteAsync(PdfOptimizationPlan.Create(Guid.NewGuid(), [baselineSource], new("optimize", new())).Confirm(), null, default);
         check(baseline.Results.Single().Publication?.Outcome == PublicationOutcome.CopyCreated,
             "PDF failure: generated large native-work fixture first completes validated optimization");
@@ -42,7 +42,7 @@ internal static class PdfFailureContracts
             var longSource = await longWorker.ProbePdfFileAsync(new(Guid.NewGuid(), longPath), default);
             check(longPath.Length > 260 && longScratch.Length > 260 && longSource.Facts.PageCount == 2,
                 "PDF failure: source and native scratch paths beyond MAX_PATH remain readable");
-            var result = await new PdfOptimizationExecutor(longWorker, publisher, new LocalTrialStore(Path.Combine(root, "trial", "trial.json")))
+            var result = await new PdfOptimizationExecutor(longWorker, publisher, new OperationAdmissionService())
                 .ExecuteAsync(PdfOptimizationPlan.Create(Guid.NewGuid(), [longSource], new("optimize", new())).Confirm(), null, default);
             check(result.Results.Single().Publication?.Outcome == PublicationOutcome.CopyCreated &&
                 result.Results.Single().Publication!.OutputPath!.Length > 260 &&
@@ -97,7 +97,7 @@ internal static class PdfFailureContracts
                     !Directory.EnumerateDirectories(workerRoot).Any() && SHA256.HashData(await File.ReadAllBytesAsync(path)).SequenceEqual(hash),
                     "PDF failure: original survives and owned output/scratch are cleaned after " + fault);
                 var fresh = await worker.ProbePdfFileAsync(new(Guid.NewGuid(), Path.Combine(fixtures, "authored original ü.pdf")), default);
-                var executor = new PdfOptimizationExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial", "trial.json")));
+                var executor = new PdfOptimizationExecutor(worker, publisher, new OperationAdmissionService());
                 var resumed = await executor.ExecuteAsync(PdfOptimizationPlan.Create(Guid.NewGuid(), [fresh], new("optimize", new(OutputDirectory: root))).Confirm(), null, default);
                 check(worker.ProcessId != processId && resumed.Results.Single().Publication?.Outcome == PublicationOutcome.CopyCreated,
                     "PDF failure: fresh worker completes a valid copy after " + fault);
@@ -117,7 +117,7 @@ internal static class PdfFailureContracts
             var source = await worker.ProbePdfFileAsync(new(Guid.NewGuid(), Path.Combine(fixtures, "authored original ü.pdf")), default);
             var io = new FailingMove(afterMove);
             var faultPublisher = new OutputPublisher(Path.Combine(faultRoot, "records"), new NoRecycle(), io: io);
-            var executor = new PdfOptimizationExecutor(worker, faultPublisher, new LocalTrialStore(Path.Combine(root, "trial", "trial.json")));
+            var executor = new PdfOptimizationExecutor(worker, faultPublisher, new OperationAdmissionService());
             var plan = PdfOptimizationPlan.Create(Guid.NewGuid(), [source], new("optimize", new(OutputDirectory: faultRoot))).Confirm();
             var execution = await executor.ExecuteAsync(plan, null, default);
             var result = execution.Results.Single();

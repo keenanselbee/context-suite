@@ -18,10 +18,9 @@ one link and rejects a stale Python notice. The selected Python-free runtime
 now passes 58 complete Office packaging checks; candidate 1.3.4 verifies all
 282 local links. Office itself remains bundled.
 
-License now includes **Third-party notices**, available without activation or
-online validation. It opens `ThirdPartyNotices.html` beside the application in
+Settings includes **Third-party notices**, available locally in the free edition. It opens `ThirdPartyNotices.html` beside the application in
 the Windows file association for HTML. Missing files and association failures
-produce a separate accessible status message without replacing license status.
+produce a separate accessible status message without changing ordinary settings.
 The existing Close/Escape action and compact content sizing are retained.
 
 The production build generates an offline index after assembling the selected

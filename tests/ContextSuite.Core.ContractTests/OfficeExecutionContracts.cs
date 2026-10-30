@@ -25,7 +25,7 @@ internal static class OfficeExecutionContracts
         var checks = new List<string>();
         await using var worker = new WorkerClient(workerPath, Path.Combine(root, "workers"));
         await using var executor = new OfficeConversionExecutor(worker, new OutputPublisher(Path.Combine(root, "publications"), new NoRecycle()),
-            new LocalTrialStore(Path.Combine(root, "trial.json")), contexts);
+            new OperationAdmissionService(), contexts);
         var confirmed = OfficeConversionPlan.Create(Guid.NewGuid(), sources, new("convert", new(OutputDirectory: output))).Confirm();
         FileStream? obstruction = null;
         string? context = null;
@@ -104,7 +104,7 @@ internal static class OfficeExecutionContracts
         var checks = new List<string>(); var results = new List<object>();
         await using var worker = new WorkerClient(workerPath, Path.Combine(root, "workers"));
         var publisher = new OutputPublisher(records, new NoRecycle());
-        IOperationAccess access = new LocalTrialStore(Path.Combine(root, "trial.json"));
+        IOperationAccess access = new OperationAdmissionService();
         await using var executor = new OfficeConversionExecutor(worker, publisher, access, contexts);
         var plan = OfficeConversionPlan.Create(Guid.NewGuid(), sources, new("convert", new(ReplaceOriginals: true))).Confirm();
         var collision = Path.Combine(originals, OutputNames.Create(sources[0].Path, "convert", "pdf"));

@@ -20,7 +20,7 @@ using ContextSuite.Core.Installation;
 namespace ContextSuite.Application;
 
 internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? settings = null, OutputPublisher? publisher = null,
-    IOperationAccess? trial = null, string? officeContextRoot = null, InstalledTools? installedTools = null) : INotifyPropertyChanged, IAsyncDisposable
+    IOperationAccess? admissionService = null, string? officeContextRoot = null, InstalledTools? installedTools = null) : INotifyPropertyChanged, IAsyncDisposable
 {
     private readonly Queue<(OperationRequest Request, FileRow[] Rows)> _pending = new();
     private readonly HashSet<Guid> _received = [];
@@ -151,12 +151,12 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
                     await AnalyzeBatchAsync(batch.Rows, active.Token);
                     continue;
                 }
-                if (batch.Request.Operation == "convert" && Publisher is not null && trial is not null && (batch.Request.IsQuickConversion || ConversionRequested is not null))
+                if (batch.Request.Operation == "convert" && Publisher is not null && admissionService is not null && (batch.Request.IsQuickConversion || ConversionRequested is not null))
                 {
                     await ConvertBatchAsync(batch.Request, batch.Rows, active.Token);
                     continue;
                 }
-                if (batch.Request.Operation == "optimize" && Publisher is not null && trial is not null)
+                if (batch.Request.Operation == "optimize" && Publisher is not null && admissionService is not null)
                 {
                     await OptimizeBatchAsync(batch.Request, batch.Rows, active.Token);
                     continue;
@@ -417,7 +417,7 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         FileRow[] rows, List<ConversionSelection> selection, ImageFormat? directTarget, CancellationToken cancellationToken)
     {
         if (!selection.Any(s => s.Facts is not null)) return (null, false);
-        await using var planner = new ConversionViewModel(worker, trial!, request.RequestId, selection, rows[0].Settings, PublicationSupport.ReplacementAvailable);
+        await using var planner = new ConversionViewModel(worker, admissionService!, request.RequestId, selection, rows[0].Settings, PublicationSupport.ReplacementAvailable);
         ConfirmedImageBatch? confirmed = null;
         if (directTarget is { } target)
         {
@@ -590,19 +590,19 @@ internal sealed partial class MainViewModel(WorkerClient worker, SuiteSettings? 
         cancellationToken.ThrowIfCancellationRequested();
         // One Explorer invocation is one admitted batch, including mixed families.
         // All confirmed plans carry the same request ID and settings snapshot.
-        var admission = png is not null ? await trial!.AdmitOptimizationAsync(png, cancellationToken)
-            : flac is not null ? await trial!.AdmitOptimizationAsync(flac, cancellationToken)
-            : pdf is not null ? await trial!.AdmitOptimizationAsync(pdf, cancellationToken)
-            : lossless is not null ? await trial!.AdmitOptimizationAsync(lossless, cancellationToken)
-            : await trial!.AdmitOptimizationAsync(package!, cancellationToken);
+        var admission = png is not null ? await admissionService!.AdmitOptimizationAsync(png, cancellationToken)
+            : flac is not null ? await admissionService!.AdmitOptimizationAsync(flac, cancellationToken)
+            : pdf is not null ? await admissionService!.AdmitOptimizationAsync(pdf, cancellationToken)
+            : lossless is not null ? await admissionService!.AdmitOptimizationAsync(lossless, cancellationToken)
+            : await admissionService!.AdmitOptimizationAsync(package!, cancellationToken);
         if (png is not null)
-            await new PngOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(png, admission,
+            await new PngOptimizationExecutor(worker, Publisher!, admissionService!).ExecuteAdmittedAsync(png, admission,
                 (item, result) => Report(item.Source.ItemId, result), cancellationToken);
         if (flac is not null)
-            await new FlacOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(flac, admission,
+            await new FlacOptimizationExecutor(worker, Publisher!, admissionService!).ExecuteAdmittedAsync(flac, admission,
                 (item, result) => Report(item.Source.ItemId, result), cancellationToken);
         if (pdf is not null)
-            await new PdfOptimizationExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(pdf, admission,
+            await new PdfOptimizationExecutor(worker, Publisher!, admissionService!).ExecuteAdmittedAsync(pdf, admission,
                 (item, result) => Report(item.Source.ItemId, result), cancellationToken);
         if (lossless is not null)
             await new LosslessImageOptimizationExecutor(worker, Publisher!).ExecuteAdmittedAsync(lossless, admission,

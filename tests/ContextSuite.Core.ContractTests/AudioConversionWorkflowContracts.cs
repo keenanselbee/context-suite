@@ -23,7 +23,7 @@ internal static class AudioConversionWorkflowContracts
             sources[format] = path; hashes[path] = await Hash(path);
         }
         var trialPath = Path.Combine(scratch, "access", "trial.json"); var clock = new Clock();
-        var access = new CountingAccess(new LocalTrialStore(trialPath, clock));
+        var access = new CountingAccess(new OperationAdmissionService());
         var records = Path.Combine(scratch, "publications"); var publisher = new OutputPublisher(records, new ForbiddenRecycle());
         await using var worker = new WorkerClient(executable, Path.Combine(scratch, "workers"));
         var executor = new AudioConversionExecutor(worker, publisher, access);
@@ -34,7 +34,7 @@ internal static class AudioConversionWorkflowContracts
             var source = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), sources[format]), format, default);
             var plan = AudioConversionBatch.Create(Guid.NewGuid(), [source], format, new("convert", new()));
             check(!plan.HasExecutableItems && plan.Items[0].Encoding!.AlreadyTarget && !File.Exists(trialPath),
-                "Audio conversion: same-format " + format + " stays unchanged without trial admission");
+                "Audio conversion: same-format " + format + " stays unchanged without batch admission");
         }
         var workerId = worker.ProcessId; var reports = new List<object>();
         foreach (var (input, _) in formats)
@@ -61,13 +61,13 @@ internal static class AudioConversionWorkflowContracts
         var acrossExpiry = await executor.ExecuteAsync(confirmed, (item, row) =>
         { if (item.Source.ItemId == a.ItemId && row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8); }, default);
         check(acrossExpiry.Results.All(row => row.Publication?.Outcome == PublicationOutcome.CopyCreated) && access.Admissions == beforeAdmission + 1,
-            "Audio conversion: admitted batch finishes both files across expiry");
+            "Audio conversion: admitted batch finishes both files after clock changes");
         check(acrossExpiry.Results[0].Publication!.OutputPath != collision && await Hash(collision) == collisionHash,
             "Audio conversion: collisions retain existing output");
         var denied = await executor.ExecuteAsync(confirmed, null, default);
-        check(!denied.Admission.IsAllowed && denied.Results.All(row => row.State == OperationState.Failed) && Directory.GetFiles(records).Length == 0,
-            "Audio conversion: expired access starts no publication");
-        var freshAccess = new CountingAccess(new LocalTrialStore(Path.Combine(scratch, "fresh-access", "trial.json")));
+        check(denied.Admission.IsAllowed && denied.Results.All(row => row.State is OperationState.Succeeded or OperationState.Unchanged) && Directory.GetFiles(records).Length == 0,
+            "Audio conversion: unavailable preparation starts no publication");
+        var freshAccess = new CountingAccess(new OperationAdmissionService());
         var fresh = new AudioConversionExecutor(worker, publisher, freshAccess);
         var mp3Bytes = await File.ReadAllBytesAsync(sources[AudioFormat.Mp3]);
         using var mp3Input = new MemoryStream(mp3Bytes);

@@ -35,7 +35,7 @@ internal static class OfficeExcelLayoutContracts
         await using (var vm = new MainViewModel(worker,
             new SuiteSettings { Convert = new(OutputDirectory: output, ReplaceOriginals: true) },
             new OutputPublisher(Path.Combine(root, "publications"), new NoRecycle()),
-            new LocalTrialStore(Path.Combine(root, "trial.json")), contexts))
+            new OperationAdmissionService(), contexts))
         {
             vm.OfficeCalculationRequested += token =>
             { token.ThrowIfCancellationRequested(); prompts.Add(mode); return Task.FromResult<string?>(mode); };

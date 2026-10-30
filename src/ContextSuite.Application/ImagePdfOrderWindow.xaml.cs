@@ -20,6 +20,5 @@ public partial class ImagePdfOrderWindow : Window
             if (PageList.SelectedItem is { } selected) PageList.ScrollIntoView(selected);
         };
     }
-    private void OnLicense(object sender, RoutedEventArgs e) { ((App)System.Windows.Application.Current).ShowLicense(); }
     private void OnCancel(object sender, RoutedEventArgs e) { Close(); }
 }

@@ -69,7 +69,7 @@ internal sealed partial class MainViewModel
         }
         var byId = rows.ToDictionary(row => row.ItemId);
         token.ThrowIfCancellationRequested();
-        await new PdfDarkExecutor(worker, Publisher!, trial!).ExecuteAsync(confirmed, (source, result) =>
+        await new PdfDarkExecutor(worker, Publisher!, admissionService!).ExecuteAsync(confirmed, (source, result) =>
         {
             byId[source.ItemId].ApplyResult(result);
             Summary = $"Converting to dark mode: {rows.Count(row => row.Result.State is not (OperationState.Pending or OperationState.Running))} of {rows.Length} files finished.";

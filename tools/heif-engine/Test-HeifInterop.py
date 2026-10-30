@@ -51,7 +51,7 @@ def main():
         if path.stat().st_size != pin["bytes"] or digest(path) != pin["sha256"]:
             raise ValueError("Decoder differs from selected candidate")
         inputs[str(path)] = pin["sha256"]
-    for directory in ("src", "tests/ContextSuite.Core.ContractTests", "proprietary/src"):
+    for directory in ("src", "tests/ContextSuite.Core.ContractTests"):
         inputs.update({str(path): digest(path) for path in (root / directory).rglob("*")
                        if path.is_file() and path.suffix in (".cs", ".csproj", ".icc")})
     for name in ("Directory.Build.props", "Directory.Build.targets", "Version.props"):

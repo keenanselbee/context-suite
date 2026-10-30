@@ -51,15 +51,15 @@ function Complete-ArchiveVerification([string] $Output, [string] $Extraction,
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $revisions = @()
 $dirty = $false
-foreach ($repo in @($repository, (Join-Path $repository 'proprietary'))) {
+foreach ($repo in @($repository)) {
     $revision = & git -C $repo rev-parse HEAD
-    if ($LASTEXITCODE -ne 0 -or $revision -notmatch '^[a-f0-9]{40}$') { throw 'Both source revisions are required.' }
+    if ($LASTEXITCODE -ne 0 -or $revision -notmatch '^[a-f0-9]{40}$') { throw 'The source revision is required.' }
     $changes = @(& git -C $repo status --porcelain=v1 --untracked-files=all)
     if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect source status.' }
     $dirty = $dirty -or $changes.Count -ne 0
     $revisions += $revision
 }
-if ($dirty -and -not $AllowDirty) { throw 'Candidate requires clean public/private checkouts. -AllowDirty is local verification only and records dirty provenance.' }
+if ($dirty -and -not $AllowDirty) { throw 'Candidate requires a clean source checkout. -AllowDirty is local verification only and records dirty provenance.' }
 # Reuse DDS only when its binary, source, build definition and notices agree.
 # Rebuild explicitly with Build-DdsEngine.ps1 when that check reports stale inputs.
 # Managed application and shell output still come from a fresh production stage.
@@ -73,8 +73,8 @@ foreach ($name in 'AudioDistributionDirectory', 'QpdfPreparedDirectory', 'Pdfium
     if ($PSBoundParameters.ContainsKey($name)) { $buildArguments[$name] = $PSBoundParameters[$name] }
 }
 & (Join-Path $repository 'tools\Build-Production.ps1') @buildArguments
-for ($index = 0; $index -lt 2; $index++) {
-    $repo = @($repository, (Join-Path $repository 'proprietary'))[$index]
+for ($index = 0; $index -lt 1; $index++) {
+    $repo = $repository
     if ((& git -C $repo rev-parse HEAD) -ne $revisions[$index] -or
         (-not $dirty -and @(& git -C $repo status --porcelain=v1 --untracked-files=all).Count)) {
         throw 'Source revisions or clean state changed during the build; discard this attempt and rebuild.'
@@ -114,7 +114,7 @@ $files = @(Get-ChildItem -LiteralPath $candidate -Recurse -File | Sort-Object Fu
     [ordered]@{ path = $_.FullName.Substring($candidate.Length + 1).Replace('\', '/'); bytes = $_.Length; sha256 = (Get-FileHash -LiteralPath $_.FullName).Hash }
 })
 $manifest = [ordered]@{
-    schema = 1; status = 'unsigned-internal-candidate'; publicCommit = $revisions[0]; privateCommit = $revisions[1];
+    schema = 2; status = 'unsigned-internal-candidate'; sourceCommit = $revisions[0];
     dirtySources = $dirty; dotnetSdk = (& dotnet --version); visualCppToolset = $vcVersion;
     configuration = 'Release'; productionStagingId = $stagingId.ToString('N');
     optionalEngines = (& (Join-Path $PSScriptRoot 'Get-CandidateEngines.ps1') -Payload $app);

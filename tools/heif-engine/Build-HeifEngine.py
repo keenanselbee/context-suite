@@ -60,7 +60,7 @@ def main():
         if digest(path) != expected:
             raise ValueError("AOM input identity differs: " + relative)
         inputs[str(path)] = expected
-    bridge_source = ROOT / "proprietary/src/ContextSuite.Heif.Native"
+    bridge_source = ROOT / "src/ContextSuite.Heif.Native"
     if not args.libraries_only:
         for path in bridge_source.iterdir():
             if path.is_file():

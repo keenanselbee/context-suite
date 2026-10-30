@@ -15,7 +15,7 @@ internal static class PdfLongGraphWorkflowContracts
         var sources = new List<PdfFileSource>(); var hashes = new Dictionary<string, string>(); var timestamps = new Dictionary<string, DateTime>();
         var records = Path.Combine(scratch, "records");
         var clock = new Clock();
-        var access = new Access(new LocalTrialStore(Path.Combine(scratch, "trial", "trial.json"), clock));
+        var access = new Access(new OperationAdmissionService());
         var publisher = new OutputPublisher(records, new ForbiddenRecycle(), replacementVerified: true);
         await using var worker = new WorkerClient(executable, Path.Combine(scratch, "workers"));
         foreach (var count in new[] { 48, 128, 512 })
@@ -38,9 +38,9 @@ internal static class PdfLongGraphWorkflowContracts
         { if (row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8); }, default);
         check(access.Admissions == 1 && completed.Admission.IsAllowed && completed.Results.Count == sources.Count &&
             completed.Results.All(row => row.Publication?.Outcome == PublicationOutcome.CopyCreated),
-            "Long PDF graph: one admission publishes all linked-graph copies across expiry despite overwrite setting");
+            "Long PDF graph: one admission publishes all linked-graph copies after clock changes despite overwrite setting");
         var pairs = new List<object>();
-        var repeatAccess = new Access(new LocalTrialStore(Path.Combine(scratch, "repeat-trial", "trial.json")));
+        var repeatAccess = new Access(new OperationAdmissionService());
         var repeatExecutor = new PdfOptimizationExecutor(worker, publisher, repeatAccess);
         for (var index = 0; index < sources.Count; index++)
         {

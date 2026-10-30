@@ -46,12 +46,12 @@ internal static class ImagePdfBatchContracts
             "combined PDF: missing engine declines before admission, worker or reservation");
         try { await executor.ExecuteAdmittedAsync(plan, new(new(true, "wrong batch"), Guid.NewGuid()), null, default); check(false, "Wrong combined admission accepted."); }
         catch (InvalidDataException) { check(worker.ProcessId is null, "combined PDF: foreign admission cannot start worker"); }
-        var denied = await executor.ExecuteAdmittedAsync(plan, new(new(false, "Activate a license."), plan.Plan.BatchId), null, default);
-        check(denied.Result.State == OperationState.Failed && denied.Result.Message == "Activate a license." && !Directory.Exists(records),
+        var denied = await executor.ExecuteAdmittedAsync(plan, new(new(false, "The operation is temporarily unavailable."), plan.Plan.BatchId), null, default);
+        check(denied.Result.State == OperationState.Failed && denied.Result.Message == "The operation is temporarily unavailable." && !Directory.Exists(records),
             "combined PDF: denied admission starts no publication");
-        IOperationAccess trial = new LocalTrialStore(Path.Combine(scratch, "combined-pdf-trial-" + Guid.NewGuid().ToString("N"), "trial.json"));
+        IOperationAccess trial = new OperationAdmissionService();
         var admission = await trial.AdmitConversionAsync(plan, default);
-        check(admission.IsAllowed && admission.BatchId == plan.Plan.BatchId, "combined PDF: confirmed group starts one ordinary trial batch");
+        check(admission.IsAllowed && admission.BatchId == plan.Plan.BatchId, "combined PDF: confirmed group starts one validated batch batch");
 
         void Reject(Action action, string name)
         {

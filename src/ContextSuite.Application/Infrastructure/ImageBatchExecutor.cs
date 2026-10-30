@@ -6,13 +6,13 @@ namespace ContextSuite.Application.Infrastructure;
 internal sealed record ImageBatchExecution(OperationAdmission Admission, IReadOnlyList<FileResult> Results);
 
 // The only application path from confirmed image plans to final output publication.
-// Access is admitted once, before any output reservation; an admitted batch can finish after expiry.
-internal sealed class ImageBatchExecutor(WorkerClient worker, OutputPublisher publisher, IOperationAccess trial)
+// A confirmed batch is admitted once, before any output reservation.
+internal sealed class ImageBatchExecutor(WorkerClient worker, OutputPublisher publisher, IOperationAccess admissionService)
 {
     public async Task<ImageBatchExecution> ExecuteAsync(ConfirmedImageBatch confirmed,
         Action<ImageItemPlan, FileResult>? report, CancellationToken cancellationToken)
     {
-        var admission = await trial.AdmitConversionAsync(confirmed, cancellationToken);
+        var admission = await admissionService.AdmitConversionAsync(confirmed, cancellationToken);
         return await ExecuteAdmittedAsync(confirmed, admission, report, cancellationToken);
     }
 

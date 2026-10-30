@@ -59,7 +59,7 @@ internal static class PdfPublicationCrashContracts
         using (var process = Process.GetProcessById(worker.ProcessId!.Value))
             await File.WriteAllTextAsync(Path.Combine(root, "worker.json"), JsonSerializer.Serialize(new WorkerIdentity(process.Id, process.StartTime.ToUniversalTime().Ticks)));
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new NoRecycle(), io: new TerminatingIo(root, stage));
-        var executor = new PdfOptimizationExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial", "trial.json")));
+        var executor = new PdfOptimizationExecutor(worker, publisher, new OperationAdmissionService());
         await executor.ExecuteAsync(PdfOptimizationPlan.Create(Guid.NewGuid(), [source], new("optimize", new())).Confirm(), null, default);
         throw new InvalidOperationException("PDF publication crash checkpoint was not reached.");
     }

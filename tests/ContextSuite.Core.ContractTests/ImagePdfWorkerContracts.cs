@@ -21,7 +21,7 @@ internal static class ImagePdfWorkerContracts
         var originalHashes = names.ToDictionary(name => name, name => Hash(Path.Combine(root, name)));
         var clock = new Clock();
         var trialPath = Path.Combine(root, "trial.json");
-        var access = new Access(new LocalTrialStore(trialPath, clock));
+        var access = new Access(new OperationAdmissionService());
         var io = new GuardedIo();
         var records = Path.Combine(root, "records");
         var publisher = new OutputPublisher(records, new NoRecycle(), replacementVerified: true, io: io);
@@ -31,7 +31,7 @@ internal static class ImagePdfWorkerContracts
         foreach (var name in names) sources.Add(await worker.ProbeAsync(new(Guid.NewGuid(), Path.Combine(root, name)), default));
         var plan = Plan(sources);
         var workerId = worker.ProcessId;
-        Check(!File.Exists(trialPath), "combined PDF: probing images does not start trial");
+        Check(!File.Exists(trialPath), "combined PDF: probing images does not create access files");
         var collision = Path.Combine(root, "samples-16-3-True - Combined.pdf"); File.WriteAllText(collision, "existing PDF canary");
         var executor = new ImagePdfExecutor(worker, publisher, access);
         io.Check = stage => {
@@ -53,16 +53,16 @@ internal static class ImagePdfWorkerContracts
         var completed = await executor.ExecuteAsync(plan, row => { if (row.Message == "Creating and validating PDF") clock.Now = clock.Now.AddDays(8); }, default);
         io.Check = null;
         Check(completed.Result.Publication?.Outcome == PublicationOutcome.CopyCreated && access.Admissions == 1 && worker.ProcessId == workerId,
-            "combined PDF: one sequential worker and one admission complete seven mixed images across trial expiry");
+            "combined PDF: one sequential worker and one admission complete seven mixed images after clock changes");
         var output = completed.Result.Publication!.OutputPath!;
         Check(Path.GetFileName(output) == "samples-16-3-True - Combined (2).pdf" && File.ReadAllText(collision) == "existing PDF canary",
             "combined PDF: named copy preserves collision canary and ignores overwrite preference");
         Check(completed.Result.Publication.SourceBytes == sources.Sum(source => source.FileBytes) && Directory.GetFiles(records).Length == 0,
             "combined PDF: aggregate source bytes and successful journal cleanup");
         var denied = await executor.ExecuteAsync(plan, null, default);
-        Check(!denied.Admission.IsAllowed && denied.Result.Publication is null && Directory.GetFiles(records).Length == 0,
-            "combined PDF: expired access starts no reservation");
-        var fresh = new Access(new LocalTrialStore(Path.Combine(root, "fresh trial.json")));
+        Check(denied.Admission.IsAllowed && denied.Result.Publication?.Outcome == PublicationOutcome.CopyCreated && Directory.GetFiles(records).Length == 0,
+            "combined PDF: subsequent free batch publishes a validated copy");
+        var fresh = new Access(new OperationAdmissionService());
         executor = new ImagePdfExecutor(worker, publisher, fresh);
         using (var cancelled = new CancellationTokenSource())
         {

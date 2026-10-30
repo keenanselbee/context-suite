@@ -18,7 +18,7 @@ internal static class AvifPublicContracts
         var sourceHash = SHA256.HashData(await File.ReadAllBytesAsync(sourcePath));
         var workerPath = Path.Combine(root, "ContextSuite.Worker.exe");
         await using var worker = new WorkerClient(workerPath);
-        var trial = new LocalTrialStore(Path.Combine(root, "trial.json"));
+        var trial = new OperationAdmissionService();
         var facts = new ImageSourceFacts(Guid.NewGuid(), sourcePath, Convert.ToHexString(sourceHash), 4,
             ImageFormat.Png, 2, 2, 8, 1, true, false, "sRGB", []);
 

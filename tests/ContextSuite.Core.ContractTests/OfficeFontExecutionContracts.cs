@@ -29,7 +29,7 @@ internal static class OfficeFontExecutionContracts
             }
         var checks = new List<string>(); var reports = new List<object>(); var profiles = new List<object>();
         await using var worker = new WorkerClient(workerPath, Path.Combine(root, "workers"));
-        var access = new LocalTrialStore(Path.Combine(root, "trial.json"));
+        var access = new OperationAdmissionService();
         var prompts = 0; string scenario = ""; string currentOutput = ""; var corrupt = false;
         using var cancellation = new CancellationTokenSource();
         Func<OfficeFontReview, CancellationToken, Task<bool>> reviewFonts = (review, token) =>

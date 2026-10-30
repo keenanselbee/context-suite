@@ -185,7 +185,7 @@ def sources(avif_build, avif_sources, svg_build, cargo_home):
     if avif_result.get("runtimeFiles") != {avif_binary.name: records["avif"]["files"][avif_binary.name]}:
         raise ValueError("AVIF build result does not identify the selected runtime")
     avif_inputs = json.loads((build / "inputs.json").read_text(encoding="utf-8"))
-    private_bridge = ROOT / "proprietary/src/ContextSuite.Avif.Native"
+    private_bridge = ROOT / "src/ContextSuite.Avif.Native"
     bridge_inputs = {key.removeprefix("bridge/"): value for key, value in avif_inputs.items()
                      if key.startswith("bridge/")}
     if set(bridge_inputs) != {"CMakeLists.txt", "Encoder.cpp", "Encoder.h"} or \
@@ -215,7 +215,7 @@ def sources(avif_build, avif_sources, svg_build, cargo_home):
     if digest(TOOLS / "svg-engine/Build-SvgEngine.ps1") != svg_provenance.get("BuildScriptSha256") or \
             digest(TOOLS / "svg-engine/Verify-CargoSources.py") != svg_provenance.get("SourceVerifierSha256"):
         raise ValueError("SVG public build recipe differs from the build receipt")
-    private_svg = ROOT / "proprietary/src/ContextSuite.Svg.Native"
+    private_svg = ROOT / "src/ContextSuite.Svg.Native"
     svg_sources = svg_provenance.get("SourceSha256", {})
     if set(svg_sources) != {"Cargo.toml", "Cargo.lock", "src/main.rs"} or \
             {name: item(private_svg / name)["sha256"] for name in svg_sources} != svg_sources:

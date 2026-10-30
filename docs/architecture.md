@@ -48,24 +48,22 @@ The application composes implementations and owns user-facing orchestration.
 Public And Product Composition
 ------------------------------
 
-The public repository exposes contracts, shell integration, UI, batch
-coordination, output safety, and tests. The separate private repository at
-`proprietary/` supplies selected production implementations and commercial
-integration. The DDS parser and its tests remain public; production media
-adapters and the built-in optimization policy catalog are private. Public core
-libraries must not depend on private types.
+The main repository owns contracts, shell integration, UI, batch coordination,
+output safety, production media adapters, optimization policies, and tests.
+The independent proprietary/ checkout is retained as historical material.
+The existing ContextSuite.Private assembly/namespace names are preserved during
+the migration; their source now belongs to this repository.
 
-One planned production application build requires the compatible private
-checkout and connects its implementations to public interfaces through direct
-project references. Missing private implementations fail the build clearly.
-There is no separate review/demo edition. Public CI checks independently
-buildable public components, tests, documentation, and source boundaries without
-private credentials; private release CI verifies the complete application and
-records both repository revisions.
-See [decision 0005](decisions/0005-public-and-proprietary-builds.md).
+One production build connects those implementations through ordinary project
+references. Core contracts remain independent of media engines; only the worker
+links implementation/engine assemblies. The documented pinned native artifacts,
+source companions, and notices remain required build inputs. Current release
+receipts identify one application source commit and the selected engine identities;
+historical dual-repository receipts remain preserved. See
+[decision 0021](decisions/0021-free-product-and-public-implementation.md).
 
 The native solution retains the shell, prototype host, and shell contract tests.
-Production scripts additionally build Core, Application, Worker, and the private
+Production scripts additionally build Core, Application, Worker, and the media
 implementation project. Managed contract tests cover the new boundaries. Accepted
 [decision 0007](decisions/0007-production-ui-and-processes.md) selects Windows 11
 x64, C#/.NET 10 WPF with MVVM, one application per interactive user session, and
@@ -73,13 +71,12 @@ one on-demand worker processing files sequentially. Retain bounded request-file
 shell activation; use local named pipes for app forwarding and worker messages.
 The app owns final publication; the worker produces and validates temporary
 outputs. Settings use versioned JSON in local application data. Typed image
-probe/preview/conversion IPC and trial-gated application publication now have
+probe/preview/conversion IPC and validated application publication now have
 real-worker integration tests, and the conversion UI now uses that path. The
 capability registry advertises twenty ordinary-image conversion pairs, seven bounded DDS
 conversion pairs and one lossless PNG optimization capability, subject
-to per-file probing and planning. The app requires the private
-checkout to build but does not reference the engine assemblies; only the worker
-links them. A test-only host compiles the real windows with isolated storage,
+to per-file probing and planning. The app does not reference engine assemblies;
+only the worker links them. A test-only host compiles the real windows with isolated storage,
 without adding a shipping override or a public review edition.
 See [development status](development.md) for verification limits.
 
@@ -87,15 +84,12 @@ See [development status](development.md) for verification limits.
 Operation Model
 ---------------
 
-All tools receive one selection, validate the request, and resolve access in the
-application before admitting work. Access checks never run inside Explorer
-menu enumeration or media parsers. Trial and paid access share the same
-application; the commercial policy is defined in
-[decision 0006](decisions/0006-trial-and-purchase-access.md).
-
-Analyze then performs bounded media analysis and presents typed facts and
-warnings. It does not enter a conversion plan or output-publication transaction.
-Application-owned trial state is separate from the read-only analyzer.
+All tools receive one selection and validate it in application orchestration.
+Confirmed transformation plans retain executable-item checks and batch identity
+before worker execution. There are no trial or paid-access conditions. Explorer
+menu enumeration remains bounded and independent of media parsing and network
+access. Analyze performs read-only bounded analysis and presents typed facts and
+warnings without entering a transformation/publication transaction.
 
 Convert and Optimize use this flow after admission:
 
@@ -248,23 +242,15 @@ Settings And Presets
   plan regardless of where a setting lives.
 
 
-Commercial Access Boundary
---------------------------
+Free Operation Admission
+------------------------
 
-The application admits work using trial or purchase state. Seven-day
-trial expiry may block new paid operations but must not interrupt an admitted
-batch or hide its results. Media engines and output validation do not branch on
-account credentials or contact the website.
-
-Polar license activation and validation are allowed network operations. Media
-contents and selected paths remain local. The private commercial adapter serves
-the public access-policy contract in application orchestration; neither Explorer
-nor the media worker owns licensing. No custom website accounts are planned.
-Paid access refreshes daily and permits 30 days offline after successful
-validation; outages cannot extend that deadline. See decisions 0017 and 0020.
-Polar JSON responses are not signed offline licenses. Keep administrative tokens,
-customer keys, and signing private keys out of both repositories and build output.
-See the [Polar integration plan](polar-integration.md).
+The application validates and admits work without licensing storage, clocks,
+credentials, or provider requests. Admission still binds the confirmed batch
+identity and enforces plan validity and executable work. Cancellation, recovery,
+format safety, worker boundaries, and publication rules remain independent of
+product pricing. Legacy trial/license records are neither read nor modified by
+the free runtime. Ordinary settings and ownership/recovery state remain active.
 
 
 Diagnostics And Privacy
@@ -294,9 +280,9 @@ Testing Strategy
   intentional contract.
 - Test shell activation separately from media behavior, then add a
   small number of complete Explorer-to-result paths.
-- Test independently buildable public components without the private checkout;
-  verify the complete application against the compatible private revision and
-  verify a clear build failure when required private implementations are absent.
+- Test the complete application from the main source checkout with reviewed engine
+  inputs and no private checkout; preserve source/engine provenance and fail clearly
+  when a required pinned engine is unavailable.
 - Test access states independently of codecs, including expiry during an
   admitted batch and the selected offline/service-failure policies.
 
@@ -320,12 +306,12 @@ Resolve these remaining choices before their dependent implementation:
 - FFmpeg distribution and update model for audio.
 - `oxipng` and `pngquant` distribution and update model.
 - Installer, signing, updates, and crash diagnostics.
-- Exact private engine adapters and optimization policy definitions.
-- Retain the implemented local trial from decision 0009; settle paid offline access
-  and recovery policies under decision 0006.
+- Complete the verified free-product source and release transition under decision
+  0021 while retaining existing adapter/policy and engine identities.
 
 Shell prototype decisions 0001–0004 remain scoped to their recorded evidence.
-Public/private build direction and commercial access direction are recorded in
+Historical public/private and commercial directions are recorded in
 0005–0006; the production foundation in 0007 is accepted. Resolve the
 choices needed by each implementation milestone before building that surface;
-audio distribution and live payment services need not block output-safety work.
+Decision 0021 supersedes commerce; engine redistribution and output safety remain
+independent release requirements.

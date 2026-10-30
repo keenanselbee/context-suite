@@ -22,7 +22,7 @@ internal static partial class AudioInterruptionContracts
         var publisher = new OutputPublisher(records, new NoRecycle());
         var clock = new ImageInterruptionContracts.DeadlineClock();
         await using var worker = new WorkerClient(executable, workerRoot, clock);
-        var executor = new AudioConversionExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial.json")));
+        var executor = new AudioConversionExecutor(worker, publisher, new OperationAdmissionService());
         var source = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), sourcePath), AudioFormat.Opus, default);
         var baseline = await executor.ExecuteAsync(Confirm(source), null, default);
         var published = baseline.Results.Single().Publication;

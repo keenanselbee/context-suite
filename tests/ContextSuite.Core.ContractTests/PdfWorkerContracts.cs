@@ -16,7 +16,7 @@ internal static class PdfWorkerContracts
         var unknown = Path.Combine(scratch, "unknown.bin"); await File.WriteAllBytesAsync(unknown, [0, 1, 2, 255]);
         var workerRoot = Path.Combine(scratch, "workers");
         await using (var worker = new WorkerClient(executable, workerRoot))
-        await using (var view = new MainViewModel(worker, trial: new ForbiddenAccess()))
+        await using (var view = new MainViewModel(worker, admissionService: new ForbiddenAccess()))
         {
             check(worker.HasPdfProbe, "PDF worker: isolated optional engine is present");
             view.Admit(new(Guid.NewGuid(), "analyze", "open-details", [.. paths, unknown]));

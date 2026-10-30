@@ -41,11 +41,11 @@ def main():
                  ('curated-candidate.json', 'payload-candidate.json', 'expanded-candidate.json',
                   'expanded-payload-candidate.json', 'voice-provider-candidate.json', 'WmaVoiceMftProbe.cpp'))
     for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/ContextSuite.Worker", "src/Shared",
-                      "proprietary/src/ContextSuite.Private", "tests/ContextSuite.Core.ContractTests", "tools/office-engine/Probe"):
+                      "src/ContextSuite.Private", "tests/ContextSuite.Core.ContractTests", "tools/office-engine/Probe"):
         paths.update(path for path in (root / directory).rglob("*") if
                      path.suffix in (".cs", ".csproj") and not {"bin", "obj"}.intersection(path.parts))
     paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props",
-                                         "Version.props", "global.json", "tools/Require-Private.targets") if (root / name).is_file())
+                                         "Version.props", "global.json") if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
     for label, project in (("worker", "src/ContextSuite.Worker/ContextSuite.Worker.csproj"),
                            ("contracts", "tests/ContextSuite.Core.ContractTests/ContextSuite.Core.ContractTests.csproj")):

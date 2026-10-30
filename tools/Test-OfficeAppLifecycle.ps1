@@ -20,8 +20,10 @@ if ($RetainedBuildReceipt) {
     if (-not $sources -or -not $files.'ContextSuite.Worker.exe') { throw 'Missing retained source/binary evidence.' }
     foreach ($source in $sources.PSObject.Properties) {
         $name = $source.Name.Replace('\', '/')
-        if ($name -match '^(src/ContextSuite.Core/|src/ContextSuite.Worker/|src/Shared/|proprietary/src/)' -and
-            (Get-FileHash -LiteralPath (Join-Path $repository $source.Name)).Hash -ne $source.Value) { throw "Retained implementation changed: $name" }
+        # Historical receipts keep their original names; compare the public copy.
+        if ($name.StartsWith('proprietary/src/')) { $name = $name.Substring('proprietary/'.Length) }
+        if ($name -match '^src/' -and
+            (Get-FileHash -LiteralPath (Join-Path $repository $name)).Hash -ne $source.Value) { throw "Retained implementation changed: $name" }
     }
     $actual = @(Get-ChildItem -LiteralPath (Split-Path $worker -Parent) -File)
     if ($actual.Count -ne @($files.PSObject.Properties).Count) { throw 'Retained worker file inventory changed.' }

@@ -11,17 +11,17 @@ internal static class ManualWorkflowContracts
     {
         using var selection = ManualWorkflowSelection.Read(manifest);
         var root = FreshRoot();
-        LicenseWorkflowFixture.Prepare(root);
+        WorkflowFixture.Prepare(root);
         var request = selection.CreateRequest(root, Guid.NewGuid());
         var parsed = ActivationParser.Parse(Encoding.UTF8.GetBytes(request));
         File.WriteAllText(Path.Combine(root, "reviewed.request"), request);
-        Console.WriteLine($"Reviewed {parsed.Operation}/{parsed.Action}: {parsed.Paths.Length} copied inputs. No window, worker or Polar request. Files retained: {root}");
+        Console.WriteLine($"Reviewed {parsed.Operation}/{parsed.Action}: {parsed.Paths.Length} copied inputs. No window, worker, or network request. Files retained: {root}");
         return 0;
     }
 
     internal static int Run()
     {
-        var root = FreshRoot(); LicenseWorkflowFixture.Prepare(root);
+        var root = FreshRoot(); WorkflowFixture.Prepare(root);
         var source = Path.Combine(root, "fixture.png");
         var original = File.ReadAllBytes(source); var written = File.GetLastWriteTimeUtc(source);
         var hash = Convert.ToHexString(SHA256.HashData(original));
@@ -29,7 +29,7 @@ internal static class ManualWorkflowContracts
         var manifest = Path.Combine(root, "selection.json");
         Write("convert", "pdf", [(source, hash, false), (source, hash, false)]);
         string[] copies;
-        var destination = FreshRoot(); LicenseWorkflowFixture.Prepare(destination);
+        var destination = FreshRoot(); WorkflowFixture.Prepare(destination);
         using (var selection = ManualWorkflowSelection.Read(manifest))
         {
             var request = ActivationParser.Parse(Encoding.UTF8.GetBytes(selection.CreateRequest(destination, Guid.NewGuid())));
@@ -44,7 +44,7 @@ internal static class ManualWorkflowContracts
             catch (IOException) { Check(true, "used manual input directory cannot be overwritten"); }
         }
         Write("analyze", "open-details", [(source, hash, true)]);
-        destination = FreshRoot(); LicenseWorkflowFixture.Prepare(destination);
+        destination = FreshRoot(); WorkflowFixture.Prepare(destination);
         using (var selection = ManualWorkflowSelection.Read(manifest))
         {
             var request = ActivationParser.Parse(Encoding.UTF8.GetBytes(selection.CreateRequest(destination, Guid.NewGuid())));
@@ -92,7 +92,7 @@ internal static class ManualWorkflowContracts
 
     private static string FreshRoot()
     {
-        var root = Path.Combine(Repository(), ".codex-temp", "license-workflow", "manual-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(Repository(), ".codex-temp", "command-workflow", "manual-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root); return root;
     }
 

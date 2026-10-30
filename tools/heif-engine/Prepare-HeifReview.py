@@ -59,7 +59,7 @@ def main():
     for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/Shared", "tests/ContextSuite.Core.ContractTests", "tools/office-engine/Probe"):
         paths.update(path for path in (root / directory).rglob("*") if path.suffix in (".cs", ".csproj") and not {"bin", "obj"}.intersection(path.parts))
     paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props",
-        "global.json", "tools/Require-Private.targets", "tools/curated-engine/Test-ProductionPayload.ps1", "tools/audio-engine/Stage-AudioPayload.py",
+        "global.json", "tools/curated-engine/Test-ProductionPayload.ps1", "tools/audio-engine/Stage-AudioPayload.py",
         "tools/office-engine/Stage-OfficePayload.py") if (root / name).is_file())
     identities = {str(path): digest(path) for path in paths}
     identities.update({str(path): digest(path) for folder in (encoder, photograph.parent, candidate) for path in folder.rglob("*") if path.is_file()})

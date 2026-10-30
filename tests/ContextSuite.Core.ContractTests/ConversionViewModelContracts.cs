@@ -10,12 +10,12 @@ internal static class ConversionViewModelContracts
     public static async Task RunAsync(string root, WorkerClient worker, ImageSourceFacts alpha, Action<bool, string> check)
     {
         var trialPath = Path.Combine(root, "planner-trial", "trial.json");
-        var trial = new LocalTrialStore(trialPath);
+        var trial = new OperationAdmissionService();
         await using var planner = new ConversionViewModel(worker, trial, Guid.NewGuid(),
             [new(alpha.ItemId, alpha.Path, alpha, null)], new("convert", new()), false);
         planner.PreviewExpanded = true;
         await planner.InitializeAsync();
-        check(planner.Target is null && !planner.CanConfirm && !File.Exists(trialPath), "conversion VM: explicit target, preview does not admit trial");
+        check(planner.Target is null && !planner.CanConfirm && !File.Exists(trialPath), "conversion VM: explicit target, preview does not admit work");
         check(planner.BeforePreview?.PixelWidth == alpha.Width && planner.AfterPreview is null, "conversion VM: real worker preview becomes a bounded WPF bitmap");
         planner.Target = ImageFormat.Jpeg;
         planner.WarningsAcknowledged = true;
@@ -49,7 +49,7 @@ internal static class ConversionViewModelContracts
         planner.Confirmed += value => confirmed = value;
         planner.ConfirmCommand.Execute(null);
         check(confirmed?.Plan.Options is { MatteRgb: 0x00ff80, Quality: 85, MaximumDimension: 2 } &&
-            confirmed.Plan.Items[0].OutputWidth == 2 && !File.Exists(trialPath), "conversion VM: exact options confirmed without preview/VM starting trial");
+            confirmed.Plan.Items[0].OutputWidth == 2 && !File.Exists(trialPath), "conversion VM: exact options confirmed without preview/VM admitting work");
         planner.MaximumDimension = "0";
         check(!planner.CanConfirm, "conversion VM: zero resize blocked");
         planner.MaximumDimension = "";
@@ -73,7 +73,7 @@ internal static class ConversionViewModelContracts
         while ((planner.AfterPreview is null || planner.IsPreviewBusy) && DateTime.UtcNow < deadline)
             await Task.Delay(50);
         check(planner.AfterPreview?.PixelWidth == 2 && !planner.WarningsAcknowledged && !File.Exists(trialPath),
-            "conversion VM: rapid edits automatically render latest preview without stale consent or trial admission");
+            "conversion VM: rapid edits automatically render latest preview without stale consent or batch admission");
 
         await using var iconPlanner = new ConversionViewModel(worker, trial, Guid.NewGuid(),
             [new(alpha.ItemId, alpha.Path, alpha, null)], new("convert", new ToolSettings(ReplaceOriginals: true)), true);

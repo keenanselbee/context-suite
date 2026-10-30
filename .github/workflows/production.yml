@@ -1,0 +1,93 @@
+name: Public production integration
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Approved full repository commit SHA
+        required: true
+        type: string
+      engine_release_tag:
+        description: Public release tag containing the reviewed curated engine and pinned palette assets
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: windows-2025-vs2026
+    steps:
+      - name: Require an immutable source revision
+        shell: pwsh
+        env:
+          SOURCE_COMMIT: ${{ inputs.source_commit }}
+        run: |
+          if ($env:SOURCE_COMMIT -notmatch '^[0-9a-fA-F]{40}$') { throw 'Select an approved full commit SHA.' }
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ inputs.source_commit }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: '10.0.x'
+      - name: Import the exact reviewed curated engine
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ENGINE_RELEASE_TAG: ${{ inputs.engine_release_tag }}
+        run: |
+          if ($env:ENGINE_RELEASE_TAG -notmatch '^[a-zA-Z0-9][a-zA-Z0-9._-]{0,100}$') { throw 'Invalid engine release tag.' }
+          New-Item -ItemType Directory -Path artifacts/engine-download -Force | Out-Null
+          gh release download $env:ENGINE_RELEASE_TAG --repo $env:GITHUB_REPOSITORY --pattern curated-win-x64.zip --dir artifacts/engine-download
+          if ($LASTEXITCODE -ne 0) { throw 'Reviewed engine download failed. No stock fallback is allowed.' }
+          ./tools/curated-engine/Import-ProductionEngine.ps1 -Archive artifacts/engine-download/curated-win-x64.zip
+      - name: Build the pinned CPU DDS bridge
+        shell: pwsh
+        run: ./tools/dds-engine/Build-DdsEngine.ps1
+      - name: Import the exact reviewed palette executable and notices
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ENGINE_RELEASE_TAG: ${{ inputs.engine_release_tag }}
+        run: |
+          New-Item -ItemType Directory -Path artifacts/palette-download -Force | Out-Null
+          gh release download $env:ENGINE_RELEASE_TAG --repo $env:GITHUB_REPOSITORY --pattern ContextSuite.Palette.exe --pattern ExoQuant.License.txt --pattern Rust.Library.Notices.html --dir artifacts/palette-download
+          if ($LASTEXITCODE -ne 0) { throw 'Reviewed palette inputs are missing. No rebuild or repin fallback is allowed.' }
+          ./tools/palette-engine/Stage-PaletteEngine.ps1 -CandidateDirectory artifacts/palette-download
+      - name: Stage the pinned lossless PNG engine
+        shell: pwsh
+        run: ./tools/png-engine/Stage-PngEngine.ps1
+      - name: Build and verify the complete foundation
+        shell: pwsh
+        run: |
+          ./tools/Test-Repository.ps1
+          ./tools/Build-Production.ps1 -Configuration Release
+          ./tools/Test-Foundation.ps1 -Configuration Release -Integration
+          ./tools/Test-ShellPrototype.ps1 -Configuration Release -SkipBuild
+          ./tools/Test-ProductionSource.ps1
+          ./tools/Test-DdsCodec.ps1 -SkipNativeBuild
+          ./tools/Test-ImageConversion.ps1 -Configuration Release
+          ./tools/release/Test-ReleasePackaging.ps1
+      - name: Create clean-source unsigned internal candidate
+        shell: pwsh
+        run: |
+          ./tools/release/New-ReleaseCandidate.ps1
+          Get-ChildItem artifacts/release-candidates -Directory | ForEach-Object {
+            ./tools/release/Test-ReleasePackaging.ps1 -Candidate (Join-Path $_.FullName ContextSuite)
+          }
+      - name: Record the source revision without exporting source or symbols
+        shell: pwsh
+        run: |
+          @{ sourceCommit = (git rev-parse HEAD) } |
+            ConvertTo-Json | Set-Content -Encoding UTF8 artifacts/integration-revisions.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: integration-revisions
+          path: artifacts/integration-revisions.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: unsigned-internal-candidate
+          path: |
+            artifacts/release-candidates/*/ContextSuite-win-x64-unsigned.zip
+            artifacts/release-candidates/*/archive.sha256
+          if-no-files-found: error
+          retention-days: 14

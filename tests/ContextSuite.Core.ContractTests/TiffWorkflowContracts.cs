@@ -81,13 +81,13 @@ internal static class TiffWorkflowContracts
         var source = await worker.ProbeTiffAsync(new(Guid.NewGuid(), sourcePath), default);
         check(source.Pages.Length == 2 && source.Pages.All(page => page.UnsupportedReason is null) &&
             source.Pages[0].Orientation == 1 && source.Pages[1].Orientation == 6 &&
-            !File.Exists(trialPath), "TIFF worker: two ordered pages probe without starting trial");
+            !File.Exists(trialPath), "TIFF worker: two ordered pages probe without access files");
         var preview = await worker.PreviewTiffAsync(new(source, 1, 0xffffff), default);
         check(preview.Width is > 0 and <= 512 && preview.Height is > 0 and <= 512 &&
             preview.BgraPixels.Length == (long)preview.Width * preview.Height * 4 && !File.Exists(trialPath),
-            "TIFF worker: first transparent-page preview is bounded and leaves trial unstarted");
+            "TIFF worker: first transparent-page preview is bounded and leaves legacy access storage untouched");
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new WindowsFileRecycler(), replacementVerified: true);
-        var access = new LocalTrialStore(trialPath);
+        var access = new OperationAdmissionService();
         var plan = TiffConversionPlan.Create(Guid.NewGuid(), [source], new(TiffTarget.Png),
             new("convert", new ToolSettings(ReplaceOriginals: true))).Confirm();
         var first = await new TiffConversionExecutor(worker, publisher, access).ExecuteAsync(plan, null, default);
@@ -99,7 +99,7 @@ internal static class TiffWorkflowContracts
             finally { await publisher.AbandonAsync(reservation, false); }
         }
         check(first.Admission.IsAllowed && first.Pages.Count == 2 && first.Pages.All(page => page.Result.Publication?.Outcome == PublicationOutcome.CopyCreated) &&
-            File.Exists(trialPath), "TIFF worker: both PNG pages publish as copies under one admission (" +
+            !File.Exists(trialPath), "TIFF worker: both PNG pages publish as copies under one admission (" +
             string.Join("; ", first.Pages.Select(page => $"{page.PageIndex}: {page.Result.State} {page.Result.Message}")) + ")");
         var outputsBeforeBudgetRetry = Directory.GetFiles(root, "pages - Page *.png").Length;
         var budgetRetry = await new TiffConversionExecutor(worker, publisher, access).ExecuteAdmittedAsync(plan,
@@ -150,7 +150,7 @@ internal static class TiffWorkflowContracts
             check(image.Width == source.Pages[page.PageIndex].OutputWidth && image.Height == source.Pages[page.PageIndex].OutputHeight &&
                 !image.HasTransparency, "TIFF worker: JPEG page is oriented and opaque");
         }
-        var mixedAccess = new CountingAccess(new LocalTrialStore(Path.Combine(root, "mixed-trial.json")));
+        var mixedAccess = new CountingAccess(new OperationAdmissionService());
         await using (var vm = new MainViewModel(worker, new SuiteSettings(), publisher, mixedAccess))
         {
             var jpegPath = jpeg.Pages[0].Result.Publication!.OutputPath!;
@@ -175,7 +175,7 @@ internal static class TiffWorkflowContracts
             prior.ApplyTiffPage(1, new(changedPath, OperationState.Failed, "Interrupted"));
             await File.AppendAllTextAsync(changedPath, "changed source canary");
             await using var retryVm = new MainViewModel(retryWorker, new SuiteSettings(), publisher,
-                new LocalTrialStore(Path.Combine(root, "retry-trial.json")));
+                new OperationAdmissionService());
             retryVm.Rows.Add(prior);
             check(retryVm.RetryFailed() == "", "TIFF application: unfinished source enters retry queue");
             await retryVm.WaitForIdleAsync();
@@ -195,12 +195,12 @@ internal static class TiffWorkflowContracts
             var pdfPlan = TiffConversionPlan.Create(Guid.NewGuid(), pdfSources, new(TiffTarget.Pdf),
                 new("convert", new ToolSettings(ReplaceOriginals: true))).Confirm();
             var pdfResults = await new TiffConversionExecutor(pdfWorker, publisher,
-                new LocalTrialStore(Path.Combine(root, "pdf-trial.json"))).ExecuteAsync(pdfPlan, null, default);
+                new OperationAdmissionService()).ExecuteAsync(pdfPlan, null, default);
             check(pdfResults.Pages.Count == 2 && pdfResults.Pages.All(page => page.PageIndex == -1 &&
                 page.Result.Publication?.Outcome == PublicationOutcome.CopyCreated &&
                 File.ReadAllBytes(page.Result.Publication.OutputPath!).AsSpan().StartsWith("%PDF-"u8)),
                 "TIFF worker: each TIFF publishes one ordered PDF copy and keeps originals");
-            var pdfAccess = new CountingAccess(new LocalTrialStore(Path.Combine(root, "pdf-mixed-trial.json")));
+            var pdfAccess = new CountingAccess(new OperationAdmissionService());
             await using var pdfVm = new MainViewModel(pdfWorker, new SuiteSettings(), publisher, pdfAccess);
             var rasterPath = jpeg.Pages[0].Result.Publication!.OutputPath!;
             check(pdfVm.Admit(new(Guid.NewGuid(), "convert", "pdf", [sourcePath, rasterPath])).Accepted,
@@ -282,7 +282,7 @@ internal static class TiffWorkflowContracts
             "TIFF: retry carries only committed pages");
         await using var worker = new WorkerClient(Path.Combine(root, "missing-worker.exe"));
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new WindowsFileRecycler());
-        var executor = new TiffConversionExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial.json")));
+        var executor = new TiffConversionExecutor(worker, publisher, new OperationAdmissionService());
         var admission = new OperationAdmission(new(true, "synthetic"), batchId);
         var skipped = await executor.ExecuteAdmittedAsync(png, admission, null, default,
             new Dictionary<(Guid SourceId, int PageIndex), long> { [(source.ItemId, 0)] = 42, [(source.ItemId, 1)] = 42 });

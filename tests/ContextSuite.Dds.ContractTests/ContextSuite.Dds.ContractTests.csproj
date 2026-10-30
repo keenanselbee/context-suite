@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ContextSuite.Private\ContextSuite.Private.csproj" />
+    <None Include="..\..\artifacts\engines\dds-win-x64\ContextSuite.Dds.Native.dll" Link="ContextSuite.Dds.Native.dll" CopyToOutputDirectory="Always" />
+    <None Include="..\..\artifacts\engines\dds-win-x64\ContextSuite.Dds.Engine.json" Link="ContextSuite.Dds.Engine.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+</Project>

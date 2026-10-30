@@ -30,7 +30,7 @@ internal static class ImagePdfOrderViewContracts
             AutomationProperties.GetName(first).Contains("second folder"), "list item exposes number, filename and distinct folder");
         var up = Find<Button>(window, "ImagePdfMoveUp"); var down = Find<Button>(window, "ImagePdfMoveDown");
         Check(!up.IsEnabled && down.IsEnabled && !Find<Button>(window, "ConfirmImagePdf").IsEnabled,
-            "movement boundaries and license wait drive real button state");
+            "movement boundaries and preparation wait drive real button state");
         var shortcuts = window.InputBindings.OfType<KeyBinding>().ToArray();
         Check(shortcuts.Any(key => key.Key == Key.Up && key.Modifiers == ModifierKeys.Alt && key.Command == model.MoveUpCommand) &&
             shortcuts.Any(key => key.Key == Key.Down && key.Modifiers == ModifierKeys.Alt && key.Command == model.MoveDownCommand) &&
@@ -41,14 +41,14 @@ internal static class ImagePdfOrderViewContracts
             Find<TextBlock>(window, "ImagePdfDestination").Text.Contains("first folder"),
             "WPF move retains selected image and updates first-page destination");
         Check(model.RefreshAccessAsync().IsCompletedSuccessfully && !Find<Button>(window, "ConfirmImagePdf").IsEnabled &&
-            ((string)Find<Button>(window, "ImagePdfOrderLicense").Content).Contains("Activate"),
-            "expired access binds an activation action and disabled Convert button");
+            model.Message.Contains("unavailable"),
+            "unavailable preparation shows guidance and disabled Convert button");
         access.Allowed = true;
         Check(model.RefreshAccessAsync().IsCompletedSuccessfully && Find<Button>(window, "ConfirmImagePdf").IsEnabled && list.SelectedItem == model.Pages[1],
-            "activation refresh enables the actual Convert button without resetting order or selection");
+            "preparation refresh enables the actual Convert button without resetting order or selection");
         access.Allowed = false;
         Check(model.RefreshAccessAsync().IsCompletedSuccessfully && !Find<Button>(window, "ConfirmImagePdf").IsEnabled && model.Pages[0].Page.Source == other,
-            "deactivation refresh disables the actual Convert button and keeps edited page one");
+            "preparation failure disables the actual Convert button and keeps edited page one");
         var shortHeight = content.DesiredSize.Height;
         var many = Enumerable.Range(0, ImagePdfPlan.MaximumPages).Select(index => source with
         { ItemId = Guid.NewGuid(), Path = Path.Combine(root, "folder " + index, new string('x', 120) + ".png") });
@@ -96,7 +96,7 @@ internal static class ImagePdfOrderViewContracts
     private sealed class SyntheticAccess : IOperationAccess
     {
         public bool Allowed { get; set; }
-        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Active" : "Activate your license to convert."));
+        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Active" : "The operation is temporarily unavailable."));
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch plan, CancellationToken token) => throw new InvalidOperationException("Unexpected admission.");
         public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization plan, CancellationToken token) => throw new InvalidOperationException("Unexpected admission.");
     }

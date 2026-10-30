@@ -15,7 +15,7 @@ internal sealed partial class MainViewModel
         token.ThrowIfCancellationRequested();
         if (!plan.NeedsOrderReview) return plan.Confirm(false);
         if (ImagePdfOrderRequested is null) return null;
-        using var decision = new ImagePdfOrderViewModel(plan, trial ?? throw new InvalidOperationException("Missing conversion access."));
+        using var decision = new ImagePdfOrderViewModel(plan, admissionService ?? throw new InvalidOperationException("Missing conversion access."));
         Summary = "Review the PDF page order. No files changed by this batch.";
         var confirmed = await ImagePdfOrderRequested(decision, token);
         token.ThrowIfCancellationRequested();
@@ -98,12 +98,12 @@ internal sealed partial class MainViewModel
         }
         if (images is null && pdf is null && tiff is null && svg is null && gif is null) return;
         token.ThrowIfCancellationRequested();
-        var admission = images is not null ? await trial!.AdmitConversionAsync(images, token) :
-            pdf is not null ? await trial!.AdmitConversionAsync(pdf, token) :
-            tiff is not null ? await trial!.AdmitConversionAsync(tiff, token) :
-            svg is not null ? await trial!.AdmitConversionAsync(svg, token) : await trial!.AdmitConversionAsync(gif!, token);
+        var admission = images is not null ? await admissionService!.AdmitConversionAsync(images, token) :
+            pdf is not null ? await admissionService!.AdmitConversionAsync(pdf, token) :
+            tiff is not null ? await admissionService!.AdmitConversionAsync(tiff, token) :
+            svg is not null ? await admissionService!.AdmitConversionAsync(svg, token) : await admissionService!.AdmitConversionAsync(gif!, token);
         if (images is not null)
-            await new ImageBatchExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(images, admission, (item, result) =>
+            await new ImageBatchExecutor(worker, Publisher!, admissionService!).ExecuteAdmittedAsync(images, admission, (item, result) =>
             {
                 byId[item.Source.ItemId].ApplyResult(result);
                 Summary = $"Converting: {rows.Count(row => row.Result.State is not (OperationState.Pending or OperationState.Running))} of {rows.Length} files finished.";
@@ -113,7 +113,7 @@ internal sealed partial class MainViewModel
             var completed = documents.SelectMany(document => byId[document.ItemId].CompletedPdfOutputs
                 .Select(output => (document.ItemId, output.PageIndex, output.OutputBytes)))
                 .ToDictionary(output => (output.ItemId, output.PageIndex), output => output.OutputBytes);
-            await new PdfPageConversionExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(pdf, admission, (source, index, result) =>
+            await new PdfPageConversionExecutor(worker, Publisher!, admissionService!).ExecuteAdmittedAsync(pdf, admission, (source, index, result) =>
             {
                 var row = byId[source.ItemId];
                 row.ApplyPdfPage(index, result);
@@ -125,7 +125,7 @@ internal sealed partial class MainViewModel
             var completed = tiffs.SelectMany(source => byId[source.ItemId].CompletedTiffOutputs
                 .Select(output => (source.ItemId, output.PageIndex, output.OutputBytes)))
                 .ToDictionary(output => (output.ItemId, output.PageIndex), output => output.OutputBytes);
-            await new TiffConversionExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(tiff, admission, (source, index, result) =>
+            await new TiffConversionExecutor(worker, Publisher!, admissionService!).ExecuteAdmittedAsync(tiff, admission, (source, index, result) =>
             {
                 var row = byId[source.ItemId];
                 row.ApplyTiffPage(index, result);
@@ -133,7 +133,7 @@ internal sealed partial class MainViewModel
             }, token, completed);
         }
         if (svg is not null)
-            await new SvgConversionExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(svg, admission, (source, result) =>
+            await new SvgConversionExecutor(worker, Publisher!, admissionService!).ExecuteAdmittedAsync(svg, admission, (source, result) =>
             {
                 byId[source.ItemId].ApplyResult(result);
                 Summary = $"Converting: {rows.Count(row => row.Result.State is not (OperationState.Pending or OperationState.Running))} of {rows.Length} files finished.";

@@ -28,7 +28,7 @@ internal static class AnalyzeBenchmark
             if (request.Batch)
             {
                 await using var worker = new WorkerClient(Path.Combine(Path.GetDirectoryName(path)!, "absent-worker.exe"));
-                await using var view = new MainViewModel(worker, trial: new NoAccess());
+                await using var view = new MainViewModel(worker, admissionService: new NoAccess());
                 view.Admit(new(Guid.NewGuid(), "analyze", "open-details", [.. request.Paths]));
                 await view.WaitForIdleAsync();
                 if (view.Rows.Count != request.Paths.Length || view.Rows.Any(row => row.HasOutput || row.Result.Publication is not null))

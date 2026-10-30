@@ -56,7 +56,7 @@ internal static class OfficeWordFontStyleContracts
         await using (var vm = new MainViewModel(worker,
             new SuiteSettings { Convert = new(OutputDirectory: output, ReplaceOriginals: true) },
             new OutputPublisher(Path.Combine(root, "publications"), new NoRecycle()),
-            new LocalTrialStore(Path.Combine(root, "trial.json")), contexts))
+            new OperationAdmissionService(), contexts))
         {
             vm.OfficeCalculationRequested += _ => throw new InvalidOperationException("Word has no calculation choice.");
             vm.OfficeFontsRequested += (review, token) =>

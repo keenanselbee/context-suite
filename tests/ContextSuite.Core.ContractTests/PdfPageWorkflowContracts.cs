@@ -19,7 +19,7 @@ internal static class PdfPageWorkflowContracts
         var originalHash = Convert.ToHexString(SHA256.HashData(original));
         var clock = new Clock();
         var trialPath = Path.Combine(root, "trial.json");
-        var access = new CountingAccess(new LocalTrialStore(trialPath, clock));
+        var access = new CountingAccess(new OperationAdmissionService());
         var records = Path.Combine(root, "records");
         var publisher = new OutputPublisher(records, new ForbiddenRecycle(), replacementVerified: true);
         await using var worker = new WorkerClient(executable, Path.Combine(root, "workers"));
@@ -28,14 +28,14 @@ internal static class PdfPageWorkflowContracts
         var first = await worker.ProbePdfPagesAsync(new(Guid.NewGuid(), sourcePath), default);
         var second = await worker.ProbePdfPagesAsync(new(Guid.NewGuid(), secondPath), default);
         var workerId = worker.ProcessId;
-        check(first.Document.Pages.Length == 2 && !File.Exists(trialPath), "PDF pages: inspecting all geometry leaves trial unstarted");
+        check(first.Document.Pages.Length == 2 && !File.Exists(trialPath), "PDF pages: inspecting all geometry leaves legacy access storage untouched");
         var collision = Path.Combine(root, "Authored ü - Page 001.png");
         await File.WriteAllTextAsync(collision, "existing file canary");
         var plan = Plan(first, second);
         var completed = await executor.ExecuteAsync(plan, (_, _, row) =>
         { if (row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8); }, default);
         check(completed.Admission.IsAllowed && completed.Pages.Count == 4 && completed.Pages.All(page => page.Result.Publication?.Outcome == PublicationOutcome.CopyCreated) && access.Admissions == 1,
-            "PDF pages: four page copies complete under one admission across trial expiry and overwrite preference");
+            "PDF pages: four page copies complete under one admission after clock changes and overwrite preference");
         check(worker.ProcessId == workerId, "PDF pages: one sequential worker handles the batch");
         check(Path.GetFileName(completed.Pages[0].Result.Publication!.OutputPath!) == "Authored ü - Page 001 (2).png" &&
             Path.GetFileName(completed.Pages[1].Result.Publication!.OutputPath!) == "Authored ü - Page 002.png" &&
@@ -50,9 +50,9 @@ internal static class PdfPageWorkflowContracts
             check(!facts.HasTransparency, "PDF pages: default published copy has opaque white paper");
         }
         var denied = await executor.ExecuteAsync(plan, null, default);
-        check(!denied.Admission.IsAllowed && denied.Pages.All(page => page.Result.State == OperationState.Failed && page.Result.Publication is null),
-            "PDF pages: expired access creates no reservations");
-        var fresh = new CountingAccess(new LocalTrialStore(Path.Combine(root, "fresh-trial.json")));
+        check(denied.Admission.IsAllowed && denied.Pages.All(page => page.Result.State == OperationState.Succeeded && page.Result.Publication?.Outcome == PublicationOutcome.CopyCreated),
+            "PDF pages: subsequent free batch publishes validated pages");
+        var fresh = new CountingAccess(new OperationAdmissionService());
         var freshExecutor = new PdfPageConversionExecutor(worker, publisher, fresh);
         var transparentPlan = PdfPageConversionPlan.Create(Guid.NewGuid(), [first],
             new("convert", new(), TransparentPdfBackground: true)).Confirm();

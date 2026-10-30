@@ -26,8 +26,8 @@ def main():
         for item in path.rglob('*') if path.is_dir() else [path]:
             if item.is_file():
                 inputs[str(item)] = digest(item)
-    for folder in ('proprietary/src/ContextSuite.Private', 'proprietary/tests/ContextSuite.Image.ContractTests',
-                   'proprietary/tests/ContextSuite.Audio.ContractTests'):
+    for folder in ('src/ContextSuite.Private', 'tests/ContextSuite.Image.ContractTests',
+                   'tests/ContextSuite.Audio.ContractTests'):
         for item in (repo / folder).rglob('*'):
             if item.is_file() and item.suffix in ('.cs', '.csproj', '.icc'):
                 inputs[str(item)] = digest(item)
@@ -50,7 +50,7 @@ def main():
         return result
 
     for kind in ('Image', 'Audio'):
-        run('build-' + kind, ['dotnet', 'build', repo / f'proprietary/tests/ContextSuite.{kind}.ContractTests/ContextSuite.{kind}.ContractTests.csproj',
+        run('build-' + kind, ['dotnet', 'build', repo / f'tests/ContextSuite.{kind}.ContractTests/ContextSuite.{kind}.ContractTests.csproj',
                              '-c', 'Release', '--nologo'])
     image_host = repo / 'artifacts/managed/bin/ContextSuite.Image.ContractTests/Release/net10.0'
     audio_host = repo / 'artifacts/managed/bin/ContextSuite.Audio.ContractTests/Release/net10.0'

@@ -29,7 +29,7 @@ internal static class ImagePdfResourceWorkerContracts
         }
         var records = Path.Combine(root, "records");
         var scratch = Path.Combine(root, "workers");
-        var access = new LocalTrialStore(Path.Combine(root, "trial.json"));
+        var access = new OperationAdmissionService();
         var publisher = new OutputPublisher(records, new NoRecycle(), replacementVerified: true);
         await using var worker = new WorkerClient(executable, scratch);
         var sources = new List<ImageSourceFacts>();

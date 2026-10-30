@@ -89,7 +89,7 @@ internal static class AvifWorkflowContracts
                 "AVIF direct command publishes copies despite replacement settings");
         }
 
-        var executor = new ImageBatchExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "fault-trial.json")));
+        var executor = new ImageBatchExecutor(worker, publisher, new OperationAdmissionService());
         foreach (var fault in new[] { "cancel", "crash", "changed" })
         {
             var batch = sources.Take(3).Select(source => source with { ItemId = Guid.NewGuid() }).ToArray();

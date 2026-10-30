@@ -13,7 +13,7 @@ if (-not $stage.StartsWith((Join-Path $repository 'artifacts\production-staging\
 }
 $build = Get-Content -LiteralPath (Join-Path $prepared 'image-validator-build.json') -Raw | ConvertFrom-Json
 $binary = Join-Path $prepared 'image-validator-build\bin\Release'
-$source = Join-Path $repository 'proprietary\src\ContextSuite.ImagePdfValidator.Native'
+$source = Join-Path $repository 'src\ContextSuite.ImagePdfValidator.Native'
 if ((Get-FileHash -LiteralPath (Join-Path $binary 'ContextSuite.ImagePdfValidator.exe')).Hash -ne $build.sha256 -or
     (Get-FileHash -LiteralPath (Join-Path $binary 'qpdf30.dll')).Hash -ne $build.qpdfSha256 -or
     (Get-FileHash -LiteralPath (Join-Path $source 'Validator.cpp')).Hash -ne $build.bridgeSourceSha256 -or

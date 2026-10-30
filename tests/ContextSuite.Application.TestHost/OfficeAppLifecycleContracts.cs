@@ -253,7 +253,7 @@ internal sealed partial class OfficeAppLifecycleContracts(string root, string mo
             RedirectStandardOutput = true, RedirectStandardError = true };
         start.ArgumentList.Add("--activation-file"); start.ArgumentList.Add(activation);
         start.Environment["CONTEXTSUITE_TEST_ROOT"] = root; start.Environment["CONTEXTSUITE_TEST_WORKER"] = Path.GetFullPath(worker);
-        start.Environment.Remove("CONTEXTSUITE_TEST_LICENSE_WORKFLOW"); start.Environment.Remove("CONTEXTSUITE_TEST_OFFICE_LIFECYCLE");
+        start.Environment.Remove("CONTEXTSUITE_TEST_OFFICE_LIFECYCLE");
         if (mode is not null) start.Environment["CONTEXTSUITE_TEST_OFFICE_LIFECYCLE"] = mode;
         return Process.Start(start) ?? throw new IOException("Could not start lifecycle application.");
     }

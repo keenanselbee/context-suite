@@ -19,7 +19,7 @@ internal static class WwiseWorkflowContracts
             var copied = Path.Combine(scratch, Path.GetFileName(path)); File.Copy(path, copied); return copied;
         }).ToArray();
         if (paths.Length != 4) throw new InvalidDataException("Use the four authored Wwise source WAVs.");
-        var access = new CountingAccess(new LocalTrialStore(Path.Combine(scratch, "access", "trial.json")));
+        var access = new CountingAccess(new OperationAdmissionService());
         var records = Path.Combine(scratch, "publications");
         var publisher = new OutputPublisher(records, new ForbiddenRecycle());
         await using var worker = new WorkerClient(executable, Path.Combine(scratch, "workers"));

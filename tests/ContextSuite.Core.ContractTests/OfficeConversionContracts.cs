@@ -40,17 +40,17 @@ internal static class OfficeConversionContracts
         { ItemId = Guid.NewGuid(), Path = Path.Combine(root, new string('x', 30000) + index + ".docx") }), settings), "aggregate path bound");
         var clock = new Clock();
         var trialPath = Path.Combine(root, "trial.json");
-        IOperationAccess trial = new LocalTrialStore(trialPath, clock);
+        IOperationAccess trial = new OperationAdmissionService();
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         try { await trial.AdmitConversionAsync(confirmed, cancelled.Token); check(false, "Office cancelled admission"); }
-        catch (OperationCanceledException) { check(!File.Exists(trialPath), "Office access: cancelled admission cannot start trial"); }
+        catch (OperationCanceledException) { check(!File.Exists(trialPath), "Office access: cancelled admission creates no access files"); }
         var admitted = await trial.AdmitConversionAsync(confirmed, default);
-        check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && File.Exists(trialPath), "Office access: one confirmed batch starts the ordinary trial");
+        check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && !File.Exists(trialPath), "Office access: one confirmed batch starts the validated batch");
         clock.Advance(TimeSpan.FromDays(7));
         var denied = await trial.AdmitConversionAsync(confirmed, default);
-        check(!denied.IsAllowed && denied.BatchId == plan.BatchId && denied.Status.Message.Contains("expired", StringComparison.OrdinalIgnoreCase),
-            "Office access: expiry blocks new admission with readable status");
-        check(admitted.IsAllowed, "Office access: admitted batch survives later trial expiry");
+        check(denied.IsAllowed && denied.BatchId == plan.BatchId && !File.Exists(trialPath),
+            "Office access: clock changes do not block a valid new batch");
+        check(admitted.IsAllowed, "Office access: admitted batch remains valid after clock changes");
         await using var absent = new WorkerClient(Path.Combine(root, "absent", "ContextSuite.Worker.exe"));
         var contextRoot = Path.Combine(root, "must-not-create-contexts");
         var publications = Path.Combine(root, "must-not-create-publications");
@@ -58,8 +58,8 @@ internal static class OfficeConversionContracts
         var unavailable = await executor.ExecuteAsync(confirmed, null, default);
         check(unavailable.Results.All(result => result.State == OperationState.Unsupported) && absent.ProcessId is null &&
             !Directory.Exists(contextRoot) && !Directory.Exists(publications), "Office execution: missing engines refuse before access, preparation or publication");
-        var blocked = await executor.ExecuteAdmittedAsync(confirmed, new(new(false, "Activate a license."), plan.BatchId), null, default);
-        check(blocked.Results.Count == 3 && blocked.Results.All(result => result.State == OperationState.Failed && result.Message == "Activate a license.") &&
+        var blocked = await executor.ExecuteAdmittedAsync(confirmed, new(new(false, "The operation is temporarily unavailable."), plan.BatchId), null, default);
+        check(blocked.Results.Count == 3 && blocked.Results.All(result => result.State == OperationState.Failed && result.Message == "The operation is temporarily unavailable.") &&
             !Directory.Exists(contextRoot), "Office execution: denied batch reports every document without native preparation");
         try { await executor.ExecuteAdmittedAsync(confirmed, new(new(true, "foreign"), Guid.NewGuid()), null, default); check(false, "Office foreign admission"); }
         catch (InvalidDataException) { check(absent.ProcessId is null, "Office execution: foreign admission cannot start a worker"); }

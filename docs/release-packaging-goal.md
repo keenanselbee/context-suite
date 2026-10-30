@@ -3,7 +3,8 @@ Reproducible Packaging And Clean-Machine Goal
 
 Status: in progress; internal candidate tooling and Inno lifecycle integration
 implemented; signing, native upgrade/repair and isolated-machine acceptance pending.
-No commercial release approval.
+Free transition in progress under [decision 0021](decisions/0021-free-product-and-public-implementation.md);
+no customer release approval.
 
 The [product versioning workflow](product-versioning.md) now gives local candidates
 one version source, matching managed/package metadata and a non-reusable staging
@@ -18,7 +19,7 @@ remains closed rather than being inferred from mocked platform tests.
 Scope and boundaries
 --------------------
 
-Make production builds repeatable from identified public/private source and
+Make production builds repeatable from one identified source revision and
 approved engine inputs, produce a narrowly inventoried package, and verify the
 customer installation lifecycle. Do not introduce new formats, Optimize, paid
 activation, signing credentials, publishing or a second application edition.
@@ -41,7 +42,7 @@ Implemented workflow
    when no source-matched cache is available. Retain its source/bridge/build-definition
    identity and native hash. Candidate packaging verifies and reuses that cache;
    it never silently rebuilds a stale or modified engine.
-4. Run `tools/release/New-ReleaseCandidate.ps1`. Both repositories must be clean;
+4. Run `tools/release/New-ReleaseCandidate.ps1`. The main source checkout must be clean;
    the script builds Release into a unique `artifacts/production-staging/<id>`
    directory, leaving `artifacts/production/Release` unchanged even when registered
    with Explorer, and copies only the approved payload minus symbols
@@ -54,7 +55,7 @@ Implemented workflow
    The [expanded composition workflow](expanded-release-composition.md) accepts
    all selected audio/Voice, PDF, Office and HEIF inputs without rebuilding those
    engines and records their selection in the archive manifest.
-5. `release-manifest.json` identifies both commits, SDK/toolset, package
+5. New schema-two `release-manifest.json` identifies one source commit, SDK/toolset, package
    dependencies, engines and every payload file's length and SHA256. The ZIP
    hash is printed and written to `archive.sha256` separately. The finished ZIP
    is extracted into fresh scratch output and revalidated. After verification
@@ -65,37 +66,27 @@ Implemented workflow
    inventory, selected optional engines and source-linked engine/notice guards.
    Read-only engine checks admit the release-candidate directory; staging writes
    remain restricted to fresh production staging or scratch. It requires the matching
-   public/private checkout; it is not a customer-side signature validator.
+   source checkout; historical schema-one dual-repository receipts remain supported.
+   This is not a customer-side signature validator.
 
 All output stays under ignored `artifacts/` or `.codex-temp/`. Nothing is
 installed, signed, published or registered. The ZIP is an unsigned internal
 candidate, not a finished installer or approved customer download.
 
-Private CI
-----------
+Production CI
+-------------
 
-The private workflow takes an immutable approved public commit and a private
-release tag containing `curated-win-x64.zip`. GitHub's job token reads that
-private asset; no credential is embedded in the payload. A moved/replaced asset
-cannot bypass the separately committed native/notice hashes. No arbitrary URL
-or public pull-request input can supply an engine implementation.
+The manual production workflow now belongs to the main repository. It requires
+reviewed pinned curated-engine and palette assets on a selected public release,
+then imports/verifies those inputs, builds the authored DDS bridge, runs contracts,
+and creates an unsigned candidate. Private checkout credentials and a private
+source revision are no longer required. Asset publication and hosted execution
+have not been performed by the local migration. Never upload private configuration
+or silently replace a pin to make provisioning succeed.
 
-That same private release must also contain the three separately pinned palette
-assets: `ContextSuite.Palette.exe`, `ExoQuant.License.txt`, and
-`Rust.Library.Notices.html`. The workflow downloads those fixed names and stages
-them only after matching `tools/palette-engine/production.json`; it never rebuilds
-or repins a different executable just to pass CI. These assets still need an
-explicitly authorized upload. The workflow now invokes synthetic licensing
-contracts as well; the public workflow runs hidden XAML/accessibility contracts.
-
-The workflow imports the reviewed image engine, builds DDS, runs public/private
-contracts and packaging checks, then exports only the candidate ZIP and revision
-receipt within the private repository. It does not export source or PDBs.
-Interactive UI and Explorer acceptance remain separate from hosted CI.
-
-The scripts/workflow must first be reviewed, committed and pushed. The owner
-must explicitly authorize uploading the engine artifact to the private release
-before a hosted run can succeed. No upload or hosted run has occurred here.
+The former private workflow and its dated results remain historical material.
+Current local and remote verification are recorded separately in
+[the free transition goal](free-access-goal.md).
 
 Installer and runtime handoff
 ----------------------------

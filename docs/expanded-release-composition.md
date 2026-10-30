@@ -36,7 +36,7 @@ use the explicit DDS build command only when those inputs need rebuilding.
 Office and the other selected engine bundles retain their existing exact pins.
 
 Candidate managed builds now use
-`.codex-temp/managed-staging-<id>/bin` and `obj`, including referenced private
+`.codex-temp/managed-staging-<id>/bin` and `obj`, including referenced media implementation
 projects. The new `ContextSuiteManagedBuildRoot` property retains the existing
 `artifacts/managed` default for ordinary builds. The production builder refuses
 an already existing candidate managed directory before reserving a version.

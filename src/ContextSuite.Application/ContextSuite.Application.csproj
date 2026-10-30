@@ -4,24 +4,16 @@
     <UseWPF>true</UseWPF>
     <OutputType>WinExe</OutputType>
     <PlatformTarget>x64</PlatformTarget>
-    <ContextSuitePrivateBuildOnly>true</ContextSuitePrivateBuildOnly>
     <ContextSuiteApplicationAssets>$(BaseIntermediateOutputPath)$(Configuration)\ApplicationAssets</ContextSuiteApplicationAssets>
     <ApplicationIcon>$(ContextSuiteApplicationAssets)\ContextSuite.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../proprietary/src/ContextSuite.Commercial/ContextSuite.Commercial.csproj"
-                      Condition="Exists('../../proprietary/src/ContextSuite.Commercial/ContextSuite.Commercial.csproj')" />
-    <Compile Include="../../proprietary/src/ContextSuite.Commercial/ApplicationComposition.cs" Link="Composition/ApplicationComposition.cs" />
     <ProjectReference Include="..\ContextSuite.Core\ContextSuite.Core.csproj" />
     <Compile Include="..\Shared\LocalPipe.cs" Link="Infrastructure\LocalPipe.cs" />
   </ItemGroup>
-  <Import Project="..\..\tools\Require-Private.targets" />
   <Target Name="GenerateApplicationIcon" BeforeTargets="CoreCompile"
           Inputs="../../images/icon-tri.png;../../images/icon-tri-small.png;../../tools/ApplicationIcons.cs;../../tools/New-ApplicationAssets.ps1"
           Outputs="$(ApplicationIcon)">
     <Exec Command="powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\..\tools\New-ApplicationAssets.ps1&quot; -OutputDirectory &quot;$(ContextSuiteApplicationAssets)&quot; -IconOnly" />
-  </Target>
-  <Target Name="RequireCommercialComposition" BeforeTargets="PrepareForBuild;CollectPackageReferences">
-    <Error Condition="!Exists('../../proprietary/src/ContextSuite.Commercial/ApplicationComposition.cs')" Text="Context Suite production requires the compatible context-suite-private commercial composition. Update the private checkout before building." />
   </Target>
 </Project>

@@ -22,10 +22,7 @@
     <Compile Include="..\..\tools\office-engine\Probe\WordRevisionStructureFixtures.cs" Link="Fixtures\WordRevisionStructureFixtures.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\FileAnalysisReader.cs" Link="Runtime\FileAnalysisReader.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\SynchronousFileIo.cs" Link="Runtime\SynchronousFileIo.cs" />
-    <Compile Include="..\..\src\ContextSuite.Application\LicenseViewModel.cs" Link="Runtime\LicenseViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OperationAccess.cs" Link="Runtime\OperationAccess.cs" />
-    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\LicenseStore.cs" Link="Runtime\LicenseStore.cs" />
-    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PaidLicenseManager.cs" Link="Runtime\PaidLicenseManager.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\QuietWorkflow.cs" Link="Runtime\QuietWorkflow.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\OptimizationViewModel.cs" Link="Runtime\OptimizationViewModel.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\PngOptimizationExecutor.cs" Link="Runtime\PngOptimizationExecutor.cs" />
@@ -52,7 +49,6 @@
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OfficeConversionExecutor.cs" Link="Runtime\OfficeConversionExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OfficeRecoveryCoordinator.cs" Link="Runtime\OfficeRecoveryCoordinator.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\SettingsStore.cs" Link="Runtime\SettingsStore.cs" />
-    <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\LocalTrialStore.cs" Link="Runtime\LocalTrialStore.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\LosslessImageOptimizationExecutor.cs" Link="Runtime\LosslessImageOptimizationExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\OfficePackageOptimizationExecutor.cs" Link="Runtime\OfficePackageOptimizationExecutor.cs" />
     <Compile Include="..\..\src\ContextSuite.Application\Infrastructure\ImageBatchExecutor.cs" Link="Runtime\ImageBatchExecutor.cs" />

@@ -936,8 +936,6 @@ await File.WriteAllTextAsync(fixture, "A deliberately non-media fixture; no tran
 var passed = 0;
 try
 {
-    PaidLicenseContracts.Run(Check);
-    await LicenseStorageContracts.RunAsync(args[0], Check);
     await SettingsContracts.RunAsync(args[0], Check);
     await InstalledToolsContracts.RunAsync(args[0], Check);
     await DdsContracts.RunAsync(args[0], Check);
@@ -997,16 +995,13 @@ try
     await PngOptimizationContracts.RunAsync(args[0], Check);
     await LosslessImageWorkflowContracts.RunAsync(args[0], null, Check);
     await OfficePackageWorkflowContracts.RunAsync(args[0], null, Check);
-    await TrialContracts.RunAsync(args[0], Check);
+    await FreeOperationContracts.RunAsync(args[0], Check);
     await PublicationContracts.RunAsync(args[0], Check);
     await PublicationCrashContracts.RunAsync(args[0], Check);
     var id = Guid.NewGuid();
     string RequestText(string operation = "analyze", string action = "open-details", int count = 1) =>
         $"ContextSuiteActivation/1\nrequestId={id:D}\noperation={operation}\naction={action}\npathCount={count}\npath={fixture}\n";
     var request = ActivationParser.Parse(Encoding.UTF8.GetBytes(RequestText()));
-    foreach (var state in Enum.GetValues<AccessState>())
-        Check(new AccessDecision(state, "Test state").CanStart == (state is AccessState.Trial or AccessState.Paid),
-            "access admission: " + state);
     Check(request.RequestId == id && request.Paths.Single() == fixture, "valid activation");
     var settingsRequest = ActivationParser.Parse(Encoding.UTF8.GetBytes(
         $"ContextSuiteActivation/1\nrequestId={Guid.NewGuid():D}\noperation=convert\naction=settings\npathCount=0\n"));

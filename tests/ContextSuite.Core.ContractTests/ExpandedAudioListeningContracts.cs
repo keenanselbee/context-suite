@@ -28,7 +28,7 @@ internal static class ExpandedAudioListeningContracts
         await using (var worker = new WorkerClient(executable, scratch))
         {
             var executor = new AudioConversionExecutor(worker, new OutputPublisher(records, new ForbiddenRecycle()),
-                new LocalTrialStore(Path.Combine(work, "trial.json")));
+                new OperationAdmissionService());
             foreach (var fixture in fixtures)
             {
                 if (Hash(fixture.Path) != fixture.Sha256 || Hash(fixture.ReferencePath) != fixture.ReferenceHash)

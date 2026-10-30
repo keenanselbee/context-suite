@@ -9,11 +9,11 @@ single digits; increment patch for an ordinary candidate, carrying 9 to the next
 minor/major. Managed assemblies and file metadata derive `MAJOR.MINOR.PATCH.0`.
 The three package templates use that same Windows form. Update their values and
 [CHANGELOG.md](../CHANGELOG.md) together before staging changed packaged contents.
-Private projects import the parent build properties; they do not own a separate
-product version.
+Media implementation projects share the root build properties and do not own a
+separate product version.
 
 Run `tools/Test-ProductVersion.ps1` for source/template checks. Add `-Payload` to
-check the staged application, worker, core, private and commercial assemblies.
+check the staged application, worker, core, and media implementation assemblies.
 `Build-Production.ps1` runs both checks and reserves candidate versions in
 `artifacts/production-version-receipts/<version>.json` before producing files.
 An exclusive create prevents concurrent or later reuse, even with another staging

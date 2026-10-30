@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $Payload)
+param([Parameter(Mandatory)][string] $Payload, [switch] $AllowLegacyBuildDefinition)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $pins = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'source.json') -Raw | ConvertFrom-Json
@@ -10,12 +10,16 @@ foreach ($name in 'ContextSuite.Dds.Native.dll', 'ContextSuite.Dds.Engine.json',
     }
 }
 $identity = Get-Content -LiteralPath (Join-Path $Payload 'ContextSuite.Dds.Engine.json') -Raw | ConvertFrom-Json
+# Historical schema-1 candidates used this exact definition before the source move.
+# New builds always require the current definition and unchanged bridge source.
+$definitionMatches = $identity.buildDefinitionSha256 -eq (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'CMakeLists.txt')).Hash
+if ($AllowLegacyBuildDefinition -and $identity.buildDefinitionSha256 -eq 'DB154FAF0C020DD50DD669CDB8D990E388B3FBC5D95BB19BBA3618D030B7492A') { $definitionMatches = $true }
 if ($identity.revision -ne $pins.revision -or $identity.archiveSha256 -ne $pins.archiveSha256 -or
     $identity.configuration -ne $pins.configuration -or
     $identity.nativeSha256 -ne (Get-FileHash -LiteralPath (Join-Path $Payload 'ContextSuite.Dds.Native.dll')).Hash -or
     $identity.licenseSha256 -ne (Get-FileHash -LiteralPath (Join-Path $Payload 'DirectXTex.License.txt')).Hash -or
-    $identity.bridgeSourceSha256 -ne (Get-FileHash -LiteralPath (Join-Path $repository 'proprietary\native\dds\Bridge.cpp')).Hash -or
-    $identity.buildDefinitionSha256 -ne (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'CMakeLists.txt')).Hash) {
+    $identity.bridgeSourceSha256 -ne (Get-FileHash -LiteralPath (Join-Path $repository 'native\dds\Bridge.cpp')).Hash -or
+    -not $definitionMatches) {
     throw 'DDS candidate identity, source or notices are stale or modified; rebuild and verify the candidate.'
 }
 Write-Output 'DDS candidate provenance and payload hashes passed. This is not commercial release clearance.'

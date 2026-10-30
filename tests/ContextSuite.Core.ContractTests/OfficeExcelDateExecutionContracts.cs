@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using ContextSuite.Application.Infrastructure;
-using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Office;
 using ContextSuite.Core.Operations;
 using Microsoft.Win32;
@@ -20,7 +19,7 @@ internal static class OfficeExcelDateExecutionContracts
         await using var worker = new WorkerClient(workerPath, Path.Combine(root, "workers"));
         await using var executor = new OfficeConversionExecutor(worker,
             new OutputPublisher(Path.Combine(root, "publications"), new NoRecycle()),
-            new LocalTrialStore(Path.Combine(root, "trial.json")), contexts);
+            new OperationAdmissionService(), contexts);
         foreach (var variant in new[] { "1900-default", "1900-explicit", "1904" })
         foreach (var calculation in new[] { "cached", "recalculate" })
         {

@@ -48,7 +48,7 @@ def main():
             raise ValueError("Fixture/bridge inputs changed: " + str(folder))
         inputs.update(recorded)
         inputs[str(folder / "results.json")] = digest(folder / "results.json")
-    for directory in ("src", "tests/ContextSuite.Core.ContractTests", "proprietary/src"):
+    for directory in ("src", "tests/ContextSuite.Core.ContractTests"):
         inputs.update({str(path): digest(path) for path in (root / directory).rglob("*")
                        if path.is_file() and path.suffix in (".cs", ".csproj", ".icc")})
     for path in [Path(__file__).resolve(), root / "Directory.Build.props", root / "Directory.Build.targets", root / "Version.props"]:

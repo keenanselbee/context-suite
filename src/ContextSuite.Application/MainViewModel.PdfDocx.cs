@@ -44,7 +44,7 @@ internal sealed partial class MainViewModel
             return;
         }
         var byId = rows.ToDictionary(row => row.ItemId);
-        await new PdfDocxExecutor(worker, Publisher!, trial!).ExecuteAsync(confirmed, (source, result) =>
+        await new PdfDocxExecutor(worker, Publisher!, admissionService!).ExecuteAsync(confirmed, (source, result) =>
         {
             byId[source.ItemId].ApplyResult(result);
             Summary = $"Converting to Word: {rows.Count(row => row.Result.State is not (OperationState.Pending or OperationState.Running))} of {rows.Length} files finished. Layout may differ from the PDF.";

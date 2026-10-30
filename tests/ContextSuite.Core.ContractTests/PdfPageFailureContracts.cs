@@ -23,7 +23,7 @@ internal static class PdfPageFailureContracts
         var publisher = new OutputPublisher(records, new NoRecycle());
         var clock = new ImageInterruptionContracts.DeadlineClock();
         await using var worker = new WorkerClient(executable, workerRoot, clock);
-        var access = new LocalTrialStore(Path.Combine(root, "trial.json"));
+        var access = new OperationAdmissionService();
         var executor = new PdfPageConversionExecutor(worker, publisher, access);
         var baselineSource = await worker.ProbePdfPagesAsync(new(Guid.NewGuid(), path), default);
         var baseline = await executor.ExecuteAsync(Plan(baselineSource), null, default);

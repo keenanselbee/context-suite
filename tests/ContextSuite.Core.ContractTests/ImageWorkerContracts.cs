@@ -38,7 +38,7 @@ internal static class ImageWorkerContracts
         await using (var direct = new ContextSuite.Application.MainViewModel(
             new WorkerClient(executable, Path.Combine(root, "automatic-worker")),
             new ContextSuite.Core.Settings.SuiteSettings { Convert = new(true) }, publisher,
-            new LocalTrialStore(Path.Combine(root, "automatic-trial.json"))))
+            new OperationAdmissionService()))
         {
             direct.ConversionRequested += (_, _) => throw new InvalidOperationException("Routine metadata must not open the planner.");
             direct.Admit(new(Guid.NewGuid(), "convert", "webp", [extrasPath]));
@@ -87,7 +87,7 @@ internal static class ImageWorkerContracts
 
         var faultSources = Enumerable.Range(0, 3).Select(_ => source with { ItemId = Guid.NewGuid() }).ToArray();
         var faultPlan = ImageConversionPlanner.Create(Guid.NewGuid(), faultSources, new(ImageFormat.WebP), new("convert", new()));
-        var faultTrial = new LocalTrialStore(Path.Combine(root, "fault-trial", "trial.json"), new TestClock());
+        var faultTrial = new OperationAdmissionService();
         var faultExecutor = new ImageBatchExecutor(worker, publisher, faultTrial);
         var previousOutputs = Directory.GetFiles(root, "* - Converted*.*").ToDictionary(p => p, p => SHA256.HashData(File.ReadAllBytes(p)));
         var killed = false;
@@ -129,7 +129,7 @@ internal static class ImageWorkerContracts
 
         var clock = new TestClock();
         var trialPath = Path.Combine(root, "isolated-trial", "trial.json");
-        var trial = new LocalTrialStore(trialPath, clock);
+        var trial = new OperationAdmissionService();
         var executor = new ImageBatchExecutor(worker, publisher, trial);
         var batchPlan = ImageConversionPlanner.Create(Guid.NewGuid(),
             [source with { ItemId = Guid.NewGuid() }, source with { ItemId = Guid.NewGuid() }],
@@ -139,22 +139,22 @@ internal static class ImageWorkerContracts
         {
             if (result.State == OperationState.Succeeded) clock.Utc += TimeSpan.FromHours(169);
         }, CancellationToken.None);
-        check(execution.Admission.IsAllowed && execution.Results.All(r => r.State == OperationState.Succeeded) && File.Exists(trialPath),
-            "image orchestration: first confirmation persists isolated trial, admitted batch finishes after expiry");
+        check(execution.Admission.IsAllowed && execution.Results.All(r => r.State == OperationState.Succeeded) && !File.Exists(trialPath),
+            "image orchestration: first confirmation needs no access file and finishes after clock changes");
         var beforeExpired = Directory.GetFiles(root).Length;
         var expired = await executor.ExecuteAsync(batchPlan.Confirm(true, false, false), null, CancellationToken.None);
-        check(!expired.Admission.IsAllowed && expired.Results.All(r => r.State == OperationState.Failed) && Directory.GetFiles(root).Length == beforeExpired,
-            "image orchestration: expired admission creates no output or reservation");
+        check(expired.Admission.IsAllowed && expired.Results.All(r => r.State == OperationState.Succeeded) && Directory.GetFiles(root).Length == beforeExpired + 2,
+            "image orchestration: subsequent free batch publishes new collision-safe copies");
         var cancelledTrial = Path.Combine(root, "cancelled-trial", "trial.json");
         using var cancelled = new CancellationTokenSource();
         cancelled.Cancel();
         try
         {
-            await new ImageBatchExecutor(worker, publisher, new LocalTrialStore(cancelledTrial, clock))
+            await new ImageBatchExecutor(worker, publisher, new OperationAdmissionService())
                 .ExecuteAsync(batchPlan.Confirm(true, false, false), null, cancelled.Token);
             throw new InvalidOperationException("Cancelled admission executed");
         }
-        catch (OperationCanceledException) { check(!File.Exists(cancelledTrial), "image orchestration: cancellation before admission does not start trial"); }
+        catch (OperationCanceledException) { check(!File.Exists(cancelledTrial), "image orchestration: cancellation before admission does not create access files"); }
     }
 
     // Independent test fixture encoder. No private engine or image library is linked into the public tests.

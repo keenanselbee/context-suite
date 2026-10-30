@@ -20,7 +20,7 @@ internal sealed record MetadataChoice(string Label, ImageMetadataMode Value);
 internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsyncDisposable
 {
     private readonly WorkerClient _worker;
-    private readonly IOperationAccess _trial;
+    private readonly IOperationAccess _admission;
     private readonly Guid _batchId;
     private readonly BatchSettings _settings;
     private readonly bool _replacementAvailable;
@@ -39,14 +39,14 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     private int _revision;
     private bool _hasMattePreview;
     private string _message = "Choose a target format to prepare this batch.", _warnings = "", _previewMessage = "Select a file and refresh the preview.";
-    private OperationAccessStatus? _trialStatus;
+    private OperationAccessStatus? _preparationStatus;
     private ImageMetadataMode _metadataMode = ImageMetadataMode.Automatic;
     private BitmapSource? _before, _after;
 
-    public ConversionViewModel(WorkerClient worker, IOperationAccess trial, Guid batchId,
+    public ConversionViewModel(WorkerClient worker, IOperationAccess admission, Guid batchId,
         IReadOnlyList<ConversionSelection> selection, BatchSettings settings, bool replacementAvailable)
     {
-        _worker = worker; _trial = trial; _batchId = batchId; _settings = settings;
+        _worker = worker; _admission = admission; _batchId = batchId; _settings = settings;
         _replacementAvailable = replacementAvailable && settings.Preferences.ReplaceOriginals && settings.Preferences.OutputDirectory is null;
         _replaceOriginal = CanReplaceOriginal;
         Rows = new(selection.Select(item => new ConversionRow(item)));
@@ -108,25 +108,25 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     public bool NeedsBackgroundChoice => NeedsMatte && Rows.Any(row => row.Selection.Facts?.HasTransparency == true);
     public bool NeedsVisiblePreview => NeedsBackgroundChoice || IsDdsWorkflow;
     public bool PreviewExpanded { get => _previewExpanded; set { if (Set(ref _previewExpanded, value) && value) SchedulePreview(); } }
-    public bool AccessBlocked => _trialStatus is { CanStart: false };
-    public bool HasAccessStatus => _trialStatus?.CanStart != true;
+    public bool PreparationBlocked => _preparationStatus is { CanStart: false };
+    public bool HasPreparationStatus => _preparationStatus?.CanStart != true;
     public bool EffectiveReplacement => _plan?.ReplaceOriginal == true;
     public bool CanReplaceOriginal => Target is not (ImageFormat.Ico or ImageFormat.Avif) && _replacementAvailable;
     public bool HasWarnings => _warnings.Length != 0;
     public bool IsPreviewBusy => _previewBusy;
     public bool CanConfirm => _plan?.HasExecutableItems == true && !_previewBusy &&
-        _trialStatus?.CanStart == true &&
+        _preparationStatus?.CanStart == true &&
         (!HasWarnings || WarningsAcknowledged) && (!EffectiveReplacement || (CanReplaceOriginal && ReplacementConfirmed)) &&
         (!IsDdsWorkflow || _hasDdsPreview) &&
         (_hasMattePreview || _plan.Options.SupportsAlpha || !_plan.Items.Any(item => item.CanExecute && item.Source.HasTransparency));
-    public string Message => AccessBlocked ? "Activate your license to convert these files." : _message;
+    public string Message => PreparationBlocked ? "The operation is temporarily unavailable." : _message;
     public string SelectedExplanation => SelectedIndex >= 0 && SelectedIndex < Rows.Count ?
         $"{Rows[SelectedIndex].Name}: {Rows[SelectedIndex].Status}" : "Select a row for its full explanation and preview.";
     public string SelectedFileDetails => SelectedIndex >= 0 && SelectedIndex < Rows.Count ?
         Rows[SelectedIndex].Details + Environment.NewLine + Rows[SelectedIndex].ProposedOutput : "";
     public string Warnings => _warnings;
     public string PreviewMessage => _previewMessage;
-    public string TrialMessage => _trialStatus?.Message ?? "Checking license and trial status…";
+    public string PreparationMessage => _preparationStatus?.Message ?? "Preparing operation...";
     public string OutputNotice => Target == ImageFormat.Ico ? "Originals kept. Standard icon sizes are saved as new ICO copies." : Target == ImageFormat.Avif ? "Originals kept. AVIF images are saved as new copies." : ReplaceOriginal && !EffectiveReplacement ? "An original contains information this format cannot keep. A new copy will be saved instead." : EffectiveReplacement
         ? "Publish the converted file, then move its original to the Recycle Bin. A cleanup failure retains the original and is reported. No permanent-delete fallback."
         : IsDdsTarget ? "Keep originals. New names include the texture representation, such as ‘ - BC7-sRGB’; collisions get (2), (3), and so on. Proposed paths are finalized safely at publication." :
@@ -160,9 +160,9 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
     {
         try
         {
-            _trialStatus = await _trial.ReadAccessAsync(_lifetime.Token);
-            Changed(nameof(TrialMessage)); Changed(nameof(CanConfirm));
-            Changed(nameof(AccessBlocked)); Changed(nameof(HasAccessStatus)); Changed(nameof(Message));
+            _preparationStatus = await _admission.ReadAccessAsync(_lifetime.Token);
+            Changed(nameof(PreparationMessage)); Changed(nameof(CanConfirm));
+            Changed(nameof(PreparationBlocked)); Changed(nameof(HasPreparationStatus)); Changed(nameof(Message));
         }
         catch (OperationCanceledException) { }
     }
@@ -265,7 +265,7 @@ internal sealed partial class ConversionViewModel : INotifyPropertyChanged, IAsy
         _revision++;
         _previewCancellation?.Cancel();
         _after = null;
-        _previewMessage = "Preview updates automatically. It is capped at 512 pixels and does not create a file or start the trial.";
+        _previewMessage = "Preview updates automatically. It is capped at 512 pixels and does not create a file.";
         Changed(nameof(AfterPreview)); Changed(nameof(PreviewMessage));
     }
 

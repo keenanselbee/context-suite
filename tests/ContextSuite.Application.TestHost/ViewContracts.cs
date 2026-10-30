@@ -4,7 +4,6 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Installation;
-using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Settings;
 
@@ -21,11 +20,7 @@ internal static class ViewContracts
         var app = new System.Windows.Application { ShutdownMode = ShutdownMode.OnExplicitShutdown, ThemeMode = ThemeMode.System };
 #pragma warning restore WPF0001
         var passed = 0;
-        // The window is never loaded or shown, so this store and provider must
-        // not be called. No production licensing state is touched.
-        var licenseModel = new LicenseViewModel(new(new UnusedLicenseService(),
-            new LicenseStore(Path.Combine(Path.GetTempPath(), "unused-license-view-contract.bin"), LicenseEnvironment.Sandbox)));
-        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new LicenseWindow(licenseModel), new AudioConversionWindow(), new ImagePdfOrderWindow(), new OfficeCalculationWindow(),
+        Window[] windows = [new MainWindow(), new ConversionWindow(), new OptimizationWindow(), new SettingsWindow(), new AudioConversionWindow(), new ImagePdfOrderWindow(), new OfficeCalculationWindow(),
             new OfficeFontReviewWindow(new(@"C:\fixtures\Document.docx", ["Missing Font", "日本語"]))];
         try
         {
@@ -42,7 +37,7 @@ internal static class ViewContracts
                 Check(double.IsFinite(content.DesiredSize.Width) && double.IsFinite(content.DesiredSize.Height),
                     window.GetType().Name + ": minimum-size layout completes");
             }
-            var main = windows[0]; var convert = windows[1]; var optimize = windows[2]; var settings = windows[3]; var license = windows[4];
+            var main = windows[0]; var convert = windows[1]; var optimize = windows[2]; var settings = windows[3];
             var recoveryModel = new MainViewModel(new WorkerClient(Path.Combine(Path.GetTempPath(), "unused-office-view-worker.exe")));
             main.DataContext = recoveryModel;
             main.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
@@ -58,8 +53,8 @@ internal static class ViewContracts
             Check(Find<StatusTextBlock>(main, "RecoveryNotice").Text.Length == 0 && !main.IsVisible,
                 "Office empty restart report adds no visible status or window");
             recoveryModel.DisposeAsync().AsTask().GetAwaiter().GetResult();
-            var audio = windows[5];
-            var fontReview = (OfficeFontReviewWindow)windows[8];
+            var audio = windows[4];
+            var fontReview = (OfficeFontReviewWindow)windows[7];
             Check(!fontReview.Accepted && Find<Button>(fontReview, "OfficeFontsSkip").IsCancel &&
                 !Find<Button>(fontReview, "OfficeFontsSave").IsDefault, "Office font review: no implicit consent; Escape declares skip");
             Check(Find<TextBlock>(fontReview, "OfficeMissingFonts").Text == "Missing Font" + Environment.NewLine + "日本語",
@@ -85,8 +80,8 @@ internal static class ViewContracts
             Check(fontBody.ScrollableHeight > 0 && saveFontBounds.Top >= fontBodyBounds.Bottom && saveFontBounds.Bottom <= fontContent.RenderSize.Height,
                 "Office font review: maximum family list scrolls while Save remains reachable at minimum size");
             manyFonts.Close();
-            passed += ImagePdfOrderViewContracts.Run(windows[6]);
-            var calculation = (OfficeCalculationWindow)windows[7];
+            passed += ImagePdfOrderViewContracts.Run(windows[5]);
+            var calculation = (OfficeCalculationWindow)windows[6];
             Check(calculation.Calculation is null && !Find<Button>(calculation, "OfficeSavedValues").IsDefault &&
                 !Find<Button>(calculation, "OfficeRecalculate").IsDefault && Find<Button>(calculation, "OfficeCalculationCancel").IsCancel,
                 "Office spreadsheet choice: no implicit policy or default confirmation; Escape is declared as cancellation");
@@ -99,14 +94,12 @@ internal static class ViewContracts
                 !Find<Button>(audio, "ConfirmAudioConversion").IsDefault,
                 "audio decision: files start collapsed; Escape cancels and Enter does not implicitly confirm");
             audio.DataContext = new { Heading = "Convert to Opus", FileSummary = "4096 audio files", QualityChanges = "Quality loss and resampling require a choice.",
-                FileNames = "One.mp3\nTwo.mp3", OutputSummary = "Originals are kept.", Message = "Activate your license to convert these files.", LicenseActionLabel = "_Activate license…" };
+                FileNames = "One.mp3\nTwo.mp3", OutputSummary = "Originals are kept.", Message = "Choose Convert to accept these changes." };
             var audioContent = (FrameworkElement)audio.Content;
             audioContent.Measure(new Size(audio.Width - 16, double.PositiveInfinity));
             audioContent.Arrange(new Rect(0, 0, audio.Width - 16, audioContent.DesiredSize.Height));
             audioContent.UpdateLayout();
-            Check(Find<TextBlock>(audio, "AudioQualityChanges").Text.Contains("resampling") &&
-                (string)Find<Button>(audio, "AudioConversionLicense").Content == "_Activate license…",
-                "audio decision: explicit quality text and activation action bind to the fixed plan");
+            Check(Find<TextBlock>(audio, "AudioQualityChanges").Text.Contains("resampling"), "audio decision: explicit quality text binds to the fixed plan");
             var audioFiles = Find<Expander>(audio, "AudioConversionFiles");
             var audioCollapsedHeight = audioContent.DesiredSize.Height;
             audio.SizeToContent = SizeToContent.Manual;
@@ -133,9 +126,9 @@ internal static class ViewContracts
             audioContent.Measure(new Size(audio.Width - 16, double.PositiveInfinity));
             Check(audio.SizeToContent == SizeToContent.Height && Math.Abs(audioContent.DesiredSize.Height - audioCollapsedHeight) < 1,
                 "audio decision: closing files restores compact content height");
-            foreach (var (window, id) in new[] { (main, "BatchSummary"), (main, "RecoveryNotice"), (main, "InputNotice"), (license, "NoticeStatus"),
-                (convert, "ConversionPlanStatus"), (convert, "ConversionPreviewStatus"), (convert, "ConversionTrialStatus"),
-                (optimize, "OptimizationPlanStatus"), (optimize, "OptimizationTrialStatus"), (settings, "SettingsMessage"), (license, "LicenseStatus"), (audio, "AudioConversionStatus"), (windows[6], "ImagePdfOrderStatus") })
+            foreach (var (window, id) in new[] { (main, "BatchSummary"), (main, "RecoveryNotice"), (main, "InputNotice"), (settings, "NoticeStatus"),
+                (convert, "ConversionPlanStatus"), (convert, "ConversionPreviewStatus"), (convert, "ConversionPreparationStatus"),
+                (optimize, "OptimizationPlanStatus"), (optimize, "OptimizationPreparationStatus"), (settings, "SettingsMessage"), (audio, "AudioConversionStatus"), (windows[5], "ImagePdfOrderStatus") })
             {
                 var control = Find<StatusTextBlock>(window, id);
                 control.Text = "A file needs attention.";
@@ -175,13 +168,12 @@ internal static class ViewContracts
                 "media confirmation: typing Enter does not implicitly submit");
             Check(UIElementAutomationPeer.CreatePeerForElement(Find<ComboBox>(optimize, "PngOptimizationPreset"))?.GetName() ==
                 "PNG optimization preset", "optimization: preset has an accessible name");
-            optimize.DataContext = new { TrialMessage = "Your trial has expired. Activate a license to convert or optimize. Analyze remains available.",
-                LicenseActionLabel = "_Activate license..." };
+            optimize.DataContext = new { PreparationMessage = "Ready to optimize. Originals are kept." };
             var optimizationContent = (FrameworkElement)optimize.Content;
             optimizationContent.Measure(new Size(optimize.MinWidth - 40, optimize.MinHeight - 70));
             optimizationContent.Arrange(new Rect(0, 0, optimize.MinWidth - 40, optimize.MinHeight - 70));
             optimizationContent.UpdateLayout();
-            var accessStatus = Find<StatusTextBlock>(optimize, "OptimizationTrialStatus");
+            var accessStatus = Find<StatusTextBlock>(optimize, "OptimizationPreparationStatus");
             var optimizationBody = Find<ScrollViewer>(optimize, "OptimizationBody");
             var statusBounds = accessStatus.TransformToAncestor(optimizationContent).TransformBounds(new Rect(accessStatus.RenderSize));
             var bodyBounds = optimizationBody.TransformToAncestor(optimizationContent).TransformBounds(new Rect(optimizationBody.RenderSize));
@@ -242,30 +234,6 @@ internal static class ViewContracts
             }
             RunInstalledSettingsContracts(Check);
             RunNoticeContracts(Check);
-            RunLicenseLinkContracts(Check);
-            var licenseContent = (FrameworkElement)license.Content;
-            licenseContent.Measure(new Size(license.Width - 16, double.PositiveInfinity));
-            Check(license.SizeToContent == SizeToContent.Height && licenseContent.DesiredSize.Height < 440,
-                "license: normal content sizes naturally without a large blank lower area");
-            Check(Find<PasswordBox>(license, "LicenseKey").MaxLength == 512 &&
-                UIElementAutomationPeer.CreatePeerForElement(Find<PasswordBox>(license, "LicenseKey"))?.GetName() == "License key",
-                "license: bounded masked entry has an accessible name");
-            Check(!Find<Button>(license, "ActivateLicense").IsDefault && Find<Button>(license, "CloseLicense").IsCancel,
-                "license: Enter does not activate implicitly and Escape closes");
-            var recovery = Find<StackPanel>(license, "LicenseRecovery");
-            var confirmRecovery = Find<Button>(license, "ConfirmLicenseRecovery");
-            Check(recovery.Visibility == Visibility.Collapsed && !confirmRecovery.IsEnabled,
-                "license: recovery is absent until a recovery state is loaded");
-            license.DataContext = new { ShowRecovery = true, CanRecover = true };
-            recovery.UpdateLayout();
-            Check(recovery.Visibility == Visibility.Visible && !confirmRecovery.IsEnabled,
-                "license: recovery instructions appear directly but require confirmation");
-            ((CheckBox)license.FindName("PortalConfirmed")).IsChecked = true;
-            Check(confirmRecovery.IsEnabled, "license: portal confirmation enables recovery");
-            license.DataContext = new { ShowRecovery = true, CanRecover = false };
-            Check(recovery.Visibility == Visibility.Visible && !confirmRecovery.IsEnabled,
-                "license: busy recovery keeps instructions visible and disables submission");
-            license.DataContext = licenseModel;
             // Use fresh bindings after the live-region text mutation checks above.
             main = new MainWindow();
             windows = [.. windows, main];
@@ -451,12 +419,7 @@ internal static class ViewContracts
                         heading is null && !VisualDescendants(content).OfType<RadioButton>().Any(),
                         $"installed settings {mask}: selected content matches the installed tool");
                     var save = Find<Button>(window, "SaveSettings");
-                    var license = Find<Button>(window, "SettingsLicense");
-                    var licenseName = UIElementAutomationPeer.CreatePeerForElement(license)?.GetName();
-                    check(save.IsEnabled == hasProcessing && license.IsEnabled && license.Focusable &&
-                        licenseName?.Contains("License", StringComparison.OrdinalIgnoreCase) == true,
-                        $"installed settings {mask}: Save follows processing tools and License remains accessible " +
-                        $"(save={save.IsEnabled}, license={license.IsEnabled}, focusable={license.Focusable}, name={licenseName})");
+                    check(save.IsEnabled == hasProcessing, $"installed settings {mask}: Save follows processing tools");
                     check(!window.IsVisible && !File.Exists(Path.Combine(fixture, "unused-settings.json")),
                         $"installed settings {mask}: no window or settings write occurs");
                 }
@@ -478,11 +441,9 @@ internal static class ViewContracts
     {
         var root = Path.Combine(AppContext.BaseDirectory, "notice-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
-        using var model = new LicenseViewModel(new(new UnusedLicenseService(),
-            new LicenseStore(Path.Combine(root, "unused-license.bin"), LicenseEnvironment.Sandbox)));
         System.Diagnostics.ProcessStartInfo? opened = null;
         var fail = false;
-        var window = new LicenseWindow(model, root, start =>
+        var window = new SettingsWindow(root, start =>
         {
             if (fail) throw new System.ComponentModel.Win32Exception(1155);
             opened = start;
@@ -493,75 +454,24 @@ internal static class ViewContracts
             var status = Find<StatusTextBlock>(window, "NoticeStatus");
             check(button.IsEnabled && button.Focusable &&
                 UIElementAutomationPeer.CreatePeerForElement(button)?.GetName() == "Third-party notices",
-                "notices: named keyboard control works without loaded license state");
+                "notices: named keyboard control is accessible");
             button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            check(opened is null && status.Text.Contains("missing", StringComparison.Ordinal) && model.Message.Length > 0,
+            check(opened is null && status.Text.Contains("missing", StringComparison.Ordinal),
                 "notices: missing bundle is reported without launching a process");
             var path = Path.Combine(root, "ThirdPartyNotices.html");
             File.WriteAllText(path, "<!doctype html><title>Test notices</title>");
-            var licenseMessage = model.Message;
             button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             check(opened?.FileName == path && opened.UseShellExecute && opened.Arguments.Length == 0 &&
-                opened.ArgumentList.Count == 0 && status.Text == "Third-party notices opened." && model.Message == licenseMessage,
-                "notices: opens only the bundled index and preserves license status");
+                opened.ArgumentList.Count == 0 && status.Text == "Third-party notices opened.",
+                "notices: opens only the bundled index and retains local notice status");
             fail = true;
             button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            check(status.Text.Contains("Open ThirdPartyNotices.html", StringComparison.Ordinal) && model.Message == licenseMessage,
+            check(status.Text.Contains("Open ThirdPartyNotices.html", StringComparison.Ordinal),
                 "notices: unavailable file association has an actionable local fallback");
             check(!window.IsVisible && !File.Exists(Path.Combine(root, "unused-license.bin")),
                 "notices: tests did not show UI, use a browser or touch licensing storage");
         }
         finally { window.Close(); }
-    }
-
-    private static void RunLicenseLinkContracts(Action<bool, string> check)
-    {
-        foreach (var address in new Uri?[] { null, new("http://example.test/buy"), new("file:///C:/test"),
-            new("https://user:secret@example.test/buy"), new("relative", UriKind.Relative), new("https://example.test/buy") })
-        {
-            using var model = new LicenseViewModel(new(new UnusedLicenseService { PurchaseUrl = address, PortalUrl = address },
-                new LicenseStore(Path.Combine(Path.GetTempPath(), "unused-license-links.bin"), LicenseEnvironment.Sandbox)));
-            System.Diagnostics.ProcessStartInfo? opened = null;
-            var fail = false;
-            var window = new LicenseWindow(model, openNotice: start =>
-            {
-                if (fail) throw new System.ComponentModel.Win32Exception(1155);
-                opened = start;
-            });
-            try
-            {
-                window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
-                var valid = address?.OriginalString == "https://example.test/buy";
-                foreach (var id in new[] { "PurchaseLicense", "ManageLicense" })
-                {
-                    var button = Find<Button>(window, id);
-                    check(button.IsEnabled == valid && button.Focusable, "license links: availability and keyboard access " + id);
-                    button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                    check(valid ? opened?.FileName == address!.AbsoluteUri && opened.UseShellExecute &&
-                        opened.Arguments.Length == 0 && opened.ArgumentList.Count == 0 : opened is null,
-                        "license links: exact HTTPS destination only " + id);
-                }
-                if (valid)
-                {
-                    fail = true;
-                    Find<Button>(window, "PurchaseLicense").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                    check(Find<StatusTextBlock>(window, "LicenseLinkStatus").Text.Contains(address!.AbsoluteUri) &&
-                        model.Message == "One purchase unlocks Context Suite and all future updates.",
-                        "license links: browser failure provides address and preserves access status");
-                }
-            }
-            finally { window.Close(); }
-        }
-    }
-
-    private sealed class UnusedLicenseService : ILicenseService
-    {
-        public LicenseEnvironment Environment => LicenseEnvironment.Sandbox;
-        public Uri? PurchaseUrl { get; init; }
-        public Uri? PortalUrl { get; init; }
-        public Task<LicenseReply> ActivateAsync(string key, Guid installationId, CancellationToken cancellationToken) => throw new InvalidOperationException("Hidden view must not activate.");
-        public Task<LicenseReply> ValidateAsync(string key, Guid installationId, Guid activationId, CancellationToken cancellationToken) => throw new InvalidOperationException("Hidden view must not validate.");
-        public Task<LicenseReply> DeactivateAsync(string key, Guid activationId, CancellationToken cancellationToken) => throw new InvalidOperationException("Hidden view must not deactivate.");
     }
 
     private static T Find<T>(DependencyObject root, string id) where T : DependencyObject

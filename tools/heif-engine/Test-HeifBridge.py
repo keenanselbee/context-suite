@@ -73,7 +73,7 @@ def main():
     print("Bridge evidence:", evidence, flush=True)
     inputs = {str(path): digest(path) for path in (
         bridge, bridge.parent / "heif.dll", bridge.parent / "libde265.dll", Path(__file__).resolve())}
-    inputs.update({str(path): digest(path) for path in (root / "proprietary/src/ContextSuite.Heif.Native").iterdir() if path.is_file()})
+    inputs.update({str(path): digest(path) for path in (root / "src/ContextSuite.Heif.Native").iterdir() if path.is_file()})
     limit = args.limit_fixture.resolve(strict=True) if args.limit_fixture else None
     if limit:
         limit.relative_to(root / ".codex-temp")

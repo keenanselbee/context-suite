@@ -9,5 +9,7 @@
     <ProjectReference Include="..\ContextSuite.Core\ContextSuite.Core.csproj" />
     <Compile Include="..\Shared\LocalPipe.cs" Link="Infrastructure\LocalPipe.cs" />
   </ItemGroup>
-  <Import Project="..\..\tools\Require-Private.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\ContextSuite.Private\ContextSuite.Private.csproj" />
+  </ItemGroup>
 </Project>

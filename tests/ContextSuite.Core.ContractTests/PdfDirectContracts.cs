@@ -25,7 +25,7 @@ internal static class PdfDirectContracts
         var paths = new[] { pdf, flac, png };
         var hashes = paths.Select(path => SHA256.HashData(File.ReadAllBytes(path))).ToArray();
         var clock = new Clock();
-        var access = new Access(new LocalTrialStore(Path.Combine(scratch, "trial", "trial.json"), clock));
+        var access = new Access(new OperationAdmissionService());
         var publisher = new OutputPublisher(Path.Combine(scratch, "records"), new ForbiddenRecycle());
         var worker = new WorkerClient(executable, Path.Combine(scratch, "workers"));
         await using (var vm = new MainViewModel(worker, new() { PlayCompletionSound = false }, publisher, access))
@@ -45,15 +45,15 @@ internal static class PdfDirectContracts
             check(vm.Admit(new(Guid.NewGuid(), "optimize", "auto", [.. paths])).Accepted, "PDF direct: mixed three-family selection is admitted");
             await vm.WaitForIdleAsync();
             check(access.Admissions == 1 && vm.Rows.All(row => row.Result.Publication?.Outcome == PublicationOutcome.CopyCreated),
-                "PDF direct: one admission covers PNG, FLAC and PDF across trial expiry");
+                "PDF direct: one admission covers PNG, FLAC and PDF after clock changes");
             check(vm.Rows.Select(row => Path.GetExtension(row.OutputPath)).SequenceEqual([".pdf", ".flac", ".png"]),
                 "PDF direct: combined rows retain selection order and original formats");
             check(starts == 1 && finishes == 1 && !quiet.NeedsAttention && !vm.HasProblems && !vm.ShowDetails && vm.Summary.Contains("saved"),
                 "PDF direct: mixed success has one quiet completion and aggregate savings");
             var workerId = worker.ProcessId;
             vm.Admit(new(Guid.NewGuid(), "optimize", "lossless", [pdf])); await vm.WaitForIdleAsync();
-            check(vm.Rows[^1].Result.State == OperationState.Failed && access.Admissions == 2 && worker.ProcessId == workerId,
-                "PDF direct: subsequent PDF-only batch is blocked by expired trial");
+            check(vm.Rows[^1].Result.State is OperationState.Succeeded or OperationState.Unchanged && access.Admissions == 2 && worker.ProcessId == workerId,
+                "PDF direct: subsequent PDF-only batch remains free");
         }
         var switched = new Access();
         var retryFolder = Path.Combine(scratch, "retry-output"); Directory.CreateDirectory(retryFolder);
@@ -61,7 +61,7 @@ internal static class PdfDirectContracts
             new() { PlayCompletionSound = false }, publisher, switched))
         {
             vm.Admit(new(Guid.NewGuid(), "optimize", "lossless", [pdf])); await vm.WaitForIdleAsync();
-            check(vm.Rows.Single().Status.Contains("Activate") && vm.CanRetry && vm.HasProblems,
+            check(vm.Rows.Single().Status.Contains("unavailable") && vm.CanRetry && vm.HasProblems,
                 "PDF direct: denied access gives activation guidance and retry");
             switched.Allowed = true;
             vm.Settings = new() { Optimize = new(ReplaceOriginals: true, OutputDirectory: retryFolder), PlayCompletionSound = false };
@@ -80,10 +80,10 @@ internal static class PdfDirectContracts
                 "PDF direct: no smaller result remains a quiet successful outcome");
             switched.Allowed = false;
             vm.Admit(new(Guid.NewGuid(), "optimize", "auto", [pdf])); await vm.WaitForIdleAsync();
-            check(vm.Rows[^1].Result.State == OperationState.Failed, "PDF direct: deactivation blocks new PDF work");
+            check(vm.Rows[^1].Result.State == OperationState.Failed, "PDF direct: preparation failure blocks new PDF work");
             switched.Allowed = true; vm.RetryFailed(); await vm.WaitForIdleAsync();
             check(vm.Rows[^1].Action == "auto" && vm.Rows[^1].Result.State == OperationState.Succeeded && !vm.HasProblems,
-                "PDF direct: reactivation retries the original Auto action");
+                "PDF direct: preparation recovery retries the original Auto action");
         }
         var eligible = new Access { Allowed = true };
         await using (var vm = new MainViewModel(new WorkerClient(executable, Path.Combine(scratch, "other-workers")), new(), publisher, eligible))
@@ -124,7 +124,7 @@ internal static class PdfDirectContracts
         {
             vm.Admit(new(Guid.NewGuid(), "optimize", "auto", [pdf])); await vm.WaitForIdleAsync();
             check(vm.Rows.Single().Status.Contains("unavailable in this build") && unavailable.Admissions == 0 && missingWorker.ProcessId is null,
-                "PDF direct: missing optional engine creates no worker or trial admission");
+                "PDF direct: missing optional engine creates no worker or batch admission");
         }
         check(paths.Select((path, i) => SHA256.HashData(File.ReadAllBytes(path)).SequenceEqual(hashes[i])).All(value => value) &&
             Directory.GetFiles(publisher.RecordDirectory).Length == 0 && !Directory.GetFiles(scratch, ".context-suite-*.tmp", SearchOption.AllDirectories).Any(),
@@ -143,7 +143,7 @@ internal static class PdfDirectContracts
         public bool Allowed { get; set; }
         public int Admissions { get; private set; }
         public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => inner?.ReadAccessAsync(token) ??
-            Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "License active." : "Activate a license to optimize."));
+            Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Ready." : "The operation is temporarily unavailable."));
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken token) => throw new InvalidOperationException();
         public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken token)
         { Admissions++; return inner?.AdmitOptimizationAsync(confirmed, token) ?? Admit(confirmed.Plan.BatchId, token); }

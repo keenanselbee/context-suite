@@ -281,7 +281,7 @@ internal static class AnalysisContracts
         var timestamp = File.GetLastWriteTimeUtc(binary);
         await using (var lockStream = new FileStream(locked, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
         await using (var worker = new WorkerClient(Path.Combine(root, "must-not-start.exe")))
-        await using (var view = new MainViewModel(worker, trial: new ForbiddenAccess()))
+        await using (var view = new MainViewModel(worker, admissionService: new ForbiddenAccess()))
         {
             view.Admit(new(Guid.NewGuid(), "analyze", "open-details", [locked, binary, pdf, text]));
             await view.WaitForIdleAsync();
@@ -309,7 +309,7 @@ internal static class AnalysisContracts
                 "analysis: MIME descriptions stay in technical details and unknown files receive no invented type");
         }
         await using (var worker = new WorkerClient(Path.Combine(root, "must-not-start.exe")))
-        await using (var view = new MainViewModel(worker, trial: new ForbiddenAccess()))
+        await using (var view = new MainViewModel(worker, admissionService: new ForbiddenAccess()))
         {
             var missing = Path.Combine(root, "disappeared.bin");
             var request = new OperationRequest(Guid.NewGuid(), "analyze", "open-details", [missing, binary, root, pdf]);
@@ -342,7 +342,7 @@ internal static class AnalysisContracts
         {
             denied.SetAccessControl(restrictedSecurity);
             await using var worker = new WorkerClient(Path.Combine(root, "must-not-start.exe"));
-            await using var view = new MainViewModel(worker, trial: new ForbiddenAccess());
+            await using var view = new MainViewModel(worker, admissionService: new ForbiddenAccess());
             check(view.Admit(new(Guid.NewGuid(), "analyze", "open-details", [denied.FullName, text])).Accepted,
                 "analysis: read-denied member is admitted for per-file inspection");
             await view.WaitForIdleAsync();

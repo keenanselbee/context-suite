@@ -282,7 +282,7 @@ internal static class SvgApplicationContracts
         await using var worker = new WorkerClient(Path.Combine(root, "ContextSuite.Worker.exe"));
         check(!worker.HasSvgConverter, "SVG availability requires the adjacent rendering engine");
         await using var view = new MainViewModel(worker, new SuiteSettings { Convert = new(ReplaceOriginals: true) },
-            new OutputPublisher(Path.Combine(root, "records"), null!), new LocalTrialStore(Path.Combine(root, "trial.json")));
+            new OutputPublisher(Path.Combine(root, "records"), null!), new OperationAdmissionService());
         view.Admit(new(Guid.NewGuid(), "convert", "png", [path]));
         await view.WaitForIdleAsync();
         check(view.Rows.Single().Result.State == OperationState.Unsupported && worker.ProcessId is null &&

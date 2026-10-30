@@ -28,7 +28,7 @@ internal static class OfficePackageWorkflowContracts
         var source = await worker.ProbeOfficePackageAsync(new(Guid.NewGuid(), sourcePath), default);
         check(source.Format == "xlsx" && source.Sha256 == originalHash && source.FileBytes == original.Length,
             "Representative Office package: real worker admits complete LibreOffice-produced XLSX");
-        var access = new Access(new LocalTrialStore(Path.Combine(scratch, "trial", "trial.json")));
+        var access = new Access(new OperationAdmissionService());
         var records = Path.Combine(scratch, "records");
         var publisher = new OutputPublisher(records, new ForbiddenRecycle(), replacementVerified: true);
         var batch = OfficePackageOptimizationPlan.Create(Guid.NewGuid(), [source], new("optimize", new(ReplaceOriginals: true, OutputDirectory: scratch))).Confirm();
@@ -107,18 +107,18 @@ internal static class OfficePackageWorkflowContracts
         Refuses(() => new WorkerCommand(1, Guid.NewGuid(), "office-package-optimize", PackageWork: work, PdfBytes: [1]).Validate(), "unrelated media payload");
         Refuses(() => new WorkerCommand(1, Guid.NewGuid(), "capabilities", PackageWork: work).Validate(), "unexpected optimization payload");
         var trialPath = Path.Combine(scratch, "public-trial", "trial.json");
-        IOperationAccess trial = new LocalTrialStore(trialPath);
+        IOperationAccess trial = new OperationAdmissionService();
         check(!File.Exists(trialPath), "Office package: planning and protocol validation do not start trial");
         var admission = await trial.AdmitOptimizationAsync(plan.Confirm(), default);
-        check(admission.IsAllowed && admission.BatchId == plan.BatchId && File.Exists(trialPath), "Office package: normal confirmed-operation trial admission");
+        check(admission.IsAllowed && admission.BatchId == plan.BatchId && !File.Exists(trialPath), "Office package: normal confirmed-operation batch admission");
         var deniedRecords = Path.Combine(scratch, "denied-records");
         await using (var absent = new WorkerClient(Path.Combine(scratch, "absent-worker.exe")))
         {
             var executor = new OfficePackageOptimizationExecutor(absent, new OutputPublisher(deniedRecords, new ForbiddenRecycle()));
             try { await executor.ExecuteAdmittedAsync(plan.Confirm(), new(new(true, "Other batch"), Guid.NewGuid()), null, default); check(false, "Office package foreign admission"); }
             catch (InvalidDataException) { check(absent.ProcessId is null && !Directory.Exists(deniedRecords), "Office package: foreign admission touches neither worker nor publication"); }
-            var denied = await executor.ExecuteAdmittedAsync(plan.Confirm(), new(new(false, "Activate a license."), plan.BatchId), null, default);
-            check(denied.Results.Single().State == OperationState.Failed && denied.Results.Single().Message == "Activate a license." && absent.ProcessId is null &&
+            var denied = await executor.ExecuteAdmittedAsync(plan.Confirm(), new(new(false, "The operation is temporarily unavailable."), plan.BatchId), null, default);
+            check(denied.Results.Single().State == OperationState.Failed && denied.Results.Single().Message == "The operation is temporarily unavailable." && absent.ProcessId is null &&
                 !Directory.Exists(deniedRecords), "Office package: denied access starts no worker or reservation");
         }
         if (executable is null) return;
@@ -128,7 +128,7 @@ internal static class OfficePackageWorkflowContracts
         foreach (var path in paths) await File.WriteAllBytesAsync(path, Fixture(Path.GetExtension(path)[1..]));
         var originals = paths.ToDictionary(path => path, path => SHA256.HashData(File.ReadAllBytes(path)));
         var timestamps = paths.ToDictionary(path => path, File.GetLastWriteTimeUtc);
-        var clock = new Clock(); var access = new Access(new LocalTrialStore(Path.Combine(actual, "trial", "trial.json"), clock));
+        var clock = new Clock(); var access = new Access(new OperationAdmissionService());
         var records = Path.Combine(actual, "records");
         var publisher = new OutputPublisher(records, new ForbiddenRecycle(), replacementVerified: true);
         await using var worker = new WorkerClient(executable, Path.Combine(actual, "workers"));
@@ -144,7 +144,7 @@ internal static class OfficePackageWorkflowContracts
         var completed = await new OfficePackageOptimizationExecutor(worker, publisher).ExecuteAdmittedAsync(confirmed, admitted, (_, row) =>
         { if (row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8); }, default);
         check(access.Admissions == 1 && completed.Results.Count == 3 && completed.Results.All(row => row.Publication?.Outcome == PublicationOutcome.CopyCreated),
-            "Office package: one admitted batch publishes all three document copies across expiry despite overwrite setting");
+            "Office package: one admitted batch publishes all three document copies after clock changes despite overwrite setting");
         check(completed.Results[0].Publication!.OutputPath != collision && await File.ReadAllTextAsync(collision) == "collision canary",
             "Office package: colliding destination remains intact");
         for (var index = 0; index < paths.Length; index++)
@@ -157,8 +157,8 @@ internal static class OfficePackageWorkflowContracts
         }
         check(worker.ProcessId == workerId, "Office package: one sequential worker serves all package operations");
         var expired = await access.AdmitOptimizationAsync(confirmed, default);
-        check(!expired.IsAllowed, "Office package: expiry blocks the next batch after admitted work completes");
-        var fresh = new Access(new LocalTrialStore(Path.Combine(actual, "fresh-trial", "trial.json")));
+        check(expired.IsAllowed, "Office package: a following valid batch remains free");
+        var fresh = new Access(new OperationAdmissionService());
         async Task<ImageBatchExecution> Execute(params OfficePackageSource[] items)
         {
             var batch = OfficePackageOptimizationPlan.Create(Guid.NewGuid(), items, new("optimize", new())).Confirm();
@@ -203,7 +203,7 @@ internal static class OfficePackageWorkflowContracts
 
         // This exercises application routing and a shared admission across formats.
         var png = Path.Combine(actual, "Image.png"); ImageWorkerContracts.WritePng(png, compression: CompressionLevel.NoCompression);
-        var mixedAccess = new Access(new LocalTrialStore(Path.Combine(actual, "mixed-trial", "trial.json")));
+        var mixedAccess = new Access(new OperationAdmissionService());
         await using (var vm = new MainViewModel(new WorkerClient(executable, Path.Combine(actual, "mixed-workers")), new() { PlayCompletionSound = false }, publisher, mixedAccess))
         {
             check(vm.Admit(new(Guid.NewGuid(), "optimize", "auto", [paths[0], png, paths[1], paths[2]])).Accepted, "Office package direct: mixed selection is admitted");

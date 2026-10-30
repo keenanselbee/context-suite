@@ -95,12 +95,13 @@
                 </TabControl>
                 <CheckBox Visibility="{Binding HasProcessingTools, Converter={StaticResource InstalledToolVisibility}}" Content="Play a _sound when work finishes" IsChecked="{Binding PlayCompletionSound}" IsEnabled="{Binding CanEdit}"
                           AutomationProperties.AutomationId="PlayCompletionSound" Margin="0,24,0,12" />
+                <ui:StatusTextBlock x:Name="NoticeStatus" TextWrapping="Wrap" AutomationProperties.AutomationId="NoticeStatus" AutomationProperties.LiveSetting="Polite" />
             </StackPanel>
         </ScrollViewer>
         <ui:StatusTextBlock Grid.Row="2" Text="{Binding Message}" TextWrapping="Wrap" Margin="0,16,0,0"
                            AutomationProperties.AutomationId="SettingsMessage" AutomationProperties.LiveSetting="Polite" />
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-            <Button Content="_License..." Click="OnLicense" Padding="18,6" Margin="0,0,8,0" AutomationProperties.AutomationId="SettingsLicense" />
+            <Button Content="Third-party _notices" Click="OnNotices" Padding="12,6" Margin="0,0,8,0" AutomationProperties.AutomationId="OpenThirdPartyNotices" />
             <Button Content="_Save" Command="{Binding SaveCommand}" IsDefault="True" Padding="18,6" Margin="0,0,8,0"
                     AutomationProperties.AutomationId="SaveSettings" />
             <Button Content="_Cancel" Click="OnCancel" IsCancel="True" Padding="18,6" AutomationProperties.AutomationId="CancelSettings" />

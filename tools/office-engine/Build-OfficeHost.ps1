@@ -2,7 +2,7 @@
 param()
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-$source = Join-Path $repository 'proprietary\src\ContextSuite.OfficeHost.Native'
+$source = Join-Path $repository 'src\ContextSuite.OfficeHost.Native'
 if (-not (Test-Path -LiteralPath (Join-Path $source 'Host.cpp'))) { throw 'The private Office host source is required.' }
 $scratch = Join-Path $repository ('.codex-temp\office-host\' + [guid]::NewGuid().ToString('N'))
 $build = Join-Path $scratch 'build'

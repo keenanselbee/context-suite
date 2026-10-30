@@ -42,17 +42,17 @@ def main():
     print("Office I/O evidence:", stage, flush=True)
     paths = {Path(__file__).resolve()}
     for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/ContextSuite.Worker", "src/Shared",
-                      "proprietary/src/ContextSuite.Private", "proprietary/tests/ContextSuite.Pdf.ContractTests",
-                      "proprietary/tests/ContextSuite.Image.ContractTests"):
+                      "src/ContextSuite.Private", "tests/ContextSuite.Pdf.ContractTests",
+                      "tests/ContextSuite.Image.ContractTests"):
         paths.update(path for path in (root / directory).rglob("*") if path.suffix in (".cs", ".csproj")
                      and not {"bin", "obj"}.intersection(path.parts))
     paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props",
-        "Version.props", "global.json", "tools/Require-Private.targets", "tools/office-engine/payload-candidate.json",
+        "Version.props", "global.json", "tools/office-engine/payload-candidate.json",
         "tools/office-engine/source-runtime-candidate.json") if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
     inputs = {"Sources": sources, "Fixtures": originals, "Engines": engines}
     (stage / "inputs.json").write_text(json.dumps(inputs, indent=2) + "\n", encoding="utf-8")
-    for label, project in (("contracts", "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"),
+    for label, project in (("contracts", "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"),
                            ("worker", "src/ContextSuite.Worker/ContextSuite.Worker.csproj")):
         build = subprocess.run(["dotnet", "build", str(root / project), "-c", "Release", "--no-restore",
                                 "--verbosity", "quiet", "-maxcpucount:1"], cwd=root, capture_output=True)

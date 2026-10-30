@@ -17,7 +17,7 @@ if (-not $candidate.StartsWith($scratchRoot, [StringComparison]::OrdinalIgnoreCa
 & python -B (Join-Path $PSScriptRoot 'Check-AudioBuild.py') $candidate
 if ($LASTEXITCODE -ne 0) { throw 'Candidate native build review failed.' }
 $evidence = Join-Path $candidate ('adapter-' + [guid]::NewGuid().ToString('N'))
-$project = Join-Path $repository 'proprietary\tests\ContextSuite.Audio.ContractTests\ContextSuite.Audio.ContractTests.csproj'
+$project = Join-Path $repository 'tests\ContextSuite.Audio.ContractTests\ContextSuite.Audio.ContractTests.csproj'
 & dotnet run --project $project -c Release -- (Join-Path $candidate 'bin') $fixtures $evidence --independent-decoder $independent
 if ($LASTEXITCODE -ne 0) { throw 'Curated audio adapter checks failed.' }
 Write-Output "Curated audio adapter evidence: $evidence"

@@ -100,9 +100,9 @@ def main():
                 raise RuntimeError("Production candidate verification failed before profile creation: " + label)
     paths = {Path(__file__).resolve()}
     for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/ContextSuite.Worker", "src/Shared",
-                      "proprietary/src/ContextSuite.Private", "tests/ContextSuite.Core.ContractTests"):
+                      "src/ContextSuite.Private", "tests/ContextSuite.Core.ContractTests"):
         paths.update(path for path in (root / directory).rglob("*") if path.suffix in (".cs", ".csproj") and not {"bin", "obj"}.intersection(path.parts))
-    paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json", "tools/Require-Private.targets")
+    paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "Version.props", "global.json")
                  if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
     for name in ("tools/office-engine/Test-OfficeExecution.py", "tools/office-engine/payload-candidate.json",

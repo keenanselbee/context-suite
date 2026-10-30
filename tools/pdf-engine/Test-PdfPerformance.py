@@ -54,7 +54,7 @@ def main():
         paths.update(path for path in (root / directory).rglob("*") if
                      path.suffix in (".cs", ".csproj") and not {"bin", "obj"}.intersection(path.parts))
     paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props",
-        "Version.props", "global.json", "tools/Require-Private.targets", "tools/curated-engine/Test-ProductionPayload.ps1",
+        "Version.props", "global.json", "tools/curated-engine/Test-ProductionPayload.ps1",
         "tools/audio-engine/Stage-AudioPayload.py", "tools/office-engine/Stage-OfficePayload.py",
         "tools/heif-engine/Stage-HeifPayload.py", "tools/heif-engine/payload-candidate.json") if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}

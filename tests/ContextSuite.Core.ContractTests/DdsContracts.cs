@@ -124,7 +124,7 @@ internal static class DdsContracts
             await viewModel.WaitForIdleAsync();
             check(viewModel.Rows[0].Result.State == OperationState.Succeeded && viewModel.Rows[0].Analysis?.Identity.FormatId == "text" &&
                 viewModel.Rows[1].Analysis?.Texture?.Format == DdsFormat.Rgba8,
-                "DDS: mixed Analyze batch continues without launching worker or consuming trial");
+                "DDS: mixed Analyze batch continues without launching worker or admitting transformation work");
             check(viewModel.Rows[1].ResultDetails.Contains("not proof of authored linear", StringComparison.Ordinal),
                 "DDS: report distinguishes storage from color meaning");
         }

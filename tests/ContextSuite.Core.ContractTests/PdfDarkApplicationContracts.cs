@@ -119,11 +119,11 @@ internal static class PdfDarkApplicationContracts
         public bool Allowed { get; set; }
         public int Admissions { get; private set; }
         public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) =>
-            Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Access active." : "Activate access."));
+            Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Ready." : "The operation is temporarily unavailable."));
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfDark confirmed, CancellationToken token)
         {
             Admissions++;
-            return Task.FromResult(new OperationAdmission(new(Allowed, Allowed ? "Access active." : "Activate access."), confirmed.Plan.BatchId));
+            return Task.FromResult(new OperationAdmission(new(Allowed, Allowed ? "Ready." : "The operation is temporarily unavailable."), confirmed.Plan.BatchId));
         }
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken token) => throw new NotSupportedException();
         public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken token) => throw new NotSupportedException();

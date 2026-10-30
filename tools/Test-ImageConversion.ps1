@@ -3,8 +3,8 @@ param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Release')
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
-$project = Join-Path $repositoryRoot 'proprietary\tests\ContextSuite.Image.ContractTests\ContextSuite.Image.ContractTests.csproj'
-if (-not (Test-Path -LiteralPath $project)) { throw 'Real-image contracts require the compatible private checkout.' }
+$project = Join-Path $repositoryRoot 'tests\ContextSuite.Image.ContractTests\ContextSuite.Image.ContractTests.csproj'
+if (-not (Test-Path -LiteralPath $project)) { throw 'Real-image contract sources are missing from this checkout.' }
 $scratch = Join-Path $repositoryRoot '.codex-temp\image-tests'
 & dotnet build $project -c $Configuration --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Real-image contract build failed.' }

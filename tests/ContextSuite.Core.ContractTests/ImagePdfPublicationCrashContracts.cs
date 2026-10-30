@@ -65,7 +65,7 @@ internal static class ImagePdfPublicationCrashContracts
             File.WriteAllText(Path.Combine(root, "worker.json"), JsonSerializer.Serialize(new WorkerIdentity(owned.Id, owned.StartTime.ToUniversalTime().Ticks)));
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new NoRecycle(), io: new ExitAt(root, stage));
         var plan = ImagePdfPlan.Create(Guid.NewGuid(), sources, new("convert", new(ReplaceOriginals: true))).Confirm(true);
-        await new ImagePdfExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial.json"))).ExecuteAsync(plan, null, default);
+        await new ImagePdfExecutor(worker, publisher, new OperationAdmissionService()).ExecuteAsync(plan, null, default);
         throw new Exception("Combined PDF crash checkpoint was not reached.");
     }
 

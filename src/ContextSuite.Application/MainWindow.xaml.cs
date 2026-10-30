@@ -13,7 +13,6 @@ public partial class MainWindow : System.Windows.Window
 
     private void OnClose(object sender, RoutedEventArgs e) { Close(); }
 
-    private void OnLicense(object sender, RoutedEventArgs e) => ((App)System.Windows.Application.Current).ShowLicense();
 
     private void OnRetrySelected(object sender, RoutedEventArgs e)
     {

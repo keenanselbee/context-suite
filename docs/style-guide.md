@@ -55,9 +55,9 @@ assets/
   source directories.
 - Keep ignored implementation research under `reference/`; production code must
   not depend on it.
-- Keep the separate private repository under ignored `proprietary/`. Follow
-  [decision 0005](decisions/0005-public-and-proprietary-builds.md) for public
-  interfaces, private implementations, the production build, and source packaging.
+- Preserve the retired private history under ignored `proprietary/`. Follow
+  [decision 0021](decisions/0021-free-product-and-public-implementation.md) for
+  the reviewed implementation import, one production build, and source packaging.
 
 
 C# And .NET

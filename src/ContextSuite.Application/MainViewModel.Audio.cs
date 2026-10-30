@@ -119,7 +119,7 @@ internal sealed partial class MainViewModel
         if (plan.RequiredConsent == AudioConversionConsent.None) confirmed = plan.Confirm(0, replace, PublicationSupport.ReplacementAvailable);
         else
         {
-            using var decision = new AudioConversionViewModel(plan, trial!, PublicationSupport.ReplacementAvailable);
+            using var decision = new AudioConversionViewModel(plan, admissionService!, PublicationSupport.ReplacementAvailable);
             confirmed = AudioConversionRequested is null ? null : await AudioConversionRequested(decision, token);
         }
         if (confirmed is null)
@@ -129,7 +129,7 @@ internal sealed partial class MainViewModel
             return;
         }
         token.ThrowIfCancellationRequested();
-        await new AudioConversionExecutor(worker, Publisher!, trial!).ExecuteAsync(confirmed, (item, result) =>
+        await new AudioConversionExecutor(worker, Publisher!, admissionService!).ExecuteAsync(confirmed, (item, result) =>
         {
             byId[item.Source.ItemId].ApplyResult(result);
             Summary = $"Converting audio: {rows.Count(row => row.Result.State is not (OperationState.Pending or OperationState.Running))} of {rows.Length} finished.";

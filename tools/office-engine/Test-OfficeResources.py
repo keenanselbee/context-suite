@@ -32,19 +32,19 @@ def main():
     for name in ("Probe.cpp", "CMakeLists.txt"):
         (source / name).write_bytes((root / "tools/office-engine/ResourceProbe" / name).read_bytes())
     inputs = {Path(__file__).resolve(), *(root / "tools/office-engine/ResourceProbe").iterdir()}
-    for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/Shared", "proprietary/src/ContextSuite.Private",
-                      "proprietary/tests/ContextSuite.Pdf.ContractTests", "proprietary/tests/ContextSuite.Image.ContractTests"):
+    for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/Shared", "src/ContextSuite.Private",
+                      "tests/ContextSuite.Pdf.ContractTests", "tests/ContextSuite.Image.ContractTests"):
         inputs.update(path for path in (root / directory).rglob("*") if path.suffix in (".cs", ".csproj")
                       and not {"bin", "obj"}.intersection(path.parts))
     inputs.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props",
-                                         "Version.props", "global.json", "tools/Require-Private.targets") if (root / name).is_file())
+                                         "Version.props", "global.json") if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(inputs)}
     (evidence / "inputs.json").write_text(json.dumps(sources, indent=2) + "\n", encoding="utf-8")
     vswhere = Path(os.environ["ProgramFiles(x86)"]) / "Microsoft Visual Studio/Installer/vswhere.exe"
     visual_studio = subprocess.check_output([str(vswhere), "-latest", "-products", "*", "-requires",
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "-property", "installationPath"], text=True).strip()
     cmake = Path(visual_studio) / "Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
-    project = root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
+    project = root / "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
     build = evidence / "build"
     commands = [
         ["dotnet", "build", str(project), "-c", "Release", "--no-restore", "--verbosity", "quiet"],

@@ -108,13 +108,6 @@ if ($includeImageExpansion) {
         --svg-build $SvgBuildDirectory --cargo-home $SvgCargoHome
     if ($LASTEXITCODE -ne 0) { throw 'AVIF/SVG candidate staging failed.' }
 }
-$privateProject = Join-Path $repositoryRoot 'proprietary\src\ContextSuite.Private\ContextSuite.Private.csproj'
-if (-not (Test-Path -LiteralPath $privateProject)) {
-    throw 'Production requires the compatible context-suite-private repository at proprietary/. There is no public demo build.'
-}
-if (-not (Test-Path -LiteralPath (Join-Path $repositoryRoot 'proprietary\src\ContextSuite.Commercial\ApplicationComposition.cs'))) {
-    throw 'Production requires the compatible context-suite-private commercial composition. Update the private checkout before building.'
-}
 & (Join-Path $PSScriptRoot 'curated-engine\Test-ProductionEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\curated-win-x64')
 & (Join-Path $PSScriptRoot 'dds-engine\Test-DdsEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\dds-win-x64')
 & (Join-Path $PSScriptRoot 'png-engine\Test-PngEngine.ps1') -Payload (Join-Path $repositoryRoot 'artifacts\engines\png-win-x64')
@@ -131,6 +124,7 @@ foreach ($entry in @(@('LICENSE.txt', 'DotNet.License.txt'), @('ThirdPartyNotice
     Copy-Item -LiteralPath $noticeSource -Destination (Join-Path $output $entry[1]) -Force
 }
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'assets\THIRD-PARTY-NOTICES.txt') -Destination $output -Force
+Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE.md') -Destination (Join-Path $output 'ContextSuite.License.md') -Force
 foreach ($project in @('ContextSuite.Application', 'ContextSuite.Worker')) {
     $source = Join-Path $managedBuildRoot "bin\$project\$Configuration\net10.0-windows"
     Get-ChildItem -LiteralPath $source -File | Copy-Item -Destination $output -Force

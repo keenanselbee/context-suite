@@ -24,11 +24,11 @@
       "sha256": "4D58C3D9DFFCC8973391C93A0612C7DF97D516519BB726F6FEB2A29836485913",
       "sources": [
         {
-          "path": "proprietary/src/ContextSuite.PdfRenderer.Native/Renderer.cpp",
+          "path": "src/ContextSuite.PdfRenderer.Native/Renderer.cpp",
           "sha256": "2405049EA8DC1EA47FDB936E452E222F7F28BBA811CACD3CB64D3F1AB878B419"
         },
         {
-          "path": "proprietary/src/ContextSuite.PdfRenderer.Native/CMakeLists.txt",
+          "path": "src/ContextSuite.PdfRenderer.Native/CMakeLists.txt",
           "sha256": "5CDDA63C523A289E12E47B336532F460674E38F034C142F3ECF74EF9BFC43869"
         }
       ]
@@ -41,11 +41,11 @@
       "sha256": "4BD57D54B4B6BD7C0A56170EEA26CA8DFB7080B429821D513E69829DCD91E073",
       "sources": [
         {
-          "path": "proprietary/src/ContextSuite.ImagePdfValidator.Native/Validator.cpp",
+          "path": "src/ContextSuite.ImagePdfValidator.Native/Validator.cpp",
           "sha256": "1C41E019D5DE891BBA472A1B68416FFDD8B16225643B42F59F9A1DEB974FA66C"
         },
         {
-          "path": "proprietary/src/ContextSuite.ImagePdfValidator.Native/CMakeLists.txt",
+          "path": "src/ContextSuite.ImagePdfValidator.Native/CMakeLists.txt",
           "sha256": "600C493941E72909378993B09BCCFD966817D2D0AC16BF72B10713DBB8B9B707"
         }
       ]

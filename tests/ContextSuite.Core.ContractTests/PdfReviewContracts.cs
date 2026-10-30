@@ -36,7 +36,7 @@ internal static class PdfReviewContracts
             await using (var worker = new WorkerClient(executable, scratch))
             await using (var vm = new MainViewModel(worker,
                 new SuiteSettings { Convert = new(OutputDirectory: output), PlayCompletionSound = false },
-                new OutputPublisher(records, new ForbiddenRecycle()), new LocalTrialStore(Path.Combine(evidence, "trial.json"))))
+                new OutputPublisher(records, new ForbiddenRecycle()), new OperationAdmissionService()))
             {
                 vm.ConversionRequested += (_, _) => throw new InvalidOperationException("PDF review commands must not open a planner.");
                 vm.Admit(new(Guid.NewGuid(), "convert", "png", fixtures.Select(item => item.Path).ToImmutableArray()));

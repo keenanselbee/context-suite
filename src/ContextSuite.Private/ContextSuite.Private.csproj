@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\Profiles\*.icc" />
+    <InternalsVisibleTo Include="ContextSuite.Image.ContractTests" />
+    <InternalsVisibleTo Include="ContextSuite.Audio.ContractTests" />
+    <InternalsVisibleTo Include="ContextSuite.Pdf.ContractTests" />
+    <None Include="..\..\artifacts\engines\palette-win-x64\ContextSuite.Palette.exe;..\..\artifacts\engines\palette-win-x64\ExoQuant.License.txt;..\..\artifacts\engines\palette-win-x64\Rust.Library.Notices.html;..\..\artifacts\engines\palette-win-x64\ContextSuite.Palette.Engine.json" Link="%(Filename)%(Extension)" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\artifacts\engines\png-win-x64\oxipng.exe" Link="oxipng.exe" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\artifacts\engines\png-win-x64\Oxipng.License.txt" Link="Oxipng.License.txt" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\assets\third-party\oxipng\Oxipng.ThirdPartyNotices.txt;..\..\assets\third-party\oxipng\Oxipng.Rust.Library.Notices.html" Link="%(Filename)%(Extension)" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\artifacts\engines\png-win-x64\ContextSuite.Png.Engine.json" Link="ContextSuite.Png.Engine.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <ProjectReference Include="..\..\src\ContextSuite.Core\ContextSuite.Core.csproj" />
+    <PackageReference Include="Magick.NET-Q16-x64" Version="[14.17.1]" ExcludeAssets="native" />
+    <PackageReference Include="PdfPig" Version="[0.1.16]" />
+    <None Include="..\..\assets\third-party\pdfpig\PdfPig.License.txt;..\..\assets\third-party\pdfpig\PdfPig.Notices.txt" Link="%(Filename)%(Extension)" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\artifacts\engines\curated-win-x64\Magick.Native-Q16-x64.dll" Link="Magick.Native-Q16-x64.dll" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\artifacts\engines\curated-win-x64\Magick.NET.Notice.txt" Link="Magick.NET.Notice.txt" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\tools\curated-engine\production.json" Link="ContextSuite.Engine.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\artifacts\engines\dds-win-x64\ContextSuite.Dds.Native.dll" Link="ContextSuite.Dds.Native.dll" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\artifacts\engines\dds-win-x64\ContextSuite.Dds.Engine.json" Link="ContextSuite.Dds.Engine.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="..\..\artifacts\engines\dds-win-x64\DirectXTex.License.txt" Link="DirectXTex.License.txt" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+  </ItemGroup>
+  <Target Name="RequireCuratedEngine" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\..\artifacts\engines\palette-win-x64\ContextSuite.Palette.exe')" Text="Stage the pinned palette engine with tools/palette-engine/Stage-PaletteEngine.ps1 before building." />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\..\artifacts\engines\png-win-x64\oxipng.exe')" Text="Stage the pinned PNG optimizer with tools/png-engine/Stage-PngEngine.ps1 before building private components." />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\..\artifacts\engines\dds-win-x64\ContextSuite.Dds.Native.dll')" Text="Build the pinned DDS candidate with tools/dds-engine/Build-DdsEngine.ps1 before building private components. No native fallback is permitted." />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\..\artifacts\engines\curated-win-x64\Magick.Native-Q16-x64.dll')" Text="Stage the reviewed curated image engine with tools/curated-engine/Stage-ProductionEngine.ps1 before building private image components. Stock native fallback is disabled." />
+  </Target>
+</Project>

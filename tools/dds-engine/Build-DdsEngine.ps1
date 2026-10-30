@@ -63,7 +63,7 @@ if ($compilerText -notmatch 'set\(CMAKE_CXX_COMPILER "[^"\r\n]+/VC/Tools/MSVC/(1
 $minimumRuntime = $Matches[1] + '.0'
 $identity = @{ revision = $pins.revision; archiveSha256 = $pins.archiveSha256; nativeSha256 = (Get-FileHash -LiteralPath $dll).Hash;
     minimumVisualCppRuntime = $minimumRuntime;
-    bridgeSourceSha256 = (Get-FileHash -LiteralPath (Join-Path $repository 'proprietary\native\dds\Bridge.cpp')).Hash;
+    bridgeSourceSha256 = (Get-FileHash -LiteralPath (Join-Path $repository 'native\dds\Bridge.cpp')).Hash;
     licenseSha256 = (Get-FileHash -LiteralPath (Join-Path $source 'LICENSE')).Hash;
     buildDefinitionSha256 = (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'CMakeLists.txt')).Hash;
     configuration = $pins.configuration; windowsSdk = '10.0.26100.0'; visualStudio = $generatorInstance }

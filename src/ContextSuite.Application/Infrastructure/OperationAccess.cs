@@ -1,5 +1,4 @@
 using ContextSuite.Core.Images;
-using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Pdf;
 using ContextSuite.Core.Office;
@@ -47,132 +46,135 @@ internal interface IOperationAccess
         throw new NotSupportedException("This access implementation does not admit PDF operations.");
 }
 
-// Media and Explorer never see the key or service. Paid batches bypass trial
-// bookkeeping entirely; only an unactivated installation may use its trial.
-internal sealed class OperationAccess(LocalTrialStore trial, PaidLicenseManager paid) : IOperationAccess
+// Validates a confirmed batch before execution. Free operation admission has no
+// persisted access state, clock, provider, or network dependency.
+internal sealed class OperationAdmissionService : IOperationAccess
 {
-    public async Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedOfficePackageOptimization confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedOfficePackageOptimization confirmed, CancellationToken cancellationToken)
     {
-        _ = confirmed.Plan.Confirm();
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
-    }
-
-    public async Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedLosslessImageOptimization confirmed, CancellationToken cancellationToken)
-    {
-        _ = confirmed.Plan.Confirm();
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
-    }
-
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedGifConversion confirmed, CancellationToken cancellationToken)
-    {
-        _ = confirmed.Plan.Confirm();
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
-    }
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedSvgConversion confirmed, CancellationToken cancellationToken)
-    {
-        _ = confirmed.Plan.Confirm();
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
-    }
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedTiffConversion confirmed, CancellationToken cancellationToken)
-    {
-        _ = confirmed.Plan.Confirm();
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
-    }
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedOfficeConversion confirmed, CancellationToken cancellationToken)
-    {
+        cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(confirmed);
         _ = confirmed.Plan.Confirm();
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
 
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedImagePdf confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedLosslessImageOptimization confirmed, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm();
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
+    }
+
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedGifConversion confirmed, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm();
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
+    }
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedSvgConversion confirmed, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm();
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
+    }
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedTiffConversion confirmed, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm();
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
+    }
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedOfficeConversion confirmed, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
+        _ = confirmed.Plan.Confirm();
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
+    }
+
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImagePdf confirmed, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
         _ = confirmed.Plan.Confirm(true);
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
 
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfDocx confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfDocx confirmed, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
         _ = confirmed.Plan.Confirm();
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
 
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfDark confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfDark confirmed, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
         _ = confirmed.Plan.Confirm();
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
 
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfPageConversion confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedPdfPageConversion confirmed, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
         _ = confirmed.Plan.Confirm();
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
 
-    public async Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPdfOptimization confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPdfOptimization confirmed, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
         if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No valid PDF optimization was confirmed.");
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
 
-    public async Task<OperationAccessStatus> ReadAccessAsync(CancellationToken cancellationToken = default)
+    public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken cancellationToken = default)
     {
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).ReadAccessAsync(cancellationToken);
-        return new(status.CanStart, status.Message);
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(new OperationAccessStatus(true, "Ready."));
     }
 
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
         if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No valid conversion was confirmed.");
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
 
-    public async Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
         if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No valid optimization was confirmed.");
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
 
-    public async Task<OperationAdmission> AdmitConversionAsync(ConfirmedAudioConversion confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitConversionAsync(ConfirmedAudioConversion confirmed, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
         if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No valid audio conversion was confirmed.");
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitConversionAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
 
-    public async Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedFlacOptimization confirmed, CancellationToken cancellationToken)
+    public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedFlacOptimization confirmed, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(confirmed);
         if (!confirmed.Plan.HasExecutableItems) throw new InvalidDataException("No valid FLAC optimization was confirmed.");
-        var status = await paid.ReadStatusAsync(cancellationToken);
-        if (status.State == PaidLicenseState.NotActivated) return await ((IOperationAccess)trial).AdmitOptimizationAsync(confirmed, cancellationToken);
-        return new(new(status.CanStart, status.Message), confirmed.Plan.BatchId);
+        return Task.FromResult(new OperationAdmission(new(true, "Ready."), confirmed.Plan.BatchId));
     }
+
+    public Task<OperationAdmission> AdmitAsync(ConfirmedImageBatch confirmed, CancellationToken cancellationToken = default) =>
+        AdmitConversionAsync(confirmed, cancellationToken);
+    public Task<OperationAdmission> AdmitAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken = default) =>
+        AdmitOptimizationAsync(confirmed, cancellationToken);
 }

@@ -188,16 +188,14 @@ of unsupported tags, artwork or out-of-range samples.
 Completed UX direction: [context-menu simplification](context-menu-simplification-goal.md)
 under [decision 0018](decisions/0018-context-menu-utility-and-output-preference.md).
 Remove the general customer workspace and routine planners; retain focused
-decision prompts, Analyze, progress/problems, Settings and License. Output defaults
+decision prompts, Analyze, progress/problems, and Settings. Output defaults
 to copies, with explicit Settings consent for safe replacement on future commands.
 The implementation follows this scope with owner manual acceptance. Additional
 accessibility/theme/DPI and installed lifecycle coverage remain release gates.
 
-License provides **Purchase...** and **Manage license...** actions opening the configured Polar
-checkout and customer portal. The owner cleared live checkout on 2026-09-28.
-Checkout owns purchase/return instructions; the app retains key activation.
-The [bundled third-party notices](bundled-notices.md) remain available without
-activation or an online request. Source delivery and redistribution are separate.
+The free transition removes the License window and all purchase/activation
+actions. Settings retains access to [bundled third-party notices](bundled-notices.md)
+without an online request. Source delivery and redistribution remain separate.
 
 Previously accepted expansion: [broad file support](broad-file-support-goal.md) under
 [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md).
@@ -411,10 +409,9 @@ setting. Explorer menus remain Windows-owned.
 Shared Operation Workflow
 -------------------------
 
-The application resolves trial or purchase access before admitting a commercial
-operation. Analyze validates the selection, reads bounded media facts, and opens
-its report; it does not create or publish transformed files. Application-owned
-trial bookkeeping does not belong in the read-only analyzer.
+The application validates confirmed plans before admitting work, independently
+of any trial or purchase state. Analyze validates the selection, reads bounded
+media facts, and opens its report; it does not create or publish transformed files.
 
 Convert and Optimize follow the transformation workflow:
 
@@ -477,46 +474,27 @@ See [broad file support](broad-file-support-goal.md) for that expansion's sequen
 the image slices above retain their existing implementation and evidence scope.
 
 
-Portfolio And Commercial Product
---------------------------------
+Free Product And Source Availability
+------------------------------------
 
-Context Suite is both a co-op portfolio project and a potential paid utility.
-Most engineering is intended to be publicly reviewable. The complete production
-application requires private implementations from `context-suite-private`,
-checked out under the public repository's ignored `proprietary/` directory.
+Context Suite is a free Windows utility and a co-op portfolio project. All
+supported features and future official updates are free, with no trial,
+purchase, activation, installation limit, or licensing network requests.
+The reviewed application implementation and tests live in the main repository;
+the separate private checkout is retired historical material.
 
-One production foundation build requires the private checkout; a
-public checkout alone cannot build the complete app. There is no separate
-review/demo edition. Portfolio presentation uses public code, architecture,
-tests, and planned screenshots and demo video; a downloadable commercial trial
-will serve people who want to run it. Public components may be tested separately
-where their dependencies permit. Public-only builds cover the shell prototype
-and component contracts, not the complete production application. See
-[decision 0005](decisions/0005-public-and-proprietary-builds.md).
+One production build composes the same media adapters and pinned engine inputs.
+Complete application builds require the documented toolchain and reviewed engine
+artifacts; public source availability does not remove those prerequisites.
+Keep source-available terms, third-party notices, and source-delivery material.
+See [decision 0021](decisions/0021-free-product-and-public-implementation.md)
+and [transition status](free-access-goal.md) for implementation and verification.
 
-The commercial direction is a seven-day trial followed by Polar license-key
-activation. Hosted checkout and the customer portal replace custom website
-accounts. A checkout redirect alone does not establish paid access. All media
-processing stays local; account services do not receive selected paths or media
-contents. Access is checked by the application before work starts, never while
-Explorer constructs a menu. An admitted batch may finish after trial expiry,
-and its results remain available.
-
-The local trial starts at the first confirmed valid conversion or optimization and lasts 168
-elapsed hours; [decision 0009](decisions/0009-first-image-engine-and-trial.md)
-and its [PNG extension](decisions/0013-lossless-png-optimization.md)
-define clock and failure handling. Browser activation
-is replaced by in-app key activation. The accepted
-[paid-access policy](decisions/0017-paid-access-and-release-candidate.md) grants
-all future updates, one active installation with transfer, daily revalidation,
-30-day offline grace and free Analyze access after trial expiry. Implementation
-and actual activation/transfer verification remain in progress.
-The accepted price is $5 CAD, one time, under
-[decision 0020](decisions/0020-seven-day-trial-and-pricing.md). Final licence terms
-and live checkout verification remain pending. See the
-[Polar integration plan](polar-integration.md). Keep protection modest and accept
-that determined users may reset local trials or modify binaries. See
-[decision 0006](decisions/0006-trial-and-purchase-access.md).
+Old trial and license records remain untouched and cannot block new operations.
+Validation of plans, selected tools, formats, quality choices, source/output
+identities, and safe publication remains mandatory. Media contents and selected
+paths remain local. Existing historical commercial decisions retain their
+original evidence, with their current policy superseded by decision 0021.
 
 
 Distribution Direction
@@ -528,8 +506,7 @@ Only selected commands and their required shared payload are installed; see
 [optional tool installation](optional-tool-installation.md) for dependencies,
 size estimates, and current acceptance limits. Installation is per-user, with
 bundled offline Microsoft runtime prerequisites that may require administrator
-approval. Settings, trial
-and license data must survive uninstall. Manual installer-based updates come first;
+approval. Settings and legacy trial/license data must survive uninstall. Manual installer-based updates come first;
 Microsoft Store distribution is a later option, not a separate app edition.
 The internal installer uses versioned payloads and active-release launch/uninstall.
 Upgrade/repair orchestration is integrated and tested with mocked platform calls;

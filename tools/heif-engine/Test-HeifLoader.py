@@ -29,7 +29,7 @@ def main():
     evidence.mkdir(parents=True)
     print("HEIF loader evidence:", evidence, flush=True)
     inputs = {str(path): digest(path) for path in (bridge, fixture, bridge.parent / "heif.dll", bridge.parent / "libde265.dll", Path(__file__).resolve())}
-    for folder in ("proprietary/src/ContextSuite.Private", "proprietary/tests/ContextSuite.Image.ContractTests"):
+    for folder in ("src/ContextSuite.Private", "tests/ContextSuite.Image.ContractTests"):
         inputs.update({str(path): digest(path) for path in (root / folder).rglob("*") if path.is_file() and path.suffix in (".cs", ".csproj", ".icc")})
     (evidence / "inputs.json").write_text(json.dumps(inputs, indent=2))
 
@@ -44,7 +44,7 @@ def main():
             raise RuntimeError("Failed " + name + "; retained evidence: " + str(evidence))
         return child.stdout
 
-    run("build", ["dotnet", "build", root / "proprietary/tests/ContextSuite.Image.ContractTests/ContextSuite.Image.ContractTests.csproj", "-c", "Release", "--nologo"])
+    run("build", ["dotnet", "build", root / "tests/ContextSuite.Image.ContractTests/ContextSuite.Image.ContractTests.csproj", "-c", "Release", "--nologo"])
     junction_script = evidence / "junction.ps1"
     junction_script.write_text("param([string]$Link, [string]$Target)\n$ErrorActionPreference = 'Stop'\nNew-Item -ItemType Junction -Path $Link -Target $Target | Out-Null\n")
     results = []

@@ -28,11 +28,11 @@ function Assert-FoundationFixture {
     $repository = [IO.Path]::GetFullPath($RepositoryRoot).TrimEnd('\')
     $run = [IO.Path]::GetFullPath($RunRoot).TrimEnd('\')
     $fixture = [IO.Path]::GetFullPath($FixtureRoot).TrimEnd('\')
-    $scratch = Join-Path $repository '.codex-temp\foundation-tests'
+    $scratch = Join-Path $repository '.codex-temp'
     if ($run -ne (Join-Path $scratch ([IO.Path]::GetFileName($run))) -or
         [IO.Path]::GetDirectoryName($run) -ne $scratch -or
-        [IO.Path]::GetFileName($run) -notmatch '^[0-9a-f]{32}$' -or
-        $fixture -ne (Join-Path $run 'fixtures')) {
+        [IO.Path]::GetFileName($run) -notmatch '^ft-[0-9a-f]{12}$' -or
+        $fixture -ne (Join-Path $run 'f')) {
         throw "Refusing cleanup outside an exact foundation run: $fixture"
     }
 
@@ -103,9 +103,9 @@ function Remove-FoundationFixture {
 }
 
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
-$scratchRoot = Join-Path $repositoryRoot '.codex-temp\foundation-tests'
-$runRoot = Join-Path $scratchRoot ([guid]::NewGuid().ToString('N'))
-$fixtures = Join-Path $runRoot 'fixtures'
+$scratchRoot = Join-Path $repositoryRoot '.codex-temp'
+$runRoot = Join-Path $scratchRoot ('ft-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
+$fixtures = Join-Path $runRoot 'f'
 $log = Join-Path $runRoot 'foundation.log'
 $receipt = Join-Path $runRoot 'result.json'
 $project = Join-Path $repositoryRoot 'tests\ContextSuite.Core.ContractTests\ContextSuite.Core.ContractTests.csproj'

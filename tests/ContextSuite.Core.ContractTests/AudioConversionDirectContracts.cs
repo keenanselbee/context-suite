@@ -80,12 +80,12 @@ internal static partial class AudioConversionDirectContracts
         prompt = async (decision, _) =>
         {
             var plan = decision.Plan; access.Allowed = false; await decision.RefreshAccessAsync();
-            check(!decision.CanConfirm && decision.LicenseActionLabel.Contains("Activate"), "Audio direct conversion: open quality prompt exposes activation when expired");
+            check(!decision.CanConfirm && decision.Message.Contains("unavailable"), "Audio direct conversion: open quality prompt reports unavailable preparation when preparation is unavailable");
             access.Allowed = true; await decision.RefreshAccessAsync();
             check(decision.CanConfirm && ReferenceEquals(plan, decision.Plan) && plan.Target == AudioFormat.M4a && plan.Items.Length == 2 &&
-                plan.Settings.Preferences.OutputDirectory == folder, "Audio direct conversion: activation retains target, files and settings");
+                plan.Settings.Preferences.OutputDirectory == folder, "Audio direct conversion: preparation recovery retains target, files and settings");
             access.Allowed = false; await decision.RefreshAccessAsync();
-            check(!decision.CanConfirm, "Audio direct conversion: deactivation blocks open quality prompt");
+            check(!decision.CanConfirm, "Audio direct conversion: preparation failure blocks open quality prompt");
             access.Allowed = true; await decision.RefreshAccessAsync();
             vm.Settings = new() { PlayCompletionSound = false };
             ConfirmedAudioConversion? result = null; decision.Confirmed += confirmed => result = confirmed;
@@ -105,7 +105,7 @@ internal static partial class AudioConversionDirectContracts
             decision.ConfirmCommand.Execute(null); access.Allowed = false; return result;
         };
         vm.Admit(new(Guid.NewGuid(), "convert", "m4a", [mp3])); await vm.WaitForIdleAsync();
-        check(vm.Rows[^1].Result.State == OperationState.Failed && vm.Rows[^1].Status.Contains("Activate"),
+        check(vm.Rows[^1].Result.State == OperationState.Failed && vm.Rows[^1].Status.Contains("unavailable"),
             "Audio direct conversion: final admission rejects access revoked after quality confirmation");
         prompt = async (decision, _) =>
         {
@@ -115,9 +115,9 @@ internal static partial class AudioConversionDirectContracts
         access.Allowed = true;
         var rowsBefore = vm.Rows.Count; vm.RetryFailed(); vm.RetryFailed(); await vm.WaitForIdleAsync();
         check(vm.Rows.Count == rowsBefore + 1 && vm.Rows[^1].Action == "m4a" && vm.Rows[^1].Result.State == OperationState.Succeeded && !vm.CanRetry,
-            "Audio direct conversion: reactivation retry retains target and suppresses duplicate clicks");
+            "Audio direct conversion: preparation recovery retry retains target and suppresses duplicate clicks");
         access.Allowed = false; vm.Admit(new(Guid.NewGuid(), "convert", "flac", [wave])); await vm.WaitForIdleAsync();
-        check(vm.Rows[^1].Result.State == OperationState.Failed && vm.CanRetry, "Audio direct conversion: routine expired action offers retry");
+        check(vm.Rows[^1].Result.State == OperationState.Failed && vm.CanRetry, "Audio direct conversion: routine unavailable operation offers retry");
         access.Allowed = true; vm.Settings = new() { Convert = new(OutputDirectory: folder), PlayCompletionSound = false };
         vm.RetryFailed(); vm.Settings = new() { PlayCompletionSound = false }; await vm.WaitForIdleAsync();
         check(vm.Rows[^1].Action == "flac" && Path.GetDirectoryName(vm.Rows[^1].OutputPath) == folder && vm.Rows[^1].Settings.Preferences.OutputDirectory == folder,
@@ -138,7 +138,7 @@ internal static partial class AudioConversionDirectContracts
         {
             absent.Admit(new(Guid.NewGuid(), "convert", "flac", [wave])); await absent.WaitForIdleAsync();
             check(absent.Rows.Single().Result.State == OperationState.Unsupported && absent.Rows.Single().Status.Contains("unavailable in this build") &&
-                absentWorker.ProcessId is null && absentAccess.Admissions == 0, "Audio direct conversion: missing engine starts no worker or trial");
+                absentWorker.ProcessId is null && absentAccess.Admissions == 0, "Audio direct conversion: missing engine starts no worker or admission");
         }
         check(SHA256.HashData(await File.ReadAllBytesAsync(wave)).SequenceEqual(waveHash) && SHA256.HashData(await File.ReadAllBytesAsync(mp3)).SequenceEqual(mp3Hash) &&
             !Directory.GetFiles(scratch, ".context-suite-*.tmp", SearchOption.AllDirectories).Any(), "Audio direct conversion: originals and reservation cleanup survive all paths");
@@ -149,11 +149,11 @@ internal static partial class AudioConversionDirectContracts
     {
         public bool Allowed { get; set; }
         public int Admissions { get; private set; }
-        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Licensed" : "Activate your license to convert."));
+        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Ready" : "The operation is temporarily unavailable."));
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken token) => throw new InvalidOperationException("Unexpected image admission.");
         public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken token) => throw new InvalidOperationException("Unexpected optimization admission.");
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedAudioConversion confirmed, CancellationToken token)
-        { token.ThrowIfCancellationRequested(); Admissions++; return Task.FromResult(new OperationAdmission(new(Allowed, Allowed ? "Licensed" : "Activate your license to convert."), confirmed.Plan.BatchId)); }
+        { token.ThrowIfCancellationRequested(); Admissions++; return Task.FromResult(new OperationAdmission(new(Allowed, Allowed ? "Ready" : "The operation is temporarily unavailable."), confirmed.Plan.BatchId)); }
     }
     private sealed class RefusingRecycler : IFileRecycler
     {

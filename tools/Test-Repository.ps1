@@ -6,7 +6,7 @@ $repositoryRoot = Split-Path $PSScriptRoot -Parent
 $trackedPrivate = @(git -C $repositoryRoot ls-files -- proprietary reference)
 if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect repository source boundaries.' }
 if ($trackedPrivate.Count) { throw 'Private or reference files must not be tracked in the public repository.' }
-git -C $repositoryRoot diff --check
+git -C $repositoryRoot -c core.safecrlf=false diff --check
 if ($LASTEXITCODE -ne 0) { throw 'Git whitespace validation failed.' }
 $files = @(Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'docs') -Filter '*.md' -Recurse)
 $files += Get-Item -LiteralPath (Join-Path $repositoryRoot 'README.md'), (Join-Path $repositoryRoot 'AGENTS.md'), (Join-Path $repositoryRoot 'CHANGELOG.md')

@@ -13,7 +13,7 @@ if (-not $stage.StartsWith((Join-Path $repository 'artifacts\production-staging\
 }
 $build = Get-Content -LiteralPath (Join-Path $prepared 'renderer-build.json') -Raw | ConvertFrom-Json
 $binary = Join-Path $prepared 'renderer-build\bin\Release'
-$source = Join-Path $repository 'proprietary\src\ContextSuite.PdfRenderer.Native'
+$source = Join-Path $repository 'src\ContextSuite.PdfRenderer.Native'
 if ((Get-FileHash -LiteralPath (Join-Path $binary 'ContextSuite.PdfRenderer.exe')).Hash -ne $build.sha256 -or
     (Get-FileHash -LiteralPath (Join-Path $binary 'pdfium.dll')).Hash -ne $build.pdfiumSha256 -or
     (Get-FileHash -LiteralPath (Join-Path $source 'Renderer.cpp')).Hash -ne $build.bridgeSourceSha256 -or

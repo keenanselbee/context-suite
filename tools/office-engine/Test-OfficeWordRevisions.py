@@ -29,11 +29,11 @@ def main():
     print("Word revision application evidence:", stage, flush=True)
     files = {Path(__file__).resolve(), root / "tools/office-engine/Probe/WordRevisionFixtures.cs",
              root / "tools/office-engine/Probe/WordRevisionStructureFixtures.cs"}
-    for directory in ("src", "proprietary/src", "tests/ContextSuite.Core.ContractTests"):
+    for directory in ("src", "tests/ContextSuite.Core.ContractTests"):
         files.update(path for path in (root / directory).rglob("*") if path.suffix in (".cs", ".csproj", ".xaml")
                      and not {"bin", "obj"}.intersection(path.parts))
     files.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props",
-                                          "Version.props", "global.json", "tools/Require-Private.targets") if (root / name).is_file())
+                                          "Version.props", "global.json") if (root / name).is_file())
     sources = {str(path): digest(path) for path in sorted(files)}
     for label, project in (("worker", "src/ContextSuite.Worker/ContextSuite.Worker.csproj"),
                            ("contracts", "tests/ContextSuite.Core.ContractTests/ContextSuite.Core.ContractTests.csproj")):

@@ -41,18 +41,18 @@ def main():
               root / "src/ContextSuite.Application/Infrastructure/OfficeRecoveryCoordinator.cs",
               root / "src/ContextSuite.Application/Infrastructure/PublicationFiles.cs",
               root / "src/ContextSuite.Core/Transport/Messages.cs", root / "src/ContextSuite.Worker/Program.cs",
-              root / "proprietary/tests/ContextSuite.Pdf.ContractTests/OfficeWorkerContracts.cs",
-              root / "proprietary/tests/ContextSuite.Pdf.ContractTests/Program.cs",
-              root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj",
+              root / "tests/ContextSuite.Pdf.ContractTests/OfficeWorkerContracts.cs",
+              root / "tests/ContextSuite.Pdf.ContractTests/Program.cs",
+              root / "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj",
               Path(__file__), root / "tools/office-engine/Write-OfficeRuntimeInventory.py"]
     inputs += list((root / "src/ContextSuite.Core/Office").glob("*.cs"))
-    inputs += list((root / "proprietary/src/ContextSuite.Private/Office").glob("*.cs"))
+    inputs += list((root / "src/ContextSuite.Private/Office").glob("*.cs"))
     sources = {str(path.relative_to(root)): digest(path) for path in inputs}
     commands = [[sys.executable, str(root / "tools/office-engine/Write-OfficeRuntimeInventory.py"),
                  str(args.copy_receipt.resolve()), str(inventory)],
                 ["dotnet", "build", str(root / "src/ContextSuite.Worker/ContextSuite.Worker.csproj"),
                  "-c", "Release", "--no-restore", "--verbosity", "quiet", "--output", str(worker)],
-                ["dotnet", "build", str(root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"),
+                ["dotnet", "build", str(root / "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"),
                  "-c", "Release", "--no-restore", "--verbosity", "quiet"]]
     for index, command in enumerate(commands):
         result = subprocess.run(command, cwd=root, capture_output=True)

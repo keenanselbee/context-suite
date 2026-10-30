@@ -17,10 +17,8 @@
             <TextBlock Text="{Binding Heading}" FontSize="24" FontWeight="SemiBold" />
             <TextBlock Text="Choose a format. We’ll take care of the image information."
                        TextWrapping="Wrap" Margin="0,6,0,0" />
-            <ui:StatusTextBlock Text="{Binding TrialMessage}" TextWrapping="Wrap" Margin="0,6,0,0" Visibility="{Binding HasAccessStatus, Converter={StaticResource VisibleWhenTrue}}"
-                       AutomationProperties.AutomationId="ConversionTrialStatus" />
-            <Button Content="Activate license..." Click="OnLicense" HorizontalAlignment="Left" Padding="12,6" Margin="0,8,0,0"
-                    Visibility="{Binding AccessBlocked, Converter={StaticResource VisibleWhenTrue}}" />
+            <ui:StatusTextBlock Text="{Binding PreparationMessage}" TextWrapping="Wrap" Margin="0,6,0,0" Visibility="{Binding HasPreparationStatus, Converter={StaticResource VisibleWhenTrue}}"
+                       AutomationProperties.AutomationId="ConversionPreparationStatus" />
         </StackPanel>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" AutomationProperties.AutomationId="ConversionBody">
             <StackPanel Margin="0,0,10,0">
@@ -171,7 +169,6 @@
             </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="_License..." Click="OnLicense" Padding="18,7" Margin="0,0,8,0" AutomationProperties.AutomationId="ConversionLicense" />
             <Button Content="_Convert" Command="{Binding ConfirmCommand}" Padding="22,7" Margin="0,0,8,0"
                     AutomationProperties.AutomationId="ConfirmImageConversion" />
             <Button Content="Cancel" Click="OnCancel" IsCancel="True" Padding="18,7" AutomationProperties.AutomationId="CancelImageConversion" />

@@ -12,7 +12,7 @@ from importlib.machinery import SourceFileLoader
 
 
 ROOT = Path(__file__).resolve().parents[2]
-BRIDGE = ROOT / "proprietary/src/ContextSuite.Avif.Native"
+BRIDGE = ROOT / "src/ContextSuite.Avif.Native"
 PREPARE = SourceFileLoader("avif_source", str(Path(__file__).with_name("Prepare-AvifSource.py"))).load_module()
 NOTICES = {
     "Libavif.License.txt": "libavif/LICENSE",

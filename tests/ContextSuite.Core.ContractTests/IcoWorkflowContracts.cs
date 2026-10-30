@@ -63,7 +63,7 @@ internal static class IcoWorkflowContracts
         }
         var invalid = Path.Combine(root, "broken.png"); File.WriteAllText(invalid, "not an image");
         await using (var direct = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "direct")),
-            new SuiteSettings { Convert = new(true) }, publisher, new LocalTrialStore(Path.Combine(root, "trial.json"))))
+            new SuiteSettings { Convert = new(true) }, publisher, new OperationAdmissionService()))
         {
             direct.ConversionRequested += (_, _) => throw new InvalidOperationException("ICO must not open a routine planner.");
             direct.Admit(new(Guid.NewGuid(), "convert", "ico", [sources[0].Path, invalid]));
@@ -75,7 +75,7 @@ internal static class IcoWorkflowContracts
                 "ICO direct command routes to the icon encoder");
         }
 
-        var executor = new ImageBatchExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "fault-trial.json")));
+        var executor = new ImageBatchExecutor(worker, publisher, new OperationAdmissionService());
         foreach (var fault in new[] { "cancel", "crash", "changed" })
         {
             var faultSources = sources.Take(3).Select(s => s with { ItemId = Guid.NewGuid() }).ToArray();

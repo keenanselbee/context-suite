@@ -35,7 +35,7 @@ def main():
                    TOOLS / "source-runtime-candidate.json",
                    payload.COMPONENT_NOTICE_RECORD, payload.COMPONENT_NOTICE_FILE,
                    payload.ROOT / "tools/release/Write-NoticeIndex.ps1",
-                   payload.ROOT / "proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
+                   payload.ROOT / "src/ContextSuite.Private/Office/OfficeRuntimeLease.cs",
                    payload.ROOT / "tools/Build-Production.ps1", payload.ROOT / "tools/curated-engine/Test-ProductionPayload.ps1"]
     if python_mode == "bundled":
         input_paths.extend((payload.NOTICE_RECORD, payload.NOTICE_FILE))
@@ -63,7 +63,7 @@ def main():
             raise AssertionError("Production entry-point check failed: " + name)
         passed(name)
 
-    lease = (payload.ROOT / "proprietary/src/ContextSuite.Private/Office/OfficeRuntimeLease.cs").read_text()
+    lease = (payload.ROOT / "src/ContextSuite.Private/Office/OfficeRuntimeLease.cs").read_text()
     provenance = json.loads((TOOLS / "source-runtime-candidate.json").read_bytes())
     for value in (record["host"]["sha256"], record["inventory"]["sha256"], str(record["host"]["bytes"]),
                   str(record["inventory"]["bytes"]), str(record["inventory"]["files"]), str(record["inventory"]["runtimeBytes"])):

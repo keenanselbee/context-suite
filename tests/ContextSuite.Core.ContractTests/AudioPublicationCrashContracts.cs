@@ -110,7 +110,7 @@ internal static class AudioPublicationCrashContracts
     private static async Task<FileResult> ExecuteAsync(string root, string operation, WorkerClient worker,
         OutputPublisher publisher, Action? afterProbe = null)
     {
-        var access = new LocalTrialStore(Path.Combine(root, "trial.json"));
+        var access = new OperationAdmissionService();
         if (operation == "convert")
         {
             var source = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), Path.Combine(root, "Original \u00fc.wav")), AudioFormat.Flac, default);

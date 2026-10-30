@@ -24,7 +24,7 @@ def main():
     source = scratch / "source"
     source.mkdir(parents=True)
     inputs = [root / "tools/office-engine/PathProbe/Probe.cpp",
-              root / "proprietary/src/ContextSuite.OfficeHost.Native/app.manifest", Path(__file__)]
+              root / "src/ContextSuite.OfficeHost.Native/app.manifest", Path(__file__)]
     sources = {str(path.relative_to(root)): digest(path) for path in inputs}
     (source / "Probe.cpp").write_bytes(inputs[0].read_bytes())
     (source / "app.manifest").write_bytes(inputs[1].read_bytes())

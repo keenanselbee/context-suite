@@ -41,9 +41,8 @@ internal sealed class AudioConversionViewModel(AudioConversionBatch plan, IOpera
     }
     public string FileNames => string.Join("\n", Plan.Items.Where(item => item.CanExecute).Select(item => Path.GetFileName(item.Source.Path)));
     public string OutputSummary => Plan.ReplaceOriginal ? "After the new file is validated, the original goes to the Recycle Bin." : "Originals are kept. New files use your Convert settings.";
-    public string Message => _checking ? "Checking license access…" : _status?.CanStart == true ? "Choose Convert to accept these changes." :
-        _status?.Message ?? "License access could not be checked. Open License and try again.";
-    public string LicenseActionLabel => _status?.CanStart == false ? "_Activate license…" : "_License…";
+    public string Message => _checking ? "Preparing operation..." : _status?.CanStart == true ? "Choose Convert to accept these changes." :
+        _status?.Message ?? "The operation could not be prepared. Close this window and try again.";
     public bool CanConfirm => !_disposed && !_checking && !_confirmed && !_lifetime.IsCancellationRequested && _status?.CanStart == true && Plan.HasExecutableItems;
     public ICommand ConfirmCommand => _confirmCommand ??= new UiCommand(Confirm, () => CanConfirm);
     public event Action<ConfirmedAudioConversion>? Confirmed;

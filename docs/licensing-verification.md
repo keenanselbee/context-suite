@@ -1,6 +1,11 @@
 Licensing Implementation And Verification
 =========================================
 
+Historical commercial record: the free transition under
+[decision 0021](decisions/0021-free-product-and-public-implementation.md)
+supersedes this product policy. Preserve earlier evidence and provider history;
+these instructions do not authorize new sales or live account changes.
+
 Status: implemented locally; live Polar and interactive acceptance pending
 
 The accepted policy is [decision 0017](decisions/0017-paid-access-and-release-candidate.md),

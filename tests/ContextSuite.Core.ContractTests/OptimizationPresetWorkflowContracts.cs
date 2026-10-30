@@ -27,7 +27,7 @@ internal static class OptimizationPresetWorkflowContracts
         var originals = sources.ToDictionary(path => path, path => SHA256.HashData(File.ReadAllBytes(path)));
         var times = sources.ToDictionary(path => path, File.GetLastWriteTimeUtc);
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new NoRecycle(), replacementVerified: true);
-        IOperationAccess access = new LocalTrialStore(Path.Combine(root, "trial", "trial.json"));
+        IOperationAccess access = new OperationAdmissionService();
         await using var view = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "worker")),
             new SuiteSettings { PlayCompletionSound = false, Optimize = new(ReplaceOriginals: true) }, publisher, access);
         var receipts = new List<object>();

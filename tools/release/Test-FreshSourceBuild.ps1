@@ -9,9 +9,11 @@ $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 if (-not $PaletteCandidateDirectory) { $PaletteCandidateDirectory = Join-Path $repository 'artifacts\engines\palette-win-x64' }
 & (Join-Path $repository 'tools\palette-engine\Test-PaletteEngine.ps1') -Payload $PaletteCandidateDirectory
 $engine = (Resolve-Path -LiteralPath $EngineArchive).Path
-$run = Join-Path $repository ('.codex-temp\fresh-source-build\' + [guid]::NewGuid().ToString('N'))
-$snapshot = Join-Path $run 'source'
-New-Item -ItemType Directory -Path $snapshot -Force | Out-Null
+# Keep native/test fixture paths short without aliases or shared output directories.
+$run = Join-Path $repository ('.codex-temp\fs-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
+New-Item -ItemType Directory -Path $run -ErrorAction Stop | Out-Null
+$snapshot = Join-Path $run 's'
+New-Item -ItemType Directory -Path $snapshot -ErrorAction Stop | Out-Null
 $receipt = [ordered]@{
     status = 'started'; includesWorkingChanges = [bool]$IncludeWorkingChanges;
     engineArchiveSha256 = (Get-FileHash -LiteralPath $engine).Hash;
@@ -21,8 +23,7 @@ $receipt = [ordered]@{
     sources = @()
 }
 $utf8 = [Text.UTF8Encoding]::new($false)
-foreach ($entry in @(@{ source = $repository; destination = $snapshot; name = 'public' },
-                     @{ source = (Join-Path $repository 'proprietary'); destination = (Join-Path $snapshot 'proprietary'); name = 'private' })) {
+foreach ($entry in @(@{ source = $repository; destination = $snapshot; name = 'public' })) {
     $revision = & git -C $entry.source rev-parse HEAD
     if ($LASTEXITCODE -ne 0) { throw 'Cannot determine source revision.' }
     $archive = Join-Path $run ($entry.name + '-source.zip')
@@ -30,12 +31,12 @@ foreach ($entry in @(@{ source = $repository; destination = $snapshot; name = 'p
     if ($LASTEXITCODE -ne 0) { throw 'Cannot archive committed source.' }
     Expand-Archive -LiteralPath $archive -DestinationPath $entry.destination
     if ($IncludeWorkingChanges) {
-        $changed = @(& git -C $entry.source diff HEAD --name-only --diff-filter=ACMRT)
+        $changed = @(& git -C $entry.source -c core.safecrlf=false diff HEAD --name-only --diff-filter=ACMRT)
         if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect changed sources.' }
         $new = @(& git -C $entry.source ls-files --others --exclude-standard)
         if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect new sources.' }
         # This local verification includes authored changes, never incidental root logs.
-        $new = @($new | Where-Object { $_ -match '^(src/|tests/|tools/|docs/|packaging/|assets/|images/|\.github/)' })
+        $new = @($new | Where-Object { $_ -match '^(src/|tests/|tools/|native/|docs/|packaging/|assets/|images/|\.github/|LICENSE\.md$)' })
         foreach ($relative in @($changed + $new | Sort-Object -Unique)) {
             $source = Join-Path $entry.source $relative
             if ((Get-Item -LiteralPath $source).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Source symlinks are not supported by this snapshot test.' }
@@ -44,7 +45,7 @@ foreach ($entry in @(@{ source = $repository; destination = $snapshot; name = 'p
             New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
             Copy-Item -LiteralPath $source -Destination $target -Force
         }
-        $deleted = @(& git -C $entry.source diff HEAD --name-only --diff-filter=D)
+        $deleted = @(& git -C $entry.source -c core.safecrlf=false diff HEAD --name-only --diff-filter=D)
         if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect deleted sources.' }
         foreach ($relative in $deleted) {
             $target = [IO.Path]::GetFullPath((Join-Path $entry.destination $relative))
@@ -68,7 +69,8 @@ try {
     & (Join-Path $snapshot 'tools\png-engine\Stage-PngEngine.ps1')
     & (Join-Path $snapshot 'tools\palette-engine\Stage-PaletteEngine.ps1') -CandidateDirectory $PaletteCandidateDirectory
     & (Join-Path $snapshot 'tools\Build-Production.ps1') -Configuration Release
-    & (Join-Path $snapshot 'tools\Test-Licensing.ps1') -Configuration Release
+    & (Join-Path $snapshot 'tools\Test-Foundation.ps1') -Configuration Release -Integration
+    & (Join-Path $snapshot 'tools\Test-ProductionSource.ps1')
     & (Join-Path $snapshot 'tools\Test-DdsCodec.ps1') -SkipNativeBuild
     & (Join-Path $snapshot 'tools\Test-ImageConversion.ps1') -Configuration Release
     $receipt.status = 'passed'

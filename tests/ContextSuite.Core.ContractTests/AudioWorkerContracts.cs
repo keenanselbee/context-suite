@@ -18,7 +18,7 @@ internal static class AudioWorkerContracts
         await File.WriteAllBytesAsync(unknown, [0, 1, 2, 3, 255]);
         await using var worker = new WorkerClient(executable, Path.Combine(scratch, "workers"));
         check(worker.HasAudioProbe, "audio worker: isolated optional engine is present");
-        await using var view = new MainViewModel(worker, trial: new ForbiddenAccess());
+        await using var view = new MainViewModel(worker, admissionService: new ForbiddenAccess());
         view.Admit(new(Guid.NewGuid(), "analyze", "open-details", [.. paths, malformed, unknown]));
         await view.WaitForIdleAsync();
         for (var index = 0; index < paths.Length; index++)
@@ -40,7 +40,7 @@ internal static class AudioWorkerContracts
             "audio worker: malformed audio retains usable header report");
         check(view.Rows[paths.Length + 1].Result.State == OperationState.Succeeded && view.Rows[paths.Length + 1].Analysis!.Identity.FormatId is null,
             "audio worker: failure does not stop the next unknown file");
-        check(view.Rows.All(row => row.Result.Publication is null && !row.HasOutput), "audio worker: no Analyze publication or license admission");
+        check(view.Rows.All(row => row.Result.Publication is null && !row.HasOutput), "audio worker: no Analyze publication or transformation admission");
         check(paths.Select((path, index) => SHA256.HashData(File.ReadAllBytes(path)).SequenceEqual(hashes[index])).All(value => value),
             "audio worker: all generated original hashes preserved");
         await File.WriteAllTextAsync(Path.Combine(scratch, "analysis-results.txt"), string.Join("\n\n", view.Rows.Select(row => row.AnalysisSummary + "\n" + row.AnalysisDetails)));

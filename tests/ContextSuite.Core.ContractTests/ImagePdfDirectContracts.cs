@@ -112,12 +112,12 @@ internal static class ImagePdfDirectContracts
         await using (var vm = Create("expired", expiredAccess))
         {
             vm.Admit(new(Guid.NewGuid(), "convert", "pdf", [paths[0]])); await vm.WaitForIdleAsync();
-            Check(vm.Rows.Single().Result.State == OperationState.Failed && vm.Rows.Single().Status.Contains("Activate") && vm.CanRetry && !vm.Rows.Single().HasOutput,
-                "expired single-image access gives an actionable failure without saving output");
+            Check(vm.Rows.Single().Result.State == OperationState.Failed && vm.Rows.Single().Status.Contains("unavailable") && vm.CanRetry && !vm.Rows.Single().HasOutput,
+                "unavailable single-image preparation gives an actionable failure without saving output");
             expiredAccess.Allowed = true; vm.RetryFailed(); await vm.WaitForIdleAsync();
-            Check(vm.DisplayRows.Single().Result.State == OperationState.Succeeded && expiredAccess.Admissions == 2, "activation permits a fresh whole-document admission");
+            Check(vm.DisplayRows.Single().Result.State == OperationState.Succeeded && expiredAccess.Admissions == 2, "preparation recovery permits a fresh whole-document admission");
         }
-        await using (var missing = new MainViewModel(new WorkerClient(Path.Combine(root, "missing.exe")), publisher: new OutputPublisher(Path.Combine(root, "missing-records"), new ForbiddenRecycle()), trial: access))
+        await using (var missing = new MainViewModel(new WorkerClient(Path.Combine(root, "missing.exe")), publisher: new OutputPublisher(Path.Combine(root, "missing-records"), new ForbiddenRecycle()), admissionService: access))
         {
             var admissions = access.Admissions;
             missing.Admit(new(Guid.NewGuid(), "convert", "pdf", [paths[0], paths[1]])); await missing.WaitForIdleAsync();
@@ -153,9 +153,9 @@ internal static class ImagePdfDirectContracts
     {
         public bool Allowed { get; set; } = true;
         public int Admissions { get; private set; }
-        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Active" : "Activate your license to convert."));
+        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Active" : "The operation is temporarily unavailable."));
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImagePdf plan, CancellationToken token)
-        { Admissions++; return Task.FromResult(new OperationAdmission(new(Allowed, Allowed ? "Active" : "Activate your license to convert."), plan.Plan.BatchId)); }
+        { Admissions++; return Task.FromResult(new OperationAdmission(new(Allowed, Allowed ? "Active" : "The operation is temporarily unavailable."), plan.Plan.BatchId)); }
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch plan, CancellationToken token) => throw new InvalidOperationException("Unexpected image admission.");
         public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization plan, CancellationToken token) => throw new InvalidOperationException("Unexpected optimization admission.");
     }

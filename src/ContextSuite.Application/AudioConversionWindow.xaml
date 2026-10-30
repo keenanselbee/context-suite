@@ -24,7 +24,6 @@
         <StackPanel Grid.Row="2" Margin="0,12,0,0">
             <ui:StatusTextBlock Text="{Binding Message}" TextWrapping="Wrap" AutomationProperties.AutomationId="AudioConversionStatus" />
             <WrapPanel HorizontalAlignment="Right" Margin="0,16,0,0">
-                <Button Content="{Binding LicenseActionLabel}" Click="OnLicense" Padding="12,6" Margin="0,0,8,0" AutomationProperties.AutomationId="AudioConversionLicense" />
                 <Button Content="_Convert" Command="{Binding ConfirmCommand}" Padding="12,6" Margin="0,0,8,0" AutomationProperties.AutomationId="ConfirmAudioConversion" />
                 <Button Content="_Cancel" Click="OnCancel" IsCancel="True" Padding="12,6" AutomationProperties.AutomationId="CancelAudioConversion" />
             </WrapPanel>

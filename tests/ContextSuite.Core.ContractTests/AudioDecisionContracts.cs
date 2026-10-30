@@ -23,13 +23,13 @@ internal static class AudioDecisionContracts
         check(!model.CanConfirm && model.Heading == "Convert to Opus" && model.FileSummary == "1 audio file" &&
             model.QualityChanges.Contains("quality loss") && model.QualityChanges.Contains("48,000"), "Audio decision: fixed target and required consequences precede confirmation");
         await model.RefreshAccessAsync();
-        check(!model.CanConfirm && model.LicenseActionLabel.Contains("Activate") && access.Admissions == 0,
-            "Audio decision: expired access gives activation without starting work");
+        check(!model.CanConfirm && model.Message.Contains("unavailable") && access.Admissions == 0,
+            "Audio decision: unavailable preparation gives preparation guidance without starting work");
         access.Allowed = true; await model.RefreshAccessAsync();
         check(model.CanConfirm && ReferenceEquals(model.Plan, plan) && model.FileNames == "decision.mp3" && model.OutputSummary.Contains("Originals are kept"),
-            "Audio decision: activation refresh retains target, files and copy policy");
+            "Audio decision: preparation refresh retains target, files and copy policy");
         access.Allowed = false; await model.RefreshAccessAsync();
-        check(!model.CanConfirm && ReferenceEquals(model.Plan, plan), "Audio decision: deactivation blocks the same plan");
+        check(!model.CanConfirm && ReferenceEquals(model.Plan, plan), "Audio decision: preparation failure blocks the same plan");
         access.Allowed = true; await model.RefreshAccessAsync();
         ConfirmedAudioConversion? confirmed = null; var confirmations = 0;
         model.Confirmed += value => { confirmed = value; confirmations++; };
@@ -50,7 +50,7 @@ internal static class AudioDecisionContracts
     {
         public bool Allowed { get; set; }
         public int Admissions { get; private set; }
-        public virtual Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Licensed" : "Activate your license to convert."));
+        public virtual Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Ready" : "The operation is temporarily unavailable."));
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken token) => throw new InvalidOperationException("Unexpected image admission.");
         public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken token) => throw new InvalidOperationException("Unexpected optimization admission.");
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedAudioConversion confirmed, CancellationToken token)

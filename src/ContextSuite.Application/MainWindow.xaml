@@ -31,8 +31,6 @@
                     AutomationProperties.AutomationId="RetrySelectedFiles" />
             <Button Content="_Settings..." Command="{Binding SettingsCommand}" Padding="12,6" Margin="8,0,0,0"
                     AutomationProperties.AutomationId="OpenSettings" />
-            <Button Content="_License..." Click="OnLicense" Padding="12,6" Margin="8,0,0,0"
-                    AutomationProperties.AutomationId="OpenLicense" />
             <Button Content="_Close" Click="OnClose" IsCancel="True" Padding="12,6" Margin="8,0,0,0"
                     AutomationProperties.AutomationId="CloseResults" />
         </WrapPanel>

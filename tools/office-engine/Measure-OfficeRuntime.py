@@ -23,16 +23,16 @@ def main():
     stage = root / ".codex-temp/office-runtime" / uuid.uuid4().hex
     stage.mkdir(parents=True)
     print("Office runtime timing evidence:", stage, flush=True)
-    paths = {Path(__file__).resolve(), root / "proprietary/tests/ContextSuite.Image.ContractTests/PngFixture.cs",
+    paths = {Path(__file__).resolve(), root / "tests/ContextSuite.Image.ContractTests/PngFixture.cs",
              root / "tools/office-engine/payload-candidate.json", root / "tools/office-engine/source-runtime-candidate.json"}
     for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/Shared",
-                      "proprietary/src/ContextSuite.Private", "proprietary/tests/ContextSuite.Pdf.ContractTests"):
+                      "src/ContextSuite.Private", "tests/ContextSuite.Pdf.ContractTests"):
         paths.update(path for path in (root / directory).rglob("*") if
                      path.suffix in (".cs", ".csproj") and not {"bin", "obj"}.intersection(path.parts))
     paths.update(root / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props",
-                                         "Version.props", "global.json", "tools/Require-Private.targets") if (root / name).is_file())
+                                         "Version.props", "global.json") if (root / name).is_file())
     sources = {str(path.relative_to(root)): digest(path) for path in sorted(paths)}
-    project = root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
+    project = root / "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"
     build = subprocess.run(["dotnet", "build", str(project), "-c", "Release", "--no-restore", "--verbosity", "quiet", "-maxcpucount:1"],
                            cwd=root, capture_output=True)
     (stage / "build.log").write_bytes(build.stdout + build.stderr)

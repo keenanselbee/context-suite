@@ -108,17 +108,17 @@ internal sealed partial class MainViewModel
         }
         if (images is null && office is null && tiff is null) return;
         token.ThrowIfCancellationRequested();
-        var admission = images is not null ? await trial!.AdmitConversionAsync(images, token) :
-            office is not null ? await trial!.AdmitConversionAsync(office, token) : await trial!.AdmitConversionAsync(tiff!, token);
+        var admission = images is not null ? await admissionService!.AdmitConversionAsync(images, token) :
+            office is not null ? await admissionService!.AdmitConversionAsync(office, token) : await admissionService!.AdmitConversionAsync(tiff!, token);
         if (images is not null)
-            await new ImagePdfExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(images, admission, result =>
+            await new ImagePdfExecutor(worker, Publisher!, admissionService!).ExecuteAdmittedAsync(images, admission, result =>
             {
                 imageRow!.ApplyResult(result with { Path = imageRow.Path });
                 if (result.State == OperationState.Running) Summary = "Creating one PDF from the reviewed images.";
             }, token);
         if (office is not null)
         {
-            _officeExecutor ??= new(worker, Publisher!, trial!, officeContextRoot!, reviewFonts: (review, cancellation) =>
+            _officeExecutor ??= new(worker, Publisher!, admissionService!, officeContextRoot!, reviewFonts: (review, cancellation) =>
                 OfficeFontsRequested is null ? Task.FromResult(false) : OfficeFontsRequested(review, cancellation));
             var byPath = office.Plan.Sources.ToDictionary(source => source.Path,
                 source => officeRows.Single(row => row.ItemId == source.ItemId), StringComparer.OrdinalIgnoreCase);
@@ -134,7 +134,7 @@ internal sealed partial class MainViewModel
             var completed = tiffSources.SelectMany(source => byId[source.ItemId].CompletedTiffOutputs
                 .Select(output => (source.ItemId, output.PageIndex, output.OutputBytes)))
                 .ToDictionary(output => (output.ItemId, output.PageIndex), output => output.OutputBytes);
-            await new TiffConversionExecutor(worker, Publisher!, trial!).ExecuteAdmittedAsync(tiff, admission, (source, index, result) =>
+            await new TiffConversionExecutor(worker, Publisher!, admissionService!).ExecuteAdmittedAsync(tiff, admission, (source, index, result) =>
             {
                 var row = byId[source.ItemId];
                 row.ApplyTiffPage(index, result);

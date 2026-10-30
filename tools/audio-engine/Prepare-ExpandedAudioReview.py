@@ -77,11 +77,11 @@ def main():
 
     paths = {path for path in TOOLS.iterdir() if path.suffix in (".py", ".cpp", ".json")}
     for directory in ("src/ContextSuite.Core", "src/ContextSuite.Application", "src/ContextSuite.Worker", "src/Shared",
-                      "proprietary/src/ContextSuite.Private", "tests/ContextSuite.Core.ContractTests", "tools/office-engine/Probe"):
+                      "src/ContextSuite.Private", "tests/ContextSuite.Core.ContractTests", "tools/office-engine/Probe"):
         paths.update(path for path in (ROOT / directory).rglob("*") if
                      path.suffix in (".cs", ".csproj") and not {"bin", "obj"}.intersection(path.parts))
     paths.update(ROOT / name for name in ("Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props",
-        "Version.props", "global.json", "tools/Require-Private.targets") if (ROOT / name).is_file())
+        "Version.props", "global.json") if (ROOT / name).is_file())
     identities = {str(path): digest(path) for path in paths}
     identities.update({item["Path"]: item["Sha256"] for item in references.values()})
     identities.update({str(path): digest(path) for path in engine.rglob("*") if path.is_file()})

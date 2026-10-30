@@ -2,7 +2,6 @@
   <Project Path="src/ContextSuite.Core/ContextSuite.Core.csproj" />
   <Project Path="src/ContextSuite.Application/ContextSuite.Application.csproj" />
   <Project Path="src/ContextSuite.Worker/ContextSuite.Worker.csproj" />
-  <Project Path="proprietary/src/ContextSuite.Private/ContextSuite.Private.csproj" />
-  <Project Path="proprietary/src/ContextSuite.Commercial/ContextSuite.Commercial.csproj" />
+  <Project Path="src/ContextSuite.Private/ContextSuite.Private.csproj" />
   <Project Path="tests/ContextSuite.Core.ContractTests/ContextSuite.Core.ContractTests.csproj" />
 </Solution>

@@ -171,7 +171,7 @@ internal static class HeifWorkerContracts
         Check(!File.Exists(staleReservation.TemporaryPath) && !File.Exists(staleReservation.Record.OutputPath), "Stale HEIF work publishes nothing");
         var faultPlan = ImageConversionPlanner.Create(Guid.NewGuid(), sources.Take(2).Select(source => source with { ItemId = Guid.NewGuid() }),
             optionsForFault, new("convert", new(OutputDirectory: output)));
-        var executor = new ImageBatchExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "fault-trial.json")));
+        var executor = new ImageBatchExecutor(worker, publisher, new OperationAdmissionService());
         var killed = false;
         var faultResults = await executor.ExecuteAsync(faultPlan.Confirm(true, false, false), (_, result) =>
         {
@@ -195,7 +195,7 @@ internal static class HeifWorkerContracts
         Console.WriteLine($"Passed {checks.Count} HEIF worker/application checks; {reports.Count} outputs published.");
 
         MainViewModel Create(string name, OutputPublisher outputPublisher) => new(new WorkerClient(executable, Path.Combine(root, name + "-workers")),
-            settings, outputPublisher, new LocalTrialStore(Path.Combine(root, name + "-trial.json")));
+            settings, outputPublisher, new OperationAdmissionService());
         async Task RejectAsync(string path, ImageFailure expected)
         {
             try { await worker.ProbeAsync(new(Guid.NewGuid(), path), default); throw new InvalidOperationException("Unsupported image accepted"); }

@@ -22,7 +22,7 @@ internal static class DdsWorkerContracts
         check(source.Texture is { Format: DdsFormat.Rgba8Srgb }, "DDS IPC: actual native probe returns public header facts");
         var trialPath = Path.Combine(root, "trial", "trial.json");
         var clock = new Clock();
-        var trial = new LocalTrialStore(trialPath, clock);
+        var trial = new OperationAdmissionService();
         await using (var vm = new ConversionViewModel(worker, trial, Guid.NewGuid(), [new(source.ItemId, path, source, null)], new("convert", new()), false))
         {
             await vm.InitializeAsync();
@@ -32,7 +32,7 @@ internal static class DdsWorkerContracts
             check(vm.IsDdsWorkflow && !vm.CanConfirm && vm.Rows[0].ProposedOutput.EndsWith(" - BC7-sRGB.dds", StringComparison.Ordinal),
                 "DDS VM: named representation requires a current encoded preview");
             await vm.RefreshPreviewAsync();
-            check(vm.CanConfirm && vm.AfterPreview?.PixelWidth == 4 && !File.Exists(trialPath), "DDS VM: preview enables consent without starting trial");
+            check(vm.CanConfirm && vm.AfterPreview?.PixelWidth == 4 && !File.Exists(trialPath), "DDS VM: preview enables consent without access files");
             vm.DdsFormat = DdsFormat.Bc3Srgb;
             check(!vm.CanConfirm && !vm.WarningsAcknowledged && vm.AfterPreview is null, "DDS VM: policy changes invalidate preview and consent");
             vm.Target = ImageFormat.Png; vm.DdsMip = "9";
@@ -47,14 +47,14 @@ internal static class DdsWorkerContracts
         var executor = new ImageBatchExecutor(worker, publisher, trial);
         var result = await executor.ExecuteAsync(plan.Confirm(true, false, false), (_, state) =>
         { if (state.State == OperationState.Succeeded) clock.Utc += TimeSpan.FromHours(169); }, default);
-        check(result.Admission.IsAllowed && result.Results.All(item => item.State == OperationState.Succeeded), "DDS orchestration: admitted batch completes after trial expiry");
+        check(result.Admission.IsAllowed && result.Results.All(item => item.State == OperationState.Succeeded), "DDS orchestration: admitted batch completes after clock changes");
         var outputs = Directory.GetFiles(root, "* - BC7-sRGB*.dds");
         check(outputs.Length == 2 && outputs.Any(file => file.EndsWith(" (2).dds", StringComparison.Ordinal)) &&
             outputs.All(file => DdsParser.Parse(File.ReadAllBytes(file), new FileInfo(file).Length) is { Format: DdsFormat.Bc7Srgb, MipLevels: 3 }),
             "DDS orchestration: app publishes validated, collision-safe named textures");
         check(SHA256.HashData(File.ReadAllBytes(path)).SequenceEqual(SHA256.HashData(original)), "DDS orchestration: sources unchanged");
         var expired = await executor.ExecuteAsync(plan.Confirm(true, false, false), null, default);
-        check(!expired.Admission.IsAllowed && Directory.GetFiles(root, "* - BC7-sRGB*.dds").Length == 2, "DDS orchestration: expired admission publishes nothing");
+        check(expired.Admission.IsAllowed && expired.Results.All(row => row.State == OperationState.Succeeded) && Directory.GetFiles(root, "* - BC7-sRGB*.dds").Length == 4, "DDS orchestration: subsequent free batch publishes collision-safe copies");
         var invalid = Path.Combine(root, "truncated.dds"); File.WriteAllBytes(invalid, original[..149]);
         var process = worker.ProcessId;
         try { await worker.ProbeAsync(new(Guid.NewGuid(), invalid), default); check(false, "DDS IPC: truncated payload rejected"); }

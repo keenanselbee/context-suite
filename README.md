@@ -27,6 +27,13 @@ permission-only settings migrate to copies. See the
 remaining visual acceptance.
 
 
+Context Suite is transitioning to a fully free application, with no trial,
+purchase, or activation. The source-available implementation is being consolidated
+into this repository. See [the transition goal](docs/free-access-goal.md) for
+current verification and [license terms](LICENSE.md) for permitted use. Existing
+installed releases and historical evidence below remain separate.
+
+
 Project Status
 --------------
 
@@ -51,7 +58,7 @@ interruption checks, keeps mandatory copies, and reuses existing engines.
 Total payload growth from 1.5.2 is about 248 KiB, with no added files or engines.
 Source changes and historical passing results do not establish a newly verified
 release. Signing, native installer lifecycle, broader visual/accessibility and
-commercial acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).
+free-release acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).
 The [cleanup and correctness plan](docs/repository-maintenance.md) tracks the
 current maintenance workflow. The dated milestones below retain their original
 evidence and do not describe the current installation unless stated above.

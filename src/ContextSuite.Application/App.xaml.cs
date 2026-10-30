@@ -3,7 +3,6 @@ using ContextSuite.Application.Infrastructure;
 using ContextSuite.Core.Operations;
 using ContextSuite.Core.Transport;
 using ContextSuite.Core.Images;
-using ContextSuite.Core.Licensing;
 using ContextSuite.Core.Audio;
 using ContextSuite.Core.Pdf;
 using ContextSuite.Core.Installation;
@@ -33,21 +32,14 @@ public partial class App : System.Windows.Application
     private readonly System.Windows.Threading.DispatcherTimer _quietTimer = new() { Interval = TimeSpan.FromMilliseconds(200) };
     private bool _userOpened;
     private Task _sounds = Task.CompletedTask;
-    private readonly ILicenseService? _licenseService;
-    private readonly CancellationTokenSource _licenseLifetime = new();
-    private PaidLicenseManager? _paidLicense;
-    private LicenseWindow? _licenseWindow;
-    private Task? _licenseRefresh;
-    private bool _licenseValidating;
     private Task _officeRecovery = Task.CompletedTask;
     private readonly CancellationTokenSource _officeRecoveryLifetime = new();
 
-    private static partial ILicenseService? CreateProductionLicensing();
-    public App() : this(ApplicationPaths.Production, CreateProductionLicensing()) { }
-    internal App(ApplicationPaths paths, ILicenseService? licenseService = null,
+    public App() : this(ApplicationPaths.Production) { }
+    internal App(ApplicationPaths paths,
         Func<string, CancellationToken, Task<OperationRequest>>? readActivation = null)
     {
-        _paths = paths; _settingsStore = new(paths.Settings); _licenseService = licenseService;
+        _paths = paths; _settingsStore = new(paths.Settings);
         _readActivation = readActivation ?? ActivationStore.ReadAsync;
     }
 
@@ -83,13 +75,7 @@ public partial class App : System.Windows.Application
             _settings = await _settingsStore.LoadAsync();
             _analysisDetailsExpanded = _settings.Settings.AnalysisDetailsExpanded;
             var publisher = new OutputPublisher(_paths.Publications, new WindowsFileRecycler(), PublicationSupport.ReplacementAvailable);
-            IOperationAccess access = new LocalTrialStore(_paths.Trial);
-            if (_licenseService is not null)
-            {
-                _paidLicense = new(_licenseService, new LicenseStore(Path.Combine(Path.GetDirectoryName(_paths.Trial)!,
-                    "license-" + _licenseService.Environment.ToString().ToLowerInvariant() + ".bin"), _licenseService.Environment));
-                access = new OperationAccess(new LocalTrialStore(_paths.Trial), _paidLicense);
-            }
+            IOperationAccess access = new OperationAdmissionService();
             _viewModel = new MainViewModel(new WorkerClient(_paths.Worker, _paths.WorkerScratch), _settings.Settings, publisher, access, _paths.OfficeContexts, installedTools);
             _viewModel.SettingsRequested += ShowSettings;
             _viewModel.ConversionRequested += ShowConversionAsync;
@@ -124,7 +110,6 @@ public partial class App : System.Windows.Application
             };
             _quietTimer.Tick += CheckQuietWindow;
             _quietTimer.Start();
-            if (_paidLicense is not null) _licenseRefresh = RefreshLicenseAsync();
             _router.Start(incoming => Dispatcher.InvokeAsync(() =>
             {
                 if (_closing) return new ActivationReply(1, incoming?.RequestId ?? Guid.Empty, false, "Application is closing.");
@@ -255,44 +240,9 @@ public partial class App : System.Windows.Application
         { /* A missing sound is not a media failure. */ }
     }
 
-    internal void ShowLicense()
-    {
-        if (_paidLicense is null || _closing) return;
-        if (_licenseWindow is not null) { _licenseWindow.Activate(); return; }
-        _licenseWindow = new(new LicenseViewModel(_paidLicense));
-        var owner = _officeFontReviewWindow as Window ?? _officeCalculationWindow as Window ?? _imagePdfOrderWindow as Window ?? _audioConversionWindow as Window ?? _wemEncodingWindow as Window ?? _conversionWindow as Window ?? _settingsWindow ?? MainWindow;
-        if (owner.IsVisible) _licenseWindow.Owner = owner;
-        _licenseWindow.Closed += async (_, _) =>
-        {
-            _licenseWindow = null;
-            if (_closing) return;
-            if (_conversionWindow?.DataContext is ConversionViewModel converter) await converter.RefreshAccessAsync();
-            if (_audioConversionWindow?.DataContext is AudioConversionViewModel audio) await audio.RefreshAccessAsync();
-            if (_imagePdfOrderWindow?.DataContext is ImagePdfOrderViewModel order) await order.RefreshAccessAsync();
-        };
-        _licenseWindow.Show();
-    }
-
-    private async Task RefreshLicenseAsync()
-    {
-        try
-        {
-            while (!_licenseLifetime.IsCancellationRequested)
-            {
-                _licenseValidating = true;
-                try { await _paidLicense!.RefreshAsync(cancellationToken: _licenseLifetime.Token); }
-                finally { _licenseValidating = false; }
-                await Task.Delay(TimeSpan.FromMinutes(1), _licenseLifetime.Token);
-            }
-        }
-        catch (OperationCanceledException) { }
-    }
-
     protected override void OnExit(ExitEventArgs e)
     {
-        _licenseLifetime.Cancel();
         _officeRecoveryLifetime.Cancel();
-        if (_licenseService is IDisposable disposable) disposable.Dispose();
         base.OnExit(e);
     }
 
@@ -301,21 +251,17 @@ public partial class App : System.Windows.Application
         if (_closing || _viewModel is null) return;
         if (!_userOpened && _conversionWindow is null && _audioConversionWindow is null && _wemEncodingWindow is null && _imagePdfOrderWindow is null && _officeCalculationWindow is null && _officeFontReviewWindow is null && _quiet.ShowProgress(DateTimeOffset.UtcNow)) MainWindow.Show();
         if (_viewModel.IsBusy || _userOpened || _quiet.NeedsAttention || _settingsWindow is not null ||
-            _wemEncodingWindow is not null || _openingSettings || _licenseWindow is not null) return;
+            _wemEncodingWindow is not null || _openingSettings) return;
         MainWindow.Hide();
         if (_analyzeWindow is not null) return;
-        // A bounded refresh may finish quietly before exit so short image jobs do
-        // not repeatedly cancel the daily validation and exhaust offline grace.
-        if (!_sounds.IsCompleted || !_analysisPreferenceSave.IsCompleted || _licenseValidating || !_officeRecovery.IsCompleted || _router!.HasConnectedClient) return;
+        if (!_sounds.IsCompleted || !_analysisPreferenceSave.IsCompleted || !_officeRecovery.IsCompleted || _router!.HasConnectedClient) return;
         using var handoff = new ActivationGate();
         if (!handoff.TryEnter()) return;
         _closing = true;
         _quietTimer.Stop();
-        _licenseLifetime.Cancel();
         _officeRecoveryLifetime.Cancel();
         await _officeRecovery;
         await _analysisPreferenceSave;
-        if (_licenseRefresh is not null) await _licenseRefresh;
         _router.StopAccepting();
         await _viewModel.DisposeAsync();
         await _router.DisposeAsync();
@@ -486,11 +432,9 @@ public partial class App : System.Windows.Application
             "Context Suite", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
         _closing = true;
         _quietTimer.Stop();
-        _licenseLifetime.Cancel();
         _officeRecoveryLifetime.Cancel();
         await _officeRecovery;
         await _analysisPreferenceSave;
-        if (_licenseRefresh is not null) await _licenseRefresh;
         _router!.StopAccepting();
         await _viewModel.DisposeAsync();
         await _router.DisposeAsync();

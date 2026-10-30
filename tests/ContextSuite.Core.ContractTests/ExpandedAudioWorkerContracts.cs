@@ -25,7 +25,7 @@ internal static class ExpandedAudioWorkerContracts
         var records = Path.Combine(scratch, "publications");
         var publisher = new OutputPublisher(records, new ForbiddenRecycle());
         await using var worker = new WorkerClient(executable, Path.Combine(scratch, "workers"));
-        var access = new LocalTrialStore(Path.Combine(scratch, "access", "trial.json"));
+        var access = new OperationAdmissionService();
         var executor = new AudioConversionExecutor(worker, publisher, access);
         var checks = new List<string>(); var results = new List<object>(); var failures = new List<string>();
         const AudioConversionConsent consent = AudioConversionConsent.LossyTranscoding | AudioConversionConsent.Resampling | AudioConversionConsent.PrecisionReduction;

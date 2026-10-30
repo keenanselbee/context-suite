@@ -77,7 +77,7 @@ internal static class OfficePerformanceContracts
                 await using (var worker = new WorkerClient(executable, scratch))
                 await using (var vm = new MainViewModel(worker,
                     new SuiteSettings { Convert = new(OutputDirectory: outputs), PlayCompletionSound = false },
-                    new OutputPublisher(records, new ForbiddenRecycle()), new LocalTrialStore(Path.Combine(directory, "trial.json")), contexts))
+                    new OutputPublisher(records, new ForbiddenRecycle()), new OperationAdmissionService(), contexts))
                 {
                     vm.ConversionRequested += (_, _) => throw new InvalidOperationException("Office commands must not open an image planner.");
                     vm.OfficeFontsRequested += (_, _) => throw new InvalidOperationException("Ordinary fixtures must not require a font substitution decision.");

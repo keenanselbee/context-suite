@@ -23,7 +23,7 @@ internal static partial class PdfPageGeometryContracts
         var outputDirectory = root;
         var publisher = new OutputPublisher(records, new ForbiddenRecycle(), replacementVerified: true);
         await using var worker = new WorkerClient(executable, Path.Combine(root, "workers"));
-        var executor = new PdfPageConversionExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial.json")));
+        var executor = new PdfPageConversionExecutor(worker, publisher, new OperationAdmissionService());
         foreach (var rotation in new[] { 0, 90, 180, 270 })
             await Complete("cropped-rotate-" + rotation, "0 0 288 144", "/CropBox [72 36 216 108] /Rotate " + rotation,
                 Quadrants(288, 144), rotation % 180 == 0 ? 300 : 150, rotation % 180 == 0 ? 150 : 300, rotation / 90, false);
@@ -112,7 +112,7 @@ internal static partial class PdfPageGeometryContracts
                 failedRender.Pages.Single().Result.Message.Contains("completed page copies were kept"), "PDF geometry: render-limit result retains specific guidance and preservation status");
         }
         await using (var model = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "direct-worker")), new() { PlayCompletionSound = false },
-            publisher, new LocalTrialStore(Path.Combine(root, "trial.json"))))
+            publisher, new OperationAdmissionService()))
         {
             model.ConversionRequested += (_, _) => throw new InvalidOperationException("PDF page conversion must not open a planner.");
             model.Admit(new(Guid.NewGuid(), "convert", "png", [oversizedPath, validPath])); await model.WaitForIdleAsync();

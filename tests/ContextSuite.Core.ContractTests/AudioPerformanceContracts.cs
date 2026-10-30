@@ -95,7 +95,7 @@ internal static class AudioPerformanceContracts
                 await using (var worker = new WorkerClient(executable, workerRoot))
                 {
                     var publisher = new OutputPublisher(records, new ForbiddenRecycle());
-                    var access = new LocalTrialStore(Path.Combine(directory, "trial.json"));
+                    var access = new OperationAdmissionService();
                     var executor = new AudioConversionExecutor(worker, publisher, access);
                     var source = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), input), target, deadline.Token);
                     var batch = AudioConversionBatch.Create(Guid.NewGuid(), [source], target,

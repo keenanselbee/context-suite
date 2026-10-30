@@ -57,7 +57,7 @@ def main():
     before = {"Base": identities(base), "Bundles": {name: identities(path) for name, path in bundles.items()},
               "AudioManifest": digest(manifest)}
     sources = {}
-    for folder in ("src", "proprietary/src", "tests/ContextSuite.Core.ContractTests", "tools"):
+    for folder in ("src", "tests/ContextSuite.Core.ContractTests", "tools"):
         for path in (ROOT / folder).rglob("*"):
             if path.is_file() and not {"obj", "bin", "__pycache__"}.intersection(path.relative_to(ROOT).parts) and path.suffix in (
                     ".cs", ".csproj", ".xaml", ".icc", ".py", ".ps1", ".json", ".props", ".targets", ".patch"):

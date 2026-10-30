@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string] $Payload, [switch] $AllowAudioCandidate, [switch] $AllowPdfCandidate,
     [switch] $AllowOfficeCandidate, [switch] $AllowHeifCandidate, [switch] $AllowWemCandidate,
-    [switch] $AllowImageExpansionCandidate, [switch] $AllowPdfDarkCandidate)
+    [switch] $AllowImageExpansionCandidate, [switch] $AllowPdfDarkCandidate, [switch] $AllowLegacyCommercial)
 $ErrorActionPreference = 'Stop'
 if ($AllowOfficeCandidate -and -not $AllowPdfCandidate) {
     throw 'The Office candidate requires the PDF candidate for independent output validation.'
@@ -13,12 +13,12 @@ if ($AllowImageExpansionCandidate -and -not $AllowHeifCandidate) {
     throw 'The AVIF output candidate requires the pinned HEIF decoder for independent validation.'
 }
 & (Join-Path $PSScriptRoot 'Test-ProductionEngine.ps1') -Payload $Payload
-& (Join-Path (Split-Path $PSScriptRoot -Parent) 'dds-engine\Test-DdsEngine.ps1') -Payload $Payload
+& (Join-Path (Split-Path $PSScriptRoot -Parent) 'dds-engine\Test-DdsEngine.ps1') -Payload $Payload -AllowLegacyBuildDefinition:$AllowLegacyCommercial
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'png-engine\Test-PngEngine.ps1') -Payload $Payload -RequireDependencyNotices
 & (Join-Path (Split-Path $PSScriptRoot -Parent) 'palette-engine\Test-PaletteEngine.ps1') -Payload $Payload
 $allowed = @('Magick.Native-Q16-x64.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.Core.dll',
     'Magick.NET.Notice.txt', 'ContextSuite.Engine.json', 'ContextSuite.Shell.dll',
-    'THIRD-PARTY-NOTICES.txt', 'ThirdPartyNotices.html', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'payload-inventory.json',
+    'ContextSuite.License.md', 'THIRD-PARTY-NOTICES.txt', 'ThirdPartyNotices.html', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'payload-inventory.json',
     'ContextSuite.Dds.Native.dll', 'ContextSuite.Dds.Engine.json', 'DirectXTex.License.txt',
     'oxipng.exe', 'ContextSuite.Png.Engine.json', 'Oxipng.License.txt', 'Oxipng.ThirdPartyNotices.txt', 'Oxipng.Rust.Library.Notices.html',
     'ContextSuite.Palette.exe', 'ContextSuite.Palette.Engine.json', 'ExoQuant.License.txt', 'Rust.Library.Notices.html')
@@ -33,7 +33,8 @@ foreach ($entry in $docxSelection.files) {
 foreach ($name in 'Application', 'Worker') {
     foreach ($extension in 'exe', 'dll', 'pdb', 'deps.json', 'runtimeconfig.json') { $allowed += "ContextSuite.$name.$extension" }
 }
-foreach ($name in 'Core', 'Private', 'Commercial') { $allowed += "ContextSuite.$name.dll", "ContextSuite.$name.pdb" }
+if ($AllowLegacyCommercial) { $allowed += 'ContextSuite.Commercial.dll', 'ContextSuite.Commercial.pdb' }
+foreach ($name in 'Core', 'Private') { $allowed += "ContextSuite.$name.dll", "ContextSuite.$name.pdb" }
 foreach ($name in 'Analyze', 'Convert', 'Optimize') { $allowed += "Assets\$name.ico", "Assets\$($name)Dark.ico", "Assets\$($name)Square44x44Logo.png", "Assets\$($name)Square150x150Logo.png" }
 foreach ($name in 'ConvertPng', 'ConvertJpeg', 'ConvertWebp', 'ConvertBmp', 'ConvertTga', 'ConvertDds',
     'ConvertWav', 'ConvertFlac', 'ConvertMp3', 'ConvertM4a', 'ConvertOgg', 'ConvertOpus',
@@ -150,10 +151,12 @@ foreach ($name in $allowed) { [void]$allowedSet.Add($name) }
 foreach ($file in Get-ChildItem -LiteralPath $root -Recurse -File) {
     if (-not $allowedSet.Contains($file.FullName.Substring($root.Length + 1))) { throw "Unreviewed production file: $($file.FullName)" }
 }
-foreach ($required in 'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'ContextSuite.Engine.json', 'ContextSuite.Commercial.dll') {
+if ($AllowLegacyCommercial -and -not (Test-Path -LiteralPath (Join-Path $root 'ContextSuite.Commercial.dll') -PathType Leaf)) { throw 'Missing historical commercial runtime.' }
+foreach ($required in 'THIRD-PARTY-NOTICES.txt', 'DotNet.License.txt', 'DotNet.ThirdPartyNotices.txt', 'ContextSuite.Engine.json') {
     if (-not (Test-Path -LiteralPath (Join-Path $root $required)) -or (Get-Item -LiteralPath (Join-Path $root $required)).Length -eq 0) { throw "Missing/empty production notice/identity: $required" }
 }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+if (-not $AllowLegacyCommercial) { & (Join-Path (Split-Path $PSScriptRoot -Parent) 'Test-ProductTerms.ps1') -Payload $root }
 if ((Get-FileHash (Join-Path $repository 'assets\THIRD-PARTY-NOTICES.txt')).Hash -ne
     (Get-FileHash (Join-Path $root 'THIRD-PARTY-NOTICES.txt')).Hash) { throw 'Product third-party acknowledgment is stale.' }
 $selection = Join-Path $PSScriptRoot 'production.json'

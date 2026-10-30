@@ -12,7 +12,7 @@ $pin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'pdfium-evaluation.json
 if ((Get-FileHash -LiteralPath (Join-Path $prepared 'upstream.tgz')).Hash -ne $pin.archiveSha256) { throw 'PDFium archive identity changed.' }
 foreach ($kind in @('probe', 'renderer')) {
     $build = Get-Content -LiteralPath (Join-Path $prepared ($kind + '-build.json')) -Raw | ConvertFrom-Json
-    $source = if ($kind -eq 'probe') { Join-Path $PSScriptRoot 'PdfiumProbe' } else { Join-Path $repository 'proprietary\src\ContextSuite.PdfRenderer.Native' }
+    $source = if ($kind -eq 'probe') { Join-Path $PSScriptRoot 'PdfiumProbe' } else { Join-Path $repository 'src\ContextSuite.PdfRenderer.Native' }
     $sourceFile = if ($kind -eq 'probe') { 'Probe.cpp' } else { 'Renderer.cpp' }
     $hostName = if ($kind -eq 'probe') { 'ContextSuite.Pdfium.Probe.exe' } else { 'ContextSuite.PdfRenderer.exe' }
     $bin = Join-Path $prepared ($kind + '-build\bin\Release')
@@ -31,5 +31,5 @@ $probe = Join-Path $prepared 'probe-build\bin\Release\ContextSuite.Pdfium.Probe.
 if ($LASTEXITCODE -ne 0) { throw "PDFium comparison evaluation failed; evidence retained at $reference" }
 $evidence = Join-Path $prepared ('raster-adapter-' + [guid]::NewGuid().ToString('N'))
 $binary = Join-Path $prepared 'renderer-build\bin\Release'
-& dotnet run --project (Join-Path $repository 'proprietary\tests\ContextSuite.Pdf.ContractTests\ContextSuite.Pdf.ContractTests.csproj') -c Release -- --raster $binary $fixtures $reference $evidence
+& dotnet run --project (Join-Path $repository 'tests\ContextSuite.Pdf.ContractTests\ContextSuite.Pdf.ContractTests.csproj') -c Release -- --raster $binary $fixtures $reference $evidence
 if ($LASTEXITCODE -ne 0) { throw "Private PDF raster checks failed; evidence retained at $evidence" }

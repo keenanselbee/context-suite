@@ -76,7 +76,7 @@ internal static partial class DocumentAnalysisContracts
             vm.OfficeCalculationRequested += _ => { chartPrompts++; return Task.FromResult<string?>("cached"); };
             vm.Admit(Request(internalFiles)); await vm.WaitForIdleAsync();
             check(chartPrompts == 1 && internalAccess.Admissions == 1 && internalAccess.Last!.Plan.Sources.Length == 4 &&
-                vm.Rows.All(row => row.Result.State == OperationState.Failed && row.Status.Contains("Activate")),
+                vm.Rows.All(row => row.Result.State == OperationState.Failed && row.Status.Contains("unavailable")),
                 "Office charts: ordinary internal charts reach the existing calculation and access gates");
         }
         await using (var vm = Create("denied", denied))
@@ -86,7 +86,7 @@ internal static partial class DocumentAnalysisContracts
             vm.QuickBatchCompleted += (_, _) => completed++;
             vm.Admit(Request(paths)); await vm.WaitForIdleAsync();
             check(denied.Admissions == 1 && prompts == 1 && started == 1 && completed == 1 &&
-                vm.Rows.All(row => row.Result.State == OperationState.Failed && row.Status.Contains("Activate")),
+                vm.Rows.All(row => row.Result.State == OperationState.Failed && row.Status.Contains("unavailable")),
                 "Office direct: one calculation prompt, admission and completion cover the document batch");
             check(denied.Last!.Plan.Sources.Select(source => source.Format).SequenceEqual(new[] { "docx", "xlsx", "pptx" }) &&
                 denied.Last.Plan.Sources[1].Calculation == "recalculate" && denied.Last.Plan.Output.Mode == OutputMode.SiblingCopy,
@@ -156,11 +156,11 @@ internal static partial class DocumentAnalysisContracts
     {
         internal int Admissions;
         internal ConfirmedOfficeConversion? Last;
-        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken cancellationToken = default) => Task.FromResult(new OperationAccessStatus(false, "Activate a license."));
+        public Task<OperationAccessStatus> ReadAccessAsync(CancellationToken cancellationToken = default) => Task.FromResult(new OperationAccessStatus(false, "The operation is temporarily unavailable."));
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedOfficeConversion confirmed, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested(); Admissions++; Last = confirmed;
-            return Task.FromResult(new OperationAdmission(new(false, "Activate a license."), confirmed.Plan.BatchId));
+            return Task.FromResult(new OperationAdmission(new(false, "The operation is temporarily unavailable."), confirmed.Plan.BatchId));
         }
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch confirmed, CancellationToken cancellationToken) => throw new InvalidOperationException("Unexpected raster admission.");
         public Task<OperationAdmission> AdmitOptimizationAsync(ConfirmedPngOptimization confirmed, CancellationToken cancellationToken) => throw new InvalidOperationException("Unexpected Optimize admission.");

@@ -7,7 +7,7 @@ $scratch = Join-Path $repository '.codex-temp\png-quantization'
 if (-not $corpusRoot.StartsWith($scratch + '\', [StringComparison]::OrdinalIgnoreCase) -or $corpusRoot.Contains('"')) {
     throw 'Use already-copied PNGs beneath .codex-temp/png-quantization, never original media.'
 }
-& dotnet build (Join-Path $repository 'proprietary\tests\ContextSuite.Image.ContractTests\ContextSuite.Image.ContractTests.csproj') -c Release --nologo
+& dotnet build (Join-Path $repository 'tests\ContextSuite.Image.ContractTests\ContextSuite.Image.ContractTests.csproj') -c Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Corpus host build failed.' }
 $start = [Diagnostics.ProcessStartInfo]::new()
 $start.FileName = Join-Path $repository 'artifacts\managed\bin\ContextSuite.Image.ContractTests\Release\net10.0\ContextSuite.Image.ContractTests.exe'

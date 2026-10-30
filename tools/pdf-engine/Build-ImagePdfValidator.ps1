@@ -18,7 +18,7 @@ $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer
 $visualStudio = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 if (-not $visualStudio) { throw 'Visual Studio x64 C++ tools are required.' }
 $cmake = Join-Path $visualStudio 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe'
-$source = Join-Path $repository 'proprietary\src\ContextSuite.ImagePdfValidator.Native'
+$source = Join-Path $repository 'src\ContextSuite.ImagePdfValidator.Native'
 $payload = Join-Path $unpacked 'qpdf-12.4.1-msvc64'
 $build = Join-Path $prepared 'image-validator-build'
 & $cmake -S $source -B $build -G 'Visual Studio 18 2026' -A x64 "-DQPDF_PAYLOAD=$payload" '-DCMAKE_SYSTEM_VERSION=10.0.26100.0'

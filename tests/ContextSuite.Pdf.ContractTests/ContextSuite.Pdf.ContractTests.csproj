@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="[3.5.1]" />
+    <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute">
+      <_Parameter1>windows</_Parameter1>
+    </AssemblyAttribute>
+    <Compile Include="../../src/ContextSuite.Application/Infrastructure/OfficeSandboxOwner.cs" Link="OfficeSandboxOwner.cs" />
+    <Compile Include="../../src/ContextSuite.Application/Infrastructure/OfficeOwnershipJournal.cs" Link="OfficeOwnershipJournal.cs" />
+    <Compile Include="../../src/ContextSuite.Application/Infrastructure/OfficeContextPreparation.cs" Link="OfficeContextPreparation.cs" />
+    <Compile Include="../../src/ContextSuite.Application/Infrastructure/OfficeRecoveryCoordinator.cs" Link="OfficeRecoveryCoordinator.cs" />
+    <Compile Include="../../src/ContextSuite.Application/Infrastructure/PublicationFiles.cs" Link="PublicationFiles.cs" />
+    <Compile Include="../../src/ContextSuite.Application/Infrastructure/WorkerClient.cs" Link="WorkerClient.cs" />
+    <Compile Include="../../src/ContextSuite.Application/Infrastructure/OfficeFailureMessages.cs" Link="OfficeFailureMessages.cs" />
+    <Compile Include="../../src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs" Link="WorkerProcessJob.cs" />
+    <Compile Include="../../src/Shared/LocalPipe.cs" Link="LocalPipe.cs" />
+    <Compile Include="../ContextSuite.Image.ContractTests/PngFixture.cs" Link="PngFixture.cs" />
+    <ProjectReference Include="../../src/ContextSuite.Private/ContextSuite.Private.csproj" />
+  </ItemGroup>
+</Project>

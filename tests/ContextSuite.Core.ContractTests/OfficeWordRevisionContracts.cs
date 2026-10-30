@@ -27,7 +27,7 @@ internal static class OfficeWordRevisionContracts
         var checks = new List<string>();
         FileResult[] results;
         await using var worker = new WorkerClient(workerPath, Path.Combine(root, "workers"));
-        var access = new LocalTrialStore(Path.Combine(root, "trial.json"));
+        var access = new OperationAdmissionService();
         await using (var vm = new MainViewModel(worker,
             new SuiteSettings { Convert = new(OutputDirectory: output, ReplaceOriginals: true) },
             new OutputPublisher(Path.Combine(root, "publications"), new NoRecycle()), access, contexts))

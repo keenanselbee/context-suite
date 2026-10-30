@@ -83,7 +83,7 @@ internal static class PdfPerformanceContracts
                 await using (var worker = new WorkerClient(executable, scratch))
                 await using (var vm = new MainViewModel(worker,
                     new SuiteSettings { Convert = new(OutputDirectory: outputs), PlayCompletionSound = false },
-                    new OutputPublisher(records, new ForbiddenRecycle()), new LocalTrialStore(Path.Combine(directory, "trial.json"))))
+                    new OutputPublisher(records, new ForbiddenRecycle()), new OperationAdmissionService()))
                 {
                     vm.ConversionRequested += (_, _) => throw new InvalidOperationException("Routine PDF commands must not open a planner.");
                     vm.ImagePdfOrderRequested += async (decision, token) =>

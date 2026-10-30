@@ -20,7 +20,7 @@ internal static class FlacWorkflowContracts
         var digest = SHA256.HashData(padded);
         var trialPath = Path.Combine(scratch, "access", "trial.json");
         var clock = new Clock();
-        var access = new CountingAccess(new LocalTrialStore(trialPath, clock));
+        var access = new CountingAccess(new OperationAdmissionService());
         var records = Path.Combine(scratch, "publications");
         var publisher = new OutputPublisher(records, new ForbiddenRecycle());
         await using var worker = new WorkerClient(executable, Path.Combine(scratch, "workers"));
@@ -28,7 +28,7 @@ internal static class FlacWorkflowContracts
         check(worker.HasFlacOptimizer, "FLAC workflow: isolated encoder payload is present");
         var first = await worker.ProbeFlacAsync(new(Guid.NewGuid(), path), default);
         var workerId = worker.ProcessId;
-        check(first.OptimizationBlockReason is null && !File.Exists(trialPath), "FLAC workflow: planning probe leaves trial unstarted");
+        check(first.OptimizationBlockReason is null && !File.Exists(trialPath), "FLAC workflow: planning probe leaves legacy access storage untouched");
         var second = await worker.ProbeFlacAsync(new(Guid.NewGuid(), secondPath), default);
         var collision = Path.Combine(scratch, OutputNames.Create(path, "optimize", "flac"));
         await File.WriteAllTextAsync(collision, "existing output canary");
@@ -38,7 +38,7 @@ internal static class FlacWorkflowContracts
             if (item.Source.ItemId == first.ItemId && row.State == OperationState.Succeeded) clock.Now = clock.Now.AddDays(8);
         }, default);
         check(result.Admission.IsAllowed && access.Admissions == 1 && result.Results.All(row => row.Publication?.Outcome == PublicationOutcome.CopyCreated),
-            "FLAC workflow: one trial admission lets both files finish across expiry");
+            "FLAC workflow: one batch admission lets both files finish after clock changes");
         check(worker.ProcessId == workerId, "FLAC workflow: one sequential worker handles the batch");
         var published = result.Results[0].Publication!.OutputPath!;
         check(published != collision && await File.ReadAllTextAsync(collision) == "existing output canary" &&
@@ -48,10 +48,10 @@ internal static class FlacWorkflowContracts
         check(outputBytes.Length < padded.Length && SHA256.HashData(await File.ReadAllBytesAsync(path)).SequenceEqual(digest) &&
             SHA256.HashData(await File.ReadAllBytesAsync(secondPath)).SequenceEqual(digest), "FLAC workflow: validated smaller copies preserve metadata and both originals");
         var denied = await executor.ExecuteAsync(confirmed, null, default);
-        check(!denied.Admission.IsAllowed && denied.Results.All(row => row.State == OperationState.Failed) && Directory.GetFiles(records).Length == 0,
-            "FLAC workflow: expired access creates no reservation or output");
+        check(denied.Admission.IsAllowed && denied.Results.All(row => row.State is OperationState.Succeeded or OperationState.Unchanged) && Directory.GetFiles(records).Length == 0,
+            "FLAC workflow: subsequent free batch completes and cleans publication records");
 
-        var freshAccess = new CountingAccess(new LocalTrialStore(Path.Combine(scratch, "fresh-access", "trial.json")));
+        var freshAccess = new CountingAccess(new OperationAdmissionService());
         var freshExecutor = new FlacOptimizationExecutor(worker, publisher, freshAccess);
         var compressed = await worker.ProbeFlacAsync(new(Guid.NewGuid(), published), default);
         var beforeCount = Directory.GetFiles(scratch, "*.flac").Length;

@@ -4,10 +4,21 @@ $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $root = (Resolve-Path -LiteralPath $Candidate).Path.TrimEnd('\')
 $manifest = Get-Content -LiteralPath (Join-Path $root 'release-manifest.json') -Raw | ConvertFrom-Json
-if ($manifest.schema -ne 1 -or $manifest.status -ne 'unsigned-internal-candidate' -or
-    $manifest.publicCommit -notmatch '^[a-f0-9]{40}$' -or $manifest.privateCommit -notmatch '^[a-f0-9]{40}$') {
-    throw 'Invalid candidate identity.'
+# Schema 1 identifies historical public/private builds; schema 2 has one public source.
+function Assert-ReleaseIdentity([object] $Manifest) {
+    if (($Manifest.schema -isnot [int] -and $Manifest.schema -isnot [long]) -or
+        $Manifest.schema -notin 1, 2 -or $Manifest.status -isnot [string] -or
+        $Manifest.status -cne 'unsigned-internal-candidate') { throw 'Invalid candidate identity.' }
+    $legacyCommercial = $Manifest.schema -eq 1
+    if (($legacyCommercial -and ($Manifest.publicCommit -isnot [string] -or $Manifest.privateCommit -isnot [string] -or
+            $Manifest.publicCommit -cnotmatch '^[a-f0-9]{40}$' -or $Manifest.privateCommit -cnotmatch '^[a-f0-9]{40}$')) -or
+        (-not $legacyCommercial -and ($Manifest.sourceCommit -isnot [string] -or $Manifest.sourceCommit -cnotmatch '^[a-f0-9]{40}$' -or
+            $Manifest.PSObject.Properties.Name -contains 'privateCommit' -or $Manifest.PSObject.Properties.Name -contains 'publicCommit'))) {
+        throw 'Invalid candidate identity.'
+    }
+    return $legacyCommercial
 }
+$legacyCommercial = Assert-ReleaseIdentity $manifest
 $engines = & (Join-Path $PSScriptRoot 'Get-CandidateEngines.ps1') -Payload (Join-Path $root 'app')
 if ($manifest.PSObject.Properties.Name -contains 'optionalEngines') {
     $recorded = $manifest.optionalEngines
@@ -55,7 +66,9 @@ foreach ($name in 'Application', 'Worker') {
         if (-not $expected.Contains("app/ContextSuite.$name.$extension")) { throw 'Incomplete application/worker payload.' }
     }
 }
-foreach ($required in 'ContextSuite.Core.dll', 'ContextSuite.Private.dll', 'ContextSuite.Commercial.dll', 'ContextSuite.Shell.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.Core.dll') {
+if ($legacyCommercial -and -not $expected.Contains('app/ContextSuite.Commercial.dll')) { throw 'Missing historical commercial runtime.' }
+if (-not $legacyCommercial -and $expected.Contains('app/ContextSuite.Commercial.dll')) { throw 'Commercial runtime in free candidate.' }
+foreach ($required in 'ContextSuite.Core.dll', 'ContextSuite.Private.dll', 'ContextSuite.Shell.dll', 'Magick.NET-Q16-x64.dll', 'Magick.NET.Core.dll') {
     if (-not $expected.Contains("app/$required")) { throw "Missing runtime component: $required" }
 }
 foreach ($entry in @(@{ name='Application'; recorded=$manifest.applicationDependencies }, @{ name='Worker'; recorded=$manifest.dependencies })) {
@@ -88,5 +101,5 @@ if ($applicationVersion -ge [version]'1.3.6.0' -and -not $expected.Contains('app
 & (Join-Path $repository 'tools\curated-engine\Test-ProductionPayload.ps1') -Payload (Join-Path $root 'app') `
     -AllowAudioCandidate:($engines.audio -ne 'none') -AllowPdfCandidate:$engines.pdf `
     -AllowOfficeCandidate:$engines.office -AllowHeifCandidate:$engines.heif -AllowWemCandidate:$engines.wem `
-    -AllowImageExpansionCandidate:$engines.imageExpansion -AllowPdfDarkCandidate:$engines.pdfDark
+    -AllowImageExpansionCandidate:$engines.imageExpansion -AllowPdfDarkCandidate:$engines.pdfDark -AllowLegacyCommercial:$legacyCommercial
 Write-Output 'Release candidate inventory and source-linked engine guards passed. Hashes are not signatures; installation remains unverified.'

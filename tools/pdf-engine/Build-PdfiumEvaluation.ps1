@@ -22,7 +22,7 @@ $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer
 $visualStudio = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 if (-not $visualStudio) { throw 'Visual Studio x64 C++ tools are required.' }
 $cmake = Join-Path $visualStudio 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe'
-$source = if ($Renderer) { Join-Path $repository 'proprietary\src\ContextSuite.PdfRenderer.Native' } else { Join-Path $PSScriptRoot 'PdfiumProbe' }
+$source = if ($Renderer) { Join-Path $repository 'src\ContextSuite.PdfRenderer.Native' } else { Join-Path $PSScriptRoot 'PdfiumProbe' }
 $name = if ($Renderer) { 'renderer-build' } else { 'probe-build' }
 $target = if ($Renderer) { 'ContextSuite.PdfRenderer' } else { 'ContextSuite.Pdfium.Probe' }
 $sourceName = if ($Renderer) { 'Renderer.cpp' } else { 'Probe.cpp' }

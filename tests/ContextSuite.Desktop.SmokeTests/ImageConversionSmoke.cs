@@ -104,27 +104,24 @@ internal static class ImageConversionSmoke
                 "routine direct actions leave no conversion dialog");
             Check(owned.Skip(1).All(process => process.HasExited), "forwarded activations retain one owner");
             using (var decoded = new Bitmap(jpeg)) Check(decoded.Width == 64 && decoded.Height == 48, "fixed defaults preserve original dimensions");
-            Check(File.Exists(trial), "first direct conversion starts isolated trial");
+            Check(!File.Exists(trial), "free direct conversion creates no access file");
             Check(Control(main, "BatchSummary").Name.Contains("3 completed", StringComparison.Ordinal), "compact status reports the three successful outputs");
             Capture(main, "direct-results");
             var tryAgain = main.FindFirstDescendant(cf => cf.ByAutomationId("RetrySelectedFiles"));
             Check(tryAgain is null || tryAgain.IsOffscreen,
                 "unsupported input does not offer an ineffective Try again action");
 
+            Directory.CreateDirectory(Path.GetDirectoryName(trial)!);
             File.WriteAllText(trial, JsonSerializer.Serialize(new { SchemaVersion = 1,
                 StartedUtc = DateTimeOffset.UtcNow.AddDays(-8), LastObservedUtc = DateTimeOffset.UtcNow }));
             Activate("convert", "tga", [files[1]]);
-            Wait(() => IsIdle(main), "expired direct conversion completion");
-            Check(!File.Exists(Path.Combine(inputs, "opaque - Converted.tga")) && Control(main, "OpenLicense").IsEnabled,
-                "expired direct conversion keeps files and exposes License");
-            Control(main, "RetrySelectedFiles").AsButton().Invoke();
-            Wait(() => IsIdle(main), "expired command retry completes");
-            Check(!File.Exists(Path.Combine(inputs, "opaque - Converted.tga")) &&
-                !Directory.EnumerateFiles(inputs, "*Converted (2)*").Any(),
-                "Try again respects expired access and does not repeat successful files");
+            var legacyBytes = File.ReadAllBytes(trial);
+            Wait(() => File.Exists(Path.Combine(inputs, "opaque - Converted.tga")) && IsIdle(main), "free conversion with expired legacy record");
+            Check(File.ReadAllBytes(trial).SequenceEqual(legacyBytes),
+                "free conversion preserves expired legacy access bytes");
             Control(main, "OpenSettings").AsButton().Invoke();
             var settings = WaitWindow("SettingsWindow");
-            Check(Control(settings, "SaveSettings").IsEnabled, "settings remain accessible after expiry");
+            Check(Control(settings, "SaveSettings").IsEnabled, "settings remain accessible after free conversion");
             Check(Control(settings, "CreateCopies").AsRadioButton().IsChecked, "Create copies is the saved default");
             var preferencesBefore = File.ReadAllBytes(Path.Combine(root, "settings.json"));
             var replacement = Control(settings, "AllowReplacement");

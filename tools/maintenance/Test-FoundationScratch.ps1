@@ -40,7 +40,7 @@ function New-MockRepository {
 
 function Get-MockRun {
     param([string] $Root)
-    $runs = @(Get-ChildItem -LiteralPath (Join-Path $Root '.codex-temp\foundation-tests') -Directory)
+    $runs = @(Get-ChildItem -LiteralPath (Join-Path $Root '.codex-temp') -Directory -Filter 'ft-*')
     Assert-Check ($runs.Count -eq 1) 'one unique run was created'
     return $runs[0].FullName
 }
@@ -51,7 +51,7 @@ try {
     $root = New-MockRepository 'success'
     & (Join-Path $root 'tools\Test-Foundation.ps1') | Out-Null
     $run = Get-MockRun $root
-    Assert-Check (-not (Test-Path -LiteralPath (Join-Path $run 'fixtures')) -and
+    Assert-Check (-not (Test-Path -LiteralPath (Join-Path $run 'f')) -and
         (Test-Path -LiteralPath (Join-Path $run 'result.json')) -and
         (Test-Path -LiteralPath (Join-Path $run 'foundation.log')) -and
         (Test-Path -LiteralPath (Join-Path $run 'cleanup.txt'))) 'success retains receipt and log, removes fixtures'
@@ -66,7 +66,7 @@ try {
     $failed = $false
     try { & (Join-Path $root 'tools\Test-Foundation.ps1') 3>$null | Out-Null } catch { $failed = $true }
     $run = Get-MockRun $root
-    Assert-Check ($failed -and (Test-Path -LiteralPath (Join-Path $run 'fixtures\nested\sample.txt')) -and
+    Assert-Check ($failed -and (Test-Path -LiteralPath (Join-Path $run 'f\nested\sample.txt')) -and
         (Test-Path -LiteralPath (Join-Path $run 'foundation.log')) -and
         (Test-Path -LiteralPath (Join-Path $run 'failure.txt')) -and
         -not (Test-Path -LiteralPath (Join-Path $run 'result.json'))) 'failed contracts retain fixture, log, and reason'
@@ -76,14 +76,14 @@ try {
     $failed = $false
     try { & (Join-Path $root 'tools\Test-Foundation.ps1') 3>$null | Out-Null } catch { $failed = $true }
     $run = Get-MockRun $root
-    Assert-Check ($failed -and (Test-Path -LiteralPath (Join-Path $run 'fixtures\nested\sample.txt')) -and
+    Assert-Check ($failed -and (Test-Path -LiteralPath (Join-Path $run 'f\nested\sample.txt')) -and
         -not (Test-Path -LiteralPath (Join-Path $run 'cleanup.txt'))) 'receipt failure retains fixtures'
 
     $global:FoundationMockScenario = 'keep'
     $root = New-MockRepository 'keep'
     & (Join-Path $root 'tools\Test-Foundation.ps1') -KeepScratch | Out-Null
     $run = Get-MockRun $root
-    Assert-Check ((Test-Path -LiteralPath (Join-Path $run 'fixtures\nested\sample.txt')) -and
+    Assert-Check ((Test-Path -LiteralPath (Join-Path $run 'f\nested\sample.txt')) -and
         (Test-Path -LiteralPath (Join-Path $run 'result.json')) -and
         -not (Test-Path -LiteralPath (Join-Path $run 'cleanup.txt'))) 'KeepScratch retains a successful fixture'
 
@@ -98,27 +98,22 @@ $global:LASTEXITCODE = 0
     & (Join-Path $root 'tools\Test-Foundation.ps1') -Configuration Release -Integration | Out-Null
     $run = Get-MockRun $root
     $result = Get-Content -LiteralPath (Join-Path $run 'result.json') -Raw | ConvertFrom-Json
-    Assert-Check ($result.integration -and -not (Test-Path -LiteralPath (Join-Path $run 'fixtures')) -and
+    Assert-Check ($result.integration -and -not (Test-Path -LiteralPath (Join-Path $run 'f')) -and
         $global:FoundationMockArguments.Count -eq 8 -and
         $global:FoundationMockArguments[-2] -eq (Join-Path $root 'artifacts\production\Release\ContextSuite.Worker.exe') -and
         $global:FoundationMockArguments[-1] -eq (Join-Path $root 'artifacts\production\Release\ContextSuite.Application.exe')) 'Integration keeps production build and worker arguments'
 
-    foreach ($linkName in @('scratch', 'foundation-tests')) {
-        $root = New-MockRepository ('linked-' + $linkName)
-        $target = Join-Path $testRoot ('target-' + $linkName)
-        New-Item -ItemType Directory -Path $target -ErrorAction Stop | Out-Null
-        if ($linkName -eq 'foundation-tests') {
-            New-Item -ItemType Directory -Path (Join-Path $root '.codex-temp') -ErrorAction Stop | Out-Null
-            $link = Join-Path $root '.codex-temp\foundation-tests'
-        } else { $link = Join-Path $root '.codex-temp' }
-        New-Item -ItemType Junction -Path $link -Target $target -ErrorAction Stop | Out-Null
-        $global:FoundationMockArguments = @()
-        $rejected = $false
-        try { & (Join-Path $root 'tools\Test-Foundation.ps1') 3>$null | Out-Null } catch { $rejected = $true }
-        Assert-Check ($rejected -and $global:FoundationMockArguments.Count -eq 0 -and
-            @(Get-ChildItem -LiteralPath $target -Force).Count -eq 0) "linked $linkName ancestor rejected before test creation"
-        (Get-Item -LiteralPath $link -Force).Delete()
-    }
+    $root = New-MockRepository 'linked-scratch'
+    $target = Join-Path $testRoot 'target-scratch'
+    New-Item -ItemType Directory -Path $target -ErrorAction Stop | Out-Null
+    $link = Join-Path $root '.codex-temp'
+    New-Item -ItemType Junction -Path $link -Target $target -ErrorAction Stop | Out-Null
+    $global:FoundationMockArguments = @()
+    $rejected = $false
+    try { & (Join-Path $root 'tools\Test-Foundation.ps1') 3>$null | Out-Null } catch { $rejected = $true }
+    Assert-Check ($rejected -and $global:FoundationMockArguments.Count -eq 0 -and
+        @(Get-ChildItem -LiteralPath $target -Force).Count -eq 0) 'linked scratch ancestor rejected before test creation'
+    (Get-Item -LiteralPath $link -Force).Delete()
 
     # Load only the runner's functions; never execute its real dotnet or build path.
     $tokens = $null; $errors = $null
@@ -128,15 +123,33 @@ $global:LASTEXITCODE = 0
         . ([scriptblock]::Create($function.Extent.Text))
     }
     $root = New-MockRepository 'guards'
-    $scratch = Join-Path $root '.codex-temp\foundation-tests'
-    $run = Join-Path $scratch ([guid]::NewGuid().ToString('N'))
-    $fixture = Join-Path $run 'fixtures'
+    $scratch = Join-Path $root '.codex-temp'
+    $run = Join-Path $scratch ('ft-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
+    $fixture = Join-Path $run 'f'
     New-Item -ItemType Directory -Path $fixture -ErrorAction Stop | Out-Null
-    $sibling = Join-Path $scratch ([guid]::NewGuid().ToString('N'))
+    $sibling = Join-Path $scratch ('ft-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
     New-Item -ItemType Directory -Path $sibling -ErrorAction Stop | Out-Null
     Set-Content -LiteralPath (Join-Path $sibling 'history.txt') -Value 'keep'
     Set-Content -LiteralPath (Join-Path $fixture 'a.txt') -Value 'a'
     $inventory = @(Get-FoundationFixtureInventory $fixture)
+    # The shorter layout keeps the same exact ownership and link protections.
+    foreach ($invalidRun in @((Join-Path $scratch 'ft-not-a-run'), (Join-Path $scratch 'ft-0123456789ab-extra'),
+        (Join-Path $scratch ('foundation-tests\' + [guid]::NewGuid().ToString('N'))))) {
+        $rejected = $false
+        try { Assert-FoundationFixture $root $invalidRun (Join-Path $invalidRun 'f') } catch { $rejected = $true }
+        Assert-Check $rejected 'invalid or historical run layout rejected'
+    }
+    $rejected = $false
+    try { Assert-FoundationFixture $root $run (Join-Path $run 'fixtures') } catch { $rejected = $true }
+    Assert-Check $rejected 'alternate fixture child rejected'
+    $linkedRun = Join-Path $scratch ('ft-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
+    $runTarget = Join-Path $testRoot 'linked-run-target'
+    New-Item -ItemType Directory -Path $runTarget -ErrorAction Stop | Out-Null
+    New-Item -ItemType Junction -Path $linkedRun -Target $runTarget -ErrorAction Stop | Out-Null
+    $rejected = $false
+    try { Assert-FoundationFixture $root $linkedRun (Join-Path $linkedRun 'f') } catch { $rejected = $true }
+    Assert-Check ($rejected -and @(Get-ChildItem -LiteralPath $runTarget -Force).Count -eq 0) 'linked run rejected without changing its target'
+    (Get-Item -LiteralPath $linkedRun -Force).Delete()
     $outside = Join-Path $testRoot 'outside.txt'
     Set-Content -LiteralPath $outside -Value 'safe'
     $rejected = $false
@@ -166,7 +179,7 @@ $global:LASTEXITCODE = 0
         (Test-Path -LiteralPath (Join-Path $sibling 'history.txt'))) 'exact fixture cleanup preserves siblings'
 
     # A newly added file after inventory validation can stop a directory delete.
-    $fixture = Join-Path $run 'fixtures'
+    $fixture = Join-Path $run 'f'
     New-Item -ItemType Directory -Path $fixture -ErrorAction Stop | Out-Null
     Set-Content -LiteralPath (Join-Path $fixture 'first.txt') -Value 'first'
     $inventory = @(Get-FoundationFixtureInventory $fixture)
@@ -182,8 +195,8 @@ $global:LASTEXITCODE = 0
     Remove-Item Function:\Remove-Item
     Assert-Check ($rejected -and (Test-Path -LiteralPath (Join-Path $fixture 'new.txt'))) 'partial cleanup preserves late content'
 
-    $run = Join-Path $scratch ([guid]::NewGuid().ToString('N'))
-    $fixture = Join-Path $run 'fixtures'
+    $run = Join-Path $scratch ('ft-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
+    $fixture = Join-Path $run 'f'
     $script:swapDirectory = Join-Path $fixture 'inside'
     $script:savedDirectory = Join-Path $fixture 'saved'
     $script:swapFilePath = Join-Path $script:swapDirectory 'sample.txt'

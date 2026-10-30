@@ -28,7 +28,7 @@ internal static partial class AudioInterruptionContracts
         var publisher = new OutputPublisher(records, new NoRecycle());
         var clock = new ImageInterruptionContracts.DeadlineClock();
         await using var worker = new WorkerClient(executable, workerRoot, clock);
-        var executor = new AudioConversionExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial.json")));
+        var executor = new AudioConversionExecutor(worker, publisher, new OperationAdmissionService());
         var source = await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), sourcePath), AudioFormat.Flac, default);
         var baseline = await executor.ExecuteAsync(Plan(source, AudioFormat.Flac), null, default);
         var baselineOutput = baseline.Results.Single().Publication;
@@ -128,7 +128,7 @@ internal static partial class AudioInterruptionContracts
                 check(preserved, "Audio interruption: originals and earlier committed copies survive " + scenario);
                 var retry = optimize ? await worker.ProbeFlacAsync(new(Guid.NewGuid(), retryPath), default) :
                     await worker.ProbeAudioFileAsync(new(Guid.NewGuid(), retryPath), target, default);
-                var resumed = optimize ? await new FlacOptimizationExecutor(worker, publisher, new LocalTrialStore(Path.Combine(root, "trial.json")))
+                var resumed = optimize ? await new FlacOptimizationExecutor(worker, publisher, new OperationAdmissionService())
                     .ExecuteAsync(FlacOptimizationPlan.Create(Guid.NewGuid(), [retry], new("optimize", new())).Confirm(false, false), null, default) :
                     await executor.ExecuteAsync(Plan(retry, target), null, default);
                 var resumedOutput = resumed.Results.Single().Publication;

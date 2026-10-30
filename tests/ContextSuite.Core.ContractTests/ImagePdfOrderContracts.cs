@@ -24,8 +24,8 @@ internal static class ImagePdfOrderContracts
         check(!model.CanConfirm && !model.MoveUpCommand.CanExecute(null) && model.MoveDownCommand.CanExecute(null),
             "PDF order: confirmation waits for access and movement stops at first boundary");
         await model.RefreshAccessAsync();
-        check(!model.CanConfirm && model.LicenseActionLabel.Contains("Activate") && access.Admissions == 0,
-            "PDF order: expiry has an activation action without admission");
+        check(!model.CanConfirm && model.Message.Contains("unavailable") && access.Admissions == 0,
+            "PDF order: unavailable preparation has a message without admission");
         model.SelectedPage = model.Pages[2]; model.MoveDownCommand.Execute(null);
         check(model.SelectedPage.Page.Source == third && model.Pages[2].Number == 3 && !model.MoveDownCommand.CanExecute(null),
             "PDF order: last boundary cannot discard or duplicate a page");
@@ -41,7 +41,7 @@ internal static class ImagePdfOrderContracts
             "PDF order: activation enables the exact edited order with mandatory copies");
         access.Allowed = false; await model.RefreshAccessAsync();
         check(!model.CanConfirm && model.Pages.Select(page => page.Page.Source).SequenceEqual(ordered),
-            "PDF order: deactivation preserves edited pages and blocks conversion");
+            "PDF order: preparation failure preserves edited pages and blocks conversion");
         access.Allowed = true; await model.RefreshAccessAsync();
         ConfirmedImagePdf? confirmed = null; var count = 0;
         model.Confirmed += value => { confirmed = value; count++; };
@@ -64,14 +64,14 @@ internal static class ImagePdfOrderContracts
             "PDF order: moving a valid first image resolves the output name without losing pages");
         var delayed = new DelayedAccess(); using var racing = new ImagePdfOrderViewModel(plan, delayed);
         var older = racing.RefreshAccessAsync(); var newer = racing.RefreshAccessAsync();
-        delayed.Replies[1].SetResult(new(false, "New expired status")); await newer;
+        delayed.Replies[1].SetResult(new(false, "New unavailable status")); await newer;
         delayed.Replies[0].SetResult(new(true, "Old active status")); await older;
-        check(!racing.CanConfirm && racing.Message == "New expired status", "PDF order: late stale license response cannot enable conversion");
+        check(!racing.CanConfirm && racing.Message == "New unavailable status", "PDF order: late stale preparation response cannot enable conversion");
         var waiting = racing.RefreshAccessAsync(); racing.Dispose(); await waiting;
         check(!racing.CanConfirm && !racing.CanEdit && delayed.Replies[2].Task.IsCanceled,
             "PDF order: closing cancels access and prevents late confirmation");
         await using var worker = new WorkerClient(Path.Combine(scratch, "missing-worker.exe"));
-        await using var main = new MainViewModel(worker, trial: access);
+        await using var main = new MainViewModel(worker, admissionService: access);
         var prompts = 0;
         main.ImagePdfOrderRequested += async (decision, token) =>
         {
@@ -86,7 +86,7 @@ internal static class ImagePdfOrderContracts
         check(prompts == 1 && many!.Plan.Pages.Select(page => page.Source).SequenceEqual(ordered) && access.Admissions == 0,
             "PDF order orchestration: several images use one focused review and return reviewed order");
         await using var cancelWorker = new WorkerClient(Path.Combine(scratch, "missing-worker.exe"));
-        await using var cancelMain = new MainViewModel(cancelWorker, trial: access);
+        await using var cancelMain = new MainViewModel(cancelWorker, admissionService: access);
         ImagePdfOrderViewModel? cancelledModel = null;
         cancelMain.ImagePdfOrderRequested += (decision, token) => { cancelledModel = decision; return Task.FromResult<ConfirmedImagePdf?>(null); };
         check(await cancelMain.ConfirmImagePdfOrderAsync(plan, default) is null && cancelledModel?.CanEdit == false && access.Admissions == 0,
@@ -97,7 +97,7 @@ internal static class ImagePdfOrderContracts
     {
         public bool Allowed { get; set; }
         public int Admissions { get; private set; }
-        public virtual Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Active" : "Activate your license to convert."));
+        public virtual Task<OperationAccessStatus> ReadAccessAsync(CancellationToken token = default) => Task.FromResult(new OperationAccessStatus(Allowed, Allowed ? "Active" : "The operation is temporarily unavailable."));
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImagePdf plan, CancellationToken token)
         { Admissions++; throw new InvalidOperationException("Page-order review must not admit work."); }
         public Task<OperationAdmission> AdmitConversionAsync(ConfirmedImageBatch plan, CancellationToken token) => throw new InvalidOperationException("Unexpected admission.");

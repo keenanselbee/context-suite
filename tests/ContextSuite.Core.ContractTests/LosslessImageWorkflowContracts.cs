@@ -65,14 +65,14 @@ internal static class LosslessImageWorkflowContracts
 
         var clock = new Clock();
         var trialPath = Path.Combine(root, "policy-trial", "trial.json");
-        IOperationAccess trial = new LocalTrialStore(trialPath, clock);
+        IOperationAccess trial = new OperationAdmissionService();
         check(!File.Exists(trialPath), "lossless image policy: planning and work validation leave trial unstarted");
         var admitted = await trial.AdmitOptimizationAsync(confirmed, default);
-        check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && File.Exists(trialPath),
-            "lossless image policy: confirmed plan starts one isolated trial admission");
+        check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && !File.Exists(trialPath),
+            "lossless image policy: confirmed plan starts one isolated batch admission");
         clock.Now = clock.Now.AddDays(8);
-        check(!(await trial.AdmitOptimizationAsync(confirmed, default)).IsAllowed,
-            "lossless image policy: expired trial blocks a new admission");
+        check((await trial.AdmitOptimizationAsync(confirmed, default)).IsAllowed,
+            "lossless image policy: clock changes do not block a new admission");
         if (executable is null) return;
 
         var pngPath = Path.Combine(root, "authored.png");
@@ -93,7 +93,7 @@ internal static class LosslessImageWorkflowContracts
         check(lossy.Format == ImageFormat.WebP && lossy.IsLossy, "image worker: still lossy WebP retains honest encoding facts");
         var publisher = new OutputPublisher(Path.Combine(root, "records"), new NoRecycle(), replacementVerified: true);
         var executor = new LosslessImageOptimizationExecutor(worker, publisher);
-        var freshTrial = new CountedAccess(new LocalTrialStore(Path.Combine(root, "worker-trial", "trial.json")));
+        var freshTrial = new CountedAccess(new OperationAdmissionService());
         var batch = LosslessImageOptimizationPlan.Create(Guid.NewGuid(), [jpeg, lossless], settings).Confirm();
         var admission = await freshTrial.AdmitOptimizationAsync(batch, default);
         var collision = Path.Combine(root, OutputNames.Create(jpegPath, "optimize", "jpg"));
@@ -147,7 +147,7 @@ internal static class LosslessImageWorkflowContracts
 
         var mixedClock = new Clock();
         var mixedTrialPath = Path.Combine(root, "mixed-trial", "trial.json");
-        var mixedAccess = new CountedAccess(new LocalTrialStore(mixedTrialPath, mixedClock));
+        var mixedAccess = new CountedAccess(new OperationAdmissionService());
         await using (var view = new MainViewModel(new WorkerClient(executable, Path.Combine(root, "mixed-worker")),
             new SuiteSettings { PlayCompletionSound = false }, publisher, mixedAccess))
         {
@@ -166,16 +166,16 @@ internal static class LosslessImageWorkflowContracts
             view.ConversionRequested += (_, _) => throw new InvalidOperationException("Optimization must not open a conversion planner.");
             view.Admit(new(Guid.NewGuid(), "optimize", "auto", [pngPath, jpegPath, webpPath, lossyPath]));
             await view.WaitForIdleAsync();
-            check(starts == 1 && finishes == 1 && mixedAccess.Admissions == 1 && File.Exists(mixedTrialPath) &&
+            check(starts == 1 && finishes == 1 && mixedAccess.Admissions == 1 && !File.Exists(mixedTrialPath) &&
                 view.Rows.All(row => row.Result.State is OperationState.Succeeded or OperationState.Unchanged),
-                "image direct: mixed PNG/JPEG/VP8L/VP8 completes under one admission across expiry");
+                "image direct: mixed PNG/JPEG/VP8L/VP8 completes under one admission after clock changes");
             check(view.Rows.Where(row => row.Path != pngPath && row.HasOutput).All(row => row.Result.Publication?.Outcome == PublicationOutcome.CopyCreated) &&
                 originals.All(pair => SHA256.HashData(File.ReadAllBytes(pair.Key)).SequenceEqual(pair.Value)),
                 "lossless image direct: mixed copy workflow preserves all originals");
             view.Admit(new(Guid.NewGuid(), "optimize", "lossless", [jpegPath]));
             await view.WaitForIdleAsync();
-            check(mixedAccess.Admissions == 2 && view.Rows[^1].Result.State == OperationState.Failed,
-                "lossless image direct: next batch after expiry requires fresh access");
+            check(mixedAccess.Admissions == 2 && view.Rows[^1].Result.State is OperationState.Succeeded or OperationState.Unchanged,
+                "lossless image direct: next batch after clock changes remains free");
         }
         foreach (var preset in new[] { ImageOptimizationPreset.Balanced, ImageOptimizationPreset.Smallest })
         {

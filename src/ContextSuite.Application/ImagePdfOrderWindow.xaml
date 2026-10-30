@@ -56,7 +56,6 @@
         <StackPanel Grid.Row="2" Margin="0,16,0,0">
             <ui:StatusTextBlock Text="{Binding Message}" TextWrapping="Wrap" AutomationProperties.AutomationId="ImagePdfOrderStatus" />
             <WrapPanel HorizontalAlignment="Right" Margin="0,16,0,0">
-                <Button Content="{Binding LicenseActionLabel}" Click="OnLicense" Padding="12,6" Margin="0,0,8,0" AutomationProperties.AutomationId="ImagePdfOrderLicense" />
                 <Button Content="_Convert" Command="{Binding ConfirmCommand}" Padding="12,6" Margin="0,0,8,0" AutomationProperties.AutomationId="ConfirmImagePdf" />
                 <Button Content="Cancel" Click="OnCancel" IsCancel="True" Padding="12,6" AutomationProperties.AutomationId="CancelImagePdf" />
             </WrapPanel>

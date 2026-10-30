@@ -50,13 +50,15 @@ def main():
     for name, expected in recorded_sources.items():
         # Tests may evolve independently; the prepared worker implementation must match.
         normalized = name.replace("\\", "/")
-        if normalized.startswith(("src/ContextSuite.Core/", "src/ContextSuite.Worker/", "src/Shared/", "proprietary/src/")) and digest(root / name) != expected:
+        if normalized.startswith("proprietary/src/"):
+            normalized = normalized.removeprefix("proprietary/")
+        if normalized.startswith("src/") and digest(root / normalized) != expected:
             raise RuntimeError(f"Retained worker implementation source changed: {name}")
     actual = {path.name: digest(path) for path in worker.parent.iterdir() if path.is_file()}
     if actual != worker_files:
         raise RuntimeError("Retained worker files differ from their build receipt.")
-    inputs = list((root / "proprietary/tests/ContextSuite.Pdf.ContractTests").glob("*.cs"))
-    inputs += [root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj",
+    inputs = list((root / "tests/ContextSuite.Pdf.ContractTests").glob("*.cs"))
+    inputs += [root / "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj",
                root / "src/ContextSuite.Application/Infrastructure/WorkerClient.cs",
                root / "src/ContextSuite.Application/Infrastructure/WorkerProcessJob.cs",
                root / "src/ContextSuite.Application/Infrastructure/OfficeSandboxOwner.cs", Path(__file__)]
@@ -76,7 +78,7 @@ def main():
     scratch.mkdir(parents=True)
     print("Office interruption evidence:", scratch, flush=True)
     result = subprocess.run(["dotnet", "build",
-        str(root / "proprietary/tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"),
+        str(root / "tests/ContextSuite.Pdf.ContractTests/ContextSuite.Pdf.ContractTests.csproj"),
         "-c", "Release", "--no-restore", "--verbosity", "quiet"], cwd=root, capture_output=True)
     (scratch / "build.log").write_bytes(result.stdout + result.stderr)
     if result.returncode:

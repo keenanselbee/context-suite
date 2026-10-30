@@ -17,8 +17,8 @@ if ($Corpus) {
         throw 'Use an already-copied corpus beneath .codex-temp/png-quantization, never an original media folder.'
     }
 }
-$project = Join-Path $repositoryRoot 'proprietary\tests\ContextSuite.Image.ContractTests\ContextSuite.Image.ContractTests.csproj'
-if (-not (Test-Path -LiteralPath $project)) { throw 'PNG evaluation requires the compatible private checkout.' }
+$project = Join-Path $repositoryRoot 'tests\ContextSuite.Image.ContractTests\ContextSuite.Image.ContractTests.csproj'
+if (-not (Test-Path -LiteralPath $project)) { throw 'PNG evaluation sources are missing from this checkout.' }
 & dotnet build $project -c $Configuration --nologo
 if ($LASTEXITCODE -ne 0) { throw 'PNG evaluation build failed.' }
 $buildOutput = Join-Path $repositoryRoot "artifacts\managed\bin\ContextSuite.Image.ContractTests\$Configuration\net10.0"

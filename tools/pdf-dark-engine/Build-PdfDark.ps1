@@ -43,7 +43,7 @@ $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer
 $visualStudio = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 if (-not $visualStudio) { throw 'Visual Studio x64 C++ tools are required.' }
 $cmake = Join-Path $visualStudio 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe'
-$source = Join-Path $repository 'proprietary\src\ContextSuite.PdfDark.Native'
+$source = Join-Path $repository 'src\ContextSuite.PdfDark.Native'
 $payload = Join-Path $unpacked 'qpdf-12.4.1-msvc64'
 foreach ($required in @('include\qpdf\QPDF.hh', 'lib\qpdf.lib', 'bin\qpdf30.dll')) {
     if (-not (Test-Path -LiteralPath (Join-Path $payload $required) -PathType Leaf)) {

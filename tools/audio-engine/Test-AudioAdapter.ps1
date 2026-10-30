@@ -10,6 +10,6 @@ if (-not $prepared.StartsWith($root, [StringComparison]::OrdinalIgnoreCase) -or
 $pin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'evaluation.json') -Raw | ConvertFrom-Json
 $bin = Join-Path $prepared ('unpacked\' + $pin.archiveDirectory + '\bin')
 $evidence = Join-Path $prepared ('adapter-' + [guid]::NewGuid().ToString('N'))
-$project = Join-Path $repository 'proprietary\tests\ContextSuite.Audio.ContractTests\ContextSuite.Audio.ContractTests.csproj'
+$project = Join-Path $repository 'tests\ContextSuite.Audio.ContractTests\ContextSuite.Audio.ContractTests.csproj'
 & dotnet run --project $project -c Release -- $bin $fixtures $evidence
 if ($LASTEXITCODE -ne 0) { throw 'Private audio adapter checks failed.' }

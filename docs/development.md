@@ -9,19 +9,24 @@ Follow [repository maintenance](repository-maintenance.md) for agent task
 closeout, temporary output, retained evidence and the cleanup/commit plan.
 
 
+The free transition under [decision 0021](decisions/0021-free-product-and-public-implementation.md)
+consolidates production source here. Legacy private/commercial evidence below
+retains its original scope; current verification is in [the transition goal](free-access-goal.md).
+
+
 Build And Test
 --------------
 
 ```powershell
-# Public checkout only; no private credentials or implementation needed.
+# Public checkout only; no private checkout needed.
 ./tools/Test-Repository.ps1
 ./tools/Test-Foundation.ps1 -Configuration Release
-./tools/Test-PrivateBoundary.ps1
+./tools/Test-ProductionSource.ps1
 ./tools/Test-ShellPrototype.ps1 -Configuration Release
 ./tools/release/Test-InstallerSelections.ps1 # Mocked modern/classic lifecycle; no installation.
 ./tools/release/Test-InstallerComponents.ps1 # All seven payload selections; no engine inputs needed.
 
-# Complete foundation, requiring private source and staged curated inputs.
+# Complete foundation from this checkout and staged curated inputs.
 # See tools/curated-engine/README.md for the reviewed native staging workflow.
 ./tools/dds-engine/Build-DdsEngine.ps1
 ./tools/png-engine/Stage-PngEngine.ps1
@@ -29,14 +34,12 @@ Build And Test
 ./tools/Test-Foundation.ps1 -Configuration Release -Integration
 ./artifacts/production/Release/ContextSuite.Application.exe
 
-# Real image-engine/adapter contracts, requiring the private checkout.
+# Real image-engine/adapter contracts, requiring staged native inputs.
 ./tools/Test-ImageConversion.ps1 -Configuration Release
-./tools/Test-Licensing.ps1 -Configuration Release # Synthetic HTTP only; never activates a real key.
-./tools/Test-LicenseSandbox.ps1 # Compile only; -Launch requires explicit live sandbox/desktop permission.
 ./tools/Test-PngQuantization.ps1 -Configuration Release # Research only; generates an offline comparison report.
 # Optional: -Corpus '.codex-temp/png-quantization/screenshots-<id>' for pre-copied research inputs.
 ./tools/Test-DdsCodec.ps1 -SkipNativeBuild
-# Opt-in desktop test of the actual conversion UI with isolated trial/settings.
+# Opt-in desktop test of the actual conversion UI with isolated settings.
 ./tools/Test-DesktopSmoke.ps1 -Configuration Release -Images
 # Opt-in native replacement; recycles only two newly generated image fixtures.
 ./tools/Test-PublicationWindows.ps1 -Configuration Release -Recycle -Images
@@ -57,7 +60,7 @@ with a plain path labelled local-only. `tools/Test-RepositoryLinks.ps1` exercise
 this rule with disposable fixtures, including an ignored file that exists locally.
 
 For CI or build changes, replay the relevant commands from a clean public source
-snapshot and report exactly what ran. Keep expensive private engine integration,
+snapshot and report exactly what ran. Keep expensive engine integration,
 native installation and interactive desktop acceptance in their explicit local
 workflows; release verification applies to the exact packaged payload.
 After an authorized push, inspect the workflow for that commit and distinguish
@@ -69,8 +72,9 @@ Close Context Suite before running activation-router contracts. They acquire
 the same per-user/session pipe to verify single ownership and forwarding.
 Do not run two foundation test harnesses concurrently in one session.
 
-Foundation runs keep a log and result under `.codex-temp/foundation-tests/<run>`.
-Successful runs remove their own disposable `fixtures` directory after recording
+Foundation runs keep a log and result under `.codex-temp/ft-<12hex>`. The short
+run name keeps nested Office test paths within the existing application limit.
+Successful runs remove their own disposable `f` directory after recording
 the result; failed runs retain fixtures and diagnostics. Pass `-KeepScratch`
 when investigating a successful run. Existing historical runs remain untouched.
 The focused cleanup guards are `tools/maintenance/Test-FoundationScratch.ps1`
@@ -106,14 +110,12 @@ Implementation Boundaries
   and bounded JSON framing. No UI, account service, or codec dependency.
 - Application: WPF window/view model, bounded in-memory selection queue, activation
   forwarding, request-file handling, and on-demand worker ownership.
-- Worker: authenticated local connection and real private capability discovery.
-- Commercial: private Polar transport/composition in `proprietary/src/ContextSuite.Commercial`.
-  The WPF app links this small assembly, never the private media engine. The public
-  test host supplies no online provider. Shipping composition is production-only;
-  ordinary tests cannot switch the installed app to sandbox or grant access.
-- Private: real image adapter and production composition; the catalog advertises
-  twenty tested ordinary-image pairs and seven bounded DDS pairs. No fake encoder or licensing
-  bypass is supplied.
+- Worker: authenticated local connection and real media capability discovery.
+- Admission: validates confirmed plans, cancellation, and batch identity without
+  licensing storage or network dependencies.
+- Media implementation: authored adapters and production catalog under src/;
+  the existing ContextSuite.Private project name is retained. The WPF app does
+  not load engine assemblies; the worker owns them.
 - Shared source: Windows pipe identity/security code compiled into its process
   owners and contract tests without adding an infrastructure assembly.
 
@@ -125,17 +127,13 @@ Optimize now opens the bounded lossless PNG planner. See
 optimization-window acceptance is still pending.
 The image worker, application executor and real conversion UI have focused
 integration tests; final goal acceptance and release checks remain separate.
-Shared trial/paid admission precedes reserving/encoding/publishing. See
-[licensing verification](licensing-verification.md) for policy, protection and test evidence.
-UI tests compile the same app sources into a test-only host with isolated paths
-and real trial enforcement. No permissive shipping access implementation exists;
-live Polar access remains deferred. Only the worker links private image engines;
-the app retains the mandatory-private build check without a runtime engine reference.
-The production trial record is `%LOCALAPPDATA%/ContextSuite/Access/trial.json`,
-separate from settings. Status reads do not start/create a trial. Only a confirmed
-executable immutable conversion plan can call admission, and a successful atomic
-save must precede admission. Public contracts use isolated scratch directories and
-test clocks, not the user's real record. There is no shipping reset switch.
+Validated free admission precedes reserving, encoding, and publishing. UI tests
+compile the same app sources into a test-only host with isolated paths. The free
+runtime does not read or write legacy files under
+%LOCALAPPDATA%/ContextSuite/Access, including trial.json and protected license
+records. Existing files are preserved through upgrades and uninstall. Public
+contracts use disposable legacy fixtures and retain plan/cancellation/batch
+identity refusal checks. See [the transition goal](free-access-goal.md).
 The shared settings UI now stores versioned JSON at
 `%LOCALAPPDATA%/ContextSuite/settings.json`. It opens from the app or pathless
 Convert/Optimize `settings` activation. Output-folder preferences and replacement

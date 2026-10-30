@@ -41,17 +41,17 @@ internal static class FlacBatchContracts
             Reject(request.Validate, "contradictory worker payload");
         var clock = new Clock();
         var trialPath = Path.Combine(scratch, "flac-trial-" + Guid.NewGuid().ToString("N"), "trial.json");
-        IOperationAccess access = new LocalTrialStore(trialPath, clock);
-        check((await access.ReadAccessAsync()).CanStart && !File.Exists(trialPath), "FLAC access: read-only status does not start trial");
+        IOperationAccess access = new OperationAdmissionService();
+        check((await access.ReadAccessAsync()).CanStart && !File.Exists(trialPath), "FLAC access: read-only status does not create access files");
         var admitted = await access.AdmitOptimizationAsync(confirmed, default);
-        check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && File.Exists(trialPath), "FLAC access: confirmed batch starts existing trial bookkeeping");
+        check(admitted.IsAllowed && admitted.BatchId == plan.BatchId && !File.Exists(trialPath), "FLAC access: confirmed batch starts validated admission without access files");
         clock.Now = clock.Now.AddDays(8);
-        check(admitted.IsAllowed && !(await access.AdmitOptimizationAsync(confirmed, default)).IsAllowed, "FLAC access: expiry blocks new work without revoking admitted batch");
+        check(admitted.IsAllowed && (await access.AdmitOptimizationAsync(confirmed, default)).IsAllowed, "FLAC access: clock changes do not restrict new or admitted batches");
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         var cancelledPath = Path.Combine(scratch, "flac-cancelled-trial-" + Guid.NewGuid().ToString("N"), "trial.json");
-        IOperationAccess cancelledTrial = new LocalTrialStore(cancelledPath, clock);
+        IOperationAccess cancelledTrial = new OperationAdmissionService();
         try { await cancelledTrial.AdmitOptimizationAsync(confirmed, cancelled.Token); check(false, "FLAC access: pre-cancellation"); }
-        catch (OperationCanceledException) { check(!File.Exists(cancelledPath), "FLAC access: pre-cancellation leaves trial unstarted"); }
+        catch (OperationCanceledException) { check(!File.Exists(cancelledPath), "FLAC access: pre-cancellation leaves legacy access storage untouched"); }
         void Reject(Action action, string name)
         {
             try { action(); check(false, "FLAC batch: " + name); }

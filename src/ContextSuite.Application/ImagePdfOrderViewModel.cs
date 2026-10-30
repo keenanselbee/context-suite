@@ -28,9 +28,8 @@ internal sealed class ImagePdfOrderViewModel : INotifyPropertyChanged, IDisposab
     }
     public string FileSummary => $"{Pages.Count} images → one PDF";
     public string Destination => _destination;
-    public string Message => _destinationError ?? (_checking ? "Checking license access…" : _status?.CanStart == true ?
-        "Ready to create one PDF. All originals are kept." : _status?.Message ?? "License access could not be checked. Open License and try again.");
-    public string LicenseActionLabel => _status?.CanStart == false ? "_Activate license…" : "_License…";
+    public string Message => _destinationError ?? (_checking ? "Preparing operation..." : _status?.CanStart == true ?
+        "Ready to create one PDF. All originals are kept." : _status?.Message ?? "The operation could not be prepared. Close this window and try again.");
     public bool CanEdit => !_disposed && !_confirmed;
     public bool CanConfirm => CanEdit && _destinationError is null && !_checking && _status?.CanStart == true;
     public ICommand MoveUpCommand { get; }
