@@ -77,7 +77,11 @@ Local-only evidence is under .codex-temp/free-transition-20261030. Reproduction
 commands, source/input hashes and retained failure details are in its receipts
 and logs. Version 1.6.0 was reserved but failed HEIF staging because the archived
 build recipe still named the old private source location. Its reservation and
-partial stage are retained; later candidates must use a new version.
+partial stage are retained; later candidates must use a new version. The next
+1.6.1 attempt passed HEIF and stopped at the analogous AVIF recipe guard. Both
+attempts are failed staging evidence, not accepted candidates. A clean-source
+recipe test also exposed automatic line-ending conversion; explicit attributes
+now preserve the reviewed HEIF recipe bytes in Windows checkouts.
 
 
 Prepared Live Retirement
