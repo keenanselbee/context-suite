@@ -155,6 +155,37 @@ def verify(payload, inventory=False):
     return records
 
 
+def recipe_bytes(name, current, expected):
+    if hashlib.sha256(current).hexdigest().upper() == expected:
+        return current
+    # Historical receipts and shipped kits retain their exact reviewed bytes.
+    # Reconstruct only these independently pinned path-only source relocations.
+    migrations = {
+        "avif-engine/Build-AvifEngine.py": (
+            "C3043FF4E53AC12F8F76551855CD4CC7211E1E3D40437F47959D5357163C5501",
+            b'BRIDGE = ROOT / "proprietary/src/ContextSuite.Avif.Native"',
+            b'BRIDGE = ROOT / "src/ContextSuite.Avif.Native"'),
+        "svg-engine/Build-SvgEngine.ps1": (
+            "CAFFFB6C4429E6430FD2E8D7E2ED1AE5BFF64C5DC8818C0422FDF770161A45A4",
+            b"$privateSource = Join-Path $repositoryRoot 'proprietary/src/ContextSuite.Svg.Native'",
+            b"$privateSource = Join-Path $repositoryRoot 'src/ContextSuite.Svg.Native'"),
+    }
+    migration = migrations.get(name)
+    if migration is not None:
+        historical_hash, old, new = migration
+        if expected == historical_hash and current.count(new) == 1:
+            archived = current.replace(new, old, 1)
+            if hashlib.sha256(archived).hexdigest().upper() == historical_hash:
+                return archived
+    raise ValueError("Image expansion recipe differs from the reviewed identity: " + name)
+
+
+def selected_recipe(path, expected):
+    # Preserve ordinary-file, ownership, and ancestor checks before reading recipes.
+    item(path)
+    return recipe_bytes(path.relative_to(ROOT).as_posix().removeprefix("tools/"), path.read_bytes(), expected)
+
+
 def sources(avif_build, avif_sources, svg_build, cargo_home):
     records = selection()
     build = safe(avif_build)
@@ -192,8 +223,7 @@ def sources(avif_build, avif_sources, svg_build, cargo_home):
             {name: item(private_bridge / name)["sha256"] for name in bridge_inputs} != bridge_inputs:
         raise ValueError("Private AVIF bridge source differs from the selected build receipt")
     for name in ("Build-AvifEngine.py", "Prepare-AvifSource.py"):
-        if avif_inputs.get("recipe/" + name) != digest(TOOLS / "avif-engine" / name):
-            raise ValueError("AVIF public build recipe differs from the build receipt: " + name)
+        selected_recipe(TOOLS / "avif-engine" / name, avif_inputs.get("recipe/" + name))
     for name, expected in avif_result.get("notices", {}).items():
         if not name.startswith("notice/") or digest(ROOT / "assets/third-party/avif" / name.removeprefix("notice/")) != expected:
             raise ValueError("AVIF notice differs from the build receipt: " + name)
@@ -212,9 +242,8 @@ def sources(avif_build, avif_sources, svg_build, cargo_home):
         raise ValueError("SVG source verification differs from build provenance")
     if digest(svg / "source-verification.json") != svg_provenance.get("SourceVerificationSha256"):
         raise ValueError("SVG source verification receipt changed")
-    if digest(TOOLS / "svg-engine/Build-SvgEngine.ps1") != svg_provenance.get("BuildScriptSha256") or \
-            digest(TOOLS / "svg-engine/Verify-CargoSources.py") != svg_provenance.get("SourceVerifierSha256"):
-        raise ValueError("SVG public build recipe differs from the build receipt")
+    selected_recipe(TOOLS / "svg-engine/Build-SvgEngine.ps1", svg_provenance.get("BuildScriptSha256"))
+    selected_recipe(TOOLS / "svg-engine/Verify-CargoSources.py", svg_provenance.get("SourceVerifierSha256"))
     private_svg = ROOT / "src/ContextSuite.Svg.Native"
     svg_sources = svg_provenance.get("SourceSha256", {})
     if set(svg_sources) != {"Cargo.toml", "Cargo.lock", "src/main.rs"} or \
@@ -268,7 +297,14 @@ def sources(avif_build, avif_sources, svg_build, cargo_home):
         engine, relative_name = name.split("/", 1)
         if relative_name not in records[engine]["files"]:
             raise ValueError("Selected source or notice lacks a deployment pin: " + name)
-        checked(path, records[engine]["files"][relative_name])
+        pin = records[engine]["files"][relative_name]
+        if relative_name.startswith("provenance/recipe/"):
+            # Package the exact historical recipe named by the immutable selection.
+            mapping[name] = selected_recipe(path, pin["sha256"])
+            if len(mapping[name]) != pin["bytes"]:
+                raise ValueError("Selected image expansion recipe size differs: " + name)
+        else:
+            checked(path, pin)
     if set(mapping) != {engine + "/" + name for engine, record in records.items() for name in record["files"]}:
         raise ValueError("Selection includes an unprovided image expansion member")
     return mapping
@@ -288,8 +324,12 @@ def stage(payload, avif_build, avif_sources, svg_build, cargo_home):
     for name, source in sorted(mapping.items()):
         target = safe(root / name, payload=True)
         target.parent.mkdir(parents=True, exist_ok=True)
-        with source.open("rb") as input_file, target.open("xb") as output_file:
-            shutil.copyfileobj(input_file, output_file, length=1024 * 1024)
+        if isinstance(source, bytes):
+            with target.open("xb") as output_file:
+                output_file.write(source)
+        else:
+            with source.open("rb") as input_file, target.open("xb") as output_file:
+                shutil.copyfileobj(input_file, output_file, length=1024 * 1024)
     verify(root)
 
 
