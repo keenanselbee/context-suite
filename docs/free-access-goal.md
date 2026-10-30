@@ -1,7 +1,8 @@
 Free Access And Repository Transition
 =====================================
 
-Status: in progress. Decision accepted 2026-10-30 under
+Status: local migration and candidate verification complete; live retirement
+prepared but not executed. Decision accepted 2026-10-30 under
 [0021](decisions/0021-free-product-and-public-implementation.md).
 
 The owner authorized one free application, retirement of the private build
@@ -49,8 +50,8 @@ installation claim. Choose a new release version only after checking reservation
 Completion Evidence
 -------------------
 
-The local implementation and source migration are committed. Candidate media
-verification is still in progress. No remote archival, storefront retirement,
+The local implementation, source migration and candidate verification are
+complete. No remote archival, storefront retirement,
 website deployment, or replacement of the installed application has occurred.
 
 - Main decisions/terms: 3c18d7f; included PDF milestone: 838de52; free runtime,
@@ -70,8 +71,37 @@ website deployment, or replacement of the installed application has occurred.
   components 77, and fixture cleanup 26. These mocked installer checks do not
   establish native installation or upgrade acceptance.
 - Five current native PDF suites passed 119 checks against the unchanged pinned
-  engine. All ten native source hashes match. Packaged-worker corpus replay is
-  recorded separately when complete.
+  engine. All ten native source hashes match.
+
+Unsigned candidate **1.6.2** was built from clean source
+bc35753c5eee0d7f9d73f59019a1ae343d38bd59. Its schema-two manifest records one source
+revision and 2,913 candidate files. All selected engine families, product terms,
+283 notice links, payload inventory, and the independently extracted archive
+passed verification. Local-only artifact:
+artifacts/release-candidates/446a7286eba943618b42ba330b0d517a/ContextSuite-win-x64-unsigned.zip
+(217,007,733 bytes). SHA-256:
+EDED10709B3F86955E3A7DA4372B3F2BB9092EB845A48B35E7884AAD73B37CFE.
+
+The exact candidate passed 811 PDF/Optimize checks: six workflow modes (352),
+62 exact historical documents (372), six changed current documents (36),
+16 historical refusals (48), and one changed current document's resource-limit
+refusal (3). Fifteen separate checks against the retained 1.5.5 worker confirmed
+the existing limit and warning classification. All original corpus and preset
+inputs, candidate files, worker, native engine and test host remained unchanged.
+
+Seven prior corpus originals had changed since their historical hashes were
+recorded. Six current versions converted; the seventh exceeds the existing
+64-detached-artifact ceiling and is refused by both versions without output.
+An early replay script also omitted the final historical correction for four
+warning-bearing refusals: these deliberately use generic UnsupportedInput rather
+than exposing parser text. Exact historical identities, retained final results,
+native diagnostics and the old worker establish those expectations. Both failed
+exploratory assertions and the passing independent continuations remain recorded;
+no production bound or test-source expectation was weakened.
+
+The installed 1.5.5 payload was separately compared with its retained inventory:
+all 2,915 files still match. No normal-profile upgrade, registration, signing,
+remote CI, deployment or publication acceptance is inferred from these checks.
 
 Local-only evidence is under .codex-temp/free-transition-20261030. Reproduction
 commands, source/input hashes and retained failure details are in its receipts
@@ -82,6 +112,40 @@ partial stage are retained; later candidates must use a new version. The next
 attempts are failed staging evidence, not accepted candidates. A clean-source
 recipe test also exposed automatic line-ending conversion; explicit attributes
 now preserve the reviewed HEIF recipe bytes in Windows checkouts.
+
+The HEIF compatibility fix (d9ec4fe), line-ending rules (31e22ef), and AVIF/SVG
+recipe retention (efed14f) preserve independently pinned historical identities.
+All optional input families passed read-only preflight. Eight HEIF and seven
+AVIF/SVG recipe checks also passed from a fresh committed Windows source archive.
+Version preparation is recorded in bc35753; later closeout documentation does not
+change the preserved candidate's source identity or bytes.
+
+
+Retained Output And Cleanup
+---------------------------
+
+Compact fresh-source evidence was copied and hash-verified before cleanup review.
+Both failed staging directories contain only files byte-identical to the verified
+final stage: 491,044,576 and 502,389,595 bytes. Their permanent version reservations
+remain required even though these partial copies are redundant.
+
+Automatic approval review rejected both broad cleanup-script preparation and a
+later bounded deletion of those two classified staging directories, with only
+the reason "blocked by policy." No cleanup script was executed and no selected
+directory was deleted. Keep the reviewed manifests and failure classifications;
+do not treat the unused script as approved. Any later cleanup must recheck exact
+paths, identities, dependencies and reparse points.
+
+Significant local-only retained output includes about 947 MiB of failed staging
+copies, 547 MiB of verified production staging, a 753 MiB candidate directory
+including its archive, 182 MiB of PDF replay evidence, and a 590 MiB isolated
+website verification worktree. Roughly 331 MiB of fresh-source test snapshots
+and a 36 MiB committed-source check remain too. The website worktree retains
+browser evidence and unfinished publication obligations; its dependency junction
+must never be traversed during cleanup. Main/private Git history, engine inputs,
+notices, receipts, existing installed/rollback payloads, and unrelated website
+work remain protected. Purposes, reproduction commands and exact selections are
+recorded in the local-only receipts and cleanup-manifest.json.
 
 
 Prepared Live Retirement

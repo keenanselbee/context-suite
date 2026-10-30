@@ -63,40 +63,37 @@ Development Cleanup
 Repository-Specific Notes
 -------------------------
 
-- Follow accepted decision 0021 and docs/free-access-goal.md for the free-product
-  migration. It supersedes the commercial/private-build requirements below.
-  The required authored implementations move into this repository; proprietary/
-  remains an ignored historical repository. Include the owner-authorized current
-  PDF work, preserve engine identities and safety, and leave legacy access data
-  untouched. Keep migration, release, installation, and live retirement separate.
+- Follow accepted decision 0021 and docs/free-access-goal.md for the free product.
+  Required authored implementations live in this repository; proprietary/
+  remains an ignored historical repository. Preserve engine identities and
+  safety, and leave legacy access data untouched. Keep source migration,
+  release, installation, and live retirement acceptance separate.
 
 - Context Suite is a local Windows application with three peer Explorer tools:
   Analyze, Convert, and Optimize.
 - Treat `proprietary/` as a separate private Git repository with its own
   instructions, history, and remote. Keep it untracked by the parent; parent
   staging or commit requests do not authorize private-repository commits.
-- Follow decisions 0005 and 0006 for public/private builds and commercial
-  access. Maintain one production application build requiring the private
-  checkout, with a clear error when required implementations are unavailable.
-  Do not add a separate public review/demo edition or shipping access bypass.
-  Independently testable public components do not require a second application.
+- Maintain one free production application built from the main repository,
+  with a clear error when required implementations or pinned engines are missing.
+  Do not add a separate review/demo edition or restore a private build dependency.
+  Decisions 0005 and 0006 retain historical context superseded by decision 0021.
   Use tools/Build-Production.ps1 for the full foundation; the native
   shell-prototype commands remain independently supported.
 - Follow accepted decision 0007 for the production foundation: Windows 11 x64,
   WPF/.NET 10 with MVVM, one app per interactive user session, one on-demand
   sequential worker, and bounded local named-pipe communication. The app owns
   final output publication. Do not add a worker pool or resident service without
-  a new scope decision. Bounded PNG/JPEG/WebP/BMP/TGA conversion and local trial admission are
-  implemented with a passed bounded acceptance matrix; paid activation remains planned.
-- Keep private source out of public source archives through explicit packaging
-  rules. Never store payment credentials or signing private keys in either repo.
-- Polar-hosted checkout and license-key validation are selected; do not add
-  custom website accounts or a signing backend without a new decision. Follow
-  docs/polar-integration.md; account approval is not proof of working licensing.
-  Purchase validation is permitted; media contents and
-  selected paths stay local. Keep access checks in application orchestration,
-  never in Explorer enumeration or parsers. Trial expiry must not interrupt an
-  admitted batch. Do not add extensive anti-piracy machinery.
+  a new scope decision. Operation admission still validates confirmed plans,
+  cancellation, and batch identity; it has no trial or license dependency.
+- Keep historical private configuration and Git history out of public source
+  archives through explicit packaging rules. Never store payment credentials or
+  signing private keys in either repo. Retain third-party source and notices.
+- Polar integration is historical. Follow docs/free-access-goal.md for separately
+  reviewed live retirement; preserve existing customer benefits and records.
+  Do not restore commerce, accounts, or activation without a new product decision.
+  Media contents and selected paths stay local. Explorer enumeration and parsers
+  must remain independent of network access and application orchestration.
 - Treat `docs/product-design.md` as the suite-wide product boundary and the
   relevant tool design as that tool's current boundary. Update the owning
   document when an accepted decision changes either boundary.
@@ -142,7 +139,8 @@ Repository-Specific Notes
   simplicity, context-menu-first direct actions, Auto first, best-effort results
   within fixed quality limits, quiet success and compact progress/problem UI.
   Decision 0018 now narrows the customer UI to direct commands, necessary prompts,
-  Analyze, progress/problems, Settings and License. Remove the general workspace
+  Analyze, progress/problems and Settings, with decision 0021 removing License
+  and placing third-party notices in Settings. Remove the general workspace
   and routine planners. Copies remain default; explicit Settings consent will
   allow safe replacement on future direct actions, retaining mandatory copy
   exceptions. Track implementation in docs/context-menu-simplification-goal.md. Keep planned
@@ -167,8 +165,8 @@ Repository-Specific Notes
   Follow `docs/bmp-tga-and-engine-integration.md`; never fall back to stock native assets.
   Use
   `tools/Test-Foundation.ps1` for public contracts; add `-Integration` to test the
-  real private worker. Close the application before router tests. Use
-  `tools/Test-PrivateBoundary.ps1` for expected missing-private failures and
+  real production worker. Close the application before router tests. Use
+  `tools/Test-ProductionSource.ps1` for main-source/project boundaries and
   `tools/Test-Repository.ps1` for documentation and public-source boundaries.
 - Use `tools/Test-ShellPrototype.ps1` for host schema, manifest, COM class, and
   multi-selection activation contracts.

@@ -37,8 +37,11 @@ installed releases and historical evidence below remain separate.
 Project Status
 --------------
 
-Current source implements the free transition. Candidate verification and the
-separate live-retirement actions are recorded in the transition goal above.
+Current source implements the free transition. The unsigned **1.6.2** candidate
+was built from clean source and its archive verified on 2026-10-30. It passed
+811 packaged PDF/Optimize checks, including 62 exact historical documents and
+explicit refusal handling. Candidate details, existing limits and separate
+live-retirement actions are recorded in the transition goal above.
 
 The existing local installation remains **1.5.5**, historically verified on
 2026-10-20. At that milestone, all 2,915 payload files and all three registered

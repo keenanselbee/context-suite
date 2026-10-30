@@ -3,8 +3,9 @@ Reproducible Packaging And Clean-Machine Goal
 
 Status: in progress; internal candidate tooling and Inno lifecycle integration
 implemented; signing, native upgrade/repair and isolated-machine acceptance pending.
-Free transition in progress under [decision 0021](decisions/0021-free-product-and-public-implementation.md);
-no customer release approval.
+The free migration and unsigned 1.6.2 candidate are verified locally under
+[decision 0021](decisions/0021-free-product-and-public-implementation.md);
+customer release approval remains separate.
 
 The [product versioning workflow](product-versioning.md) now gives local candidates
 one version source, matching managed/package metadata and a non-reusable staging
