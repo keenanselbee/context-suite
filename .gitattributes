@@ -63,3 +63,8 @@ tools/dds-engine/CMakeLists.txt text eol=lf
 src/ContextSuite.Heif.Native/* text eol=lf
 src/ContextSuite.ImagePdfValidator.Native/* text eol=lf
 src/ContextSuite.PdfRenderer.Native/* text eol=lf
+# Retained HEIF source bundles compare these recipe bytes exactly.
+tools/heif-engine/.gitattributes text eol=lf
+tools/heif-engine/Build-HeifEngine.py text eol=lf
+tools/heif-engine/source-inputs.json -text whitespace=cr-at-eol
+tools/heif-engine/distribution/BUILD.md text eol=lf
