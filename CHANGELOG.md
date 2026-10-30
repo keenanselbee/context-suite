@@ -1,6 +1,20 @@
 Context Suite Changelog
 =======================
 
+1.6.0 - Make Context Suite free, 2026-10-30
+------------------------------------------
+
+- Make Analyze, Convert, and Optimize free without a trial, activation, or
+  purchase requirement. Existing settings and old access files remain intact.
+- Build the complete application from the main repository, including the
+  reviewed PDF dark-mode improvements. Preserve native engine pins and safety
+  checks; retain the former private repository as historical source.
+- Move third-party notices to Settings and include the product terms in the
+  verified candidate. Keep source-available licensing and engine notices explicit.
+- Prepare an unsigned candidate; signing, installation acceptance, hosted
+  publication, and storefront retirement remain separate release actions.
+
+
 1.5.5 - Broaden PDF reading copies and optimization presets, 2026-10-20
 ---------------------------------------------------------------------
 
