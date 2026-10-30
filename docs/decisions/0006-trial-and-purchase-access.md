@@ -4,6 +4,10 @@ Trial And Purchase Access
 Status: accepted; trial settled in decision 0009, paid policy settled in decision 0017
 Date: 2026-09-06
 
+Commercial/private-build requirements are superseded by
+[0021: Free product and public implementation](0021-free-product-and-public-implementation.md).
+Unrelated media/safety decisions and historical evidence remain unchanged.
+
 Trial duration and pricing are superseded by
 [decision 0020](0020-seven-day-trial-and-pricing.md): seven days and $5 CAD.
 Other accepted access and safety rules remain in effect.

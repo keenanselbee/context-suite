@@ -4,6 +4,10 @@ Seven-Day Trial And Pricing
 Status: accepted; local trial verified, live commerce pending
 Date: 2026-09-13
 
+Commercial/private-build requirements are superseded by
+[0021: Free product and public implementation](0021-free-product-and-public-implementation.md).
+Unrelated media/safety decisions and historical evidence remain unchanged.
+
 This decision supersedes the trial duration and undecided pricing in decisions
 0006, 0009 and 0017. It does not authorize live commerce or release publication.
 

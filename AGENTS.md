@@ -63,6 +63,13 @@ Development Cleanup
 Repository-Specific Notes
 -------------------------
 
+- Follow accepted decision 0021 and docs/free-access-goal.md for the free-product
+  migration. It supersedes the commercial/private-build requirements below.
+  The required authored implementations move into this repository; proprietary/
+  remains an ignored historical repository. Include the owner-authorized current
+  PDF work, preserve engine identities and safety, and leave legacy access data
+  untouched. Keep migration, release, installation, and live retirement separate.
+
 - Context Suite is a local Windows application with three peer Explorer tools:
   Analyze, Convert, and Optimize.
 - Treat `proprietary/` as a separate private Git repository with its own

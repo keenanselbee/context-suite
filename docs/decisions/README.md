@@ -1,8 +1,9 @@
 Architecture Decisions
 ======================
 
-Latest: [0020: Seven-day trial and pricing](0020-seven-day-trial-and-pricing.md) --
-accepted; seven-day trials and a $5 CAD lifetime purchase.
+Latest: [0021: Free product and public implementation](0021-free-product-and-public-implementation.md) --
+accepted; one free build, no trial or licensing, and retirement of the private
+implementation boundary. Implementation and verification are in progress.
 
 Use this directory for decisions that constrain implementation, packaging,
 public behavior, or long-term maintenance. Do not create a decision record for a

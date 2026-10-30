@@ -4,6 +4,10 @@ Public And Proprietary Builds
 Status: accepted
 Date: 2026-09-06
 
+Commercial/private-build requirements are superseded by
+[0021: Free product and public implementation](0021-free-product-and-public-implementation.md).
+Unrelated media/safety decisions and historical evidence remain unchanged.
+
 
 Context
 -------
