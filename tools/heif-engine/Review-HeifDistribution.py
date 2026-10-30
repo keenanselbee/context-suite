@@ -139,6 +139,20 @@ def expected_runtime(sources):
     return pins, runtime, count
 
 
+def verify_recipe(name, archived, current):
+    if archived == current:
+        return
+    # The reviewed pre-migration library source kit retains its original recipe.
+    # Its only allowed difference is this one authored bridge-source relocation.
+    old = b'    bridge_source = ROOT / "proprietary/src/ContextSuite.Heif.Native"'
+    new = b'    bridge_source = ROOT / "src/ContextSuite.Heif.Native"'
+    if (name == "Build-HeifEngine.py" and
+            sha(archived) == "30FDE2FB752BE633096F07032A0EFF0A58CD4105C5A1B55DF7FDC5E69F1AD793" and
+            archived.count(old) == 1 and archived.replace(old, new, 1) == current):
+        return
+    raise ValueError("Source kit recipe changed: " + name)
+
+
 def verify(directory):
     directory = local(directory)
     manifest = json.loads(read(directory / "bundle-inventory.json", 1024 * 1024))
@@ -153,8 +167,7 @@ def verify(directory):
     if set(sources) != source_names:
         raise ValueError("Unexpected source kit membership")
     for name in RECIPES:
-        if sources["tools/heif-engine/" + name] != (TOOLS / name).read_bytes():
-            raise ValueError("Source kit recipe changed")
+        verify_recipe(name, sources["tools/heif-engine/" + name], (TOOLS / name).read_bytes())
     if sources["BUILD.md"] != (TOOLS / "distribution/BUILD.md").read_bytes():
         raise ValueError("Source kit instructions changed")
     for name, expected in pins["aom"]["files"].items():
