@@ -30,23 +30,25 @@ remaining visual acceptance.
 Project Status
 --------------
 
-Source metadata and the verified development candidate are **1.5.3**.
-The latest recorded local installation remains **1.5.2**
-(verified 2026-10-19). That installed payload includes filesystem dates in Analyze and the
-bounded PDF reading-copy compatibility fixes. Its recorded verification covers
-2,915 payload files and all three registered package identities. Later source
-changes require their own verification. The approved
-[Optimize expansion goal](docs/optimization-expansion-goal.md) records its verified
-JPEG, still lossless WebP and DOCX/XLSX/PPTX paths, with mandatory copies and bounded
-preservation checks. The exact candidate passes 5,441 foundation contracts and
-Optimize-only component workflows. The application payload grows by 132 KiB with
-no new native engines. The first expansion milestone and its fixture cleanup are
-complete. These changes are not installed.
-The subsequent [preset expansion](docs/optimization-presets-goal.md) adds
-Balanced/Smallest to JPEG, still WebP, PDF, and DOCX/XLSX/PPTX, plus exact
-Auto/Lossless TGA, OpenDocument, and EPUB paths. It reuses existing engines and
-keeps mandatory copies. Its scratch-source checks and bounded quality evidence
-are separate from the reserved 1.5.3 candidate.
+Source metadata, the verified development candidate, and the local installation
+are **1.5.5** (verified 2026-10-20). All 2,915 payload files and all three registered
+package identities are verified; settings, trial and license data are preserved.
+The exact candidate passes 5,484 foundation contracts. Installed PDF workflows
+and packaged COM activation also pass. The 1.5.2 payload is retained for rollback.
+
+The [PDF compatibility follow-up](docs/pdf-dark-lecture-support-goal.md#broader-pdf-compatibility-2026-10-20)
+adds 33 verified local documents covering 311 pages. Actual worker conversion
+passes those documents and all 36 prior regression documents, with independent
+glyph validation, mandatory copies, and repeat no-ops. Eight of the original
+50 difficult samples are now supported; unsupported features and ambiguous
+rendering remain explicitly bounded. Embedded images may retain original colors.
+
+The installed [Optimize expansion](docs/optimization-expansion-goal.md) and
+[preset expansion](docs/optimization-presets-goal.md) include JPEG, still WebP,
+PDF, and DOCX/XLSX/PPTX quality choices where supported, plus exact Auto/Lossless
+TGA, OpenDocument, and EPUB paths. The package passes representative preset and
+interruption checks, keeps mandatory copies, and reuses existing engines.
+Total payload growth from 1.5.2 is about 248 KiB, with no added files or engines.
 Source changes and historical passing results do not establish a newly verified
 release. Signing, native installer lifecycle, broader visual/accessibility and
 commercial acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).

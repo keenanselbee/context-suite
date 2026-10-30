@@ -170,10 +170,15 @@ for case in (*POSITIVES, *NEGATIVES):
                 (convert_code, converted)
         result['geometryPreserved'] = True
     else:
-        if first_code == 0:
+        if args.probe and first_code == 0:
             assert repeat_code == 3 and 'Page 1:' in repeated, (case, repeated)
         else:
-            assert first_code == 3 and 'Page 1:' in first, (case, first)
+            # A reading copy that the same policy cannot inspect again is not
+            # an acceptable first export. Both admission modes must refuse it.
+            assert first_code == 3 and ('Page 1:' in first or
+                first == 'PDF reading palette does not reach a stable repeat conversion.'), (case, first)
+            inspect_code, inspected, no_output = invoke(source, '--inspect')
+            assert inspect_code == first_code and inspected == first and not no_output, (case, inspected)
     results.append(result)
 
 (scratch / 'results.json').write_text(json.dumps(results, indent=2), encoding='utf-8')

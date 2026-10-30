@@ -62,7 +62,7 @@ public sealed class ConfirmedPdfDark
 
 public sealed record PdfDarkWork(PdfDarkSource Source, string TemporaryPath, string Policy = PdfDarkWork.CurrentPolicy)
 {
-    public const string CurrentPolicy = "pdf-dark-8";
+    public const string CurrentPolicy = "pdf-dark-9";
     public const int MaximumOutputBytes = 128 * 1024 * 1024;
     public void Validate()
     {

@@ -228,14 +228,17 @@ internal static class PdfDarkFailureContracts
         }
 
         var slow = Path.Combine(root, "Slow.pdf");
-        WritePdf(slow, pages: 128, rectanglesPerPage: 8000);
+        // Inspection now validates serialized output and repeat stability too.
+        // Keep admission comfortably bounded while retaining enough work to
+        // observe and cancel the separate native conversion process.
+        WritePdf(slow, pages: 16, rectanglesPerPage: 8000);
         var slowHash = Hash(slow);
         var records = Path.Combine(root, "cancel-records");
         var workerScratch = Path.Combine(root, "cancel-worker");
         var publisher = new OutputPublisher(records, new NoRecycle());
         await using var worker = new WorkerClient(workerExecutable, workerScratch);
         var source = await worker.ProbePdfDarkAsync(new(Guid.NewGuid(), slow), default);
-        check(source.Facts.PageCount == 128 && source.Facts.ChangedPages == 128,
+        check(source.Facts.PageCount == 16 && source.Facts.ChangedPages == 16,
             "PDF dark cancellation: bounded authored fixture enters the real native conversion path");
         var reservation = await publisher.ReserveAsync(new(source.ItemId, slow, "pdf", new("convert", new()), PdfDark: true));
         using var cancellation = new CancellationTokenSource();

@@ -4,6 +4,80 @@ PDF Dark Palette Support for Lecture Documents
 Evidence paths under `.codex-temp` are local-only review records; they are not
 included in the public checkout.
 
+Broader PDF Compatibility, 2026-10-20
+------------------------------------
+
+Status: complete for the bounded compatibility increment below. Version 1.5.5
+is installed and verified locally on 2026-10-20.
+The local survey found 369 PDFs and inspected 261 new unique candidates after
+excluding prior coverage, duplicates, generated output, and administrative files.
+The baseline native engine admitted 51 and refused 210. Admission is not output
+or visual acceptance. Fifty distinct refused originals form a diverse gap corpus,
+with 40 development cases and ten reserved acceptance cases; both sets were
+inspected during planning, so the latter is not a blind holdout.
+
+The implementation adds passive empty form containers, ordinary opening views
+and destinations, relative links, validated RGB ICC paint, common legacy sRGB,
+gray JPEG and packed lossless gray images, graphics-state line styles, bounded
+presentation artifacts, and actual-use traversal of inherited graphics resources.
+Source limits remain unchanged. There are no filename-specific exceptions, OCR,
+new rendering bundles, or customer PDFs in source.
+
+Final native admission is 82 of 261 surveyed candidates: 33 additional documents
+covering 311 pages, with two earlier inspection-only passes now correctly refused
+by the stronger output checks. Eight of the original difficult 50 are supported
+(51 pages); this increment does not claim support for all 50. All 36 previously
+covered regression documents pass actual packaged-worker conversion. All 69
+actual worker cases preserve originals, publish mandatory copies, independently
+validate glyphs, and repeat without new output. The 33 new native exports also
+match the visually reviewed output pixels. The two earlier inspection passes
+already failed the old engine's export or repeat checks; these are closed
+inspection gaps, not losses of previously demonstrated stable conversion.
+
+Visual and repeat testing deliberately narrowed admission. White glyphs that
+erase prior underlines on white paper are refused rather than exposing distorted
+headings. A serialized output must pass the same bounded planner without further
+palette changes. Original leading artifact markers are retained. These checks
+apply to inspection and export, so a successful preview cannot promise an output
+that fails these native preservation checks. Independent worker glyph validation
+still applies before publication. Embedded images can retain their original colors.
+
+Signed/encrypted files, active or populated forms, unsupported annotations,
+Type 3 fonts, unsupported image compression and color profiles, complex
+compositing, ambiguous structure, and existing resource ceilings remain outside
+this increment. Preserve specific refusal reasons; do not loosen these bounds
+merely to improve corpus counts.
+
+Acceptance passed 61 native suites, 59 joined-coordinate and 100 numeric cases,
+357 private diagnostic checks, 15 packaging checks, 5,484 combined foundation
+contracts, 111 public/workflow/failure PDF checks, 414 real-document checks, and
+48 real-refusal checks. Optimize expansion, interruption, and all four preset
+workflows passed 241 checks. All 2,915 installed file hashes and three registered
+package identities match 1.5.5; installed workflow/document smoke checks passed
+20 checks. Settings, trial and license data are unchanged. Payload growth from
+1.5.2 is 253,612 bytes (about 248 KiB), with no added files or engines.
+
+The cancellation fixture now uses 16 rather than 128 authored pages: the stronger
+inspection includes export/repeat validation and the former fixture exceeds the
+unchanged deadline. Live-child cancellation and cleanup are still exercised.
+One foundation run hit an existing named-job teardown timing assertion; a full
+fresh rerun passed. Warning-bearing parser diagnostics deliberately use the
+generic unsupported category rather than exposing untrusted parser text. These
+limits and test corrections are recorded in the local completion audit.
+
+Local-only planning evidence: `.codex-temp/pdf-corpus-50-ead5559e`.
+Implementation evidence: `.codex-temp/pdf-expansion-5f0cfa34`.
+Prepared SDKs are reused. Owned redundant build/test output is removed with
+compact evidence retained; the installed payload, immutable candidates, version
+receipts, and 1.5.2 rollback are preserved. This work does not authorize a push
+or publication.
+
+Candidate 1.5.4 was reserved but failed packaged-worker acceptance because its
+adapter still pinned the previous native host. It was never installed. Candidate
+1.5.5 corrects that pin; staging now checks adapter/native pin agreement before
+payload work. The failed candidate and version receipt remain intact.
+
+
 Historical evidence relocation (2026-10-13): paths marked archived below now
 reside under `Z:\Backup\Context Suite\workspace-history\20261013\payload`,
 using the same repository-relative paths. Follow the

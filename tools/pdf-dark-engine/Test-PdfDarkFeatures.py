@@ -16,7 +16,8 @@ import pymupdf
 from PIL import Image, ImageDraw
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import (ArrayObject, BooleanObject, DecodedStreamObject,
-                           DictionaryObject, NameObject, NumberObject)
+                           DictionaryObject, NameObject, NumberObject,
+                           TextStringObject)
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen.canvas import Canvas
 
@@ -51,7 +52,7 @@ def invoke(data, mode):
     assert (magic, version) == (0x31445043, 1)
     assert len(process.stdout) == 16 + json_size + pdf_size
     facts = json.loads(process.stdout[16:16 + json_size])
-    assert facts["policy"] == "pdf-dark-8"
+    assert facts["policy"] == "pdf-dark-9"
     return 0, facts, process.stdout[16 + json_size:]
 
 
@@ -152,7 +153,9 @@ def add_signature(w):
 
 check_refusal("signature-dictionary", mutate(base, add_signature), 3, "Signed PDFs")
 check_refusal("acroform", mutate(base, lambda w: w._root_object.__setitem__(
-    NameObject("/AcroForm"), DictionaryObject({NameObject("/Fields"): ArrayObject()}))),
+    NameObject("/AcroForm"), DictionaryObject({NameObject("/Fields"): ArrayObject([
+        w._add_object(DictionaryObject({NameObject("/FT"): NameObject("/Tx"),
+            NameObject("/T"): TextStringObject("Interactive field")}))])}))),
     3, "Interactive PDF forms")
 
 

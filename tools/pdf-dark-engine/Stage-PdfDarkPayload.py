@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 import pathlib
+import re
 import stat
 
 
@@ -11,6 +12,7 @@ TOOLS = pathlib.Path(__file__).absolute().parent
 ROOT = TOOLS.parents[1]
 PDF_TOOLS = ROOT / "tools/pdf-engine"
 HOST_NAME = "ContextSuite.PdfDark.exe"
+ADAPTER_SOURCE = ROOT / "proprietary/src/ContextSuite.Private/Pdf/PdfDarkAdapter.cs"
 
 
 def digest(path):
@@ -62,6 +64,18 @@ def pins():
     return host, dependencies
 
 
+def verify_adapter_pin(host):
+    for ancestor in (ADAPTER_SOURCE, *ADAPTER_SOURCE.parents):
+        if ancestor == ROOT:
+            break
+        if ancestor.exists() and ancestor.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+            raise ValueError("Linked PDF dark-mode adapter source is not allowed")
+    matches = re.findall(r'\bprivate\s+const\s+string\s+HostHash\s*=\s*"([0-9a-fA-F]{64})"\s*;',
+                         ADAPTER_SOURCE.read_text(encoding="utf-8-sig"))
+    if len(matches) != 1 or matches[0].upper() != host["sha256"].upper():
+        raise ValueError("PDF dark-mode adapter host pin does not match the reviewed native host")
+
+
 def verify_pdf(payload):
     # Reuse the existing exact PDF runtime, renderer, validator and notice verifier.
     spec = importlib.util.spec_from_file_location("context_suite_pdf_stage", PDF_TOOLS / "Stage-PdfPayload.py")
@@ -79,8 +93,9 @@ def expected_files(host, dependencies):
 
 def verify(payload):
     root = local_path(payload, verification=True)
-    verify_pdf(root)
     host, dependencies = pins()
+    verify_adapter_pin(host)
+    verify_pdf(root)
     folder = local_path(root / "pdf-dark", verification=True)
     if not folder.is_dir():
         raise ValueError("PDF dark-mode candidate is missing")
@@ -102,8 +117,9 @@ def stage(payload, build_directory):
     folder = local_path(root / "pdf-dark")
     if not root.is_dir() or folder.exists():
         raise ValueError("Use an existing new stage without a PDF dark-mode payload")
-    verify_pdf(root)
     host, dependencies = pins()
+    verify_adapter_pin(host)
+    verify_pdf(root)
     executable = local_path(build / checked_relative(host["path"]), build=True)
     if not executable.is_file() or executable.stat().st_size != host["bytes"] or digest(executable) != host["sha256"]:
         raise ValueError("PDF dark-mode host differs from the reviewed build")

@@ -1,6 +1,13 @@
 Context Suite Product Design
 ============================
 
+Owner-approved extension, 2026-10-20: broaden PDF dark-mode compatibility using
+a local 50-document gap corpus, while preserving originals, searchable text,
+document structure, and readable appearance. Prioritize passive document
+features and validated color handling; larger limits and ambiguous rendering
+require separate evidence. Reuse existing engines. Implementation and installation
+acceptance are tracked in the [PDF support record](pdf-dark-lecture-support-goal.md).
+
 Owner-approved extension, 2026-10-19: the
 [Optimize preset expansion goal](optimization-presets-goal.md) extends meaningful
 quality choices across supported formats, with bounded fixed recipes, mandatory

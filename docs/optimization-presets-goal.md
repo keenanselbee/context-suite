@@ -4,7 +4,13 @@ Optimize Preset Expansion Goal
 Status: complete for the bounded source implementation and verification below.
 Owner authorized on 2026-10-19. This follows the completed
 [first expansion](optimization-expansion-goal.md); it does not change the
-installed 1.5.2 application or the reserved 1.5.3 candidate.
+then-installed 1.5.2 application or the reserved 1.5.3 candidate.
+
+Installation follow-up, 2026-10-20: these source changes are included in installed
+1.5.5. The exact package passes 82 preset workflow checks across nine representative
+formats, plus expansion/interruption checks. See the
+[PDF compatibility follow-up](pdf-dark-lecture-support-goal.md#broader-pdf-compatibility-2026-10-20)
+for the complete payload, installed verification, and retained rollback evidence.
 
 Deliver useful Auto, Lossless, Balanced, and Smallest choices wherever the format
 has a defensible quality tradeoff. Do not expose duplicate settings just to fill

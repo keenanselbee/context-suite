@@ -1,6 +1,16 @@
 Document Support Design
 =======================
 
+The 2026-10-20 `pdf-dark-9` [compatibility extension](pdf-dark-lecture-support-goal.md)
+adds bounded passive form shells and navigation, validated RGB ICC paint, gray
+images, graphics-state line styles and nested resource handling. Both inspection
+and conversion validate actual serialized output and require repeat conversion
+to be a no-op. Original marked-content groups are preserved; only proved generated
+backgrounds are excluded from structural comparison. Unsupported erasing-text
+and unstable palette cases remain explicit refusals. Customer PDFs remain local,
+and no runtime engine or OCR dependency is added. The linked record owns current
+candidate and installation evidence; older milestones below are historical.
+
 The owner-approved [PDF dark-mode goal](pdf-dark-mode-goal.md), 2026-10-10,
 adds a deterministic appearance conversion on mandatory copies. Its native engine,
 worker and direct action are implemented in source. Admission rejects unsupported

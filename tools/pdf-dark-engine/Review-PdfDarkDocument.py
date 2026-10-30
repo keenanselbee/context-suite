@@ -17,6 +17,7 @@ import subprocess
 import pymupdf
 from PIL import Image, ImageDraw
 from pypdf import PdfReader
+from pypdf.generic import ContentStream
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--engine", required=True)
@@ -78,13 +79,17 @@ def paths(page):
             for entry in page.get_drawings()]
 
 
-def images(page):
+def images(page, reader):
     resources = page["/Resources"].get_object()
     result = {}
 
-    def walk(resources, prefix, depth):
+    def walk(resources, content, prefix, depth):
         assert depth < 16
+        used = {str(operands[0]) for operands, operator in ContentStream(content, reader).operations
+                if operator == b'Do'}
         for name, ref in resources.get("/XObject", {}).get_object().items() if "/XObject" in resources else []:
+            if name not in used:
+                continue
             obj = ref.get_object()
             key = prefix + name
             if obj.get("/Subtype") == "/Image":
@@ -92,8 +97,8 @@ def images(page):
                 result[key] = (obj["/Width"], obj["/Height"],
                                hashlib.sha256(mask.get_object().get_data()).hexdigest() if mask else None)
             elif obj.get("/Subtype") == "/Form":
-                walk(obj.get("/Resources", resources).get_object(), key, depth + 1)
-    walk(resources, "", 0)
+                walk(obj.get("/Resources", resources).get_object(), obj, key, depth + 1)
+    walk(resources, page.get_contents(), "", 0)
     return result
 
 
@@ -156,7 +161,7 @@ for index, (left, right) in enumerate(zip(before, after)):
     original_paths, result_paths = paths(left), paths(geometry_copy[index])
     # The native converter adds one paper rectangle ahead of unchanged drawing geometry.
     assert result_paths == original_paths or result_paths[1:] == original_paths, (index + 1, "vector geometry")
-    assert images(source_reader.pages[index]) == images(output_reader.pages[index]), (index + 1, "image dimensions/masks")
+    assert images(source_reader.pages[index], source_reader) == images(output_reader.pages[index], output_reader), (index + 1, "image dimensions/masks")
     row = []
     views = [("Original", left), ("Converted", right)]
     if control:

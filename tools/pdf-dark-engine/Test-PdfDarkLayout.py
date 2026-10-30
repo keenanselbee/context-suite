@@ -73,7 +73,7 @@ def accepted(name, source, check_pixels=None):
     assert code == 0 and not empty, (name, inspected)
     code, converted, output = invoke(source, "--convert")
     assert code == 0 and converted == inspected and output, (name, converted)
-    assert converted["policy"] == "pdf-dark-8", (name, converted)
+    assert converted["policy"] == "pdf-dark-9", (name, converted)
     assert hashlib.sha256(source).digest() == before_hash
     original = pymupdf.open(stream=source, filetype="pdf")
     result = pymupdf.open(stream=output, filetype="pdf")

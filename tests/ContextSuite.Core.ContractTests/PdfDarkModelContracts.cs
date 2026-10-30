@@ -61,8 +61,8 @@ internal static class PdfDarkModelContracts
         Reject(() => new WorkerCommand(1, Guid.NewGuid(), "pdf-dark-probe", PdfDarkWork: work).Validate(), "Dark-mode probe cannot carry conversion work");
         Reject(() => new WorkerCommand(1, Guid.NewGuid(), "pdf-dark-convert", PdfDarkWork: work, PdfBytes: [1]).Validate(), "Dark-mode command refuses extra media payloads");
 
-        const string json = "{\"policy\":\"pdf-dark-8\",\"pageCount\":3,\"changedPages\":2,\"alreadyDarkPages\":1,\"recoloredImages\":4,\"preservedImages\":2,\"sourceBytes\":100}";
-        Reject(() => PdfDarkProtocol.Read(Frame(json.Replace("pdf-dark-8", "pdf-dark-7"), []), false),
+        const string json = "{\"policy\":\"pdf-dark-9\",\"pageCount\":3,\"changedPages\":2,\"alreadyDarkPages\":1,\"recoloredImages\":4,\"preservedImages\":2,\"sourceBytes\":100}";
+        Reject(() => PdfDarkProtocol.Read(Frame(json.Replace("pdf-dark-9", "pdf-dark-8"), []), false),
             "Admission facts from the earlier dark-mode policy cannot be reused");
         var inspect = Frame(json, []);
         check(PdfDarkProtocol.Read(inspect, false).Facts == facts, "Native inspection frame retains all admission facts");

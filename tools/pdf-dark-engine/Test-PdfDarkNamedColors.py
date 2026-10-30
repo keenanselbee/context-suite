@@ -164,6 +164,10 @@ def main():
         assert code == 0 and output and facts == inspection, (label, code, facts)
         reference_code, _, reference = invoke(engine, scratch, fixture(direct), '--convert')
         assert reference_code == 0 and reference, label
+        if label.startswith('graphics-style-'):
+            with pymupdf.open(stream=output, filetype='pdf') as actual_doc, \
+                    pymupdf.open(stream=reference, filetype='pdf') as expected_doc:
+                assert actual_doc[0].get_pixmap().samples == expected_doc[0].get_pixmap().samples, label
         geometry, colors, text = appearance(output)
         reference_geometry, reference_colors, reference_text = appearance(reference)
         assert geometry == reference_geometry and text == reference_text, (label, 'geometry/text')
@@ -270,6 +274,19 @@ def main():
            state={'op': BooleanObject(True)})
     refuse('overprint-text-image-backing', 'q 120 0 0 70 20 20 cm /Im Do Q /GS gs .4 g ' + plain_text,
            state={'op': BooleanObject(True)}, image_obstacle=True)
+    style_stroke = '110 40 60 50 re S'
+    for cap in range(3):
+        for join in range(3):
+            positive(f'graphics-style-{cap}-{join}', '/GS gs .4 G ' + style_stroke,
+                     f'3 w 7 M {cap} J {join} j .4 G ' + style_stroke,
+                     state={'LW': NumberObject(3), 'ML': NumberObject(7),
+                            'LC': NumberObject(cap), 'LJ': NumberObject(join)})
+    positive('graphics-style-restore', 'q /GS gs Q .4 G ' + style_stroke, '.4 G ' + style_stroke,
+             state={'LW': NumberObject(9), 'ML': NumberObject(2)})
+    for key, bad in [('LW', NumberObject(-1)), ('LW', NumberObject(10001)),
+                     ('ML', NumberObject(0)), ('ML', NumberObject(10001)),
+                     ('LC', NumberObject(3)), ('LJ', FloatObject(.5))]:
+        refuse('invalid-style-' + key + '-' + str(bad), '/GS gs .4 G ' + stroke, state={key: bad})
     for label, baseline, mode in (('inside', 45, 0), ('partial', 75, 0), ('stroke', 120, 2)):
         refuse('overprint-clipped-text-' + label,
                colored_backing + clip + f'/GS gs .4 g .4 G BT /F1 12 Tf {mode} Tr 30 {baseline} Td (CLIPPED) Tj ET',

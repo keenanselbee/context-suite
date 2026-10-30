@@ -1,6 +1,25 @@
 Context Suite Changelog
 =======================
 
+1.5.5 - Broaden PDF reading copies and optimization presets, 2026-10-20
+---------------------------------------------------------------------
+
+- Add bounded passive PDF form shells, opening views, named destinations,
+  ordinary relative links, and preserved presentation artifact relationships.
+- Handle validated RGB ICC paint, common legacy sRGB profiles, gray JPEGs,
+  packed lossless grayscale images, and graphics-state line styles.
+- Follow actual nested graphics calls without recursively rewriting unused
+  inherited resources; retain source, output, and work limits.
+- Preserve original leading artifact markers and validate repeat stability before
+  admitting an export. Refuse unsupported white-text erasing effects instead of
+  returning distorted headings.
+- Include the previously source-verified Optimize preset expansion: meaningful
+  Balanced/Smallest choices and exact TGA, OpenDocument, and EPUB paths using
+  existing engines. Preserve originals and format-specific quality checks.
+- Keep unsupported document features explicit. Local candidate and installation
+  acceptance are recorded separately; this is not a universal fidelity claim.
+
+
 1.5.3 - Expand lossless optimization, 2026-10-19
 ----------------------------------------------
 

@@ -23,7 +23,9 @@ and native source identities before creating `pdf-dark/`. That directory gets
 the host plus the exact qpdf runtime DLLs and notices already selected under
 `pdf-engine/`, excluding `qpdf.exe`. Existing `pdf-dark/` directories are never
 overwritten. With only `--payload`, the script verifies exact membership and
-hashes; extra, missing, changed or linked entries fail.
+hashes; extra, missing, changed or linked entries fail. Staging and verification
+also require the private adapter's host checksum to match the native pin, so a
+new engine cannot be packaged with a worker that still expects the old engine.
 
 `Build-Production.ps1` can opt in through `-PdfDarkBuildDirectory` only with a
 new `-StagingId` and all three PDF candidate inputs. Candidate staging reserves
@@ -33,7 +35,11 @@ workflow does not run that command. `Test-ProductionPayload.ps1` accepts
 same exact files. Until the host and pin are reviewed together, do not pass
 this option to candidate staging. Candidate 1.2.7 opts in with the reviewed
 native pin; subsequent source or binary changes require a new review and version.
-The current pin selects the `pdf-dark-8` exercises compatibility extension. The build
+The current pin selects the `pdf-dark-9` passive-document and color compatibility
+extension. Inspection and conversion both validate the serialized reading copy
+and require a bounded repeat plan to make no further changes before admission.
+Unstable palette or contrast cases remain unsupported instead of accumulating
+changes on repeated conversion. The build
 records the implementation, CMake definition and all eight policy headers.
 The parent `docs/pdf-dark-lecture-support-goal.md` records supported bounds,
 corpus evidence, independent preservation review and current candidate status.
@@ -49,6 +55,19 @@ is historical; the dated follow-ups record later development and installation.
 
 Verification
 ------------
+
+`Test-PdfDarkPassive.py` checks empty form shells, passive opening destinations,
+relative links, exact retention and active-content refusals.
+`Test-PdfDarkArtifactParents.py` covers bounded detached presentation artifacts
+and preservation of original marked content around generated page backgrounds.
+`Test-PdfDarkRgbPaint.py` checks matrix/TRC profiles, fractional paint precision,
+legacy sRGB bounds, gray JPEGs and packed lossless grayscale images.
+`Test-PdfDarkInheritedResources.py` checks actual nested graphics calls, unused
+inherited self-references and refusal of active recursion.
+`Test-PdfDarkKnockoutText.py` refuses white glyphs erasing dark underlines on white
+paper; legitimate panel labels and navy-paper labels remain covered. General
+knockout-text reconstruction is outside this increment. These suites accept
+`--engine` and a fresh repository-local `--scratch`, as below.
 
 `Test-PdfDarkNamedColors.py`, `Test-PdfDarkCalibratedImages.py`, and
 `Test-PdfDarkCffBounds.py` exercise bounded color profiles, calibrated image

@@ -29,12 +29,14 @@ for folder in ("pdf-engine", "pdf-renderer", "pdf-validator"):
 checks = []
 
 
-def check(name, action, refusal=False):
+def check(name, action, refusal=False, detail=None):
     try:
         action()
-    except (ValueError, FileNotFoundError, KeyError):
+    except (ValueError, FileNotFoundError, KeyError) as error:
         if not refusal:
             raise
+        if detail is not None and detail not in str(error):
+            raise AssertionError("Unexpected refusal detail: " + str(error)) from error
     else:
         if refusal:
             raise AssertionError("Unexpected acceptance: " + name)
@@ -46,6 +48,18 @@ def check(name, action, refusal=False):
 # patches change only test-process values, never repository pins or native files.
 real_pins = stage.pins
 host, dependencies = real_pins()
+real_adapter_source = stage.ADAPTER_SOURCE
+adapter_fixture = scratch / "mismatched-adapter.cs"
+adapter_fixture.write_text('private const string HostHash = "' + "0" * 64 + '";\n', encoding="utf-8")
+stage.ADAPTER_SOURCE = adapter_fixture
+try:
+    check("mismatched adapter host pin refuses staging before writes",
+          lambda: stage.stage(candidate, args.build_directory), refusal=True,
+          detail="adapter host pin does not match")
+    assert not (candidate / "pdf-dark").exists()
+finally:
+    stage.ADAPTER_SOURCE = real_adapter_source
+
 for name, modify in (
         ("wrong native host digest refuses staging before writes", lambda value: value.update(sha256="0" * 64)),
         ("changed native source refuses staging before writes", lambda value: value["sources"][0].update(sha256="0" * 64))):

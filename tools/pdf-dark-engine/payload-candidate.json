@@ -2,12 +2,12 @@
   "schema": 1,
   "host": {
     "path": "bin/Release/ContextSuite.PdfDark.exe",
-    "bytes": 762368,
-    "sha256": "E72A38B99F750129ABE5D3DD97A38FD2EFD5A8F0E60DFF12E91C64761D1A485A",
+    "bytes": 808960,
+    "sha256": "11E24AA7BE995A33903B24621514C1DB71B954C1A8341E0F6091C1A99A813E9C",
     "sources": [
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDark.cpp",
-        "sha256": "67690C211E2D670CC545264769EA36D2F625BF2965379964EA36E3DFE1D9CB3E"
+        "sha256": "6602173B1724213A7844829DBEF4262B5D725CA7D0269F60DE3B3A8DC512A919"
       },
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/CMakeLists.txt",
@@ -23,7 +23,7 @@
       },
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkStructurePolicy.h",
-        "sha256": "F2F4F668C745D01C6DFC9781AB43C42A23DD8A909FA60044FB9F8057E4326AFC"
+        "sha256": "8A0AE2C9BEE525735526446AA0D24C5F2B5F6EBAFE85A5BD3C2823567AFF8691"
       },
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkShadingPolicy.h",
@@ -31,7 +31,7 @@
       },
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkRetainedImagePolicy.h",
-        "sha256": "9F65DFAAFD9346B174465A6DF43B1B089E173A4D7B143E20F6518475A56E7164"
+        "sha256": "8AC7B09A338E63202639D1BAF3EB0BF8E67173B9E41E33A3712693A1E819C3D8"
       },
       {
         "path": "proprietary/src/ContextSuite.PdfDark.Native/PdfDarkFontPolicy.h",
