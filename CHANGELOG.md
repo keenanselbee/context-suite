@@ -1,7 +1,7 @@
 Context Suite Changelog
 =======================
 
-1.6.0 - Make Context Suite free, 2026-10-30
+1.6.1 - Make Context Suite free, 2026-10-30
 ------------------------------------------
 
 - Make Analyze, Convert, and Optimize free without a trial, activation, or

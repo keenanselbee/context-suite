@@ -27,9 +27,9 @@ permission-only settings migrate to copies. See the
 remaining visual acceptance.
 
 
-Context Suite is transitioning to a fully free application, with no trial,
-purchase, or activation. The source-available implementation is being consolidated
-into this repository. See [the transition goal](docs/free-access-goal.md) for
+Context Suite is fully free in current source, with no trial, purchase, or
+activation. The source-available implementation lives in this repository.
+See [the transition goal](docs/free-access-goal.md) for
 current verification and [license terms](LICENSE.md) for permitted use. Existing
 installed releases and historical evidence below remain separate.
 
@@ -37,11 +37,14 @@ installed releases and historical evidence below remain separate.
 Project Status
 --------------
 
-Source metadata, the verified development candidate, and the local installation
-are **1.5.5** (verified 2026-10-20). All 2,915 payload files and all three registered
-package identities are verified; settings, trial and license data are preserved.
-The exact candidate passes 5,484 foundation contracts. Installed PDF workflows
-and packaged COM activation also pass. The 1.5.2 payload is retained for rollback.
+Current source implements the free transition. Candidate verification and the
+separate live-retirement actions are recorded in the transition goal above.
+
+The existing local installation remains **1.5.5**, historically verified on
+2026-10-20. At that milestone, all 2,915 payload files and all three registered
+package identities were verified; settings, trial and license data were preserved.
+That candidate passed 5,484 foundation contracts. Installed PDF workflows
+and packaged COM activation also passed. The 1.5.2 payload is retained for rollback.
 
 The [PDF compatibility follow-up](docs/pdf-dark-lecture-support-goal.md#broader-pdf-compatibility-2026-10-20)
 adds 33 verified local documents covering 311 pages. Actual worker conversion
