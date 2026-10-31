@@ -28,7 +28,7 @@ Current status as of 2026-10-30:
 | Verified candidate | Unsigned 1.6.2, built from clean source and archive-verified; 811 packaged PDF/Optimize checks passed |
 | Existing local installation | 1.5.5, unchanged; all 2,915 installed payload files matched during migration verification |
 | Release acceptance | Signing, native installer/upgrade lifecycle, clean-machine checks, and broader visible/accessibility acceptance remain open |
-| External retirement | Live Polar changes, private-repository archival, pushes, and website deployment are prepared but not executed |
+| External retirement | Free-product website copy is live; local private history is preserved under `z backup/proprietary/`; Polar retirement and remote archival remain open |
 
 The [free transition record](docs/free-access-goal.md) owns exact source/archive
 identities, test results, limits, and retained evidence. See the

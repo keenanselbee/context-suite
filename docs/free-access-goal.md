@@ -1,8 +1,8 @@
 Free Access And Repository Transition
 =====================================
 
-Status: local migration and candidate verification complete; live retirement
-prepared but not executed. Decision accepted 2026-10-30 under
+Status: local migration, candidate verification, and website deployment complete;
+Polar retirement and owner-managed remote archival remain open. Decision accepted 2026-10-30 under
 [0021](decisions/0021-free-product-and-public-implementation.md).
 
 The owner authorized one free application, retirement of the private build
@@ -51,8 +51,9 @@ Completion Evidence
 -------------------
 
 The local implementation, source migration and candidate verification are
-complete. No remote archival, storefront retirement,
-website deployment, or replacement of the installed application has occurred.
+complete. Website deployment was subsequently verified as recorded below.
+No remote archival, storefront retirement, or replacement of the installed
+application has occurred.
 
 - Main decisions/terms: 3c18d7f; included PDF milestone: 838de52; free runtime,
   source, build and packaging migration: a64321c.
@@ -141,20 +142,34 @@ copies, 547 MiB of verified production staging, a 753 MiB candidate directory
 including its archive, 182 MiB of PDF replay evidence, and a 590 MiB isolated
 website verification worktree. Roughly 331 MiB of fresh-source test snapshots
 and a 36 MiB committed-source check remain too. The website worktree retains
-browser evidence and unfinished publication obligations; its dependency junction
+browser evidence from the website work; its dependency junction
 must never be traversed during cleanup. Main/private Git history, engine inputs,
 notices, receipts, existing installed/rollback payloads, and unrelated website
 work remain protected. Purposes, reproduction commands and exact selections are
 recorded in the local-only receipts and cleanup-manifest.json.
 
 
-Prepared Live Retirement
-------------------------
+Retirement Follow-through
+-------------------------
 
-These are reviewable next actions, not completed account changes:
+On 2026-10-30, the owner authorized the remaining changes and reviewed pushes,
+while reserving remote repository archival for later. The private checkout moved
+intact to local-only z backup/proprietary/: 1,839 file hashes matched before Git
+pointer repair, and the existing linked worktree was verified. The prior stale
+worktree registration was preserved. Parent source checks reject tracked backup
+content and production references to it. Local-only relocation receipts and the
+reproduction script are in .codex-temp/retirement-followthrough-20261030-174330;
+retain them to document the move and preserved history.
 
-1. Push the reviewed main and private milestones only when publication is
-   authorized; inspect the matching hosted checks. Provision the selected pinned
+The website free-product commit 3f33d23 is included in deployed release 0.7.6,
+published at 2026-10-30 23:11:16 UTC. The deployment receipt, 435 checked live
+assets, and live product wording were verified. This does not publish the
+Context Suite candidate or satisfy installer/signing acceptance.
+
+Remaining boundaries and account actions:
+
+1. Reviewed main and private pushes are authorized; inspect the matching hosted
+   checks. Provision the selected pinned
    engine assets before claiming manual production CI acceptance.
 2. Archive only the existing production Context Suite product in Polar. Keep
    its benefits, older customer keys, downloads and order history intact. Polar
@@ -166,11 +181,11 @@ These are reviewable next actions, not completed account changes:
    `keenanselbee/context-suite-private`. Keep its visibility private and retain
    the local checkout/history. Review outstanding issues/PRs before making the
    remote read-only; see [GitHub archival](https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories).
-4. Deploy the scoped website wording through the normal verified publication
-   workflow. Release binaries only after the separate installer, signing and
+4. Website wording is deployed. Release binaries only after the separate installer, signing and
    customer acceptance decisions have been addressed.
 
 The local-only live-retirement-plan.json records the exact privately configured
-Polar target and intended update. Its account state has not been inspected in
-this task. No keys, benefits, provider history, remote repositories or existing
+Polar target and intended update. Browser interaction was stopped by the owner
+before account inspection, so no Polar changes were made. No keys, benefits,
+provider history, remote repositories or existing
 installations are deleted by this plan.
