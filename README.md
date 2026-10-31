@@ -1,400 +1,92 @@
 Context Suite
 =============
 
-Context Suite is a local Windows application that makes common media
-file operations available directly from File Explorer through three peer
-context-menu commands:
+Context Suite is a free, local Windows application with three File Explorer tools:
 
-- **Analyze** explains how a selected file is stored and which properties matter.
-- **Convert** creates a deliberately selected format or texture representation.
-- **Optimize** reduces file size while retaining the current format by default.
+- **Analyze** explains a file's properties without changing it.
+- **Convert** creates an explicitly selected format or texture representation.
+- **Optimize** reduces size while retaining the current format by default.
 
-The project focuses on image and audio workflows that are understandable
-without codec expertise. It should never hide meaningful quality, transparency,
-metadata, or compatibility consequences.
+Common actions use saved settings and complete quietly. Focused prompts handle
+necessary choices; standalone launch opens Settings/help. There is no trial,
+purchase, activation, or network licensing. Third-party notices are in Settings.
 
-The primary UX goal is **right-click, choose, done** for a broad, nontechnical
-audience. [The quiet Optimize slice](docs/quiet-first-ux-goal.md) implements direct presets with
-Auto first, best-effort optimization, quiet successful completion and a much
-simpler progress/problem UI. Quick Optimize is implemented and tested locally;
-installed Explorer, accessibility and visual acceptance remain pending. Common
-Convert targets also run directly when safe; focused dialogs handle necessary
-transparency and DDS decisions. The manual workspace and routine Optimize planner
-are removed. Standalone launch opens Settings/help. Copies are the default;
-Settings offers explicit per-tool replacement for future commands. Old
-permission-only settings migrate to copies. See the
-[simplification goal](docs/context-menu-simplification-goal.md) for evidence and
-remaining visual acceptance.
-
-
-Context Suite is fully free in current source, with no trial, purchase, or
-activation. The source-available implementation lives in this repository.
-See [the transition goal](docs/free-access-goal.md) for
-current verification and [license terms](LICENSE.md) for permitted use. Existing
-installed releases and historical evidence below remain separate.
+The source-available implementation lives in this repository. See the
+[license terms](LICENSE.md) for permitted use; source availability is not an
+open-source license. The ignored historical private repository is not a build
+input. Selected engines and their source/notices remain required.
 
 
 Project Status
 --------------
 
-Current source implements the free transition. The unsigned **1.6.2** candidate
-was built from clean source and its archive verified on 2026-10-30. It passed
-811 packaged PDF/Optimize checks, including 62 exact historical documents and
-explicit refusal handling. Candidate details, existing limits and separate
-live-retirement actions are recorded in the transition goal above.
+Current status as of 2026-10-30:
 
-The existing local installation remains **1.5.5**, historically verified on
-2026-10-20. At that milestone, all 2,915 payload files and all three registered
-package identities were verified; settings, trial and license data were preserved.
-That candidate passed 5,484 foundation contracts. Installed PDF workflows
-and packaged COM activation also passed. The 1.5.2 payload is retained for rollback.
+| Area | State |
+| --- | --- |
+| Source | Free 1.6.2 application, built from the main repository |
+| Verified candidate | Unsigned 1.6.2, built from clean source and archive-verified; 811 packaged PDF/Optimize checks passed |
+| Existing local installation | 1.5.5, unchanged; all 2,915 installed payload files matched during migration verification |
+| Release acceptance | Signing, native installer/upgrade lifecycle, clean-machine checks, and broader visible/accessibility acceptance remain open |
+| External retirement | Live Polar changes, private-repository archival, pushes, and website deployment are prepared but not executed |
 
-The [PDF compatibility follow-up](docs/pdf-dark-lecture-support-goal.md#broader-pdf-compatibility-2026-10-20)
-adds 33 verified local documents covering 311 pages. Actual worker conversion
-passes those documents and all 36 prior regression documents, with independent
-glyph validation, mandatory copies, and repeat no-ops. Eight of the original
-50 difficult samples are now supported; unsupported features and ambiguous
-rendering remain explicitly bounded. Embedded images may retain original colors.
-
-The installed [Optimize expansion](docs/optimization-expansion-goal.md) and
-[preset expansion](docs/optimization-presets-goal.md) include JPEG, still WebP,
-PDF, and DOCX/XLSX/PPTX quality choices where supported, plus exact Auto/Lossless
-TGA, OpenDocument, and EPUB paths. The package passes representative preset and
-interruption checks, keeps mandatory copies, and reuses existing engines.
-Total payload growth from 1.5.2 is about 248 KiB, with no added files or engines.
-Source changes and historical passing results do not establish a newly verified
-release. Signing, native installer lifecycle, broader visual/accessibility and
-free-release acceptance remain open; see the [packaging goal](docs/release-packaging-goal.md).
-The [cleanup and correctness plan](docs/repository-maintenance.md) tracks the
-current maintenance workflow. The dated milestones below retain their original
-evidence and do not describe the current installation unless stated above.
-
-
-Local Milestone History
------------------------
-
-Local version **1.4.7** is installed as of 2026-10-16. Analyze now streams text
-line counts, opens Technical details by default, remembers disclosure choices,
-prioritizes file-specific facts and opens expanded at 82% of the current monitor's
-usable height with balanced vertical spacing. This placement runs once; normal
-moving, resizing, snapping and maximizing remain free of ongoing corrections.
-Collapsing Technical details shrinks the normal window; reopening restores its
-previous expanded height where space permits, preserving position and width.
-Maximized windows keep their geometry. Remembered collapsed details open compactly
-at the same starting top as the expanded window, without separate centering.
-The installed build uses the owner's latest transparent triangle PNGs for
-ten Windows icon sizes from 16 to 256 pixels and preserves movement between
-monitors. The emerald-background artwork remains reserved for online pages.
-The complete bundled engine selection, lecture PDF compatibility and expanding
-conversion file-details UI are retained. Default, dark and light taskbar resources
-remain indexed at the external application location with transparent backgrounds.
-The Analyze update passed 4,925 foundation contracts and 951 Analyze checks;
-the shared-starting-position follow-up passed 21 checks in each theme. Broader visible lifecycle
-acceptance remains separate. The installed payload and packaged resource lookup
-checks pass; settings, trial and license files were preserved during installation.
-Previous installed payloads are retained for rollback.
-See the [icon conventions](docs/style-guide.md#shell-integration) and
-[lecture support evidence](docs/pdf-dark-lecture-support-goal.md).
-The owner confirmed on 2026-10-16 that the gray taskbar square is gone after
-reopening 1.3.8. Broader visual/accessibility acceptance remains separate.
-The milestone records below retain their historical package and acceptance scope.
-
-The `pdf-dark-6` [lecture extension](docs/pdf-dark-lecture-support-goal.md) now
-normalizes all 25 topic PDFs (746 pages), including already-dark navy slides,
-tables and eligible diagrams. Real-worker copies, repeat no-ops, preservation
-checks and rendered review pass. The earlier 50-page lecture also passes.
-The isolated 1.3.1 candidate passes exact-worker and payload verification. Installed 1.2.9
-remains unchanged. Protected/interactive or ambiguous PDFs remain unsupported;
-photos and uncertain image regions retain their original appearance.
-Native desktop/accessibility and owner acceptance remain separate.
-
-The `pdf-dark-7` COSC 310 follow-up adds rounded panels, safer overlapping
-text and image handling, readable screenshot fallbacks and page-specific failures.
-Five original lectures (212 pages) pass native conversion and repeat checks;
-three originals still refuse with documented reasons. Candidate 1.3.2 passes
-actual-worker, preservation and payload checks; see the same lecture support goal.
-It is not installed.
-
-The owner-approved image expansion adds ICO and AVIF output from the
-five ordinary raster inputs, classic TIFF to PNG/JPEG/PDF, and static SVG to PNG.
-All four are implemented in the unsigned **1.2.5** review candidate, including
-[bounded SVG rendering](docs/converter-design.md#svg-input-checkpoint-2026-10-09).
-The archive passes fresh-extraction and payload verification; its exact staged
-worker passes 5,064 foundation checks and the recorded existing-feature replay.
-See the [candidate evidence](docs/launch-capability-matrix.md#image-expansion-candidate-125-2026-10-09)
-and [interactive icon/output review](docs/image-expansion-review.md).
-Native Explorer, accessibility, representative-content fidelity and commercial
-acceptance remain open. Preserved combined baseline 1.2.4
-passes the recorded automated workflow and payload checks, including destination
-icons and WEM. See the [baseline checkpoint](docs/launch-capability-matrix.md#image-expansion-baseline-2026-10-09).
-At that checkpoint the installed local application was **1.2.5**; the previous
-1.2.3 payload was retained for rollback. Earlier milestone records retain their
-original evidence and do not establish completion of this expansion.
-
-The older implementation milestones below retain their original package and
-acceptance scope; the 1.2.5 candidate record describes that integration checkpoint.
-
-The preceding [broad file support goal](docs/broad-file-support-goal.md) covers
-useful Analyze results for every readable regular file, an offline common-type
-catalog, common audio, and PDF/document support. The first Analyze source slice
-now handles unknown/empty files, initial header identification and existing DDS
-details, bounded JSON/XML structure analysis, WAVE/FLAC header facts,
-bounded OOXML/OpenDocument package and legacy DOC/XLS/PPT analysis, and a
-245-entry offline catalog.
-The [versioned launch matrix](docs/launch-capability-matrix.md) separates current
-analysis, exact conversion pairs, optimization, packaged engines and remaining
-acceptance. See [analysis coverage](docs/file-type-coverage.md) for individual
-facts and source-review limits.
-Audio conversion now has isolated worker/publication coverage for all 30
-cross-format pairs, direct Convert commands and a compact prompt for required
-quality changes. Production audio engine adoption and visible acceptance remain
-pending. [MP3 output cover preservation](docs/mp3-output-artwork.md) has isolated
-evidence for supported FLAC, Ogg and M4A inputs. [M4A output cover preservation](docs/m4a-output-artwork.md)
-also supports representable FLAC, MP3 and Ogg pictures. [WAV source artwork](docs/wave-id3-artwork.md)
-now uses the same preserved output paths. [WAV output artwork](docs/wave-output-artwork.md)
-also retains representable covers from the other five audio formats.
-[WAV Unicode tags](docs/wave-text-conversion.md) preserve supported descriptive
-values in explicitly encoded ID3 alongside ordinary ASCII INFO fields. An explicit
-[isolated production build option](docs/audio-distribution.md) packages the
-reviewed audio runtime and notices; default release packaging
-still excludes it. Broader analysis remains in progress. Selected document launch actions are
-images-to-PDF, PDF pages-to-images, PDF optimization and Word/Excel/PowerPoint-to-PDF.
-A structural PDF optimization candidate now passes isolated worker, paid-access
-and copy-publication checks, plus independent two-page rendering comparison.
-Auto/Lossless dispatch now includes PDFs in the same batch as PNG and FLAC, with
-mandatory PDF copies. Broader fidelity, engine adoption and the other document
-actions remain pending. **Convert > PNG** now includes PDFs when the optional
-renderer is present, with numbered page copies, one document result and retries
-that skip completed pages. Partial failure/cancellation remain visible; normal
-packaging still excludes the renderer. **Convert > PDF** now combines supported
-images into one validated copy when the optional validator is present. Several
-images require page-order review; retries keep that order and preserve originals.
-An explicit [combined production candidate](docs/pdf-production-payload.md) now
-packages these PDF engines and notices alongside images/audio. Default release
-adoption and broader document fidelity remain pending. Office conversion is
-implemented separately in isolated builds and is absent from that package.
-Normal packaging still excludes this validator. [Optional Office PDF commands](docs/office-direct-command.md)
-now connect DOCX/XLSX/PPTX documents to separate validated copies, with a focused
-spreadsheet calculation choice. Integrated acceptance remains pending.
-The fresh [combined 1.1.1 candidate](docs/combined-office-candidate.md)
-now packages Office alongside image/audio/PDF engines for isolated integration
-checks; fidelity, redistribution and release adoption remain open.
-The later [expanded scratch payload](docs/combined-expanded-inputs.md) adds
-HEIC/AVIF input to JPEG/PNG and AIFF/WMA input to the six existing audio targets.
-Its exact worker passes the recorded 659 HEIF interoperability and 211 expanded
-audio direct-command checks, including validated output copies and preserved
-originals. These additions follow the variant limits in the launch matrix and
-are absent from reserved 1.1.1. Human review, Office fidelity/security, engine
-adoption and one final versioned candidate remain required.
-The [goal record](docs/broad-file-support-goal.md)
-identifies the latest isolated staging and its limited acceptance scope.
-The owner accepted the image utility's simplified UI; screen-reader, additional
-themes/DPI and installed lifecycle coverage remain separate gates. Signing is
-deferred. The following records describe the existing image foundation.
-
-Product design and technical discovery are in progress. A native x64 shell
-prototype now registers **Analyze**, **Convert**, and **Optimize** as independent
-Windows 11 Explorer commands and hands the complete selection to a separate host
-through a bounded, versioned request file. The standalone native prototype host
-only confirms activation; production WPF activation supports the implemented
-analysis/conversion workflows below.
-
-Shared image-output safety and settings are implemented and locally verified.
-The [goal evidence](docs/image-output-safety-goal.md) records the tested scope and
-replacement restrictions. The completed PNG/JPEG/WebP conversion slice has tested
-adapter/worker execution, a system-themed conversion planner, previews and
-trial-gated safe publication and a passing bounded media/failure matrix.
-The curated native engine is now integrated into production development builds,
-with bounded BMP/TGA conversion bringing the catalog to twenty cross-format pairs.
-The completed bounded [DDS slice](docs/dds-conversion-goal.md) adds public header analysis,
-pinned CPU DirectXTex conversion, mip/color policies and safe publication: 27
-conditional conversion pairs total. Earlier focused image/DDS desktop checks
-passed before the current simplification; final customer-surface acceptance
-remains open.
-Bounded [lossless PNG optimization](docs/png-optimization-goal.md) now has a
-direct commands, a private encoder, independent sample/metadata validation,
-trial-gated smaller-only publication and automated failure tests.
-[Balanced and Smallest](docs/png-lossy-presets.md) add bounded RGB precision and dark-protected palette reduction
-for supported 8-bit RGB/RGBA PNGs, with exact alpha and preserved accepted metadata. Interactive
-optimization/licensing UI acceptance and live paid activation remain pending; this is not release-ready.
-[Fixed optimization recipes](docs/decisions/0016-fixed-optimization-recipes.md)
-are now implemented: predictable presets, at most one safety fallback and
-gradient-protected Smallest. See [integration evidence](docs/fixed-preset-integration.md)
-for policy limits, measured latency and the scope of visual approval.
-An Inno Setup offline installer candidate now compiles. The
-[installer lifecycle integration](docs/installer-recovery.md) now wires versioned
-staging, active-release launch/uninstall and recovery, with automated failure
-tests. Native upgrade admission remains closed pending signed Windows lifecycle
-acceptance; trusted signing and clean-machine checks remain pending. See the
-[packaging goal](docs/release-packaging-goal.md),
-[integration evidence](docs/bmp-tga-and-engine-integration.md)
-and [remaining redistribution gates](docs/release-redistribution.md).
-See the [conversion goal](docs/image-conversion-goal.md) for verified scope.
-
-
-Developer Commands
-------------------
-
-Run these commands from PowerShell at the repository root:
-
-```powershell
-.\tools\Build.ps1 -Configuration Debug
-.\tools\Test-ShellPrototype.ps1 -Configuration Debug -SkipBuild
-.\tools\Install-ShellPrototype.ps1 -Configuration Debug -SkipBuild
-.\tools\Test-InstalledShellPrototype.ps1
-.\tools\Open-ShellPrototypeTestFolder.ps1
-.\tools\Uninstall-ShellPrototype.ps1
-```
-
-The build requires Visual Studio 2026 with the x64 C++ desktop tools and Windows
-11 SDK 26100. Generated binaries and package assets are written under
-`artifacts/`. Installation registers three development-only sparse identity
-packages, one for each Explorer root; it does not modify media-file associations.
-
-See [shell prototype validation](docs/shell-prototype-validation.md) for the
-automated evidence, observed layout, and optional manual host-dialog check.
-
-
-Production Foundation
----------------------
-
-The WPF application, shared core, on-demand worker, bounded activation queue,
-and private-project composition now build. Convert has a working PNG/JPEG/WebP/BMP/TGA/DDS
-planner and private worker adapter, with trial-gated safe publication. Analyze
-reports bounded DDS headers; Optimize offers Lossless and bounded lossy PNG presets.
-The bounded conversion acceptance
-matrix passes; commercial release checks remain unfinished.
-
-```powershell
-./tools/Test-Foundation.ps1 -Configuration Release
-./tools/dds-engine/Build-DdsEngine.ps1
-./tools/png-engine/Stage-PngEngine.ps1
-./tools/Build-Production.ps1 -Configuration Release
-./tools/Test-Foundation.ps1 -Configuration Release -Integration
-./artifacts/production/Release/ContextSuite.Application.exe
-```
-
-The full build requires the compatible private checkout and staged, hash-verified
-curated native inputs; see the [staging workflow](tools/curated-engine/README.md).
-These commands do not
-install or replace Explorer packages. See [development and validation](docs/development.md)
-for prerequisites, public-only checks, IPC limits, and the remaining manual smoke
-checks. CI workflows are authored; hosted execution requires publication.
-See [foundation validation](docs/milestone-1-validation.md) for the local evidence.
-
-
-Public Source And Commercial Direction
--------------------------------------
-
-Context Suite is intended as both a co-op portfolio project and a paid Windows
-utility. Most engineering is publicly reviewable; selected production
-implementations live in the separate `context-suite-private` repository,
-checked out at the ignored `proprietary/` path.
-
-There will be one production application build, requiring the compatible private
-checkout. A public checkout alone will not build the complete app. There is no
-separate review/demo edition: portfolio evaluation will use the public code,
-architecture, tests, and planned screenshots and demo video. A downloadable
-commercial trial is planned for people who want to run the application.
-
-Public components may be built and tested independently where supported. The
-native prototype commands remain independent. Production composition now builds;
-paid licensing is locally implemented and contract-tested, not live-verified. The image conversion flow and its bounded
-media/failure acceptance matrix are verified locally.
-
-The commercial direction is a seven-day trial followed by Polar license-key
-activation, using hosted checkout without custom website accounts. Polar account
-approval is user-confirmed; app integration has synthetic-provider evidence. Media processing
-remains local. Decision 0020 extends the local trial to seven days starting at the first
-confirmed valid conversion or optimization; its store, execution gate and conversion UI are tested
-with isolated trial data. One purchase includes all future updates; paid access
-uses daily validation and 30-day offline grace. The price is $5 CAD per product, with one active transferable installation.
-Final source-license terms and live checkout verification remain release decisions. See the active
-[commercial release-candidate goal](docs/commercial-release-candidate-goal.md).
-See [build ownership](docs/decisions/0005-public-and-proprietary-builds.md) and
-[commercial access](docs/decisions/0006-trial-and-purchase-access.md).
-The [Polar integration plan](docs/polar-integration.md) records setup information
-still needed and the implementation and release checks.
+The [free transition record](docs/free-access-goal.md) owns exact source/archive
+identities, test results, limits, and retained evidence. See the
+[current roadmap](docs/roadmap.md) for remaining work and the
+[capability matrix](docs/launch-capability-matrix.md) for supported format boundaries.
+Source checks, candidate checks, and installed behavior are separate claims.
+Historical milestones are in [project history](docs/project-history.md) and
+[CHANGELOG](CHANGELOG.md).
 
 
 Product Boundaries
 ------------------
 
-The accepted production foundation is Windows 11 x64, WPF on .NET 10 with MVVM,
-one application per interactive user session, and one on-demand sequential
-media worker. It retains the native Explorer extension and bounded request-file
-activation, with local named pipes for application forwarding and worker
-communication. Settings use versioned local JSON and immutable batch snapshots.
-Process foundations are implemented; see [decision 0007](docs/decisions/0007-production-ui-and-processes.md)
-and [development status](docs/development.md) for verification limits.
+- Analyze is read-only; media contents and selected paths stay local.
+- Copies are the default. Explicit per-tool Settings consent permits future
+  replacement only on verified paths/platforms; mandatory-copy exceptions remain.
+- Only validated outputs are published. Original recycling happens after safe
+  publication, with no fallback to permanent deletion.
+- Transparency, color, animation, metadata, and document fidelity follow each
+  workflow's stated limits. Unsupported cases receive an explicit result.
+- Explorer integration stays minimal. One application and one on-demand worker
+  coordinate each interactive user session.
 
-- Analysis is read-only.
-- Conversion changes format only after the destination is explicit.
-- Optimization retains the current format unless the user separately chooses a
-  conversion.
-- Source files are preserved by default.
-- New output names use Windows-style suffixes, such as `gamma - Converted.png`
-  and `gamma - Optimized (2).webp`. Explicit replacement and recycle-only cleanup
-  are verified for ordinary local NTFS files on Windows build 26200 x64; other
-  platforms/locations remain copy-only. See
-  [decision 0008](docs/decisions/0008-output-naming-settings-and-replacement.md).
-- Completed outputs are validated before they are published or replace anything.
-- Explorer integration remains thin; media processing runs outside Explorer.
+The [product design](docs/product-design.md) owns the full product contract.
+
+
+Developer Commands
+------------------
+
+Development targets Windows 11 x64, .NET 10, and the native toolchain documented in
+[development](docs/development.md). From the repository root:
+
+```powershell
+./tools/Test-Repository.ps1
+./tools/Test-ProductionSource.ps1
+./tools/Test-Foundation.ps1 -Configuration Release
+```
+
+Close Context Suite before router tests and follow the documented test-concurrency
+restrictions. These commands do not install the application.
+
+For production builds, integration tests, and release candidates, follow the
+[development workflow](docs/development.md) first. Default production output can
+be the installed payload; use the documented isolation and fresh-version rules.
+A command that does not register packages can still overwrite application files.
+Installation, native recycle tests, desktop interaction, and publication remain
+separate opt-in workflows.
 
 
 Documentation
 -------------
 
-- [Product design](docs/product-design.md)
-- [Roadmap](docs/roadmap.md)
-- [Release packaging and clean-machine goal](docs/release-packaging-goal.md)
-- [Image output safety and settings: implementation evidence](docs/image-output-safety-goal.md)
-- [Analyzer design](docs/analyzer-design.md)
-- [Converter design](docs/converter-design.md)
-- [Optimizer design](docs/optimizer-design.md)
-- [Lossy PNG quantization evaluation](docs/png-quantization-evaluation.md)
-- [Shell integration](docs/shell-integration.md)
-- [Architecture](docs/architecture.md)
-- [Desktop smoke tests](docs/desktop-smoke-tests.md)
-- [Repository style guide](docs/style-guide.md)
-- [Commit style](docs/commit-style.md)
-- [Architecture decisions](docs/decisions/README.md)
+Start with the [documentation index](docs/README.md). Key guides:
 
-
-Initial Scope
--------------
-
-The first release path is intentionally narrow:
-
-1. Shared settings, safe copies, and optional replacement: implemented and tested.
-2. PNG/JPEG/WebP/BMP/TGA conversion and curated-engine integration: implemented
-   and tested for explicitly bounded variants.
-3. DDS analysis and bounded 2D conversion: implemented and locally verified
-   under [decision 0011](docs/decisions/0011-dds-engine-and-texture-policies.md).
-4. Optimize PNG files with explicit lossless and bounded lossy policies, then
-   expand image coverage through tested capabilities.
-5. Add common audio analysis and conversion after the image workflow is
-   reliable.
-
-Video, documents, cloud processing, AI editing, CD ripping, and arbitrary media
-engine commands are not part of the initial scope.
-
-The latest source changes add [best-effort PDF-to-Word conversion](docs/pdf-to-docx.md),
-white PDF page backgrounds with an optional transparent setting, and
-selection-aware conversion targets. Installed local version 1.2.3 adds transparent
-figure backgrounds and closer answer-font spacing to these
-changes, native Word rules, grouped prose, heading styles, repeated footers and
-Compact monochrome Explorer icons. Previous installed payloads and
-reserved candidates are preserved.
-
-The [icons and WEM goal](docs/wem-conversion-goal.md) has distinct Convert
-destination icons and both loose WEM-to-WAV and installed-Wwise audio-to-WEM paths
-in source. Native shell, real-engine worker/publication, setup recovery and
-representative BG3 decoding checks pass. The goal records the bounded input
-matrix and remaining native UI/game acceptance; the installed application is
-unchanged.
-
-The subsequent WEM input extension adds MP3 and float32 WAV preparation in the
-same pending-batch workflow, with one quality-consent prompt. It reuses the pinned
-MP3 decoder and installed Wwise, keeps rate/channels and supported WAV loops, and
-removes intermediate audio after use. The installed application remains unchanged.
+- [Product](docs/product-design.md), [Analyze](docs/analyzer-design.md),
+  [Convert](docs/converter-design.md), [Optimize](docs/optimizer-design.md), and
+  [documents](docs/document-design.md).
+- [Development](docs/development.md), [release packaging](docs/release-packaging-goal.md),
+  and [repository maintenance](docs/repository-maintenance.md).
+- [Decisions](docs/decisions/README.md), [style](docs/style-guide.md), and
+  [commit conventions](docs/commit-style.md).

@@ -1,7 +1,8 @@
 Free Product And Public Implementation
 ======================================
 
-Status: accepted; implementation and verification in progress
+Status: accepted; local migration and candidate verification complete.
+Live retirement and release acceptance remain separate; see the transition goal.
 Date: 2026-10-30
 
 

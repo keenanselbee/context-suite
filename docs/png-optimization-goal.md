@@ -1,8 +1,17 @@
 Lossless PNG Optimization Goal
 ==============================
 
-Status: implemented locally; automated acceptance recorded below. Interactive
-optimization-window/Explorer acceptance and commercial release checks remain pending.
+Current policy: [decision 0021](decisions/0021-free-product-and-public-implementation.md)
+removes License UI and all trial/paid admission. Third-party notices are in
+Settings. [Project status](../README.md#project-status) owns current payload state.
+The original implementation sequence, checklists, and dated evidence below
+retain their historical scope; commercial checks and routine planners are not
+current work requirements. The [simplification acceptance](context-menu-simplification-goal.md)
+and [free transition](free-access-goal.md) record the later customer surface.
+
+Status: historical bounded PNG implementation and automated acceptance record.
+Later direct-action UX and free admission are governed by decisions 0018 and 0021.
+Current release acceptance is tracked separately in project status.
 Date: 2026-09-08
 
 This records the original lossless slice. The subsequent [precision preset

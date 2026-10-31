@@ -91,7 +91,7 @@ a fresh engine directory in repository scratch or a new production stage.
 the outer payload inventory. Unknown files, changed notices and linked paths
 are rejected.
 
-With the private checkout and existing curated image prerequisites available,
+With the complete main checkout and existing curated image prerequisites available,
 run the actual worker/application publication checks from the repository root:
 
 ```powershell

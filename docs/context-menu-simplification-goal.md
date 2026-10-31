@@ -1,6 +1,14 @@
 Context-Menu Simplification Goal
 ================================
 
+Current policy: [decision 0021](decisions/0021-free-product-and-public-implementation.md)
+removes License UI and all trial/paid admission. Third-party notices are in
+Settings. [Project status](../README.md#project-status) owns current payload state.
+The original implementation sequence, checklists, and dated evidence below
+retain their historical scope; commercial checks and routine planners are not
+current work requirements. The acceptance below and [free transition](free-access-goal.md) record the
+later customer surface.
+
 Status: complete for the simplification scope; automated evidence passed and owner manual review accepted
 Owner direction recorded: 2026-09-09
 
@@ -34,7 +42,7 @@ Deliver the focused utility defined in
 direct context-menu image commands, copies by default, and an explicit Settings
 choice to replace originals safely on future commands. Remove the general
 customer workspace and routine planners. Keep only necessary decisions,
-read-only Analyze, compact progress/problems, Settings and License.
+read-only Analyze, compact progress/problems, and Settings with third-party notices.
 
 This takes priority over polishing the current general-purpose UI. The
 [commercial release goal](commercial-release-candidate-goal.md) remains open;
@@ -42,6 +50,9 @@ this goal is not permission to ship.
 
 Execution checklist
 -------------------
+
+Historical acceptance checklist for decision 0018. License/access items were
+subsequently superseded by decision 0021; retain the recorded checks as evidence.
 
 - [x] Record the accepted scope, replacement consent and migration rules.
 - [x] Add a versioned per-tool output choice; default/migrate to copies, never

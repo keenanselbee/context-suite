@@ -4,6 +4,11 @@ Broad File Analysis And Media Expansion
 Status: accepted; document launch actions selected, implementation in progress
 Date: 2026-09-09
 
+Current-policy update: [decision 0021](0021-free-product-and-public-implementation.md)
+removes trial/paid admission, License UI, and the private build dependency.
+Any such requirements below retain their historical context; media, process,
+and safety constraints otherwise remain in force.
+
 Context
 -------
 

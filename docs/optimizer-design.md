@@ -1,19 +1,25 @@
 Context Optimizer Design
 ========================
 
+Current product policy: [decision 0021](decisions/0021-free-product-and-public-implementation.md)
+removes trial/paid admission and License UI. Operations still validate confirmed
+plans, batch identity, choices, cancellation, and safe publication. Third-party
+notices are available in Settings. [Project status](../README.md#project-status)
+owns current source, candidate, and installed state. Dated evidence below records
+its original checkpoint; legacy access checks are historical, not current requirements.
+
 Current source, 2026-10-19: the [preset expansion](optimization-presets-goal.md)
 adds four meaningful presets for PNG, JPEG, still WebP, PDF, and DOCX/XLSX/PPTX.
 Auto/Lossless also support FLAC, TGA, ODT/ODS/ODP, and EPUB. New image and document
 paths always create copies, share one batch admission and sequential worker, and
 publish only validated smaller results. Inapplicable presets explain the limit.
 
-Installed **1.5.2** retains the earlier PNG/FLAC/structural PDF baseline. Reserved
-candidate **1.5.3** contains the [first expansion](optimization-expansion-goal.md),
-not this later preset work. Current scratch builds do not update either payload
-or establish release acceptance. The preset goal records current checks and limits.
+The [first expansion](optimization-expansion-goal.md) and
+[preset goal](optimization-presets-goal.md) retain dated implementation and
+installation evidence. Refer to project status above for the current payload;
+scratch builds alone do not establish installation or release acceptance.
 
-Existing PNG, FLAC, and structural PDF dispatch are included in that recorded
-installation. PDF always produces a copy. Missing required engines produce an
+PNG, FLAC, and structural PDF dispatch are implemented. PDF always produces a copy. Missing required engines produce an
 unavailable result before admission; format recognition alone never enables
 processing. The [document design](document-design.md) owns broader PDF bounds.
 
@@ -40,12 +46,13 @@ implemented. The researched `fdEC` exception now follows the selected output pol
 with ordinary quiet success instead of rejecting optimization or warning. Interactive release acceptance and
 general selectable metadata policies remain planned.
 
-Accepted next direction: [decision 0015](decisions/0015-simple-context-menu-workflows.md)
+Accepted UX direction: [decision 0015](decisions/0015-simple-context-menu-workflows.md)
 and the [quiet-first UX plan](quiet-first-ux-goal.md) replace mandatory planning
 with direct Auto-first presets and best-effort processing. This includes
-saving a useful permitted fallback. The initial slice is implemented
-with local policy, worker, shell and isolated quiet-launch evidence; human
-acceptance and wider PNG compatibility remain pending.
+saving a useful permitted fallback. The initial slice has local policy, worker,
+shell, and isolated quiet-launch evidence. The simplification goal records later
+owner acceptance; remaining environment and compatibility checks retain their
+specific scope.
 
 [Decision 0016](decisions/0016-fixed-optimization-recipes.md) now refines the
 implemented PNG policy: fixed recipes, Auto-only preflight routing, one
@@ -72,8 +79,8 @@ processing action. Mixed selections retain presets useful for at least one file.
 Direct preset IDs capture the saved output choice. The bounded shell checks only
 selection metadata and filenames; content support is checked outside Explorer
 and inapplicable files get per-file explanations.
-No manual picker or routine preset planner is exposed. Expired access appears
-as an actionable problem with License and Retry failed; retry retains the
+No manual picker or routine preset planner is exposed. Actionable problems
+offer relevant recovery and Retry failed; retry retains the
 selected file and preset. Legacy choose-preset activation uses conservative
 Lossless directly. Direct Explorer Auto remains first.
 The direct actions are:
@@ -380,8 +387,8 @@ Selecting multiple files and invoking Optimize creates one coordinated batch.
   batch action.
 - A direct preset remains useful when at least one selected filename qualifies.
   Content admission handles each file separately; unsupported items do not block
-  supported ones. All supported families share one access admission and settings
-  snapshot, including when trial access expires during the admitted batch.
+  supported ones. All supported families share one validated batch admission and
+  settings snapshot, without a trial or license dependency.
 - One queue, progress surface, and cancellation control represent the batch.
 - Work uses bounded concurrency and prevents conflicting operations on the same
   source or destination.

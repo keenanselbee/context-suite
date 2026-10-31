@@ -31,7 +31,7 @@ Interactive checks
 The public FlaUI.UIA3 5.0.0 harness drives the production WPF executable in
 foundation mode and the exact app sources in an isolated test host in image mode.
 The latter is a test assembly, not a review edition, fake codec or access bypass:
-it enforces the same local trial using scratch storage and calls the real worker.
+it uses the same free admission with scratch settings and calls the real worker.
 Neither test project requires private source to compile; real image execution
 requires the built production worker. The host is excluded from production output.
 
@@ -64,13 +64,19 @@ Close Context Suite, unlock Windows, and avoid mouse/keyboard input while these
 tests run. Do not run foundation integration tests at the same time.
 
 ```powershell
-./tools/Test-DesktopSmoke.ps1 -Configuration Release
+./tools/Test-DesktopSmoke.ps1 -Configuration Release -SkipBuild
 ./tools/Test-DesktopSmoke.ps1 -Configuration Release -Images -WorkerPath <verified-staged-worker>
 ./tools/Test-DesktopSmoke.ps1 -Configuration Release -Explorer -SkipBuild
 ```
 
-The first command builds production and tests the WPF window via normal
-activation-file entry points. SkipBuild skips the production build only; the
+The first command tests existing production output via normal activation-file
+entry points. Use it only after confirming the selected configuration is
+appropriate: it launches that application without isolating its normal settings.
+`-SkipBuild` is required here because omitting it rebuilds
+`artifacts/production/Release`, which is installed on this workstation. Do not
+refresh installed/registered output for routine verification. The default build
+mode remains available in a disposable checkout or confirmed unregistered,
+unused configuration. SkipBuild skips the production build only; the
 test project is still built. Image mode builds only the isolated host and test
 project, validates the explicit staged worker, and never refreshes a production
 or registered development payload. Its activation files stay inside the test
@@ -134,24 +140,26 @@ target, matte choice, automatic preview, keyboard traversal and Escape.
 Routine WebP and opaque JPEG commands then execute directly, including mixed
 valid/damaged input and queued forwarding. An independent decoder verifies full
 source dimensions; the harness checks named copies, unchanged sources, one app
-owner, no lingering conversion dialog and failed-only retry. It expires only
-its isolated trial, checks blocked direct conversion and Settings access, then
+owner, no lingering conversion dialog and failed-only retry. It creates only
+an isolated expired legacy trial record, verifies free conversion leaves those
+bytes unchanged, checks Settings access, then
 changes and cancels the output preference and checks that consent was not saved.
 Escape should close idle results. It does not open Explorer, a file picker or
 an OLE drag source. No native recycling is performed.
 
-The replacement/copy publication and simulated activation/retry paths are
-verified independently by `tools/Test-LicenseWorkflow.ps1 -DirectCommands`.
+Focused replacement/copy publication and direct dispatch checks use the current
+test-host `--direct-command-contracts <verified staged worker>` entry point.
+See [supported headless commands](manual-workflow-review.md#supported-headless-checks).
 The desktop sequence is compiled but unverified until it runs on an available
 interactive desktop; it must not inherit the old planner's passing status.
 
 The test-only entry point reads `CONTEXTSUITE_TEST_ROOT` and
 `CONTEXTSUITE_TEST_WORKER` in its own assembly and injects normal application
-paths. Production reads neither variable and exposes no trial override flag.
-The root must be under `.codex-temp`; no real trial is read, consumed or reset.
+paths. Production reads neither variable. The root must be under `.codex-temp`;
+current source does not read, consume, or reset real legacy access data.
 This is evidence for the actual windows/view models with isolated composition;
 the distinct production-executable smoke still covers non-converting activation,
-settings and lifecycle. Do not claim live paid licensing or complete media coverage.
+settings and lifecycle. Neither mode establishes complete media coverage.
 
 Historical initial image evidence is recorded in the [completed goal](image-conversion-goal.md).
 The [BMP/TGA integration](bmp-tga-and-engine-integration.md) adds three planner
@@ -183,8 +191,8 @@ matrix in adapter/worker contracts rather than driving every case through Explor
 
 Public CI should compile this harness without private source. Interactive runs
 are opt-in local checks initially, not assumed available on hosted CI. A future
-dedicated Windows VM must isolate desktop access and private production builds;
-never give untrusted public pull requests a private self-hosted runner.
+dedicated Windows VM must isolate desktop access and production test payloads;
+never give untrusted public pull requests access to a privileged self-hosted runner.
 
 Visual clipping, icon appearance, modern-menu ordering, high-DPI behaviour, and
 screen-reader usability still require a brief manual review. UIA focus and

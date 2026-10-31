@@ -1,11 +1,13 @@
 Media Engine Evaluation
 =======================
 
-Initial comparison: 2026-09-09. Current status (2026-09-11): optional curated
+Historical comparison: 2026-09-09. Checkpoint on 2026-09-11: optional curated
 audio and PDF candidates are implemented and have isolated combined staging
 evidence; default engine adoption and document launch acceptance remain pending.
 The comparison table below records the initial evaluation direction, not current
-implementation status. See the [current completion path](broad-file-support-goal.md#current-completion-path-2026-09-11).
+implementation status. See the [current completion plan](broad-file-support-goal.md#current-objective-and-completion-plan)
+and [project status](../README.md#project-status). Experiments and pending items
+below retain their original checkpoint, not current implementation requirements.
 
 The [audio evidence](audio-engine-evaluation.md),
 [PDF payload](pdf-production-payload.md) and

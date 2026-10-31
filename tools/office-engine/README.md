@@ -1,5 +1,13 @@
 # Office engine evaluation
 
+Current authored adapters, native hosts, and contract projects are in the main
+repository; no private checkout is required. ContextSuite.Private names and dated
+private-commit evidence below retain historical identities. Exact reviewed Office,
+PDF, and validator inputs remain required. See [development](../../docs/development.md)
+for current build boundaries and [the free transition](../../docs/free-access-goal.md)
+for candidate status. Preserve existing profile/network opt-in requirements;
+free admission does not relax isolation or fidelity gates.
+
 These tools evaluate the independently pinned LibreOffice Windows x64 package
 using three small, passive fixtures authored in this repository. They do not
 enable an Office command or add a production dependency. See the

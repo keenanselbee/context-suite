@@ -11,27 +11,37 @@ Production staging
 
 ```powershell
 ./tools/curated-engine/Stage-ProductionEngine.ps1 -RunName prototype-2
-./tools/Build-Production.ps1 -Configuration Release
-./tools/curated-engine/Test-ProductionPackaging.ps1
 ```
 
 Staging requires the prepared/built candidate and its source evidence. It checks
 the exact DLL and notice hashes in `production.json`, then copies approved inputs
-into ignored `artifacts/engines/curated-win-x64`. The private project excludes
+into ignored `artifacts/engines/curated-win-x64`. The main media project excludes
 NuGet native assets and fails if these inputs are missing; the production script
 checks identity, notices and the file/package allowlist. There is no stock fallback.
 New checkouts can import the exact reviewed binary/notice transport ZIP with
 `Import-ProductionEngine.ps1 -Archive <zip>`; `Export-ProductionEngine.ps1`
 creates it from verified staged inputs without uploading anything. See the
-[packaging goal](../../docs/release-packaging-goal.md) for private CI provisioning.
+[packaging goal](../../docs/release-packaging-goal.md) for main-repository CI provisioning.
 New native selections must build/review a candidate first. Native rebuilds are not
 byte-identical: an unreviewed new hash cannot replace the recorded selection.
 Production staging does not install software or clear commercial distribution.
 
+Staging the engine does not build the application. The separate
+`Test-ProductionPackaging.ps1 -Configuration Release` contract harness copies
+the existing `artifacts/production/Release` output into disposable test cases;
+it does not test `artifacts/engines/curated-win-x64` directly or accept an arbitrary
+payload path. Run it only after building matching production output in a
+disposable checkout or a confirmed unregistered, unused configuration, following
+[development](../../docs/development.md). Without that build it either fails for
+missing output or tests an older payload. Do not rebuild the installed Release
+directory in this checkout to satisfy this prerequisite. For a preserved release
+candidate, use the candidate verifier in the
+[packaging workflow](../../docs/release-packaging-goal.md).
+
 Isolated candidate workflow
 ---------------------------
 
-Requirements: compatible private checkout, existing Release production and test
+Requirements: complete main checkout, existing Release production and test
 outputs, Windows 11 x64, .NET 10 SDK, Visual Studio 2026 x64 C++ tools, curl.
 Preparation downloads pinned upstream build inputs; it does not install tools.
 All generated native files, caches, test payloads and evidence stay under
@@ -51,8 +61,8 @@ From the repository root, with a fresh run name:
 Close Context Suite first. Add `-Desktop` to the last command only on an unlocked
 desktop to run the conversion UI suite after integration tests. It opens test
 windows and may leave its disposable Explorer folder open; it does not restart
-Explorer or close unrelated windows. Tests use their existing isolated trial
-stores, not the real application trial. Do not run other app tests concurrently.
+Explorer or close unrelated windows. Tests use isolated settings and free
+admission, preserving real legacy access data. Do not run other app tests concurrently.
 The runner holds the existing desktop-smoke lock. Interactive focus and Explorer
 folder recognition have failed on reruns; see the report, and retain failures
 instead of interpreting earlier green evidence as reliable unattended automation.
@@ -62,6 +72,11 @@ the owned test runner; inspect any remaining test child processes before retryin
 This recipe uses **previously built managed outputs**. It is not a substitute for
 rebuilding changed application/tests using the documented development commands.
 Record that managed revision/output provenance alongside any future release.
+Preparation reads existing Release output; it does not refresh the installed
+payload. Do not rebuild `artifacts/production/Release` here as a prerequisite.
+Use a disposable checkout or confirmed unregistered development configuration
+for builds; isolated candidate staging also reserves a version. See
+[development](../../docs/development.md) for those distinct workflows.
 Preparation deliberately copies top-level files only: NuGet runtime folders can
 otherwise load the stock engine instead of the candidate. Each prepared engine
 and worker payload is checked for one native DLL and the curated notice hash.

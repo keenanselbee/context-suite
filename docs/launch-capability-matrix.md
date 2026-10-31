@@ -10,10 +10,10 @@ Neither a newer version nor a historical pass broadens the tested scope below.
 The [Optimize expansion](optimization-expansion-goal.md) adds implemented source
 handlers for bounded lossless JPEG, still lossless WebP, and DOCX/XLSX/PPTX package
 recompression to Auto and Lossless. They always create copies, reuse existing
-dependencies, and retain one batch admission. The recorded installed **1.5.2**
-baseline remains PNG/FLAC/PDF optimization. New source implementation and focused
-checks do not establish installation or public release. Development candidate
-1.5.3 now passes exact-worker and common-only projection checks with measured size
+dependencies, and retain one batch admission. At the 2026-10-19 checkpoint,
+installed **1.5.2** retained PNG/FLAC/PDF optimization. Source implementation and
+focused checks alone do not establish installation or public release. Candidate
+1.5.3 passed exact-worker and common-only projection checks with measured size
 and resource evidence; the goal records remaining representative and visible
 acceptance separately.
 
@@ -21,7 +21,7 @@ Current source additionally implements the [preset expansion](optimization-prese
 all four presets for JPEG/still WebP/PDF/DOCX/XLSX/PPTX alongside PNG, and exact
 Auto/Lossless for TGA/ODT/ODS/ODP/EPUB alongside FLAC. The goal specifies eligible
 representations, image preservation limits, and verification. These additions
-are absent from the reserved 1.5.3 payload and installed 1.5.2.
+were absent from reserved 1.5.3 and the then-installed 1.5.2 payload.
 
 Matrix revision: **2026-10-19.2**. The earlier PDF dark-mode candidate **1.2.7** passes
 exact-candidate regression coverage and verified fresh archive extraction.
@@ -39,16 +39,16 @@ SVG-to-JPEG and MP4/MOV/WebM/MKV audio extraction. See the
 [converter design](converter-design.md#compatibility-expansion-approved-2026-10-09).
 Its exact combined-candidate checks and fresh extraction passed. Engineering
 integration and review handoff are complete within the documented variant and
-resource limits; native UI and owner acceptance remain separate. The verified
-installed baseline below remains **1.2.5**.
+resource limits; native UI and owner acceptance remain separate. The historical
+installed baseline at that checkpoint was **1.2.5**.
 
 The previous unsigned review candidate is
 **1.2.5**, containing all four approved image additions. Engineering integration,
 packaging and the review handoff are complete within the documented variant
 bounds. Native UI, owner fidelity and commercial acceptance remain pending.
-Local **1.2.5** is now installed; previous **1.2.3** is retained for rollback and
-reserved baseline **1.2.4** is unchanged. The current
-checkpoint supersedes older status wording without expanding historical evidence.
+Local **1.2.5** was installed at that checkpoint; previous **1.2.3** was retained
+for rollback, and reserved baseline **1.2.4** was unchanged. These historical
+results do not describe the current installation or broaden tested scope.
 
 
 Image Expansion Candidate 1.2.5, 2026-10-09

@@ -4,6 +4,11 @@ Lossless PNG Recompression
 Status: accepted for bounded implementation; customer release clearance pending
 Date: 2026-09-08
 
+Current-policy update: [decision 0021](0021-free-product-and-public-implementation.md)
+removes trial/paid admission, License UI, and the private build dependency.
+Any such requirements below retain their historical context; media, process,
+and safety constraints otherwise remain in force.
+
 Trial duration is superseded by [decision 0020](0020-seven-day-trial-and-pricing.md):
 seven days from the original first confirmed conversion or optimization.
 

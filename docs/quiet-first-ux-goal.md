@@ -1,7 +1,17 @@
 Quiet-First UX And Best-Effort Optimization
 ==========================================
 
-Status: broad everyday-image implementation in progress; local automated evidence, human acceptance pending
+Current policy: [decision 0021](decisions/0021-free-product-and-public-implementation.md)
+removes License UI and all trial/paid admission. Third-party notices are in
+Settings. [Project status](../README.md#project-status) owns current payload state.
+The original implementation sequence, checklists, and dated evidence below
+retain their historical scope; commercial checks and routine planners are not
+current work requirements. The [simplification acceptance](context-menu-simplification-goal.md)
+and [free transition](free-access-goal.md) record the later customer surface.
+
+Status: historical implementation/evidence plan, refined by decisions 0018 and 0021.
+The simplification goal owns subsequent owner acceptance; release environment
+checks remain separate.
 Date: 2026-09-08
 
 Objective

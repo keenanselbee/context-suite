@@ -11,10 +11,15 @@ Current objective and completion plan
 Prepare an unsigned local candidate for owner review, completing authorized
 engineering and automated verification before the consolidated human review.
 Keep a fixed, tested capability matrix and simple context-menu operation.
-Retain the implemented image, audio, PDF and modern Office actions; add the
-owner-selected HEIC/AVIF image inputs and AIFF/WMA audio inputs. Preserve copies
+Retain the implemented image, audio, PDF, and modern Office actions, including
+the owner-selected HEIC/AVIF image inputs and AIFF/WMA audio inputs. Preserve copies
 by default, explicit safe overwrite settings, quiet success, bounded local
-processing, existing access rules and useful read-only Analyze fallback.
+processing, validated free operation admission, and useful read-only Analyze fallback.
+[Decision 0021](decisions/0021-free-product-and-public-implementation.md) removes
+commercial access and the private implementation dependency. Refer to
+[project status](../README.md#project-status) and the [free transition](free-access-goal.md)
+for current source, candidate, and installed state. Earlier candidate results
+below retain their exact identities and do not describe the newest payload.
 
 The current execution goal ends at review readiness, not owner acceptance or
 commercial release. Freeze the existing launch matrix; do not add formats or
@@ -32,9 +37,11 @@ The review-ready deliverables are:
   adoption and footprint decisions prepared for the owner.
 - One consolidated review pack containing source/output pairs, expected results,
   concise workflow instructions and a checklist of actual human observations.
-- Reviewed DIFF/COMMIT checkpoints for task-owned public and private changes,
-  preserving unrelated edits; no push. A final report identifies every remaining
-  owner decision, human/environment check and separate commercial release gate.
+- Reviewed checkpoints for task-owned main-repository changes, preserving
+  unrelated edits; commits and pushes require their own authorization. The
+  historical private checkout is not a build or implementation dependency.
+  A final report identifies every remaining
+  owner decision, human/environment check and separate release gate.
 
 Batch owner input where possible and continue independent work while waiting.
 Attended administrator network evidence and footprint/adoption acceptance remain
@@ -47,35 +54,45 @@ commerce and publication retain their separate authorization requirements.
 This section governs remaining work. The evidence history and original
 implementation milestones below remain useful records, but their older pending
 labels do not override the current capability matrix or completed evidence.
-Reserved 1.1.1 remains the earlier baseline. The fresh
-[expanded 1.1.2 archive](expanded-candidate-1.1.2.md) now contains the selected
+
+### Historical 1.1.2 checkpoint
+
+These results describe the earlier reserved payload, not the current candidate.
+
+Reserved 1.1.1 remained the earlier baseline. The fresh
+[expanded 1.1.2 archive](expanded-candidate-1.1.2.md) contained the selected
 inputs and reconstructed Office runtime, with source/notice binding and the
 first exact-worker foundation/audio/PDF replay. Remaining acceptance and
 commercial release readiness are not inferred from package integrity.
-The exact candidate now passes the declared performance workloads and recorded
+The exact candidate passed the declared performance workloads and recorded
 media/Analyze suites. Office print, date/font decisions, direct commands,
-recovery/capacity and PDF validation also pass; authored D09 typography now passes
+recovery/capacity and PDF validation also passed; authored D09 typography passed
 the owner-approved fixture-only 0.015-point allowance on the unchanged PDF.
-All three negative-control groups pass; historical failed evidence remains.
+All three negative-control groups passed; historical failed evidence remains.
 Affirmative network evidence, real-input
 preparation and owner decisions remain open. Packaged launcher/resource,
-output-denial and native PDF interruption checks now pass, as do release-package
+output-denial and native PDF interruption checks passed, as did release-package
 guards and exact source/notice binding. Exact-candidate startup and unfinished
-workbook recovery now pass, as does the shipped-library managed guard; all
-twelve profiles/mappings and owned permissions are cleaned up. Fresh audio,
-image and PDF review samples are generated with the exact worker, without human
-acceptance. Their consolidated collection now includes 62 current document/PDF
-cases; the revised worksheet has 60 scoped passes and two required date refusals,
+workbook recovery passed, as did the shipped-library managed guard; all
+twelve profiles/mappings and owned permissions were cleaned up. Fresh audio,
+image and PDF review samples were generated with the exact worker, without human
+acceptance. Their consolidated collection included 62 current document/PDF
+cases; the revised worksheet had 60 scoped passes and two required date refusals,
 with the earlier D09 failure retained separately. Seven real input/reference
-copies now preserve their originals' bytes and last-write times. Their conversion
-and independent comparisons remain. Current H04
-instructions now use the byte-matched 1.1.2 stage; all eight headless selections
-pass. Eleven provider entry guards, the native HEIF bridge and Windows Voice
-component replay now pass their recorded scopes. The
+copies preserved their originals' bytes and last-write times. Their conversion
+and independent comparisons remained. Historical H04 preparation used the
+byte-matched 1.1.2 stage; all eight
+headless selections passed. That preparation does not establish a currently
+reproducible harness; see the [manual workflow review](manual-workflow-review.md)
+for the current tooling gap. Eleven provider entry guards, the native HEIF bridge,
+and Windows Voice
+component replay passed their recorded scopes. The
 [owner handoff](candidate-owner-handoff.md) identifies the concrete review entry
 and remaining dependencies; it does not mark the goal complete.
 The linked candidate record owns
-these current results; earlier scratch evidence below remains historical.
+these historical results; earlier scratch evidence below retains its original scope.
+
+### Remaining acceptance
 
 The [local candidate acceptance contract](local-candidate-acceptance.md) now
 defines eight finite automated suite families, twelve Office content/layout
@@ -118,8 +135,8 @@ The next completion steps are:
    A01-A08 evidence without rebuilding unchanged native inputs or repeating
    passing suites. Delivery/adoption remain owner decisions. Preserve reserved
    1.1.1 and 1.1.2 throughout; changed packaged bytes require a new version.
-4. Audit every required automated result, complete the final public/private
-   checkpoint, and deliver the review pack and decision list. Record human,
+4. Audit every required automated result, review task-owned main-repository
+   changes, and deliver the review pack and decision list. Record human,
    commercial and environment acceptance separately. A review-ready local
    candidate is not an accepted release or authorization to install or publish.
 
@@ -590,6 +607,12 @@ implied by the reference material or the newly selected input families.
 
 Implementation evidence history
 -------------------------------
+
+The remaining sections preserve dated checkpoints and original plans. Labels
+such as Current completion path, pending, trial/paid admission, private changes,
+and next candidate describe those historical checkpoints. They do not override
+the current objective above, decision 0021, or current project status. Preserve
+source/engine identities, failures, and acceptance limits when reusing evidence.
 
 The fresh [combined candidate 1.1.1](combined-office-candidate.md) packages all
 selected image/audio/PDF/Office engines together: 19,450 inventoried files with

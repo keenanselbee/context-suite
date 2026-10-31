@@ -1,6 +1,13 @@
 Document Support Design
 =======================
 
+Current product policy: [decision 0021](decisions/0021-free-product-and-public-implementation.md)
+removes trial/paid admission and License UI. Operations still validate confirmed
+plans, batch identity, choices, cancellation, and safe publication. Third-party
+notices are available in Settings. [Project status](../README.md#project-status)
+owns current source, candidate, and installed state. Dated evidence below records
+its original checkpoint; legacy access checks are historical, not current requirements.
+
 The 2026-10-20 `pdf-dark-9` [compatibility extension](pdf-dark-lecture-support-goal.md)
 adds bounded passive form shells and navigation, validated RGB ICC paint, gray
 images, graphics-state line styles and nested resource handling. Both inspection
@@ -74,13 +81,13 @@ the default, and Convert Settings has a secondary transparent-background choice.
 The captured batch carries this choice through retry and worker publication.
 Existing settings without the field select white; the optional native renderer
 still produces straight BGRA and the adapter composites white before validation.
-Installed 1.1.3 retains its previous transparent-page behavior.
+At that checkpoint, installed 1.1.3 retained its previous transparent-page behavior.
 
 The independent [Office PDF validation component](office-pdf-validation.md)
 checks acknowledged exports with pinned structural and page readers before
 filling an existing reservation. It now has typed worker dispatch, 71 actual-worker
 checks, 57 direct-reader checks and 72 public policy/transport contracts. Customer
-admission now has a tested internal immutable plan and paid/trial path. The
+admission uses a validated internal immutable plan without commercial access checks. The
 application executor also passes isolated export/validation/copy-publication and
 pending-cleanup tests. [Direct PDF dispatch](office-direct-command.md) now connects
 Office documents and combined images through one batch admission. Completed
@@ -384,7 +391,7 @@ identifier when present and PDF version. Object numbering and reviewed physical
 storage fields may change. Unknown extra storage metadata remains compared.
 
 The file-based worker and application executor now use this candidate through
-normal trial/paid admission and transactional copy publication. A source read
+validated free batch admission and transactional copy publication. A source read
 handle stays open while the worker validates snapshots and fills the app's
 checked empty reservation; final naming remains application-owned. PDF work
 always requests copies even when the saved Optimize preference selects overwrite.
@@ -468,7 +475,7 @@ host/inventory checks and read leases over the complete candidate payload. Thirt
 contracts cover membership, sharing and failure cleanup. Connecting that lease
 to the application-owned context and actual worker execution remains pending.
 
-The subsequent [worker export checkpoint](office-worker-export.md) connects that
+At the subsequent [worker export checkpoint](office-worker-export.md) connects that
 runtime lease and the launcher to typed application/worker requests. Actual
 DOCX/XLSX/PPTX exports and independent candidate inspection pass. Context creation
 still belongs to the isolated harness; production admission, context journals and
@@ -569,8 +576,8 @@ the adapter's 60-second native deadline.
 The confirmed conversion plan bounds the whole selection to 4,096 pages and
 512 million pixels, validates every inspected page and takes an immutable Convert
 settings snapshot. It always creates copies, including with Overwrite originals
-selected. One ordinary trial/paid admission covers the entire selected-file batch;
-expiry does not interrupt admitted work. Paid expiry cannot start a new trial.
+selected. One validated free operation admission covers the entire selected-file
+batch; cancellation, batch identity, and confirmed-plan checks remain mandatory.
 Execution adds a 2 GiB cumulative output limit and keeps only one page reservation
 active at a time. Page names are `Document - Page 001.png`, `Page 002.png`, etc.;
 existing-name collisions append `(2)`, `(3)`, and so on separately from page numbers.
@@ -626,9 +633,9 @@ Direct PDF-to-PNG and partial retry (2026-09-10)
 
 The existing Convert > PNG action now handles PDF pages alongside supported image
 inputs. Content identification runs before dispatch; renamed PDFs require .pdf,
-other PDF targets explain PNG, and a missing renderer declines before worker or
-trial startup. Routine PDF-only conversion opens no image planner. Mixed valid
-image/PDF plans use one immutable settings snapshot and one trial/paid admission;
+other PDF targets explain PNG, and a missing renderer declines before worker
+execution. Routine PDF-only conversion opens no image planner. Mixed valid
+image/PDF plans use one immutable settings snapshot and one validated batch admission;
 images execute first, then PDF pages, while displayed rows retain selection order.
 Necessary image/DDS prompts remain available, and cancellation before confirmation
 cancels the coordinated selection.
@@ -681,9 +688,10 @@ The later [combined image-PDF checkpoint](image-pdf-candidate.md) adds its direc
 command. The [initial Office engine evaluation](office-engine-evaluation.md) passes
 three passive modern-format fixtures without installation; it does not enable
 Office conversion or settle isolation, wider fidelity and runtime packaging.
-Next implementation work includes required Word/Excel/PowerPoint-to-PDF,
-wider PDF fidelity and renderer interruption coverage, production
-engine adoption and the broad-file goal's remaining catalog/analysis/release gates.
+At that checkpoint, next work included Word/Excel/PowerPoint-to-PDF, wider PDF
+fidelity, interruption coverage, engine adoption, and remaining catalog/analysis/
+release gates. Later checkpoints and current project status govern subsequent
+implementation and acceptance; this list is not the current execution plan.
 
 The [Excel print layout evaluation](excel-print-layout-evaluation.md) adds passive
 fixtures for saved print areas, manual breaks, repeated title rows, fit-to-page

@@ -39,7 +39,11 @@ silently merged with a retry. The production verifier repeats exact membership
 and hash checks; an opt-out build rejects these engine directories.
 
 The source kits contain independently obtained upstream materials and build
-instructions. They do not contain the private AVIF bridge or SVG renderer
-source. The private checkout remains necessary to rebuild those components.
+instructions. They do not contain the authored AVIF bridge or SVG renderer
+source. Those implementations now live in the main repository under
+`src/ContextSuite.Avif.Native` and `src/ContextSuite.Svg.Native`; current build
+scripts use those paths without a private checkout. Preserve the pinned kit
+documents and their historical source-layout wording. See
+[development](../../docs/development.md) for current build guidance.
 Neither kit contains fonts. These local hashes and notices are packaging
 evidence, not a signature or commercial release clearance.

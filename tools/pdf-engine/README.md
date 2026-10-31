@@ -1,6 +1,13 @@
 Isolated PDF Engine Evaluation
 =============================
 
+Current authored adapters and native hosts live in the main repository; no
+private checkout is required. ContextSuite.Private names and dated evaluation
+results retain their original identities. Current operation admission is free
+and preserves legacy access files. Exact pinned qpdf/PDFium inputs remain
+required. Follow [development](../../docs/development.md) to separate disposable
+development builds from version-reserving candidates and installed output.
+
 These tools evaluate an independently sourced pinned qpdf build using generated
 disposable files. They do not install anything or change production staging,
 Explorer registrations, PATH, licensing or customer files. The tools are not a
@@ -14,7 +21,12 @@ commands below keep their scratch-only behavior. `Test-PdfProduction.ps1` runs
 all three PDF workflows directly against a combined image/audio/PDF stage.
 `Test-PdfPayload.py` checks missing/changed payloads, entry-point refusals and
 native dependency closure. See [commands and evidence](../../docs/pdf-production-payload.md).
-Default release packaging still rejects these candidates.
+Release candidates can include these reviewed PDF inputs by passing the same
+three parameters to `tools/release/New-ReleaseCandidate.ps1`; see
+[expanded release composition](../../docs/expanded-release-composition.md).
+Omitting those inputs leaves PDF engines out of the default build. Selecting
+them requires complete pinned inputs and the matching PDF payload verification;
+it does not establish human fidelity or public release acceptance.
 
 The page and combined-production wrappers include the
 [live renderer interruption checks](../../docs/pdf-page-interruption.md),
@@ -68,7 +80,7 @@ fixed lossless stream recompression, complete object/stream preservation checks,
 signature/encryption/revision refusal, smaller-only results and owned snapshot
 cleanup. `probe-adapter.json` now records both probe and optimization checks, and
 `optimized-candidate.pdf` retains the generated accepted candidate. `Test-PdfWorker.ps1`
-also runs the file-based optimization worker through real trial admission and
+also runs the file-based optimization worker through free admission and
 application-owned copy publication. Its separate `optimization-results` directory
 records collisions, source changes, protection refusal, cancellation and no-change
 outcomes. Add both `-AudioPreparedDirectory '<prepared audio directory>'` and

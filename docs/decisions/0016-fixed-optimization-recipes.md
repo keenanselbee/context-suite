@@ -4,6 +4,11 @@ Fixed Optimization Recipes
 Status: implemented for PNG; bounded acceptance recorded in [integration evidence](../fixed-preset-integration.md)
 Date: 2026-09-08
 
+Current-policy update: [decision 0021](0021-free-product-and-public-implementation.md)
+removes trial/paid admission, License UI, and the private build dependency.
+Any such requirements below retain their historical context; media, process,
+and safety constraints otherwise remain in force.
+
 
 Context
 -------

@@ -1,8 +1,11 @@
 Bundled Third-Party Notices
 ==========================
 
-Status: implemented and checked in source on 2026-09-23; fresh candidate
-composition and human acceptance remain pending.
+Status: implemented; current free-source access is through Settings. See
+[project status](../README.md#project-status) and the
+[free transition](free-access-goal.md) for current candidate verification.
+The dated counts below preserve earlier index/component checkpoints; human
+browser and accessibility acceptance remain separate.
 
 The later [PNG dependency notice checkpoint](png-dependency-notices.md) adds two
 required base notices. [Office Python notices](office-python-notices.md) add one
@@ -44,6 +47,8 @@ they predate this new packaging requirement.
 Verification
 ------------
 
+Historical 2026-09-23 evidence:
+
 - Release test-host build: zero warnings/errors; 126 hidden view contracts pass.
   These include notice-button accessibility, missing files, successful local
   launch routing, association failure, independent license status and polite
@@ -73,8 +78,8 @@ retained at `.codex-temp/notice-index-real/7a5cb2da53e6420ca2bbbc94ef1e59c9`;
 the corrected attempt uses the expanded record. No expected engine or notice
 hash was changed.
 
-Actual browser launch, visual layout, screen-reader delivery, other themes/DPI,
-and replay against the fresh complete production payload remain unverified.
-For manual review, open Settings, then License, choose **Third-party notices**,
-and check a notice from each included tool family. Confirm that license status
-is unchanged and closing the browser leaves Context Suite usable.
+Actual browser launch, visual layout, screen-reader delivery, and other themes/DPI
+still require human review. For current manual review, open Settings, choose
+**Third-party notices**, and check a notice from each included tool family.
+Confirm that ordinary settings remain unchanged and closing the browser leaves
+Context Suite usable. There is no License window in current source.

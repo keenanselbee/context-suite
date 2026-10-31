@@ -184,14 +184,18 @@ Acceptance checklist
 --------------------
 
 - [x] Exact reviewed image-engine transport and fail-closed import.
-- [x] Private CI provisions required engines before production compilation.
+- [x] Main-repository manual production workflow defines pinned engine provisioning
+  before compilation; hosted execution remains unverified.
 - [x] Clean-source gate, unsigned candidate ZIP, file inventory and no symbols.
 - [x] Explicit runtime prerequisites and read-only host preflight.
 - [x] Unsigned sparse identity packaging verified with the Windows SDK.
 - [x] Fresh local source/output directories build using only approved engine
   input and pinned DDS download; image/DDS contracts pass. This includes local
   working changes and shares the installed SDKs/NuGet cache.
-- [ ] Clean committed checkouts/hosted CI reproduce a candidate using the private asset.
+- [x] Clean committed main source builds and verifies the unsigned 1.6.2 candidate
+  locally without a private checkout; see the [transition evidence](free-access-goal.md).
+- [ ] Publish the required pinned public engine assets and observe the matching
+  hosted production workflow reproducing a candidate.
 - [x] Inno Setup, per-user/offline installation and manual updates approved.
 - [x] Internal EXE compilation and mocked registration/failure contracts.
 - [x] Versioned Inno extraction, active launch/uninstall and recovery orchestration;

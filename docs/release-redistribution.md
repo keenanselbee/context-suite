@@ -4,6 +4,14 @@ Release Redistribution Checklist
 Reviewed: 2026-09-07, with dated additions below. Engineering review, not a legal
 opinion or release approval.
 
+Current product/source terms are in [LICENSE.md](../LICENSE.md), following
+[decision 0021](decisions/0021-free-product-and-public-implementation.md). The
+application is free and its required authored source is in the main repository;
+ContextSuite.Private names below identify retained project namespaces. Dated
+component reviews preserve their original scope. Third-party redistribution,
+source delivery, tooling eligibility, and final signed-package review remain
+separate from the removal of trials and purchases.
+
 PDF notice addition, 2026-09-23: [qpdf dependency notices and PDFium source mapping](pdf-dependency-notices.md)
 now retain the selected static dependency texts and supplier notice provenance.
 Fresh PDF staging includes exact qpdf supplements beside all three runtime copies
@@ -137,10 +145,10 @@ Remaining release gates and owners
    [redistribution list](https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution)
    is conditional on the relevant license and excludes preview/debug-only code.
    No conclusion about the user's license entitlement is inferred here.
-2. **Owner: settle product/source terms.** Choose the public source license,
-   proprietary EULA, warranty/support/refund terms and any needed third-party
-   protections. Do not retroactively label the whole repository MIT or assume
-   that public visibility grants a redistribution license.
+2. **Release review: apply the selected product/source terms.** Verify the final
+   package carries [the source-available license](../LICENSE.md), accurate free-use
+   wording, and applicable third-party protections. Do not label the repository
+   MIT or assume public visibility grants unrestricted redistribution rights.
 3. **Release review: review the exact archived components and intended markets.**
    Confirm retained file-specific notices, source-change disclosures and any
    applicable patent questions. Escalate unresolved legal questions to qualified
@@ -149,8 +157,9 @@ Remaining release gates and owners
    prerequisites, update policy, release-only file inventory, omission of
    development PDBs/test material and a notice viewer/link remain release work.
    Re-run final package media/UI checks and scan dependencies for advisories.
-   Synthetic licensing is implemented and tested; live commerce acceptance remains
-   separate under [licensing verification](licensing-verification.md).
+   Trials, activation, and licensing services are removed from current source.
+   Preserve existing legacy access data. Live retirement and existing customer
+   benefits remain separate under [the transition goal](free-access-goal.md).
 
 The in-progress [packaging goal](release-packaging-goal.md) now creates an
 unsigned internal candidate without PDBs/test material, records source and engine

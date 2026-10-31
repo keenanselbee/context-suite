@@ -4,6 +4,11 @@ Simple Context-Menu Workflows
 Status: accepted; initial quiet Optimize slice implemented, broader acceptance pending
 Date: 2026-09-08
 
+Current-policy update: [decision 0021](0021-free-product-and-public-implementation.md)
+removes trial/paid admission, License UI, and the private build dependency.
+Any such requirements below retain their historical context; media, process,
+and safety constraints otherwise remain in force.
+
 [Decision 0018](0018-context-menu-utility-and-output-preference.md) further narrows
 the accepted customer UI and replaces the always-copy quick-action rule with
 copies by default and explicit persistent replacement consent in Settings.

@@ -1,7 +1,16 @@
 Image Commercial Release Candidate
 ==================================
 
-Status: retained image evidence and open release gates; not commercial release clearance
+Status: historical image/commercial evidence; superseded for current product access.
+
+[Decision 0021](decisions/0021-free-product-and-public-implementation.md) removes
+trials, paid activation, and the private checkout requirement. Current source and
+unsigned 1.6.2 candidate evidence are in [the transition goal](free-access-goal.md);
+current delivery gates are in [the packaging goal](release-packaging-goal.md).
+All commercial workflow descriptions, commands, checklists, and counts below
+retain their historical scope. Removed licensing scripts are not runnable current
+instructions. Preserve the recorded artifacts and hashes; do not recreate them
+using current source or interpret their open licensing checks as free-release gates.
 
 Current product priority: the [broad file support goal](broad-file-support-goal.md)
 under [decision 0019](decisions/0019-broad-file-analysis-and-media-expansion.md).

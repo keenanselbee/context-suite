@@ -1,178 +1,136 @@
 Context Suite Quick Start
 =========================
 
-Draft for internal review. Reserved candidate 1.1.1 includes image, audio, PDF
-and Office engines. The later expanded test build adds HEIC/AVIF and AIFF/WMA
-inputs and refuses affected Excel charts. These builds are still undergoing
-acceptance; this guide does not describe a released or newly installed update.
-Signed installation and live license acceptance remain pending.
+This guide describes the free edition. It has no trial, purchase, activation,
+or installation limit. Older installed editions can differ; see
+[project status](../README.md#project-status) for the verified candidate,
+installation, and remaining release acceptance. This guide does not announce
+an installation or a published release.
+
 
 Everyday use
 ------------
 
 Select one or more files in File Explorer, then right-click:
 
-- **Analyze** shows information without modifying files.
-- **Convert** creates the selected image, audio or PDF format when the build and
-  source support it. Choose the target from the menu.
-  If the conversion needs a decision, such as a background color for a transparent
-  image, Context Suite asks before proceeding.
-- **Optimize** reduces supported PNG, FLAC or PDF file size while keeping its
-  format. For PNG, start with
-  **Auto**; it aims for a useful size reduction with gentle quality changes.
-  **Lossless** keeps pixels identical, **Balanced** permits modest changes, and
-  **Smallest** permits more changes to reduce size further. No preset guarantees
-  a particular file size. FLAC and PDF use Auto or Lossless. Already efficient
-  files can remain unchanged.
+- **Analyze** explains file properties without changing the file.
+- **Convert** creates the format you select. If a decision is necessary, such as
+  a background color for a transparent image, Context Suite asks first.
+- **Optimize** reduces supported files while keeping their format. Start with
+  **Auto** for a tested default. **Lossless** preserves the supported media
+  content, **Balanced** permits modest quality changes, and **Smallest** permits
+  stronger changes. Available behavior depends on the format; an inapplicable
+  preset explains its limit. No preset guarantees a particular size reduction.
 
-Routine menu actions create copies by default. Original filenames are retained, with new
-names such as `Photo - Converted.webp` or `Photo - Optimized.png`. Existing output
-names are not overwritten; another copy receives `(2)`, `(3)`, and so on.
-Reprocessing an already efficient image need not create an extra copy.
+Actions create copies by default, with names such as `Photo - Converted.webp`
+or `Photo - Optimized.png`. Existing output names are not overwritten; another
+copy receives `(2)`, `(3)`, and so on. Already efficient files can remain unchanged
+without creating an extra copy.
 
-Conversion normally takes care of image information automatically: it handles
-orientation and color and keeps information the new format supports. Incompatible
-extras may be left out of the copy without interrupting you. Your original stays
-safe. Automatic is not a privacy scrub; supported camera/location information can
-remain. DDS workflows offer their own explicit image-information choices.
+Opening Context Suite directly opens Settings with Explorer instructions.
+Run conversions and optimization from the context menu. Settings also provides
+**Third-party notices**, which opens the bundled notices locally.
 
-Opening Context Suite directly opens Settings with Explorer instructions and
-License access. Run conversions and optimization from the context menu.
+Successful quick actions stay quiet apart from the optional completion sound.
+Longer batches can show progress. Problems and meaningful warnings show details;
+other valid files can still finish. Cancelling stops pending work but does not
+undo completed output. Retry handles eligible unsuccessful work, not already
+completed copies. Missing or changed inputs can require a new selection.
 
-Successful quick actions stay quiet apart from the completion sound when enabled.
-Longer batches can show progress. Problems or meaningful warnings show details;
-other valid files can still finish. **Cancel work** stops pending work but does not
-undo completed output. **Try again** retries eligible unsuccessful work, not
-already completed copies. Missing or changed inputs can require a new selection.
 
 Settings and safe replacement
 -----------------------------
 
 Use **Settings...** at the bottom of Convert or Optimize for saved preferences.
 Settings apply to future work; an already queued batch keeps its chosen settings.
-Convert and Optimize each default to **Create copies**. To overwrite instead,
-select **Overwrite originals** for that tool and save. Future context-menu
-commands use that choice without asking again. Choosing another output folder
-always creates copies; some image-information requirements also keep originals.
+Both tools default to **Create copies**. To overwrite instead, select
+**Overwrite originals** for that tool and save. Future commands use that consent
+without asking again, but only where the app's safety checks permit replacement.
+Choosing another output folder creates copies. PDF/document transformations,
+JPEG/WebP/TGA optimization, and some image-information requirements also
+keep originals regardless of this preference.
 
-Replacement is available only where the app's safety checks allow it. After the
-new file is validated, the original goes to the Recycle Bin. If recycling fails, a recoverable
-original/backup is kept and its location is shown. There is no permanent-delete
-fallback. Keep your own backups of important originals.
+After the new file is validated and safely published, the original goes to the
+Recycle Bin. If recycling fails, a recoverable original/backup is kept and its
+location is shown. There is no permanent-delete fallback. Keep your own backups
+of important originals.
+
 
 Supported scope
 ---------------
 
-Image conversion includes PNG, JPEG, WebP, BMP, TGA and bounded DDS textures.
-Not every variant is supported: animation, oversized files and
-unsupported color/texture structures may need another workflow. Read the
-file's explanation; renaming its extension does not convert it. Analyze also gives basic
-identification and common-use descriptions for other readable regular files;
-recognition does not mean conversion is available.
+Available operations depend on the selected file and included engines. Analyze
+can identify many files that cannot be converted. Read the explanation for an
+unsupported file; renaming its extension does not convert it. The
+[capability matrix](launch-capability-matrix.md) records exact format and variant
+boundaries. The examples below are not a promise to handle every file.
 
-The expanded test build also converts supported HEIC and AVIF images to JPEG or
-PNG. HDR images, image sequences and unsupported extra image data are declined;
-they are not silently flattened. Transparent images still need a background
-choice when converting to JPEG.
+Image conversion includes PNG, JPEG, WebP, BMP, TGA, and bounded DDS textures,
+plus selected HEIC/AVIF, ICO, TIFF, SVG, and GIF workflows. GIF frames become
+numbered PNG copies; animation encoding is not supported. Transparent images
+need an explicit background choice when converting to an opaque format.
+Unsupported HDR, color, animation, or texture structures are declined.
 
-In isolated audio testing, Convert also offers **WAV**, **FLAC**, **MP3**,
-**M4A (AAC)**, **Ogg Vorbis** and **Opus**. Routine conversions use fixed settings.
-A short prompt asks before another lossy conversion, required resampling or
-reduced precision. A lossless format cannot restore quality already lost.
-Converting a file to its existing format leaves it unchanged.
-The expanded test build accepts supported AIFF/AIFF-C and WMA inputs for these
-same six output choices. Not every codec, channel layout or metadata field is
-supported, and protected WMA files cannot be converted.
+Ordinary image conversion applies orientation and color correctly and preserves
+information the new format supports. Incompatible extras may be omitted from a
+new copy without a prompt; the original stays safe. Automatic handling is not a
+privacy scrub: supported camera/location information can remain. DDS workflows
+have their own explicit image-information choices.
 
-In that same isolated testing, **Auto** and **Lossless** also optimize supported FLAC
-files while preserving decoded audio and admitted metadata. They share the same
-copy settings, batch progress and retry behavior. Balanced and Smallest are PNG
-presets. If the extension does not match the identified content, the app asks you
-to correct the name before optimizing. Normal packaging does not yet include the
-audio engine, although the reserved combined 1.1.1 candidate includes it. Raw AAC,
-ALAC and other audio codecs can be recognized without being convertible. Video
-processing is not available.
+Audio targets include **WAV**, **FLAC**, **MP3**, **M4A (AAC)**, **Ogg Vorbis**, and
+**Opus**, with supported AIFF/AIFF-C and WMA inputs as well. A prompt asks before
+another lossy conversion, required resampling, or reduced precision. A lossless
+format cannot restore lost quality. Same-format audio conversion leaves the file
+unchanged. Protected WMA and unsupported metadata or channel layouts are declined.
+Selected MP4/MOV/WebM/MKV files support audio extraction; general video conversion
+is outside scope. FLAC optimization preserves admitted audio and metadata.
 
-In isolated PDF testing, **Convert > PNG** saves each PDF page as a numbered image,
-such as `Document - Page 001.png`. It always keeps the PDF, even with Overwrite
-originals selected. Page images retain visible content; they do not carry editable
-forms, attachments or verifiable digital signatures. Protected or oversized PDFs
-can be declined. The retained combined candidate includes this renderer; default
-release packaging has not adopted it.
+PDF pages can become numbered PNG or JPEG copies. Page images do not retain
+editable forms, attachments, or verifiable digital signatures. Completed pages
+remain if later work stops; retry can process unfinished pages. If the source
+changed, start a new command. Page retry state is not retained after the results
+session ends.
 
-The result shows how many page copies were saved. Expand file details to see their
-locations. If work stops partway through, completed copies stay in place. **Try
-again** converts only unfinished pages, using current settings for those new copies.
-If the source PDF changed, start a new Convert command. Page retry information is
-kept for the current results session; restarting the app does not resume that list.
+**Convert > PDF** combines supported images into one PDF, with an order review
+for multiple images. Supported Word, Excel, and PowerPoint documents produce
+separate PDF copies when the Office engine is included. Images in a mixed
+selection still form their own combined PDF. All these actions keep originals.
+PDF-to-Word creates best-effort editable copies; inspect the result before use.
+**PDF (Dark mode)** creates a reading copy within supported document limits;
+photos and other preserved image regions may retain their original colors.
 
-PDF **Auto** and **Lossless** optimize supported document structure without
-downsampling page images. They always keep the original PDF and publish only a
-validated smaller copy. Encrypted, signed and unsupported PDFs can be declined.
+For spreadsheets, **Use saved values** uses stored formula results, while
+**Recalculate** evaluates supported formulas locally. Saved values may be stale;
+recalculation may change results. External data is not refreshed. Unsupported
+charts, incomplete inspection, or affected early dates can prevent conversion.
+PowerPoint export omits hidden slides and speaker notes. Missing fonts can
+require a choice between a substituted PDF copy and skipping the file.
+Check document layout before sharing; unsupported or protected files may need
+export from their original application.
 
-The optional **Convert > PDF** workflow combines selected supported images into
-one PDF copy. With several images, review their page order before converting.
-When the optional Office engine is present, selected Word `.docx`, Excel `.xlsx`
-and PowerPoint `.pptx` documents each get a separate PDF copy. Images in a mixed
-selection still form their own combined PDF. Originals are always kept.
-PowerPoint export omits hidden slides and speaker notes. If the saved presentation
-has no visible slides, Context Suite asks you to add or unhide a slide and creates
-no PDF. If it cannot determine visibility, it does not label the presentation empty.
+Optimization also covers supported JPEG, still WebP, PDF, and Office documents,
+with Auto/Lossless paths for TGA, OpenDocument, and EPUB. PDF Auto/Lossless
+preserves admitted document content without downsampling page images;
+Balanced/Smallest can reduce eligible embedded-image quality. Only validated,
+smaller results are published. Consult the [Optimizer design](optimizer-design.md)
+for each format's preservation and quality limits.
 
-For spreadsheets, choose **Use saved values** to use formula results stored in
-the workbook, or **Recalculate** to evaluate supported formulas locally before
-exporting. Saved values may be out of date; recalculation may change results.
-External data is not refreshed. **Try again** keeps this choice for a failed
-document. These optional Office paths are undergoing isolated acceptance and
-are included in candidate 1.1.1. Only ordinary DOCX, XLSX
-and PPTX variants are currently admitted; legacy files, templates and macro-enabled
-documents have no current conversion path. If Context Suite detects affected
-dates before March 1, 1900, it keeps the workbook and asks you to export the PDF
-from Excel. Spreadsheet date fidelity remains under development; broader
-spreadsheet acceptance is incomplete. Analyze remains available.
 
-The expanded test build also declines Excel workbooks whose charts cannot yet
-be preserved, or whose chart information cannot be checked completely. Export
-those files from Excel while this limitation is being resolved. When a document
-uses unavailable fonts, Context Suite offers a choice to save the PDF copy with
-substituted fonts or skip the file. Check its appearance before sharing it.
+Free use
+--------
 
-License and transfer
---------------------
+Supported features and future official updates are free. No key, account,
+activation, or periodic licensing connection is needed. Existing legacy access
+records are left untouched and do not control the free edition. See the
+[license terms](../LICENSE.md) for permitted use and source redistribution.
 
-The trial starts with the first confirmed valid conversion or optimization and
-lasts seven days (168 hours). Analyze and viewing results do not start it. A $5 CAD
-one-time purchase includes all future updates and allows one active installation
-at a time. Existing trials retain their original start time.
-
-Open **License...** from results, Settings or a conversion prompt, paste your purchase key,
-and select **Activate**. A successful activation is saved using Windows per-user
-protection. Media stays local; licensing sends no image contents or selected paths.
-If activation is declined, check the key and whether another installation already
-uses it, then try again explicitly. An uncertain interrupted request is different
-and requires the portal recovery steps below.
-Paid access checks online daily while running and allows up to 30 days offline
-after a successful check. Use **Validate online** to refresh immediately;
-successful validation displays **License validated online**.
-
-To move to another installation, **Deactivate...** the current one first, or use
-the Polar customer portal from your purchase email. An interrupted activation may
-need portal recovery; check/deactivate the old instance before clearing its local
-recovery state. Never share your key in screenshots, bug reports or source control.
-
-Expiry stops new Convert/Optimize work, not admitted batches. Analyze remains
-available, along with Settings and license recovery. Reinstalling is not a
-supported way to reset a trial or recover a remote activation.
 
 Getting help
 ------------
 
-Include the app version, Windows version, chosen operation/preset and the displayed
-problem text. Do not include a license key or private image unless you intentionally
-choose to share it. A small non-private sample is preferable when reporting a format
-problem. Preserve any original or recovery backup named in a warning.
+Include the app version, Windows version, chosen operation/preset, and displayed
+problem text. Use a small non-private sample when reporting a format problem;
+avoid sharing sensitive media or old purchase credentials. Preserve any original
+or recovery backup named in a warning.
 
-For exact format/build boundaries, see the [launch matrix](launch-capability-matrix.md).
-For detailed internal acceptance status, see
-[licensing verification](licensing-verification.md) and the
-[commercial-release goal](commercial-release-candidate-goal.md).
+For current release and acceptance status, see [project status](../README.md#project-status).

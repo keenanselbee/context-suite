@@ -1,13 +1,20 @@
 Context Converter Design
 ========================
 
+Current product policy: [decision 0021](decisions/0021-free-product-and-public-implementation.md)
+removes trial/paid admission and License UI. Operations still validate confirmed
+plans, batch identity, choices, cancellation, and safe publication. Third-party
+notices are available in Settings. [Project status](../README.md#project-status)
+owns current source, candidate, and installed state. Dated evidence below records
+its original checkpoint; legacy access checks are historical, not current requirements.
+
 The [lecture PDF support goal](pdf-dark-lecture-support-goal.md), approved
 2026-10-11, implements validated tagged, linked, passively attached and statically
 layered lecture PDFs, actual font/glyph bounds and palette normalization within
 already-dark pages. Policy `pdf-dark-6` passes the 25-document, 746-page corpus
 and repeat no-op checks. It retains one PDF (Dark mode) destination, mandatory
 copies and document semantics. Candidate 1.3.1 passes exact-worker and payload verification;
-installed 1.2.9 / `pdf-dark-5` remains unchanged. Historical milestones below
+at that checkpoint, installed 1.2.9 / `pdf-dark-5` remained unchanged. Historical milestones below
 retain their original scope and do not describe the current policy.
 
 The `pdf-dark-7` follow-up adds bounded rounded backgrounds, proved text/outline
@@ -40,7 +47,7 @@ Compatibility expansion, approved 2026-10-09
 This expansion is implemented in unsigned candidate 1.2.6, verified 2026-10-10.
 Exact combined-candidate regressions and fresh extraction passed; see the
 [candidate review](compatibility-expansion-review.md) for identities, evidence
-and remaining human acceptance. The installed 1.2.5 baseline below is unchanged.
+and remaining human acceptance. At that checkpoint the installed 1.2.5 baseline was unchanged.
 Retain existing labels, destination icons and order. Explorer checks
 filenames only; content validation stays in the worker. All new paths preserve
 originals regardless of the overwrite preference.
@@ -226,8 +233,9 @@ uses declared conservative defaults for unspecified color on mandatory copies,
 and refuses hidden HDR or inconsistent alpha transforms. Follow the
 [color policy and evidence](heif-color-fallback.md) before production adoption.
 
-Status: PNG/JPEG/WebP/BMP/TGA conversion, planner, preview and trial-gated publication
-implemented and verified locally for the bounded slice; release checks remain open.
+PNG/JPEG/WebP/BMP/TGA conversion, necessary decision prompts, and preview use
+validated free operation admission and transactional publication. The dated
+checks below retain their bounded scope; current release state is linked above.
 
 Direct PNG/JPEG/WebP/BMP/TGA menu targets run without a planner
 when no meaningful decision is needed. Defaults are full size, automatic metadata,
@@ -250,8 +258,8 @@ The focused conversion dialog keeps its target fixed to the selected command,
 with optional file details and preview. Only necessary transparency or DDS choices
 are visible; DDS retains explicit descriptive-information handling. Preview work
 starts when requested or needed, then refreshes after a 300 ms edit pause.
-Expired access offers License and retry of the same selected command/files.
-Standalone launch opens Settings with Explorer instructions and License.
+Problems offer relevant recovery and retry of the same selected command/files.
+Standalone launch opens Settings with Explorer instructions and third-party notices.
 See [current UX verification](quiet-first-ux-goal.md) for pending desktop acceptance.
 
 
@@ -277,15 +285,17 @@ when no destination applies; Settings alone does not make it available. Mixed
 selections retain destinations useful for at least one file, with independent
 content validation and per-file unsupported results outside Explorer. Enumeration
 checks only bounded selection metadata and filenames, never media contents,
-engine availability or licensing.
+engine availability or commercial access checks.
 
 A child action may begin immediately only when its plan is complete and safe.
-If conversion requires a meaningful choice, Converter opens a planning surface.
-Examples include choosing a matte for transparent-to-JPEG conversion, resolving
-mixed animation support, or confirming lossy-to-lossy transcoding.
+If conversion requires a necessary choice, Converter opens a focused decision
+dialog. Examples include choosing a matte for transparent-to-JPEG conversion,
+explicit DDS interpretation, or confirming lossy-to-lossy transcoding.
+Unsupported animation paths receive per-file explanations.
 
 The submenu should not reproduce a large preset tree. Destination-oriented
-recommendations and advanced settings belong in the planning surface.
+recommendations and advanced settings must stay within relevant focused
+controls or Settings, without restoring a general planner.
 
 A separated **Settings...** item comes last and opens the Convert section of the
 shared settings window without starting a media operation.
@@ -314,7 +324,7 @@ the curated general-image engine and separately selected DDS toolchain.
 
 Magick.NET-Q16-x64 14.17.1 is pinned and tested for the first slice; broader
 runtime/failure coverage and redistribution checks remain gates. See
-[decision 0009](decisions/0009-first-image-engine-and-trial.md) for image/trial
+[decision 0009](decisions/0009-first-image-engine-and-trial.md) for historical image/trial
 policies and the [implementation goal](image-conversion-goal.md) for coverage.
 DDS uses a pinned CPU DirectXTex bridge under
 [decision 0011](decisions/0011-dds-engine-and-texture-policies.md). Its native
@@ -371,13 +381,16 @@ Image Safety Rules
 - Do not enlarge an image unless explicitly requested.
 - Preserve color behavior where possible and warn when conversion changes bit
   depth, HDR, animation, or color capabilities.
-- Treat animated inputs as unsupported until frame behavior is designed and
-  tested.
+- Admit animated inputs only through explicitly supported frame workflows,
+  such as GIF frames to PNG copies; do not silently flatten animation.
 - Never overwrite the source by default.
 
 
 Planned Audio Scope
 -------------------
+
+The heading is retained for existing links. The fixed-target audio workflow is
+implemented; destination contexts below are design concepts, not extra commands.
 
 The [fixed audio policy and worker integration](audio-conversion-policy.md) now
 implement typed target/consent decisions and application-owned publication through
@@ -385,8 +398,8 @@ the real worker. All 30 cross-format pairs pass generated-fixture copy workflows
 six same-format cases remain unchanged without admission. Direct WAV, FLAC, MP3,
 M4A (AAC), Ogg Vorbis and Opus menu actions now use fixed settings. Routine work
 stays quiet; required lossy-transcoding, resampling or precision changes open one
-compact decision for the batch. Closing License refreshes access without changing
-the target, files or captured settings. Metadata completeness, visible acceptance,
+compact decision for the batch. Retry preserves
+the target, files, and captured settings without a commercial access check. Metadata completeness, visible acceptance,
 independent fidelity/listening and production payload acceptance remain pending.
 The scope below is still the
 launch requirement.
@@ -441,12 +454,12 @@ Batch Contract
 
 Selecting multiple files and invoking Convert creates one coordinated batch.
 
-- One target format and shared policy apply to the batch unless the planning
-  surface explicitly shows and confirms compatible subgroups.
-- A direct **To ...** child is offered only when every selected file supports
-  that target safely.
-- The planner analyzes every file before execution and groups file-specific
-  consequences, such as only some images requiring a matte.
+- One explicit target and shared policy apply to the coordinated batch.
+- A direct **To ...** child is offered when at least one selected filename has
+  an applicable hint. Content inspection validates support outside Explorer;
+  inapplicable files receive explanations without blocking independent work.
+- Internal planning analyzes files before execution and groups necessary
+  choices, such as only some images requiring a matte, into a focused prompt.
 - One queue, progress surface, and cancellation control represent the batch.
 - Work uses bounded concurrency rather than one uncoordinated process or window
   per selected file.
@@ -468,7 +481,7 @@ The focused conversion dialog contains:
 - Visible transparency-background controls only when the selection needs them.
 - Explicit advanced DDS controls when working with textures.
 - Meaningful decision acknowledgement; no repeated replacement-consent checkbox.
-- Fixed Convert/Cancel actions and an activation action when access is blocked.
+- Fixed Convert/Cancel actions and relevant recovery when processing is blocked.
 
 No manual file picker or drag-and-drop workspace is exposed. The main window
 shows compact progress, problems and per-file results only when needed.

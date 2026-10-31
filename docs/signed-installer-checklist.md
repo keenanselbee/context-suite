@@ -76,5 +76,8 @@ Exit criteria
 
 Attach evidence per row, triage failures, rerun the affected cases on the final
 signed artifact, and review before enabling customer upgrades. Hosted CI,
-commercial clearance and paid Polar activation remain separate gates. Approval
+redistribution review and free-product release acceptance remain separate gates.
+Live storefront retirement and preservation of existing customer benefits are
+tracked in [the free transition goal](free-access-goal.md); activation is not a
+free-product acceptance requirement. Approval
 of this checklist is not installation, signing or publishing authorization.

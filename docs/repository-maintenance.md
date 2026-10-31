@@ -1,6 +1,20 @@
 Repository Cleanup And Correctness Plan
 =======================================
 
+Use [project status](../README.md#project-status) for current source, candidate,
+and installed versions, and [the roadmap](roadmap.md) for remaining work. This
+guide owns maintenance policy; the dated checkpoint below preserves earlier
+evidence and does not establish current CI or release acceptance.
+
+Keep the repository understandable, preserve working behavior, and prevent
+unnecessary output from accumulating. Use existing tools and short records.
+There is no ongoing GB target, budget revision process, or automatic deletion
+threshold. Required inputs, useful caches, and evidence may grow with development.
+
+
+Historical Maintenance Checkpoint
+---------------------------------
+
 Status as of 2026-10-17: the maintenance work and reviewed public/private feature
 groups are committed. Public integration commit `4e9c02d` includes the reviewed
 TIFF/GIF retry, video title metadata and workflow payload fixes with their tests
@@ -36,12 +50,6 @@ readiness: signing, native installer lifecycle and broader visual/accessibility
 acceptance remain open. This document is not an executable commit or deletion
 proposal; refresh Git state before starting new work.
 
-Keep the repository understandable, preserve working behavior and prevent
-unnecessary output from accumulating. Use existing tools and short records.
-There is no ongoing GB target, budget revision process or automatic deletion
-threshold. Required inputs, useful caches and evidence may grow with development.
-
-
 Scope And Starting Evidence
 ---------------------------
 
@@ -54,8 +62,9 @@ earlier archived history; preserve them when classifying subsequent output.
 At the initial scan, the checkout contained substantial uncommitted source, tests
 and documentation; the reviewed groups have since been committed. Refresh its
 actual state before reviewing or committing. Existing documentation
-checks do not establish application correctness. Public and private repositories
-have separate changes and authorization; reviewing one does not review the other.
+checks do not establish application correctness. The historical private repository
+has separate changes and authorization; reviewing the main repository does not
+review it. Current application implementation lives in the main repository.
 Git history does not preserve ignored engines, local evidence or rollback copies.
 
 
@@ -87,9 +96,9 @@ is not a request to redesign or exhaustively retest every existing subsystem.
 | Source and output safety | Original preservation, explicit replacement consent, collision handling, validation before publication, recoverable failure |
 | Workflow correctness | Advertised conversion pairs, settings snapshots, batch results, cancellation, retries and partial success |
 | Media fidelity | Transparency, orientation, color, metadata, animation and document layout within each supported workflow's stated limits |
-| Integration | Public/private contracts, engine selection and hashes, source/notice correspondence, worker failures and bounded transport |
+| Integration | Application/worker contracts, engine selection and hashes, source/notice correspondence, worker failures and bounded transport |
 | Customer behavior | Direct actions, necessary prompts, useful errors, quiet success, settings migration and truthful Analyze results |
-| Delivery and status | Package inventory, private-source exclusion, consistent version/resource metadata, accurate implemented/verified/pending claims |
+| Delivery and status | Package inventory, historical private configuration/history exclusion, consistent version/resource metadata, accurate implemented/verified/pending claims |
 
 Fix demonstrated problems in small changes, with meaningful regression coverage
 where practical. Keep behavior changes explicit. Remove obsolete code only after
@@ -106,7 +115,7 @@ contracts or composition changed:
 | Core or application contracts | `tools/Test-Foundation.ps1` and the affected focused harness |
 | Real worker/engine composition | Documented integration checks and the owning engine's verifier |
 | Explorer commands/resources | `tools/Test-ShellPrototype.ps1`; installed checks only when that scope is authorized |
-| Public/private boundary | `tools/Test-PrivateBoundary.ps1` and source/package boundary checks |
+| Main production source and archive boundaries | `tools/Test-ProductionSource.ps1` and source/package boundary checks |
 | Packaging or cleanup | Relevant release/payload checks and focused filesystem guard tests |
 
 Follow [development instructions](development.md) for prerequisites and command
@@ -136,7 +145,9 @@ tracked generated companions together. Shared contracts may require a larger
 coherent group; do not force a split that leaves broken intermediate states.
 
 Review and fix first, run required checks, then execute authorized commits.
-Keep public/private commits separate and record compatible revisions when needed.
+Normal application work is committed in the main repository. If separately
+authorized historical private work is in scope, keep its commits separate and
+record related revisions when needed.
 Preserve unrelated work. Refresh the proposal if reviewed contents, HEAD or the
 index changes; never absorb another agent's edits silently. Push is separate.
 Do not create one catch-all cleanup commit or rewrite history to manufacture

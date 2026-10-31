@@ -4,6 +4,11 @@ Context-Menu Utility And Output Preference
 Status: accepted; implemented with automated evidence and owner manual acceptance
 Date: 2026-09-09
 
+Current-policy update: [decision 0021](0021-free-product-and-public-implementation.md)
+removes trial/paid admission, License UI, and the private build dependency.
+Any such requirements below retain their historical context; media, process,
+and safety constraints otherwise remain in force.
+
 Scope update: [decision 0019](0019-broad-file-analysis-and-media-expansion.md)
 broadens the image utility to file analysis, audio and document support while
 retaining all customer-surface and safe-output decisions below.

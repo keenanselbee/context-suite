@@ -10,8 +10,9 @@ closeout, temporary output, retained evidence and the cleanup/commit plan.
 
 
 The free transition under [decision 0021](decisions/0021-free-product-and-public-implementation.md)
-consolidates production source here. Legacy private/commercial evidence below
-retains its original scope; current verification is in [the transition goal](free-access-goal.md).
+consolidates production source here. Legacy private/commercial evidence in the
+[historical record](foundation-development-history.md) retains its original scope;
+current verification is in [the transition goal](free-access-goal.md).
 
 
 Build And Test
@@ -26,23 +27,15 @@ Build And Test
 ./tools/release/Test-InstallerSelections.ps1 # Mocked modern/classic lifecycle; no installation.
 ./tools/release/Test-InstallerComponents.ps1 # All seven payload selections; no engine inputs needed.
 
-# Complete foundation from this checkout and staged curated inputs.
-# See tools/curated-engine/README.md for the reviewed native staging workflow.
-./tools/dds-engine/Build-DdsEngine.ps1
-./tools/png-engine/Stage-PngEngine.ps1
-./tools/Build-Production.ps1 -Configuration Release
-./tools/Test-Foundation.ps1 -Configuration Release -Integration
-./artifacts/production/Release/ContextSuite.Application.exe
-
 # Real image-engine/adapter contracts, requiring staged native inputs.
 ./tools/Test-ImageConversion.ps1 -Configuration Release
 ./tools/Test-PngQuantization.ps1 -Configuration Release # Research only; generates an offline comparison report.
 # Optional: -Corpus '.codex-temp/png-quantization/screenshots-<id>' for pre-copied research inputs.
 ./tools/Test-DdsCodec.ps1 -SkipNativeBuild
 # Opt-in desktop test of the actual conversion UI with isolated settings.
-./tools/Test-DesktopSmoke.ps1 -Configuration Release -Images
-# Opt-in native replacement; recycles only two newly generated image fixtures.
-./tools/Test-PublicationWindows.ps1 -Configuration Release -Recycle -Images
+./tools/Test-DesktopSmoke.ps1 -Configuration Release -Images -WorkerPath '<verified isolated stage>/ContextSuite.Worker.exe'
+# Opt-in native publication test with newly generated disposable inputs.
+./tools/Test-PublicationWindows.ps1 -Configuration Release -Recycle
 ```
 
 Build commands restore required SDK projects automatically. `dotnet restore`
@@ -89,18 +82,55 @@ installs packages or restarts Explorer. When deployed beside the production app,
 the shell DLL chooses it; otherwise it retains the native prototype host.
 Installed packages are not automatically switched to this new output directory.
 However, rebuilding an already registered development directory updates its files.
-`New-ReleaseCandidate.ps1` now uses fresh isolated staging instead. For a standalone
-unregistered production build, pass `-StagingId ([guid]::NewGuid())` to
-`Build-Production.ps1`; the output is reported under `artifacts/production-staging/`.
+`New-ReleaseCandidate.ps1` uses fresh isolated staging instead, subject to the
+version reservation rules below.
 
-For an explicitly requested local Explorer smoke test, switch the existing three
-development identities with `./tools/Install-ShellPrototype.ps1 -Production
--Configuration Release` (on one line). This builds production and registers
-generated manifests targeting the WPF executable. Then run
-`./tools/Test-InstalledShellPrototype.ps1` and
-`./tools/Open-ShellPrototypeTestFolder.ps1 -Production`. Restart Explorer if it
-retains the old shell DLL. To return to the native prototype, run the installer
-without `-Production`. Neither mode is a release installer.
+The default `Build-Production.ps1` output is a reusable development directory,
+not an isolated candidate. On this workstation `artifacts/production/Release`
+is installed: do not refresh it as routine verification. `Test-Foundation.ps1
+-Integration` also rebuilds that configuration's production directory. Use these
+commands only in a disposable source checkout or a confirmed unregistered,
+unused development configuration. Stage the exact curated engine first using
+the [engine guide](../tools/curated-engine/README.md), then build DDS and stage
+PNG inputs before production compilation. Required engine inputs remain separate
+from the complete authored source; missing pins must fail rather than use stock
+native assets.
+
+Only in that disposable checkout or unused, unregistered configuration, the
+ordinary development sequence is:
+
+```powershell
+./tools/dds-engine/Build-DdsEngine.ps1
+./tools/png-engine/Stage-PngEngine.ps1
+./tools/Build-Production.ps1 -Configuration Release
+./tools/Test-Foundation.ps1 -Configuration Release -Integration
+```
+
+Do not run this sequence against the installed Release directory in this
+checkout. The optional `Test-PublicationWindows.ps1 -Recycle -Images` mode also
+rebuilds that production configuration: it requires the same output safeguards
+and separate explicit authorization to recycle its disposable test originals.
+
+Fresh candidate staging uses `Build-Production.ps1 -StagingId <new-guid>` or
+`tools/release/New-ReleaseCandidate.ps1`. A new GUID isolates files but also
+reserves the product version; it is not a disposable compile option. Follow
+[product versioning](product-versioning.md) and the
+[packaging workflow](release-packaging-goal.md), including clean source and all
+selected engine inputs. Failed reservations remain protected. Existing verified
+candidates must be reused as preserved inputs, never rebuilt in place.
+
+Installation/registration and Explorer acceptance are separately authorized
+workflows in [shell integration](shell-integration.md). Normal build and test
+work does not switch registered identities or restart Explorer.
+
+Some engine documentation is itself part of an immutable reviewed source kit.
+In particular, the AVIF/SVG engine READMEs and KIT documents and HEIF/audio
+distribution BUILD documents retain historical private-source wording. Current
+authored native projects are under `src/ContextSuite.*.Native` in this checkout;
+use the current repository build scripts for fresh builds. Historical packaged
+recipes still name their original source layout. Do not rewrite their bytes or
+repin engines as documentation cleanup: preserve old kit identities and add
+current guidance outside the selected recipe, or review a new kit separately.
 
 
 Implementation Boundaries
@@ -119,14 +149,13 @@ Implementation Boundaries
 - Shared source: Windows pipe identity/security code compiled into its process
   owners and contract tests without adding an infrastructure assembly.
 
-This is one unfinished production application, not a demonstration edition.
-Convert selections now open the image planner and can produce validated
-PNG/JPEG/WebP/BMP/TGA/DDS copies after confirmation. Analyze reports DDS headers;
-Optimize now opens the bounded lossless PNG planner. See
-[PNG implementation and verification](png-optimization-goal.md); interactive
-optimization-window acceptance is still pending.
-The image worker, application executor and real conversion UI have focused
-integration tests; final goal acceptance and release checks remain separate.
+This is one free production application. Routine Convert and Optimize commands
+run directly with captured settings; necessary matte, DDS, quality, and document
+choices use focused prompts. Standalone launch opens Settings/help. Analyze is
+read-only. The general workspace and routine planners are removed. See the
+[simplification goal](context-menu-simplification-goal.md) and
+[launch matrix](launch-capability-matrix.md) for current scope; automated checks
+do not establish outstanding visual, accessibility, or release acceptance.
 Validated free admission precedes reserving, encoding, and publishing. UI tests
 compile the same app sources into a test-only host with isolated paths. The free
 runtime does not read or write legacy files under
@@ -146,8 +175,10 @@ silently truncate or replace the previously loaded preferences. Credentials and
 trial records are not stored here. The application-owned publisher implements
 validated copies, explicit replacement, and recycle-only cleanup. Its tests use
 controlled temporary bytes plus real worker integration, never a permissive access provider.
-The image planner supplies semantic validation and per-batch replacement
-confirmation; enabling the preference alone never authorizes replacement.
+The explicit per-tool Overwrite originals choice in Settings supplies standing
+consent for future commands. Legacy permission-only settings migrate to copies.
+Each operation still validates safety and mandatory-copy exceptions; no routine
+per-batch replacement confirmation is required.
 See the [safety goal evidence](image-output-safety-goal.md).
 
 Publication recovery evidence is stored separately at
@@ -193,54 +224,36 @@ connection; a later request starts a fresh worker. Parent exit or pipe closure
 also ends the worker. No persistent job recovery or worker pool is implemented.
 
 
-CI And Private Source
----------------------
+CI And Source
+-------------
 
-Public CI never checks out private source. It runs public contracts, native
-contracts, documentation checks, and expected missing-private build failures.
-Private CI is manually dispatched from `context-suite-private` with an approved
-immutable public commit SHA. It checks out both repositories, tests integration,
-and imports the exact reviewed image-engine archive from an owner-provisioned
-private release before building DDS. It exports revision IDs and an unsigned,
-inventoried internal candidate ZIP, never source or symbols. See the
-[packaging goal](release-packaging-goal.md) for the required asset, scripts,
-runtime preflight, Inno offline installer commands and unverified signing/lifecycle
-gates. `tools/release/Test-InnoInstaller.ps1` runs registration contracts with
-mocked platform calls; it never installs or unregisters packages. Do not run private integration against
-untrusted public contributions or export whole workspaces, source, or symbols.
+Both workflows live in the main repository and require no private checkout.
+`public.yml` runs documentation/source-boundary, managed, hidden-view, installer
+mock, and native shell contracts. `Test-ProductionSource.ps1` checks complete
+main-source references and rejects private/reference dependencies.
+
+`production.yml` is manually dispatched with an approved full source SHA and a
+public engine-release tag. It imports the exact curated engine and palette
+assets, builds DDS, stages PNG inputs, runs integration, and exports an unsigned
+inventoried candidate plus its source revision. The hosted runner is a fresh
+checkout; its default development output is not this workstation's installed
+directory. See the [packaging goal](release-packaging-goal.md) for provisioning,
+runtime preflight, installer commands, and remaining signing/lifecycle gates.
+`tools/release/Test-InnoInstaller.ps1` uses mocked platform calls and does not
+install or unregister packages. Never export whole workspaces, private historical
+configuration, or symbols as release artifacts.
 
 Workflow files must be committed/pushed before hosted CI can execute; adding
 them locally does not establish a hosted CI pass. Parent commits do not commit
-the nested private repository. No source-license or payment-provider choice is
-made by this scaffold.
+the nested historical private repository. Product/source terms are recorded in
+[LICENSE.md](../LICENSE.md); free operation requires no payment provider.
 
 
 Verification Status
 -------------------
 
-The original foundation evidence comprised Release builds and 50 managed
-contracts; the completed conversion goal now records 280 passing integration
-contracts and expanded engine/UI evidence. Foundation coverage includes full
-selection transport, malformed clients, duplicate IDs, queue bounds, cancellation,
-worker reuse, and restart after cancellation/crash. Native Release contracts also
-pass for all three commands and complete three-file selections. Both production
-projects fail with the documented error when private implementations are absent.
-A public-only snapshot without `proprietary/` also passes component contracts.
-The actual WPF process smoke verifies startup, three successive three-file
-activations routed into one owner, request consumption, an on-demand worker,
-unchanged sources, and worker exit after abrupt parent termination. The smoke
-uses temporary GUID request files in the normal local activation directory and
-removes them afterward; it does not install packages or automate Explorer UI.
-
-The computer-use helper was unavailable during foundation implementation.
-The later [desktop smoke harness](desktop-smoke-tests.md) adds real WPF UIA
-assertions and an optional installed Explorer path. The WPF smoke has passed
-locally, including row contents, focus, resize, and close/reopen. Production
-Explorer automation is experimental and has not passed end to end. Subsequent
-user-provided screenshots confirm the manual classic Explorer-to-WPF handoff:
-all three tools receive complete three-file selections and accumulate 12 rows
-across four batches in one window. The local development shell
-registration was explicitly switched for local smoke work after the original
-foundation validation. Neither registration nor UI test success certifies a
-release installer. Window appearance, modern menu icons/order, high-DPI layout,
-and screen-reader usability still require manual review.
+Current free-source and unsigned-candidate evidence is maintained in the
+[transition goal](free-access-goal.md). Original process/UI observations remain
+in [the historical record](foundation-development-history.md). They do not
+establish current visual, accessibility, installed Explorer, or native installer
+acceptance.

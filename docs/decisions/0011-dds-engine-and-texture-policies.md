@@ -4,6 +4,11 @@ DDS Engine And Texture Policies
 Status: accepted; bounded implementation and local acceptance completed
 Date: 2026-09-07
 
+Current-policy update: [decision 0021](0021-free-product-and-public-implementation.md)
+removes trial/paid admission, License UI, and the private build dependency.
+Any such requirements below retain their historical context; media, process,
+and safety constraints otherwise remain in force.
+
 See [scope, evidence and remaining release gates](../dds-conversion-goal.md).
 
 Use a pinned Microsoft DirectXTex CPU build through a narrow native bridge loaded

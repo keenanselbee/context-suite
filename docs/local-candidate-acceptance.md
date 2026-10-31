@@ -2,6 +2,11 @@ Local Candidate Acceptance Contract
 ===================================
 
 Revision 1, 2026-09-19. Status: remaining acceptance is bounded below, not complete.
+The dated 1.1.2 evidence and commercial terminology below are historical.
+[Decision 0021](decisions/0021-free-product-and-public-implementation.md) removes
+trials, License UI, and private-source prerequisites. Current free-source and
+candidate status is in [the transition goal](free-access-goal.md). Media fidelity,
+human workflow review, and native delivery acceptance remain distinct gates.
 This contract implements Milestones A-D of the [active goal](broad-file-support-goal.md).
 It preserves required features and distinguishes automated evidence, human
 acceptance and commercial release gates. The final replay must use one fresh
@@ -195,14 +200,15 @@ owner acceptance. Do not reuse old review results for changed media outputs.
   copies still need conversion/reference comparison; human review remains open.
 - **H04 workflows:** eight scenarios: mixed Analyze with unreadable input; quiet
   image conversion; matte choice; audio quality choice; image-PDF order; Office
-  calculation/font choices; cancellation/failure/retry; Settings/License changes
+  calculation/font choices; cancellation/failure/retry; Settings changes
   and copy/overwrite preferences. Check names, originals, status, keyboard focus,
-  Tab/Shift+Tab and Escape using simulated access and disposable files.
+  Tab/Shift+Tab, and Escape using free admission and disposable files.
 
-The [manual workflow harness](manual-workflow-review.md) prepares eight reviewed
-command selections plus standalone Settings for these groups. Fresh profiles use
-copied fixtures and TEST-ONLY access. Headless admission passes; visible H04
-results remain pending while desktop control is unavailable.
+The [manual workflow review](manual-workflow-review.md) retains eight reviewed
+command selections and supported headless selection checks. The old licensing
+launch wrapper is removed; there is no supported replacement visual wrapper.
+Historical headless passes do not establish current visible H04 acceptance,
+which remains pending.
 
 Record light/dark, 100%/150%/200% scaling, two-monitor movement and screen-reader
 announcements separately. Unavailable checks stay explicitly unverified release

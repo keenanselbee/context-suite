@@ -1,8 +1,18 @@
 Image Output Safety And Settings Goal
 ====================================
 
-Status: implemented and locally verified; bounded goal complete, media codecs remain next
+Status: completed historical foundation goal.
 Date: 2026-09-06
+
+The evidence and original consent model below belong to that checkpoint.
+[Decision 0018](decisions/0018-context-menu-utility-and-output-preference.md)
+supersedes per-batch replacement consent with explicit per-tool Settings consent
+for future commands; legacy permission-only settings migrate to copies.
+Platform/path restrictions, mandatory-copy exceptions, and publication safety
+remain. [Decision 0021](decisions/0021-free-product-and-public-implementation.md)
+removes commercial access and private composition. The removed
+`Test-PrivateBoundary.ps1` is historical evidence, not a current command; use
+[development](development.md) for supported verification.
 
 
 Objective

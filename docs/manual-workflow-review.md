@@ -1,128 +1,91 @@
 Manual Workflow Review
 ======================
 
-Status: prepared; expanded H04 visual acceptance not performed.
+Status: supported headless checks; expanded H04 visual acceptance not performed.
+The former `Test-LicenseWorkflow.ps1` launch wrapper was removed in the free
+migration. Its `-Launch`, `-Settings`, and `-RequestManifest` examples are retired;
+there is no supported replacement visual wrapper. Current source has free
+admission and no License window. See [the transition goal](free-access-goal.md)
+for current candidate evidence and [the acceptance contract](local-candidate-acceptance.md)
+for remaining human review. Headless checks do not certify visual usability.
 
-Use the test-only host to review the existing application with disposable copies,
-an expired trial and the simulated `TEST-ONLY` license. The installed app, Explorer
-registration and real license state are outside this workflow. This implements
-review preparation for the [local acceptance contract](local-candidate-acceptance.md);
-headless admission checks do not certify visual usability.
+
+Supported Headless Checks
+-------------------------
+
+From the repository root, the current test-host entry point supports:
+
+```powershell
+dotnet run --project tests/ContextSuite.Application.TestHost -c Release -- --view-contracts
+dotnet run --project tests/ContextSuite.Application.TestHost -c Release -- --manual-workflow-contracts
+dotnet run --project tests/ContextSuite.Application.TestHost -c Release -- --verify-manual-selection '<absolute reviewed scratch manifest>'
+```
+
+The selection modes validate manifests, create fresh disposable input copies and
+activation requests under .codex-temp/command-workflow, and retain evidence. They
+show no window and start no worker. Selection checks do not verify a complete
+payload or perform conversion. The test host is excluded from production output.
+
+For focused application/view-model dispatch and publication contracts with an
+existing verified worker, use:
+
+```powershell
+dotnet run --project tests/ContextSuite.Application.TestHost -c Release -- --direct-command-contracts '<verified isolated stage>/ContextSuite.Worker.exe'
+```
+
+This mode starts the real worker, uses disposable media and free admission, and
+substitutes a retaining recycler rather than native recycling. Verify the chosen
+stage with its owning payload checks first. These commands build test outputs,
+not the installed production directory, and do not reserve candidate versions.
+Close Context Suite and run worker/router checks sequentially; do not overlap
+foundation integration or desktop harnesses.
 
 
-Prepared local cases
---------------------
+Human Review Still Required
+--------------------------
 
-The current 1.1.2 preparation is
-`.codex-temp/candidate-112-workflows-aa99d8233a5d4fb296792fffbd93b40d`.
-Its `cases` directory contains eight manifests and copied generated fixtures.
-All 3,972 released application files match the original production stage below;
-the full staged allowlist and inventory also pass verification. The retained
-source-linked WPF host uses the shipped Core DLL and passes ten simulated-license
-checks, fifteen selection checks and all eight headless copy/request preflights.
-No app window or media worker ran; there was no live provider contact. Bound
-source, host, candidate and stage identities remain unchanged.
+Revalidate retained manifests and fixture hashes with current source before
+using them for new evidence. The eight prepared cases cover:
 
-The [consolidated review collection](document-review.md#current-candidate-collection-2026-09-24)
-now opens at `review.html` and includes a local `workflows.html` with these
-commands and observations. Its workflow supplement preserves the original media
-manifest and verification receipts. The 2026-09-19 fixture selection remains at
-`.codex-temp/manual-workflows/a8da8f5f670043debd81ec1eedfb51c1`; current manifests
-reference fresh copies of those hash-checked generated inputs.
-
-| Manifest | Review after activation where required |
+| Manifest | Review with free admission |
 | --- | --- |
-| `01-analyze.json` | Six files: PNG, DOCX, Opus, empty, unknown binary and a deliberately unreadable PDF copy. Analyze works with expired access, gives useful bounded facts, and explains unreadable/unknown cases without crashing. |
-| `02-quiet-image.json` | Opaque PNG to TGA. Expired access explains activation. Activate, close License and choose Try again. A named copy appears with no routine options planner or metadata acknowledgement. |
-| `03-matte.json` | Transparent PNG to JPEG. Require an explicit background choice, readable preview/options and sensible focus; cancellation creates no output. |
+| `01-analyze.json` | Six files: PNG, DOCX, Opus, empty, unknown binary, and a deliberately unreadable PDF copy. Analyze works without access state, gives useful bounded facts, and explains unreadable/unknown cases without crashing. |
+| `02-quiet-image.json` | Opaque PNG to TGA. A named copy appears with no routine options planner or metadata acknowledgement. |
+| `03-matte.json` | Transparent PNG to JPEG. Require an explicit background choice, readable preview/options, and sensible focus; cancellation creates no output. |
 | `04-audio-quality.json` | Generated Opus to MP3. Explain lossy-to-lossy quality loss before proceeding. Cancellation leaves the copied input intact. |
 | `05-pdf-order.json` | Two distinct PNGs to one PDF. Show both filenames and the explicit page order; change the order and confirm it in the two-page output. |
-| `06-office-calculation.json` | Ordinary chart-free XLSX to PDF. Show saved-values/recalculate choice and retain it through relevant License interactions. |
+| `06-office-calculation.json` | Ordinary chart-free XLSX to PDF. Show saved-values/recalculate choice and retain it through the operation. |
 | `07-office-font.json` | DOCX with an actively used missing font. Explain substitution and require the relevant choice before saving the PDF. |
 | `08-cancel-retry.json` | Ordinary two-page DOCX to PDF. Cancel while work is active, inspect readable status and confirm no partial published file. Retry if offered; record actual behavior rather than assuming retry is available for cancellation. |
 
-The two Office choice cases belong to one H04 group. Standalone Settings/License
-is the remaining group. These small fixtures do not cover every declared media
-variant, hostile input, output failure or layout requirement.
+Standalone Settings adds tool tabs, expansion/collapse, copy/overwrite wording,
+Save/Cancel, notices, and focus restoration. Preference persistence across launches
+needs separate observation. Saving overwrite consent does not authorize native
+recycling during review; use copies. Licensing interaction is no longer a case.
+
+Use [desktop smoke guidance](desktop-smoke-tests.md) for the supported opt-in image
+UI sequence and its limits. It does not provide the complete eight-case manual
+launcher. Restoring a bounded current visual launcher and observing H04 remain
+acceptance work; do not substitute ad hoc production activation that could use
+real settings or originals.
+
+Record manifest and worker inventory hashes, disposable profile location, Windows
+theme/scaling, outputs, original preservation, prompt clarity, Tab/Shift+Tab,
+Escape, resizing, and status. Record screenshots or reproduction steps for
+failures. Screen-reader announcements, 100%/150%/200% scaling, and two-monitor
+movement remain unverified unless exercised. Installed Explorer and native
+installer lifecycle retain separate acceptance gates.
 
 
-Run one case
-------------
-
-Close Context Suite first; leave unrelated programs open. The harness refuses
-when another Context Suite application/test host/worker is running. Avoid Explorer
-commands during the session because the router is shared per Windows user.
-
-From the repository in PowerShell:
-
-```powershell
-Set-Location 'C:\Repositories\Context Suite'
-$worker = Join-Path (Get-Location) 'artifacts\production-staging\5d97eab3d78e4e6199717450ad835264\ContextSuite.Worker.exe'
-$cases = Join-Path (Get-Location) '.codex-temp\candidate-112-workflows-aa99d8233a5d4fb296792fffbd93b40d\cases'
-.\tools\Test-LicenseWorkflow.ps1 -Launch -WorkerPath $worker -RequestManifest (Join-Path $cases '02-quiet-image.json')
-```
-
-Change only the manifest filename for another case. Omit `-Launch` for headless
-preflight. The script verifies the complete payload allowlist, engine identities
-and inventory before building the host and running its checks. This can take a
-few minutes for the Office runtime. It does not reserve or change a release
-version. Both reserved 1.1.1 and 1.1.2 payloads remain preserved. The inventoried
-production stage is used because the release archive intentionally omits the
-staging inventory; all released application bytes have been compared with it.
-
-Every launch creates a fresh isolated profile with default copy settings and an
-expired trial. Use only `TEST-ONLY` in License. An activation failure/result may
-need Try again before the requested prompt appears. Confirm the actual target,
-files and choices survive License closing; never enter a customer key. Analyze
-does not require activation. No real Polar transport is used.
-
-The printed profile contains `Inputs` and `manual-inputs.json`, identifying each
-retained source, its copied input and SHA-256. Names receive ordered `01 -`,
-`02 -` prefixes so duplicate source names remain distinct. Outputs belong beside
-these copies by default. Unreadable Analyze copies stay locked for the test
-process lifetime; the retained original is never locked. Close the test app before
-launching another case. Quiet success may close it automatically.
-
-For standalone Settings:
-
-```powershell
-.\tools\Test-LicenseWorkflow.ps1 -Launch -Settings -WorkerPath $worker
-```
-
-Check tool tabs, expansion/collapse resizing, copy/overwrite wording, Save/Cancel,
-License activation/deactivation and focus restoration. A fresh invocation resets
-the test profile deliberately; it is not evidence that Save failed. Preference
-persistence across installed-app launches remains a separate test. Reviewing or
-saving the overwrite setting does not authorize executing native recycling in
-this session; use copy output for the prepared transformations.
-
-
-Record observations
---------------------
-
-For each case record the manifest hash, printed profile path, worker inventory
-hash, Windows theme/scaling and observed result. Note filenames and output counts,
-original preservation, prompt clarity, keyboard focus, Tab/Shift+Tab, Escape,
-window resizing and status text. Record screenshots or reproduction steps for
-failures. Do not report a predicted prompt as one that was observed.
-
-The last recorded Computer Use attempt failed with native-pipe error 2. This
-headless preparation did not retry desktop control, start a helper or change
-configuration. Actual visible H04 review is pending.
-Screen-reader announcements, other themes, 100%/150%/200% scaling and two-monitor
-movement remain unverified unless explicitly exercised. Installed Explorer,
-native installer lifecycle and live licensing have separate acceptance gates.
-
-
-Harness boundary
+Manifest Boundary
 -----------------
 
-`-RequestManifest` is supported only by the simulated test host. It accepts a
-single existing public command and 1-32 inputs, each at most 64 MiB and at most
-256 MiB combined. Manifests are at most 64 KiB. Both manifest and input paths must
-be absolute paths inside this checkout's `.codex-temp`; traversal, reparse links,
-changed SHA-256, unknown JSON fields and invalid commands are rejected. `Locked`
-is optional and permitted only for Analyze. Use generated, reviewed fixtures.
+The test-only selection reader accepts one existing public command and 1-32
+inputs, each at most 64 MiB and at most 256 MiB combined. Manifests are at most
+64 KiB. Manifest/input paths must be absolute and inside this checkout's
+.codex-temp; traversal, reparse links, changed SHA-256, unknown JSON fields, and
+invalid commands are rejected. `Locked` is optional and only valid for Analyze.
+Use generated, reviewed fixtures.
 
 ```json
 {
@@ -134,16 +97,30 @@ is optional and permitted only for Analyze. Use generated, reviewed fixtures.
 }
 ```
 
-The test host copies and validates inputs before normal application activation;
-shipping code does not read this test environment variable. `-AllowScratchWorker`
-is an explicit opt-in for an inventoried repository scratch payload. Without it,
-workers must be under `artifacts/production-staging`. Payload checks still require
-all included optional engines to pass their existing validators.
+Copies receive ordered `01 -`, `02 -` prefixes. Unreadable Analyze controls lock
+only disposable copies for the selection lifetime. Production does not read the
+test-only selection environment variable. The old wrapper's worker allowlist and
+`-AllowScratchWorker` flag are not current host CLI options.
 
-The focused selection suite passes 15 admission/copy/lock/preservation checks.
-These verify test infrastructure only; they add no human acceptance claims.
-The complete expanded-worker preflight passes its existing engine validators and
-inventory check, a Release test-host build with zero warnings/errors, and all ten
-simulated licensing checks. Evidence is retained in
-`.codex-temp/manual-workflow-preflight.log`. The worker inventory remains
-`ABA4BCE94D364BC6327BB8545D884D636D0B2A31E031DEBF8186E414D10AE5A6`.
+
+Historical 1.1.2 Preparation
+----------------------------
+
+Local-only cases remain at
+.codex-temp/candidate-112-workflows-aa99d8233a5d4fb296792fffbd93b40d/cases.
+The matching stage was artifacts/production-staging/5d97eab3d78e4e6199717450ad835264.
+All 3,972 released files matched that stage; its full inventory passed. The
+then-current source-linked host used the shipped Core DLL and passed ten
+simulated-license checks, fifteen selection checks, and eight headless
+copy/request preflights. No window or media worker ran. Those licensing results
+are historical, not current free-source evidence.
+
+The [review collection](document-review.md#current-candidate-collection-2026-09-24)
+retains review.html and workflows.html. Original selections remain at the
+local-only path .codex-temp/manual-workflows/a8da8f5f670043debd81ec1eedfb51c1;
+preserve fixtures, manifests, and receipts. Local-only preflight log:
+.codex-temp/manual-workflow-preflight.log. Recorded worker inventory SHA-256:
+ABA4BCE94D364BC6327BB8545D884D636D0B2A31E031DEBF8186E414D10AE5A6.
+The last recorded Computer Use attempt failed with native-pipe error 2; visible
+H04 review was not performed. Neither that failure nor historical headless passes
+establish current desktop availability or acceptance.

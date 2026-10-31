@@ -4,6 +4,11 @@ Inno Setup And Offline Website Distribution
 Status: accepted direction; internal lifecycle integration implemented, native acceptance pending
 Date: 2026-09-07
 
+Current-policy update: [decision 0021](0021-free-product-and-public-implementation.md)
+removes trial/paid admission, License UI, and the private build dependency.
+Any such requirements below retain their historical context; media, process,
+and safety constraints otherwise remain in force.
+
 Context
 -------
 

@@ -1,6 +1,16 @@
 Isolated Audio Engine Evaluation
 ===============================
 
+Current source is complete in the main checkout under
+[decision 0021](../../docs/decisions/0021-free-product-and-public-implementation.md).
+Adapter/worker tests require pinned engine inputs, not a private repository.
+ContextSuite.Private project names and dated private/trial results below retain
+their historical identities; current admission is free and preserves legacy
+access files. Read [development](../../docs/development.md) before build/integration
+commands, especially when a development output directory is installed.
+The distribution `BUILD*.md` files are preserved source-kit members; do not
+rewrite their historical wording without reviewing kit identities and verifiers.
+
 The opt-in [AIFF/WMA native evaluation](../../docs/audio-expanded-input-evaluation.md)
 adds restricted input decoders with 27 generated decoding fixtures and fifteen
 configuration guards. Application integration and production adoption remain
@@ -116,7 +126,7 @@ vendor/comment bytes, exact restored metadata and decoded samples, smaller outpu
 an unchanged original and refusal of an application-specific block. Its evidence
 is `preservation.json`; it does not rerun the conversion matrix.
 
-`Test-AudioAdapter.ps1` requires the private repository and tests its probe
+`Test-AudioAdapter.ps1` uses the main audio contract project and tests its probe
 component with the generated six-format inputs. It verifies runtime engine-file
 hashes/leases, typed replies, cancellation, limits, protocol rejection and disabled
 engine report files. It writes `probe-adapter.json` under a fresh scratch directory;
@@ -167,23 +177,23 @@ install an application, register Explorer or claim native shell acceptance.
 Optional `-ArtworkFixture <generated authored-artwork.flac>` adds actual IPC and
 Analyze checks for embedded-artwork facts; the file must be under audio scratch.
 Optional `-IncludeOptimization` also exercises the FLAC worker commands, real
-trial admission and application publisher using generated padded FLAC files.
+free admission and application publisher using generated padded FLAC files.
 It writes `flac-results/flac-workflow.json` after all checks pass. Copies and name
-collisions, no-smaller-result handling, expiry between files, changed/corrupt
+collisions, no-smaller-result handling, admission between files, changed/corrupt
 sources, cancellation and unsafe reservations are covered. A refusing recycler
 ensures this workflow never uses the native Recycle Bin. It does not exercise a
 customer menu or authorize shipping the evaluation payload.
 The switch also runs `--audio-direct` through the real application queue and
 records `direct-results/direct-audio.json`. It covers Auto/Lossless FLAC dispatch,
-one admitted mixed PNG/FLAC batch across trial expiry, synthetic activation/retry,
+one admitted mixed PNG/FLAC batch, command forwarding/retry,
 captured settings, quiet completion, cancellation, malformed files, misleading
 extensions and missing-engine fallback. These component checks do not operate
 Explorer or inspect visible windows, keyboard focus or assistive technology.
 
 Optional `-IncludeConversion` runs 52 checks through the audio file probe,
-conversion worker, confirmed batch, local trial and transactional publisher.
+conversion worker, confirmed batch, free admission, and transactional publisher.
 It covers all 30 cross-format pairs and six no-op cases, legacy MP3 tag transport
-and conflict refusal, collisions, expiry,
+and conflict refusal, collisions,
 changed sources, unsupported metadata, cancellation, alternate folders and
 refusal of nonempty/hard-linked reservations. It records
 `conversion-results/audio-conversion-workflow.json`. It then runs 20 additional

@@ -4,6 +4,11 @@ Bounded PNG Precision Presets
 Status: accepted and implemented locally; interactive/release acceptance pending
 Date: 2026-09-08
 
+Current-policy update: [decision 0021](0021-free-product-and-public-implementation.md)
+removes trial/paid admission, License UI, and the private build dependency.
+Any such requirements below retain their historical context; media, process,
+and safety constraints otherwise remain in force.
+
 [Decision 0015](0015-simple-context-menu-workflows.md) supersedes the target
 planner-first experience and no-lossless-fallback rule. That redesign is planned;
 the implementation described here remains the current build until replaced.

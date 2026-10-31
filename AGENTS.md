@@ -135,26 +135,27 @@ Repository-Specific Notes
   validated semantic results to determine completion.
 - Keep common workflows understandable without codec expertise and place
   advanced controls behind a secondary surface.
-- Follow accepted decision 0015 as the next product priority: broad-audience
+- Preserve accepted decision 0015's product direction: broad-audience
   simplicity, context-menu-first direct actions, Auto first, best-effort results
   within fixed quality limits, quiet success and compact progress/problem UI.
   Decision 0018 now narrows the customer UI to direct commands, necessary prompts,
   Analyze, progress/problems and Settings, with decision 0021 removing License
-  and placing third-party notices in Settings. Remove the general workspace
-  and routine planners. Copies remain default; explicit Settings consent will
-  allow safe replacement on future direct actions, retaining mandatory copy
-  exceptions. Track implementation in docs/context-menu-simplification-goal.md. Keep planned
+  and placing third-party notices in Settings. Keep the general workspace
+  and routine planners removed. Copies remain default; explicit Settings consent
+  allows safe replacement on future direct actions, retaining mandatory copy
+  exceptions. Track evidence in docs/context-menu-simplification-goal.md. Keep planned
   behavior distinct from implemented and verified behavior in status reports.
 - Keep Explorer-facing code minimal and bounded. Do not load media engines,
   perform unbounded parsing, access the network, or display errors while Explorer
   enumerates commands.
-- Follow decision 0019 and docs/broad-file-support-goal.md for the next priority:
+- Follow decision 0019 and docs/broad-file-support-goal.md for capability boundaries:
   useful read-only Analyze for every readable regular file, an offline common-type
   catalog, common audio conversion/FLAC optimization and PDF/document analysis.
   Selected launch document actions are images-to-PDF, PDF pages-to-images, PDF
   optimization and Word/Excel/PowerPoint-to-PDF. Evaluate exact variants, engines
   and fidelity under docs/document-design.md before enabling them.
   Recognition does not authorize conversion. Keep the completed decision 0018 UX.
+  Use docs/roadmap.md for current priorities and README.md for project status.
 - Do not add video conversion, archive extraction, cloud processing, AI editing,
   CD ripping, arbitrary engine commands or obscure transformations without a new
   product-scope decision. Signing remains deferred; product expansion does not
