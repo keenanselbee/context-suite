@@ -12,7 +12,7 @@ New-Item -ItemType Directory -Path (Join-Path $fixture 'docs'), (Join-Path $fixt
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Test-Repository.ps1') -Destination (Join-Path $fixture 'tools')
 git -C $fixture init --quiet
 if ($LASTEXITCODE -ne 0) { throw 'Cannot initialize documentation fixture.' }
-[IO.File]::WriteAllText((Join-Path $fixture '.gitignore'), ".codex-temp/`n/z backup/`n", $utf8)
+[IO.File]::WriteAllText((Join-Path $fixture '.gitignore'), ".codex-temp/`n", $utf8)
 [IO.File]::WriteAllText((Join-Path $fixture 'src\ContextSuite.Application\App.xaml'), '<Application ThemeMode="System" />', $utf8)
 foreach ($name in 'README.md', 'AGENTS.md', 'CHANGELOG.md', 'docs\target.md') {
     [IO.File]::WriteAllText((Join-Path $fixture $name), "Fixture`n", $utf8)
@@ -39,22 +39,7 @@ foreach ($case in $cases) {
     if ($rejected -ne $case.Rejected) { throw "Unexpected documentation result: $($case.Name)" }
     $passed++
 }
-# A forced add must not bypass the backup boundary, even when files are otherwise
-# eligible documentation targets. This sentinel belongs only to this fixture.
-$backupSentinel = Join-Path $fixture 'z backup\proprietary\sentinel.txt'
-New-Item -ItemType Directory -Path (Split-Path $backupSentinel -Parent) -Force | Out-Null
-[IO.File]::WriteAllText($backupSentinel, "Synthetic private backup`n", $utf8)
-git -C $fixture add --force -- 'z backup/proprietary/sentinel.txt'
-if ($LASTEXITCODE -ne 0) { throw 'Cannot stage backup boundary fixture.' }
-$rejected = $false
-try { & (Join-Path $fixture 'tools\Test-Repository.ps1') | Out-Null }
-catch {
-    if ($_.Exception.Message -notlike 'Private, backup or reference files must not be tracked*') { throw }
-    $rejected = $true
-}
-if (-not $rejected) { throw 'Tracked backup content escaped the public boundary.' }
-$passed++
-$result = @{ passed = $passed; cases = @($cases | ForEach-Object { $_.Name }) + @('Tracked private backup'); fixtureCleanup = 'pending' }
+$result = @{ passed = $passed; cases = @($cases | ForEach-Object { $_.Name }); fixtureCleanup = 'pending' }
 $receipt = Join-Path $run 'result.json'
 $result | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $receipt -Encoding UTF8
 # Only this successful run's fixtures are disposable. Retain failures for diagnosis.

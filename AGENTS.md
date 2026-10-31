@@ -64,15 +64,16 @@ Repository-Specific Notes
 -------------------------
 
 - Follow accepted decision 0021 and docs/free-access-goal.md for the free product.
-  Required authored implementations live in this repository; z backup/proprietary/
-  remains an ignored historical repository. Preserve engine identities and
-  safety, and leave legacy access data untouched. Keep source migration,
+  Required authored implementations live in this repository. Local-only
+  Z:\Backup\Context Suite\proprietary remains a separate historical repository
+  outside this checkout. Preserve engine identities and safety, and leave
+  legacy access data untouched. Keep source migration,
   release, installation, and live retirement acceptance separate.
 
 - Context Suite is a local Windows application with three peer Explorer tools:
   Analyze, Convert, and Optimize.
-- Treat local-only `z backup/proprietary/` as a separate private Git repository with its own
-  instructions, history, and remote. Keep it untracked by the parent; parent
+- Treat local-only `Z:\Backup\Context Suite\proprietary` as a separate private Git
+  repository with its own instructions, history, and remote. Keep it outside the parent; parent
   staging or commit requests do not authorize private-repository commits.
 - Maintain one free production application built from the main repository,
   with a clear error when required implementations or pinned engines are missing.

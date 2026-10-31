@@ -2,7 +2,6 @@ Context Suite.code-workspace
 /.vscode/settings.json
 reference/
 proprietary/
-/z backup/
 .codex-temp/
 artifacts/
 

@@ -9,7 +9,7 @@ foreach ($project in $projects) {
     [xml] $xml = Get-Content -LiteralPath $project.FullName -Raw
     foreach ($node in $xml.SelectNodes('//*[@Include or @Project]')) {
         $value = if ($node.HasAttribute('Include')) { $node.GetAttribute('Include') } else { $node.GetAttribute('Project') }
-        if ($value -match 'proprietary[\\/]|z backup[\\/]|reference[\\/]|ContextSuite.Commercial|Require-Private') {
+        if ($value -match 'proprietary[\\/]|reference[\\/]|ContextSuite.Commercial|Require-Private') {
             throw "Production source boundary violation in $($project.Name): $value"
         }
         if ($node.Name -eq 'ProjectReference' -and -not (Test-Path -LiteralPath (Join-Path $project.DirectoryName $value) -PathType Leaf)) {
@@ -19,7 +19,7 @@ foreach ($project in $projects) {
 }
 [xml] $solution = Get-Content -LiteralPath (Join-Path $repository 'ContextSuite.Production.slnx') -Raw
 foreach ($node in $solution.SelectNodes('/Solution/Project')) {
-    if ($node.Path -match 'proprietary|z backup[\\/]|Commercial' -or -not (Test-Path -LiteralPath (Join-Path $repository $node.Path) -PathType Leaf)) {
+    if ($node.Path -match 'proprietary|Commercial' -or -not (Test-Path -LiteralPath (Join-Path $repository $node.Path) -PathType Leaf)) {
         throw "Production solution requires unavailable or commercial source: $($node.Path)"
     }
 }

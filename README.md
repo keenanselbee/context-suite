@@ -13,7 +13,7 @@ purchase, activation, or network licensing. Third-party notices are in Settings.
 
 The source-available implementation lives in this repository. See the
 [license terms](LICENSE.md) for permitted use; source availability is not an
-open-source license. The ignored historical private repository is not a build
+open-source license. The preserved historical private repository is not a build
 input. Selected engines and their source/notices remain required.
 
 
@@ -28,7 +28,7 @@ Current status as of 2026-10-30:
 | Verified candidate | Unsigned 1.6.2, built from clean source and archive-verified; 811 packaged PDF/Optimize checks passed |
 | Existing local installation | 1.5.5, unchanged; all 2,915 installed payload files matched during migration verification |
 | Release acceptance | Signing, native installer/upgrade lifecycle, clean-machine checks, and broader visible/accessibility acceptance remain open |
-| External retirement | Free-product website copy is live; local private history is preserved under `z backup/proprietary/`; Polar retirement and remote archival remain open |
+| External retirement | Free-product website copy is live; local private history is preserved under `Z:\Backup\Context Suite\proprietary`; Polar retirement and remote archival remain open |
 
 The [free transition record](docs/free-access-goal.md) owns exact source/archive
 identities, test results, limits, and retained evidence. See the

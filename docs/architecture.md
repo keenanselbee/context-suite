@@ -50,7 +50,8 @@ Public And Product Composition
 
 The main repository owns contracts, shell integration, UI, batch coordination,
 output safety, production media adapters, optimization policies, and tests.
-The independent local-only z backup/proprietary/ checkout is retained as historical material.
+The independent local-only Z:\Backup\Context Suite\proprietary checkout is
+retained as historical material.
 The existing ContextSuite.Private assembly/namespace names are preserved during
 the migration; their source now belongs to this repository.
 

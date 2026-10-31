@@ -154,11 +154,12 @@ Retirement Follow-through
 
 On 2026-10-30, the owner authorized the remaining changes and reviewed pushes,
 while reserving remote repository archival for later. The private checkout moved
-intact to local-only z backup/proprietary/: 1,839 file hashes matched before Git
-pointer repair, and the existing linked worktree was verified. The prior stale
-worktree registration was preserved. Parent source checks reject tracked backup
-content and production references to it. Local-only relocation receipts and the
-reproduction script are in .codex-temp/retirement-followthrough-20261030-174330;
+intact to local-only Z:\Backup\Context Suite\proprietary: 1,843 file hashes matched
+before Git pointer repair, and the existing linked worktree was verified. The
+prior stale worktree registration was preserved. The backup is outside the main
+checkout and its source/package boundaries. The owner chose to leave existing
+workspace and shared-instruction path references unchanged. Local-only relocation
+receipts and the reproduction script are in .codex-temp/retirement-followthrough-20261030-174330;
 retain them to document the move and preserved history.
 
 The website free-product commit 3f33d23 is included in deployed release 0.7.6,
